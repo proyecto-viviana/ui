@@ -264,9 +264,14 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown, true);
+    // Bubble phase, mirroring react-aria's `useOverlay` (its `onKeyDown` is an
+    // overlay-element prop, handled on bubble). Capture would preempt inner
+    // widgets that dismiss on Escape (a combobox/menu inside the dialog must
+    // consume Escape first) and would also fire before the event is recorded by
+    // capture-phase listeners, inverting the keydown/onOpenChange order.
+    document.addEventListener("keydown", handleKeyDown, false);
     onCleanup(() => {
-      document.removeEventListener("keydown", handleKeyDown, true);
+      document.removeEventListener("keydown", handleKeyDown, false);
     });
   });
 
@@ -487,9 +492,11 @@ function ModalContent(props: ModalProps): JSX.Element {
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown, true);
+    // Bubble phase — see the ModalOverlay handler above for why (react-aria
+    // `useOverlay` parity; inner-widget Escape precedence; event-order fidelity).
+    document.addEventListener("keydown", handleKeyDown, false);
     onCleanup(() => {
-      document.removeEventListener("keydown", handleKeyDown, true);
+      document.removeEventListener("keydown", handleKeyDown, false);
     });
   });
 
@@ -548,7 +555,16 @@ function ModalContent(props: ModalProps): JSX.Element {
     // No autoFocus: react-aria's Overlay renders FocusScope with restoreFocus +
     // contain only — initial focus is useDialog's job (it focuses the dialog
     // element itself when nothing inside holds focus).
-    <FocusScope contain restoreFocus>
+    //
+    // `contain` is gated on `!isExiting`, mirroring react-aria's Overlay
+    // (react-aria/src/overlays/Overlay.tsx: `contain={... && !isExiting}`). The
+    // overlay stays mounted through its exit transition (isOpen || isExiting), so
+    // without this gate containment would remain active during the exit and yank
+    // focus back into the dialog as restoreFocus moves it to the trigger —
+    // producing a focus bounce (focusout→focusin→focusout) that React never
+    // shows. Releasing containment the instant the exit begins lets focus settle
+    // on the trigger in a single move, matching upstream's event sequence.
+    <FocusScope contain={!isModalExiting()} restoreFocus>
       <div
         {...domProps()}
         ref={registerModalRef}

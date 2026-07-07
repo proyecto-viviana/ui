@@ -5023,8 +5023,15 @@ function SolidSpectrumDialogDemo() {
       target: document.activeElement,
       value: nextOpen,
     });
+    // Track open state in its own signal only. Folding `isOpen` back into
+    // `demoProps` is redundant — `serializedProps` already overlays `isOpen()`
+    // — and harmful in Solid: the role-conditional child below reads
+    // `demoProps()`, so perturbing it on every open/close re-runs that thunk and
+    // recreates the whole Dialog subtree (tearing the focused section's portal
+    // out mid-gesture, before `keyup`). React reconciles the same conditional by
+    // type and keeps it mounted; decoupling `isOpen` here matches that so the D4
+    // event-sequence oracle isolates dismiss/focus behavior, not fixture churn.
     setIsOpen(nextOpen);
-    setDemoProps((current) => ({ ...current, isOpen: nextOpen }));
   };
 
   return hc(

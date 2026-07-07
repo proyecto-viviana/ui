@@ -3,7 +3,7 @@
  * Based on @react-aria/tabs.
  */
 
-import { type Accessor, createEffect, createMemo } from "solid-js";
+import { type Accessor, batch, createEffect, createMemo } from "solid-js";
 import { createFocusRing } from "../interactions";
 import { createPress } from "../interactions";
 import { createHover } from "../interactions";
@@ -271,12 +271,25 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
 
     if (nextKey !== null) {
       e.preventDefault();
-      state.setFocusedKey(nextKey);
-      // Selection follows focus only for keyboard navigation in automatic mode
-      // (mirrors useSelectableCollection's selectOnFocus in navigateToKey).
-      if (keyboardActivation() === "automatic") {
-        state.setSelectedKey(nextKey);
-      }
+      // Batch the focus + selection writes so their observable ordering matches
+      // React. `setFocusedKey` drives a reactive effect that moves DOM focus
+      // (firing native focusout/focusin); `setSelectedKey` calls
+      // `onSelectionChange` synchronously. Written bare, Solid flushes the focus
+      // effect the instant `setFocusedKey` runs — so focus moves *before* the
+      // selection callback, inverting React's order. React batches both state
+      // updates in the handler (callback fires synchronously) and defers the
+      // focus move to a layout effect. `batch()` is the Solid equivalent: it
+      // holds the focus effect until the batch closes, so the synchronous
+      // `onSelectionChange` fires first, then focus moves — matching upstream's
+      // `callback → focusout → focusin` sequence (D4 event-sequence oracle).
+      batch(() => {
+        state.setFocusedKey(nextKey);
+        // Selection follows focus only for keyboard navigation in automatic mode
+        // (mirrors useSelectableCollection's selectOnFocus in navigateToKey).
+        if (keyboardActivation() === "automatic") {
+          state.setSelectedKey(nextKey);
+        }
+      });
     }
   };
 
@@ -340,9 +353,17 @@ export function createTab<T>(
   // keyboard on key down, while touch, pen, and virtual pointers select on
   // press up.
   const selectTab = () => {
-    const tabKey = key();
-    state.setFocusedKey(tabKey);
-    state.setSelectedKey(tabKey);
+    // Press handlers select only — they do NOT set the focused key. Upstream's
+    // useSelectableItem does the same: its press/onSelect path calls
+    // replaceSelection, while `focusedKey` is driven exclusively by the DOM
+    // `onFocus` handler (see handleFocus below). Setting the focused key here too
+    // flipped the roving tabIndex synchronously at pointer-up — *before* the
+    // browser's native focus reached the tab — so a touch tap logged the tapped
+    // tab with tabIndex 0 at its own `focusin`, where React (which updates
+    // tabIndex only on the post-event commit) still shows -1. Letting native
+    // focus alone advance `focusedKey` defers the tabIndex flip past the focus
+    // event, matching React's D4 event sequence.
+    state.setSelectedKey(key());
   };
   const { isPressed, pressProps } = createPress({
     get isDisabled() {

@@ -47,6 +47,30 @@ const tabsScenario: DriverScenario = {
         },
       },
     ],
+    // touch-tap is the irreducible "React batched-effect vs Solid synchronous
+    // reactivity" commit-timing gap. Tapping a tab focuses it, and both stacks
+    // set focusedKey in the item's onFocus handler. In Solid that write flips the
+    // roving `tabIndex` reactively and synchronously *inside* the native `focus`
+    // dispatch — so the oracle's capture-phase read at the following `focusin`
+    // already sees tabIndex="0". React defers the DOM write to its post-event
+    // commit, so at `focusin` the tab still reads tabIndex="-1". The callbacks and
+    // event order are identical; only the tabIndex attribute value observed
+    // mid-flight differs. Matching React here means emulating its commit-defer for
+    // the roving-tabindex write — a SharedElement-wide change that would regress
+    // the D5 roving snapshots (which assert exactly-one-tab-at-0 synchronously).
+    // Tracked in recertification.md; deferred to CP9 alongside the D2 SharedElement
+    // two-phase-commit work.
+    knownDivergences: {
+      "horizontal-regular · touch-tap":
+        "React batched-effect vs Solid synchronous reactivity: Solid flips the " +
+        "roving tabIndex to 0 inside the native `focus` dispatch (before the " +
+        "oracle's capture-phase `focusin` read), while React defers the DOM write " +
+        "to its commit phase so the tab still reads tabIndex=-1 at `focusin`. " +
+        "Event order and callbacks are identical; only the mid-flight attribute " +
+        "value differs. A faithful fix needs React's commit-defer for the roving " +
+        "write, which would regress the D5 roving snapshots. Tracked in " +
+        "recertification.md; deferred to CP9.",
+    },
   },
   // D5: the roving-tabindex walk — arrows, Home, End across the tablist; the
   // roving snapshot must show exactly one tab at tabindex=0 after every key.

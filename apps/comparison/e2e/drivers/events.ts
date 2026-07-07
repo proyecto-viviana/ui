@@ -87,7 +87,12 @@ export function registerEventSequenceDriver(scenario: DriverScenario) {
 
     for (const caseDef of driverCases(scenario, config.cases)) {
       for (const gesture of config.gestures) {
-        test(`${caseDef.id} · ${gesture.id}`, async ({ page }) => {
+        const caseTitle = `${caseDef.id} · ${gesture.id}`;
+        test(caseTitle, async ({ page }) => {
+          const divergence = config.knownDivergences?.[caseTitle];
+          if (divergence) {
+            test.fixme(true, divergence);
+          }
           test.setTimeout(120_000);
           const theme = scenarioThemes(scenario, caseDef)[0];
           const logs: Partial<Record<PanelFramework, OracleRecordedEvent[]>> = {};

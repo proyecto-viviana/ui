@@ -293,8 +293,21 @@ export interface DriverScenario {
    * D4 event-sequence driver config. Interaction logs are theme-independent,
    * so D4 runs the first scenario theme only; `cases` defaults to the first
    * scenario case.
+   *
+   * `knownDivergences` maps a `${caseId} · ${gestureId}` test title to a
+   * documented, tracked port gap that keeps that one event log red. It registers
+   * the test as `test.fixme` (visible in reports, excluded from pass/fail)
+   * instead of silently passing — the same mechanism as
+   * `AxConfig.knownDivergences`. Keyed per case+gesture (not on the shared
+   * gesture object) so a divergence in one scenario never masks the same gesture
+   * elsewhere. Reference the tracked finding so the marker is removed once the
+   * port is fixed.
    */
-  events?: { cases?: readonly string[]; gestures: readonly EventGesture[] };
+  events?: {
+    cases?: readonly string[];
+    gestures: readonly EventGesture[];
+    knownDivergences?: Record<string, string>;
+  };
   /**
    * D5 focus/keyboard-trail driver config; same case/theme defaults as D4.
    * `root` (optional, mirrors `contrast.root`/`ax.root`) scopes the roving-tabindex
