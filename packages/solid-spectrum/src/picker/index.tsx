@@ -34,6 +34,7 @@ import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import {
   baseColor,
+  css,
   focusRing,
   fontRelative,
   lightDark,
@@ -142,6 +143,13 @@ interface PickerOptionStyleProps extends SelectOptionRenderProps {
 }
 
 const PickerSizeContext = createContext<S2PickerSize>("M");
+
+// Mirrors upstream S2 `Picker`'s `InsideSelectValueContext` (Picker.tsx:315).
+// True while rendering a selected option's content inside the trigger's
+// `SelectValue`. `PickerItem` reads it to render only its slotted content
+// (icon/avatar/label) — no option row, checkmark, or press-scale — so the
+// trigger mirrors the full selected node, not just its text.
+const InsidePickerValueContext = createContext<boolean>(false);
 
 // Mirrors React S2's `PickerContext`: slotted props injected by an ancestor
 // provider. No-op by default (`getSlottedContextProps(null, …)` returns null).
@@ -280,6 +288,14 @@ const pickerValueText = style({
   flexGrow: 1,
   truncate: true,
 });
+
+// Faithful to upstream S2 `Picker` (Picker.tsx:668-670): when no custom
+// `renderValue` is supplied, the trigger mirrors the selected option's full
+// content but hides anything that is NOT an icon/avatar/label slot (e.g. an
+// option `description`), so the trigger shows only the meaningful value slots.
+const pickerValueContents = css(
+  "&> :not([slot=icon], [slot=avatar], [slot=label], [data-slot=label]) {display: none;}",
+);
 
 const pickerChevron = style<{ size?: S2PickerSize; isLoading?: boolean }>({
   size: {
@@ -711,21 +727,53 @@ function selectedValues<T>(valueProps: SelectValueRenderProps<T>): T[] {
 function pickerValueContent<T>(
   valueProps: SelectValueRenderProps<T>,
   renderValue: ((selectedItems: T[]) => JSX.Element) | undefined,
+  renderItem: (item: T) => JSX.Element,
 ) {
   // Upstream wraps a custom `renderValue` in `<div style={{display:'contents'}}>`
   // (Picker.tsx:743) so it lays out transparently in the flex value container.
+  // `InsidePickerValueContext` lets any `PickerItem` inside a custom `renderValue`
+  // back off its option chrome (checkmark/press-scale), matching upstream's
+  // `InsideSelectValueContext`/`DefaultProvider` handshake (Picker.tsx:864-880).
   if (valueProps.selectedItems.length > 0 && renderValue) {
-    return <div style={{ display: "contents" }}>{renderValue(selectedValues(valueProps))}</div>;
+    return (
+      <InsidePickerValueContext.Provider value={true}>
+        <div style={{ display: "contents" }}>{renderValue(selectedValues(valueProps))}</div>
+      </InsidePickerValueContext.Provider>
+    );
   }
 
-  // The default single/multi/placeholder text mirrors upstream's `<Text slot="label">`
-  // (block, flex-grow:1, truncate) — see `pickerValueText`.
-  const text =
-    valueProps.selectedItems.length > 1
-      ? `${valueProps.selectedItems.length} selected`
-      : (valueProps.selectedText ?? valueProps.placeholder ?? "");
+  // Multiple selection collapses to an "N selected" summary (Picker.tsx:677-682),
+  // rendered in the label slot so the trigger's slot-hiding css keeps it.
+  if (valueProps.selectedItems.length > 1) {
+    return (
+      <span slot="label" class={pickerValueText}>
+        {`${valueProps.selectedItems.length} selected`}
+      </span>
+    );
+  }
 
-  return <span class={pickerValueText}>{text}</span>;
+  // Single selection mirrors the option's FULL rendered content (icon/avatar +
+  // label), not just its text — upstream's `defaultChildren` is `rendered[0]` =
+  // the selected item's children (Picker.tsx:374-392). We reconstruct that by
+  // re-rendering the item through the same render function the listbox uses,
+  // inside `InsidePickerValueContext` so `PickerItem` emits content-only.
+  const selected = valueProps.selectedItems[0];
+  if (selected != null && selected.value != null) {
+    return (
+      <InsidePickerValueContext.Provider value={true}>
+        {renderItem(selected.value as T)}
+      </InsidePickerValueContext.Provider>
+    );
+  }
+
+  // No selection: the placeholder text (block, flex-grow:1, truncate). Slotted so
+  // the trigger's slot-hiding css keeps it visible; `pickerValue`'s
+  // `[data-placeholder]` selector still paints the muted placeholder color.
+  return (
+    <span slot="label" class={pickerValueText}>
+      {valueProps.placeholder ?? ""}
+    </span>
+  );
 }
 
 function loadingSpinnerLabel(loadingState: PickerLoadingState | undefined) {
@@ -962,10 +1010,12 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                       pickerValue({
                         ...valueProps,
                         isQuiet: isQuiet(),
-                      })
+                      }) + (local.renderValue ? "" : " " + pickerValueContents)
                     }
                   >
-                    {(valueProps) => pickerValueContent(valueProps, local.renderValue)}
+                    {(valueProps) =>
+                      pickerValueContent(valueProps, local.renderValue, listBoxChildren)
+                    }
                   </HeadlessSelectValue>
                   <Show when={isInvalid() && !triggerProps.isDisabled}>
                     <CenterBaseline>
@@ -1050,7 +1100,28 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
     "children",
   ]);
   const size = useContext(PickerSizeContext);
+  const insideValue = useContext(InsidePickerValueContext);
   const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
+
+  // Trigger/value mode: mirror upstream, where `SelectValue`'s default children
+  // are the selected item's *content* (`item.props.children`), not a rendered
+  // option row. Emit only the slotted content — no `HeadlessSelectOption`
+  // wrapper, checkmark, or press-scale — so the trigger shows icon/avatar/label.
+  // A bare text child is wrapped in the label slot (block/flex-grow/truncate),
+  // matching upstream's `<Text slot="label">` (Picker.tsx:854 → TextContext).
+  if (insideValue) {
+    return (
+      <>
+        {isTextOnlyChildren(local.children) ? (
+          <span slot="label" class={pickerValueText} data-rsp-slot="text">
+            {local.children}
+          </span>
+        ) : (
+          local.children
+        )}
+      </>
+    );
+  }
 
   const optionClass = (renderProps: SelectOptionRenderProps) =>
     [

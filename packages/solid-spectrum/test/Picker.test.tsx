@@ -38,6 +38,36 @@ describe("Picker (solid-spectrum)", () => {
     expect(onSelectionChange).toHaveBeenCalledWith("#api");
   });
 
+  it("mirrors the selected option's full content (icon + label) in the trigger", () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey="#api"
+      >
+        {(item) => (
+          <PickerItem id={item.href} item={item} textValue={item.label}>
+            <svg slot="icon" data-testid={`icon-${item.href}`} aria-hidden="true" />
+            <span slot="label">{item.label}</span>
+          </PickerItem>
+        )}
+      </Picker>
+    ));
+
+    const button = screen.getByRole("button");
+    // The trigger shows the label text of the selected option...
+    expect(button).toHaveTextContent("API");
+    // ...and, faithfully to upstream S2 `SelectValue`, the option's icon slot —
+    // the whole rendered node is mirrored, not just its text.
+    const triggerIcon = button.querySelector('[slot="icon"]');
+    expect(triggerIcon).not.toBeNull();
+    expect(triggerIcon).toHaveAttribute("data-testid", "icon-#api");
+    // Only the selected option's icon is mirrored (no stray duplicate).
+    expect(button.querySelectorAll('[slot="icon"]').length).toBe(1);
+  });
+
   it("supports multiple selection with selectedKeys/defaultSelectedKeys/onSelectionChangeKeys", async () => {
     const user = setupUser();
     const onSelectionChangeKeys = vi.fn();

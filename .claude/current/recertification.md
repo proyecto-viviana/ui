@@ -2721,6 +2721,27 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     `"Color picker, أداة انتقاء اللون"`. Full color visual suite **20/20**, solid-stately **887**,
     solidaria-components Color **97**, solid-spectrum **988** green.
 
+- ✓ **`select-value-content-mirror` DONE — Picker trigger mirrors the full selected node (icon/avatar +
+  label), not just text.** (Deferred follow-up (a) from the CP9.40 Picker cert, above.) Upstream S2
+  `SelectValue`'s default children are `rendered[0]` = the selected item's *content* (`item.props.children`),
+  so an option with an `<Icon slot="icon">`/`<Avatar slot="avatar">` shows it in the trigger. Our data-driven
+  Picker (`items` + a `(item) => JSX` render fn, not a JSX collection) had no `item.props.children` to mirror,
+  so `pickerValueContent` rendered `valueProps.selectedText` — text only. Fix reconstructs the content the same
+  way the listbox does: re-render the selected item through the Picker's own `listBoxChildren(item)` inside a new
+  `InsidePickerValueContext` (the port's analogue of upstream's `InsideSelectValueContext`, Picker.tsx:315). In
+  that context `PickerItem` short-circuits to emit **content only** — no `HeadlessSelectOption` wrapper, checkmark,
+  or press-scale (so no option registration/side-effects) — and a bare text child is wrapped in `<span slot="label">`
+  (matching upstream's `<Text slot="label">`, Picker.tsx:854). The `SelectValue` element carries a slot-hiding class
+  (`css('&> :not([slot=icon], [slot=avatar], [slot=label], [data-slot=label]) {display:none}')`, Picker.tsx:668-670),
+  applied only when no custom `renderValue`. **Landmine caught:** that slot-hiding css would have hidden the
+  "N selected" multi-summary and the placeholder (both plain `<span>`s) — upstream renders both via `<Text slot="label">`,
+  so I slotted them too. Multi-select still summarizes as "N selected"; a custom `renderValue` is untouched (wrapped in
+  `display:contents` + `InsidePickerValueContext` so a `<PickerItem>` inside it backs off its chrome). New unit test
+  proves the selected option's `slot="icon"` appears exactly once in the trigger button alongside the label text.
+  Verified: solid-spectrum **989** unit (+1) / SSR 2 / hydrate 1, and all **61** Picker e2e (D1/D3/D5/D6/D7/D8/D9 —
+  the D3 pixel diffs confirm the text-only trigger is pixel-identical to before). Remaining CP9.40 follow-ups still
+  open: `picker-d10-rtl-driver`, standalone-ListBox container-focus.
+
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
   x (409). `clonedElementScreenshot` pins the cloned frame at an integer viewport origin, but the residual
