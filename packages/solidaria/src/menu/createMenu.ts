@@ -475,7 +475,23 @@ export function createMenu<T>(
         fieldProps as Record<string, unknown>,
         {
           role: "menu",
-          tabIndex: p.isDisabled ? undefined : 0,
+          // Roving tabindex: the menu container is tab-reachable (0) only while no
+          // item holds focus; once `focusedKey` is set the container drops to -1 so
+          // Tab/Shift+Tab traverse past it and real focus stays on the item. This
+          // mirrors upstream `useMenu`, which spreads `useSelectableList`'s
+          // `listProps.tabIndex` (`manager.focusedKey == null ? 0 : -1`, non-virtual
+          // focus) onto the menu.
+          //
+          // This MUST be a getter, not an eagerly-evaluated value. Consumers
+          // (solidaria-components `Menu.tsx`) destructure `menuProps` once and
+          // spread it through `mergeProps`; a plain `tabIndex: <value>` would be
+          // computed at that first read (while `focusedKey` is still null → 0) and
+          // frozen. As a getter it survives `mergeProps` (which preserves getters),
+          // so the consumer's reactive element-spread re-reads `state.focusedKey()`
+          // and the container tabindex tracks focus.
+          get tabIndex() {
+            return getProps().isDisabled ? undefined : state.focusedKey() == null ? 0 : -1;
+          },
           "aria-disabled": p.isDisabled || undefined,
           onKeyDown,
         } as Record<string, unknown>,

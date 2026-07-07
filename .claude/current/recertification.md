@@ -2589,6 +2589,38 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      instead of `.focus()`) or a real focus-sync investigation. **D5/D6 remain deferred pending that fork**
      (`menu-actionmenu-d5-d6-backfill` phase 2/3, still open); this CP9.37 lands only the structural prerequisite.
 
+- ✓ **Menu/ActionMenu D5 focus-trail certified 2026-07-06 (CP9.38 — backfill phase 2):** resolved the CP9.37
+  three-divergence fork with the driver-enhancement path, and it isolated exactly ONE real port bug. Changes:
+  1. **Driver: opt-in root scope + keyboard entry** (`focus.ts`, `scenario.ts`, `dom-oracle.ts`). `FocusScenario.focus`
+     gains an optional `root: TargetResolver` (mirrors `contrast.root`/`ax.root`) — `snapshotFocus(root)` now filters
+     the roving-tabindex set to the root's subtree, so the deferred popover `role="dialog"` wrapper + Dismiss button
+     stop folding into the trail (divergence **a** = a driver-scope artifact, not a port bug). `FocusWalk` gains an
+     optional `entry: "focus" | "keyboard"` (default `"focus"` — the 16 existing D5 specs are untouched); `"keyboard"`
+     skips the synthetic `start.focus()` and relies on the menu's `FocusScope` autoFocus, so the walk drives the real
+     shared keyboard path. Under keyboard entry, divergence **c** (item nav) vanished — it was the programmatic-focus
+     artifact the GridList memory warns about (`.focus()` seeds `focusedKey` divergently across stacks).
+  2. **Real port bug fixed — menu container roving tabindex** (`createMenu.ts`). Divergence **b** SURVIVED keyboard
+     entry, confirming it real: the port hard-coded the menu container `tabIndex: 0`, but upstream `useMenu` spreads
+     `useSelectableList`'s `listProps.tabIndex` = `manager.focusedKey == null ? 0 : -1` (non-virtual focus), so once
+     an item holds focus the container must drop to `-1`. Fixed to `get tabIndex()` reading `state.focusedKey()`.
+     It MUST be a getter, not an eager value: `solidaria-components/Menu.tsx` destructures `menuProps` once (while
+     `focusedKey` is still null → 0) and spreads it through `mergeProps`; an eager value froze at that first read.
+     `mergeProps` preserves getters (mergeProps.ts:62-67), so as a getter the consumer's reactive element-spread
+     re-reads `focusedKey` and the container tabindex tracks focus. (The exact "destructuring a Solid `get` prop
+     FREEZES reactivity" pattern — the fix is to keep it a getter that survives the merge, not to touch the consumer.)
+  3. **Oracle: faithful `aria-labelledby` name resolution** (`dom-oracle.ts`). ActionMenu's icon-only trigger exposed
+     an oracle gap: `accessibleName` resolved `aria-labelledby` via the target's `textContent` only, so upstream RAC's
+     `aria-labelledby={triggerId}` menu (trigger has empty textContent, name carried by its `aria-label`) read as
+     nameless and fell through to item text, while the port's literal `aria-label="More actions"` read correctly —
+     a pure accessible-name (D6) delta leaking into the D5 diff. Both announce identically to a screen reader. Fixed
+     per the ARIA name computation: a labelledby target contributes its own accessible name (`aria-label` first, then
+     textContent). Strictly more faithful; only changes results where a labelledby target has an `aria-label`.
+  Result: **D5 green on both** (`menu` 15/15, `actionmenu` 16/16 including the new trigger); all **18 D5 specs green**
+  (no regression from the shared `createMenu`/oracle changes); menu unit suites **215 green**. **D6 (AX-tree) remains
+  the last open phase** of `menu-actionmenu-d5-d6-backfill` (two-context `Text`/`Keyboard` id delegation + restore the
+  stripped item `aria-describedby` + field-regression sweep); the gate adoption ("D5+D6 mandatory for keyboard-heavy
+  composites" in `certification.md`) lands with it.
+
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
   x (409). `clonedElementScreenshot` pins the cloned frame at an integer viewport origin, but the residual

@@ -193,6 +193,19 @@ export interface FocusWalk {
   id: string;
   /** Element focused before the walk; defaults to the scenario target. */
   start?: TargetResolver;
+  /**
+   * How focus enters the walk. Default `"focus"` calls `start.focus()`
+   * (programmatic) — correct for a static widget whose focusable target is
+   * unambiguous. `"keyboard"` SKIPS the programmatic focus and lets the walk
+   * keys drive focus from wherever the scenario's `beforePanel` left it — the
+   * faithful entry for an auto-focusing overlay (e.g. an OPEN menu, whose
+   * `FocusScope autoFocus` already holds focus). Programmatic `.focus()` on an
+   * auto-advancing collection item seeds the collection's `focusedKey`
+   * differently across React and Solid, so `"focus"` fabricates an entry-order
+   * divergence there; `"keyboard"` exercises the real keyboard path both stacks
+   * share. `start` is still used only for the pre-walk visibility gate.
+   */
+  entry?: "focus" | "keyboard";
   /** Keys pressed in order (Playwright key names); focus is snapshot after each. */
   keys: readonly string[];
 }
@@ -282,8 +295,14 @@ export interface DriverScenario {
    * scenario case.
    */
   events?: { cases?: readonly string[]; gestures: readonly EventGesture[] };
-  /** D5 focus/keyboard-trail driver config; same case/theme defaults as D4. */
-  focus?: { cases?: readonly string[]; walks: readonly FocusWalk[] };
+  /**
+   * D5 focus/keyboard-trail driver config; same case/theme defaults as D4.
+   * `root` (optional, mirrors `contrast.root`/`ax.root`) scopes the roving-tabindex
+   * snapshot to a subtree so an overlay composite's deferred surface chrome (e.g.
+   * Menu's hand-rolled popover `role="dialog"` + Dismiss button) does not leak into
+   * the certified element's focus trail.
+   */
+  focus?: { cases?: readonly string[]; walks: readonly FocusWalk[]; root?: TargetResolver };
   /** D2 motion driver config; same case/theme defaults as D4/D5. */
   motion?: MotionConfig;
   /** D6 AX-tree + announcements driver config; runs the first theme only. */

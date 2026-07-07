@@ -1,4 +1,4 @@
-import type { Locator, Page } from "@playwright/test";
+import type { ElementHandle, Locator, Page } from "@playwright/test";
 
 /**
  * In-page oracle shared by the interaction drivers (D4 event sequence, D5
@@ -118,7 +118,7 @@ interface ComparisonOracle {
   setPanel(canvas: Element): void;
   start(types: readonly string[]): void;
   flush(): OracleRecordedEvent[];
-  snapshotFocus(): OracleFocusSnapshot;
+  snapshotFocus(root?: Element | null): OracleFocusSnapshot;
   startFreezer(): void;
   stopFreezer(): void;
   snapshotAnimations(scopes: readonly OracleScope[]): OracleAnimationSnapshot[];
@@ -168,9 +168,23 @@ export function comparisonOracleInit(): void {
     }
     const labelledBy = el.getAttribute("aria-labelledby");
     if (labelledBy) {
+      // Resolve each idref to the referenced element's ACCESSIBLE NAME, not just
+      // its textContent — per the ARIA accessible-name computation, a labelledby
+      // target contributes its own name, which prioritizes the target's
+      // `aria-label` over its subtree text. Without this an icon-only trigger
+      // (empty textContent, name carried by its `aria-label`) resolves to "",
+      // making a menu labelled `aria-labelledby={triggerId}` (upstream RAC's
+      // wiring) look nameless and fall through to its item text — while a menu
+      // carrying a literal `aria-label` (the port) reads correctly. Both announce
+      // identically to a screen reader; matching that here keeps a pure
+      // accessible-name (D6) concern out of the D5 focus-trail diff.
       const text = labelledBy
         .split(/\s+/)
-        .map((id) => document.getElementById(id)?.textContent?.trim() ?? "")
+        .map((id) => {
+          const ref = document.getElementById(id);
+          if (!ref) return "";
+          return (ref.getAttribute("aria-label") ?? ref.textContent ?? "").trim();
+        })
         .filter(Boolean)
         .join(" ");
       if (text) {
@@ -430,7 +444,7 @@ export function comparisonOracleInit(): void {
       return entries;
     },
 
-    snapshotFocus() {
+    snapshotFocus(root?: Element | null) {
       const active =
         document.activeElement && document.activeElement !== document.body
           ? describe(document.activeElement)
@@ -443,6 +457,17 @@ export function comparisonOracleInit(): void {
       }
       const roving = Array.from(document.querySelectorAll("[tabindex]"))
         .filter((el) => {
+          // Optional subtree scope: when the scenario pins a `root` (mirrors the
+          // contrast/AX `root`), the roving snapshot only counts elements in that
+          // subtree (root included). Overlay composites like Menu portal the
+          // certified `role="menu"` list INTO a popover surface (a hand-rolled
+          // `role="dialog"` wrapper + a Dismiss button) that is a DEFERRED,
+          // out-of-this-unit's-scope concern; without a root the whole-overlay
+          // scan would fold that surface's roving/name gaps into the list's
+          // focus-trail. Scoping to the list keeps the trail about the list.
+          if (root && el !== root && !root.contains(el)) {
+            return false;
+          }
           // The roving snapshot must reflect the tab order a keyboard user
           // actually traverses — not raw DOM tabindex attributes. Skip inert
           // subtrees and anything hidden (display:none / visibility:hidden /
@@ -638,8 +663,11 @@ export async function flushEventLog(page: Page): Promise<OracleRecordedEvent[]> 
   return page.evaluate(() => window.__comparisonOracle!.flush());
 }
 
-export async function snapshotFocus(page: Page): Promise<OracleFocusSnapshot> {
-  return page.evaluate(() => window.__comparisonOracle!.snapshotFocus());
+export async function snapshotFocus(
+  page: Page,
+  root?: ElementHandle<Element> | null,
+): Promise<OracleFocusSnapshot> {
+  return page.evaluate((rootEl) => window.__comparisonOracle!.snapshotFocus(rootEl), root ?? null);
 }
 
 /** Scopes the motion capture defaults to: the driven panel and its portals. */

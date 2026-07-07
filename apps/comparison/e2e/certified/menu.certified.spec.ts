@@ -1,4 +1,5 @@
 import { registerContrastDriver } from "../drivers/contrast";
+import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -179,8 +180,28 @@ const listScenario: DriverScenario = {
     cases: ["size-m"],
     root: menuList,
   },
+  // D5: arrow-key roving through the open menu. `root: menuList` scopes the
+  // roving-tabindex snapshot to the `role="menu"` list, so the deferred popover
+  // surface (dialog wrapper + Dismiss button) does not fold into the trail.
+  focus: {
+    cases: ["size-m"],
+    root: menuList,
+    walks: [
+      {
+        id: "arrow-roving",
+        // Keyboard entry: `beforePanel` opens the menu (its FocusScope autoFocus
+        // already holds focus), so the walk drives the real keyboard path both
+        // stacks share instead of a synthetic `.focus()` that seeds `focusedKey`
+        // divergently. `start` (menuList) is only the pre-walk visibility gate.
+        start: menuList,
+        entry: "keyboard",
+        keys: ["ArrowDown", "ArrowDown", "ArrowDown", "Home", "End", "ArrowUp"],
+      },
+    ],
+  },
 };
 
 registerStateMatrixDriver(listScenario);
 registerPixelDriver(listScenario);
 registerContrastDriver(listScenario);
+registerFocusTrailDriver(listScenario);

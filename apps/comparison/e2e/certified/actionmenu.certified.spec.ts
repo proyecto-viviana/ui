@@ -1,4 +1,5 @@
 import { registerContrastDriver } from "../drivers/contrast";
+import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerPixelDriver } from "../drivers/pixel";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -35,7 +36,9 @@ import { expect } from "@playwright/test";
  * button is measured in its default closed state.
  *
  * SCOPE — applicable drivers: D1 (trigger button + item parts), D3 (pixel:
- * icon-only trigger glyph + painted list), D7 (contrast: item copy on `layer-2`).
+ * icon-only trigger glyph + painted list), D5 (focus: arrow-key roving through the
+ * open list — same roving-tabindex contract certified on Menu, CP9.37), D7
+ * (contrast: item copy on `layer-2`).
  * The LIST scenario carries CP9.32's tracked/deferred artifacts UNCHANGED:
  *   - `styleProps.remove:["outline-color"]` — an unobservable computed-style channel
  *     (both stacks now `<div role="menu">`; `outline-style:none` on both, zero paint).
@@ -45,7 +48,7 @@ import { expect } from "@playwright/test";
  *     delegation follow-up as Menu — deferred, registered when that unit lands.
  *   - D2 (motion): the hand-rolled `ActionMenuPopover` enter/exit fade is the same
  *     surface concern as Menu's `menuPopover`, tracked with the overlay realignment.
- *   - D4/D5/D8 (open-on-press, roving, type-ahead, `onAction`, hit-area) are
+ *   - D4/D8 (open-on-press, type-ahead, `onAction`, hit-area) are
  *     `MenuTrigger`/collection/interaction behaviors, not paint — trigger unit.
  */
 
@@ -145,6 +148,25 @@ const listScenario: DriverScenario = {
     cases: ["size-m"],
     root: menuList,
   },
+  // D5: arrow-key roving through the open list — the same roving-tabindex
+  // contract certified on Menu. `root: menuList` scopes the snapshot to the
+  // `role="menu"` list (the deferred popover surface — dialog wrapper + Dismiss
+  // button — stays out of the trail). `entry: "keyboard"` drives the real
+  // keyboard path both stacks share (`beforePanel` opens the menu and its
+  // FocusScope autoFocus already holds focus), instead of a synthetic `.focus()`
+  // that seeds `focusedKey` divergently.
+  focus: {
+    cases: ["size-m"],
+    root: menuList,
+    walks: [
+      {
+        id: "arrow-roving",
+        start: menuList,
+        entry: "keyboard",
+        keys: ["ArrowDown", "ArrowDown", "ArrowDown", "Home", "End", "ArrowUp"],
+      },
+    ],
+  },
 };
 
 registerStateMatrixDriver(triggerScenario);
@@ -153,3 +175,4 @@ registerPixelDriver(triggerScenario);
 registerStateMatrixDriver(listScenario);
 registerPixelDriver(listScenario);
 registerContrastDriver(listScenario);
+registerFocusTrailDriver(listScenario);

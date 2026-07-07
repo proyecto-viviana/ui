@@ -44,15 +44,24 @@ export function registerFocusTrailDriver(scenario: DriverScenario) {
             await expect(start).toBeVisible();
             await installOracle(ctx.page, ctx.canvas);
 
-            await start.focus();
+            // Optional roving subtree scope (see DriverScenario.focus.root): resolve
+            // it to a handle once per panel so the browser-side snapshot can filter.
+            const root = config.root ? await config.root(ctx).elementHandle() : null;
+
+            // Entry: programmatic focus (default) or keyboard (overlay auto-focus).
+            // See FocusWalk.entry — `"keyboard"` avoids seeding the collection's
+            // focusedKey via a synthetic `.focus()`, which diverges across stacks.
+            if ((walk.entry ?? "focus") === "focus") {
+              await start.focus();
+            }
             await ctx.page.waitForTimeout(keySettleMs);
             const trail: TrailEntry[] = [
-              { after: "(start)", snapshot: await snapshotFocus(ctx.page) },
+              { after: "(start)", snapshot: await snapshotFocus(ctx.page, root) },
             ];
             for (const key of walk.keys) {
               await ctx.page.keyboard.press(key);
               await ctx.page.waitForTimeout(keySettleMs);
-              trail.push({ after: key, snapshot: await snapshotFocus(ctx.page) });
+              trail.push({ after: key, snapshot: await snapshotFocus(ctx.page, root) });
             }
             trails[ctx.framework] = trail;
           });
