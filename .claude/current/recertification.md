@@ -164,9 +164,16 @@ March order (dependency/leverage; within a tier, top to bottom):
   horizontal (`tab`-nav) D5/D10 pass; the browser D5 driver caught the port had
   INVENTED an `arrow`-mode container Left/Right row-nav branch RAC lacks (the
   inline axis belongs to the row under `arrow`) — gated it to `tab` navigation.
-  **NEXT unit: ListView styled-S2 paint (CP9.43)**, then TagGroup, ComboBox,
-  Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar, ActionGroup,
-  Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
+  **ListView styled-S2 paint ✓ certified 2026-07-08 (CP9.43)** — S2-oracle D1/D3/
+  D7/D8 (D5/D6 already certified at the GridList base); the D3 pixel oracle caught
+  two consequences of the port lacking S2's row Virtualizer — the selection-fill
+  layer escaped its stacking context (→ row `zIndex:0`) and the checkbox column
+  rasterizes at a ≤5/255 sub-pixel AA phase (→ tracked waiver
+  `listview-virtualizer-subpixel`) — plus a disabled-row checkbox-column D1 gap and
+  a 2× checkmark-glyph D3 oversize (row IconContext leak). **NEXT unit: TagGroup**,
+  then ComboBox, Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
+  ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
+  DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
   and the D9/D10 sequencing decision — see "Director pass 2026-07-06" below).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
@@ -2902,6 +2909,61 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     **certified e2e 9/9 green** (D5 vertical fwd/back, D6 single/multiple, D5 horizontal, D6 horizontal, D10 RTL
     state-matrix dark/light, D10 RTL focus-trail) + `astro check` clean + full certified suite **1423 passed**
     (6 skipped, 0 failed, no regression). Next Tier-4 unit: **ListView styled-S2 paint (CP9.43)**.
+
+- ✓ **ListView styled-S2 paint certified 2026-07-08 (CP9.43 — Tier-4, fourth collections unit) — the S2 paint
+  oracle caught two structural consequences of the port having NO row Virtualizer.** Unlike the standalone ListBox
+  (which S2 leaves an unstyled RAC passthrough), S2 ships a real, publicly-styled `ListView` (its `gridlist` style
+  macro), so this unit has a genuine S2 PAINT oracle: the React panel renders `@react-spectrum/s2` `ListView`, the
+  Solid panel `@proyecto-viviana/solid-spectrum` `ListView` (its port of the same macro), both the "Documents" grid.
+  ListView is the GridList base layer (roving focus + role=grid/row/gridcell, certified CP9.42) with the S2 macro
+  painted on top, so the NEW surface is PAINT — registered **D1** (state-matrix computed styles: the row + the grid
+  container + the label/description text slots, keyed on `isSelected`/`isDisabled`/`isQuiet`), **D3** (strict
+  zero-tolerance pixel of the WHOLE grid, so the selection-fill layer + checkbox + separators rasterize together),
+  **D7** (contrast, label + description on resting/selected/disabled rows), **D8** (target size, rows + checkboxes).
+  D5/D6 scoped out (roving focus + AX tree certified at the GridList base); D10 not added (the ListView fixture
+  threads no `?locale`); D2 no mount animation (only the `transition` longhands D1 pins). The cert runs a six-case
+  prop-driven rest matrix (`default`/`selected`/`multiple`/`highlight`/`quiet`/`disabled`) — a row is itself a
+  selectable target, so driving a gesture on it would toggle selection mid-capture and desync the panels; the only
+  gesture-driven row paint (hover tint, focus ring) is a byte-identical S2 style object whose BEHAVIOR the base D5
+  already pins.
+  - **The D3 pixel oracle caught two consequences of the missing Virtualizer.** S2's ListView wraps the collection
+    in `<Virtualizer layout={S2ListLayout}>` (ListView.tsx:363-396), rendering every row inside an
+    absolutely-positioned `<div role="presentation" z-index:0>` — a per-row, integer-snapped stacking context the
+    port lacks (its rows are DIRECT grid children flowed by the grid). (1) **Selection-fill escape (fixed):** the
+    `z-index:-1` selection-fill layer (`listViewRowBackground`) escaped to the grid's ancestor stacking context and
+    was painted OVER by the grid's own white background — D3 default at ~16%. Fixed faithfully by giving the
+    (`position:relative`) row `zIndex:0` so it forms its OWN stacking context, substituting for S2's row-wrapper —
+    D3 16% → 0. (2) **Checkbox-column sub-pixel (waived):** the four bordered checkbox cases leave a ≤5/255 AA
+    residual (≤26/136320 px, ~1.9e-4) confined to the selection checkbox column (x≈45-60) — the absolutely-positioned
+    S2 row snaps the checkbox box + checkmark glyph to a slightly different sub-pixel phase than the port's
+    flow-positioned row, so their edges rasterize with a 1-5/255 rounding delta. A measurement-layer artifact, NOT a
+    paint divergence (D1 pins every computed style byte-identical; `quiet` — no border to shift the column — and
+    `highlight` — no checkbox column at all — stay byte-EXACT at zero tolerance). Waived as
+    `listview-virtualizer-subpixel` (ceiling `maxMismatchRatio 5e-4`, ~2.6x the worst observed, TIGHTER than the
+    house glyphSubpixel precedents: contextualhelp 1.5e-3, toast 2e-3, tooltip 3e-3), scoped ONLY to the four
+    bordered cases. Tracked in tech-debt.md; root fix = port S2ListLayout/Virtualizer (a multi-day structural port,
+    out of a paint cert's scope) — which also closes this to byte-exact.
+  - **Two smaller paint fixes the drivers forced.** (a) **Disabled-row checkbox column (D1
+    `grid-template-columns`):** the port skipped RENDERING the selection checkbox on disabled rows, so a disabled
+    row's `grid-template-columns` dropped the checkmark track and misaligned vs S2 — dropped the `!isDisabled` guard
+    so a disabled row now renders the checkbox (visually hidden via `visibility:hidden` on the `listViewCheckbox`
+    wrapper, faithfully mirroring S2 `listCheckbox`), restoring the track. (b) **Checkmark glyph 2× oversize (D3):**
+    the port's `Checkmark` ui-icon reads `IconContext`, so INSIDE the row it inherited the leading-icon slot's
+    `size:20` (`listViewSlotIcon`, via `mergeStyles` later-wins) and painted 20×20 vs S2's 10×10 — S2's raw
+    `CheckmarkIcon` svg never reads IconContext. Restored S2's immunity by resetting `IconContext` to `{}` around the
+    checkmark + switching the variant `XS`→`S` (S2's `smallerSize['M']`), so it falls back to its intrinsic 10×10.
+  - **The jsdom blind spot, again (memory: only a browser driver verifies real DOM).** The disabled-checkbox change
+    flipped ONE unit (`ListView.test.tsx:209`): jsdom does NOT apply the S2 atomic stylesheet, so the disabled
+    checkbox's `visibility:hidden` never takes effect there and its "Select" aria-label leaks into the disabled row's
+    accessible name — the one exact-name row lookup broke where the file's other checkbox-row lookups already use a
+    content regex. Retargeted that lookup to the same regex; in a real browser the disabled checkbox IS
+    `visibility:hidden` (dropped from the a11y tree), matching S2 — so the row is located by content in both.
+  - Verified: **ListView 11 unit** (`ListView.test.tsx`; GridList 50 unchanged) + ListView **certified e2e 32/32
+    green** (D1 6 cases × 2 themes = 12, D3 6 × 2 = 12, D7 3 cases × 2 themes = 6, D8 2 cases = 2 — the four bordered
+    checkbox D3 cases under the tracked sub-pixel waiver, `highlight`/`quiet` byte-exact at zero tolerance) +
+    `typecheck` clean + `astro check` clean + full certified suite **1454 passed** (6 skipped; the lone red, a D4
+    Dialog event-sequence case, is load-flake — passes 2/2 in isolation, unrelated to ListView). Next Tier-4 unit:
+    **TagGroup**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

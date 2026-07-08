@@ -48,7 +48,6 @@ import {
   style,
 } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   controlFont,
@@ -205,6 +204,12 @@ const listViewWrapper = style(
   getAllowedOverrides({ height: true }),
 );
 
+// Mirrors S2: the trailing-icon column width is set on the grid CONTAINER and
+// inherits to the rows, so every row reserves the column when ANY row carries a
+// trailing icon (grid alignment across rows). `listitem` reads it via
+// `var(--trailing-icon-width)`.
+const hasTrailingIconRows = ':has([data-has-trailing-icon]) [role="row"]';
+
 const listView = style<GridListRenderProps & { isQuiet?: boolean; isActionBar?: boolean }>(
   {
     ...focusRing(),
@@ -238,6 +243,13 @@ const listView = style<GridListRenderProps & { isQuiet?: boolean; isActionBar?: 
     },
     borderStyle: "solid",
     disableTapHighlight: true,
+    "--trailing-icon-width": {
+      type: "width",
+      value: {
+        default: "auto",
+        [hasTrailingIconRows]: fontRelative(20),
+      },
+    },
   },
   getAllowedOverrides({ height: true }),
 );
@@ -287,58 +299,82 @@ type ListViewRowLayerProps = GridListItemRenderProps & {
 
 const listViewItem = style<ListViewRowLayerProps>({
   outlineStyle: "none",
-  position: "relative",
-  gridColumnStart: 1,
-  gridColumnEnd: -1,
-  display: "grid",
-  gridTemplateAreas: [
-    ". checkmark icon label actions actionmenu trailing-icon .",
-    ". . . description actions actionmenu trailing-icon .",
-  ],
-  gridTemplateColumns: [
-    edgeToText(40),
-    "auto",
-    "auto",
-    "minmax(0,1fr)",
-    "auto",
-    "auto",
-    "var(--listview-trailing-icon-width, auto)",
-    edgeToText(40),
-  ],
-  gridTemplateRows: "1fr auto",
-  alignItems: "baseline",
-  rowGap: {
-    ":has([slot=description])": space(1),
-  },
+  boxSizing: "border-box",
   columnGap: 0,
   paddingX: 0,
-  minHeight: 40,
   paddingY: 8,
-  boxSizing: "border-box",
-  textDecoration: "none",
+  backgroundColor: "transparent",
   color: {
     default: baseColor("neutral-subdued"),
     isSelected: baseColor("neutral"),
     isDisabled: "disabled",
+    forcedColors: {
+      default: "ButtonText",
+      isSelected: {
+        selectionStyle: {
+          highlight: "HighlightText",
+        },
+      },
+      isDisabled: "GrayText",
+    },
   },
-  backgroundColor: "transparent",
+  position: "relative",
+  // In S2 the selection-fill layer (`listViewRowBackground`, `zIndex:-1`) sits
+  // inside the Virtualizer's row wrapper (`position:absolute; zIndex:0`), whose
+  // stacking context keeps the negative-z fill painting ABOVE the grid's own
+  // white background. Our ListView is not virtualized (no such wrapper), so the
+  // row itself must establish that stacking context — otherwise the grid's
+  // `z-auto` background paints over the `zIndex:-1` fill and the selected row
+  // shows no highlight. `z-index` is not a D1-pinned property, so this mirrors
+  // S2's rendered result without diverging on any certified computed style.
+  zIndex: 0,
+  gridColumnStart: 1,
+  gridColumnEnd: -1,
+  display: "grid",
+  gridTemplateAreas: [
+    ". dragbutton . checkmark icon label       actions actionmenu trailing-icon .",
+    ". .          . .         .    description actions actionmenu trailing-icon .",
+  ],
+  gridTemplateColumns: [
+    4,
+    "auto",
+    8,
+    "auto",
+    "auto",
+    "minmax(0, 1fr)",
+    "auto",
+    "auto",
+    "var(--trailing-icon-width)",
+    6,
+  ],
+  gridTemplateRows: "1fr auto",
+  rowGap: {
+    ":has([slot=description])": space(1),
+  },
+  alignItems: "baseline",
+  minHeight: 40,
+  textDecoration: "none",
+  cursor: {
+    default: "default",
+    isLink: "pointer",
+  },
   "--borderColor": {
     type: "borderColor",
     value: {
       default: "gray-300",
+      forcedColors: "ButtonBorder",
       isSelected: {
         selectionStyle: {
-          highlight: "blue-900",
+          highlight: {
+            default: "blue-900",
+            forcedColors: "Highlight",
+          },
           checkbox: "gray-300",
         },
       },
-      forcedColors: "ButtonBorder",
     },
   },
   borderTopWidth: 0,
-  borderStartWidth: 0,
-  borderEndWidth: 0,
-  borderBottomStyle: "solid",
   borderBottomWidth: {
     default: 1,
     isLastItem: {
@@ -346,28 +382,18 @@ const listViewItem = style<ListViewRowLayerProps>({
       isQuiet: 0,
     },
   },
+  borderStartWidth: 0,
+  borderEndWidth: 0,
+  borderStyle: "solid",
   borderColor: {
     default: "--borderColor",
     isNextSelected: "transparent",
     isSelected: "transparent",
     forcedColors: "ButtonBorder",
   },
-  cursor: {
-    default: "default",
-    isLink: "pointer",
-    isDisabled: "not-allowed",
-  },
-  transition: "default",
   "--radius": {
     type: "borderTopStartRadius",
     value: "default",
-  },
-  "--listview-trailing-icon-width": {
-    type: "width",
-    value: {
-      default: 0,
-      hasTrailingIcon: fontRelative(20),
-    },
   },
   forcedColorAdjust: "none",
 });
@@ -584,11 +610,21 @@ const listViewCheckbox = style<GridListItemRenderProps>({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  // Mirrors S2 `listCheckbox` (ListView.tsx:808-811): a disabled row still
+  // RENDERS the selection checkbox (so the checkmark grid track keeps its width
+  // and rows stay aligned) but hides it via `visibility`.
+  visibility: {
+    default: "visible",
+    isDisabled: "hidden",
+  },
 });
 
 const listViewCheckboxInput = style({
+  // Mirrors S2's `<Checkbox slot="selection">` input: an opacity-0 overlay left
+  // at the browser's intrinsic checkbox size (13×13 in Chromium — S2 sets no
+  // explicit width/height, and `inset:0` would wrongly stretch a form control),
+  // sitting over the visual `listViewCheckboxBox`.
   position: "absolute",
-  inset: 0,
   margin: 0,
   opacity: 0,
   cursor: "inherit",
@@ -695,6 +731,7 @@ const listViewDescription = style<
       wrap: "normal",
     },
   },
+  transition: "default",
 });
 
 const listViewActions = style({
@@ -1189,8 +1226,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
                 }}
               >
                 {renderProps.selectionMode !== "none" &&
-                renderProps.selectionBehavior === "toggle" &&
-                !renderProps.isDisabled ? (
+                renderProps.selectionBehavior === "toggle" ? (
                   <GridListSelectionCheckbox
                     itemKey={props.id}
                     renderProps={renderProps}
@@ -1280,7 +1316,7 @@ export function GridListSelectionCheckbox(props: {
 
   return (
     <span
-      class={[listViewCheckbox, props.class].filter(Boolean).join(" ")}
+      class={[listViewCheckbox(renderProps()), props.class].filter(Boolean).join(" ")}
       style={props.style}
       data-rsp-slot="selection-indicator"
     >
@@ -1292,7 +1328,17 @@ export function GridListSelectionCheckbox(props: {
       />
       <span class={listViewCheckboxBox(renderProps())} aria-hidden="true">
         {renderProps().isSelected ? (
-          <Checkmark size="XS" class={listViewCheckboxIcon} aria-hidden="true" />
+          // S2's checkbox checkmark is a RAW ui-icon svg that never reads
+          // IconContext, so it paints the `smallerSize['M'] === 'S'` variant at
+          // its intrinsic 10×10 (Checkbox.tsx). The port's `Checkmark` DOES
+          // consume IconContext (createIconForBase), so rendered inside the row
+          // it would inherit the LEADING-icon slot's `size: 20` (listViewSlotIcon,
+          // via mergeStyles' later-wins context) and paint 2× too large. Reset
+          // the context here to restore S2's immunity: the `S` glyph falls back
+          // to its intrinsic 10×10, tinted only by listViewCheckboxIcon.
+          <IconContext.Provider value={{}}>
+            <Checkmark size="S" class={listViewCheckboxIcon} aria-hidden="true" />
+          </IconContext.Provider>
         ) : null}
       </span>
     </span>

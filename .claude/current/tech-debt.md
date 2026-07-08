@@ -298,6 +298,38 @@ tasks:
       on ALL four placements with ZERO D3 waivers. So this entry's arrow scope is now
       TOOLTIP-ONLY (its headless `createTooltip` still exposes no `arrowProps`). The
       popover's remaining realignment gap is D2 motion only — see `popover-enter-motion`.
+  - id: listview-virtualizer-subpixel
+    title: Port the ListView row windowing onto S2's Virtualizer + S2ListLayout (row-wrapper stacking/positioning)
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the ListView recertification (CP9.43). Upstream S2 ListView.tsx
+      (:363-396) wraps the whole collection in `<Virtualizer layout={S2ListLayout}>`,
+      which renders each row inside a `<div role="presentation">` that is
+      `position:absolute; z-index:0` — an integer-snapped, per-row stacking context.
+      The port's ListView (solid-spectrum/src/gridlist/index.tsx) has NO Virtualizer
+      (only a legacy `layout` prop alias); rows are DIRECT grid children flowed by the
+      grid. Two certified consequences, both worked around faithfully rather than
+      papered over: (1) the `z-index:-1` selection-fill layer escaped to the grid's
+      ancestor stacking context and was painted over by the grid's own white bg — fixed
+      minimally by giving the (position:relative) row `zIndex:0` so it forms its own
+      stacking context (substitutes for S2's row-wrapper); D3 default dropped 16% → 0.
+      (2) RESIDUAL, waived: the bordered checkbox cases (default/selected/multiple/
+      disabled) leave a ≤5/255 anti-aliasing residual (≤26/136320 px, ~1.9e-4) confined
+      to the selection checkbox column (x≈45-60). The absolutely-positioned S2 row snaps
+      the checkbox box + checkmark glyph to a slightly different sub-pixel phase than the
+      port's flow-positioned row, so their edges rasterize with a 1-5/255 rounding delta
+      — a measurement-layer artifact, not a paint divergence (D1 pins every computed
+      style byte-identical; and `quiet` — no grid border to shift the column — and
+      `highlight` — no checkbox column at all — stay byte-EXACT at zero tolerance).
+      Waived in listview.certified.spec.ts as `listview-virtualizer-subpixel`
+      (maxMismatchRatio 5e-4, ~2.6x the worst observed, tighter than the house
+      glyphSubpixel precedents: contextualhelp 1.5e-3, toast 2e-3, tooltip 3e-3). ROOT
+      FIX = port S2ListLayout + the Virtualizer row-windowing (a multi-day structural
+      port, out of a paint cert's scope); this ALSO closes the residual to byte-exact.
+      Confirm against S2 `Virtualizer`/`S2ListLayout` + `@react-aria/virtualizer` first
+      (parity rule). Same "structural realignment blocks byte-exact, waive the sub-pixel
+      residual meanwhile" shape as `tooltip-arrow-overlayarrow`.
   - id: tooltip-arrow-aria-exposed
     title: Tooltip arrow svg is exposed as role=img (upstream-faithful mirror, not an improvement)
     state: open

@@ -206,7 +206,15 @@ describe("ListView (solid-spectrum)", () => {
       </ListView>
     ));
 
-    const quarterlyReport = screen.getByRole("row", { name: "Quarterly report" });
+    // A disabled selectable row still RENDERS its selection checkbox (faithful to
+    // S2's `listCheckbox`, certified by the ListView D1 grid-template-columns pair
+    // diff — the checkmark track keeps its width so rows stay aligned). In a real
+    // browser the checkbox is `visibility:hidden` on a disabled row, which drops it
+    // from the a11y tree; but jsdom does not apply the S2 atomic stylesheet, so its
+    // "Select" label surfaces in this row's accessible name here. Locate by content
+    // (the convention every checkbox-row lookup in this file already uses), not an
+    // exact whole-name.
+    const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
     expect(quarterlyReport).toHaveAttribute("aria-disabled", "true");
 
     await user.click(quarterlyReport);
