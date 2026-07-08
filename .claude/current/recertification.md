@@ -151,13 +151,17 @@ March order (dependency/leverage; within a tier, top to bottom):
 - **Tier 4 — collections:** Picker/Select **✓ certified 2026-07-06 (CP9.40,
   52/52)** — was first per the director pass (production-broken for installed
   consumers — `picker-popover-anchor` + `picker-item-checkmark` in tech-debt
-  remain open as consumer-delivery items); D9 shipped, D10 now shipped too
+  remain open as consumer-delivery items); D9 + D10 shipped
   (`picker-d10-rtl-driver` DONE — caught + fixed an app-wide portal-locale
-  `lang`/`dir` bug in the shared Popover). Then ListBox, GridList, TagGroup, ComboBox, Autocomplete, Tabs, Breadcrumbs,
-  Disclosure/Accordion, ActionBar, ActionGroup, Toolbar, TableView, TreeView,
-  StepList, Virtualizer (via its hosts), DnD (via its hosts). Two gates before
-  this tier starts: the D4 event-ordering policy decision and the D9/D10
-  sequencing decision (see "Director pass 2026-07-06" below).
+  `lang`/`dir` bug in the shared Popover). **All three CP9.40 deferred follow-ups
+  are now closed** (`select-value-content-mirror` `6823c0b2`, `picker-d10-rtl`
+  `fed13516`, standalone-ListBox real-roving-focus `7030e518`). **NEXT unit:
+  ListBox** (the real-focus spine fix already landed in `7030e518`; certify it
+  through the full driver march), then GridList, TagGroup, ComboBox, Autocomplete,
+  Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar, ActionGroup, Toolbar,
+  TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
+  Both gates that preceded this tier are resolved (the D4 event-ordering policy
+  and the D9/D10 sequencing decision — see "Director pass 2026-07-06" below).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor
@@ -297,7 +301,17 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☐ D10 ☐ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑ D11 ☐ D12 ☐`
+
+- D9 + D10 done 2026-07-06 (`bae2edae`): landed the forced-colors (D9 — D1 re-run
+  under `forcedColors: 'active'`, comparing resolved system-color keywords) and
+  RTL/i18n (D10 — D1 + D5 re-run under `dir="rtl"` + `ar-AE`) pair-oracle drivers,
+  then re-ran the certified Tiers 1–3 through them (the `recert-drivers-d9-d12`
+  gate the director pass required before Tier 4). D10 was subsequently wired into
+  the Picker fixture (`fed13516`), which caught + fixed an app-wide portal-locale
+  `lang`/`dir` bug in the shared Popover. Remaining Phase-1 drivers: D11 (timing —
+  mocked-clock tooltip warmup/toast auto-dismiss/long-press) and D12
+  (SSR/hydration — Astro island server HTML vs hydrated DOM), both still ☐.
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
@@ -2774,7 +2788,35 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   Picker certified suite is **58** green (52 prior + 6 new D10). The 5 pre-existing red visual specs
   (combobox/datepicker/dialog `*-visual`, all interaction/measurement rot on `main`) were confirmed to fail
   identically WITHOUT this change (stash-rebuild-rerun), so they are not regressions. Last CP9.40 follow-up
-  still open: standalone-ListBox container-focus vs upstream real-option-focus.
+  still open at that commit: standalone-ListBox container-focus vs upstream real-option-focus (closed next).
+
+- ✓ **standalone-ListBox real roving focus DONE 2026-07-07 (`7030e518`).** (Deferred follow-up (c) from the
+  CP9.40 Picker cert — the LAST of the three; all three now closed.) The standalone ListBox diverged from
+  upstream: `createListBox` hardcoded container `tabIndex: 0` (never rolled) and unconditionally emitted
+  `aria-activedescendant` — a **virtual-focus** model bolted onto an option side that already did **real** DOM
+  focus. Upstream's standalone ListBox uses real roving focus (the option becomes `document.activeElement` via
+  `createSelectableItem`'s focus effect), rolls tabIndex, and never sets `aria-activedescendant` (that is the
+  ComboBox/Autocomplete virtual-focus channel: `useComboBox.ts:481`, `useAutocomplete.ts:556`). Fixed with three
+  coupled changes on the non-virtual path, all gated on `shouldUseVirtualFocus` so ComboBox stays byte-identical:
+  (1) roll the container tabIndex (`focusedKey == null ? 0 : -1`, `useSelectableCollection.ts:687-690`); (2) drop
+  `aria-activedescendant` (emit only under virtual focus); (3) add the container **focus trampoline** — on
+  container focus with `focusedKey == null`, marshal `firstSelectedKey ?? getFirstKey()` (or last, by tab
+  direction via `compareDocumentPosition & DOCUMENT_POSITION_FOLLOWING`), mirroring
+  `useSelectableCollection.ts:409-454`. **Guard gotcha:** upstream guards its `onFocus` on `manager.isFocused`
+  and sets it there itself; our split `createFocusWithin` flips `setFocused(true)` via `onFocusWithinChange`
+  BEFORE this handler runs (mergeProps chains it first), so the guard must be `focusedKey() == null`, not
+  `isFocused`. **Cross-widget fix:** Select's popup listbox also routes through `createListBox` (real focus, not
+  virtual), so the new trampoline `onFocus` leaked in via `cleanListBoxProps`'s `...rest` and regressed 4 Select
+  tests — it forced first-key focus on click-open (Select deliberately leaves `focusedKey` null until the first
+  arrow) and, under replace behavior, `replaceSelection`'d the first item on open (then the click toggled it back
+  off → "item1 only" bug). Select now STRIPS `onFocus` in `cleanListBoxProps` (faithful — upstream's trampoline
+  no-ops there anyway, guarded on `isFocused` which Select's open effect already set). Regression isolated by
+  stash-rebuild-rerun (Select 140/140 clean without the change). Verified: solidaria `createListBox` **66** +
+  full solidaria **1488** + full solidaria-components **2158** (ListBox/Select/Color/ComboBox) + certified e2e
+  all green; only 5 unrelated pre-existing datepicker/daterangepicker `*-visual` reds (calendar widgets don't
+  import `createListBox`/Select — mechanically independent; the documented silent visual-spec rot on `main`).
+  This is the ListBox **spine** fix; the full ListBox driver-march certification (D1/D3/D5/D6/D7/D8/D9/D10) is
+  the next Tier-4 unit.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
