@@ -477,7 +477,15 @@ export function Tag(props: TagProps): JSX.Element {
     "target",
     "rel",
     "onAction",
+    "textValue",
   ]);
+
+  // Mirror S2 Tag: derive the row's accessible text from string children when no
+  // explicit textValue is given. This names the row (and cascades to the remove
+  // button's `aria-labelledby` and the gridcell's name-from-contents), matching
+  // how S2 auto-derives `node.textValue` from string children.
+  const textValue = () =>
+    local.textValue ?? (typeof local.children === "string" ? local.children : undefined);
   const size = () => normalizeSize(local.size ?? ctx?.size);
   const isEmphasized = () => local.isEmphasized ?? ctx?.isEmphasized ?? false;
   const isLink = () => local.href != null;
@@ -518,6 +526,7 @@ export function Tag(props: TagProps): JSX.Element {
       {...tagProps}
       id={local.id}
       isDisabled={local.isDisabled}
+      textValue={textValue()}
       class={className}
       ref={(el: HTMLDivElement) => (tagEl = el)}
       style={rowStyle}
@@ -546,8 +555,11 @@ export function Tag(props: TagProps): JSX.Element {
               {/* S2 ClearButton renders `<CrossIcon size={props.size}/>` with the RAW
                   control size — the ui-icon selects its own variant (S→Size75,
                   M→Size100, L→Size200) and CSS width (S=M=8px, L=10px). Passing a
-                  down-mapped size renders the wrong Cross path variant. */}
-              <CrossIcon size={size()} aria-hidden="true" />
+                  down-mapped size renders the wrong Cross path variant. No
+                  `aria-hidden`: S2's ClearButton leaves the bare CrossIcon svg
+                  exposed (Chromium reports an unnamed `img` under the labelled
+                  remove button), so mirror that AX shape rather than hiding it. */}
+              <CrossIcon size={size()} />
             </HeadlessTagRemoveButton>
           </Show>
         </>

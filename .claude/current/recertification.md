@@ -183,9 +183,18 @@ March order (dependency/leverage; within a tier, top to bottom):
   S2's TextContext `order:1` (→ `× Landscape` instead of `Landscape ×`), an
   invented remove-button `cursor:pointer`, a missing `pressScale` `will-change`
   hint, an emphasized-selection outline colour miss, and a size-conditional grid
-  font (S2's TagList is fixed `font:'ui'`). **NEXT: TagGroup CP9.44b** (roving focus
-  + AX + RTL — D5/D6/D10 + the `createTag` inline-axis + accessible-name fixes),
-  then ComboBox, Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
+  font (S2's TagList is fixed `font:'ui'`).
+  **TagGroup roving focus + AX + RTL ✓ certified 2026-07-08 (CP9.44b)** — D5/D6/D10.
+  The behavior drivers caught the port diverging from `useTag`'s tab-stop model
+  (only the first/selected row was tabbable, so Shift+Tab entered at the wrong end),
+  a missing container-focus trampoline, an un-flipped inline nav axis under RTL, the
+  row/gridcell/remove-button accessible names missing the tag text, and the remove
+  icon hidden from the AX tree. Faithful fixes: `createTag` now makes every enabled
+  row a tab stop when unfocused + flips only ArrowLeft/ArrowRight under RTL;
+  `createTagGroup` adds the roving container tabIndex + `compareDocumentPosition`
+  entry trampoline + post-commit focus effect; the styled `Tag` derives `textValue`
+  from string children and drops the remove-icon `aria-hidden`. **NEXT: ComboBox**,
+  then Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
   ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
   DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
@@ -3027,6 +3036,55 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     housekeeping proven identical with/without this change (stash-rebuild-rerun), NOT regressions. Next: **TagGroup
     CP9.44b** (D5/D6/D10 + `createTag` inline-axis nav + row/gridcell accessible-name parity + remove-icon `img`
     exposure), then ComboBox.
+
+- ✓ **TagGroup roving focus + AX + RTL certified 2026-07-08 (CP9.44b — Tier-4, fifth collections unit, behavior
+  half) — the browser behavior drivers caught FIVE port divergences the 45 jsdom units could not, extending the
+  [[listbox-real-roving-focus]] "only a browser driver verifies real DOM focus" lesson to TagGroup.** Registered
+  **D5** (focus trail — `tab-forward` `[Tab,ArrowRight,ArrowRight,ArrowLeft,Home,End]` from a preceding button +
+  `tab-backward` `[Shift+Tab]` from a following button), **D6** (AX tree — role/name/state, cases
+  `single`/`multiple`/`removable`), and **D10** (`registerRtlDriver` re-running D1 + D5 under `ar-AE`, case
+  `single`). Oracle = the same `@react-spectrum/s2` `TagGroup`/`Tag` vs the Solid port; the fixtures flank the
+  control with `Before`/`After` buttons so the trampoline's entry direction is observable. All five reds were
+  diagnosed to root cause against vendored `useTag.ts`/`useTagGroup.ts` before any fix:
+  - **(1) Wrong tab-stop model (D5 both walks).** The port's `createTag` tabIndex used a single-default-tab-stop
+    model (only the first navigable row — or the selected row — was `tabindex 0` when `focusedKey==null`), so
+    native Shift+Tab from the following button landed on the FIRST row instead of the LAST. `useTag.ts:100-104` is
+    `tabIndex = (!isDisabled && (isItemFocused || focusedKey==null)) ? 0 : -1` — EVERY enabled row is a tab stop
+    when nothing is focused (selection plays no role, unlike ListBox/Select). Fixed to the exact useTag expression;
+    the two units asserting the old model (`createTagGroup.test.tsx` "single roving tab stop"/"selected key as
+    initial tab stop" + `TagGroup.test.tsx` "single roving tab stop") were self-inflicted divergences codified as
+    tests — rewritten to assert the faithful all-enabled-rows model.
+  - **(2) No container-focus trampoline (D5 tab-forward).** `useTagGroup`→`useGridList` gives the grid container a
+    roving `tabIndex` (0 while `focusedKey==null`, else -1) plus `useSelectableCollection`'s `onFocus` that marshals
+    entry onto the first/last row via `compareDocumentPosition(relatedTarget)`. The port's `createTagGroup` emitted
+    neither, so a forward Tab that landed on the container never advanced onto a row. Ported the same trampoline the
+    standalone ListBox uses (`createListBox`): container `tabIndex`, an `onFocus` that picks first- vs last-navigable
+    by document position, and a post-commit `createEffect` that pulls real DOM focus onto `[data-key]`. Wired the
+    previously-unused `_ref`. The consuming `TagList` switched its focus-within tracking from the non-bubbling
+    `onFocus`/`onBlur` (which CLOBBERED the spread `gridProps.onFocus` trampoline) to the bubbling
+    `onFocusIn`/`onFocusOut` — the faithful focus-within channel, distinct events so the trampoline survives.
+  - **(3) Inline nav axis not RTL-flipped (D10 both walks).** A TagGroup is inherently horizontal
+    (`useTagGroup` passes `orientation:'horizontal'` + `direction` to the `ListKeyboardDelegate`); mirroring
+    `ListKeyboardDelegate` lines 201-214, ArrowRight/ArrowLeft flip under RTL while ArrowUp/ArrowDown (block axis)
+    never do. The port's `createTag` mapped Right→next/Left→prev unconditionally. Threaded `direction` from
+    `useLocale` → `TagList` → `createTagGroup` `tagGroupData` → `createTag`, which now flips only Right/Left when
+    `direction==='rtl'`.
+  - **(4) Row/gridcell/remove-button names missing the tag text (D6 removable).** `useGridListItem` sets the row
+    `aria-label = node.textValue`, which cascades (row name → remove-button `aria-labelledby` → gridcell
+    name-from-contents). S2 auto-derives `node.textValue` from string children; the port's styled `Tag` never
+    computed it, so the row was unnamed. Fixed by deriving `textValue = props.textValue ?? (typeof children ===
+    'string' ? children : undefined)` and threading it to `HeadlessTag` (mirrors S2 `Tag`).
+  - **(5) Remove icon hidden from the AX tree (D6 removable).** S2's `ClearButton` leaves the bare `CrossIcon` svg
+    exposed (Chromium reports an unnamed `img` under the labelled remove button); the port set `aria-hidden="true"`
+    on it, dropping that node. Removed the `aria-hidden` — the bare `createUIIcon` svg then matches S2's AX shape.
+  - Verified: **TagGroup 45 unit** (3 files, the 3 tab-stop assertions updated to the faithful useTag model) +
+    TagGroup **certified e2e 45/45 green** (paint D1/D3/D7/D8 40 + behavior D5 2 + D6 3 + D10 4 — was 40 pass / 5
+    red, now all green) + `typecheck` clean. Deferred: **`taggroup-remove-pressscale`** (headless `TagRemoveButton`
+    has no press state, so only the resting `pressScale` `will-change` hint is mirrored — the on-press scale awaits
+    a headless press-state pass) and the broader **createGridList/ListKeyboardDelegate spine rebuild** (TagGroup
+    reimplements the horizontal delegate inline in `createTag`/`createTagGroup` rather than composing the shared
+    `createSelectableCollection` + `ListKeyboardDelegate`, the same inline-nav shortcut ListBox/Select took) — both
+    filed in tech-debt.md. Next Tier-4 unit: **ComboBox**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

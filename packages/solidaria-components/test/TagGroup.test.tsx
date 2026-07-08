@@ -488,7 +488,9 @@ describe("TagGroup", () => {
       expect(firstTag).toHaveAttribute("tabindex");
     });
 
-    it("uses a single roving tab stop when no tag is focused", () => {
+    it("makes every enabled tag a tab stop when no tag is focused", () => {
+      // Faithful to useTag (useTag.ts:100-104): with nothing focused, every
+      // non-disabled row is a tab stop (tabindex 0); only the disabled row is -1.
       render(() => <TestTagGroup tagListProps={{ disabledKeys: ["1"] }} />);
 
       const newsTag = screen.getByRole("row", { name: "News" });
@@ -497,7 +499,7 @@ describe("TagGroup", () => {
 
       expect(newsTag).toHaveAttribute("tabindex", "-1");
       expect(travelTag).toHaveAttribute("tabindex", "0");
-      expect(gamingTag).toHaveAttribute("tabindex", "-1");
+      expect(gamingTag).toHaveAttribute("tabindex", "0");
     });
 
     it("supports Arrow/Home/End keyboard navigation between tags", async () => {

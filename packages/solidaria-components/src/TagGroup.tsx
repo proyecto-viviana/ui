@@ -18,7 +18,12 @@ import {
   For,
   Show,
 } from "solid-js";
-import { createTagGroup, createTag, type AriaTagGroupProps } from "@proyecto-viviana/solidaria";
+import {
+  createTagGroup,
+  createTag,
+  useLocale,
+  type AriaTagGroupProps,
+} from "@proyecto-viviana/solidaria";
 import {
   createListState,
   type ListState,
@@ -258,6 +263,11 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
     },
   });
 
+  // The tag group navigates on the inline axis, so ArrowLeft/ArrowRight flip
+  // under RTL. Thread the resolved layout direction into the hook (mirrors
+  // ListBox, and useTagGroup passing `direction` to the ListKeyboardDelegate).
+  const locale = useLocale();
+
   // Create tag group accessibility props
   const tagGroupAria = createTagGroup(
     {
@@ -275,6 +285,9 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
       },
       get onRemove() {
         return local.onRemove;
+      },
+      get direction() {
+        return locale().direction;
       },
     },
     state,
@@ -316,18 +329,20 @@ export function TagList<T extends { id?: Key; key?: Key }>(props: TagListProps<T
           {...tagGroupAria.gridProps}
           class={renderProps.class()}
           style={renderProps.style()}
-          onFocus={() => {
+          // Track focus-within via the BUBBLING focusin/focusout pair (not the
+          // non-bubbling focus/blur the hook's trampoline uses) so this render-prop
+          // signal never clobbers `gridProps.onFocus` — the container focus
+          // trampoline that marshals entry onto the first/last row.
+          onFocusIn={() => {
             setIsFocused(true);
-            state.setFocused(true);
           }}
-          onBlur={(e) => {
+          onFocusOut={(e) => {
             const nextTarget = e.relatedTarget as Node | null;
             if (nextTarget && e.currentTarget.contains(nextTarget)) {
               return;
             }
 
             setIsFocused(false);
-            state.setFocused(false);
           }}
           data-empty={dataAttr(local.items.length === 0)}
           data-focused={dataAttr(isFocused())}

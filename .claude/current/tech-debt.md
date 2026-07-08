@@ -158,6 +158,23 @@ tasks:
     state: open
     depends: [port-selection-manager, port-list-keyboard-delegate]
     roadmap: headless-spine-port
+  - id: migrate-taggroup-spine
+    title: Re-route TagGroup onto the ported createSelectableCollection + ListKeyboardDelegate
+    state: open
+    depends: [port-selection-manager, port-list-keyboard-delegate]
+    roadmap: headless-spine-port
+    note: >-
+      CP9.44b (2026-07-08) certified TagGroup behavior but createTag/createTagGroup
+      still reimplement the horizontal delegate INLINE (per-key Arrow/Home/End nav,
+      a hand-rolled container-focus trampoline via compareDocumentPosition + a
+      post-commit [data-key] focus effect, and the useTag tabIndex expression) rather
+      than composing the shared createSelectableCollection + ListKeyboardDelegate
+      ({orientation:'horizontal', direction}) the way useTagGroup→useGridList does
+      upstream. Same inline-nav shortcut ListBox/Select took. Faithful target = build
+      createTagGroup on createGridList (useTag = thin useGridListItem wrapper whose
+      only extra keydown is Delete/Backspace removal). Direction is already threaded
+      (useLocale → TagList → tagGroupData); the trampoline logic is a copy of
+      createListBox's and should collapse into the shared collection hook.
   - id: migrate-combobox-nav
     title: Fix ComboBox filtered-list nav onto the ported delegate
     state: open
@@ -262,6 +279,20 @@ tasks:
       condition compile is the suspect. Diff both against upstream S2 before patching.
       Director pass 2026-07-06: fix alongside picker-popover-anchor as part of the
       Picker-first Tier 4 slot.
+  - id: taggroup-remove-pressscale
+    title: Give the styled Tag remove button real on-press pressScale (not just the resting hint)
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      Surfaced by the TagGroup recertification (CP9.44a/b). S2's ClearButton renders
+      the remove button with `style={pressScale(domRef)}`, which contributes BOTH the
+      resting `will-change:transform` layer hint AND the on-press scale transform. The
+      port's headless `TagRemoveButton` (HeadlessTagRemoveButton) carries no press
+      state, so solid-spectrum tag-group/index.tsx only mirrors the resting hint via
+      `pressScale(undefined)({isPressed:false})`. Faithful fix = thread press state
+      through the headless remove button (createPress on the button) and feed its
+      domRef + isPressed into pressScale, matching S2 ClearButton. Not paint-visible
+      at rest (D1/D3 green) — the gap is the missing press-down animation.
   - id: tooltip-arrow-overlayarrow
     title: Port the Tooltip arrow onto the real RAC <OverlayArrow> + arrowProps (headless-overlay realignment)
     state: open

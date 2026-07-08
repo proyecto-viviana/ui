@@ -184,13 +184,27 @@ export function createTag<T>(
   const handleKeyDown = (e: KeyboardEvent) => {
     if (isDisabled()) return;
 
+    // A TagGroup is inherently horizontal (useTagGroup passes
+    // `orientation: 'horizontal'` to the ListKeyboardDelegate), so the inline
+    // (Left/Right) axis is the navigation axis and flips under RTL, while the
+    // block (Up/Down) axis stays DOM-ordered. Mirror ListKeyboardDelegate:
+    // getKeyRightOf = rtl ? previous : next; getKeyLeftOf = rtl ? next : previous;
+    // getKeyBelow/Above are never direction-flipped.
+    const isRtl = getData()?.direction === "rtl";
+
     switch (e.key) {
       case "ArrowRight":
+        e.preventDefault();
+        focusKey(isRtl ? getPreviousFocusableKey(key()) : getNextFocusableKey(key()));
+        return;
+      case "ArrowLeft":
+        e.preventDefault();
+        focusKey(isRtl ? getNextFocusableKey(key()) : getPreviousFocusableKey(key()));
+        return;
       case "ArrowDown":
         e.preventDefault();
         focusKey(getNextFocusableKey(key()));
         return;
-      case "ArrowLeft":
       case "ArrowUp":
         e.preventDefault();
         focusKey(getPreviousFocusableKey(key()));
@@ -226,39 +240,14 @@ export function createTag<T>(
     }
   };
 
-  // Compute tabIndex
+  // Compute tabIndex. Mirror useTag (vendored @react-aria/tag/src/useTag.ts):
+  //   tabIndex = (!isDisabled && (isFocused || focusedKey == null)) ? 0 : -1
+  // Every non-disabled row is a tab stop when nothing is focused yet (so native
+  // Shift+Tab from a following element lands on the LAST row); once a key is
+  // focused, only that row keeps tabIndex 0 (roving single tab stop).
   const tabIndex = createMemo(() => {
     if (isDisabled()) return -1;
-
-    if (isFocused()) {
-      return 0;
-    }
-
-    if (state.focusedKey() !== null) {
-      return -1;
-    }
-
-    const collection = state.collection();
-    let defaultTabStop: Key | null = null;
-
-    if (state.selectionMode() !== "none") {
-      for (const item of collection) {
-        if (!state.isDisabled(item.key) && state.isSelected(item.key)) {
-          defaultTabStop = item.key;
-          break;
-        }
-      }
-    }
-
-    if (defaultTabStop == null) {
-      defaultTabStop = getFirstFocusableKey();
-    }
-
-    if (key() === defaultTabStop) {
-      return 0;
-    }
-
-    return -1;
+    return isFocused() || state.focusedKey() == null ? 0 : -1;
   });
 
   // Filter DOM props

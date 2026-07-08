@@ -362,6 +362,7 @@ import {
   normalizeTagGroupDemoProps,
   serializeTagGroupDemoProps,
   serializeTagGroupKeys,
+  tagGroupDemoLocaleFromWindow,
   tagGroupDemoPropsFromWindow,
   tagGroupInitialItems,
   tagGroupItems,
@@ -1719,6 +1720,7 @@ function ReactTableViewDemo() {
 
 function ReactTagGroupDemo() {
   const colorScheme = useComparisonResolvedTheme();
+  const locale = tagGroupDemoLocaleFromWindow();
   const [demoProps, setDemoProps] = useState(tagGroupDemoPropsFromWindow);
   const [tags, setTags] = useState(() => tagGroupInitialItems(demoProps));
   const [selectedKeys, setSelectedKeys] = useState(() => initialTagGroupSelectedKeys(demoProps));
@@ -1775,14 +1777,20 @@ function ReactTagGroupDemo() {
   ].join("|");
 
   return renderReactSpectrumReference(
-    jsx("div", {
-      style: collectionFixtureStyle,
-      "data-comparison-control-root": "taggroup",
-      "data-comparison-control-props": serializeTagGroupDemoProps(demoProps),
-      "data-comparison-selected-keys": selectedValue,
-      "data-comparison-tag-count": String(tags.length),
-      "data-comparison-action-count": String(actionCount),
-      children: jsx(SpectrumTagGroup, {
+    jsxs(Fragment, {
+      // Boundary buttons flank the grid so the D5 focus walk can Tab into the
+      // group from before it and Shift+Tab into it from after it — exercising the
+      // trampoline's entry-direction logic in both directions.
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx("div", {
+          style: collectionFixtureStyle,
+          "data-comparison-control-root": "taggroup",
+          "data-comparison-control-props": serializeTagGroupDemoProps(demoProps),
+          "data-comparison-selected-keys": selectedValue,
+          "data-comparison-tag-count": String(tags.length),
+          "data-comparison-action-count": String(actionCount),
+          children: jsx(SpectrumTagGroup, {
         key: renderKey,
         label: demoProps.label,
         size: demoProps.size,
@@ -1836,9 +1844,13 @@ function ReactTagGroupDemo() {
                   })
                 : item.name,
           }),
-      }),
+          }),
+        }),
+        jsx("button", { children: "After" }),
+      ],
     }),
     colorScheme,
+    locale,
   );
 }
 

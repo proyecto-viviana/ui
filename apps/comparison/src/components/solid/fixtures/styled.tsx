@@ -394,6 +394,7 @@ import {
   normalizeTagGroupDemoProps,
   serializeTagGroupDemoProps,
   serializeTagGroupKeys,
+  tagGroupDemoLocaleFromWindow,
   tagGroupDemoPropsFromWindow,
   tagGroupInitialItems,
   tagGroupItems,
@@ -2376,6 +2377,7 @@ function SolidSpectrumTableViewDemo() {
 
 function SolidSpectrumTagGroupDemo() {
   const colorScheme = createComparisonResolvedThemeSignal();
+  const locale = tagGroupDemoLocaleFromWindow();
   const [demoProps, setDemoProps] = createSignal<TagGroupDemoProps>(tagGroupDemoPropsFromWindow());
   const [tags, setTags] = createSignal(tagGroupInitialItems(demoProps()));
   const [selectedKeys, setSelectedKeys] = createSignal(initialTagGroupSelectedKeys(demoProps()));
@@ -2406,10 +2408,16 @@ function SolidSpectrumTagGroupDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      // Threaded so the D10 RTL driver's `?locale=ar-AE` gives the Provider
+      // `direction: 'rtl'` and `createTag` flips its inline-axis nav.
+      locale,
       background: "base",
       style: providerShellStyle,
     },
     [
+      // Boundary buttons flank the grid so the D5 walk can Tab into the group and
+      // Shift+Tab into it from after — exercising entry-direction in both ways.
+      h("button", {}, "Before"),
       hc(
         "div",
         {
@@ -2528,6 +2536,7 @@ function SolidSpectrumTagGroupDemo() {
           ),
         ],
       ),
+      h("button", {}, "After"),
     ],
   );
 }

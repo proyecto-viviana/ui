@@ -10,6 +10,14 @@ export const tagGroupLabelPositionOptions = ["top", "side"] as const;
 export const tagGroupLabelAlignOptions = ["start", "end"] as const;
 export const tagGroupItemCountOptions = ["0", "2", "4"] as const;
 export const tagGroupContentModeOptions = ["text", "icon"] as const;
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// TagGroup fixture routes `?locale` into the S2 `Provider` (React) / the
+// `SolidSpectrumProvider` (Solid) so the D10 RTL driver can re-run the D5 focus
+// walk mirrored, certifying the RTL-flipped inline-axis nav (TagGroup is an
+// inherently HORIZONTAL grid — `useTagGroup` builds a
+// `ListKeyboardDelegate({orientation:'horizontal', direction})` — so ArrowRight
+// moves NEXT and ArrowLeft PREVIOUS in LTR, flipped under `ar-AE`).
+export const tagGroupDemoLocaleOptions = ["en-US", "ar-AE"] as const;
 
 export type TagGroupSize = (typeof tagGroupSizeOptions)[number];
 export type TagGroupSelectionMode = (typeof tagGroupSelectionModeOptions)[number];
@@ -255,4 +263,20 @@ export function tagGroupDemoPropsFromWindow(): TagGroupDemoProps {
 
 export function serializeTagGroupDemoProps(props: TagGroupDemoProps) {
   return JSON.stringify(normalizeTagGroupDemoProps(props));
+}
+
+// Locale is threaded separately from the demo props: the D10 (RTL/i18n) driver
+// re-mounts the fixture with `?locale=ar-AE` so the Provider computes
+// `direction: 'rtl'`, and `createTag`'s inline-axis nav flips Left/Right.
+export function tagGroupDemoLocaleFromSearch(search: string) {
+  const locale = new URLSearchParams(search).get("locale");
+  return isOneOf(locale, tagGroupDemoLocaleOptions) ? locale : undefined;
+}
+
+export function tagGroupDemoLocaleFromWindow() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return tagGroupDemoLocaleFromSearch(window.location.search);
 }

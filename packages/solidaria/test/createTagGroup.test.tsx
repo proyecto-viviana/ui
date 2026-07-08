@@ -84,7 +84,11 @@ function HookTagList(props: {
 }
 
 describe("createTagGroup/createTag", () => {
-  it("uses a single roving tab stop when focus is not yet set", () => {
+  it("makes every enabled tag a tab stop when focus is not yet set", () => {
+    // useTag (vendored useTag.ts:100-104): tabIndex = 0 when
+    // `!isDisabled && (isItemFocused || focusedKey == null)`. So with nothing
+    // focused, ALL enabled rows are tab stops (native tab order then lands on the
+    // last row on Shift+Tab); only the disabled row is -1.
     render(() => <HookTagList disabledKeys={["1"]} />);
 
     const alpha = screen.getByRole("option", { name: "Alpha" });
@@ -93,16 +97,19 @@ describe("createTagGroup/createTag", () => {
 
     expect(alpha).toHaveAttribute("tabindex", "-1");
     expect(beta).toHaveAttribute("tabindex", "0");
-    expect(gamma).toHaveAttribute("tabindex", "-1");
+    expect(gamma).toHaveAttribute("tabindex", "0");
   });
 
-  it("uses selected key as initial tab stop when selection exists", () => {
+  it("does not use selection to pick a tab stop (unlike ListBox)", () => {
+    // useTag's tabIndex ignores selection entirely — a selected key is NOT a
+    // special initial tab stop. Every enabled tag stays a tab stop until a key
+    // is focused.
     render(() => <HookTagList selectionMode="single" defaultSelectedKeys={["3"]} />);
 
     const alpha = screen.getByRole("option", { name: "Alpha" });
     const gamma = screen.getByRole("option", { name: "Gamma" });
 
-    expect(alpha).toHaveAttribute("tabindex", "-1");
+    expect(alpha).toHaveAttribute("tabindex", "0");
     expect(gamma).toHaveAttribute("tabindex", "0");
   });
 
