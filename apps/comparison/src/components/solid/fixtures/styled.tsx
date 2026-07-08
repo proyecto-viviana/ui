@@ -127,6 +127,8 @@ import {
 import {
   ListBox as SolidHeadlessListBox,
   ListBoxOption as SolidHeadlessListBoxOption,
+  GridList as SolidHeadlessGridList,
+  GridListItem as SolidHeadlessGridListItem,
 } from "@proyecto-viviana/solidaria-components";
 import { s2ButtonText } from "../../../../../../packages/solid-spectrum/src/button/s2-button-styles";
 import {
@@ -346,6 +348,15 @@ import {
   type ListBoxDemoItem,
   type ListBoxDemoProps,
 } from "@comparison/data/listbox-demo";
+import {
+  gridListDemoItems,
+  gridListDemoPropsFromWindow,
+  gridListDemoLocaleFromWindow,
+  normalizeGridListDemoProps,
+  serializeGridListDemoProps,
+  type GridListDemoItem,
+  type GridListDemoProps,
+} from "@comparison/data/gridlist-demo";
 import {
   comparisonControlsEvent as treeViewControlsEvent,
   initialTreeViewExpandedKeys,
@@ -1039,6 +1050,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   link: () => h(SolidSpectrumLinkDemo, {}),
   listview: () => h(SolidSpectrumListViewDemo, {}),
   listbox: () => h(SolidSpectrumListBoxDemo, {}),
+  gridlist: () => h(SolidSpectrumGridListDemo, {}),
   menu: () => h(SolidSpectrumMenuDemo, {}),
   meter: () => h(SolidSpectrumMeterDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
@@ -1830,6 +1842,83 @@ function SolidSpectrumListBoxDemo() {
           class: "comparison-listbox-row",
         },
         [h("button", {}, "Before"), renderedListBox, h("button", {}, "After")],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumGridListDemo() {
+  const [demoProps, setDemoProps] = createSignal<GridListDemoProps>(gridListDemoPropsFromWindow());
+  const locale = gridListDemoLocaleFromWindow();
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "gridlist") {
+        setDemoProps(normalizeGridListDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedGridList = createMemo(() =>
+    hc(
+      SolidHeadlessGridList,
+      {
+        "aria-label": "Permissions",
+        get selectionMode() {
+          return demoProps().selectionMode;
+        },
+        get orientation() {
+          return demoProps().orientation;
+        },
+        get keyboardNavigationBehavior() {
+          return demoProps().keyboardNavigationBehavior;
+        },
+        "data-comparison-control-root": "gridlist",
+        get "data-comparison-control-props"() {
+          return serializeGridListDemoProps(demoProps());
+        },
+        items: gridListDemoItems,
+        getKey: (item: GridListDemoItem) => item.id,
+        getTextValue: (item: GridListDemoItem) => item.label,
+      },
+      renderProp((item: GridListDemoItem) =>
+        hc(SolidHeadlessGridListItem, { id: item.id, textValue: item.label }, [item.label]),
+      ),
+    ),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      locale,
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-gridlist-row",
+        },
+        [h("button", {}, "Before"), renderedGridList, h("button", {}, "After")],
       ),
     ],
   );

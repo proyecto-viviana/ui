@@ -160,9 +160,13 @@ March order (dependency/leverage; within a tier, top to bottom):
   standalone ListBox); the browser D5 driver caught that `7030e518` was
   incomplete (imperative `focusSafely` never ran — `createOption` was never
   passed the option's DOM ref) plus a `ul/li → div` structural divergence vs RAC.
-  **NEXT unit: GridList**, then TagGroup, ComboBox, Autocomplete,
-  Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar, ActionGroup, Toolbar,
-  TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
+  **GridList base ✓ certified 2026-07-08 (CP9.42)** — RAC-oracle D5+D6 + a
+  horizontal (`tab`-nav) D5/D10 pass; the browser D5 driver caught the port had
+  INVENTED an `arrow`-mode container Left/Right row-nav branch RAC lacks (the
+  inline axis belongs to the row under `arrow`) — gated it to `tab` navigation.
+  **NEXT unit: ListView styled-S2 paint (CP9.43)**, then TagGroup, ComboBox,
+  Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar, ActionGroup,
+  Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
   and the D9/D10 sequencing decision — see "Director pass 2026-07-06" below).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
@@ -2852,6 +2856,52 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      annotations. GridList was already `div`; ComboBox renders its own inline `ul`/`li` (its own cert unit's
      concern, untouched). Verified: ListBox 150 / Select 230 / ComboBox 157 / GridList 49 / TagGroup 45 unit +
      typecheck clean + ListBox certified e2e **3/3** green.
+
+- ✓ **GridList base certified 2026-07-08 (CP9.42 — Tier-4, third collections unit) — the browser D5 driver
+  caught the port had INVENTED an `arrow`-mode container Left/Right row-nav branch RAC lacks.** Base RAC layer,
+  so — like ListBox — the oracle is **RAC's own `GridList`/`GridListItem`** (`react-aria-components@1.19.0`,
+  direct upstream of `createGridList`), both panels unstyled base surfaces (styled paint is the ListView S2 unit,
+  CP9.43). Registered **D5** (focus trail — vertical `tab-forward`/`tab-backward` roving + a horizontal walk),
+  **D6** (AX tree — role=grid/row/gridcell, `aria-selected`/`aria-multiselectable`), and **D10** (RTL — re-runs
+  the horizontal D5 walk + a state-matrix under `?locale=ar-AE`, certifying the RTL-flipped inline axis). D1/D3/
+  D7/D8 scoped out (no styled oracle at the base layer — they live in the ListView cert); D2/D4 certified through
+  the Picker/ListBox/ComboBox hosts. The user broadened this unit past ListBox's vertical-only D5/D6 to add the
+  **horizontal-orientation** case and the **D10 RTL** walk, precisely to exercise the orientation-aware Left/Right
+  nav — and that is exactly what caught the bug.
+  - **The defect: an invented `arrow`-mode container inline-axis nav.** RAC splits inline-axis (Left/Right)
+    ownership by `keyboardNavigationBehavior`. Under the default **`arrow`** mode the **ROW** owns Left/Right —
+    `useGridListItem`'s `onKeyDownCapture` intercepts them for intra-row focus movement (a no-op for text-only
+    rows) and stops them, so the container never steps between rows on the inline axis. Only under **`tab`** mode
+    does the row stop intercepting, the event reaches `useSelectableCollection` → `ListKeyboardDelegate`, and a
+    **horizontal** stack promotes Left/Right to the primary row axis (Right=next / Left=prev in LTR, flipped under
+    RTL; a vertical stack strips them entirely). Our `createGridList` had a container Left/Right branch gated only
+    on `orientation === "horizontal"` — it fired in **`arrow`** mode too, navigating rows RAC never would.
+  - **Why jsdom missed it, and the Solid root cause.** The jsdom units fired `keyDown` **directly on the grid
+    container**, bypassing the row's real capture-phase `onKeyDownCapture` entirely — testing a fiction where the
+    container is the only handler, so the invented branch looked correct. In real Solid DOM the port's nav is
+    **entirely container-driven**: the row's capture-phase `stopPropagation()` does **not** reliably prevent the
+    container's **delegated** `onKeyDown` (Solid delegates at `document`, bubble phase), so the row can't gate the
+    container the way React's synthetic capture does. The fix therefore had to gate **at the container, explicitly**
+    — the same lesson as ListBox `7030e518`: only a browser driver exercises the real event-propagation/focus flow.
+  - **Faithful fix (`createGridList.ts` ArrowRight/ArrowLeft):** gate the container branch on `orientation ===
+    "horizontal" && (keyboardNavigationBehavior ?? "arrow") === "tab"` — so it stays inert in `arrow` mode (RAC's
+    row owns the axis) and inert for a vertical `tab` stack (RAC strips it), and only navigates rows for a
+    horizontal `tab` stack, direction-aware (`forward = ArrowRight ? !isRtl : isRtl`). Preserves parity in BOTH
+    modes rather than deleting the branch (which would have dropped the `tab`-mode row nav RAC does have). The
+    `onFocus` trampoline (direction-aware via `compareDocumentPosition`) and the roving `gridProps.tabIndex`
+    (`focusedKey != null ? -1 : 0`) were confirmed already faithful — untouched.
+  - **Fixture plumbing (mirror the ListBox recipe):** `gridlist-demo.ts` codec gains `keyboardNavigationBehavior`
+    (`arrow`/`tab`) alongside `selectionMode`/`orientation`, plus the `?locale` (`en-US`/`ar-AE`) passthrough for
+    D10 (re-mirrors `picker-demo.ts`); both React (`AriaGridList` `keyboardNavigationBehavior`) and Solid
+    (`SolidSpectrumGridListDemo` getter) fixtures thread it; the horizontal cert case runs `{ orientation:
+    "horizontal", keyboardNavigationBehavior: "tab" }`. The port already read `ariaProps.keyboardNavigationBehavior`
+    and resolves `direction` from the DOM (`resolveDirection()`), so RTL flows from the Provider's `dir="rtl"`, not
+    a prop. Two unit suites retargeted the old assertions (which asserted the invented `arrow`-mode nav) to `tab`
+    mode and added an **`arrow`-mode-inert regression guard** so the invented branch can't silently return.
+  - Verified: **GridList 50 unit** (`solidaria-components` GridList + `createGridList`, 2 files) + GridList
+    **certified e2e 9/9 green** (D5 vertical fwd/back, D6 single/multiple, D5 horizontal, D6 horizontal, D10 RTL
+    state-matrix dark/light, D10 RTL focus-trail) + `astro check` clean + full certified suite **1423 passed**
+    (6 skipped, 0 failed, no regression). Next Tier-4 unit: **ListView styled-S2 paint (CP9.43)**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

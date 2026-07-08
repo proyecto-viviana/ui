@@ -233,8 +233,12 @@ describe("createGridList disabled-key keyboard navigation", () => {
     it("skips disabled rows navigating the horizontal axis", () => {
       createRoot((dispose) => {
         const state = createRowGridState({ disabledKeys: ["b", "c"] });
+        // A horizontal stack promotes Left/Right to the row axis, but only under
+        // "tab" navigation — under the default "arrow" behavior the row owns the
+        // inline axis, so the container leaves Left/Right inert (see the
+        // keyboardNavigationBehavior suite and the GridList browser cert).
         const { gridProps } = createGridList(
-          () => ({ orientation: "horizontal" }),
+          () => ({ orientation: "horizontal", keyboardNavigationBehavior: "tab" }),
           () => state,
           () => null,
         );

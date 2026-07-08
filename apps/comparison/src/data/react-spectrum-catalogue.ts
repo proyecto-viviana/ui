@@ -51,6 +51,7 @@ export const reactSpectrumCatalogue = [
   component("Divider"),
   component("DropZone"),
   component("Form"),
+  component("GridList"),
   component("Icons", "icons"),
   component("IllustratedMessage"),
   component("Illustrations", "illustrations"),

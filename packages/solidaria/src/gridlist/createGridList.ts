@@ -151,12 +151,21 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       }
       case "ArrowRight":
       case "ArrowLeft": {
-        // Horizontal orientation promotes the inline axis to the primary
-        // navigation axis. Upstream's ListKeyboardDelegate strips
-        // getKeyLeftOf/getKeyRightOf for a vertical stack, so Left/Right stay
-        // no-ops there; in a horizontal stack they move prev/next, flipped
-        // under RTL (Right=next, Left=prev in LTR).
-        if (p.orientation !== "horizontal") break;
+        // The inline axis (Left/Right) belongs to the ROW under the default
+        // "arrow" navigation behavior: createGridListItem's onKeyDownCapture
+        // intercepts Left/Right for intra-row focus movement (a no-op for
+        // text-only rows), exactly as useGridListItem does upstream, so the
+        // container must NOT step between rows here. Only under "tab" navigation
+        // does the row stop intercepting and the event reach the collection —
+        // mirroring how useSelectableCollection handles Left/Right via
+        // ListKeyboardDelegate. Even then it strips getKeyLeftOf/getKeyRightOf
+        // for a vertical stack, so this stays a no-op unless the stack is
+        // horizontal, where Right=next / Left=prev in LTR, flipped under RTL.
+        // (In Solid the row's capture-phase stopPropagation does not reliably
+        // prevent the container's delegated onKeyDown, so this gate — not the
+        // row's stopPropagation — is what keeps the axes from double-firing.)
+        const behavior = p.keyboardNavigationBehavior ?? "arrow";
+        if (p.orientation !== "horizontal" || behavior !== "tab") break;
         e.preventDefault();
         const isRtl = p.direction === "rtl";
         const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
@@ -217,18 +226,41 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     }
   };
 
-  const onFocus = () => {
+  // Focus marshalling — the grid container is a trampoline. Its roving tabIndex
+  // is 0 only while `focusedKey == null` (see gridProps below), so a Tab that
+  // reaches a standalone grid lands on the container itself; move the focused key
+  // onto the first/last row and the post-commit effect below pulls REAL DOM focus
+  // there while the container rolls to tabIndex -1. This mirrors
+  // useSelectableCollection's `onFocus` — the same direction-aware trampoline the
+  // standalone ListBox uses (createListBox.ts) — and is why a standalone grid
+  // announces the active row through real focus, never `aria-activedescendant`.
+  const onFocus: JSX.EventHandler<HTMLElement, FocusEvent> = (e) => {
     const s = state();
+    const p = props();
     s.setFocused(true);
 
-    // If nothing is focused, focus the first navigable item
-    if (s.focusedKey == null) {
-      const firstKey = findNextNavigableKey(s, s.collection.getFirstKey(), (k) =>
-        s.collection.getKeyAfter(k),
-      );
-      if (firstKey != null) {
-        s.setFocusedKey(firstKey);
-      }
+    // onFocus is non-bubbling in Solid, so this fires only when the container
+    // itself receives focus; ignore anything that bubbled from a descendant.
+    // (`currentTarget` is null only in synthetic unit-test FocusEvents — treat
+    // those as a direct container focus.)
+    const container = e.currentTarget as HTMLElement | null;
+    if (container && !container.contains(e.target as Node)) return;
+    // Only marshal when no row is focused yet.
+    if (s.focusedKey != null || p.isDisabled) return;
+
+    const collection = s.collection;
+    const relatedTarget = e.relatedTarget as Element | null;
+    // Detect tab direction: focus arriving from an element that FOLLOWS the grid
+    // in document order means the user shift-tabbed backward into it, so enter at
+    // the LAST row; otherwise (forward Tab, or programmatic) enter at the FIRST.
+    const enterKey =
+      relatedTarget &&
+      container &&
+      container.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING
+        ? findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k))
+        : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
+    if (enterKey != null) {
+      s.setFocusedKey(enterKey);
     }
   };
 
@@ -287,7 +319,11 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       "aria-describedby": p["aria-describedby"],
       "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
       "aria-disabled": p.isDisabled || undefined,
-      tabIndex: p.isDisabled ? undefined : 0,
+      // Roving container tabIndex mirrors useSelectableCollection: the container
+      // is tabbable (0) only while nothing is focused, then rolls to -1 once a row
+      // takes focus so Tab exits the grid. A standalone grid drives AT through
+      // real row focus, so it never needs (nor emits) aria-activedescendant.
+      tabIndex: p.isDisabled ? undefined : s.focusedKey != null ? -1 : 0,
       onKeyDown,
       onFocus,
       onBlur,

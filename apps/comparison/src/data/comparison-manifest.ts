@@ -554,6 +554,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/ListBox.html",
   },
 
+  gridlist: {
+    ...styledLiveOfficialEntry({
+      slug: "gridlist",
+      title: "GridList",
+      category: "Components",
+      summary:
+        "Standalone selectable grid list mounted on both stacks with real roving-focus keyboard navigation, single/multiple/none selection, and vertical/horizontal orientation coverage.",
+      styledSummary:
+        "react-aria-components GridList (base) vs Solid solidaria-components GridList (base).",
+      styledNote:
+        "The styled S2 manifestation of GridList is ListView (certified separately on its paint surface), so the base GridList oracle is react-aria-components' own GridList — the direct upstream of the Solid port's createGridList/useSelectableCollection.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/GridList.html",
+  },
+
   skeleton: styledLiveOfficialEntry({
     slug: "skeleton",
     title: "Skeleton",

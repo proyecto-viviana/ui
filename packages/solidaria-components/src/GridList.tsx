@@ -383,7 +383,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     onSelectionChange: stateProps.onSelectionChange,
   }));
 
-  const { gridProps } = createGridList<T, GridCollection<T>>(
+  // Keep the aria object (do NOT destructure `gridProps`): its `gridProps` getter
+  // returns a memo that recomputes on state changes — chiefly the roving container
+  // `tabIndex`, which rolls to -1 once a row takes focus. Destructuring here would
+  // freeze the getter at its first value (tabIndex 0) and the roll would never
+  // reach the DOM. Read `gridListAria.gridProps` inside `cleanGridProps` instead,
+  // mirroring how ListBox consumes `listBoxAria.listBoxProps`.
+  const gridListAria = createGridList<T, GridCollection<T>>(
     () => ({
       id: ariaProps.id,
       "aria-label": ariaProps["aria-label"],
@@ -425,7 +431,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   });
 
   const cleanGridProps = () => {
-    const { ref: _ref1, ...rest } = gridProps as Record<string, unknown>;
+    const { ref: _ref1, ...rest } = gridListAria.gridProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {

@@ -1,6 +1,11 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { ListBox as AriaListBox, ListBoxItem as AriaListBoxItem } from "react-aria-components";
+import {
+  ListBox as AriaListBox,
+  ListBoxItem as AriaListBoxItem,
+  GridList as AriaGridList,
+  GridListItem as AriaGridListItem,
+} from "react-aria-components";
 import {
   Accordion as SpectrumAccordion,
   AccordionItem as SpectrumAccordionItem,
@@ -318,6 +323,13 @@ import {
   normalizeListBoxDemoProps,
   serializeListBoxDemoProps,
 } from "@comparison/data/listbox-demo";
+import {
+  gridListDemoItems,
+  gridListDemoPropsFromWindow,
+  gridListDemoLocaleFromWindow,
+  normalizeGridListDemoProps,
+  serializeGridListDemoProps,
+} from "@comparison/data/gridlist-demo";
 import {
   initialTreeViewExpandedKeys,
   initialTreeViewSelectedKeys,
@@ -817,6 +829,7 @@ export const reactStyledFixtures = {
   link: () => jsx(ReactLinkDemo, {}),
   listview: () => jsx(ReactListViewDemo, {}),
   listbox: () => jsx(ReactListBoxDemo, {}),
+  gridlist: () => jsx(ReactGridListDemo, {}),
   meter: () => jsx(ReactMeterDemo, {}),
   menu: () => jsx(ReactMenuDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
@@ -1358,6 +1371,44 @@ function ReactListBoxDemo() {
       ],
     }),
     colorScheme,
+  );
+}
+
+function ReactGridListDemo() {
+  const [demoProps, setDemoProps] = useState(gridListDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+  const locale = gridListDemoLocaleFromWindow();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "gridlist") {
+        setDemoProps(normalizeGridListDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx(AriaGridList, {
+          "aria-label": "Permissions",
+          selectionMode: demoProps.selectionMode,
+          orientation: demoProps.orientation,
+          keyboardNavigationBehavior: demoProps.keyboardNavigationBehavior,
+          "data-comparison-control-root": "gridlist",
+          "data-comparison-control-props": serializeGridListDemoProps(demoProps),
+          children: gridListDemoItems.map((item) =>
+            jsx(AriaGridListItem, { id: item.id, children: item.label }, item.id),
+          ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
+    }),
+    colorScheme,
+    locale,
   );
 }
 
