@@ -1100,8 +1100,11 @@ describe("ListBox", () => {
 
       await user.tab();
 
-      const listbox = screen.getByRole("listbox");
-      expect(listbox).toHaveAttribute("data-focus-visible");
+      // Real roving focus: keyboard Tab enters the trampoline, which moves
+      // document.activeElement onto the first OPTION (not the container). So
+      // data-focus-visible lands on the focused option, mirroring RAC.
+      const options = screen.getAllByRole("option");
+      expect(options[0]).toHaveAttribute("data-focus-visible");
     });
   });
 

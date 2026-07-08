@@ -124,7 +124,7 @@ export interface ListBoxProps<T> extends Omit<AriaListBoxProps, "children">, Slo
   /** Called when the load more sentinel becomes visible. */
   onLoadMore?: () => void | Promise<void>;
   /** Ref for the listbox element. */
-  ref?: RefLike<HTMLUListElement>;
+  ref?: RefLike<HTMLDivElement>;
   /** Drag and drop hooks from `useDragAndDrop`. */
   dragAndDropHooks?: DragAndDropHooks<T>;
   /** Layout hint for styling parity. */
@@ -165,7 +165,7 @@ export interface ListBoxOptionProps<T>
   /** The text value of the option (for typeahead). */
   textValue?: string;
   /** Ref for the option element. */
-  ref?: RefLike<HTMLLIElement>;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface ListBoxLoadMoreItemProps extends SlotProps {
@@ -569,7 +569,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
             <Show when={ariaProps.label}>
               <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
             </Show>
-            <ul
+            <div
               {...mergeProps(
                 domProps(),
                 cleanListBoxProps(),
@@ -594,14 +594,14 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
             >
               <SharedElementTransition>
                 {isEmpty() && local.renderEmptyState ? (
-                  <li role="option" style={{ display: "contents" }} data-empty-state>
+                  <div role="option" style={{ display: "contents" }} data-empty-state>
                     {local.renderEmptyState()}
-                  </li>
+                  </div>
                 ) : hasSections() ? (
                   <For each={sectionedRenderEntries()}>
                     {(entry) =>
                       entry.type === "section" ? (
-                        <li role="presentation" data-section-wrapper>
+                        <div role="presentation" data-section-wrapper>
                           <Section class="solidaria-ListBox-section">
                             {entry.section.title != null && (
                               <Header class="solidaria-ListBox-sectionHeader">
@@ -609,7 +609,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                               </Header>
                             )}
                             <Group class="solidaria-ListBox-sectionGroup">
-                              <ul role="group" aria-label={entry.section["aria-label"]}>
+                              <div role="group" aria-label={entry.section["aria-label"]}>
                                 <For each={entry.items}>
                                   {(indexedItem) => (
                                     <>
@@ -629,10 +629,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                     </>
                                   )}
                                 </For>
-                              </ul>
+                              </div>
                             </Group>
                           </Section>
-                        </li>
+                        </div>
                       ) : (
                         <>
                           {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
@@ -646,7 +646,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                 ) : (
                   <>
                     {virtualRange()?.offsetTop ? (
-                      <li
+                      <div
                         role="presentation"
                         aria-hidden="true"
                         style={virtualSpacerStyle(virtualRange()!.offsetTop)}
@@ -673,7 +673,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                       }}
                     </For>
                     {virtualRange()?.offsetBottom ? (
-                      <li
+                      <div
                         role="presentation"
                         aria-hidden="true"
                         style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
@@ -686,7 +686,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
               {local.hasMore && local.onLoadMore && (
                 <ListBoxLoadMoreItem onLoadMore={local.onLoadMore} isLoading={local.isLoading} />
               )}
-            </ul>
+            </div>
           </>
         </CollectionRendererContext.Provider>
       </ListBoxStateContext.Provider>
@@ -714,7 +714,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
   }
   const state = context as ListState<T>;
   const listContext = useContext(ListBoxContext) as ListBoxContextValue<T> | null;
-  const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
 
   const optionAria = createOption<T>(
     {
@@ -742,6 +742,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
       },
     },
     state,
+    ref,
   );
 
   const renderValues = createMemo<ListBoxOptionRenderProps>(() => ({
@@ -808,7 +809,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
 
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-      <li
+      <div
         ref={(el) => {
           setRef(el);
           assignRef(local.ref, el);
@@ -836,7 +837,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         ) : (
           renderProps.renderChildren()
         )}
-      </li>
+      </div>
     </SelectionIndicatorContext.Provider>
   );
 }
@@ -892,10 +893,10 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
 
   return (
     <>
-      <li style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
+      <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
         <div ref={sentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
-      </li>
-      <li
+      </div>
+      <div
         role="option"
         aria-disabled={true}
         tabIndex={0}
@@ -907,7 +908,7 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
         data-loading={isLoading() || undefined}
       >
         {renderProps.renderChildren()}
-      </li>
+      </div>
     </>
   );
 }

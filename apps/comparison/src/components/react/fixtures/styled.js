@@ -1,5 +1,6 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { ListBox as AriaListBox, ListBoxItem as AriaListBoxItem } from "react-aria-components";
 import {
   Accordion as SpectrumAccordion,
   AccordionItem as SpectrumAccordionItem,
@@ -311,6 +312,12 @@ import {
   serializeListViewDemoProps,
   serializeListViewKeys,
 } from "@comparison/data/listview-demo";
+import {
+  listBoxDemoItems,
+  listBoxDemoPropsFromWindow,
+  normalizeListBoxDemoProps,
+  serializeListBoxDemoProps,
+} from "@comparison/data/listbox-demo";
 import {
   initialTreeViewExpandedKeys,
   initialTreeViewSelectedKeys,
@@ -809,6 +816,7 @@ export const reactStyledFixtures = {
   form: () => jsx(ReactFormDemo, {}),
   link: () => jsx(ReactLinkDemo, {}),
   listview: () => jsx(ReactListViewDemo, {}),
+  listbox: () => jsx(ReactListBoxDemo, {}),
   meter: () => jsx(ReactMeterDemo, {}),
   menu: () => jsx(ReactMenuDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
@@ -1314,6 +1322,40 @@ function ReactPopoverDemo() {
       "data-comparison-open": String(demoProps.isOpen),
       "data-comparison-popover-trigger-mode": demoProps.triggerMode,
       children: triggerContent,
+    }),
+    colorScheme,
+  );
+}
+
+function ReactListBoxDemo() {
+  const [demoProps, setDemoProps] = useState(listBoxDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "listbox") {
+        setDemoProps(normalizeListBoxDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx(AriaListBox, {
+          "aria-label": "Permissions",
+          selectionMode: demoProps.selectionMode,
+          "data-comparison-control-root": "listbox",
+          "data-comparison-control-props": serializeListBoxDemoProps(demoProps),
+          children: listBoxDemoItems.map((item) =>
+            jsx(AriaListBoxItem, { id: item.id, children: item.label }, item.id),
+          ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
     }),
     colorScheme,
   );

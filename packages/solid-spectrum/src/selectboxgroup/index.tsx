@@ -58,7 +58,7 @@ export interface SelectBoxGroupProps<T> extends Omit<
   /** Slot name when used in a Spectrum context. */
   slot?: string | null;
   /** Ref for the underlying listbox element. */
-  ref?: RefLike<HTMLUListElement>;
+  ref?: RefLike<HTMLDivElement>;
 }
 
 export interface SelectBoxProps extends Omit<
@@ -402,7 +402,7 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
   const assignGroupRefs = mergeContextRefs(
-    (contextProps as { ref?: RefLike<HTMLUListElement> } | null)?.ref,
+    (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
   const className = (_renderProps: ListBoxRenderProps): string =>
@@ -587,7 +587,7 @@ export function SelectBox(props: SelectBoxProps): JSX.Element {
   const orientation = (): SelectBoxOrientation => context.orientation ?? "vertical";
   const selectionMode = () => context.selectionMode ?? "single";
   const isDisabled = () => !!headlessProps.isDisabled || !!context.isDisabled;
-  let optionElement: HTMLLIElement | undefined;
+  let optionElement: HTMLDivElement | undefined;
   const assignOptionRef = mergeContextRefs(local.ref);
   const getClassName = (renderProps: ListBoxOptionRenderProps): string =>
     [

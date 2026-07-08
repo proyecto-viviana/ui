@@ -539,6 +539,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
       "React uses @react-spectrum/s2 ListView and ListViewItem directly with the official collection item slots; Solid uses @proyecto-viviana/solid-spectrum ListView and ListViewItem with items/getKey/getTextValue collection wiring and equivalent selection state.",
   }),
 
+  listbox: {
+    ...styledLiveOfficialEntry({
+      slug: "listbox",
+      title: "ListBox",
+      category: "Components",
+      summary:
+        "Standalone selectable listbox mounted on both stacks with roving-focus keyboard navigation and single/multiple/none selection-mode coverage.",
+      styledSummary:
+        "react-aria-components ListBox (base) vs Solid solidaria-components ListBox (base).",
+      styledNote:
+        "S2 exposes no publicly-styled standalone ListBox (its ListBox.tsx is an unstyled RAC passthrough, not exported), so the React oracle is react-aria-components' own ListBox — the direct upstream of the Solid port's useSelectableCollection.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/ListBox.html",
+  },
+
   skeleton: styledLiveOfficialEntry({
     slug: "skeleton",
     title: "Skeleton",

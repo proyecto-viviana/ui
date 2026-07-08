@@ -59,6 +59,7 @@ export const reactSpectrumCatalogue = [
   component("LabeledValue"),
   component("Link"),
   component("LinkButton"),
+  component("ListBox"),
   component("ListView"),
   component("Menu"),
   component("Meter"),

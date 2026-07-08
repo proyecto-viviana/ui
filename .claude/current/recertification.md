@@ -155,9 +155,12 @@ March order (dependency/leverage; within a tier, top to bottom):
   (`picker-d10-rtl-driver` DONE — caught + fixed an app-wide portal-locale
   `lang`/`dir` bug in the shared Popover). **All three CP9.40 deferred follow-ups
   are now closed** (`select-value-content-mirror` `6823c0b2`, `picker-d10-rtl`
-  `fed13516`, standalone-ListBox real-roving-focus `7030e518`). **NEXT unit:
-  ListBox** (the real-focus spine fix already landed in `7030e518`; certify it
-  through the full driver march), then GridList, TagGroup, ComboBox, Autocomplete,
+  `fed13516`, standalone-ListBox real-roving-focus `7030e518`). **ListBox
+  ✓ certified 2026-07-07 (CP9.41)** — RAC-oracle D5+D6 (S2 ships no styled
+  standalone ListBox); the browser D5 driver caught that `7030e518` was
+  incomplete (imperative `focusSafely` never ran — `createOption` was never
+  passed the option's DOM ref) plus a `ul/li → div` structural divergence vs RAC.
+  **NEXT unit: GridList**, then TagGroup, ComboBox, Autocomplete,
   Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar, ActionGroup, Toolbar,
   TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
@@ -2817,6 +2820,38 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   import `createListBox`/Select — mechanically independent; the documented silent visual-spec rot on `main`).
   This is the ListBox **spine** fix; the full ListBox driver-march certification (D1/D3/D5/D6/D7/D8/D9/D10) is
   the next Tier-4 unit.
+
+- ✓ **ListBox certified 2026-07-07 (CP9.41 — Tier-4, `7cee0110`-stream) — the driver march that caught the
+  spine fix was incomplete.** Second Tier-4 collection unit. **Oracle scoping (documented, not silent):** S2
+  ships NO publicly-styled standalone ListBox — `@react-spectrum/s2`'s `ListBox.tsx` is an unstyled pass-through
+  to RAC, absent from the public barrel, imported by no S2 component — so there is no styled S2 surface to
+  pixel-diff. The correct oracle is **RAC's own `ListBox`** (`react-aria-components@1.19.0`, the direct upstream
+  of our `createListBox`), rendered in the React panel; both panels are the unstyled base layer, so the certified
+  surface is **STRUCTURE + FOCUS BEHAVIOR**, not paint. Registered **D5** (focus trail — the crux, both trampoline
+  directions: `tab-forward` → first key, `tab-backward`/Shift+Tab → last key via `compareDocumentPosition`) and
+  **D6** (AX tree). D1/D3/D7/D8 scoped out (no styled oracle; both panels near-empty base surfaces — the styled
+  `solid-spectrum` ListBox carries invented Tailwind sizing, a Tier-6-style self-cert tracked separately);
+  D9/D10 deferred (trampoline direction is DOM-order not visual → RTL order-stable); D2/D4 certified through
+  the Picker/Select/ComboBox hosts. **The browser D5 driver caught TWO defects the jsdom unit suite could not:**
+  1. **`7030e518` was INCOMPLETE — real roving DOM focus never actually moved.** The spine fix rolled the
+     container `tabIndex`, dropped `aria-activedescendant`, and added the trampoline, and jsdom asserted all three
+     (declarative `data-focused` + roving tabindex) green — but the option element never became
+     `document.activeElement`. Root cause: `createOption<T>(props, state)` was called with only **two** args,
+     omitting the third `_ref` accessor, so `createSelectableItem`'s `ref()` was permanently `null` and its focus
+     effect's `focusSafely(el)` branch (`createSelectableItem.ts:292-309`) silently never ran. The imperative
+     half of roving focus was dead. jsdom's unit tests assert only the declarative proxy (`data-focused`/tabindex),
+     never real `activeElement`, so they stayed green over a broken fix — **exactly** the blind spot the browser
+     driver exists to close. Fixed by threading the option DOM ref as `createOption`'s 3rd arg
+     (`ListBox.tsx` ~L746). One jsdom test that asserted `data-focus-visible` on the CONTAINER was updated to
+     assert it on the focused OPTION (the now-faithful RAC behavior; ListBox 150/150).
+  2. **`ul`/`li` → `div` structural divergence vs RAC.** RAC renders collection containers/options as `<div>`
+     (deliberately, to dodge default list styling); our port used `<ul role="listbox">`/`<li role="option">`, a
+     free divergence D6 would have flagged. Converted all `ul`/`li` → `div` in `ListBox.tsx` (container,
+     empty-state, section wrapper/group, virtual spacers, option, load-more sentinel), ref types
+     `HTMLUListElement`/`HTMLLIElement` → `HTMLDivElement`, plus the `selectboxgroup` consumer's three ref-type
+     annotations. GridList was already `div`; ComboBox renders its own inline `ul`/`li` (its own cert unit's
+     concern, untouched). Verified: ListBox 150 / Select 230 / ComboBox 157 / GridList 49 / TagGroup 45 unit +
+     typecheck clean + ListBox certified e2e **3/3** green.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
