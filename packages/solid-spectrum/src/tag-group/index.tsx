@@ -30,6 +30,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { useProviderProps } from "../provider";
+import { pressScale } from "../pressScale";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import { CrossIcon } from "../icon/ui-icons/Cross";
 import { ActionButton } from "../button/ActionButton";
@@ -192,7 +193,11 @@ const tagListStyle = style({
   ...fieldInput(),
   display: "inline",
   minWidth: "full",
-  font: controlFont(),
+  // S2's real `<TagList>` sets a FIXED `font: 'ui'` (14px) on the grid container —
+  // NOT the size-conditional `controlFont()`. The tags scale their own font via
+  // `control()`; the grid's font is a static default (D1 grid font-size diverges at
+  // size S/L when this ramps).
+  font: "ui",
   outlineStyle: "none",
 });
 
@@ -257,6 +262,11 @@ const tagStyle = style<TagGroupStyleProps>({
   },
 });
 
+// S2's TagWrapper CONTENT DIV (a sibling of the ClearButton at the tag-row flex
+// level). It carries NO `order`, so it keeps DOM order (content before the remove
+// button). The `order`/`truncate` belong on the inner Text (`tagTextStyle`), NOT
+// here — putting them on the row-level element sorts the label AFTER the
+// `order: 0` remove button (`× Landscape` instead of `Landscape ×`).
 const tagContentStyle = style({
   display: "flex",
   minWidth: 0,
@@ -264,20 +274,34 @@ const tagContentStyle = style({
   gap: "text-to-visual",
   forcedColorAdjust: "none",
   backgroundColor: "transparent",
+});
+
+// S2's `TextContext` styles inside the content div: `{order: 1, truncate: true}`
+// (icon slots take `order: 0`, so the icon precedes the text regardless of DOM
+// order). Scoped to the inner text — see `tagContentStyle`.
+const tagTextStyle = style({
   order: 1,
   truncate: true,
 });
 
+// Captured so the `outlineColor` static-color branch can reuse the focus ring's own
+// default (mirrors S2 `const focusRingStyles = focusRing()`).
+const removeButtonFocusRing = focusRing();
+
 const removeButtonStyle = style<TagGroupStyleProps>({
-  ...focusRing(),
+  ...removeButtonFocusRing,
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  size: {
+  // Mirror S2 ClearButton (`visibleClearButton`): fill the tag height and width to
+  // the control-size ramp (`controlSize()` = {S: 24, M: 32, L: 40}). The port's
+  // local `controlSize` helper has a different meaning, so the ramp is inlined.
+  height: "full",
+  width: {
     size: {
-      S: 20,
-      M: 24,
-      L: 32,
+      S: 24,
+      M: 32,
+      L: 40,
     },
   },
   flexShrink: 0,
@@ -288,10 +312,17 @@ const removeButtonStyle = style<TagGroupStyleProps>({
   boxSizing: "border-box",
   padding: 0,
   outlineOffset: -4,
-  cursor: {
-    default: "pointer",
-    isDisabled: "default",
+  // Mirror S2 `visibleClearButton`: a static-color (emphasized + selected) tag uses
+  // a white focus outline against its accent fill; every other tag uses the default
+  // focus-ring colour. `isStaticColor` = `isEmphasized && isSelected` (threaded in
+  // by the TagWrapper — here at the render site).
+  outlineColor: {
+    default: removeButtonFocusRing.outlineColor,
+    isStaticColor: "white",
   },
+  // S2 `visibleClearButton` sets NO cursor — the native `<button>` UA cursor
+  // (`default`) stands. Do NOT re-add the arrow→`pointer` override (an invented
+  // divergence: D1 pins React's native `default`).
   "--iconPrimary": {
     type: "fill",
     value: "currentColor",
@@ -419,10 +450,6 @@ function maxRowsStyle(
   };
 }
 
-function removeIconSize(size: S2TagGroupSize): "S" | "M" | "L" {
-  return size === "L" ? "M" : "S";
-}
-
 function resolveStyleClass<P extends Record<string, unknown>>(
   styleValue: StyleString | ((props: P) => StyleString),
   props: P,
@@ -456,6 +483,19 @@ export function Tag(props: TagProps): JSX.Element {
   const isLink = () => local.href != null;
   const actionHandler = () => local.onAction ?? ctx?.onAction;
 
+  // Mirror S2 Tag: `ref={domRef} style={pressScale(domRef)}` — the layer hint
+  // (`will-change: transform`) at rest, plus the press-scale transform on press.
+  let tagEl: HTMLDivElement | undefined;
+  const rowStyle = (renderProps: TagRenderProps): JSX.CSSProperties =>
+    pressScale(() => tagEl, local.UNSAFE_style ?? local.style)(renderProps);
+
+  // Mirror S2 ClearButton: `<Button style={pressScale(domRef)}>` — pressScale
+  // ALWAYS contributes the `will-change: transform` layer hint. The plain headless
+  // remove button carries no press state yet, so only the resting hint is mirrored
+  // here; the on-press scale lands with the CP9.44b interaction pass
+  // (tech-debt `taggroup-remove-pressscale`).
+  const removeButtonRestStyle = pressScale(undefined)({ isPressed: false });
+
   const className = (renderProps: TagRenderProps) =>
     [
       local.UNSAFE_className,
@@ -479,7 +519,8 @@ export function Tag(props: TagProps): JSX.Element {
       id={local.id}
       isDisabled={local.isDisabled}
       class={className}
-      style={local.UNSAFE_style ?? local.style}
+      ref={(el: HTMLDivElement) => (tagEl = el)}
+      style={rowStyle}
       data-href={local.href}
       data-target={local.target}
       data-rel={local.rel}
@@ -487,7 +528,9 @@ export function Tag(props: TagProps): JSX.Element {
     >
       {(renderProps) => (
         <>
-          <span class={resolveStyleClass(tagContentStyle, { size: size() })}>{local.children}</span>
+          <div class={resolveStyleClass(tagContentStyle, {})}>
+            <span class={resolveStyleClass(tagTextStyle, {})}>{local.children}</span>
+          </div>
           <Show when={renderProps.allowsRemoving}>
             <HeadlessTagRemoveButton
               buttonProps={renderProps.removeButtonProps}
@@ -495,9 +538,16 @@ export function Tag(props: TagProps): JSX.Element {
                 ...renderProps,
                 size: size(),
                 isEmphasized: isEmphasized(),
+                // S2 TagWrapper: `isStaticColor={isEmphasized && isSelected}`.
+                isStaticColor: isEmphasized() && renderProps.isSelected,
               })}
+              style={removeButtonRestStyle}
             >
-              <CrossIcon size={removeIconSize(size())} aria-hidden="true" />
+              {/* S2 ClearButton renders `<CrossIcon size={props.size}/>` with the RAW
+                  control size — the ui-icon selects its own variant (S→Size75,
+                  M→Size100, L→Size200) and CSS width (S=M=8px, L=10px). Passing a
+                  down-mapped size renders the wrong Cross path variant. */}
+              <CrossIcon size={size()} aria-hidden="true" />
             </HeadlessTagRemoveButton>
           </Show>
         </>

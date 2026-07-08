@@ -31,9 +31,11 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  type RefLike,
   useRenderProps,
   filterDOMProps,
   dataAttr,
+  mergeRefs,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import {
@@ -140,6 +142,8 @@ export interface TagProps extends SlotProps {
   class?: ClassNameOrFunction<TagRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<TagRenderProps>;
+  /** A ref to the tag's DOM element (merged with the internal collection ref). */
+  ref?: RefLike<HTMLDivElement>;
   /** Handler called when the tag is activated. */
   onAction?: (key: Key) => void;
 }
@@ -351,6 +355,7 @@ export function Tag(props: TagProps): JSX.Element {
     "isDisabled",
     "textValue",
     "onAction",
+    "ref",
   ]);
 
   const state = useContext(TagListStateContext);
@@ -433,7 +438,7 @@ export function Tag(props: TagProps): JSX.Element {
         }}
       >
         <div
-          ref={setTagRef}
+          ref={mergeRefs(setTagRef, local.ref)}
           {...domProps()}
           {...tagAria.rowProps}
           class={renderProps.class()}

@@ -170,7 +170,21 @@ March order (dependency/leverage; within a tier, top to bottom):
   layer escaped its stacking context (→ row `zIndex:0`) and the checkbox column
   rasterizes at a ≤5/255 sub-pixel AA phase (→ tracked waiver
   `listview-virtualizer-subpixel`) — plus a disabled-row checkbox-column D1 gap and
-  a 2× checkmark-glyph D3 oversize (row IconContext leak). **NEXT unit: TagGroup**,
+  a 2× checkmark-glyph D3 oversize (row IconContext leak).
+  **TagGroup styled-S2 paint ✓ certified 2026-07-08 (CP9.44a)** — S2-oracle D1/D3/
+  D7/D8. Unlike GridList (base only) / ListView (paint only), TagGroup is ONE unit
+  that owns both surfaces (S2 ships a single publicly-styled `TagGroup`/`Tag` that
+  IS the base), so its paint and behavior split across two checkpoints, not two
+  components. The D3 pixel oracle caught the port rendering the WRONG `Cross`
+  ui-icon variant on the remove button — a hand-rolled `removeIconSize` down-map
+  (M→S, L→M) selected `CrossSize75`/`100` where S2's `<CrossIcon size={size}>`
+  selects `CrossSize100`/`200` (same widths, different SVG paths); dropped the
+  down-map to pass the raw control size. Also caught the tag content-div conflating
+  S2's TextContext `order:1` (→ `× Landscape` instead of `Landscape ×`), an
+  invented remove-button `cursor:pointer`, a missing `pressScale` `will-change`
+  hint, an emphasized-selection outline colour miss, and a size-conditional grid
+  font (S2's TagList is fixed `font:'ui'`). **NEXT: TagGroup CP9.44b** (roving focus
+  + AX + RTL — D5/D6/D10 + the `createTag` inline-axis + accessible-name fixes),
   then ComboBox, Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
   ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
   DnD (via its hosts).
@@ -2964,6 +2978,55 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     `typecheck` clean + `astro check` clean + full certified suite **1454 passed** (6 skipped; the lone red, a D4
     Dialog event-sequence case, is load-flake — passes 2/2 in isolation, unrelated to ListView). Next Tier-4 unit:
     **TagGroup**.
+
+- ✓ **TagGroup styled-S2 paint certified 2026-07-08 (CP9.44a — Tier-4, fifth collections unit) — the S2 paint
+  oracle caught a wrong-ui-icon-variant on the remove button.** TagGroup is the ONLY collection unit that owns BOTH
+  the base and styled surfaces in one component: S2 ships a single publicly-styled `TagGroup`/`Tag` (its own style
+  macro) that IS the base (`useTagGroup` builds on `useGridList` + a `ListKeyboardDelegate({orientation:'horizontal',
+  direction})`; `useTag` is a thin `useGridListItem` wrapper whose only extra keydown is Delete/Backspace removal).
+  So unlike GridList (base cert) / ListView (paint cert) — two components, two certs — TagGroup splits its ONE
+  component across two checkpoints: **CP9.44a (this entry) = S2 PAINT (D1/D3/D7/D8)**; **CP9.44b (next) = roving
+  focus + AX + RTL (D5/D6/D10) + the `createTag` fixes those drivers surface.** Both panels render the labelled
+  "Photo categories" removable tag collection (React = `@react-spectrum/s2` `TagGroup`/`Tag`; Solid =
+  `@proyecto-viviana/solid-spectrum` port of the same macro).
+  - **D1/D3 scope = `states:["default"]`, seven prop-driven rest cases** (`default`/`selected`/`multiple`/
+    `emphasized`/`disabled`/`size-s`/`size-l`). A tag is itself a selectable/pressable target, so driving a
+    press/hover gesture would toggle selection mid-capture and desync the panels (the same rest-only reason as the
+    ListView row cert); the styling that actually varies (selection · emphasized · disabled · size) is URL-param
+    driven and captured in full at rest, which is where a port condition-threading bug surfaces. D1 target = the
+    first tag (`role="row"`) with the grid container, label slot, and remove button as diffed parts; D3 pixels the
+    whole grid so every fill + remove button + label rasterizes together.
+  - **The D3 pixel oracle caught the remove button rendering the WRONG `Cross` ui-icon variant.** S2's `ClearButton`
+    renders `<CrossIcon size={props.size}>` with the RAW control size — the ui-icon selects its own variant
+    (S→`CrossSize75`, M→`CrossSize100`, L→`CrossSize200`) and its own CSS width (S=M=8px, L=10px). The port had a
+    hand-rolled `removeIconSize` down-map (M→"S", L→"M"), so at size M it rendered `CrossSize75`'s SVG path where S2
+    renders `CrossSize100` — SAME 8px width, DIFFERENT path data — leaving a consistent ~176px (0.4%) residual sitting
+    exactly at the × glyph (only size-S coincidentally matched, since both map to `CrossSize75`). Faithful fix:
+    dropped the down-map and pass `size={size()}` (the raw control size), exactly like S2 — the port's own
+    `Cross_S/M/L` viewBoxes (8/8/10) already match S2's CSS widths, so D3 went byte-EXACT at zero tolerance, no
+    waiver (contrast the ListView checkbox sub-pixel — no measurement-layer artifact here because the tag remove
+    button is not inside a missing-Virtualizer stacking context).
+  - **Four more D1/D3 divergences the drivers forced, each a small faithful fix vs S2 source.** (a) **Visual order
+    `× Landscape` (D3):** the port's `tagContentStyle` conflated S2's content-div style with the Text slot's
+    `TextContext {order:1}`, applied at the ROW flex level so the label (`order:1`) sorted AFTER the remove button
+    (`order:0`) — split into `tagContentStyle` (no order) + a nested `tagTextStyle` (`order:1, truncate`), matching
+    S2's `TagWrapper` structure (content div → Text with its own `order:1`). (b) **Invented remove-button
+    `cursor:pointer` (D1):** removed — S2's `ClearButton` sets no cursor, the native `<button>` UA gives `default`.
+    (c) **Missing `pressScale` `will-change` (D1):** S2 renders the clear button with `style={pressScale(domRef)}`
+    (always emits `will-change:transform`); added `pressScale(undefined)({isPressed:false})` as the rest style (full
+    on-press scale deferred to CP9.44b `taggroup-remove-pressscale` — the headless `TagRemoveButton` has no press
+    state yet). (d) **Emphasized-selection remove-button `outline-color` (D1):** was port-blue vs S2 white — threaded
+    `isStaticColor={isEmphasized && isSelected}` + `outlineColor:{default:focusRing, isStaticColor:'white'}` mirroring
+    S2's `ClearButton`. Plus a **size-conditional grid font (D1):** the port's `tagListStyle` used
+    `font:controlFont()` (size-ramped 12/14/16px) where S2's TagList is a fixed `font:'ui'` (14px) — pinned to `'ui'`.
+  - Verified: **TagGroup 45 unit** (`solid-spectrum/TagGroup.test.tsx` + `solidaria/createTagGroup.test.tsx` +
+    `solidaria-components/TagGroup.test.tsx`, unchanged by the paint fix) + TagGroup **certified e2e 36/36 green**
+    (D1 7 cases × 2 themes = 14, D3 7 × 2 = 14, D7 3 cases × 2 themes = 6, D8 2 cases = 2 — ALL byte-exact at zero
+    tolerance, no waiver) + `typecheck` clean. The 4 pre-existing regression-snapshot reds (ListBox "Phonetic"
+    ul/li→div `d0f29411`; Menu + ActionMenu lang/dir `fed13516`; GridList grid/rows `00b3fcc5`) are stale-snapshot
+    housekeeping proven identical with/without this change (stash-rebuild-rerun), NOT regressions. Next: **TagGroup
+    CP9.44b** (D5/D6/D10 + `createTag` inline-axis nav + row/gridcell accessible-name parity + remove-icon `img`
+    exposure), then ComboBox.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
