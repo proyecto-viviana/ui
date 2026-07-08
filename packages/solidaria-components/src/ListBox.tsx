@@ -11,6 +11,7 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  on,
   onCleanup,
   splitProps,
   useContext,
@@ -23,16 +24,22 @@ import {
   createFocusRing,
   createScrollIntoViewOnFocus,
   mergeProps,
+  moveVirtualFocus,
   useLocale,
+  FOCUS_EVENT,
+  CLEAR_FOCUS_EVENT,
   type AriaListBoxProps,
   type AriaOptionProps,
 } from "@proyecto-viviana/solidaria";
 import {
   createListState,
+  createFilteredListState,
   type ListState,
+  type ListFilterFn,
   type Key,
   type DropTarget,
 } from "@proyecto-viviana/solid-stately";
+import { useAutocompleteCollection } from "./Autocomplete";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -245,7 +252,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
 
   const hasSections = createMemo(() => stateProps.items.some((item) => isCollectionSection(item)));
 
-  const state = createListState<T>({
+  const baseState = createListState<T>({
     get items() {
       return flatItems();
     },
@@ -281,6 +288,21 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     },
   });
 
+  // When this ListBox is the collection of an Autocomplete, the input and the
+  // collection are separate components bridged by context. The collection's
+  // state is filtered by the input's predicate (mirrors RAC's
+  // UNSTABLE_useFilteredListState), and virtual focus is driven across the
+  // component boundary by synthetic DOM events (see the bridge effects below).
+  // ComboBox/Picker never provide this context, so their createListBox path is
+  // untouched.
+  const autocompleteCtx = useAutocompleteCollection();
+  const state = autocompleteCtx
+    ? createFilteredListState<T>(
+        baseState,
+        () => autocompleteCtx.filter as ListFilterFn<T> | undefined,
+      )
+    : baseState;
+
   const resolveDisabled = (): boolean => {
     const disabled = ariaProps.isDisabled;
     if (typeof disabled === "function") {
@@ -293,6 +315,23 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const listBoxAria = createListBox(
     {
       ...ariaProps,
+      // Under Autocomplete, the input owns the collection's id (its
+      // aria-controls target), accessible name, and virtual-focus/type-ahead
+      // config; prefer the bridged values over any locally-passed props.
+      get id() {
+        return autocompleteCtx?.collectionProps.id ?? (ariaProps as { id?: string }).id;
+      },
+      get "aria-label"() {
+        return autocompleteCtx?.collectionProps["aria-label"] ?? ariaProps["aria-label"];
+      },
+      get shouldUseVirtualFocus() {
+        return (
+          autocompleteCtx?.collectionProps.shouldUseVirtualFocus ?? ariaProps.shouldUseVirtualFocus
+        );
+      },
+      get disallowTypeAhead() {
+        return autocompleteCtx?.collectionProps.disallowTypeAhead ?? ariaProps.disallowTypeAhead;
+      },
       get isDisabled() {
         return resolveDisabled();
       },
@@ -352,6 +391,80 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     isActive: () => state.isFocused(),
     ref: () => listRef(),
   });
+
+  // Autocomplete bridge. createListBox reimplements navigation inline (it does
+  // not route through createSelectableCollection), so the virtual-focus event
+  // wiring the Autocomplete input relies on lives here, gated on the bridge
+  // context. This mirrors createSelectableCollection's FOCUS_EVENT/CLEAR_FOCUS_EVENT
+  // handlers and useSelectableItem's per-item moveVirtualFocus, at the component
+  // layer, without touching the shared hooks (protecting ComboBox/Picker).
+  if (autocompleteCtx) {
+    // Forward path: the input dispatches FOCUS_EVENT/CLEAR_FOCUS_EVENT onto the
+    // collection element. FOCUS_EVENT marks the collection focused (and, when the
+    // user types forward, requests the first item); the actual arrow navigation
+    // arrives as a re-dispatched KeyboardEvent handled by createListBox's onKeyDown.
+    let shouldVirtualFocusFirst = false;
+    createEffect(() => {
+      const list = listRef();
+      if (!list) return;
+      const onFocusEvent = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        e.stopPropagation();
+        state.setFocused(true);
+        if (detail?.focusStrategy === "first") {
+          shouldVirtualFocusFirst = true;
+        }
+      };
+      const onClearFocusEvent = (e: Event) => {
+        e.stopPropagation();
+        state.setFocused(false);
+        if ((e as CustomEvent).detail?.clearFocusKey) {
+          state.setFocusedKey(null);
+        }
+      };
+      list.addEventListener(FOCUS_EVENT, onFocusEvent);
+      list.addEventListener(CLEAR_FOCUS_EVENT, onClearFocusEvent);
+      onCleanup(() => {
+        list.removeEventListener(FOCUS_EVENT, onFocusEvent);
+        list.removeEventListener(CLEAR_FOCUS_EVENT, onClearFocusEvent);
+      });
+    });
+
+    // Focus the first item once the (filtered) collection settles after the user
+    // types forward. If nothing survives the filter, clear the input's active
+    // descendant by moving virtual focus onto the collection itself (its focusin
+    // reaches the input's clear branch). Mirrors useSelectableCollection.
+    createEffect(
+      on(
+        () => [state.collection().getFirstKey?.() ?? null, state.collection().size] as const,
+        ([firstKey, size]) => {
+          if (!shouldVirtualFocusFirst) return;
+          if (firstKey == null) {
+            const list = listRef();
+            if (list) moveVirtualFocus(list);
+            if (size > 0) shouldVirtualFocusFirst = false;
+          } else {
+            state.setFocusedKey(firstKey);
+            shouldVirtualFocusFirst = false;
+          }
+        },
+        { defer: true },
+      ),
+    );
+
+    // Reverse path: mirror the focused key onto the option's DOM element via a
+    // synthetic, bubbling focusin (moveVirtualFocus). The input's focusin listener
+    // reads target.id into its aria-activedescendant. Option ids are String(key)
+    // in this path (createOption). Real DOM focus stays on the input.
+    createEffect(() => {
+      const key = state.focusedKey();
+      const list = listRef();
+      if (!list || !state.isFocused()) return;
+      if (key == null) return;
+      const el = list.ownerDocument.getElementById(String(key));
+      if (el) moveVirtualFocus(el);
+    });
+  }
 
   const isEmpty = () => stateProps.items.length === 0;
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
@@ -580,6 +693,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
               ref={(el) => {
                 setListRef(el);
                 assignRef(local.ref, el);
+                autocompleteCtx?.collectionRef(el);
               }}
               class={renderProps.class()}
               style={renderProps.style()}

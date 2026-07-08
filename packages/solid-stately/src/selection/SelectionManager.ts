@@ -523,4 +523,19 @@ export class SelectionManager<T = unknown> {
       fullCollection: this.fullCollection ?? this.collection,
     });
   }
+
+  /**
+   * Like {@link withCollection}, but the collection is supplied as a live
+   * accessor so the returned manager stays reactive as the collection recomputes
+   * (e.g. an Autocomplete filter narrowing the list as the user types). The
+   * shared underlying selection/focus state is preserved, and the original
+   * (unfiltered) collection is retained as `fullCollection` so a select-all
+   * still materializes the filtered-out keys.
+   */
+  withCollectionAccessor(collection: () => Collection<T>): SelectionManager<T> {
+    return new SelectionManager<T>(collection, this.state, {
+      layoutDelegate: this.layoutDelegate ?? undefined,
+      fullCollection: this.fullCollection ?? this.collection,
+    });
+  }
 }

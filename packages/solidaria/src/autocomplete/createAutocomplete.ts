@@ -9,7 +9,10 @@
 
 import { createSignal, createEffect, onCleanup, type Accessor } from "solid-js";
 import { createId, getOwnerDocument } from "../ssr";
-import { type AutocompleteState } from "@proyecto-viviana/solid-stately";
+import { type AutocompleteState, type CollectionNode } from "@proyecto-viviana/solid-stately";
+import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../selection/constants";
+import { getActiveElement, getEventTarget } from "../utils/dom";
+import { getPointerType } from "../interactions";
 
 export interface CollectionOptions {
   /** The id of the collection element. */
@@ -51,7 +54,7 @@ export interface AutocompleteInputProps {
   autoComplete: "off";
 }
 
-export interface AriaAutocompleteOptions<_T = unknown> {
+export interface AriaAutocompleteOptions<T = unknown> {
   /** Ref accessor for the input element. */
   inputRef: Accessor<HTMLInputElement | undefined>;
   /** Ref accessor for the collection element. */
@@ -64,8 +67,9 @@ export interface AriaAutocompleteOptions<_T = unknown> {
    * An optional filter function used to determine if an option should be included.
    * @param textValue - The text value of the item
    * @param inputValue - The current input value
+   * @param node - The collection node being filtered
    */
-  filter?: (textValue: string, inputValue: string) => boolean;
+  filter?: (textValue: string, inputValue: string, node: CollectionNode<T>) => boolean;
   /**
    * Whether to focus the first item after filtering.
    * @default false
@@ -78,13 +82,13 @@ export interface AriaAutocompleteOptions<_T = unknown> {
   disableVirtualFocus?: boolean;
 }
 
-export interface AutocompleteAria<_T = unknown> {
+export interface AutocompleteAria<T = unknown> {
   /** Props for the autocomplete input element. */
   inputProps: AutocompleteInputProps;
   /** Props for the collection (ListBox/Menu). */
   collectionProps: CollectionOptions;
   /** A filter function that returns if the item should be shown. */
-  filter?: (textValue: string) => boolean;
+  filter?: (nodeTextValue: string, node: CollectionNode<T>) => boolean;
 }
 
 function toKeyboardEventInit(e: KeyboardEvent): KeyboardEventInit {
@@ -103,9 +107,14 @@ function toKeyboardEventInit(e: KeyboardEvent): KeyboardEventInit {
   };
 }
 
-// Custom event names for collection communication
-export const AUTOCOMPLETE_FOCUS_EVENT = "autocomplete:focus";
-export const AUTOCOMPLETE_CLEAR_FOCUS_EVENT = "autocomplete:clearfocus";
+// Custom event names for collection communication.
+// These are the shared @react-aria/selection constants the collection's
+// createSelectableCollection listens for (FOCUS_EVENT / CLEAR_FOCUS_EVENT);
+// the aliases below are retained for backwards-compatible re-exports.
+/** @deprecated Use {@link FOCUS_EVENT} from the selection layer. */
+export const AUTOCOMPLETE_FOCUS_EVENT = FOCUS_EVENT;
+/** @deprecated Use {@link CLEAR_FOCUS_EVENT} from the selection layer. */
+export const AUTOCOMPLETE_CLEAR_FOCUS_EVENT = CLEAR_FOCUS_EVENT;
 
 /**
  * Provides the behavior and accessibility implementation for an autocomplete component.
@@ -188,7 +197,7 @@ export function createAutocomplete<T = unknown>(
       return;
     }
     collection.dispatchEvent(
-      new CustomEvent(AUTOCOMPLETE_FOCUS_EVENT, {
+      new CustomEvent(FOCUS_EVENT, {
         cancelable: true,
         bubbles: true,
         detail: { focusStrategy: "first" },
@@ -203,7 +212,7 @@ export function createAutocomplete<T = unknown>(
     const collection = collectionRef();
     if (collection) {
       collection.dispatchEvent(
-        new CustomEvent(AUTOCOMPLETE_CLEAR_FOCUS_EVENT, {
+        new CustomEvent(CLEAR_FOCUS_EVENT, {
           cancelable: true,
           bubbles: true,
           detail: { clearFocusKey },
@@ -275,7 +284,7 @@ export function createAutocomplete<T = unknown>(
         // Dispatch focus event to collection
         if (collection) {
           collection.dispatchEvent(
-            new CustomEvent(AUTOCOMPLETE_FOCUS_EVENT, {
+            new CustomEvent(FOCUS_EVENT, {
               cancelable: true,
               bubbles: true,
             }),
@@ -357,9 +366,64 @@ export function createAutocomplete<T = unknown>(
     // Virtual focus blur handling would go here
   };
 
-  // Create filter function
+  // Reverse path: mirror the collection's virtually-focused option into the
+  // input's aria-activedescendant. The collection dispatches a synthetic,
+  // bubbling `focusin` (via moveVirtualFocus) on its focused option; we read the
+  // target id and reflect it into AutocompleteState. Faithful port of
+  // useAutocomplete's updateActiveDescendantEvent (the SR-announcement 500ms
+  // delay is deferred, mirroring the ComboBox announcement deferral).
+  let queuedActiveDescendant: string | null = null;
+  const updateActiveDescendant = (e: Event) => {
+    const input = inputRef();
+    // If the user clicks/taps an option directly (non-touch), pull real focus
+    // back to the input so typing keeps working.
+    if (
+      !e.isTrusted &&
+      shouldUseVirtualFocus() &&
+      input &&
+      getActiveElement(getOwnerDocument(input)) !== input &&
+      getPointerType() !== "touch"
+    ) {
+      input.focus();
+    }
+
+    const target = getEventTarget<Element>(e);
+    if (e.isTrusted || !target || queuedActiveDescendant === target.id) {
+      return;
+    }
+
+    const collection = collectionRef();
+    if (target !== collection) {
+      queuedActiveDescendant = target.id;
+      state.setFocusedNodeId(target.id);
+    } else if (
+      queuedActiveDescendant &&
+      !getOwnerDocument(collection)?.getElementById(queuedActiveDescendant)
+    ) {
+      // Refocus of the collection itself while the previously focused node no
+      // longer exists (filtered away, or the input was refocused): clear the
+      // tracked item and the active descendant.
+      queuedActiveDescendant = null;
+      state.setFocusedNodeId(null);
+    }
+  };
+
+  createEffect(() => {
+    if (!shouldUseVirtualFocus()) return;
+    const collection = collectionRef();
+    if (collection) {
+      collection.addEventListener("focusin", updateActiveDescendant);
+      onCleanup(() => collection.removeEventListener("focusin", updateActiveDescendant));
+    }
+  });
+
+  // Create filter function. The user's 3-arg predicate (textValue, inputValue,
+  // node) is closed over the current input value and exposed to the collection
+  // as the 2-arg (nodeTextValue, node) shape that UNSTABLE_useFilteredListState
+  // (createFilteredListState) expects.
   const filterFn = filter
-    ? (textValue: string) => filter(textValue, state.inputValue())
+    ? (nodeTextValue: string, node: CollectionNode<T>) =>
+        filter(nodeTextValue, state.inputValue(), node)
     : undefined;
 
   return {

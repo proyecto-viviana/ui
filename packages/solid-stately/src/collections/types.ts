@@ -88,6 +88,16 @@ export interface Collection<T = unknown> extends Iterable<CollectionNode<T>> {
 
   /** Get the text value for a key. */
   getTextValue(key: Key): string;
+
+  /**
+   * Filter the collection, returning a new collection containing only the item
+   * nodes for which `filterFn` returns true. Sections whose children are all
+   * filtered out are dropped. Mirrors @react-aria/collections
+   * `BaseCollection.filter` (and the optional `Collection.filter` in
+   * @react-types/shared). Used by Autocomplete to narrow the collection as the
+   * user types.
+   */
+  filter?(filterFn: (nodeValue: string, node: CollectionNode<T>) => boolean): Collection<T>;
 }
 
 /**

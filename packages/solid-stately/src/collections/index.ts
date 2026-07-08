@@ -33,9 +33,11 @@ export {
 
 export {
   createListState,
+  createFilteredListState,
   createSingleSelectListState,
   type ListStateProps,
   type ListState,
+  type ListFilterFn,
   type SingleSelectListStateProps,
   type SingleSelectListState,
 } from "./createListState";

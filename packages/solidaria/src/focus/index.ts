@@ -23,6 +23,13 @@ export {
 } from "./createVirtualFocus";
 
 export {
+  moveVirtualFocus,
+  dispatchVirtualBlur,
+  dispatchVirtualFocus,
+  getVirtuallyFocusedElement,
+} from "./virtualFocus";
+
+export {
   createAutoFocus,
   clearAutoFocusQueue,
   getAutoFocusQueueLength,

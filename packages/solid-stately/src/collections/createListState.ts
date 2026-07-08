@@ -4,7 +4,7 @@
  * Based on @react-stately/list.
  */
 
-import { createMemo, type Accessor } from "solid-js";
+import { createMemo, createEffect, untrack, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { ListCollection } from "./ListCollection";
 import type { SelectionState, SelectionPressEvent } from "./createSelectionState";
@@ -195,6 +195,97 @@ export function createListState<T = unknown>(
     toggleSelectAll: () => selectionManager.toggleSelectAll(),
     extendSelection: (toKey: Key, _collection?: Collection) =>
       selectionManager.extendSelection(toKey),
+    select: (key: Key, e?: SelectionPressEvent) => selectionManager.select(key, e),
+  };
+}
+
+/** A collection filter predicate: `(nodeTextValue, node) => keep`. */
+export type ListFilterFn<T = unknown> = (nodeValue: string, node: CollectionNode<T>) => boolean;
+
+/**
+ * Wraps a {@link ListState} so its collection is filtered by `filterFn`, returning
+ * a new (reactive) ListState. Mirrors @react-stately's `UNSTABLE_useFilteredListState`
+ * (used by Autocomplete): the filter re-runs as the predicate — which typically
+ * closes over the current input value — or the base collection changes; a single
+ * stable, collection-aware manager reads the narrowed collection live and shares
+ * the base selection/focus state; and the focused key is reset to the nearest
+ * surviving item when the current one is filtered out.
+ */
+export function createFilteredListState<T = unknown>(
+  state: ListState<T>,
+  filterFn: Accessor<ListFilterFn<T> | null | undefined>,
+): ListState<T> {
+  const collection: Accessor<Collection<T>> = createMemo(() => {
+    const fn = filterFn();
+    const base = state.collection();
+    return fn && base.filter ? base.filter(fn) : base;
+  });
+
+  // One stable manager reading the filtered collection live; shares the base
+  // manager's underlying selection/focus state and retains the unfiltered
+  // collection as `fullCollection` (so select-all still covers filtered-out keys).
+  const selectionManager = state.selectionManager.withCollectionAccessor(() => collection());
+
+  // Reset the focused key if the item it points at was filtered out, walking
+  // forward (then backward) through the previous collection to the nearest
+  // surviving, enabled item. Mirrors @react-stately's useFocusedKeyReset.
+  let cachedCollection: Collection<T> | null = null;
+  createEffect(() => {
+    const coll = collection();
+    const focusedKey = untrack(() => state.focusedKey());
+    if (focusedKey != null && !coll.getItem(focusedKey) && cachedCollection) {
+      let key = cachedCollection.getKeyAfter(focusedKey);
+      let nextFocusedKey: Key | null = null;
+      while (key != null) {
+        const node = coll.getItem(key);
+        if (node && node.type === "item" && !selectionManager.isDisabled(key)) {
+          nextFocusedKey = key;
+          break;
+        }
+        key = cachedCollection.getKeyAfter(key);
+      }
+      if (nextFocusedKey == null) {
+        key = cachedCollection.getKeyBefore(focusedKey);
+        while (key != null) {
+          const node = coll.getItem(key);
+          if (node && node.type === "item" && !selectionManager.isDisabled(key)) {
+            nextFocusedKey = key;
+            break;
+          }
+          key = cachedCollection.getKeyBefore(key);
+        }
+      }
+      untrack(() => state.setFocusedKey(nextFocusedKey));
+    }
+    cachedCollection = coll;
+  });
+
+  // Spread the base state for type completeness + shared focus fields, then
+  // override the collection and every collection-aware operation so navigation,
+  // selection, and disabled checks all see the narrowed collection.
+  return {
+    ...state,
+    collection,
+    selectionManager,
+    setFocusedKey: (key: Key | null, childStrategy?: FocusStrategy) =>
+      selectionManager.setFocusedKey(key, childStrategy),
+    selectionMode: () => selectionManager.selectionMode,
+    selectionBehavior: () => selectionManager.selectionBehavior,
+    disallowEmptySelection: () => selectionManager.disallowEmptySelection,
+    disabledKeys: () => selectionManager.disabledKeys,
+    isEmpty: () => selectionManager.isEmpty,
+    isSelectAll: () => selectionManager.isSelectAll,
+    isSelected: (key: Key) => selectionManager.isSelected(key),
+    isDisabled: (key: Key) => selectionManager.isDisabled(key),
+    setSelectionBehavior: (behavior: SelectionBehavior) =>
+      selectionManager.setSelectionBehavior(behavior),
+    toggleSelection: (key: Key) => selectionManager.toggleSelection(key),
+    replaceSelection: (key: Key) => selectionManager.replaceSelection(key),
+    setSelectedKeys: (keys: Iterable<Key>) => selectionManager.setSelectedKeys(keys),
+    selectAll: () => selectionManager.selectAll(),
+    clearSelection: () => selectionManager.clearSelection(),
+    toggleSelectAll: () => selectionManager.toggleSelectAll(),
+    extendSelection: (toKey: Key) => selectionManager.extendSelection(toKey),
     select: (key: Key, e?: SelectionPressEvent) => selectionManager.select(key, e),
   };
 }

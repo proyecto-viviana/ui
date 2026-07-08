@@ -91,6 +91,37 @@ export class ListCollection<T = unknown> implements Collection<T> {
   }
 
   /**
+   * Filter the collection, returning a new `ListCollection` containing only the
+   * item nodes for which `filterFn(node.textValue, node)` returns true. Sections
+   * whose children are all filtered out are dropped; surviving sections are
+   * rebuilt with their filtered children. Node order is preserved. Mirrors the
+   * behaviour of @react-aria/collections `BaseCollection.filter`.
+   */
+  filter(filterFn: (nodeValue: string, node: CollectionNode<T>) => boolean): ListCollection<T> {
+    const filterNodes = (nodes: CollectionNode<T>[]): CollectionNode<T>[] => {
+      const result: CollectionNode<T>[] = [];
+      for (const node of nodes) {
+        if (node.type === "section") {
+          const children = filterNodes(node.childNodes ?? []);
+          if (children.length > 0) {
+            result.push({ ...node, childNodes: children, hasChildNodes: true });
+          }
+        } else if (node.type === "item") {
+          if (filterFn(node.textValue, node)) {
+            result.push(node);
+          }
+        } else {
+          // Non-item, non-section nodes (e.g. separators) pass through unfiltered.
+          result.push(node);
+        }
+      }
+      return result;
+    };
+
+    return new ListCollection<T>(filterNodes(this.nodes));
+  }
+
+  /**
    * Get all items (excluding sections, including items within sections).
    */
   private getAllItems(): CollectionNode<T>[] {

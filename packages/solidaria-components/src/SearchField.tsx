@@ -42,6 +42,7 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
+import { useAutocompleteInput } from "./Autocomplete";
 
 export interface SearchFieldRenderProps {
   /** Whether the search field is empty. */
@@ -247,7 +248,35 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   const baseProps = (
     contextProps ? mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) : props
   ) as SearchFieldProps;
-  const mergedProps = withFormValidationBehavior(baseProps, formContext);
+
+  // When rendered inside an <Autocomplete>, the FieldInputContext (AutocompleteContext)
+  // controls the input's value and keyboard handling: value + onChange make the field's
+  // state controlled by the shared autocomplete state (which drives the collection
+  // filter), and onKeyDown/onFocus/onBlur chain the autocomplete's virtual-focus
+  // navigation into the input. This mirrors RAC's
+  // useContextProps(props, inputRef, FieldInputContext). The remaining passthroughs
+  // (aria-activedescendant/aria-controls/aria-autocomplete) and the input-ref
+  // registration are applied at the <input> in SearchFieldInput.
+  const autocompleteInput = useAutocompleteInput();
+  const autocompleteProps = autocompleteInput
+    ? ({
+        get value() {
+          return autocompleteInput.inputProps.value();
+        },
+        onChange: autocompleteInput.inputProps.onChange,
+        onKeyDown: autocompleteInput.inputProps
+          .onKeyDown as unknown as SearchFieldProps["onKeyDown"],
+        onFocus: autocompleteInput.inputProps.onFocus as unknown as SearchFieldProps["onFocus"],
+        onBlur: autocompleteInput.inputProps.onBlur as unknown as SearchFieldProps["onBlur"],
+      } as Partial<SearchFieldProps>)
+    : undefined;
+
+  const mergedProps = withFormValidationBehavior(
+    autocompleteProps
+      ? (mergeProps(baseProps, autocompleteProps) as SearchFieldProps)
+      : baseProps,
+    formContext,
+  );
 
   const [local, stateProps, ariaProps, rest] = splitProps(
     mergedProps,
@@ -629,6 +658,15 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
     throw new Error("SearchFieldInput must be used within a SearchField");
   }
 
+  // Inside an <Autocomplete>, expose the ARIA attributes that identify the
+  // controlled collection and its virtually-focused option. value/onChange and the
+  // keyboard handlers are already merged upstream in SearchField(); here we only add
+  // the passthrough attributes that createTextField doesn't forward, and register the
+  // input element as the autocomplete inputRef so the beforeinput + reverse-path
+  // (aria-activedescendant mirror) listeners bind. Mirrors RAC's
+  // [InputContext, {...inputProps, ref: inputRef}].
+  const autocompleteInput = useAutocompleteInput();
+
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
   const { isHovered, hoverProps } = createHover({
@@ -667,12 +705,25 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
     return rest;
   };
 
+  const autocompleteInputAttrs = (): Record<string, unknown> => {
+    if (!autocompleteInput) {
+      return {};
+    }
+    const inputProps = autocompleteInput.inputProps;
+    return {
+      "aria-controls": inputProps["aria-controls"],
+      "aria-autocomplete": inputProps["aria-autocomplete"],
+      "aria-activedescendant": inputProps["aria-activedescendant"](),
+    };
+  };
+
   const mergedInputProps = () =>
     ({
       ...domProps,
       ...cleanInputProps(),
       ...cleanFocusProps(),
       ...cleanHoverProps(),
+      ...autocompleteInputAttrs(),
     }) as Record<string, unknown>;
 
   onMount(() => {
@@ -723,6 +774,7 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
       ref={(element) => {
         inputElement = element;
         context.setInputRef?.(element);
+        autocompleteInput?.inputRef(element);
         const ref = (domProps as { ref?: unknown }).ref;
         if (typeof ref === "function") {
           ref(element);

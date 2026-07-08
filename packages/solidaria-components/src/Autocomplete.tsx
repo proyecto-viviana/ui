@@ -26,6 +26,7 @@ import {
   createAutocompleteState,
   type AutocompleteState,
   type AutocompleteStateOptions,
+  type CollectionNode,
 } from "@proyecto-viviana/solid-stately";
 import { type SlotProps } from "./utils";
 
@@ -44,7 +45,7 @@ export interface AutocompleteContextValue {
 export interface AutocompleteCollectionContextValue {
   collectionProps: CollectionOptions;
   collectionRef: (el: HTMLElement) => void;
-  filter?: (textValue: string) => boolean;
+  filter?: (nodeTextValue: string, node: CollectionNode<unknown>) => boolean;
 }
 
 export const AutocompleteContext = createContext<AutocompleteContextValue | null>(null);
@@ -126,16 +127,18 @@ export function Autocomplete<T = unknown>(props: AutocompleteProps<T>): JSX.Elem
 
   const state = createAutocompleteState(stateProps);
 
-  // Create refs
-  let inputRef: HTMLInputElement | undefined;
-  let collectionRef: HTMLElement | undefined;
+  // Refs are signals so createAutocomplete's effects (the beforeinput listener
+  // and the reverse-path focusin listener that mirrors aria-activedescendant)
+  // bind reactively once the input/collection elements actually mount.
+  const [inputRef, setInputRef] = createSignal<HTMLInputElement>();
+  const [collectionRef, setCollectionRef] = createSignal<HTMLElement>();
 
   // Create autocomplete aria
   const autocomplete = createAutocomplete<T>(
     {
       ...ariaProps,
-      inputRef: () => inputRef,
-      collectionRef: () => collectionRef,
+      inputRef,
+      collectionRef,
     },
     state,
   );
@@ -144,7 +147,7 @@ export function Autocomplete<T = unknown>(props: AutocompleteProps<T>): JSX.Elem
   const inputContextValue = createMemo<AutocompleteContextValue>(() => ({
     inputProps: autocomplete.inputProps,
     inputRef: (el: HTMLInputElement) => {
-      inputRef = el;
+      setInputRef(el);
     },
   }));
 
@@ -152,9 +155,11 @@ export function Autocomplete<T = unknown>(props: AutocompleteProps<T>): JSX.Elem
   const collectionContextValue = createMemo<AutocompleteCollectionContextValue>(() => ({
     collectionProps: autocomplete.collectionProps,
     collectionRef: (el: HTMLElement) => {
-      collectionRef = el;
+      setCollectionRef(el);
     },
-    filter: autocomplete.filter,
+    filter: autocomplete.filter as
+      | ((nodeTextValue: string, node: CollectionNode<unknown>) => boolean)
+      | undefined,
   }));
 
   return (

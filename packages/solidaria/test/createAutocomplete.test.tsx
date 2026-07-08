@@ -4,6 +4,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createAutocomplete, type AutocompleteAria } from "../src/autocomplete";
+import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../src/selection/constants";
 import { createAutocompleteState, type AutocompleteState } from "@proyecto-viviana/solid-stately";
 import { Show } from "solid-js";
 
@@ -243,10 +244,10 @@ describe("createAutocomplete", () => {
       const listbox = screen.getByTestId("listbox");
       const focusSpy = vi.fn();
       const clearSpy = vi.fn();
-      listbox.addEventListener("autocomplete:focus", (e) =>
+      listbox.addEventListener(FOCUS_EVENT, (e) =>
         focusSpy((e as CustomEvent).detail?.focusStrategy),
       );
-      listbox.addEventListener("autocomplete:clearfocus", clearSpy);
+      listbox.addEventListener(CLEAR_FOCUS_EVENT, clearSpy);
       return { input, focusSpy, clearSpy };
     }
 
@@ -339,7 +340,7 @@ describe("createAutocomplete", () => {
       const input = screen.getByTestId("input");
       const listbox = screen.getByTestId("listbox");
       const focusSpy = vi.fn();
-      listbox.addEventListener("autocomplete:focus", (e) =>
+      listbox.addEventListener(FOCUS_EVENT, (e) =>
         focusSpy((e as CustomEvent).detail?.focusStrategy),
       );
 
@@ -362,7 +363,7 @@ describe("createAutocomplete", () => {
       const input = screen.getByTestId("input");
       const listbox = screen.getByTestId("listbox");
       const clearSpy = vi.fn();
-      listbox.addEventListener("autocomplete:clearfocus", clearSpy);
+      listbox.addEventListener(CLEAR_FOCUS_EVENT, clearSpy);
       return { input, listbox, clearSpy };
     }
 
