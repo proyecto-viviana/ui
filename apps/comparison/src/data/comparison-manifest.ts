@@ -569,6 +569,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/GridList.html",
   },
 
+  autocomplete: {
+    ...styledLiveOfficialEntry({
+      slug: "autocomplete",
+      title: "Autocomplete",
+      category: "Components",
+      summary:
+        "Standalone autocomplete mounted on both stacks: a SearchField input bridged to a ListBox with locale-collated filtering and cross-component virtual focus (real focus stays on the input, active option tracked via aria-activedescendant).",
+      styledSummary:
+        "react-aria-components Autocomplete (base, SearchField + ListBox) vs Solid solidaria-components Autocomplete (base).",
+      styledNote:
+        "S2 exposes no publicly-styled standalone Autocomplete, so the React oracle is react-aria-components' own Autocomplete — the direct upstream of the Solid port's createAutocomplete input↔collection bridge.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/Autocomplete.html",
+  },
+
   skeleton: styledLiveOfficialEntry({
     slug: "skeleton",
     title: "Skeleton",

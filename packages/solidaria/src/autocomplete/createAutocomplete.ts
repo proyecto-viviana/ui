@@ -167,6 +167,20 @@ export function createAutocomplete<T = unknown>(
   const [autoFocusOnMount, setAutoFocusOnMount] = createSignal(false);
   let lastInputType = "";
 
+  // Reverse-focus (collection → input aria-activedescendant) bookkeeping, mirroring
+  // useAutocomplete's queuedActiveDescendant / delayNextActiveDescendant / timeout
+  // refs. `queuedActiveDescendant` is the id of the option the collection has
+  // virtually focused — tracked synchronously on every collection `focusin`, even
+  // while the visible aria-activedescendant reflection is deferred, so key
+  // navigation always dispatches to the right item. When typing forward,
+  // `delayNextActiveDescendant` defers the next reflection behind a 500ms timeout so
+  // a screen reader finishes announcing the just-typed letter before naming the
+  // active option; every new focusin (and teardown) clears the pending timeout.
+  let queuedActiveDescendant: string | null = null;
+  let delayNextActiveDescendant = false;
+  let activeDescendantTimeout: ReturnType<typeof setTimeout> | undefined;
+  const ACTIVE_DESCENDANT_DELAY = 500;
+
   // Track the input type for determining focus behavior. We listen to
   // `beforeinput` (not `input`) so `lastInputType` is set before the input's
   // `onChange` runs, mirroring @react-aria/autocomplete.
@@ -188,6 +202,11 @@ export function createAutocomplete<T = unknown>(
 
   // Focus first item in collection
   const focusFirstItem = () => {
+    // Typing forward focuses the first filtered row, but the resulting
+    // aria-activedescendant reflection must wait so the SR announces the typed
+    // letter first (see updateActiveDescendant). Mirrors useAutocomplete
+    // setting delayNextActiveDescendant.current = true before the focus event.
+    delayNextActiveDescendant = true;
     const collection = collectionRef();
     if (!collection) {
       // Collection isn't mounted yet — defer focusing the first item to mount
@@ -208,6 +227,13 @@ export function createAutocomplete<T = unknown>(
   // Clear virtual focus
   const clearVirtualFocus = (clearFocusKey = false) => {
     setAutoFocusOnMount(false);
+    // Drop any pending delayed reflection and the tracked item alongside the
+    // active descendant so a subsequent focusin can't resurrect a stale id
+    // (mirrors useAutocomplete clearing queuedActiveDescendant / the timeout /
+    // delayNextActiveDescendant in clearVirtualFocus).
+    clearTimeout(activeDescendantTimeout);
+    queuedActiveDescendant = null;
+    delayNextActiveDescendant = false;
     state.setFocusedNodeId(null);
     const collection = collectionRef();
     if (collection) {
@@ -252,7 +278,13 @@ export function createAutocomplete<T = unknown>(
       return;
     }
 
-    const focusedNodeId = state.focusedNodeId();
+    // Navigate against the id the collection has virtually focused, tracked
+    // synchronously on every focusin, NOT the (possibly still-delayed)
+    // aria-activedescendant reflection in state — mirrors useAutocomplete
+    // reading queuedActiveDescendant.current here. Reading state.focusedNodeId()
+    // would be null during the post-type reflection delay, so arrows would
+    // re-focus the first row instead of advancing.
+    const focusedNodeId = queuedActiveDescendant;
     const collection = collectionRef();
     const ownerDocument = getOwnerDocument(inputRef() ?? collection);
 
@@ -319,7 +351,11 @@ export function createAutocomplete<T = unknown>(
 
     // Forward keyboard events to the focused item (or the collection when there
     // is no virtual focus) so the collection can act on them, e.g. onAction.
-    if (!e.defaultPrevented && collection) {
+    // Gated only on the collection existing — NOT on e.defaultPrevented: arrows
+    // call preventDefault above to stop the input's text cursor moving, but the
+    // key must still be re-dispatched to the row so navigation advances (mirrors
+    // useAutocomplete forwarding whenever collectionRef.current !== null).
+    if (collection) {
       e.stopPropagation();
 
       let shouldPerformDefaultAction = true;
@@ -369,10 +405,12 @@ export function createAutocomplete<T = unknown>(
   // Reverse path: mirror the collection's virtually-focused option into the
   // input's aria-activedescendant. The collection dispatches a synthetic,
   // bubbling `focusin` (via moveVirtualFocus) on its focused option; we read the
-  // target id and reflect it into AutocompleteState. Faithful port of
-  // useAutocomplete's updateActiveDescendantEvent (the SR-announcement 500ms
-  // delay is deferred, mirroring the ComboBox announcement deferral).
-  let queuedActiveDescendant: string | null = null;
+  // target id, track it in `queuedActiveDescendant` synchronously (so key nav
+  // always dispatches to the right item), and reflect it into AutocompleteState
+  // — immediately, or, when `delayNextActiveDescendant` was set by forward
+  // typing, behind a 500ms timeout so the SR finishes announcing the typed
+  // letter before naming the active option. Faithful port of useAutocomplete's
+  // updateActiveDescendantEvent.
   const updateActiveDescendant = (e: Event) => {
     const input = inputRef();
     // If the user clicks/taps an option directly (non-touch), pull real focus
@@ -393,9 +431,22 @@ export function createAutocomplete<T = unknown>(
     }
 
     const collection = collectionRef();
+    // A new focusin supersedes any pending delayed reflection.
+    clearTimeout(activeDescendantTimeout);
     if (target !== collection) {
-      queuedActiveDescendant = target.id;
-      state.setFocusedNodeId(target.id);
+      const targetId = target.id;
+      if (delayNextActiveDescendant) {
+        // Forward typing just focused the first row: track it now, but defer the
+        // aria-activedescendant reflection so the just-typed letter is announced
+        // before the active option.
+        queuedActiveDescendant = targetId;
+        activeDescendantTimeout = setTimeout(() => {
+          state.setFocusedNodeId(targetId);
+        }, ACTIVE_DESCENDANT_DELAY);
+      } else {
+        queuedActiveDescendant = targetId;
+        state.setFocusedNodeId(targetId);
+      }
     } else if (
       queuedActiveDescendant &&
       !getOwnerDocument(collection)?.getElementById(queuedActiveDescendant)
@@ -406,6 +457,9 @@ export function createAutocomplete<T = unknown>(
       queuedActiveDescendant = null;
       state.setFocusedNodeId(null);
     }
+    // Reflection delay is a one-shot; the next focusin reflects immediately
+    // unless forward typing sets the flag again.
+    delayNextActiveDescendant = false;
   };
 
   createEffect(() => {
@@ -413,7 +467,10 @@ export function createAutocomplete<T = unknown>(
     const collection = collectionRef();
     if (collection) {
       collection.addEventListener("focusin", updateActiveDescendant);
-      onCleanup(() => collection.removeEventListener("focusin", updateActiveDescendant));
+      onCleanup(() => {
+        collection.removeEventListener("focusin", updateActiveDescendant);
+        clearTimeout(activeDescendantTimeout);
+      });
     }
   });
 

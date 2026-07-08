@@ -5,6 +5,10 @@ import {
   ListBoxItem as AriaListBoxItem,
   GridList as AriaGridList,
   GridListItem as AriaGridListItem,
+  Autocomplete as AriaAutocomplete,
+  SearchField as AriaSearchField,
+  Input as AriaInput,
+  useFilter as useAriaFilter,
 } from "react-aria-components";
 import {
   Accordion as SpectrumAccordion,
@@ -323,6 +327,12 @@ import {
   normalizeListBoxDemoProps,
   serializeListBoxDemoProps,
 } from "@comparison/data/listbox-demo";
+import {
+  autocompleteDemoItems,
+  autocompleteDemoPropsFromWindow,
+  normalizeAutocompleteDemoProps,
+  serializeAutocompleteDemoProps,
+} from "@comparison/data/autocomplete-demo";
 import {
   gridListDemoItems,
   gridListDemoPropsFromWindow,
@@ -831,6 +841,7 @@ export const reactStyledFixtures = {
   link: () => jsx(ReactLinkDemo, {}),
   listview: () => jsx(ReactListViewDemo, {}),
   listbox: () => jsx(ReactListBoxDemo, {}),
+  autocomplete: () => jsx(ReactAutocompleteDemo, {}),
   gridlist: () => jsx(ReactGridListDemo, {}),
   meter: () => jsx(ReactMeterDemo, {}),
   menu: () => jsx(ReactMenuDemo, {}),
@@ -1368,6 +1379,54 @@ function ReactListBoxDemo() {
           children: listBoxDemoItems.map((item) =>
             jsx(AriaListBoxItem, { id: item.id, children: item.label }, item.id),
           ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactAutocompleteDemo() {
+  const [demoProps, setDemoProps] = useState(autocompleteDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+  // Locale-collated contains() — the direct upstream of the Solid port's
+  // createFilter({ sensitivity: "base" }).contains. Both stacks filter identically.
+  const { contains } = useAriaFilter({ sensitivity: "base" });
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "autocomplete") {
+        setDemoProps(normalizeAutocompleteDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx(AriaAutocomplete, {
+          filter: (textValue, inputValue) => contains(textValue, inputValue),
+          children: jsxs("div", {
+            "data-comparison-control-root": "autocomplete",
+            "data-comparison-control-props": serializeAutocompleteDemoProps(demoProps),
+            children: [
+              jsx(AriaSearchField, {
+                "aria-label": "Search fruits",
+                children: jsx(AriaInput, {}),
+              }),
+              jsx(AriaListBox, {
+                "aria-label": "Fruits",
+                selectionMode: demoProps.selectionMode,
+                children: autocompleteDemoItems.map((item) =>
+                  jsx(AriaListBoxItem, { id: item.id, children: item.label }, item.id),
+                ),
+              }),
+            ],
+          }),
         }),
         jsx("button", { children: "After" }),
       ],

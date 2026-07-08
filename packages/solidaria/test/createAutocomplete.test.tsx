@@ -355,13 +355,19 @@ describe("createAutocomplete", () => {
     // then clear the active descendant; with no virtual focus, the arrow just
     // moves the text cursor (no clear). Mirrors upstream useAutocomplete.
     function setup(opts: { focus?: string } = {}) {
-      let state: AutocompleteState | undefined;
-      render(() => <TestAutocomplete stateRef={(s) => (state = s)} />);
-      if (opts.focus) {
-        state!.setFocusedNodeId(opts.focus);
-      }
+      render(() => <TestAutocomplete />);
       const input = screen.getByTestId("input");
       const listbox = screen.getByTestId("listbox");
+      if (opts.focus) {
+        // Prime virtual focus through the real reverse channel: a bubbling,
+        // synthetic focusin on the option element runs updateActiveDescendant,
+        // which records the queued active-descendant id that onKeyDown navigates
+        // against (mirrors useAutocomplete — the queued ref, not state's
+        // focusedNodeId, is the nav source). Seeding setFocusedNodeId directly
+        // would leave queuedActiveDescendant null, so the arrow would find no
+        // item to dispatch to.
+        screen.getByTestId(opts.focus).dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+      }
       const clearSpy = vi.fn();
       listbox.addEventListener(CLEAR_FOCUS_EVENT, clearSpy);
       return { input, listbox, clearSpy };

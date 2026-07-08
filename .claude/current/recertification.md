@@ -207,8 +207,33 @@ March order (dependency/leverage; within a tier, top to bottom):
   fold, and the description/error message + label rendered as `<div>`/`<span>`-wrapper
   where RAC `Text`/`Label` render `<span>`/bare-`<label>`. D6 ANNOUNCEMENTS (the
   live-region filter transcript) split to **CP9.45b** so a driver-calibration
-  surprise can't block the paint/focus cert. **NEXT: Autocomplete**,
-  then Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
+  surprise can't block the paint/focus cert.
+  **Autocomplete ✓ certified 2026-07-08 (CP9.46)** — SECOND virtual-focus unit and
+  the ONLY cross-component one: the input (`SearchField`) and the collection
+  (`ListBox`) are SEPARATE components, real DOM focus NEVER leaves the input, and
+  the active option is tracked purely via the input's `aria-activedescendant`. No
+  styled S2 standalone exists (like ListBox), so oracle = RAC's own `Autocomplete`;
+  certified surface is STRUCTURE + FILTER + VIRTUAL-FOCUS via **D5** (three walks —
+  `virtual-filter-nav`, `filter-then-clear`, `tab-order`) + **D6**, with
+  D1/D3/D7/D8/D9/D10/D2/D4 + announcements scoped out (documented, mirroring the
+  ListBox base cert). The browser D5 driver caught a divergence the 22 jsdom units
+  could not: the port FROZE `aria-activedescendant` on the first filtered row and
+  arrows never advanced. Two coupled `createAutocomplete` bugs: (i) `onKeyDown`
+  gated the key re-dispatch on `!e.defaultPrevented`, but arrows call
+  `preventDefault` to hold the input's text cursor — so the arrow was never
+  forwarded to the focused row (upstream forwards whenever the collection exists,
+  not gated on preventDefault); and (ii) it navigated off `state.focusedNodeId()`
+  and reflected the active descendant IMMEDIATELY on type, where upstream navigates
+  off a `queuedActiveDescendant` ref and DELAYS the reflection behind a 500ms
+  timeout (`delayNextActiveDescendant`) so the SR announces the just-typed letter
+  before the active option — so the port named the first row after typing where RAC
+  names none. Ported `delayNextActiveDescendant` + `queuedActiveDescendant` + the
+  500ms timeout and switched `onKeyDown` to the queued ref (faithful to
+  `useAutocomplete`). The `createAutocomplete` unit that primed virtual focus by
+  seeding `setFocusedNodeId` was rewritten to prime through the real reverse
+  `focusin` channel (the queued ref is the nav source). A stale ComboBox regression
+  snapshot left by CP9.45a was re-baselined separately (`7acf925f`). **NEXT: Tabs**,
+  then Breadcrumbs, Disclosure/Accordion, ActionBar,
   ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
   DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
@@ -3161,6 +3186,72 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     paint/focus cert) and the shared **createListBox/createSelectableCollection spine rebuild** (createComboBox builds
     `listBoxProps` directly rather than composing the shared collection hook — the same inline shortcut ListBox/
     Select/TagGroup took). Next Tier-4 unit: **Autocomplete**.
+
+- ✓ **Autocomplete certified 2026-07-08 (CP9.46 — Tier-4, seventh collections unit, the FIRST
+  CROSS-COMPONENT virtual-focus unit) — the browser D5 focus driver caught TWO coupled bridge port
+  divergences that the 15 jsdom bridge units could not, and one of those units was itself codifying
+  the pre-fix divergence.** Autocomplete is the one composite where the input and the collection are
+  SEPARATE components: real DOM focus NEVER leaves the input, and the active option is tracked purely
+  via the input's `aria-activedescendant` — a step further than ComboBox (where a single `useComboBox`
+  owns both), so it certifies the port's own input↔collection **bridge** (`e0dedd1a`), a pair of
+  synthetic-DOM-event channels wired through the ListBox and gated on `AutocompleteCollectionContext`
+  (so `createListBox` — and thus ComboBox/Picker/GridList — stay byte-identical). Oracle = RAC's OWN
+  `Autocomplete` (`SearchField`+`Input`+`ListBox`, `react-aria-components@1.19.0`) vs the Solid port;
+  both panels are the UNSTYLED base layer (exactly like the standalone ListBox cert — S2 ships no
+  publicly-styled standalone Autocomplete), so the certified surface is STRUCTURE + FILTER +
+  VIRTUAL-FOCUS BEHAVIOR, not paint. Registered **D5** (focus trail — the crux; `snapshotFocus`
+  records the active element, which stays the `input[type="search"]`, AND resolves its
+  `aria-activedescendant` to an id-agnostic descriptor, so the two stacks' virtual focus + filtering
+  pair-diff entry-for-entry; `root: listbox` scopes the roving-tabindex snapshot to the option subtree,
+  which — being virtual-focus — must carry NO roving tabindex) and **D6** (AX tree — the input's
+  searchbox semantics + the `role="listbox"` subtree). Three D5 walks: `virtual-filter-nav` (type "a"
+  → filter to the six-fruit subset + focus the FIRST filtered row via activedescendant, then
+  `ArrowDown,ArrowDown,ArrowUp,Home,End` walk the filtered list), `filter-then-clear` (type "a" then
+  Backspace to empty — the `react-aria-clear-focus` path: deleting does NOT auto-focus first, so the
+  activedescendant clears), and `tab-order` (`Tab,Tab,Shift+Tab` from a Before boundary button — the
+  virtual-focus options are OUTSIDE the tab order, so Tab skips the whole list and lands on the After
+  button). Both reds diagnosed to root cause against vendored `useAutocomplete.ts` before any fix:
+  - **(1) `onKeyDown` froze the activedescendant and never forwarded the arrow (D5 `virtual-filter-nav`
+    + `filter-then-clear`, the crux red).** Two coupled bugs in the port's forward channel. (a) The
+    re-dispatch of the key onto the collection was gated on `!e.defaultPrevented`, but arrow keys call
+    `preventDefault` to hold the input's text cursor (`useAutocomplete.ts:246-262` only preventDefaults
+    to stop the cursor — it forwards the key to the item whenever `collectionRef.current !== null`,
+    NOT gated on preventDefault), so the arrow was swallowed and the row never moved. (b) `onKeyDown`
+    navigated off the LIVE `state.focusedNodeId()`, but that signal is written on a 500ms delay (see
+    below), so on the first keystroke it read null and found no item. Fixed both: dropped the
+    `!e.defaultPrevented` gate on the forward dispatch, and switched `onKeyDown` to navigate off a new
+    synchronous `queuedActiveDescendant` ref (upstream's `queuedActiveDescendant.current`, tracked on
+    every `focusin`).
+  - **(2) The port named the first row IMMEDIATELY on type where RAC names NONE during a 500ms delay
+    (D5 typed-step snapshot).** Upstream `focusFirstItem` sets a `delayNextActiveDescendant` ref before
+    dispatching the collection's focus event; `updateActiveDescendant` then records
+    `queuedActiveDescendant.current = target.id` synchronously (so `onKeyDown` can navigate) but defers
+    `state.setFocusedNodeId(target.id)` — the value that reflects into the input's
+    `aria-activedescendant` — behind a 500ms `setTimeout`, so a screen reader announces the typed
+    letter BEFORE the active option. The port reflected activedescendant immediately, so a typed-step
+    focus snapshot named the first row on both the "a" step (RAC: null) — a divergence. Ported the full
+    mechanism faithfully into `createAutocomplete`: `queuedActiveDescendant`/`delayNextActiveDescendant`
+    refs + a 500ms `activeDescendantTimeout`; `focusFirstItem` sets the delay flag; every `focusin`
+    `clearTimeout`s the pending reflection; `clearVirtualFocus` clears the timeout + resets both refs.
+    The D5 driver's `keySettleMs` (120ms < 500ms) makes the typed-step snapshot read null on BOTH
+    stacks, so the delay is certified as observable behavior, not just ported code.
+  - The one broken bridge unit (`createAutocomplete.test.tsx` arrow inline-navigation) had primed
+    virtual focus with a white-box `state.setFocusedNodeId("item-1")`, which — now that `onKeyDown`
+    reads the queued ref — left `queuedActiveDescendant` null so the arrow found no item. Rewritten to
+    prime through the REAL reverse channel (a bubbling synthetic `focusin` on the option element runs
+    `updateActiveDescendant` and records the queued id), the faithful contract — upstream never
+    navigates off a raw `setFocusedNodeId`.
+  - Verified: **Autocomplete + bridge + spine units green** (unit suite 5527 passed / 1 expected-fail /
+    8 skipped, incl. the rewritten `createAutocomplete` arrow unit) + Autocomplete **certified e2e 4/4
+    green** (was 2 red / 2 pass — `virtual-filter-nav` + `filter-then-clear` froze on Apple's WebKit
+    focus model, now all green) + ComboBox/ListBox shared-spine guard certs **61/61 green** (the bridge
+    gates on `AutocompleteCollectionContext`, so the shared `createListBox` is untouched) + `typecheck`
+    clean (packages + comparison). A pre-existing stale ComboBox snapshot in `solid-spectrum`
+    `regression.test.tsx` (label-as-`<span>`-wrapper debt from CP9.45a, proven unrelated by stashing
+    the createAutocomplete change) was re-baselined separately (`7acf925f`, mirrors the `ca68dfc5`
+    precedent). Deferred: **D6 ANNOUNCEMENTS** — the filter live-region "N options available"
+    transcript is the never-yet-exercised announce channel (same deferral as ComboBox CP9.45b). Next
+    Tier-4 unit: **Tabs**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
