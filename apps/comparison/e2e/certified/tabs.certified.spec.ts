@@ -56,10 +56,11 @@ const tabsScenario: DriverScenario = {
     // commit, so at `focusin` the tab still reads tabIndex="-1". The callbacks and
     // event order are identical; only the tabIndex attribute value observed
     // mid-flight differs. Matching React here means emulating its commit-defer for
-    // the roving-tabindex write — a SharedElement-wide change that would regress
-    // the D5 roving snapshots (which assert exactly-one-tab-at-0 synchronously).
-    // Tracked in recertification.md; deferred to CP9 alongside the D2 SharedElement
-    // two-phase-commit work.
+    // the roving-tabindex write — which would regress the D5 roving snapshots
+    // (which assert exactly-one-tab-at-0 synchronously). This is the roving-
+    // tabindex facet of the broader batched-effect-vs-sync event-ordering epic
+    // (recertification.md) — NOT the D2 SharedElement two-phase-commit work, which
+    // shipped in CP9.47.
     knownDivergences: {
       "horizontal-regular · touch-tap":
         "React batched-effect vs Solid synchronous reactivity: Solid flips the " +
@@ -68,8 +69,9 @@ const tabsScenario: DriverScenario = {
         "to its commit phase so the tab still reads tabIndex=-1 at `focusin`. " +
         "Event order and callbacks are identical; only the mid-flight attribute " +
         "value differs. A faithful fix needs React's commit-defer for the roving " +
-        "write, which would regress the D5 roving snapshots. Tracked in " +
-        "recertification.md; deferred to CP9.",
+        "write, which would regress the D5 roving snapshots. Roving-tabindex facet " +
+        "of the event-ordering epic in recertification.md (distinct from the D2 " +
+        "SharedElement FLIP work, shipped in CP9.47).",
     },
   },
   // D5: the roving-tabindex walk — arrows, Home, End across the tablist; the
@@ -86,19 +88,25 @@ const tabsScenario: DriverScenario = {
   },
   // D2: selecting an unselected tab slides the selection indicator
   // (`transition: [translate,width,height]`, 200ms, `out`) and cross-fades the
-  // tab labels' color (150ms). Two tracked port gaps keep the exact metadata
-  // red (see `.claude/current/recertification.md` D2 findings T-A/T-B):
-  //   T-A — the indicator never FLIPs. `SharedElement` stores its geometry
+  // tab labels' color (150ms). Certified green as of CP9.47, which closed the
+  // two port gaps that used to keep the metadata red (see
+  // `.claude/current/recertification.md` D2 findings T-A/T-B):
+  //   T-A — the indicator now FLIPs. `SharedElement` was storing its geometry
   //     snapshot in a component-disposal `onCleanup`, but per-tab indicators are
-  //     never disposed on selection change (only their `isVisible` flips), so no
-  //     snapshot is captured and no translate/width transition runs. A faithful
-  //     fix needs React's two-phase commit (store all snapshots before any FLIP
-  //     read) — a SharedElement-wide change deferred to CP9.
-  //   T-B — the always-rendered hidden overflow-measurement TabList applies the
-  //     full `tab` style (incl. `transition: default`) to its `aria-hidden`
-  //     measurement copies, so selection change emits phantom color transitions,
-  //     doubling the count vs upstream. A facet of the "Tabs always renders the
-  //     overflow picker" gate, also deferred to CP9.
+  //     never disposed on selection change (only their `isVisible` flips), so the
+  //     snapshot was never captured. Ported React's two-phase commit: the store
+  //     lives in a render-effect cleanup (fires on every isVisible flip, before
+  //     any FLIP read), a render-phase mount-promotion mounts the incoming
+  //     indicator, and the FLIP read reacts to that element mounting.
+  //   T-B — the hidden overflow-measurement TabList no longer applies the
+  //     selection/disabled color variants to its `aria-hidden` measurement copies
+  //     (mirroring upstream HiddenTabs' `className({size, density})`), so the
+  //     measurement copy of the selected tab no longer emits a phantom
+  //     `transition: default` color change that doubled the count.
+  // The still-deferred "Tabs always renders the overflow picker" structural gate
+  // is a distinct issue and invisible here: the measurement TabList is `inert` +
+  // `aria-hidden`, so it contributes no transitions the panel-scoped motion
+  // driver observes.
   motion: {
     cases: ["horizontal-regular"],
     triggers: [
@@ -109,12 +117,6 @@ const tabsScenario: DriverScenario = {
           await canvas.getByRole("tab", { name: "Parity" }).click();
         },
         settleMs: 160,
-        knownDivergence:
-          "Tabs D2 findings T-A (SelectionIndicator never FLIPs — SharedElement " +
-          "snapshot cleanup only fires on disposal, not isVisible flip; needs " +
-          "two-phase-commit fix) + T-B (hidden overflow-measurement tabs carry " +
-          "transition:default → phantom color transitions). Tracked in " +
-          "recertification.md; deferred to CP9.",
       },
     ],
   },

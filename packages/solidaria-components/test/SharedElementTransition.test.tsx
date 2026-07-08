@@ -92,7 +92,7 @@ describe("SharedElementTransition", () => {
     expect(capturedRef!.textContent).toBe("Card");
   });
 
-  it("sets data-entering attribute during enter phase", () => {
+  it("sets data-entering attribute during enter phase", async () => {
     // Don't fire the RAF callback so we stay in "entering" state
     vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 999);
     vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
@@ -113,9 +113,58 @@ describe("SharedElementTransition", () => {
     ));
 
     fireEvent.click(screen.getByRole("button", { name: "Show" }));
+    // A fresh enter (no previous snapshot) defers "entering" to a microtask, as
+    // upstream does (`queueMicrotask(() => flushSync(() => setState('entering')))`):
+    // the incoming div mounts "visible" first, then flips to "entering".
+    await Promise.resolve();
     const el = screen.getByText("Card");
     expect(el).toHaveAttribute("data-entering");
     expect(el).not.toHaveAttribute("data-exiting");
+  });
+
+  it("FLIPs an incoming same-name element from the outgoing element's snapshot", async () => {
+    // Suppress rAF so the FLIP override / entering promotion does not advance,
+    // leaving the post-swap lifecycle state observable.
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 999);
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const [which, setWhich] = createSignal<"a" | "b">("a");
+    render(() => (
+      <SharedElementTransition>
+        <SharedElement
+          name="ind"
+          isVisible={which() === "a"}
+          style={{ "transition-property": "translate" }}
+        >
+          A
+        </SharedElement>
+        <SharedElement
+          name="ind"
+          isVisible={which() === "b"}
+          style={{ "transition-property": "translate" }}
+        >
+          B
+        </SharedElement>
+      </SharedElementTransition>
+    ));
+
+    // A is visible, B is hidden.
+    expect(screen.getByText("A")).toBeInTheDocument();
+    expect(screen.queryByText("B")).not.toBeInTheDocument();
+
+    // Move selection A -> B in one update: A's store-phase captures its snapshot
+    // (render phase) and B mounts (mount-in-render) and consumes it in the FLIP
+    // branch (read phase). The FLIP branch lands directly on "visible" — it does
+    // NOT pass through "entering". The pre-fix code stored no snapshot on the
+    // isVisible flip and never mounted B before the read effect, so B could only
+    // enter fresh (data-entering). This is the observable two-phase signal.
+    setWhich("b");
+    await Promise.resolve();
+
+    const b = screen.getByText("B");
+    expect(b).toBeInTheDocument();
+    expect(b).not.toHaveAttribute("data-entering");
+    expect(screen.queryByText("A")).not.toBeInTheDocument();
   });
 
   it("forwards DOM props (id, data attributes)", () => {

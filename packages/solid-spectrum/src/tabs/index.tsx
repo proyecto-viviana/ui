@@ -656,14 +656,21 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-  const measurementTabClass = (item: TabCollectionItem) =>
+  // The hidden measurement copies exist only to size the overflow-collapse
+  // calculation. Upstream's HiddenTabs renders each with `className({size,
+  // density})` (Tabs.tsx HiddenTabs) — i.e. NO isSelected/isDisabled, so the
+  // measurement copy never takes selection/disabled color state. Those variants
+  // affect color only, never width; passing them here makes the measurement copy
+  // of the selected tab flip color on selection and, because `tab` carries an
+  // unconditional `transition: default`, emit a phantom transition that doubles
+  // the real selection-indicator motion. Mirror upstream and pass only the
+  // width-relevant variants.
+  const measurementTabClass = () =>
     [
       "solidaria-Tab",
       tab({
         orientation: context.orientation,
         density: context.density,
-        isDisabled: Boolean(item.isDisabled || state?.isKeyDisabled(item.key)),
-        isSelected: state?.selectedKey() === item.key,
         isLabelHidden: context.labelBehavior === "hide",
       }),
     ]
@@ -784,7 +791,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
         <div class={measurementListClass()} style={local.UNSAFE_style} data-tabs-measure-list>
           <For each={measuringItems()}>
             {(item) => (
-              <div class={measurementTabClass(item)} data-tabs-measure-tab>
+              <div class={measurementTabClass()} data-tabs-measure-tab>
                 <span
                   class={tabText({
                     orientation: context.orientation,

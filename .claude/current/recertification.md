@@ -232,8 +232,31 @@ March order (dependency/leverage; within a tier, top to bottom):
   `useAutocomplete`). The `createAutocomplete` unit that primed virtual focus by
   seeding `setFocusedNodeId` was rewritten to prime through the real reverse
   `focusin` channel (the queued ref is the nav source). A stale ComboBox regression
-  snapshot left by CP9.45a was re-baselined separately (`7acf925f`). **NEXT: Tabs**,
-  then Breadcrumbs, Disclosure/Accordion, ActionBar,
+  snapshot left by CP9.45a was re-baselined separately (`7acf925f`).
+  **Tabs ✓ certified 2026-07-08 (CP9.47)** — EIGHTH Tier-4 unit and the FIRST with a
+  D2 **motion** cert. The selection indicator slides between tabs via `SharedElement`
+  FLIP (`transition: [translate,width,height]`, 200ms, `out`) while the tab labels
+  cross-fade color (150ms). Registered D1/D3 (paint), **D2** (motion — normal + reduced),
+  D4/D5 (event sequence + roving focus), D6 (AX), D7/D8 (contrast + target size).
+  Removing the D2 `knownDivergence` waiver surfaced two real port gaps: **T-A** —
+  `SharedElement` never FLIPped because it stored its geometry snapshot in a
+  component-disposal `onCleanup`, but per-tab indicators are never disposed on selection
+  change (only `isVisible` flips), so the snapshot was never captured; ported React's
+  two-phase commit (store in a render-effect cleanup keyed on the captured `isVisible`, a
+  render-phase mount-in-render that mounts the incoming indicator, and a signal-driven
+  FLIP read that reacts to the element mounting instead of racing the `<Show>`
+  insertion). **T-B** — the hidden overflow-measurement `TabList` applied the
+  selection/disabled color variants to its `aria-hidden`+`inert` measurement copies, so
+  the measurement copy of the selected tab emitted a phantom `transition: default` color
+  change that doubled the count; stripped both variants to mirror upstream `HiddenTabs`'
+  `className({size, density})`. Both fixes were green in the units immediately but looked
+  unfixed in the browser until a `comparison:build` — **the cert preview serves a
+  pre-built `dist/` and `comparison:preview` does NOT rebuild**, so a source edit is
+  invisible to a cert until the app is rebuilt (lesson logged). Still deferred: **D4
+  touch-tap** (the roving-tabindex facet of the event-ordering epic, distinct from this
+  SharedElement work) and the "Tabs always renders the overflow picker" structural gate
+  (invisible here — the measurement list is `inert`+`aria-hidden`). **NEXT: Breadcrumbs**,
+  then Disclosure/Accordion, ActionBar,
   ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
   DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
@@ -3252,6 +3275,65 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     precedent). Deferred: **D6 ANNOUNCEMENTS** — the filter live-region "N options available"
     transcript is the never-yet-exercised announce channel (same deferral as ComboBox CP9.45b). Next
     Tier-4 unit: **Tabs**.
+
+- ✓ **Tabs certified 2026-07-08 (CP9.47 — Tier-4, eighth collections unit, the FIRST unit with a D2
+  MOTION cert) — the browser motion driver caught a FLIP that never ran and a phantom transition on
+  the hidden measurement copies.** Tabs is the first Tier-4 unit whose certified surface includes D2:
+  selecting an unselected tab slides the selection indicator (`SharedElement` FLIP —
+  `transition: [translate,width,height]`, 200ms, `out`) and cross-fades the tab labels' color (150ms).
+  Registered **D1/D3** (paint), **D2** (motion — normal + reduced), **D4** (event sequence), **D5**
+  (roving-tabindex walk), **D6** (AX tree), **D7** (contrast), **D8** (target size). Removing the
+  standing D2 `knownDivergence` waiver on the `select-indicator` trigger surfaced two genuine port
+  gaps, both diagnosed against the vendored `react-aria-components` `SharedElementTransition` +
+  `@react-spectrum/s2` `Tabs` before any fix:
+  - **T-A — the selection indicator never FLIPped.** `SharedElement` (the shared primitive behind 8
+    components' `SelectionIndicator`, but only Tabs registers a D2 driver, so only observable here)
+    stored its geometry snapshot in a component-level `onCleanup` that fires only on component
+    DISPOSAL — but the per-tab `SelectionIndicator`s stay mounted across a selection change (only
+    their `isVisible` flips), so the outgoing snapshot was never captured and the incoming indicator
+    always entered fresh instead of sliding. Ported React's two-phase commit into
+    `packages/solidaria-components/src/SharedElementTransition.tsx` as THREE coupled pieces: (1) a
+    render-phase **mount-in-render** effect mirroring `if (isVisible && state === 'hidden')
+    setState('visible')` so the incoming div is committed before any read; (2) a **store-phase**
+    render-effect whose `onCleanup` runs on the next `isVisible` flip and stores ONLY while the
+    captured `isVisible` was true (mirroring React closing over a null `ref.current` while hidden, so
+    an incoming element's stale cleanup can't clobber the outgoing snapshot); (3) a signal-driven
+    **read-phase** effect — `element` is a `createSignal`, and the FLIP read keys on `[isVisible,
+    element]` so it runs only once the `<Show>` has actually inserted the div (a plain `createEffect`
+    raced the insertion render-effect and read an undefined ref → the dead fresh-enter branch, which
+    is now removed entirely). Fresh enter is now microtask-deferred (faithful to React's
+    `queueMicrotask(() => flushSync(() => setState('entering')))`); the one unit asserting
+    `data-entering` synchronously after a fresh mount now awaits a microtask, and a new unit
+    (`FLIPs an incoming same-name element from the outgoing element's snapshot`) pins the two-phase
+    signal (B mounts already-`visible`, never `data-entering`, from A's snapshot).
+  - **T-B — a phantom color transition on the hidden measurement copies.** The overflow-measurement
+    `TabList` (`packages/solid-spectrum/src/tabs/index.tsx`) computed `isSelected`/`isDisabled` on its
+    `aria-hidden`+`inert` measurement copies, and the base `tab` style carries an unconditional
+    `transition: default`, so the measurement copy of the just-selected tab flipped color on selection
+    and the panel-scoped motion driver counted TWO extra `color` transitions (one per label) that the
+    React oracle lacks — most starkly under reduced motion (React 0, Solid 2). Upstream `HiddenTabs`
+    passes only `className({size, density})`, so `measurementTabClass` now drops both `isSelected` and
+    `isDisabled` (they affect color only, never width — invisible to every driver but the phantom
+    count). The `solid-spectrum` `regression.test.tsx` snapshot was updated for the measurement copy's
+    default-variant className and the indicator's now-async `data-entering`.
+  - **Process lesson (logged, cost ~one red loop):** both fixes were green in the units immediately
+    but the browser cert stayed red because **`comparison:preview` serves a pre-built `dist/` and does
+    NOT rebuild** — `reuseExistingServer` + a stale bundle meant the cert ran the OLD package code. A
+    `vp run comparison:build` (which runs `build:workspace-deps && astro build`) is mandatory after any
+    package/comparison source edit before a cert reflects it. The sorted motion diff read exactly as
+    "Solid missing the `name=""` FLIP entries + carrying extra `name=Overview/Parity` color entries" —
+    i.e. both fixes absent — which is the signature of a stale bundle, not a logic bug.
+  - Verified: **Tabs certified e2e 22/22 green + 1 skipped** (D2 motion normal + reduced both green;
+    the skip is the deferred D4 touch-tap `knownDivergence`) + **SharedElement-consumer regression
+    257/257 green** (gridlist, listbox, listview, menu, actionmenu, taggroup, combobox, picker,
+    autocomplete — the full set exercising the changed primitive) + **units green** (Tabs 126 passed /
+    1 xfail, `solidaria-components` 2160, `solid-spectrum` 990 incl. the new SharedElement FLIP unit
+    and the updated regression snapshot) + `typecheck` clean (packages + comparison). Deferred:
+    **D4 touch-tap** (React batched-effect vs Solid synchronous roving-tabindex commit — the
+    event-ordering epic, NOT this SharedElement work) and the **"Tabs always renders the overflow
+    picker"** structural gate (invisible to every driver here: the measurement `TabList` is
+    `inert`+`aria-hidden`, so it contributes no AX node, no roving stop, no target, and no transition).
+    Next Tier-4 unit: **Breadcrumbs**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
