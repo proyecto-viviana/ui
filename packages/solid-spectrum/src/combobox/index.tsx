@@ -11,6 +11,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
+import { createHover } from "@proyecto-viviana/solidaria";
 import {
   ComboBox as HeadlessComboBox,
   ComboBoxButton as HeadlessComboBoxButton,
@@ -68,10 +69,12 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
+import { pressScale } from "../pressScale";
 import { useProviderProps, useTheme } from "../provider";
 import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import {
+  assignRef,
   getSlottedContextProps,
   mergeContextRefs,
   mergeContextStyles,
@@ -195,7 +198,7 @@ const comboBoxFieldGroup = style<ComboBoxStyleProps>({
   ...control({ shape: "default" }),
   ...fieldInput(),
   paddingStart: "edge-to-text",
-  paddingEnd: "calc(self(height, self(minHeight)) * 3 / 16)",
+  paddingEnd: "calc(self(height, self(minHeight)) * 3 / 16 - self(borderEndWidth, 2px))",
   borderWidth: 2,
   borderStyle: "solid",
   transition: "default",
@@ -398,7 +401,7 @@ const comboBoxOption = style<ComboBoxOptionStyleProps>({
     isLink: "pointer",
     isDisabled: "default",
   },
-  transition: "default",
+  transition: "transform",
 });
 
 const comboBoxOptionLabel = style<{ size?: S2ComboBoxSize }>({
@@ -575,10 +578,22 @@ function ComboBoxFieldGroup(props: {
   const isFocused = () => context?.isFocused?.() ?? props.renderProps.isFocused;
   const isFocusVisible = () => context?.isFocusVisible?.() ?? props.renderProps.isFocusVisible;
 
+  // Upstream FieldGroup renders a RAC `<Group>`, whose own `useHover` drives the
+  // `isHovered` render prop that `fieldGroupStyles` reads to brighten the text to
+  // `neutral:hovered` (Field.tsx:229-230 `baseColor('neutral')`, Group.tsx:111).
+  // RAC's ComboBox root exposes no `isHovered` (ComboBoxRenderProps has none), so
+  // the hover state must come from the group element itself — mirror it here.
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return props.renderProps.isDisabled;
+    },
+  });
+
   onCleanup(() => context?.setTriggerRef?.(null));
 
   return (
     <div
+      {...hoverProps}
       ref={(el) => context?.setTriggerRef?.(el)}
       role="presentation"
       class={comboBoxFieldGroup({
@@ -586,6 +601,7 @@ function ComboBoxFieldGroup(props: {
         size: props.size(),
         isFocusWithin: isFocused(),
         isFocusVisible: isFocusVisible(),
+        isHovered: isHovered(),
       })}
       onPointerDown={(event) => {
         if (event.pointerType === "mouse") {
@@ -593,6 +609,7 @@ function ComboBoxFieldGroup(props: {
         }
       }}
       onTouchEnd={focusFieldInput}
+      data-hovered={isHovered() ? "true" : undefined}
       data-focused={isFocused() ? "true" : undefined}
       data-focus-visible={isFocusVisible() ? "true" : undefined}
       data-disabled={props.renderProps.isDisabled ? "true" : undefined}
@@ -704,23 +721,14 @@ function ComboBoxListBoxPopover(props: {
 function ComboBoxFieldLabel(props: {
   label: JSX.Element;
   size: S2ComboBoxSize;
-  isDisabled: boolean;
   isRequired: boolean;
-  labelPosition: ComboBoxLabelPosition;
-  labelAlign: ComboBoxLabelAlign;
   necessityIndicator: ComboBoxNecessityIndicator;
 }) {
+  // Renders the label text + necessity indicator as the direct children of the
+  // `<label>` (the class lives on `HeadlessComboBoxLabel`), so the label text's
+  // nearest element is the `<label>` — matching upstream FieldLabel.
   return (
-    <span
-      class={comboBoxLabel({
-        size: props.size,
-        isDisabled: props.isDisabled,
-        isRequired: props.isRequired,
-        labelPosition: props.labelPosition,
-        labelAlign: props.labelAlign,
-        isStaticColor: false,
-      })}
-    >
+    <>
       {props.label}
       <Show when={props.isRequired || props.necessityIndicator === "label"}>
         <span class={noWrap}>
@@ -742,7 +750,7 @@ function ComboBoxFieldLabel(props: {
           </Show>
         </span>
       </Show>
-    </span>
+    </>
   );
 }
 
@@ -800,6 +808,10 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
+  // Faithful to upstream S2 `ComboBox` (`style={pressScale(buttonRef)}` on the
+  // chevron Button): the trigger carries the Spectrum press-scale effect, which
+  // also emits the resting `will-change: transform` hint.
+  const [chevronEl, setChevronEl] = createSignal<HTMLButtonElement | null>(null);
 
   const rootClassName = (renderProps: ComboBoxRenderProps) =>
     [
@@ -861,14 +873,24 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           <>
             <Show when={local.label}>
               <div class={labelWrapperClass()}>
-                <HeadlessComboBoxLabel>
+                {/* Upstream FieldLabel puts the label class + text directly on the
+                    `<Label>` (`<label>`) element (Field.tsx:118) — the text node's
+                    nearest element is the `<label>` itself. Match that: class on
+                    `HeadlessComboBoxLabel`, content inline (no wrapper `<span>`). */}
+                <HeadlessComboBoxLabel
+                  class={comboBoxLabel({
+                    size: size(),
+                    isDisabled: renderProps.isDisabled,
+                    isRequired: renderProps.isRequired,
+                    labelPosition: labelPosition(),
+                    labelAlign: labelAlign(),
+                    isStaticColor: false,
+                  })}
+                >
                   <ComboBoxFieldLabel
                     label={local.label}
                     size={size()}
-                    isDisabled={renderProps.isDisabled}
                     isRequired={renderProps.isRequired}
-                    labelPosition={labelPosition()}
-                    labelAlign={labelAlign()}
                     necessityIndicator={necessityIndicator()}
                   />
                 </HeadlessComboBoxLabel>
@@ -894,7 +916,11 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   <AlertTriangleIcon styles={fieldErrorIcon} />
                 </CenterBaseline>
               </Show>
-              <HeadlessComboBoxButton class={buttonClass}>
+              <HeadlessComboBoxButton
+                ref={setChevronEl}
+                class={buttonClass}
+                style={(buttonProps) => pressScale(() => chevronEl())(buttonProps)}
+              >
                 <ChevronIcon
                   size={size()}
                   styles={comboBoxChevron}
@@ -970,8 +996,9 @@ export function ComboBoxInput(props: ComboBoxInputProps): JSX.Element {
 }
 
 export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class"]);
+  const [local, headlessProps] = splitProps(props, ["class", "ref"]);
   const size = useContext(ComboBoxSizeContext);
+  const [buttonEl, setButtonEl] = createSignal<HTMLButtonElement | null>(null);
   const buttonClass = (renderProps: ComboBoxButtonRenderProps) =>
     [
       inputButton({
@@ -985,7 +1012,16 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
       .join(" ");
 
   return (
-    <HeadlessComboBoxButton {...headlessProps} class={buttonClass}>
+    <HeadlessComboBoxButton
+      {...headlessProps}
+      ref={(el) => {
+        setButtonEl(el);
+        assignRef(local.ref, el);
+      }}
+      class={buttonClass}
+      // Faithful to upstream S2 `ComboBox` chevron `style={pressScale(buttonRef)}`.
+      style={(buttonProps) => pressScale(() => buttonEl())(buttonProps)}
+    >
       {props.children || (
         <ChevronIcon size={size} styles={comboBoxChevron} style={comboBoxChevronIconStyle(size)} />
       )}
@@ -1003,8 +1039,9 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
 }
 
 export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
-  const [local, headlessProps] = splitProps(props, ["class", "children"]);
+  const [local, headlessProps] = splitProps(props, ["class", "children", "ref", "UNSAFE_style"]);
   const size = useContext(ComboBoxSizeContext);
+  const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
   const textLabel = () =>
     isTextOnlyChildren(local.children)
@@ -1029,8 +1066,14 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   return (
     <HeadlessComboBoxOption
       {...headlessProps}
+      ref={(el) => {
+        setOptionEl(el);
+        assignRef(local.ref, el);
+      }}
       aria-label={headlessProps["aria-label"] ?? textLabel()}
       class={optionClass}
+      // Faithful to upstream S2 `ComboBoxItem` `style={pressScale(ref, UNSAFE_style)}`.
+      style={pressScale(() => optionEl(), local.UNSAFE_style)}
     >
       {(renderProps: ComboBoxOptionRenderProps) => (
         <>
@@ -1042,7 +1085,6 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             // visible on every option. Mirrors upstream S2 ComboBox `className`.
             class={checkClass(renderProps)}
             style={comboBoxCheckmarkIconStyle(size)}
-            aria-hidden="true"
           />
           {isTextOnlyChildren(local.children) ? (
             <span slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">

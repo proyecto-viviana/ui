@@ -193,8 +193,22 @@ March order (dependency/leverage; within a tier, top to bottom):
   row a tab stop when unfocused + flips only ArrowLeft/ArrowRight under RTL;
   `createTagGroup` adds the roving container tabIndex + `compareDocumentPosition`
   entry trampoline + post-commit focus effect; the styled `Tag` derives `textValue`
-  from string children and drops the remove-icon `aria-hidden`. **NEXT: ComboBox**,
-  then Autocomplete, Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
+  from string children and drops the remove-icon `aria-hidden`.
+  **ComboBox ✓ certified 2026-07-08 (CP9.45a)** — FIRST virtual-focus collection
+  (D1/D3/D5/D6/D7/D8/D9/D10). Unlike every prior Tier-4 unit, real DOM focus stays
+  on the `input[role=combobox]` and the active option highlights purely via
+  `aria-activedescendant` — so the popover listbox must NOT carry a roving tabIndex.
+  The browser drivers caught the port hardcoding `tabIndex:-1` on the listbox
+  (createComboBox) over `createListBox`'s virtual-focus branch itself returning `0`
+  instead of upstream's `undefined` — a stray `[tabindex]` node the D5 focus trail +
+  D10 RTL walk surfaced; also caught the field-group text colour not tracking hover
+  (S2 `baseColor('neutral')` via the RAC `<Group>`'s own `useHover`), the listbox
+  labelled by the input id rather than the `useLabels` "Suggestions"+field-label
+  fold, and the description/error message + label rendered as `<div>`/`<span>`-wrapper
+  where RAC `Text`/`Label` render `<span>`/bare-`<label>`. D6 ANNOUNCEMENTS (the
+  live-region filter transcript) split to **CP9.45b** so a driver-calibration
+  surprise can't block the paint/focus cert. **NEXT: Autocomplete**,
+  then Tabs, Breadcrumbs, Disclosure/Accordion, ActionBar,
   ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
   DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
@@ -3085,6 +3099,68 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     reimplements the horizontal delegate inline in `createTag`/`createTagGroup` rather than composing the shared
     `createSelectableCollection` + `ListKeyboardDelegate`, the same inline-nav shortcut ListBox/Select took) — both
     filed in tech-debt.md. Next Tier-4 unit: **ComboBox**.
+
+- ✓ **ComboBox certified 2026-07-08 (CP9.45a — Tier-4, sixth collections unit, the FIRST virtual-focus unit) —
+  the browser paint + focus drivers caught SIX port divergences the 305 jsdom units could not, and TWO of those
+  units were themselves codifying the pre-fix divergence.** Two scenarios mirror `picker.certified.spec.ts`: a
+  FIELD scenario (target = the focusable `input[role=combobox]`; parts = the `role=presentation` field group + the
+  chevron; states `default`/`focus-visible`/`hover`; cases size-s/m/l + invalid-m) and a LIST scenario (opens the
+  portaled `role=listbox` by clicking the chevron — a button open is `showAllItems` so the "Pro" input filter is
+  bypassed and all three options show). Registered **D1** (state-matrix styles), **D3** (pixel), **D5** (focus
+  trail — Tab in/out of the field with the chevron excluded from the tab order + the VIRTUAL `aria-activedescendant`
+  walk `[ArrowDown,ArrowDown,ArrowUp,Home,End]` through the open list), **D6** (AX tree — the input's combobox
+  semantics + the `role=listbox` subtree with per-option `aria-selected`), **D7** (contrast), **D8** (target size),
+  **D9** (forced colors), **D10** (RTL — field/chevron mirrored under `ar-AE` AND the portaled listbox inheriting
+  `dir=rtl`, the picker portal-locale fix re-certified). Oracle = pinned `@react-spectrum/s2` `ComboBox` + RAC
+  `useComboBox` vs the Solid port. **VIRTUAL FOCUS is the defining difference from Picker/ListBox/GridList/TagGroup:**
+  real DOM focus stays on the input the whole time and the active option highlights purely via
+  `aria-activedescendant` — so the popover listbox must NOT carry a roving tabIndex. All six reds diagnosed to root
+  cause against vendored `useComboBox.ts`/`useSelectableCollection.ts`/`Field.tsx` before any fix:
+  - **(1) Stray roving tabIndex on the virtual-focus listbox (D5 walk + D10 RTL, 2 reds).** Two coupled bugs:
+    `createComboBox` HARDCODED `tabIndex:-1` on `listBoxProps` (upstream `useComboBox.ts:488-496` never sets one),
+    AND the shared `createListBox` virtual-focus branch returned `0` where `useSelectableCollection.ts:687-690`
+    leaves it `undefined` (`let tabIndex = undefined; if (!shouldUseVirtualFocus) tabIndex = focusedKey==null?0:-1`).
+    Either alone put a `[tabindex]` node in the focus snapshot. Fixed both: dropped the createComboBox override so
+    the container's tabIndex flows from `createListBox`, and changed `createListBox`'s virtual branch `0`→`undefined`.
+    Scoped to `virtualFocus===true`, so standalone ListBox (real focus, `virtualFocus===false`) is byte-identical —
+    re-ran the ListBox cert (D5 both walks + D6) 3/3 green as the shared-spine guard. The two spine units asserting
+    the old contract (`createComboBox` "correct listbox attributes" expecting `tabIndex:-1`; `createListBox` "virtual
+    focus" expecting `tabIndex:0`) were self-inflicted divergences codified as tests — rewritten to the faithful
+    `undefined` with the `useSelectableCollection.ts:687-690` citation.
+  - **(2) Field-group text colour not tracking hover (D1 hover state + D3, 18 reds).** S2's `FieldGroup` colour is
+    `baseColor('neutral')` (Field.tsx:229-230 → `neutral` dark gray-800 / `neutral:hovered` gray-900), and the
+    hover comes from the RAC `<Group>`'s OWN `useHover` (Group.tsx) — NOT the ComboBox root, whose `renderProps`
+    faithfully expose no `isHovered` (`ComboBoxRenderProps` has none). The port's styled `ComboBoxFieldGroup` cloned
+    the `baseColor` style but never fed it an `isHovered`, so the input (`color:inherit`) never brightened on hover.
+    Fixed by giving `ComboBoxFieldGroup` its own `createHover` and threading `isHovered`/`data-hovered` — the
+    faithful source of the divergence, NOT the port-ism of adding `isHovered` to the root render props.
+  - **(3) Listbox labelled by the input id (D6).** The port set `listBoxProps['aria-labelledby'] = inputId`; upstream
+    `useComboBox.ts:326-330` names it via `useLabels` (`aria-label` "Suggestions" folded with `props['aria-labelledby']
+    || labelProps.id`), never the input. Ported the `createLabels` call for both the listbox and the trigger button.
+  - **(4) Description / error message wrapped in `<div>` (D6/D7).** RAC's `Text` defaults `elementType='span'`
+    (Text.tsx:24) and S2 renders help text via `<Text slot=description>`; the port's `ComboBoxDescription`/
+    `ComboBoxErrorMessage` rendered `<div>`. Changed both to `<span>` (matches the TextField cert precedent —
+    `helpTextStyles` sets `display:flex` so `contain:inline-size` still applies).
+  - **(5) Field label as a `<span>` wrapper (D6).** The styled label wrapped its text in an extra
+    `<span class={comboBoxLabel(...)}>`; RAC `Label` renders a bare `<label>` with the text directly inside. Moved
+    the class onto the `<label>` and made `ComboBoxFieldLabel` a Fragment.
+  - **(6) Mouse-open flashed the focus-visible ring (D1/D3, latent).** Added `isTextInput:true` to the input's
+    `createFocusRing` (mirrors RAC `<Input>`): a pointer open (chevron click) must not read as focus-visible, else
+    the input — and, via the option's activedescendant focus-visible inheritance — the highlighted option paints the
+    brighter `:focused` neutral/accent tokens. Also mirrored upstream's `autoFocus` on open by extracting
+    `applyOpenFocus` in `createComboBoxState` and calling it from `toggle()` too (a button/mouse open routes through
+    `toggle`), so a mouse open highlights the selected/first option like upstream rather than opening with no active
+    row. Backed by the full upstream 32-locale ComboBox announcement set (generated verbatim from
+    `@react-aria/combobox` 3.14.2, en-US/es-ES kept hand-authored) so the D10 `ar-AE` walk and the deferred D6
+    announcements share one faithful string table.
+  - Verified: **ComboBox + ListBox + spine units 307/307 green** (7 files, incl. `createComboBox` 40, `createListBox`
+    66, `createComboBoxState` 28 — the two pre-fix-divergence assertions rewritten to the faithful contract) +
+    ComboBox **certified e2e 58/58 green** (was 22 red / 36 pass, now all green) + ListBox regression cert 3/3 green
+    + `typecheck` clean. Deferred: **CP9.45b — D6 ANNOUNCEMENTS** (the live-region "N options available" filter
+    transcript, the never-before-exercised announce channel; split so a driver-calibration surprise can't block the
+    paint/focus cert) and the shared **createListBox/createSelectableCollection spine rebuild** (createComboBox builds
+    `listBoxProps` directly rather than composing the shared collection hook — the same inline shortcut ListBox/
+    Select/TagGroup took). Next Tier-4 unit: **Autocomplete**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

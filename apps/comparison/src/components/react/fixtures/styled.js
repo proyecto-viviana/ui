@@ -383,6 +383,7 @@ import {
   serializePickerDemoProps,
 } from "@comparison/data/picker-demo";
 import {
+  comboBoxDemoLocaleFromWindow,
   comboBoxDemoPropsFromWindow,
   comboBoxItems,
   comboBoxLabelForKey,
@@ -4439,6 +4440,7 @@ function ReactComboBoxDemo() {
   const [selectedKey, setSelectedKey] = useState(() => demoProps.selectedKey);
   const [inputValue, setInputValue] = useState(() => demoProps.inputValue);
   const colorScheme = useComparisonResolvedTheme();
+  const locale = comboBoxDemoLocaleFromWindow();
   const menuWidth = Number.parseInt(demoProps.menuWidth, 10);
   const numericMenuWidth = Number.isFinite(menuWidth) && menuWidth > 0 ? menuWidth : undefined;
   const disabledKeys = demoProps.disableEnterprise ? ["enterprise"] : undefined;
@@ -4559,6 +4561,7 @@ function ReactComboBoxDemo() {
       ],
     }),
     colorScheme,
+    locale,
   );
 }
 

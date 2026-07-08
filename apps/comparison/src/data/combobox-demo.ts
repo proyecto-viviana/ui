@@ -15,6 +15,13 @@ export const comboBoxAlignOptions = ["start", "end"] as const;
 export const comboBoxFormValueOptions = ["key", "text"] as const;
 export const comboBoxValidationBehaviorOptions = ["native", "aria"] as const;
 
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ComboBox fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
+// can re-run D1/D5 mirrored — and, crucially, certify that the PORTALED listbox
+// popover inherits `dir="rtl"` — matching the picker/button/accordion wiring.
+export const comboBoxDemoLocaleOptions = ["en-US", "ar-AE"] as const;
+export type ComboBoxDemoLocale = (typeof comboBoxDemoLocaleOptions)[number];
+
 export type ComboBoxDemoSize = (typeof comboBoxSizeOptions)[number];
 export type ComboBoxDemoKey = (typeof comboBoxKeyOptions)[number];
 export type ComboBoxDemoSelectionSource = (typeof comboBoxSelectionSourceOptions)[number];
@@ -277,6 +284,22 @@ export function comboBoxDemoPropsFromWindow(): ComboBoxDemoProps {
   }
 
   return comboBoxDemoPropsFromSearch(window.location.search);
+}
+
+// Locale is threaded separately from the demo props: the D10 (RTL/i18n) driver
+// re-mounts the fixture with `?locale=ar-AE` so the S2 `Provider` computes
+// `dir="rtl"`, and the ComboBox fixture passes it straight into that Provider.
+export function comboBoxDemoLocaleFromSearch(search: string): ComboBoxDemoLocale | undefined {
+  const locale = new URLSearchParams(search).get("locale");
+  return isOneOf(locale, comboBoxDemoLocaleOptions) ? locale : undefined;
+}
+
+export function comboBoxDemoLocaleFromWindow(): ComboBoxDemoLocale | undefined {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return comboBoxDemoLocaleFromSearch(window.location.search);
 }
 
 export function serializeComboBoxDemoProps(props: ComboBoxDemoProps) {

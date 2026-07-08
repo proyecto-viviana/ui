@@ -840,6 +840,22 @@ tasks:
       That is an announcement-mechanism assertion, not a live-region-structure one,
       and needs its own harness; deferred as its own follow-up rather than blocking
       the paint/AX cert.
+  - id: combobox-d6-announcements
+    title: ComboBox filter live-region transcript (CP9.45b — structural combobox paint/focus cert done)
+    state: open
+    depends: [d6-announcement-calibration]
+    roadmap: recertification
+    note: >-
+      ComboBox certified 2026-07-08 (CP9.45a) across D1/D3/D5/D6/D7/D8/D9/D10 — the
+      paint, the virtual-focus `aria-activedescendant` walk, and the `role=listbox`
+      AX subtree are all green. Split out here as CP9.45b: the live-region "N options
+      available" filter transcript — the `focusAnnouncement`/`countAnnouncement`/
+      `selectedAnnouncement` strings spoken into the combobox's `aria-live` region as
+      the user types and filters. Never before exercised by a driver; needs the same
+      transcript oracle harness as `d6-announcement-calibration` (assert the SPOKEN
+      string, not just the live-region structure). The full upstream 32-locale
+      announcement table is already ported, so this is harness-only. Deferred so a
+      driver-calibration surprise can't block the shipped paint/focus cert.
   - id: dnd-subsystem-port
     title: Port the drag-and-drop subsystem (6 missing S2 exports; TableView/TreeView/GridList DnD)
     state: open

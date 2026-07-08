@@ -9,6 +9,7 @@ import { isServer } from "solid-js/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { createLabel } from "../label/createLabel";
+import { createLabels } from "../label/createLabels";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
@@ -215,8 +216,14 @@ export function createComboBox<T>(
     labelElementType: "label",
   });
 
-  // Focus ring for keyboard focus styling
+  // Focus ring for keyboard focus styling. `isTextInput: true` mirrors RAC's
+  // `<Input>` (react-aria-components Input.tsx:84-85): a text input focused via
+  // pointer (e.g. clicking the chevron to open) must NOT read as focus-visible,
+  // and typing must not flash the ring. Without it the input — and, through the
+  // option's activedescendant focus-visible inheritance, the highlighted option —
+  // paints the brighter `:focused` neutral/accent tokens on a mouse open.
   const { isFocusVisible, focusProps } = createFocusRing({
+    isTextInput: true,
     get autoFocus() {
       return getProps().autoFocus;
     },
@@ -670,6 +677,15 @@ export function createComboBox<T>(
       const isDisabled = p.isDisabled ?? state.isDisabled;
       const isReadOnly = p.isReadOnly ?? state.isReadOnly;
 
+      // Mirror useComboBox: fold the field label into the trigger's name via
+      // useLabels — keeps aria-label ("Show suggestions") and self-references the
+      // button so the accessible name resolves to "<buttonLabel> <fieldLabel>".
+      const triggerLabels = createLabels({
+        id: buttonId,
+        "aria-label": stringFormatter?.().format("buttonLabel") ?? "Show suggestions",
+        "aria-labelledby": p["aria-labelledby"] ?? labelProps.id,
+      });
+
       return mergeProps(
         pressProps as Record<string, unknown>,
         {
@@ -681,20 +697,35 @@ export function createComboBox<T>(
           "aria-controls": isOpen ? listBoxId : undefined,
           "aria-disabled": isDisabled || isReadOnly || undefined,
           disabled: isDisabled || isReadOnly || undefined,
-          "aria-label": stringFormatter?.().format("buttonLabel") ?? "Show suggestions",
+          "aria-label": triggerLabels["aria-label"],
+          "aria-labelledby": triggerLabels["aria-labelledby"],
           "data-open": isOpen || undefined,
           "data-disabled": isDisabled || isReadOnly || undefined,
         } as Record<string, unknown>,
       ) as JSX.HTMLAttributes<HTMLElement>;
     },
     get listBoxProps() {
+      const p = getProps();
       const isMulti = state.selectionMode() === "multiple";
+      // Mirror useComboBox: name the listbox via useLabels — aria-label
+      // ("Suggestions") folded with the field label id (not the input id).
+      const boxLabels = createLabels({
+        id: listBoxId,
+        "aria-label": stringFormatter?.().format("listboxLabel") ?? "Suggestions",
+        "aria-labelledby": p["aria-labelledby"] ?? labelProps.id,
+      });
       return {
         id: listBoxId,
         role: "listbox",
-        "aria-labelledby": inputId,
+        "aria-label": boxLabels["aria-label"],
+        "aria-labelledby": boxLabels["aria-labelledby"],
         "aria-multiselectable": isMulti || undefined,
-        tabIndex: -1,
+        // No tabIndex here: useComboBox's listBoxProps never set one
+        // (useComboBox.ts:488-496) — the popover listbox's tabIndex flows from
+        // `useSelectableCollection`, which leaves it `undefined` under virtual
+        // focus so the container never enters the roving-focus trail. createListBox
+        // computes that (undefined for virtual focus); hardcoding -1 here made the
+        // listbox a stray `[tabindex]` node in the D5 focus snapshot.
         shouldSelectOnPressUp: true,
         shouldFocusOnHover: true,
         // Track pointerdown inside listbox to prevent blur from closing

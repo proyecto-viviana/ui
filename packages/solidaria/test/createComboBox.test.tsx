@@ -255,8 +255,17 @@ describe("createComboBox", () => {
         const comboBox = createComboBox({}, state, () => inputRef);
 
         expect(comboBox.listBoxProps.role).toBe("listbox");
-        expect(comboBox.listBoxProps["aria-labelledby"]).toBe(comboBox.inputProps.id);
-        expect(comboBox.listBoxProps.tabIndex).toBe(-1);
+        // Upstream names the listbox via useLabels: aria-label "Suggestions"
+        // folded with the field label id (props['aria-labelledby'] ||
+        // labelProps.id), NOT the input id (useComboBox.ts:326-330). With no
+        // field label provided here, labelProps.id is undefined, so the listbox
+        // carries only its "Suggestions" self-label.
+        expect(comboBox.listBoxProps["aria-label"]).toBe("Suggestions");
+        expect(comboBox.listBoxProps["aria-labelledby"]).toBeUndefined();
+        // Virtual focus: the popover listbox is never a tab stop, so
+        // useComboBox's listBoxProps never set tabIndex — it flows undefined
+        // from useSelectableCollection (createComboBox no longer hardcodes -1).
+        expect(comboBox.listBoxProps.tabIndex).toBeUndefined();
         dispose();
       });
     });

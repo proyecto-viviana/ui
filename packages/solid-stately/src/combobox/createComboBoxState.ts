@@ -373,6 +373,28 @@ export function createComboBoxState<T = unknown>(
   };
 
   // ---- Open/Toggle Logic ----
+  // Auto-focus the menu on open the way upstream's listbox does via its
+  // `autoFocus: state.focusStrategy || true` prop (useComboBox.ts:490 → useSelectableCollection):
+  // the first selectable selected key, else the first/last key for an explicit
+  // strategy, else nothing. The port drives this from the state (createListBox
+  // reimplements nav inline and does not honor a listbox `autoFocus` prop), so
+  // BOTH open() and toggle() must apply it — a button/mouse open routes through
+  // toggle(), and omitting it there left the menu opened with no active option
+  // (no aria-activedescendant / no highlighted row) unlike upstream.
+  const applyOpenFocus = (strategy: FocusStrategy | null) => {
+    const key = selectedKey();
+    const nextFocusedKey =
+      key != null && !listState.isDisabled(key)
+        ? key
+        : strategy === "first"
+          ? displayedCollection().getFirstKey()
+          : strategy === "last"
+            ? displayedCollection().getLastKey()
+            : null;
+    listState.setFocused(true);
+    listState.setFocusedKey(nextFocusedKey);
+  };
+
   const open = (strategy: FocusStrategy | null = null, trigger?: MenuTriggerAction) => {
     const displayAll = trigger === "manual" || (trigger === "focus" && menuTrigger() === "focus");
 
@@ -391,17 +413,7 @@ export function createComboBoxState<T = unknown>(
     menuOpenTrigger = trigger ?? "focus";
     setFocusStrategy(strategy);
     if (!overlayState.isOpen()) {
-      const key = selectedKey();
-      const nextFocusedKey =
-        key != null && !listState.isDisabled(key)
-          ? key
-          : strategy === "first"
-            ? displayedCollection().getFirstKey()
-            : strategy === "last"
-              ? displayedCollection().getLastKey()
-              : null;
-      listState.setFocused(true);
-      listState.setFocusedKey(nextFocusedKey);
+      applyOpenFocus(strategy);
     }
     overlayState.open();
   };
@@ -417,15 +429,20 @@ export function createComboBoxState<T = unknown>(
 
     if (!canOpen && !overlayState.isOpen()) return;
 
-    if (displayAll && !overlayState.isOpen()) {
+    const willOpen = !overlayState.isOpen();
+
+    if (displayAll && willOpen) {
       setShowAllItems(true);
     }
 
-    if (!overlayState.isOpen()) {
+    if (willOpen) {
       menuOpenTrigger = trigger ?? "focus";
     }
 
     setFocusStrategy(strategy);
+    if (willOpen) {
+      applyOpenFocus(strategy);
+    }
     overlayState.toggle();
   };
 

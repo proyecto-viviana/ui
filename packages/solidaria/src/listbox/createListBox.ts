@@ -465,17 +465,19 @@ export function createListBox<T>(
       const focusedKey = state.focusedKey();
 
       // Roving container tabIndex mirrors `useSelectableCollection`
-      // (useSelectableCollection.ts:687-690): with real option focus, the
+      // (useSelectableCollection.ts:581-582): with real option focus, the
       // container is tabbable (0) only while nothing is focused, then rolls to
       // -1 once focus lands on an option so Tab exits the widget. Under virtual
-      // focus (ComboBox) the container isn't the roving element, so keep the
-      // flat 0. `aria-activedescendant` is the virtual-focus AT channel and is
-      // emitted ONLY on that path — a standalone listbox announces the active
-      // option through real DOM focus, so upstream never sets it there.
+      // focus (ComboBox/Autocomplete) the container is NOT a tab stop at all —
+      // upstream leaves `tabIndex` undefined, so the popover listbox never
+      // appears in the roving trail. `aria-activedescendant` is the
+      // virtual-focus AT channel and is emitted ONLY on that path — a standalone
+      // listbox announces the active option through real DOM focus, so upstream
+      // never sets it there.
       const tabIndex = p.isDisabled
         ? undefined
         : virtualFocus
-          ? 0
+          ? undefined
           : focusedKey != null
             ? -1
             : 0;

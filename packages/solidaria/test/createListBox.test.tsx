@@ -172,18 +172,21 @@ describe("createListBox", () => {
     it("sets aria-activedescendant only under virtual focus (combobox path)", () => {
       createRoot((dispose) => {
         // With shouldUseVirtualFocus, DOM focus stays on the input and the
-        // active option is announced via aria-activedescendant; the container
-        // keeps a flat tabIndex 0 (it is not the roving element).
+        // active option is announced via aria-activedescendant. The container is
+        // NOT a tab stop at all — useSelectableCollection leaves tabIndex
+        // undefined under virtual focus (useSelectableCollection.ts:687-690:
+        // `tabIndex = undefined; if (!shouldUseVirtualFocus) tabIndex = ...`), so
+        // the popover listbox never enters the roving-focus trail.
         const state = createBasicListState();
         const listBoxAria = createListBox({ shouldUseVirtualFocus: true }, state);
 
         state.setFocusedKey("c");
         expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBe("c");
-        expect(listBoxAria.listBoxProps.tabIndex).toBe(0);
+        expect(listBoxAria.listBoxProps.tabIndex).toBeUndefined();
 
         state.setFocusedKey(null);
         expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBeUndefined();
-        expect(listBoxAria.listBoxProps.tabIndex).toBe(0);
+        expect(listBoxAria.listBoxProps.tabIndex).toBeUndefined();
         dispose();
       });
     });

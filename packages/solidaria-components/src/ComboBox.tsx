@@ -28,6 +28,7 @@ import {
   createInteractOutside,
   createScrollIntoViewOnFocus,
   mergeProps,
+  isFocusVisible as isGlobalFocusVisible,
   type AriaComboBoxProps,
   type AriaListBoxProps,
   type AriaOptionProps,
@@ -239,6 +240,8 @@ export interface ComboBoxValueProps extends SlotProps {
 }
 
 export interface ComboBoxButtonProps extends SlotProps {
+  /** A ref to the underlying button element. */
+  ref?: RefLike<HTMLButtonElement>;
   /** The children of the button. */
   children?: RenderChildren<ComboBoxButtonRenderProps>;
   /** The CSS className for the element. */
@@ -278,6 +281,8 @@ export interface ComboBoxOptionRenderProps {
 
 export interface ComboBoxOptionProps<T>
   extends Omit<AriaOptionProps, "children" | "key">, SlotProps {
+  /** A ref to the underlying option element. */
+  ref?: RefLike<HTMLElement>;
   /** The unique key for the option. */
   id: Key;
   /** The item value. */
@@ -706,10 +711,13 @@ export function ComboBoxDescription(props: ComboBoxDescriptionProps): JSX.Elemen
     return rest;
   };
 
+  // Upstream renders the description via `<Text slot="description">`, and RAC's
+  // `Text` defaults to `elementType="span"` (Text.tsx:24) — so the help text is a
+  // `<span>`, not a `<div>`. Match it (mirrors the TextField port's same revert).
   return (
-    <div {...domProps} {...cleanDescriptionProps()} class={local.class} style={local.style}>
+    <span {...domProps} {...cleanDescriptionProps()} class={local.class} style={local.style}>
       {local.children}
-    </div>
+    </span>
   );
 }
 
@@ -729,10 +737,12 @@ export function ComboBoxErrorMessage(props: ComboBoxErrorMessageProps): JSX.Elem
     return rest;
   };
 
+  // Same as the description: upstream's error is `<Text slot="errorMessage">`,
+  // a `<span>` (RAC Text default elementType). Match it.
   return (
-    <div {...domProps} {...cleanErrorMessageProps()} class={local.class} style={local.style}>
+    <span {...domProps} {...cleanErrorMessageProps()} class={local.class} style={local.style}>
       {local.children}
-    </div>
+    </span>
   );
 }
 
@@ -865,7 +875,7 @@ export function ComboBoxValue(props: ComboBoxValueProps): JSX.Element {
  * The trigger button for a combobox.
  */
 export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children"]);
+  const [local, domProps] = splitProps(props, ["class", "style", "slot", "children", "ref"]);
 
   const context = useContext(ComboBoxContext);
   if (!context) {
@@ -911,7 +921,10 @@ export function ComboBoxButton(props: ComboBoxButtonProps): JSX.Element {
   return (
     <button
       {...domProps}
-      ref={(el) => setButtonRef(el)}
+      ref={(el) => {
+        setButtonRef(el);
+        assignRef(local.ref, el);
+      }}
       {...cleanButtonProps()}
       {...cleanHoverProps()}
       class={renderProps.class()}
@@ -941,7 +954,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   const { state: comboBoxState, listState, isOpen, inputRef, buttonRef, setListBoxRef } = context;
   const state = comboBoxState;
 
-  let listBoxRef: HTMLUListElement | undefined;
+  let listBoxRef: HTMLElement | undefined;
 
   // Reveal the activedescendant-focused option on keyboard navigation while the
   // listbox is open. Real DOM focus stays on the input, so the browser won't
@@ -1017,7 +1030,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     );
   };
 
-  const setListBoxElement = (el: HTMLUListElement) => {
+  const setListBoxElement = (el: HTMLElement) => {
     listBoxRef = el;
     setListBoxRef(el);
   };
@@ -1028,7 +1041,10 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
 
   return (
     <Show when={isOpen()}>
-      <ul
+      {/* `<div role="listbox">`, not `<ul>` — upstream RAC ListBox (and our own
+          Select/ListBox) render div-over-div rows; the `role` comes from the
+          spread listbox aria props (createListBox), not the element tag. */}
+      <div
         {...domProps}
         ref={setListBoxElement}
         {...cleanContextProps()}
@@ -1052,7 +1068,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
             }}
           </For>
         </Show>
-      </ul>
+      </div>
     </Show>
   );
 }
@@ -1069,6 +1085,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     "item",
     "textValue",
     "onAction",
+    "ref",
   ]);
 
   const stateContext = useContext(ComboBoxStateContext);
@@ -1078,7 +1095,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   }
   const state = stateContext as ComboBoxState<T>;
   const listState = (comboBoxContext as ComboBoxContextValue<T>).listState;
-  const [ref, setRef] = createSignal<HTMLLIElement | null>(null);
+  const [ref, setRef] = createSignal<HTMLElement | null>(null);
   const optionId = () => {
     const listBoxId = getComboBoxData(state as ComboBoxState<unknown>)?.listBoxId;
     return listBoxId ? `${listBoxId}-option-${local.id}` : String(local.id);
@@ -1126,9 +1143,19 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     () => ref(),
   );
 
-  const isOptionFocusVisible = () =>
-    optionAria.isFocusVisible() ||
-    (optionAria.isFocused() && (comboBoxContext?.isFocusVisible() ?? false));
+  // Mirror upstream `useOption` exactly (useOption.ts:172):
+  //   isFocusVisible = isFocused && selectionManager.isFocused && isFocusVisible()
+  // where `isFocusVisible()` is the GLOBAL interaction-modality singleton read as
+  // a render-time snapshot (NOT the input's focus ring, and NOT the option's own
+  // createFocusRing — the option div never receives real DOM focus under virtual
+  // focus, so its ring never lights). `optionAria.isFocused()` already folds in
+  // `selectionManager.isFocused()` (createSelectableItem.ts:239), so the upstream
+  // three-term product collapses to these two. Reading the global singleton off
+  // the `isFocused` dependency gives the same non-reactive snapshot semantics as
+  // React (mouse/hover focus → pointer modality → no ring; keyboard nav → keyboard
+  // modality → ring), which the earlier input-ring OR-branch got wrong (it lit the
+  // option ring whenever the input ring was on).
+  const isOptionFocusVisible = () => optionAria.isFocused() && isGlobalFocusVisible();
 
   const renderValues = createMemo<ComboBoxOptionRenderProps>(() => ({
     isSelected: optionAria.isSelected(),
@@ -1162,8 +1189,13 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
 
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-      <li
-        ref={setRef}
+      {/* `<div role="option">`, not `<li>` — see the ComboBoxListBox note; the
+          `role` comes from the spread option aria props (createOption). */}
+      <div
+        ref={(el) => {
+          setRef(el);
+          assignRef(local.ref, el);
+        }}
         {...cleanOptionProps()}
         class={renderProps.class()}
         style={renderProps.style()}
@@ -1175,7 +1207,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         data-disabled={optionAria.isDisabled() || undefined}
       >
         {renderProps.renderChildren()}
-      </li>
+      </div>
     </SelectionIndicatorContext.Provider>
   );
 }

@@ -418,6 +418,7 @@ import {
   type PickerDemoProps,
 } from "@comparison/data/picker-demo";
 import {
+  comboBoxDemoLocaleFromWindow,
   comboBoxDemoPropsFromWindow,
   comboBoxItems,
   comboBoxLabelForKey,
@@ -7904,6 +7905,7 @@ function SolidSpectrumPickerDemo() {
 }
 
 function SolidSpectrumComboBoxDemo() {
+  const locale = comboBoxDemoLocaleFromWindow();
   const [demoProps, setDemoProps] = createSignal<ComboBoxDemoProps>(comboBoxDemoPropsFromWindow());
   const [selectedKey, setSelectedKey] = createSignal(demoProps().selectedKey);
   const [inputValue, setInputValue] = createSignal(demoProps().inputValue);
@@ -7957,6 +7959,9 @@ function SolidSpectrumComboBoxDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      // Threaded so the D10 RTL driver's `?locale=ar-AE` gives the Provider
+      // `direction: 'rtl'` and the portaled listbox popover inherits `dir="rtl"`.
+      locale,
       background: "base",
       style: providerShellStyle,
     },
