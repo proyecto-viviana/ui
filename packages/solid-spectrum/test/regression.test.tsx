@@ -694,18 +694,23 @@ describe("Regression: Breadcrumbs", () => {
     { id: "widget", label: "Widget" },
   ];
 
-  it("renders nav, list structure, last=current, and snapshot", () => {
+  it("renders list structure (no nav landmark), last=current, and snapshot", () => {
     const { container } = render(() => (
       <Breadcrumbs items={crumbs} getKey={(i) => i.id}>
         {(item) => <BreadcrumbItem>{item.label}</BreadcrumbItem>}
       </Breadcrumbs>
     ));
 
-    expect(screen.getByRole("navigation")).toBeInTheDocument();
+    // Upstream S2/RAC render a bare `<ol role="list">` — NOT a `<nav>` landmark.
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+    expect(screen.getByRole("list")).toBeInTheDocument();
     expect(container.querySelector("ol")).toBeInTheDocument();
     expect(screen.getByText("Home")).toBeInTheDocument();
     expect(screen.getByText("Products")).toBeInTheDocument();
     expect(screen.getByText("Widget")).toBeInTheDocument();
+    // The current (last) crumb is a non-interactive bare element (CP9.48): it is
+    // NOT a link and carries no roving tab stop.
+    expect(screen.queryByRole("link", { name: "Widget" })).not.toBeInTheDocument();
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

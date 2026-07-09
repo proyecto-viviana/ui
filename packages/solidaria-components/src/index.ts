@@ -372,6 +372,7 @@ export {
   BreadcrumbItem,
   BreadcrumbItem as Breadcrumb,
   BreadcrumbsContext,
+  BreadcrumbItemContext,
   type BreadcrumbsProps,
   type BreadcrumbsRenderProps,
   type BreadcrumbItemProps,

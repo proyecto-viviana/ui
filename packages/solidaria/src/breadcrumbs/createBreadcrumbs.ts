@@ -84,8 +84,14 @@ export function createBreadcrumbItem(
   const elementType = () => getProps().elementType ?? "a";
 
   // Use createLink for base link behavior
-  // Current items are treated as disabled (can't navigate to current page)
-  const { linkProps, isPressed } = createLink({
+  // Current items are treated as disabled (can't navigate to current page).
+  // Keep the whole return value (do NOT destructure linkProps): `linkProps` is a
+  // reactive getter, and destructuring it here would snapshot getLinkProps() once
+  // at mount — freezing role/tabIndex to whatever elementType was during the
+  // transient first render (e.g. before isCurrent settles). Reading
+  // linkAria.linkProps fresh inside getItemProps keeps it live, mirroring React
+  // re-running useLink every render.
+  const linkAria = createLink({
     get isDisabled() {
       return isDisabled() || isCurrent();
     },
@@ -148,6 +154,8 @@ export function createBreadcrumbItem(
   const getItemProps = (): Record<string, unknown> => {
     const p = getProps();
     const current = isCurrent();
+    // Read fresh each call so elementType-driven role/tabIndex stay reactive.
+    const linkProps = linkAria.linkProps;
 
     // Start with link props, forwarding id if provided
     let baseProps: Record<string, unknown> = p.id ? mergeProps(linkProps, { id: p.id }) : linkProps;
@@ -175,8 +183,8 @@ export function createBreadcrumbItem(
       return getItemProps();
     },
     get linkProps() {
-      return linkProps;
+      return linkAria.linkProps;
     },
-    isPressed,
+    isPressed: linkAria.isPressed,
   };
 }

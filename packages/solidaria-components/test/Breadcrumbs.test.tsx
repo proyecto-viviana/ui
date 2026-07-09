@@ -52,15 +52,17 @@ describe("Breadcrumbs", () => {
       expect(breadcrumbs).toBeInTheDocument();
     });
 
-    it("should render navigation element", () => {
+    it("should not expose a navigation landmark (renders a list, matching RAC)", () => {
+      // react-aria-components' Breadcrumbs renders a bare <ol> (role="list"),
+      // not a <nav> landmark — see react-aria-components/src/Breadcrumbs.tsx.
       render(() => (
         <Breadcrumbs items={breadcrumbItems} getKey={(item) => item.id}>
           {(item) => <BreadcrumbItem href={item.href}>{item.label}</BreadcrumbItem>}
         </Breadcrumbs>
       ));
 
-      const nav = screen.getByRole("navigation");
-      expect(nav).toBeInTheDocument();
+      expect(screen.queryByRole("navigation")).toBeNull();
+      expect(screen.getByRole("list")).toBeInTheDocument();
     });
 
     it("should render list", () => {
@@ -99,7 +101,7 @@ describe("Breadcrumbs", () => {
         </Breadcrumbs>
       ));
 
-      expect(screen.getByRole("navigation", { name: "Static breadcrumbs" })).toBeInTheDocument();
+      expect(screen.getByRole("list", { name: "Static breadcrumbs" })).toBeInTheDocument();
       expect(screen.getAllByRole("listitem")).toHaveLength(3);
       expect(screen.getByText("Category")).toHaveAttribute("aria-current", "page");
     });
@@ -375,15 +377,15 @@ describe("Breadcrumbs", () => {
   // ============================================
 
   describe("aria attributes", () => {
-    it("should have navigation role", () => {
+    it("should have list role", () => {
       render(() => (
         <Breadcrumbs items={breadcrumbItems} getKey={(item) => item.id}>
           {(item) => <BreadcrumbItem href={item.href}>{item.label}</BreadcrumbItem>}
         </Breadcrumbs>
       ));
 
-      const nav = screen.getByRole("navigation");
-      expect(nav).toBeInTheDocument();
+      const list = screen.getByRole("list");
+      expect(list).toBeInTheDocument();
     });
 
     it("should have aria-label when provided", () => {
@@ -397,8 +399,8 @@ describe("Breadcrumbs", () => {
         </Breadcrumbs>
       ));
 
-      const nav = screen.getByRole("navigation");
-      expect(nav).toHaveAttribute("aria-label", "Breadcrumb navigation");
+      const list = screen.getByRole("list");
+      expect(list).toHaveAttribute("aria-label", "Breadcrumb navigation");
     });
 
     it("should support aria-labelledby without forcing aria-label", () => {
@@ -415,9 +417,9 @@ describe("Breadcrumbs", () => {
         </div>
       ));
 
-      const nav = screen.getByRole("navigation");
-      expect(nav).toHaveAttribute("aria-labelledby", "crumb-title");
-      expect(nav).not.toHaveAttribute("aria-label");
+      const list = screen.getByRole("list");
+      expect(list).toHaveAttribute("aria-labelledby", "crumb-title");
+      expect(list).not.toHaveAttribute("aria-label");
     });
 
     it("should have list role for ol element", () => {
@@ -444,8 +446,8 @@ describe("Breadcrumbs", () => {
         </Breadcrumbs>
       ));
 
-      const nav = screen.getByRole("navigation");
-      expect(nav).toBeInTheDocument();
+      const list = screen.getByRole("list");
+      expect(list).toBeInTheDocument();
 
       const items = document.querySelectorAll(".solidaria-BreadcrumbItem");
       expect(items).toHaveLength(0);
@@ -466,8 +468,8 @@ describe("Breadcrumbs", () => {
         </I18nProvider>
       ));
 
-      const nav = screen.getByRole("navigation");
-      expect(nav).toBeInTheDocument();
+      const list = screen.getByRole("list");
+      expect(list).toBeInTheDocument();
 
       // All items should render
       expect(screen.getByText("Home")).toBeInTheDocument();

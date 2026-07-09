@@ -255,8 +255,27 @@ March order (dependency/leverage; within a tier, top to bottom):
   invisible to a cert until the app is rebuilt (lesson logged). Still deferred: **D4
   touch-tap** (the roving-tabindex facet of the event-ordering epic, distinct from this
   SharedElement work) and the "Tabs always renders the overflow picker" structural gate
-  (invisible here — the measurement list is `inert`+`aria-hidden`). **NEXT: Breadcrumbs**,
-  then Disclosure/Accordion, ActionBar,
+  (invisible here — the measurement list is `inert`+`aria-hidden`).
+  **Breadcrumbs ✓ certified 2026-07-09 (CP9.48)** — NINTH Tier-4 unit; RAC-oracle
+  D5+D6 (the demo path drives `onAction` with no `href`, so a breadcrumb link renders
+  `<span role="link">` and the styled S2 reference is the faithful structure/focus/AX
+  oracle). The pair-oracle contract caught a **renderer-pinning loop** the jsdom units
+  could not: choosing an overflow-menu entry that truncates the path to 3 items left
+  `visibleTailCount` trailing the now-smaller collection for a frame, so `sliceIndex`
+  landed at 1 and the collapse rendered an EMPTY overflow menu (`slice(1,1)`). Upstream
+  S2 renders that empty frame once and re-measures (React batches the state settle), but
+  the port's fine-grained overflow observers turned the transient into a collapse⇄expand
+  feedback loop that pinned the renderer thread (the whole Solid subtree went
+  unresponsive — `page.evaluate` timed out, no thrown error). Faithful fix: gate the
+  collapse on the overflow menu actually holding an item (`sliceIndex > 1`) — identical
+  settled layout, no renderer-pinning transient. Also (this cycle) mirrored RAC's bare
+  `<ol style={props.style}>` — dropping a hard-coded inline layout reset that was
+  clobbering the styled `wrapperStyles` `marginStart`/`align-items` — and dropped the
+  `<nav>` landmark (RAC renders a list, not a navigation region). The D6 overflow AX
+  case rides a documented `knownDivergence`: in the fixed-width harness the React
+  oracle's ResizeObserver never re-fires, so it renders a STALE tail=0 collapse while
+  Solid correctly re-measures to tail=2 — forcing byte-parity would regress Solid's
+  correct behavior. **NEXT: Disclosure/Accordion**, then ActionBar,
   ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
   DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
@@ -3334,6 +3353,75 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     picker"** structural gate (invisible to every driver here: the measurement `TabList` is
     `inert`+`aria-hidden`, so it contributes no AX node, no roving stop, no target, and no transition).
     Next Tier-4 unit: **Breadcrumbs**.
+
+- ✓ **Breadcrumbs certified 2026-07-09 (CP9.48 — Tier-4, ninth collections unit) — the pair-oracle
+  contract caught a renderer-pinning collapse⇄expand loop that 150+ jsdom units and every static
+  cert case sailed straight past.** Breadcrumbs is a collection whose only interactive collapse is the
+  overflow menu (`home` + a `FolderBreadcrumb` menu of the hidden middle items + a measured tail).
+  Oracle scoping (documented): the comparison demo drives the crumbs through `onAction` with **no
+  `href`**, so each non-current breadcrumb link renders `<span role="link" tabindex="0">` (faithful
+  RAC — an href-less `Link` is a `role=link` span, not an `<a>`), and the styled S2 `Breadcrumbs` is
+  the structure/focus/AX oracle. Registered **D5** (focus trail — a `tab-off-current` walk on the
+  standard path) + **D6** (AX tree — `standard` and `overflow`). D1/D3/D7/D8 (paint), D10 (RTL), D2
+  (motion), D4 (events) scoped out and noted in the spec docblock (no styled-paint delta over the
+  certified button/link primitives; the crumb row is a static list). The march caught three things,
+  all diagnosed against vendored `react-aria-components` `Breadcrumbs.tsx` + `@react-spectrum/s2`
+  `Breadcrumbs.tsx` before any fix:
+  - **B-A — the renderer-pinning empty-menu loop (the headline, contract-only).** Clicking an overflow
+    menu entry that truncates the path to **3** items (`home,files,projects`) left the port's
+    `visibleTailCount` signal trailing the now-smaller collection for a frame: with the stale tail=2,
+    `sliceIndex = max(1, 3 - 2) = 1`, so the collapse branch rendered a `BreadcrumbMenu` over
+    `items.slice(1, 1)` — an **empty** overflow menu — while `shouldCollapse` was still true.
+    Upstream S2 (`Breadcrumbs.tsx:543`) renders that exact empty-menu frame (`children.slice(1,
+    sliceIndex)` with `sliceIndex=1`) and heals it on the next `useLayoutEffect` re-measure, because
+    React batches the `onAction` state settle into one commit. The port's fine-grained overflow
+    machine (ResizeObserver + MutationObserver + triple `queueMicrotask`/`rAF`/`setTimeout` measure)
+    instead re-fired on the open→closing menu's DOM churn, recomputed `visibleTailCount`, flipped
+    `shouldCollapse`, re-rendered the `<Show>` branch, re-fired the observers… a collapse⇄expand
+    feedback loop that **pinned the renderer thread** — the whole Solid subtree stopped responding
+    (Playwright `page.evaluate` hit its 30s timeout with **no thrown error and no navigation**, the
+    signature of a synchronous reactive cycle, not a crash). The React panel truncated cleanly to
+    `home,files,projects` and fired `onAction("projects")`; the Solid panel hung with
+    `action-count=0`. Faithful fix (`solid-spectrum/src/breadcrumbs/index.tsx` `shouldCollapse`): gate
+    the collapse on the overflow menu actually holding an item — `sliceIndex > 1`. The settled layout
+    is byte-identical to upstream (a 3-item path that fits shows all three; a 3-item path that does
+    not still collapses with one menu item), the empty-menu transient upstream tolerates simply never
+    renders, and the loop is gone. This is a Solid-necessitated guard, not a behavioral divergence:
+    every observable settled state matches React; only the transient frame React's batching hides is
+    suppressed.
+  - **B-B — the `<ol>` inline reset clobbered the styled class (visual/computed-style).** Collapsing
+    the baseline `<nav class=wrapperStyles>` + inner `<ol style=reset>` into a single element (to
+    match RAC, which renders a list, not a `<nav>` landmark) had left the styled `wrapperStyles` class
+    AND a hard-coded inline reset (`display:flex; align-items:center; list-style:none; margin:0;
+    padding:0`) on the same `<ol>` — and inline styles beat class rules, so `margin:0` killed
+    `wrapperStyles`' `marginStart:6px` and `align-items:center` overrode the wrapper default (S2's
+    `wrapperStyles` deliberately omits `align-items`). RAC's `<ol>` carries only
+    `style={props.style}`, so the port now renders `style={renderProps.style()}` (bare) and lets
+    `wrapperStyles` own all layout. Fixed the `breadcrumbs-visual` computed-style + default-path
+    screenshot pair.
+  - **B-C — dropped the `<nav>` landmark.** RAC `Breadcrumbs` renders a bare `<ol role=list>` with the
+    aria-label on the list itself (no navigation region); the port's `<nav aria-label>` wrapper was an
+    invented landmark. Removed it; the `solidaria-components` unit now asserts `queryByRole("navigation")`
+    is null + `getByRole("list", { name })`, and the `solid-spectrum` `regression.test.tsx` snapshot was
+    regenerated (nav→list, ol reset→bare, `<a>`→`<span role=link>`).
+  - **Known divergence (documented, not silent — D6 `overflow` AX case rides `test.fixme`):** in the
+    fixed-width cert harness the React oracle's ResizeObserver never re-fires after the initial layout,
+    so S2 renders a STALE **tail=0** collapse (menu = `[Files, Projects, Reports, Annual report]`, only
+    `Home` + menu visible), while the Solid port correctly re-measures to **tail=2** (menu = `[Files,
+    Projects]`, `Reports` + `Annual report` visible). The measurement inputs are byte-identical between
+    the stacks (item widths `[51,43,62,61,91]`, gap 6, folder 32, container ~512) and the S2 slice
+    algorithm computes tail=2 on either settled DOM — the divergence is purely the oracle's un-refired
+    observer, so forcing byte-parity would regress the port's correct re-measurement. The AX case is
+    fixme'd with this evidence in the cert; the visible-collapse behavior (the tail=2 result) is what
+    the `breadcrumbs-contract` responsive test pins against React's expected narrow layout.
+  - Verified: **Breadcrumbs certified e2e 2/2 green + 1 skipped** (D5 `tab-off-current` + D6 `standard`
+    green; the skip is the D6 `overflow` `knownDivergence` above) + **`breadcrumbs-contract` 5/5 green**
+    (route mount, control axes, **onAction-truncate** [the B-A loop, now fixed], overflow-collapse menu,
+    responsive measurement) + **`breadcrumbs-visual` 3/3 green** (default-path screenshot pair,
+    computed-styles across viewer axes, overflow-menu items — the B-B fix) + **units green** (full
+    `packages` run: 268 files, **5528 passed** / 1 expected-fail / 8 skipped, incl. the regenerated
+    `solid-spectrum` regression snapshot and the `solidaria-components` nav→list realignments) +
+    `typecheck` clean (packages + comparison). Next Tier-4 unit: **Disclosure/Accordion**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

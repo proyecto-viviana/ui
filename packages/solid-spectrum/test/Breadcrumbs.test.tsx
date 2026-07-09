@@ -44,7 +44,7 @@ describe("Breadcrumbs (solid-spectrum)", () => {
       </Breadcrumbs>
     ));
 
-    expect(screen.getByRole("navigation", { name: "Static breadcrumbs" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Static breadcrumbs" })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
     expect(screen.getByText("Breadcrumbs")).toHaveAttribute("aria-current", "page");
     expect(screen.getAllByRole("link")).toHaveLength(2);
@@ -102,7 +102,7 @@ describe("Breadcrumbs (solid-spectrum)", () => {
       </Breadcrumbs>
     ));
 
-    expect(screen.getByRole("navigation")).toHaveAttribute("data-disabled");
+    expect(screen.getByRole("list")).toHaveAttribute("data-disabled");
     expect(screen.getByText("Home")).toHaveAttribute("data-disabled");
 
     await user.click(screen.getByText("Home"));
@@ -131,8 +131,8 @@ describe("Breadcrumbs (solid-spectrum)", () => {
       </div>
     ));
 
-    const large = screen.getByRole("navigation", { name: "Large breadcrumbs" });
-    const legacyLarge = screen.getByRole("navigation", { name: "Legacy large breadcrumbs" });
+    const large = screen.getByRole("list", { name: "Large breadcrumbs" });
+    const legacyLarge = screen.getByRole("list", { name: "Legacy large breadcrumbs" });
     expect(large.className).toBeTruthy();
     expect(legacyLarge.className).toBeTruthy();
     expect(large.className).toBe(legacyLarge.className);

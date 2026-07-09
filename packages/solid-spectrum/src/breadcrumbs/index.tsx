@@ -17,6 +17,7 @@ import {
 } from "solid-js";
 import {
   BreadcrumbItem as HeadlessBreadcrumbItem,
+  BreadcrumbItemContext as HeadlessBreadcrumbItemContext,
   Breadcrumbs as HeadlessBreadcrumbs,
   type BreadcrumbItemProps as HeadlessBreadcrumbItemProps,
   type BreadcrumbItemRenderProps,
@@ -235,7 +236,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
   let retryOverflowUpdateTimeout: number | undefined;
   const initialOverflowUpdateTimeouts: number[] = [];
   const measurementId = `rsp-breadcrumbs-${Math.random().toString(36).slice(2)}`;
-  const [canMeasure, setCanMeasure] = createSignal(false);
+  const [canMeasure, setCanMeasure] = createSignal(canMeasureOverflow());
   const [visibleTailCount, setVisibleTailCount] = createSignal(MAX_VISIBLE_ITEMS - 2);
   let cleanupOverflowObservers = () => {};
   let hasDisposedRoot = false;
@@ -314,9 +315,9 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
       return;
     }
 
-    const hiddenItems = Array.from(measureRoot.querySelectorAll("ol > li")).filter(
-      (element): element is HTMLElement => element instanceof HTMLElement,
-    );
+    const hiddenItems = Array.from(
+      measureRoot.querySelectorAll("[data-hidden-breadcrumb]"),
+    ).filter((element): element is HTMLElement => element instanceof HTMLElement);
     const folder =
       measurementMenuButton ??
       (measureRoot.querySelector("[data-hidden-breadcrumb-menu-button]") as HTMLElement | null);
@@ -539,10 +540,25 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
 
   const shouldCollapse = createMemo(() => {
     const items = allItems();
-    return (
-      items.length > 2 &&
-      (items.length > MAX_VISIBLE_ITEMS || (canMeasure() && visibleTailCount() < items.length))
-    );
+    if (items.length <= 2) {
+      return false;
+    }
+    const wantsCollapse =
+      items.length > MAX_VISIBLE_ITEMS || (canMeasure() && visibleTailCount() < items.length);
+    if (!wantsCollapse) {
+      return false;
+    }
+    // Only collapse when the overflow menu would actually hold an item. When the
+    // path shrinks (e.g. an overflow menu entry is chosen), `visibleTailCount` can
+    // trail the new, smaller collection for a frame — `sliceIndex` then lands at 1
+    // and the menu slice `[1, sliceIndex)` is empty. Upstream S2 renders that empty
+    // menu for a single frame and re-measures (React batches the state settle); our
+    // fine-grained overflow observers instead turn the transient into a
+    // collapse⇄expand feedback loop that pins the renderer thread. Gating on a
+    // non-empty menu yields the identical settled layout without the transient.
+    const tailCount = Math.min(visibleTailCount(), items.length);
+    const sliceIndex = Math.max(1, items.length - tailCount);
+    return sliceIndex > 1;
   });
   createEffect(() => {
     shouldCollapse();
@@ -635,6 +651,15 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
         />
       </Show>
       <Show when={allItems().length > 0 && canMeasure()}>
+        {/*
+          Hidden measurement copy. Faithful to upstream S2 `HiddenBreadcrumbs`
+          (react-spectrum/packages/@react-spectrum/s2/src/Breadcrumbs.tsx): a FLAT
+          projection of the items — plain `[data-hidden-breadcrumb]` divs — NOT a
+          second live Breadcrumbs collection. Rendering a second `<HeadlessBreadcrumbs>`
+          here span a synchronous reactive cycle between the two collections that pinned
+          the renderer thread. Each item still gets a BreadcrumbItemContext so the styled
+          Breadcrumb resolves isCurrent/isLast exactly as in the visible list.
+        */}
         <div
           ref={setMeasurementElement}
           aria-hidden="true"
@@ -643,21 +668,30 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
           style={{
             position: "absolute",
             inset: "0",
+            display: "flex",
+            "align-items": "center",
             visibility: "hidden",
             overflow: "hidden",
             opacity: 0,
             "pointer-events": "none",
           }}
         >
-          <HeadlessBreadcrumbs
-            {...headlessProps}
-            items={local.items}
-            getKey={local.getKey}
-            isDisabled={local.isDisabled}
-            class={getClassName}
-            style={() => ({})}
-            children={local.children as any}
-          />
+          <For each={allItems()}>
+            {(item, index) => {
+              const isLast = () => index() === allItems().length - 1;
+              const itemKey = () =>
+                local.getKey?.(item) ?? defaultItemKey(item, index());
+              return (
+                <div data-hidden-breadcrumb style={{ display: "inline-flex", "align-items": "center" }}>
+                  <HeadlessBreadcrumbItemContext.Provider
+                    value={{ get itemKey() { return itemKey(); }, isLast }}
+                  >
+                    {renderDynamicItem(item)}
+                  </HeadlessBreadcrumbItemContext.Provider>
+                </div>
+              );
+            }}
+          </For>
           <ActionButton
             ref={setMeasurementMenuButton}
             data-hidden-breadcrumb-menu-button=""

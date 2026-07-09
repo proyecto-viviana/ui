@@ -196,7 +196,20 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
         setStaticItemCount,
       }}
     >
-      <nav
+      {/*
+        Faithful to react-aria-components Breadcrumbs: the accessible name (navProps'
+        aria-label) sits directly on the <ol> (role="list"), with NO wrapping <nav>
+        landmark (react-spectrum/packages/react-aria-components/src/Breadcrumbs.tsx
+        renders `<dom.ol {...mergeProps(DOMProps, navProps)} style={props.style}>`).
+        The <ol> carries ONLY the consumer's class/style — no hard-coded inline
+        layout reset. An inline reset would beat the styled layer's class (inline
+        wins over class), which is exactly what broke S2 parity: the solid-spectrum
+        `wrapperStyles` class supplies display:flex / list-style:none / padding:0 /
+        marginStart and deliberately leaves align-items at its `normal` default, so
+        a hard-coded inline `align-items:center` + `margin:0` clobbered the
+        wrapper's margin and diverged from S2 (whose <ol> has neither).
+      */}
+      <ol
         {...navProps}
         {...domProps()}
         ref={(element) => assignRef(local.ref, element)}
@@ -204,39 +217,29 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
         style={renderProps.style()}
         data-disabled={isDisabled() || undefined}
       >
-        <ol
-          style={{
-            display: "flex",
-            "align-items": "center",
-            "list-style": "none",
-            margin: 0,
-            padding: 0,
-          }}
+        <Show
+          when={hasCollectionItems()}
+          fallback={
+            <StaticBreadcrumbItems>{local.children as JSX.Element}</StaticBreadcrumbItems>
+          }
         >
-          <Show
-            when={hasCollectionItems()}
-            fallback={
-              <StaticBreadcrumbItems>{local.children as JSX.Element}</StaticBreadcrumbItems>
-            }
-          >
-            <For each={items()}>
-              {(item, index) => {
-                const itemKey = getItemKey(item, index());
-                const isLast = () => index() === items().length - 1;
-                const renderItem = local.children as ((item: T) => JSX.Element) | undefined;
+          <For each={items()}>
+            {(item, index) => {
+              const itemKey = getItemKey(item, index());
+              const isLast = () => index() === items().length - 1;
+              const renderItem = local.children as ((item: T) => JSX.Element) | undefined;
 
-                return (
-                  <li style={{ display: "flex", "align-items": "center" }}>
-                    <BreadcrumbItemContext.Provider value={{ itemKey, isLast }}>
-                      {renderItem?.(item)}
-                    </BreadcrumbItemContext.Provider>
-                  </li>
-                );
-              }}
-            </For>
-          </Show>
-        </ol>
-      </nav>
+              return (
+                <li style={{ display: "flex", "align-items": "center" }}>
+                  <BreadcrumbItemContext.Provider value={{ itemKey, isLast }}>
+                    {renderItem?.(item)}
+                  </BreadcrumbItemContext.Provider>
+                </li>
+              );
+            }}
+          </For>
+        </Show>
+      </ol>
     </BreadcrumbsContext.Provider>
   );
 }
@@ -277,6 +280,18 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       staticIndex === context.staticItemCount() - 1);
   const itemKey = () => itemContext?.itemKey ?? ariaProps.id ?? null;
 
+  // Mirror react-aria-components' Link: render an <a> only when there is an
+  // href on an enabled, non-current item; otherwise fall back to a <span
+  // role="link"> (via createLink). A styled layer may force the element type
+  // (S2 renders the current item as a plain <div>), which takes precedence.
+  const elementType = () =>
+    ariaProps.elementType ?? (ariaProps.href && !isDisabled() && !isCurrent() ? "a" : "span");
+  // The current breadcrumb is the current page and is non-interactive: S2
+  // renders it as a plain element with no link role. createLink only omits
+  // role="link" for an <a>, so treat the current item as an "a" purely for the
+  // role decision while still rendering the resolved element type above.
+  const linkElementType = () => (isCurrent() ? "a" : elementType());
+
   const handlePress = (e: PressEvent) => {
     ariaProps.onPress?.(e);
     const key = itemKey();
@@ -285,7 +300,7 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
     }
   };
 
-  const { itemProps, isPressed } = createBreadcrumbItem({
+  const itemAria = createBreadcrumbItem({
     get id() {
       return ariaProps.id;
     },
@@ -305,7 +320,7 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       return ariaProps.rel;
     },
     get elementType() {
-      return ariaProps.elementType;
+      return linkElementType();
     },
     get onPress() {
       return handlePress;
@@ -354,20 +369,23 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
     },
   });
 
+  const isPressed = itemAria.isPressed;
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
       return isDisabled();
     },
   });
+  // Read itemAria.itemProps fresh inside the memo (do NOT destructure it above):
+  // the reactive getter re-runs createBreadcrumbItem → createLink each time this
+  // memo re-evaluates, so role/tabIndex track elementType once isCurrent settles.
   const mergedItemProps = createMemo(() =>
     mergeProps(
-      itemProps as Record<string, unknown>,
+      itemAria.itemProps as Record<string, unknown>,
       focusProps as Record<string, unknown>,
       hoverProps as Record<string, unknown>,
     ),
   );
-  const elementType = () => ariaProps.elementType ?? "a";
 
   const renderValues = createMemo<BreadcrumbItemRenderProps>(() => ({
     isCurrent: isCurrent(),
@@ -401,7 +419,6 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       component={elementType()}
       {...mergedItemProps()}
       ref={(element: HTMLElement) => assignRef(local.ref, element)}
-      href={isCurrent() ? undefined : (mergedItemProps() as { href?: string }).href}
       aria-current={isCurrent() ? (ariaProps["aria-current"] ?? "page") : undefined}
       aria-disabled={isDisabled() || isCurrent() || undefined}
       class={renderProps.class()}

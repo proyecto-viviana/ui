@@ -61,7 +61,7 @@ test.describe("comparison Breadcrumbs route contract", () => {
     await expect(reactRoot).toHaveAttribute("data-comparison-path", "home,breadcrumbs");
     await expect(solidRoot).toHaveAttribute("data-comparison-path", "home,breadcrumbs");
     await expect(reactPanel.getByRole("list", { name: "Project location" })).toBeVisible();
-    await expect(solidPanel.getByRole("navigation", { name: "Project location" })).toBeVisible();
+    await expect(solidPanel.getByRole("list", { name: "Project location" })).toBeVisible();
   });
 
   test("Breadcrumbs controls match the S2 size, item-set, and disabled axes", async ({ page }) => {
