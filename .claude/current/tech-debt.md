@@ -2,6 +2,31 @@
 kind: reference
 status: current
 tasks:
+  - id: invented-tailwind-utility-styling
+    title: Invented Tailwind-vocabulary utility styling leaks a styling dependency on apps/web's local-utilities.css
+    state: in-progress
+    filed: 2026-07-09
+    priority: P2
+    roadmap: recertification
+    note: >-
+      No Tailwind build exists in the repo (no tailwindcss dep, no config, no
+      @tailwind/@apply). Instead, apps/web/src/local-utilities.css (1878 lines)
+      hand-rolls Tailwind's utility vocabulary as plain CSS (.bg-accent,
+      .text-primary-600, .inline-flex, .gap-N, …), and several library components
+      emit those class strings — so they are styled ONLY inside apps/web and render
+      unstyled in the comparison app or an external consumer. Violates "mirror
+      react-spectrum, don't invent" and the ui-client-contract self-containment
+      goal. The faithful mechanism (S2 style macro) already backs 59 solid-spectrum
+      files. Invented-token library files: actiongroup, select, menu, listbox,
+      steplist, landmark, LogicButton, switch (wrapper); plus viviana-ui custom
+      (chip/logo/timeline-item), solidaria-components Breadcrumbs, apps/web (35 src
+      + the css itself), apps/comparison chrome.
+    exit: >-
+      Convert each library styled layer to the S2 style macro (as part of its
+      recertification cert), re-style apps/web off local-utilities.css and delete
+      it, then add a CI grep-gate that fails if an invented utility token reappears
+      in library source. Plan of record: .claude/current/tailwind-removal.md.
+      Phase 0 = ActionGroup (CP9.51).
   - id: release-oidc-trusted-publisher-unregistered
     title: npm publish blocked — no OIDC trusted publisher registered for the 5 packages
     state: done

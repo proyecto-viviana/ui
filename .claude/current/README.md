@@ -35,7 +35,8 @@ public reach.
 13. `ui-client-contract.md`
 14. `release-policy.md`
 15. `tech-debt.md`
-16. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
+16. `tailwind-removal.md` when removing invented utility styling or converting a component's styled layer to the S2 macro
+17. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
 17. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
 18. `../../AGENTS.md` when handing work to coding agents
 
@@ -58,6 +59,7 @@ public reach.
 | `ui-client-contract.md`     | `UC-NN` backlog making `@proyecto-viviana/ui` installable/usable by external client apps (`viviana-social`): release-matrix promotion, export/CSS/macro contract, barrel-bloat fix. Priority track, runs before the parity loop resumes. |
 | `release-policy.md`         | Releasable packages, Changesets, CI gates, npm publishing.                                                                                                                                                                               |
 | `tech-debt.md`              | Known debt and temporary bridges, each with an exit.                                                                                                                                                                                     |
+| `tailwind-removal.md`       | Plan of record for retiring invented Tailwind-vocabulary utility styling repo-wide and converting library styled layers to the S2 style macro. Runs alongside the recertification march; phased, march-priority ordered.                 |
 
 Git history is the archive. Retired plans, audits, gap inventories, and session
 logs are deleted from `main` and recovered through the commit that removed them,
