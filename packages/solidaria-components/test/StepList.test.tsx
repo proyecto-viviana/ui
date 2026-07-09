@@ -40,6 +40,7 @@ function TestStepList(props: {
       {(item, state) => (
         <Step item={item} stepNumber={state.stepNumber}>
           <span data-testid={`indicator-${item.key}`}>{state.stepNumber}</span>
+          <span data-testid={`state-${item.key}`}>{state.stepStateText}</span>
           <span data-testid={`label-${item.key}`}>{item.label}</span>
         </Step>
       )}
@@ -116,12 +117,21 @@ describe("StepList", () => {
 
     it("should select step on click", () => {
       const onSelectionChange = vi.fn();
-      render(() => <TestStepList stepListProps={{ onSelectionChange }} />);
+      // Step 2 is selectable only once its predecessor (step 1) is completed —
+      // there is no "next after the selected step" clause upstream.
+      render(() => (
+        <TestStepList
+          stepListProps={{
+            onSelectionChange,
+            defaultSelectedKey: "step1",
+            defaultLastCompletedStep: "step1",
+          }}
+        />
+      ));
 
-      // Step 2 is selectable (next after selected step 1)
       const link2 = getStepLink(2);
 
-      // Verify step 2 is selectable
+      // Verify step 2 is selectable (its predecessor is completed)
       const li2Before = getStepLi(2);
       expect(li2Before.getAttribute("data-selectable")).toBeTruthy();
 
@@ -179,20 +189,20 @@ describe("StepList", () => {
       expect(li1.getAttribute("data-selected")).toBeTruthy();
     });
 
-    it("should auto-complete previous step when advancing", () => {
-      render(() => <TestStepList />);
+    it("should auto-complete skipped steps when mounted ahead", () => {
+      // Mounting with the selection two steps in (and no completion recorded)
+      // auto-completes every intermediate step, mirroring react-stately
+      // useStepListState's effect (selectedIdx > lastCompleted + 1).
+      render(() => <TestStepList stepListProps={{ defaultSelectedKey: "step3" }} />);
 
-      // Step 1 is selected. Click step 2 to advance.
-      const link2 = getStepLink(2);
-      fireEvent.click(link2);
+      // Steps 1 and 2 are now completed (completion is cumulative).
+      expect(getStepLi(1).getAttribute("data-completed")).toBeTruthy();
+      expect(getStepLi(2).getAttribute("data-completed")).toBeTruthy();
+      expect(screen.getByTestId("state-step1")).toHaveTextContent("Completed");
+      expect(screen.getByTestId("state-step2")).toHaveTextContent("Completed");
 
-      // Step 1 should now be completed
-      const li1 = getStepLi(1);
-      expect(li1.getAttribute("data-completed")).toBeTruthy();
-
-      // Step 1's aria-label should say Completed
-      const link1 = getStepLink(1);
-      expect(link1.getAttribute("aria-label")).toContain("Completed");
+      // Step 3 is the selected step.
+      expect(getStepLi(3).getAttribute("data-selected")).toBeTruthy();
     });
 
     it("should respect defaultSelectedKey", () => {
@@ -216,23 +226,37 @@ describe("StepList", () => {
 
   describe("keyboard navigation", () => {
     it("should support Tab to navigate between selectable steps", () => {
-      render(() => <TestStepList />);
+      // With step 1 completed, steps 1 (completed) and 2 (predecessor completed)
+      // are selectable/tabbable; step 3 remains out of the tab order.
+      render(() => <TestStepList stepListProps={{ defaultLastCompletedStep: "step1" }} />);
 
-      // First step link should be focusable
       const link1 = getStepLink(1);
       expect(link1.getAttribute("tabindex")).toBe("0");
 
-      // Step 2 should also be focusable (next after selected step)
       const link2 = getStepLink(2);
       expect(link2.getAttribute("tabindex")).toBe("0");
 
-      // Step 3 should not be focusable
+      // Step 3 should not be focusable (its predecessor is not completed)
       const link3 = getStepLink(3);
       expect(link3.getAttribute("tabindex")).toBeNull();
     });
 
-    it("should select step on Enter key", () => {
+    it("should keep only the first step tabbable in a fresh list", () => {
       render(() => <TestStepList />);
+
+      // Fresh state exposes only step 1 — the immediate-next step opens when its
+      // predecessor is completed, not merely when the first step is selected.
+      expect(getStepLink(1).getAttribute("tabindex")).toBe("0");
+      expect(getStepLink(2).getAttribute("tabindex")).toBeNull();
+      expect(getStepLink(3).getAttribute("tabindex")).toBeNull();
+    });
+
+    it("should select step on Enter key", () => {
+      render(() => (
+        <TestStepList
+          stepListProps={{ defaultSelectedKey: "step1", defaultLastCompletedStep: "step1" }}
+        />
+      ));
 
       const link2 = getStepLink(2);
       link2.focus();
@@ -243,7 +267,11 @@ describe("StepList", () => {
     });
 
     it("should select step on Space key", () => {
-      render(() => <TestStepList />);
+      render(() => (
+        <TestStepList
+          stepListProps={{ defaultSelectedKey: "step1", defaultLastCompletedStep: "step1" }}
+        />
+      ));
 
       const link2 = getStepLink(2);
       link2.focus();
@@ -382,7 +410,15 @@ describe("StepList", () => {
     it("should call onSelectionChange callback", () => {
       const onSelectionChange = vi.fn();
 
-      render(() => <TestStepList stepListProps={{ onSelectionChange }} />);
+      render(() => (
+        <TestStepList
+          stepListProps={{
+            onSelectionChange,
+            defaultSelectedKey: "step1",
+            defaultLastCompletedStep: "step1",
+          }}
+        />
+      ));
 
       const link2 = getStepLink(2);
       fireEvent.click(link2);
@@ -392,20 +428,22 @@ describe("StepList", () => {
   });
 
   // ============================================
-  // STEP STATE TEXT (aria-label)
+  // STEP STATE TEXT (render-props channel)
+  //
+  // The headless Step sets no accessible name of its own — mirroring
+  // react-aria's useStepListItem, the styled layer owns naming. The state text
+  // is exposed through the `stepStateText` render prop instead.
   // ============================================
 
   describe("step state text", () => {
     it('should show "Current" for selected step', () => {
       render(() => <TestStepList />);
-      const link1 = getStepLink(1);
-      expect(link1.getAttribute("aria-label")).toContain("Current");
+      expect(screen.getByTestId("state-step1")).toHaveTextContent("Current");
     });
 
     it('should show "Not completed" for upcoming steps', () => {
       render(() => <TestStepList />);
-      const link3 = getStepLink(3);
-      expect(link3.getAttribute("aria-label")).toContain("Not completed");
+      expect(screen.getByTestId("state-step3")).toHaveTextContent("Not completed");
     });
 
     it('should show "Completed" for completed steps', () => {
@@ -417,11 +455,8 @@ describe("StepList", () => {
           }}
         />
       ));
-      const link1 = getStepLink(1);
-      expect(link1.getAttribute("aria-label")).toContain("Completed");
-
-      const link2 = getStepLink(2);
-      expect(link2.getAttribute("aria-label")).toContain("Completed");
+      expect(screen.getByTestId("state-step1")).toHaveTextContent("Completed");
+      expect(screen.getByTestId("state-step2")).toHaveTextContent("Completed");
     });
   });
 });

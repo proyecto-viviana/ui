@@ -584,6 +584,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/useActionGroup.html",
   },
 
+  steplist: {
+    ...styledLiveOfficialEntry({
+      slug: "steplist",
+      title: "StepList",
+      category: "Components",
+      summary:
+        "Sequence of steps with completion tracking mounted on both stacks: native-Tab focus order across selectable steps, aria-current on the active step, and a selectability model where a step is reachable only when completed, first, or its predecessor is completed.",
+      styledSummary:
+        "react-aria useStepList/useStepListItem hooks + react-stately useStepListState (hand-wired reference) vs Solid solid-spectrum StepList.",
+      styledNote:
+        "S2 1.5.x ships no StepList and react-aria-components exposes no StepList component — only the react-aria useStepList/useStepListItem hooks and react-stately useStepListState the Solid createStepList/createStepListState faithfully port, so the React oracle is those hooks hand-wired exactly as the vendored @adobe/react-spectrum StepList/StepListItem do.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/useStepList.html",
+  },
+
   toolbar: {
     ...styledLiveOfficialEntry({
       slug: "toolbar",

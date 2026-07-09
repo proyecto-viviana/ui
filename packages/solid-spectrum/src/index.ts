@@ -561,6 +561,10 @@ export type {
 export { StatusLight, StatusLightContext } from "./statuslight";
 export type { StatusLightProps } from "./statuslight";
 
+// StepList
+export { StepList, Item as StepListItem, Step } from "./steplist";
+export type { StepListProps, StepListSize, StepProps } from "./steplist";
+
 // Switch
 export { Switch, SwitchContext, TabSwitch, ToggleSwitch } from "./switch";
 export type { SwitchProps, SwitchSize, TabSwitchProps, ToggleSwitchProps } from "./switch";

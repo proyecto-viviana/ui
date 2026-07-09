@@ -81,6 +81,7 @@ export const reactSpectrumCatalogue = [
   component("Skeleton"),
   component("Slider"),
   component("StatusLight"),
+  component("StepList"),
   component("Switch"),
   component("TableView"),
   component("Tabs"),

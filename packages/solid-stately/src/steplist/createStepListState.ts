@@ -3,7 +3,7 @@
  * Tracks selected step, completion status, and selectability.
  */
 
-import { createMemo, createSignal, type Accessor } from "solid-js";
+import { createEffect, createMemo, createSignal, type Accessor } from "solid-js";
 import type { Key } from "../collections/types";
 
 export interface StepListStateProps {
@@ -112,13 +112,16 @@ export function createStepListState(props: StepListStateProps): StepListState {
     // First step is always selectable
     const keyIndex = indexMap().get(key);
     if (keyIndex === 0) return true;
-    // A step is selectable if the previous step is completed OR is the currently selected step
+    // Otherwise a step is selectable only if the PREVIOUS step is completed —
+    // mirrors react-stately `useStepListState.isSelectable`
+    // (`isCompleted(prevStep) || step === firstKey`). There is no "step after the
+    // currently selected step" clause upstream: a fresh list exposes only the
+    // first step, and the immediate-next step becomes selectable when its
+    // predecessor is *completed*, not merely selected.
     const currentItems = items();
     if (keyIndex !== undefined && keyIndex > 0) {
       const prevKey = currentItems[keyIndex - 1].key;
       if (isCompleted(prevKey)) return true;
-      // Allow advancing to the step immediately after the selected step
-      if (prevKey === selectedKey()) return true;
     }
     return false;
   };
@@ -176,6 +179,26 @@ export function createStepListState(props: StepListStateProps): StepListState {
     }
     props.onSelectionChange?.(key);
   };
+
+  // Mirror react-stately `useStepListState`'s effect: whenever the selected step
+  // sits more than one past the last completed step (e.g. mounted with a
+  // `defaultSelectedKey` ahead of progress), auto-complete its immediate
+  // predecessor. Because completion is cumulative (`isCompleted` = index ≤
+  // lastCompleted index), advancing `lastCompletedStep` to `selectedIdx - 1`
+  // marks every intermediate step complete. This runs regardless of
+  // `isDisabled` / `isReadOnly`, exactly as upstream (the effect is ungated).
+  createEffect(() => {
+    const selKey = selectedKey();
+    if (selKey === null) return;
+    const selIdx = indexMap().get(selKey);
+    if (selIdx === undefined || selIdx <= 0) return;
+    const completed = lastCompletedStep();
+    const lcs = completed !== null ? (indexMap().get(completed) ?? -1) : -1;
+    if (selIdx > lcs + 1) {
+      const prevKey = items()[selIdx - 1]?.key;
+      if (prevKey !== undefined) setLastCompletedStep(prevKey);
+    }
+  });
 
   return {
     selectedKey,

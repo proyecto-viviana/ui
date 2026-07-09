@@ -524,6 +524,59 @@ March order (dependency/leverage; within a tier, top to bottom):
   `"Select"` → `/^Select/` for the new `aria-labelledby`); solidaria +
   solidaria-components + solid-spectrum typecheck clean. **NEXT: StepList**, then
   Virtualizer (via its hosts), DnD (via its hosts).
+
+  **StepList ✓ certified 2026-07-09 (CP9.55)** — SIXTEENTH Tier-4 unit; the
+  wizard step sequence, and the SECOND hooks-oracle cert (after ActionGroup).
+  React Spectrum S2 1.5.x ships no `StepList` and RAC exposes no StepList
+  *component* — the only surviving upstream is the pinned react-aria (3.50.0)
+  `useStepList` / `useStepListItem` hooks plus react-stately (3.48.0)
+  `useStepListState`, the direct source of our `createStepList` / `createStep` /
+  `createStepListState` port. So the React panel hand-wires those hooks exactly as
+  the vendored `@adobe/react-spectrum` StepList / StepListItem do (private
+  subpaths), and the pair diff certifies the port against its real upstream.
+  **Certified on D5 (native-Tab focus trail) + D6 (AX tree).** Paint is scoped out
+  (no styled S2 oracle → D1/D3/D7/D8/D9 moot); D2 (no motion); D4 (press/selection
+  runs through the shared selection-manager/interaction-hook family); D10 (nav is
+  native-Tab + vertical with no RTL-flipped arrow axis — the only localized
+  surface is the container's DEFAULT `aria-label`, which both fixtures bypass with
+  a fixed label); container Home/End/typeahead scoped out (the hand-rolled
+  `createStepListState` wires no selection-manager container nav — the walks press
+  only Tab, the documented StepList interaction). Registered **D5** (`default` —
+  fresh list, only step 1 selectable — Tab in from a Before button and out to
+  After; and `progress` — step 2 completed, step 3 selected → steps 1-3 selectable
+  — four Tabs walk step 1→2→3→out) and **D6** across four cases
+  (`default`/`progress`/`disabled`/`readonly`). The browser driver caught and
+  drove **three faithful port fixes**: (1) the **selectability model** — the port
+  had invented a `prevKey === selectedKey()` clause that made the step *after* the
+  currently selected one selectable/tabbable; upstream `useStepListState.isSelectable`
+  is `isCompleted(step) || isCompleted(prevStep) || step === firstKey` with no such
+  clause (a fresh list exposes only step 1, the next step opens when its
+  predecessor is *completed*, not merely selected). The D5 `(start)` roving
+  snapshot — taken before any Tab — pinned the extra tabbable step; clause removed.
+  (2) the **auto-complete effect** — vendored `useStepListState` runs an *ungated*
+  `useEffect` that, when the selected step sits more than one past the last
+  completed step (mounted ahead), auto-completes its immediate predecessor (and
+  thus, since completion is cumulative, every intermediate step); it fires even
+  under `isDisabled`. The port had no such effect, so the `disabled` case showed
+  step 1 "Not completed" where upstream shows "Completed". Ported as a
+  `createEffect` (React→Solid `useEffect`→`createEffect` maps cleanly). (3) the
+  **accessible name** — the styled port had (a) an invented flat `aria-label`
+  ("Step 1: …") on the anchor and (b) a marker that swapped the step number for a
+  check *icon* when completed, emptying the marker's text; the vendored StepListItem
+  composes the name via `aria-labelledby` from a marker (ALWAYS
+  `numberFormatter.format(index+1)`, color-coded not icon-swapped), a
+  `VisuallyHidden` state prefix ("Current: "/"Completed: "/"Not completed: "), and
+  the label. Replaced with the same `aria-labelledby` marker+state+label
+  composition (marker always the number; marker + label `aria-hidden` so the name
+  flows only through `aria-labelledby`, which pierces aria-hidden) — the D6 name
+  diff pinned both. Also exported `StepList` from `solid-spectrum` (it was ported
+  but never re-exported). Verification: StepList cert e2e **6/6 green** (2 D5
+  trails + 4 D6 cases); `solidaria-components` StepList unit suite **24 pass** (the
+  fresh-state step-2-selectable and headless-`aria-label` assertions were rewritten
+  to upstream behavior — step 2 opens only once step 1 is completed, and state text
+  now asserts on the `stepStateText` render prop the headless exposes instead of a
+  name it never sets); `solid-stately` **887 pass**; workspace typecheck clean.
+  **NEXT: Virtualizer (via its hosts)**, then DnD (via its hosts).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor

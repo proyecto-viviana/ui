@@ -1,5 +1,5 @@
 import { jsx, jsxs } from "react/jsx-runtime";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useRef, useState } from "react";
 import {
   ListBox as AriaListBox,
   ListBoxItem as AriaListBoxItem,
@@ -19,6 +19,16 @@ import {
 // that vendored ActionGroup.tsx imports.
 import { useActionGroup } from "react-aria/private/actiongroup/useActionGroup";
 import { useActionGroupItem } from "react-aria/private/actiongroup/useActionGroupItem";
+// StepList has no react-aria-components component and S2 1.5.1 ships no styled
+// StepList, so the pair oracle is the pinned v3 `useStepList` /
+// `useStepListItem` hooks (react-aria 3.50.0) + `useStepListState`
+// (react-stately 3.48.0) wired by hand exactly as Adobe's own
+// `@adobe/react-spectrum` StepList / StepListItem do — the hooks our
+// `createStepList` / `createStep` / `createStepListState` are a faithful port
+// of. Same private-subpath specifiers the vendored StepList imports.
+import { useStepList } from "react-aria/private/steplist/useStepList";
+import { useStepListItem } from "react-aria/private/steplist/useStepListItem";
+import { useStepListState } from "react-stately/private/steplist/useStepListState";
 // react-aria's OWN bundled `I18nProvider` — the public re-export of the same
 // private `../private/i18n/I18nProvider` module `useActionGroup.useLocale`
 // reads. S2's `Provider` populates a *different* `@react-aria/i18n` context
@@ -351,6 +361,13 @@ import {
   normalizeActionGroupDemoProps,
   serializeActionGroupDemoProps,
 } from "@comparison/data/actiongroup-demo";
+import {
+  stepListDemoItems,
+  stepListDemoPropsFromWindow,
+  stepListKeysFromValue,
+  normalizeStepListDemoProps,
+  serializeStepListDemoProps,
+} from "@comparison/data/steplist-demo";
 import {
   toolbarDemoItems,
   toolbarNestedGroups,
@@ -877,6 +894,7 @@ export const reactStyledFixtures = {
   autocomplete: () => jsx(ReactAutocompleteDemo, {}),
   gridlist: () => jsx(ReactGridListDemo, {}),
   actiongroup: () => jsx(ReactActionGroupDemo, {}),
+  steplist: () => jsx(ReactStepListDemo, {}),
   toolbar: () => jsx(ReactToolbarDemo, {}),
   meter: () => jsx(ReactMeterDemo, {}),
   menu: () => jsx(ReactMenuDemo, {}),
@@ -1587,6 +1605,101 @@ function ReactActionGroupDemo() {
     locale,
     children: jsx(ReactActionGroupBody, { demoProps, colorScheme, locale }),
   });
+}
+
+// Hand-wired v3 StepList oracle: one `useStepListItem` per collection node,
+// rendered as an `<a>`. The hook sets NO accessible name — naming is composed by
+// the wrapper exactly as the vendored `@adobe/react-spectrum` StepListItem does:
+// `aria-labelledby` referencing a marker (step number), a visually-hidden state
+// prefix ("Current: " / "Completed: " / "Not completed: "), and the label. Press
+// handlers from `useSelectableItem` are DOM props already, so `stepProps` spreads
+// whole; the D5/D6 cert never clicks.
+function ReactStepListItem({ node, state }) {
+  const ref = useRef(null);
+  const { stepProps } = useStepListItem({ key: node.key }, state, ref);
+  const markerId = useId();
+  const stateId = useId();
+  const labelId = useId();
+  const isSelected = state.selectedKey === node.key;
+  const stateText = isSelected
+    ? "Current: "
+    : state.isCompleted(node.key)
+      ? "Completed: "
+      : "Not completed: ";
+  return jsx("li", {
+    children: jsxs("a", {
+      ...stepProps,
+      ref,
+      "aria-labelledby": `${markerId} ${stateId} ${labelId}`,
+      children: [
+        // Marker + label are aria-hidden; the accessible name is composed only
+        // through aria-labelledby (which pierces aria-hidden), mirroring the
+        // vendored @adobe/react-spectrum StepListItem (aria-hidden marker wrapper
+        // + label div, VisuallyHidden state). This keeps the link from also
+        // exposing its raw text content in the AX tree.
+        jsx("span", { id: markerId, "aria-hidden": true, children: (node.index ?? 0) + 1 }),
+        jsx("span", { id: stateId, children: stateText }),
+        jsx("span", { id: labelId, "aria-hidden": true, children: node.rendered }),
+      ],
+    }),
+  });
+}
+
+// The hook-calling body. `useStepListState`/`useStepList` run HERE. StepList has
+// no localized runtime dependency in this cert (D10 scoped out — see the spec),
+// so no I18nProvider is needed; the fixed `aria-label` bypasses the localized
+// default name.
+function ReactStepListBody({ demoProps, colorScheme }) {
+  const ref = useRef(null);
+  const listProps = {
+    "aria-label": "Checkout steps",
+    items: stepListDemoItems,
+    children: (item) => jsx(StatelyItem, { children: item.label }, item.key),
+    defaultSelectedKey: demoProps.defaultSelectedKey || undefined,
+    defaultLastCompletedStep: demoProps.defaultLastCompletedStep || undefined,
+    disabledKeys: stepListKeysFromValue(demoProps.disabledKeys),
+    isDisabled: demoProps.isDisabled,
+    isReadOnly: demoProps.isReadOnly,
+    suppressTextValueWarning: true,
+  };
+  const state = useStepListState(listProps);
+  const { listProps: stepListProps } = useStepList(listProps, state, ref);
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx("ol", {
+          ...stepListProps,
+          ref,
+          "data-comparison-control-root": "steplist",
+          "data-comparison-control-props": serializeStepListDemoProps(demoProps),
+          children: [...state.collection].map((node) =>
+            jsx(ReactStepListItem, { node, state }, node.key),
+          ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+function ReactStepListDemo() {
+  const [demoProps, setDemoProps] = useState(stepListDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "steplist") {
+        setDemoProps(normalizeStepListDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return jsx(ReactStepListBody, { demoProps, colorScheme });
 }
 
 // Toolbar oracle: the real react-aria-components `Toolbar` (S2 1.5.1's Toolbar is

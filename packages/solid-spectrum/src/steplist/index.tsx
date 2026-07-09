@@ -6,7 +6,7 @@ import {
   type StepListItemRenderProps,
   type StepProps as HeadlessStepProps,
 } from "@proyecto-viviana/solidaria-components";
-import type { Key } from "@proyecto-viviana/solid-stately";
+import { createId, type Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 
 export type StepListSize = "sm" | "md" | "lg";
@@ -98,6 +98,18 @@ export function StepList<T extends { key: Key; label: string }>(
   );
 }
 
+/**
+ * State prefix included in the step's accessible name, mirroring
+ * `@react-spectrum/steplist`'s `en-US.json` (`"current"`/`"completed"`/
+ * `"notCompleted"`). These are referenced through `aria-labelledby` so a screen
+ * reader announces e.g. "1 Current: Details".
+ */
+function stepStateLabel(renderProps: StepListItemRenderProps): string {
+  if (renderProps.isSelected) return "Current: ";
+  if (renderProps.isCompleted) return "Completed: ";
+  return "Not completed: ";
+}
+
 function DefaultStep<T extends { key: Key; label: string }>(props: {
   item: T;
   stepNumber: number;
@@ -105,6 +117,14 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
 }): JSX.Element {
   const ctx = useContext(StepListSizeContext);
   const styles = () => sizeStyles[ctx.size];
+
+  // Accessible name composed from marker + visually-hidden state + label,
+  // matching the vendored `@adobe/react-spectrum` StepListItem
+  // (`aria-labelledby={markerId stateId labelId}`). The hook itself sets no
+  // name — the styled wrapper owns naming.
+  const markerId = createId();
+  const stateId = createId();
+  const labelId = createId();
 
   const indicatorClasses = (): string => {
     const base = `${styles().indicator} flex items-center justify-center rounded-full font-medium shrink-0 transition-colors duration-150`;
@@ -160,17 +180,45 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
         role="link"
         aria-current={props.renderProps.isSelected ? "step" : undefined}
         aria-disabled={!props.renderProps.isSelectable ? true : undefined}
-        aria-label={`Step ${props.stepNumber}: ${props.item.label}, ${props.renderProps.stepStateText}`}
+        aria-labelledby={`${markerId} ${stateId} ${labelId}`}
         tabIndex={props.renderProps.isSelectable ? 0 : undefined}
         class={`flex flex-col items-center ${styles().gap} ${cursorClass()} outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-400 rounded`}
         onClick={(e) => {
           e.preventDefault();
         }}
       >
-        <span class={indicatorClasses()}>
-          {props.renderProps.isCompleted ? <CheckIcon /> : props.stepNumber}
+        {/* Marker ALWAYS carries the step number as text — it is referenced by
+            aria-labelledby, so the accessible name stays "N State: Label" in
+            every state (mirrors the vendored @adobe/react-spectrum StepListItem,
+            whose marker is `numberFormatter.format(index + 1)` regardless of
+            completion; completion is a color change, not an icon swap). The
+            marker and label are aria-hidden — the accessible name is composed
+            solely through aria-labelledby (which pierces aria-hidden), exactly
+            as the vendored StepListItem hides its marker wrapper + label div. */}
+        <span id={markerId} aria-hidden="true" class={indicatorClasses()}>
+          {props.stepNumber}
         </span>
-        <span class={labelClasses()}>{props.item.label}</span>
+        {/* Visually-hidden state prefix, referenced by aria-labelledby only. */}
+        <span
+          id={stateId}
+          style={{
+            border: 0,
+            clip: "rect(0 0 0 0)",
+            "clip-path": "inset(50%)",
+            height: "1px",
+            margin: "-1px",
+            overflow: "hidden",
+            padding: 0,
+            position: "absolute",
+            width: "1px",
+            "white-space": "nowrap",
+          }}
+        >
+          {stepStateLabel(props.renderProps)}
+        </span>
+        <span id={labelId} aria-hidden="true" class={labelClasses()}>
+          {props.item.label}
+        </span>
       </a>
       {/* Connector line — hidden on the last step */}
       <div
@@ -188,21 +236,6 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
 export function Step(props: StepProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
   return <HeadlessStep {...headlessProps} class={local.class} />;
-}
-
-function CheckIcon(): JSX.Element {
-  return (
-    <svg
-      class="h-4 w-4"
-      aria-hidden="true"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      stroke-width="3"
-    >
-      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  );
 }
 
 StepList.Step = Step;

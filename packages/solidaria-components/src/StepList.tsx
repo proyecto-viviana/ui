@@ -240,12 +240,6 @@ export function Step(props: StepProps): JSX.Element {
     }
   };
 
-  const stepStateText = () => {
-    if (isSelected()) return "Current";
-    if (isCompleted()) return "Completed";
-    return "Not completed";
-  };
-
   return (
     <li
       {...domProps}
@@ -263,7 +257,6 @@ export function Step(props: StepProps): JSX.Element {
         tabIndex={selectable() ? 0 : undefined}
         onClick={handleClick}
         on:keydown={handleKeyDown}
-        aria-label={`Step ${local.stepNumber}: ${local.item.label}, ${stepStateText()}`}
       >
         {local.children}
       </a>
