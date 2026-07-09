@@ -128,7 +128,7 @@ describe("TreeView (solid-spectrum)", () => {
 
     const projectBrief = screen.getByRole("row", { name: /Project brief/ });
     expect(projectBrief).toHaveAttribute("data-selected", "true");
-    expect(within(projectBrief).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    expect(within(projectBrief).getByRole("checkbox", { name: /^Select/ })).toBeChecked();
     expect(screen.getByText("Project brief")).toHaveAttribute("data-rsp-slot", "label");
     expect(screen.getByText("Planning notes")).toHaveAttribute("data-rsp-slot", "description");
 
@@ -210,7 +210,7 @@ describe("TreeView (solid-spectrum)", () => {
     const projectBrief = screen.getByRole("row", { name: /Project brief/ });
     const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
     expect(projectBrief).toHaveAttribute("data-selected", "true");
-    expect(within(projectBrief).queryByRole("checkbox", { name: "Select" })).toBeNull();
+    expect(within(projectBrief).queryByRole("checkbox", { name: /^Select/ })).toBeNull();
 
     await user.click(quarterlyReport);
 
@@ -256,7 +256,7 @@ describe("TreeView (solid-spectrum)", () => {
     const projectBrief = screen.getByRole("row", { name: /Project brief/ });
     const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
     expect(projectBrief).toHaveAttribute("data-selected", "true");
-    expect(within(projectBrief).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    expect(within(projectBrief).getByRole("checkbox", { name: /^Select/ })).toBeChecked();
 
     await user.click(quarterlyReport);
 
@@ -284,7 +284,7 @@ describe("TreeView (solid-spectrum)", () => {
 
     const archive = screen.getByRole("row", { name: /Archive/ });
     expect(archive).toHaveAttribute("aria-disabled", "true");
-    expect(within(archive).queryByRole("checkbox", { name: "Select" })).toBeNull();
+    expect(within(archive).queryByRole("checkbox", { name: /^Select/ })).toBeNull();
   });
 
   it("supports dynamic TreeViewItem isDisabled props", () => {
@@ -309,7 +309,7 @@ describe("TreeView (solid-spectrum)", () => {
 
     const report = screen.getByRole("row", { name: /Quarterly report/ });
     expect(report).toHaveAttribute("aria-disabled", "true");
-    expect(within(report).queryByRole("checkbox", { name: "Select" })).toBeNull();
+    expect(within(report).queryByRole("checkbox", { name: /^Select/ })).toBeNull();
   });
 
   it("applies the disabled content color to the row, description, and chevron", () => {

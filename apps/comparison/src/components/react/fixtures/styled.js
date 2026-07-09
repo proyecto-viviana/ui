@@ -2237,14 +2237,16 @@ function ReactTreeViewDemo() {
   ].join("|");
 
   return renderReactSpectrumReference(
-    jsx("div", {
+    jsxs("div", {
       style: collectionFixtureStyle,
       "data-comparison-selected-keys": serializeTreeViewKeys(selectedKeys),
       "data-comparison-expanded-keys": serializeTreeViewKeys(expandedKeys),
       "data-comparison-action-key": actionKey,
       "data-comparison-load-more-count": String(loadMoreCount),
-      children: jsx(
-        SpectrumTreeView,
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx(
+          SpectrumTreeView,
         {
           "aria-label": "Files",
           "data-comparison-control-root": "treeview",
@@ -2272,7 +2274,9 @@ function ReactTreeViewDemo() {
           children: renderTreeItem,
         },
         renderKey,
-      ),
+        ),
+        jsx("button", { children: "After" }),
+      ],
     }),
     colorScheme,
   );

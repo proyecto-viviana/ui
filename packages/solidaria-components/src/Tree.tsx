@@ -886,7 +886,13 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   // Resolve writing direction for keyboard expand/collapse parity
   const treeDirection = createMemo(() => ariaProps.direction ?? resolveTreeDirection(ref()));
 
-  const { treeProps } = createTree<T, TreeCollection<T>>(
+  // Keep the aria object (do NOT destructure `treeProps`): its `treeProps` getter
+  // wraps a memo carrying the reactive roving-container `tabIndex`, which rolls to
+  // -1 once a row takes focus. Destructuring here would read the getter once and
+  // freeze it at its first value (tabIndex 0), so the roll would never reach the
+  // DOM. Read `treeAria.treeProps` inside `cleanTreeProps` instead, so the spread's
+  // reactive re-run re-enters the memo and tracks `focusedKey`. (Mirrors GridList.)
+  const treeAria = createTree<T, TreeCollection<T>>(
     () => ({
       id: ariaProps.id,
       "aria-label": ariaProps["aria-label"],
@@ -926,7 +932,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   });
 
   const cleanTreeProps = () => {
-    const { ref: _ref1, ...rest } = treeProps as Record<string, unknown>;
+    const { ref: _ref1, ...rest } = treeAria.treeProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -1769,7 +1775,7 @@ export function TreeSelectionCheckbox(props: {
       {...treeSelectionCheckboxAria.checkboxProps}
       class={props.class ?? "solidaria-Tree-checkbox"}
       style={props.style}
-      tabIndex={props.excludeFromTabOrder ? -1 : undefined}
+      tabIndex={props.excludeFromTabOrder ? -1 : 0}
       aria-label={props["aria-label"] ?? treeSelectionCheckboxAria.checkboxProps["aria-label"]}
     />
   );

@@ -481,6 +481,49 @@ March order (dependency/leverage; within a tier, top to bottom):
   name assertions updated "Select" → "Select Alice"); solidaria +
   solidaria-components + solid-spectrum typecheck clean. **NEXT: TreeView**, then
   StepList, Virtualizer (via its hosts), DnD (via its hosts).
+
+  **TreeView ✓ certified 2026-07-09 (CP9.54)** — FIFTEENTH Tier-4 unit; the
+  expandable hierarchical grid. Oracle is `@react-spectrum/s2` `TreeView`.
+  **Certified on D5 (real roving focus) + D6 (AX tree).** Unlike TableView, both
+  stacks build on RAC `Tree` → `<div role="treegrid">` → `<div role="row">` →
+  `<div role="gridcell">`: the tags match, so the D5 focus-trail (whose descriptor
+  pins `tag`) IS pair-comparable and roving DOM focus is certifiable here. Paint
+  (D1/D3/D7/D8) is scoped out — the port windows its rows through the spacer-based
+  1D `virtualizer-decomposition`, S2 through its 2D `Virtualizer`+`TreeViewLayout`,
+  so geometry/box-model dimensions can't reconcile (tech-debt
+  `treeview-div-grid-paint`); D10 deferred. Registered **D5** (`default`
+  tab-forward `[Tab, ArrowDown×2, ArrowUp, Home, End]` from a Before button, and
+  tab-backward `[Shift+Tab]` from an After button — the direction-aware entry) and
+  **D6** across five cases (`default`/`single`/`highlight`/`none`/`disabled`). The
+  browser driver caught and drove **five faithful port fixes**: (1) the roving
+  **container `tabIndex`** was hardcoded `0`; ported `useSelectableCollection`'s
+  `focusedKey == null ? 0 : -1` roll (`useSelectableCollection.mjs:385`) — but the
+  roll never reached the DOM because `Tree.tsx` **destructured** `treeProps` off the
+  `createTree` aria object, freezing the getter at its first (tabIndex-0) value; the
+  fix keeps the aria object and reads `treeAria.treeProps` fresh inside
+  `cleanTreeProps`, so Solid's reactive spread re-enters the memo and tracks
+  `focusedKey` (the identical freeze GridList/TableView already documented). (2)
+  **focus entry** was a non-bubbling `onFocus` that always seeded the *first*
+  navigable row; replaced with bubbling `onFocusIn`/`onFocusOut` (the TagGroup
+  lesson — Solid `onFocus` doesn't bubble, so backward Shift+Tab stranded on the
+  last checkbox) plus selected-key + direction logic mirroring
+  `createListBox.onListBoxFocus`: forward Tab → `firstSelectedKey ?? firstNavigable`,
+  backward Shift+Tab (relatedTarget FOLLOWS via `compareDocumentPosition`) →
+  `lastSelectedKey ?? lastNavigable`. (3) the **selection checkbox `tabIndex`** was
+  `-1` (hook) + `excludeFromTabOrder` (styled); RAC's `Tree` renders the
+  `slot="selection"` Checkbox input with a static `tabindex="0"` on every row (the
+  expand/collapse button is the `-1` one), so the hook drops its `tabIndex` and the
+  styled checkbox is now unconditionally tabbable. (4) the checkbox
+  **`aria-labelledby`** now folds its own "Select" text with the row id
+  (`${checkboxId} ${rowId}`, mirroring `@react-aria/tree` `getRowId`) so SRs read
+  "Select Project brief". (5) the `ExpandableRowChevron` and the checkbox visual box
+  `<span>` + Checkmark dropped their invented `aria-hidden` to match S2's un-hidden
+  `Chevron`/plain-`Checkbox` rendering (they now surface as `img`, the CP9.53
+  precedent). Verification: TreeView cert e2e **7/7 green**; tree unit suites **77
+  pass** (two `solid-spectrum/Tree.test.tsx` checkbox-name assertions updated
+  `"Select"` → `/^Select/` for the new `aria-labelledby`); solidaria +
+  solidaria-components + solid-spectrum typecheck clean. **NEXT: StepList**, then
+  Virtualizer (via its hosts), DnD (via its hosts).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor

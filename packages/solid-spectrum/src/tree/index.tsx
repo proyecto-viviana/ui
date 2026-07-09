@@ -1040,11 +1040,7 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
               }}
             >
               {shouldShowCheckbox(renderProps) ? (
-                <TreeSelectionCheckbox
-                  itemKey={props.id}
-                  renderProps={renderProps}
-                  excludeFromTabOrder
-                />
+                <TreeSelectionCheckbox itemKey={props.id} renderProps={renderProps} />
               ) : null}
               <div
                 class={treeViewRowBackground(getRowLayerProps(renderProps))}
@@ -1151,7 +1147,6 @@ export function TreeExpandButton(
               <Chevron
                 size="S"
                 class={treeExpandIcon({ ...renderState(), isExpanded: false })}
-                aria-hidden="true"
               />
             ))}
       </button>
@@ -1170,7 +1165,6 @@ export function TreeExpandButton(
           <Chevron
             size="S"
             class={treeExpandIcon({ ...renderState(), isExpanded })}
-            aria-hidden="true"
           />
         ))}
     </HeadlessTreeExpandButton>
@@ -1212,9 +1206,9 @@ export function TreeSelectionCheckbox(props: {
         excludeFromTabOrder={props.excludeFromTabOrder}
         aria-label={props["aria-label"] ?? "Select"}
       />
-      <span class={treeCheckboxBox(renderProps())} aria-hidden="true">
+      <span class={treeCheckboxBox(renderProps())}>
         {renderProps().isSelected ? (
-          <Checkmark size="XS" class={treeCheckboxIcon} aria-hidden="true" />
+          <Checkmark size="XS" class={treeCheckboxIcon} />
         ) : null}
       </span>
     </span>

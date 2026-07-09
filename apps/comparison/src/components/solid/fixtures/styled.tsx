@@ -2915,6 +2915,7 @@ function SolidSpectrumTreeViewDemo() {
           },
         },
         [
+          hc("button", {}, ["Before"]),
           hc(
             SolidSpectrumTreeView,
             {
@@ -3064,6 +3065,7 @@ function SolidSpectrumTreeViewDemo() {
                   : null,
             ]),
           ),
+          hc("button", {}, ["After"]),
         ],
       ),
     ],

@@ -5,8 +5,10 @@
 
 import { createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
+import { createId } from "@proyecto-viviana/solid-stately";
 import type { TreeState, TreeCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeSelectionCheckboxProps, TreeSelectionCheckboxAria } from "./types";
+import { getTreeData } from "./createTree";
 
 /**
  * Creates accessibility props for a tree selection checkbox.
@@ -18,6 +20,16 @@ export function createTreeSelectionCheckbox<
   props: Accessor<AriaTreeSelectionCheckboxProps>,
   state: Accessor<TreeState<T, C>>,
 ): TreeSelectionCheckboxAria {
+  const fallbackRowId = createId();
+  const checkboxId = createId();
+
+  // Mirror @react-aria/tree getRowId: the checkbox's aria-labelledby folds its own
+  // "Select" label with the row's id so the SR announces "Select <row text>".
+  const rowId = createMemo(() => {
+    const treeData = getTreeData(state());
+    return treeData ? `${treeData.treeId}-row-${String(props().key)}` : fallbackRowId;
+  });
+
   const isSelected = createMemo(() => {
     const s = state();
     const p = props();
@@ -52,12 +64,13 @@ export function createTreeSelectionCheckbox<
   const checkboxProps = createMemo(() => {
     const baseProps: Record<string, unknown> = {
       type: "checkbox",
+      id: checkboxId,
       "aria-label": "Select",
+      "aria-labelledby": `${checkboxId} ${rowId()}`,
       checked: isSelected(),
       disabled: isDisabled(),
       onChange,
       onClick,
-      tabIndex: -1, // Use arrow keys to navigate, not tab
     };
 
     return baseProps as JSX.InputHTMLAttributes<HTMLInputElement>;

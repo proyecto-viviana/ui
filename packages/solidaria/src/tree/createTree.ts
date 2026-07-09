@@ -240,24 +240,76 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     }
   };
 
-  const onFocus = () => {
+  // The first / last SELECTED key in flattened (visible) order — mirrors React
+  // Aria's `SelectionManager.firstSelectedKey`/`lastSelectedKey`, which entry
+  // focus prefers over the first/last row.
+  const firstSelectedKey = (s: TreeState<T, C>): Key | null => {
+    let key = s.collection.getFirstKey();
+    while (key != null) {
+      if (s.isSelected(key)) return key;
+      key = s.collection.getKeyAfter(key);
+    }
+    return null;
+  };
+  const lastSelectedKey = (s: TreeState<T, C>): Key | null => {
+    let key = s.collection.getLastKey();
+    while (key != null) {
+      if (s.isSelected(key)) return key;
+      key = s.collection.getKeyBefore(key);
+    }
+    return null;
+  };
+
+  // Entry focus is handled on `focusin` (BUBBLING) rather than `focus`
+  // (non-bubbling): React Aria's `useSelectableCollection.onFocus` bubbles, so a
+  // Shift+Tab that the browser parks on a tabbable descendant (e.g. a selection
+  // checkbox, which is `tabIndex=0` like upstream) still reaches the collection
+  // and is redirected to the focused/selected row. A Solid non-bubbling `focus`
+  // handler on the treegrid only fires for forward Tab (the container is the first
+  // tab stop) and would strand backward entry on the last checkbox — the same
+  // trampoline gotcha the TagGroup port hit. See `createListBox.onListBoxFocus`.
+  const onFocusIn = (e: FocusEvent) => {
     const s = state();
     s.setFocused(true);
 
-    // If nothing is focused, focus the first navigable item
-    if (s.focusedKey == null) {
-      const firstKey = findNextNavigableKey(s, s.collection.getFirstKey(), (k) =>
-        s.collection.getKeyAfter(k),
-      );
-      if (firstKey != null) {
-        s.setFocusedKey(firstKey);
-      }
+    const currentTarget = e.currentTarget as Element | null;
+    const relatedTarget = e.relatedTarget as Element | null;
+    // Internal roving moves (focus already inside the tree) are driven by
+    // `onKeyDown`; only seed focus when it enters from OUTSIDE the treegrid.
+    if (!currentTarget || (relatedTarget && currentTarget.contains(relatedTarget))) {
+      return;
+    }
+
+    let key = s.focusedKey;
+    if (key == null) {
+      // Shift+Tab backward into the tree (focus arrived from a FOLLOWING element)
+      // enters at the last selected row, else the last navigable row; forward Tab
+      // enters at the first selected row, else the first navigable row.
+      const backward =
+        !!relatedTarget &&
+        !!(
+          currentTarget.compareDocumentPosition(relatedTarget) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+        );
+      key = backward
+        ? (lastSelectedKey(s) ??
+          findNextNavigableKey(s, s.collection.getLastKey(), (k) => s.collection.getKeyBefore(k)))
+        : (firstSelectedKey(s) ??
+          findNextNavigableKey(s, s.collection.getFirstKey(), (k) => s.collection.getKeyAfter(k)));
+    }
+    if (key != null) {
+      s.setFocusedKey(key);
     }
   };
 
-  const onBlur = () => {
+  const onFocusOut = (e: FocusEvent) => {
     const s = state();
-    s.setFocused(false);
+    const currentTarget = e.currentTarget as Element | null;
+    const relatedTarget = e.relatedTarget as Element | null;
+    // Only clear the focused flag once focus has left the treegrid entirely.
+    if (!currentTarget || !relatedTarget || !currentTarget.contains(relatedTarget)) {
+      s.setFocused(false);
+    }
   };
 
   createEffect(() => {
@@ -295,10 +347,13 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       "aria-describedby": p["aria-describedby"],
       "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
       "aria-disabled": p.isDisabled || undefined,
-      tabIndex: p.isDisabled ? undefined : 0,
+      // Roving container tab stop: `0` while no row is focused (Tab enters the
+      // tree), `-1` once a row takes focus (the row holds the tab stop). Mirrors
+      // `useSelectableCollection` `tabIndex = focusedKey == null ? 0 : -1`.
+      tabIndex: p.isDisabled ? undefined : s.focusedKey == null ? 0 : -1,
       onKeyDown,
-      onFocus,
-      onBlur,
+      onFocusIn,
+      onFocusOut,
     };
 
     // Add row count for virtualized trees
