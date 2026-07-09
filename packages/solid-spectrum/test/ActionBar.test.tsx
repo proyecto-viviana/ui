@@ -86,12 +86,15 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      expect(actionBarElement).toBe(toolbar);
+      // The root is the roleless `.vui-action-bar` container (S2 parity); the
+      // sole `toolbar` is the inner ActionButtonGroup. Ref/style/class land on
+      // the root, not the toolbar.
+      const root = container.querySelector<HTMLElement>(".vui-action-bar");
+      expect(actionBarElement).toBe(root);
       expect(container.querySelector(".vui-action-bar--emphasized")).toBeInTheDocument();
       expect(container.querySelector(".unsafe-action-bar")).toBeInTheDocument();
       expect(container.querySelector(".generated-action-bar")).toBeInTheDocument();
-      expect(toolbar).toHaveStyle({ margin: "4px" });
+      expect(root).toHaveStyle({ margin: "4px" });
     });
   });
 
@@ -157,7 +160,10 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
 
-      expect(screen.getByRole("toolbar", { name: "Actions" })).toHaveAttribute("data-open", "true");
+      // The sole toolbar is the inner ActionButtonGroup ("Actions"); the
+      // roleless root carries `data-open`.
+      expect(screen.getByRole("toolbar", { name: "Actions" })).toBeInTheDocument();
+      expect(container.querySelector(".vui-action-bar")).toHaveAttribute("data-open", "true");
       const edit = screen.getByRole("button", { name: "Edit" });
       expect(edit.className).not.toBe("");
       expect(edit).not.toHaveAttribute("data-quiet");
@@ -179,7 +185,7 @@ describe("ActionBar (solid-spectrum)", () => {
       const [count, setCount] = createSignal<number | "all">(3);
       const scrollElement = { offsetWidth: 120, clientWidth: 105 } as HTMLElement;
 
-      render(() => (
+      const { container } = render(() => (
         <ActionBar
           selectedItemCount={count()}
           scrollRef={{ current: scrollElement }}
@@ -189,9 +195,11 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
+      // The scrollbar-compensation `inset-inline-end` is a root style; the root
+      // is the roleless `.vui-action-bar` container.
+      const root = container.querySelector<HTMLElement>(".vui-action-bar");
       await waitFor(() =>
-        expect(toolbar).toHaveStyle({
+        expect(root).toHaveStyle({
           "inset-inline-end": "calc(var(--insetEnd, 8px) + 15px)",
         }),
       );
@@ -253,7 +261,7 @@ describe("ActionBar (solid-spectrum)", () => {
   describe("context", () => {
     it("merges ActionBarContext props and refs", () => {
       let actionBarElement: HTMLDivElement | undefined;
-      render(() => (
+      const { container } = render(() => (
         <ActionBarContext.Provider
           value={{
             selectedItemCount: 2,
@@ -271,10 +279,11 @@ describe("ActionBar (solid-spectrum)", () => {
         </ActionBarContext.Provider>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      expect(actionBarElement).toBe(toolbar);
-      expect(toolbar).toHaveClass("context-action-bar");
-      expect(toolbar).toHaveStyle({ margin: "6px" });
+      // Context class/style/ref merge onto the roleless root container.
+      const root = container.querySelector<HTMLElement>(".vui-action-bar");
+      expect(actionBarElement).toBe(root);
+      expect(root).toHaveClass("context-action-bar");
+      expect(root).toHaveStyle({ margin: "6px" });
       expect(screen.getByText("2 selected")).toBeInTheDocument();
     });
 
@@ -365,7 +374,7 @@ describe("ActionBar (solid-spectrum)", () => {
       const scrollElement = { offsetWidth: 140, clientWidth: 132 } as HTMLElement;
       let state!: ActionBarContainerState;
 
-      render(() => {
+      const { container } = render(() => {
         state = createActionBarContainer({
           selectedKeys,
           onSelectionChange,
@@ -382,7 +391,11 @@ describe("ActionBar (solid-spectrum)", () => {
         return <>{state.actionBar()}</>;
       });
 
-      expect(screen.getByRole("toolbar")).toHaveAttribute("data-selected-keys", "reports,roadmap");
+      // The forwarded `data-selected-keys` DOM prop lands on the roleless root.
+      expect(container.querySelector(".vui-action-bar")).toHaveAttribute(
+        "data-selected-keys",
+        "reports,roadmap",
+      );
       expect(screen.getByText("2 selected")).toBeInTheDocument();
       await waitFor(() => expect(state.actionBarHeight()).toBe(8));
 
@@ -421,7 +434,7 @@ describe("ActionBar (solid-spectrum)", () => {
     });
 
     it("supports select-all collection state", () => {
-      render(() => {
+      const { container } = render(() => {
         const state = createActionBarContainer({
           defaultSelectedKeys: "all",
           renderActionBar: (keys) => (
@@ -434,7 +447,10 @@ describe("ActionBar (solid-spectrum)", () => {
         return <>{state.actionBar()}</>;
       });
 
-      expect(screen.getByRole("toolbar")).toHaveAttribute("data-selected-keys", "all");
+      expect(container.querySelector(".vui-action-bar")).toHaveAttribute(
+        "data-selected-keys",
+        "all",
+      );
       expect(screen.getByText("All selected")).toBeInTheDocument();
     });
   });

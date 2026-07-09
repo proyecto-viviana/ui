@@ -18,7 +18,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { announce, createToolbar } from "@proyecto-viviana/solidaria";
+import { announce } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import {
   type ClassNameOrFunction,
@@ -105,16 +105,15 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   const selectedItemCount = () => local.selectedItemCount ?? 0;
   const isOpen = () => selectedItemCount() !== 0;
 
-  const { toolbarProps } = createToolbar({
-    orientation: "horizontal",
-    get "aria-label"() {
-      return local["aria-label"] ?? (local["aria-labelledby"] ? undefined : "Actions");
-    },
-    get "aria-labelledby"() {
-      return local["aria-labelledby"];
-    },
-  });
-
+  // Faithful to S2 `ActionBar` (ActionBar.tsx:192): the ROOT is a PLAIN
+  // container with NO `role` — S2 spreads only `keyboardProps` (an Escape
+  // handler that clears the selection) onto it. The single `toolbar` is the
+  // inner `ActionButtonGroup` (styled layer), NOT this root. Applying
+  // `createToolbar` here would (a) give the root a spurious `role="toolbar"`
+  // S2 never renders and (b) nest the real action toolbar inside it, forcing
+  // its role to downgrade to `group`. So the root deliberately carries no
+  // toolbar props — `aria-label`/`aria-labelledby` are consumed by the inner
+  // ActionButtonGroup at the styled layer.
   let wasOpen = false;
   createEffect(() => {
     const open = isOpen();
@@ -171,7 +170,6 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
       <ActionBarContext.Provider value={contextValue()}>
         <div
           {...filteredDOMProps()}
-          {...toolbarProps}
           class={renderProps.class()}
           style={renderProps.style()}
           slot={local.slot}

@@ -171,13 +171,17 @@ const closeIconStyles = style({
 });
 
 function ActionBarCloseIcon(): JSX.Element {
+  // Faithful to S2's `CloseButton` (CloseButton.mjs), which renders the
+  // `Cross` UI-icon: a bare `<svg>` with NO `aria-hidden` (the ui-icon path
+  // does not run the `createIcon` factory that would set it). Chromium exposes
+  // a bare `<svg>` as `role="img"`, so it surfaces as an `img` child of the
+  // clear button in the accessibility tree — the port must NOT mark it hidden.
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="12"
       height="12"
       viewBox="0 0 12 12"
-      aria-hidden="true"
       class={closeIconStyles}
     >
       <path
@@ -550,15 +554,16 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
           }
           style={() => rootStyle()}
         >
-          <div class={selectionWrapperStyles}>
-            <ActionBarCloseButton
-              isEmphasized={local.isEmphasized}
-              aria-label={clearSelectionLabel()}
-            />
-            <span class={selectionCountStyles({ isEmphasized: local.isEmphasized })}>
-              {selectionLabel()}
-            </span>
-          </div>
+          {/*
+            Actions FIRST in DOM order, selection SECOND — faithful to S2
+            `ActionBar` (ActionBar.tsx:200-231): the actions wrapper is written
+            before the selection wrapper, and CSS `order` (`order:1` actions,
+            `order:0` selection) swaps their VISUAL order so the selection reads
+            on the leading side while the sole `toolbar` (the ActionButtonGroup)
+            stays first in the accessibility tree. This is what makes the clear
+            button + count text OUTSIDE siblings of the toolbar rather than the
+            first entries under it.
+          */}
           <div class={actionsWrapperStyles}>
             <ActionButtonGroup
               staticColor={local.isEmphasized ? "auto" : undefined}
@@ -567,6 +572,15 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
             >
               {local.children}
             </ActionButtonGroup>
+          </div>
+          <div class={selectionWrapperStyles}>
+            <ActionBarCloseButton
+              isEmphasized={local.isEmphasized}
+              aria-label={clearSelectionLabel()}
+            />
+            <span class={selectionCountStyles({ isEmphasized: local.isEmphasized })}>
+              {selectionLabel()}
+            </span>
           </div>
         </HeadlessActionBar>
       </FocusScope>

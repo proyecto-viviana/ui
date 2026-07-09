@@ -20,6 +20,22 @@ afterEach(() => {
   destroyAnnouncer();
 });
 
+/**
+ * The headless ActionBar root is a PLAIN container with NO `role` — faithful to
+ * S2 `ActionBar` (ActionBar.tsx:192), whose root carries only an Escape
+ * `keyboardProps` handler. The single `toolbar` is the inner `ActionButtonGroup`
+ * added at the styled layer, NOT this root; giving the root a `toolbar` role
+ * would force that inner group's role to downgrade to `group` (the divergence
+ * the ActionBar pair-oracle cert caught). The stable hook for the root is its
+ * `data-open` attribute.
+ */
+const queryActionBar = () => document.querySelector<HTMLDivElement>("[data-open]");
+const getActionBar = (): HTMLDivElement => {
+  const el = queryActionBar();
+  if (!el) throw new Error("ActionBar root not found");
+  return el;
+};
+
 describe("ActionBar (headless)", () => {
   describe("visibility", () => {
     it("hides when selectedItemCount is 0", () => {
@@ -28,7 +44,7 @@ describe("ActionBar (headless)", () => {
           <span>actions</span>
         </ActionBar>
       ));
-      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+      expect(queryActionBar()).not.toBeInTheDocument();
     });
 
     it("hides when selectedItemCount is omitted", () => {
@@ -37,7 +53,7 @@ describe("ActionBar (headless)", () => {
           <span>actions</span>
         </ActionBar>
       ));
-      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+      expect(queryActionBar()).not.toBeInTheDocument();
     });
 
     it("shows when selectedItemCount > 0", () => {
@@ -46,7 +62,7 @@ describe("ActionBar (headless)", () => {
           <span>actions</span>
         </ActionBar>
       ));
-      expect(screen.getByRole("toolbar")).toBeInTheDocument();
+      expect(queryActionBar()).toBeInTheDocument();
     });
 
     it('shows when selectedItemCount is "all"', () => {
@@ -55,7 +71,7 @@ describe("ActionBar (headless)", () => {
           <span>actions</span>
         </ActionBar>
       ));
-      expect(screen.getByRole("toolbar")).toBeInTheDocument();
+      expect(queryActionBar()).toBeInTheDocument();
     });
 
     it("hides when count changes from positive to 0", () => {
@@ -66,57 +82,34 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      expect(screen.getByRole("toolbar")).toBeInTheDocument();
+      expect(queryActionBar()).toBeInTheDocument();
       setCount(0);
-      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+      expect(queryActionBar()).not.toBeInTheDocument();
     });
   });
 
   describe("roles and attributes", () => {
-    it("renders with toolbar role", () => {
+    it("renders a plain container with no toolbar role (S2 parity)", () => {
       render(() => (
         <ActionBar selectedItemCount={1} onClearSelection={() => {}}>
           <span>actions</span>
         </ActionBar>
       ));
-      expect(screen.getByRole("toolbar")).toBeInTheDocument();
+      // S2's ActionBar root is roleless — the toolbar lives on the inner
+      // ActionButtonGroup (styled layer), never the root.
+      expect(queryActionBar()).toBeInTheDocument();
+      expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
     });
 
-    it('has default aria-label "Actions"', () => {
-      render(() => (
-        <ActionBar selectedItemCount={1} onClearSelection={() => {}}>
-          <span>actions</span>
-        </ActionBar>
-      ));
-      expect(screen.getByRole("toolbar")).toHaveAttribute("aria-label", "Actions");
-    });
-
-    it("supports custom aria-label", () => {
+    it("does not label the root — the label belongs on the inner actions toolbar", () => {
       render(() => (
         <ActionBar selectedItemCount={1} onClearSelection={() => {}} aria-label="Bulk actions">
           <span>actions</span>
         </ActionBar>
       ));
-      expect(screen.getByRole("toolbar")).toHaveAttribute("aria-label", "Bulk actions");
-    });
-
-    it("supports aria-labelledby without forcing aria-label fallback", () => {
-      render(() => (
-        <>
-          <span id="bulk-actions-label">Bulk actions</span>
-          <ActionBar
-            selectedItemCount={1}
-            onClearSelection={() => {}}
-            aria-labelledby="bulk-actions-label"
-          >
-            <span>actions</span>
-          </ActionBar>
-        </>
-      ));
-
-      const toolbar = screen.getByRole("toolbar");
-      expect(toolbar).toHaveAttribute("aria-labelledby", "bulk-actions-label");
-      expect(toolbar).not.toHaveAttribute("aria-label");
+      // The `aria-label` prop is consumed by the styled ActionButtonGroup, never
+      // stamped on this roleless container (which S2 leaves unlabelled).
+      expect(getActionBar()).not.toHaveAttribute("aria-label");
     });
 
     it("forwards refs and DOM data attributes", () => {
@@ -135,9 +128,9 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByTestId("bulk-action-bar");
-      expect(actionBarElement).toBe(toolbar);
-      expect(toolbar).toHaveAttribute("data-state", "selected");
+      const root = screen.getByTestId("bulk-action-bar");
+      expect(actionBarElement).toBe(root);
+      expect(root).toHaveAttribute("data-state", "selected");
     });
   });
 
@@ -160,15 +153,15 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      expect(toolbar).toHaveClass("bulk-open");
-      expect(toolbar).toHaveClass("selected-2");
-      expect(toolbar).toHaveStyle({ opacity: "1" });
+      const root = getActionBar();
+      expect(root).toHaveClass("bulk-open");
+      expect(root).toHaveClass("selected-2");
+      expect(root).toHaveStyle({ opacity: "1" });
 
       setCount("all");
-      expect(toolbar).toHaveClass("bulk-open");
-      expect(toolbar).toHaveClass("selected-all");
-      expect(toolbar).toHaveStyle({ opacity: "0.75" });
+      expect(root).toHaveClass("bulk-open");
+      expect(root).toHaveClass("selected-all");
+      expect(root).toHaveStyle({ opacity: "0.75" });
     });
   });
 
@@ -181,8 +174,7 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      fireEvent.keyDown(toolbar, { key: "Escape" });
+      fireEvent.keyDown(getActionBar(), { key: "Escape" });
       expect(onClear).toHaveBeenCalledOnce();
     });
 
@@ -194,33 +186,8 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      fireEvent.keyDown(toolbar, { key: "Enter" });
+      fireEvent.keyDown(getActionBar(), { key: "Enter" });
       expect(onClear).not.toHaveBeenCalled();
-    });
-
-    it("supports toolbar arrow navigation (Home/End are no-ops, upstream useToolbar parity)", () => {
-      render(() => (
-        <ActionBar selectedItemCount={5} onClearSelection={() => {}}>
-          <button>Edit</button>
-          <button>Duplicate</button>
-          <button>Delete</button>
-        </ActionBar>
-      ));
-
-      const edit = screen.getByRole("button", { name: "Edit" });
-      const duplicate = screen.getByRole("button", { name: "Duplicate" });
-
-      edit.focus();
-      fireEvent.keyDown(edit, { key: "ArrowRight" });
-      expect(document.activeElement).toBe(duplicate);
-
-      // Upstream useToolbar only binds Arrow keys and Tab; Home/End do not move focus.
-      fireEvent.keyDown(duplicate, { key: "End" });
-      expect(document.activeElement).toBe(duplicate);
-
-      fireEvent.keyDown(duplicate, { key: "Home" });
-      expect(document.activeElement).toBe(duplicate);
     });
 
     it("calls user onKeyDown handler and respects defaultPrevented", () => {
@@ -233,8 +200,7 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      fireEvent.keyDown(toolbar, { key: "Escape" });
+      fireEvent.keyDown(getActionBar(), { key: "Escape" });
       expect(onKeyDown).toHaveBeenCalledOnce();
       expect(onClear).not.toHaveBeenCalled();
     });
@@ -246,8 +212,7 @@ describe("ActionBar (headless)", () => {
         </ActionBar>
       ));
 
-      const toolbar = screen.getByRole("toolbar");
-      expect(() => fireEvent.keyDown(toolbar, { key: "Escape" })).not.toThrow();
+      expect(() => fireEvent.keyDown(getActionBar(), { key: "Escape" })).not.toThrow();
       expect(() =>
         fireEvent.click(screen.getByRole("button", { name: "Clear selection" })),
       ).not.toThrow();
@@ -355,13 +320,13 @@ describe("ActionBar (headless)", () => {
       ));
 
       expect(screen.getByTestId("collection")).toBeInTheDocument();
-      expect(screen.getByRole("toolbar")).toBeInTheDocument();
+      expect(queryActionBar()).toBeInTheDocument();
       expect(container.firstElementChild).toHaveStyle({ position: "relative" });
     });
   });
 
   describe("a11y validation", () => {
-    it("axe: selected toolbar with count, clear button, and actions", async () => {
+    it("axe: selection container with count, clear button, and actions", async () => {
       const { container } = render(() => (
         <ActionBar selectedItemCount={2} onClearSelection={() => {}}>
           <ActionBarSelectionCount />
@@ -373,7 +338,7 @@ describe("ActionBar (headless)", () => {
       await assertNoA11yViolations(container);
     });
 
-    it("ARIA ID: labelled toolbar has no dangling refs", () => {
+    it("ARIA ID: labelled selection has no dangling refs", () => {
       render(() => (
         <>
           <span id="bulk-actions-label">Bulk actions</span>

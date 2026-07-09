@@ -297,9 +297,26 @@ March order (dependency/leverage; within a tier, top to bottom):
   the styled `DisclosurePanel` so it is dropped (the base RAC-layer panel stays
   role-honoring — the divergence was only the styled S2 layer being over-faithful
   to RAC). Paint (D1/D3/D7/D8), motion (D2), events (D4), RTL (D10) scoped out —
-  carried by `disclosure-visual`/`accordion-visual`/`accordion-contract`. **NEXT:
-  ActionBar**, then ActionGroup, Toolbar, TableView, TreeView, StepList,
-  Virtualizer (via its hosts), DnD (via its hosts).
+  carried by `disclosure-visual`/`accordion-visual`/`accordion-contract`.
+  **ActionBar ✓ certified 2026-07-09 (CP9.50)** — ELEVENTH Tier-4 unit;
+  styled-S2 oracle. Registered **D6** (AX tree — `standard`/`all`/`emphasized`) +
+  **D5** (focus trail — one roving walk within the single actions toolbar). The
+  pair-oracle caught FOUR coupled structural divergences the jsdom units missed
+  (they asserted the *invented* base contract): (1) the port ROOT carried
+  `role="toolbar"` but S2's root is roleless — its only `keyboardProps` is an
+  Escape handler; (2) DOM order was selection-first but S2 writes actions-first
+  and swaps VISUAL order via CSS `order`; (3) because the root was a toolbar, the
+  inner `ActionButtonGroup` nested-downgraded to `group` (`createToolbar`'s
+  `isInToolbar()`), where S2 makes it the ONE `toolbar`; (4) the port's close
+  `<svg>` was `aria-hidden`, but S2's `CloseButton` renders the `Cross` UI-icon —
+  a bare `<svg>` with no `aria-hidden` that Chromium exposes as `img`. Faithful
+  fixes: drop `createToolbar` from the base root (a plain container now, matching
+  S2 — this also retires the `toolbar-text-input-guard` debt on this path), flip
+  the styled children to actions-first, and drop the close icon's `aria-hidden`.
+  Resolves tech-debt `toolbar-text-input-guard` for ActionBar. Paint
+  (D1/D3/D7/D8), motion (D2), events (D4), RTL (D10) scoped out — carried by
+  `actionbar-visual`/`actionbar-contract`. **NEXT: ActionGroup**, then Toolbar,
+  TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
   and the D9/D10 sequencing decision — see "Director pass 2026-07-06" below).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
@@ -1157,6 +1174,12 @@ focusLast(); return` (no `preventDefault`, so the browser's default Tab then
     ToggleButtonGroup never exercises it and removing it unverified risks a
     regression in a real ActionBar/Toolbar text-input surface. Flagged for a
     dedicated ActionBar/Toolbar cert — see tech-debt `toolbar-text-input-guard`.
+    **UPDATE — ActionBar path retired 2026-07-09 (CP9.50).** The ActionBar cert
+    established S2 puts NO toolbar on the ActionBar root (the sole toolbar is the
+    inner `ActionButtonGroup`), so the base `ActionBar` dropped `createToolbar`
+    from its root entirely — it never touched this guard. The guard now survives
+    only on the remaining `createToolbar` consumers (ActionGroup / Toolbar), which
+    are the next Tier-4 units where it will be resolved directly.
   - Regression guard: `togglebuttongroup.certified.spec.ts` **70/70**; full
     `createToolbar` blast radius (solidaria + solidaria-components + solid-spectrum)
     **231 files / 4633 passed / 1 expected xfail / 8 skipped**; the 5 toolbar/
@@ -3502,6 +3525,71 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     assert S2's strip) + `typecheck` clean (packages + comparison) + **full `e2e/certified` suite: 1574
     passed / 5 skipped / 0 failed — no regression** (the chevron pixel reds above live in the
     `disclosure-visual`/`accordion-visual` specs, not the certified suite). Next Tier-4 unit: **ActionBar**.
+
+- ✓ **ActionBar certified 2026-07-09 (CP9.50 — Tier-4, eleventh collections unit) — the browser pair-oracle
+  caught FOUR coupled structural divergences no jsdom unit could, because the units asserted an INVENTED
+  contract.** Oracle = styled `@react-spectrum/s2` `ActionBar` (the selection action bar shown over a
+  collection). ActionBar has NO bare-RAC equivalent (the base `solidaria-components/ActionBar` is our own
+  invention — "No RAC headless equivalent"), so unlike every prior styled unit its only faithful reference is
+  S2's own structure. New cert `apps/comparison/e2e/certified/actionbar.certified.spec.ts` registers **D6**
+  (AX tree — `standard` [3 selected] / `all` [All selected] / `emphasized`) + **D5** (focus trail — one
+  `root`-scoped roving walk starting on Edit, ArrowRight/ArrowLeft roving Edit⇄Copy⇄Delete within the single
+  actions toolbar; the clear button is a SEPARATE independent tab stop).
+  - **What the D6 pair-oracle diff showed (identical Chromium).** Expected (S2): `toolbar "Actions"` →
+    `button Edit/Copy/Delete`, then a SIBLING `button "Clear selection"` containing an `img`, then
+    `text: 3 selected`. Received (port): `toolbar "Actions"` at the ROOT, containing `button "Clear
+    selection"` + `text: 3 selected` + a nested `group "Actions"` wrapping the actions. Four divergences,
+    all rooted in the invented base contract:
+    1. **Root was a toolbar; S2's root is roleless.** The base `ActionBar` applied
+       `createToolbar({orientation:"horizontal", aria-label})` to its root div (`{...toolbarProps}` →
+       `role="toolbar"`). S2's `ActionBar` (`ActionBar.tsx:192`) spreads only `keyboardProps` on the root
+       (an Escape handler via `useKeyboard`) — it is NOT a toolbar. FIX: drop `createToolbar` from the base
+       root entirely; it is now a plain container (Escape `handleKeyDown` + the `announce` effect stay).
+    2. **DOM order was selection-first; S2 is actions-first.** S2 writes the actions wrapper FIRST
+       (`order:1 marginStart:auto`) and the selection wrapper SECOND (`order:0`), so CSS `order` swaps the
+       VISUAL order (selection reads leading) while the AX/DOM order stays actions-first. The styled port
+       had the two `<div>`s reversed. FIX: emit actions wrapper first, selection wrapper second (same
+       `order` values → identical paint).
+    3. **Inner `ActionButtonGroup` nested-downgraded to `group`.** Because the root was a toolbar,
+       `createToolbar`'s `isInToolbar()` (`createToolbar.ts:266` — `.closest('[role="toolbar"]')`) saw the
+       inner ActionButtonGroup as nested and gave it `role="group"` + `aria-orientation:undefined`. S2 makes
+       the ActionButtonGroup the ONE and ONLY `toolbar`. Removing the root toolbar (fix #1) fixes this for
+       free — the group promotes back to a non-nested `toolbar "Actions"`.
+    4. **Clear-button icon was `aria-hidden`; S2's is exposed as `img`.** S2's `CloseButton` (compiled
+       `CloseButton.mjs`) renders the `Cross` UI-icon, whose factory (`Cross.mjs` → `S2_CrossSize100.mjs`)
+       is a BARE `<svg>` with NO `aria-hidden` and NO `role` — this is the UI-icon path, which (unlike the
+       `createIcon`/`createIllustration` factory in `Icon.tsx:99/168` that sets `aria-hidden` for
+       label-less icons) never adds it. Chromium exposes a bare `<svg>` as `role="img"`, so it surfaces as
+       an `img` child of the clear button. The port's hand-rolled `ActionBarCloseIcon` carried
+       `aria-hidden="true"`. FIX: drop it (bare `<svg>`, mirroring the UI-icon).
+  - **The invented base contract was the divergence — its unit tests asserted the wrong oracle** (the
+    CP9.49 pattern). `solidaria-components/test/ActionBar.test.tsx` asserted the root was a `toolbar` with
+    `aria-label="Actions"` and provided arrow-roving; all invented. Rewritten to the S2-faithful contract:
+    the root is a roleless container located by its `data-open` hook, carries no label (the label belongs on
+    the inner ActionButtonGroup), and roving lives at the styled ActionButtonGroup layer (the base
+    arrow-navigation + aria-label unit tests were dropped as asserting invented behavior). In
+    `solid-spectrum/test/ActionBar.test.tsx`, six tests located the root via `getByRole("toolbar")` — which
+    now correctly resolves to the inner ActionButtonGroup — so they were repointed to the root via
+    `.vui-action-bar` (ref/style/class/`data-open`/`data-selected-keys` all land on the root, not the
+    toolbar). No behavior regressed: Escape still clears (keydown bubbles from the inner toolbar to the root
+    handler), the ActionButtonGroup still roves.
+  - **Retires tech-debt `toolbar-text-input-guard` for ActionBar.** The ledger flagged a dedicated
+    ActionBar/Toolbar cert to resolve `createToolbar`'s invented text-input arrow guard; removing
+    `createToolbar` from the base ActionBar root eliminates that path here (the guard survives only on the
+    remaining `createToolbar` consumers — ActionGroup/Toolbar, the next units).
+  - **Two pre-existing reds are NOT this unit (proven, not silent):** `actionbar-visual` "key route states
+    are pixel-identical" fails an exact-zero-tolerance `emphasized` sub-pixel glyph diff
+    (`0.001622596153846154`, ~11×9 bounds) and `actionbar-contract` "scrollRef enter and exit use the
+    animated lifecycle" fails on a demo-harness pointer interception (`<label data-solidaria-pressable>`
+    intercepts a control-panel radio `.check()`). Both were reproduced BYTE-IDENTICALLY at HEAD `0b9d50c7`
+    by stashing the two source edits, rebuilding, and re-running — the pixel one is the same D3
+    measurement-layer glyph family as the burn-down note below; the contract one is a pre-existing harness
+    flake. Neither is a port divergence.
+  - Verified: **ActionBar certified e2e 4/4 green** (D5 `standard·roving`; D6 `standard`/`all`/`emphasized`)
+    + **units green** (full `packages` run: 268 files, **5525 passed** / 1 expected-fail / 8 skipped — the
+    base + styled ActionBar test files rewritten to the S2 contract) + `typecheck` clean + **full
+    `e2e/certified` suite: no regression** (the two pre-existing reds above live in the
+    `actionbar-visual`/`actionbar-contract` specs, not the certified suite). Next Tier-4 unit: **ActionGroup**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
