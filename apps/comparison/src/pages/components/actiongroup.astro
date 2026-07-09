@@ -1,0 +1,60 @@
+---
+// ActionGroup pair-comparison surface. React Spectrum S2 1.5.x ships no
+// ActionGroup (it was split into ActionButtonGroup / ToggleButtonGroup /
+// SegmentedControl), and react-aria-components exposes no ActionGroup component
+// — only the react-aria `useActionGroup` / `useActionGroupItem` hooks, which our
+// solidaria `createActionGroup` is a faithful port of. The React oracle here is
+// therefore hand-wired from those two hooks (mirroring the vendored
+// @adobe/react-spectrum ActionGroup) vs the Solid solid-spectrum ActionGroup
+// port. See comparison-manifest.ts "actiongroup" entry.
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "actiongroup";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ActionGroup";
+const widthPerEm = getTextWidth(title);
+const toc = [{ href: "#api", label: "API", depth: 2 }];
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="actiongroup" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    An action group is a grouped set of action buttons with roving keyboard focus and optional
+    single or multiple selection.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

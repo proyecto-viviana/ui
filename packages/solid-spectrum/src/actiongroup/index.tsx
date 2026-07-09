@@ -7,6 +7,9 @@ import {
   type ActionGroupItem,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, SelectionMode } from "@proyecto-viviana/solid-stately";
+import type { StyleString } from "../style";
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
+import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 
 export interface ActionGroupProps<T extends ActionGroupItem = ActionGroupItem> {
@@ -36,46 +39,92 @@ export interface ActionGroupProps<T extends ActionGroupItem = ActionGroupItem> {
   children?: (item: T, renderProps: ActionGroupItemRenderProps) => JSX.Element;
   /** Custom render function for items. If not provided, uses item.label. */
   renderItem?: (item: T, renderProps: ActionGroupItemRenderProps) => JSX.Element;
-  /** Additional CSS class name. */
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
   class?: string;
 }
 
-function getContainerClassName(renderProps: ActionGroupRenderProps, extraClass?: string): string {
-  const orientationClass = renderProps.orientation === "vertical" ? "flex-col" : "flex-row";
-  return [
-    "vui-action-group inline-flex items-center gap-1 rounded-lg border border-primary-600 bg-bg-300 p-1",
-    orientationClass,
-    extraClass ?? "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
+// S2 style macro (Tailwind-removal Phase 0). S2 1.5.x ships no ActionGroup
+// component (it was split into ActionButtonGroup / ToggleButtonGroup /
+// SegmentedControl), so there is no upstream ActionGroup paint to mirror
+// verbatim; these styles reuse the shared S2 idiom of those siblings — a
+// bordered pill container of ActionButton-like items — expressed through the
+// same `style` macro tokens rather than the invented Tailwind vocabulary.
+const actionGroupContainer = style<{ orientation: "horizontal" | "vertical" }>({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 4,
+  flexDirection: {
+    orientation: {
+      horizontal: "row",
+      vertical: "column",
+    },
+  },
+  borderRadius: "lg",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  backgroundColor: "gray-25",
+  padding: 4,
+});
 
-function getItemClassName(renderProps: ActionGroupItemRenderProps): string {
-  const stateClass = renderProps.isSelected
-    ? "bg-accent text-bg-400"
-    : "bg-transparent text-primary-200 hover:bg-bg-400";
-  const disabledClass = renderProps.isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer";
-  return [
-    "inline-flex items-center rounded-md px-3 py-1.5 text-sm transition-colors duration-150",
-    stateClass,
-    disabledClass,
-  ].join(" ");
-}
+const actionGroupItem = style<ActionGroupItemRenderProps>({
+  ...focusRing(),
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  whiteSpace: "nowrap",
+  userSelect: "none",
+  paddingX: 12,
+  paddingY: 4,
+  borderRadius: "default",
+  fontSize: "ui-sm",
+  transition: "default",
+  cursor: {
+    default: "default",
+    isDisabled: "not-allowed",
+  },
+  color: {
+    default: baseColor("neutral-subdued"),
+    isSelected: "white",
+    isDisabled: "disabled",
+  },
+  backgroundColor: {
+    default: "transparent",
+    isSelected: "accent",
+  },
+});
 
 export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
   props: ActionGroupProps<T>,
 ): JSX.Element {
   const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class", "renderItem", "children"]);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "class",
+    "styles",
+    "renderItem",
+    "children",
+  ]);
+
+  const containerClass = (rp: ActionGroupRenderProps): string =>
+    [
+      local.class,
+      mergeStyles(
+        actionGroupContainer({ orientation: rp.orientation }) as StyleString,
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   return (
     <HeadlessActionGroup<T>
       {...(headlessProps as HeadlessActionGroupProps<T>)}
-      class={(rp: ActionGroupRenderProps) => getContainerClassName(rp, local.class)}
+      class={containerClass}
     >
       {(item: T, renderProps: ActionGroupItemRenderProps) => (
-        <span class={getItemClassName(renderProps)}>
+        <span class={actionGroupItem(renderProps)}>
           {local.renderItem
             ? local.renderItem(item, renderProps)
             : local.children

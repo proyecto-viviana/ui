@@ -569,6 +569,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/GridList.html",
   },
 
+  actiongroup: {
+    ...styledLiveOfficialEntry({
+      slug: "actiongroup",
+      title: "ActionGroup",
+      category: "Components",
+      summary:
+        "Grouped set of action buttons mounted on both stacks with roving-focus keyboard navigation, dynamic toolbar/radiogroup roles, single/multiple/none selection, and vertical/horizontal orientation coverage.",
+      styledSummary:
+        "react-aria useActionGroup/useActionGroupItem hooks (hand-wired reference) vs Solid solid-spectrum ActionGroup.",
+      styledNote:
+        "S2 1.5.x ships no ActionGroup (split into ActionButtonGroup/ToggleButtonGroup/SegmentedControl) and react-aria-components exposes no ActionGroup component — only the react-aria useActionGroup/useActionGroupItem hooks the Solid createActionGroup faithfully ports, so the React oracle is those hooks hand-wired exactly as the vendored @adobe/react-spectrum ActionGroup does.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/useActionGroup.html",
+  },
+
   autocomplete: {
     ...styledLiveOfficialEntry({
       slug: "autocomplete",

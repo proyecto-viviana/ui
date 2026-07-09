@@ -315,10 +315,57 @@ March order (dependency/leverage; within a tier, top to bottom):
   the styled children to actions-first, and drop the close icon's `aria-hidden`.
   Resolves tech-debt `toolbar-text-input-guard` for ActionBar. Paint
   (D1/D3/D7/D8), motion (D2), events (D4), RTL (D10) scoped out — carried by
-  `actionbar-visual`/`actionbar-contract`. **NEXT: ActionGroup**, then Toolbar,
-  TableView, TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
-  Both gates that preceded this tier are resolved (the D4 event-ordering policy
-  and the D9/D10 sequencing decision — see "Director pass 2026-07-06" below).
+  `actionbar-visual`/`actionbar-contract`. Both gates that preceded this tier are
+  resolved (the D4 event-ordering policy and the D9/D10 sequencing decision — see
+  "Director pass 2026-07-06" below).
+
+  **ActionGroup ✓ certified 2026-07-09 (CP9.51)** — TWELFTH Tier-4 unit; and the
+  first cert whose oracle is a pair of react-aria *hooks*, not an S2 or RAC
+  *component*. S2 1.5.x ships no ActionGroup (it was split into
+  `ActionButtonGroup` / `ToggleButtonGroup` / `SegmentedControl`) and RAC exposes
+  no ActionGroup component, so the only surviving upstream is the pinned
+  react-aria 3.50.0 `useActionGroup` / `useActionGroupItem` hooks — the direct
+  source our `createActionGroup` / `createActionGroupItem` port. The React panel
+  hand-wires those two hooks exactly as vendored `@adobe/react-spectrum`
+  ActionGroup does, and the pair-diff certifies the port against its real
+  upstream. Registered **D5** (focus trail — a horizontal `none`/`toolbar` walk
+  and a vertical `single`/`radiogroup` walk, each Tab-trampolined from a boundary
+  button and driven across BOTH arrow axes + Home/End), **D6** (AX tree across
+  `none`/`single`/`multiple`/`disabled`), **D10** (RTL re-run of the horizontal
+  walk under `ar-AE`). The browser caught FOUR self-inflicted port divergences the
+  150+ jsdom units had codified as the *invented* contract: (1) item at-rest
+  tabIndex — the port invented a `getDefaultTabStopKey` single tab stop biased to
+  the selected key, but the hook makes EVERY enabled item tabbable until focus
+  engages (`isFocused || focusedKey == null ? 0 : -1`); (2) selection-follows-focus
+  — the port did a single-mode `replaceSelection` on arrow move, absent upstream
+  (arrows move focus only; selection changes on press); (3) orientation-gated
+  arrows — the port bound each arrow to one axis, but `useActionGroup.onKeyDown`
+  is orientation-AGNOSTIC (ArrowRight/Down→next, ArrowLeft/Up→previous, orientation
+  only drives `aria-orientation`); (4) Home/End — the port added jumps the hook
+  never handles. Faithful fixes reverted all four in
+  `createActionGroup.ts`. **The deeper bug the browser exposed** (invisible to
+  every jsdom unit, which stayed green over a dead roving spine): the styled
+  wrapper `ActionGroupItemWrapper` object-rest-destructured the reactive
+  `buttonProps` (`const { ref, ...rest } = buttonProps`), which FREEZES the Solid
+  getters — tabIndex/onFocus/role snapshotted once at first render, so roving
+  never updated and `focusedKey` was never tracked. Fixed with
+  `splitProps(buttonProps, ["ref"])` (same class as the ListBox dead-fix and the
+  documented "destructuring a Solid `get` prop freezes reactivity" gotcha). D10
+  additionally required wrapping the React reference's hook-calling body in
+  react-aria's OWN bundled `I18nProvider` (the public re-export of the same private
+  i18n context `useActionGroup.useLocale` reads) — S2's `Provider` populates a
+  different `@react-aria/i18n` context instance that never reaches the hook, so
+  without it the reference stayed LTR. Paint (D1/D3/D7/D8), motion (D2), events
+  (D4), forced-colors (D9) scoped out — S2 removed the component so there is no
+  styled paint oracle; the invented-Tailwind styled layer
+  (`solid-spectrum/src/actiongroup/index.tsx`) was restyled onto the S2 `style`
+  macro (Tailwind-removal Phase 0) and verified self-contained, not pixel-diffed
+  against a missing oracle. Wrong-oracle jsdom units (the four invented contracts)
+  inverted across `createActionGroup`, `solidaria-components` ActionGroup, and
+  `solid-spectrum` ActionGroup suites. Verification: ActionGroup certified e2e
+  9/9 green; package unit suites 5527 pass / 1 expected-fail; solid-spectrum
+  typecheck clean. **NEXT: Toolbar**, then TableView, TreeView, StepList,
+  Virtualizer (via its hosts), DnD (via its hosts).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor
@@ -1177,9 +1224,13 @@ focusLast(); return` (no `preventDefault`, so the browser's default Tab then
     **UPDATE — ActionBar path retired 2026-07-09 (CP9.50).** The ActionBar cert
     established S2 puts NO toolbar on the ActionBar root (the sole toolbar is the
     inner `ActionButtonGroup`), so the base `ActionBar` dropped `createToolbar`
-    from its root entirely — it never touched this guard. The guard now survives
-    only on the remaining `createToolbar` consumers (ActionGroup / Toolbar), which
-    are the next Tier-4 units where it will be resolved directly.
+    from its root entirely — it never touched this guard. **UPDATE — ActionGroup
+    ruled out 2026-07-09 (CP9.51).** The ActionGroup cert confirmed
+    `createActionGroup` does NOT route through `createToolbar` (it owns its role +
+    keyboard logic and has no text-input guard), so it never carried this debt.
+    **`Toolbar` is now the sole remaining `createToolbar` consumer that holds the
+    guard** — it is the next Tier-4 unit and where the guard will be resolved
+    directly.
   - Regression guard: `togglebuttongroup.certified.spec.ts` **70/70**; full
     `createToolbar` blast radius (solidaria + solidaria-components + solid-spectrum)
     **231 files / 4633 passed / 1 expected xfail / 8 skipped**; the 5 toolbar/

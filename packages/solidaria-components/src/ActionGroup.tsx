@@ -256,9 +256,11 @@ function ActionGroupItemWrapper(props: ActionGroupItemWrapperProps): JSX.Element
     isFocused: isFocused(),
   }));
 
-  const { ref: _ref, ...restButtonProps } = buttonProps as Record<string, unknown> & {
-    ref?: unknown;
-  };
+  // splitProps (not object destructuring) so the reactive getters on buttonProps
+  // — tabIndex (roving stop), onFocus (sets the focused key), role, aria-checked
+  // — stay live. A rest-spread `{ ref, ...rest }` would FREEZE them at their
+  // first-render values, pinning the roving tabIndex and killing focus tracking.
+  const [, restButtonProps] = splitProps(buttonProps, ["ref"]);
 
   return (
     <button

@@ -81,7 +81,25 @@ describe("createActionGroup", () => {
     expect(document.activeElement).toBe(b);
   });
 
-  it("updates selection with arrow navigation in single selection mode", () => {
+  it("navigates with orientation-agnostic arrows (ArrowDown moves next too)", () => {
+    // v3 `useActionGroup.onKeyDown` is orientation-agnostic: ArrowRight OR
+    // ArrowDown move NEXT, ArrowLeft OR ArrowUp move PREVIOUS, regardless of the
+    // group orientation (orientation only drives `aria-orientation`). The port
+    // had gated each arrow to a single axis — reverted.
+    render(() => <ActionGroupExample selectionMode="none" />);
+    const a = screen.getByRole("button", { name: "A" });
+    const b = screen.getByRole("button", { name: "B" });
+    a.focus();
+    fireEvent.keyDown(a, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(b);
+    fireEvent.keyDown(b, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(a);
+  });
+
+  it("moves focus without changing selection under arrow navigation (single mode)", () => {
+    // v3 `useActionGroup` has NO selection-follows-focus: arrows move the roving
+    // focus only; selection changes solely on press. (The port had invented a
+    // single-mode `replaceSelection` on focus move — reverted.)
     render(() => <ActionGroupExample selectionMode="single" />);
 
     const a = screen.getByRole("radio", { name: "A" });
@@ -90,40 +108,52 @@ describe("createActionGroup", () => {
     fireEvent.keyDown(a, { key: "ArrowRight" });
 
     expect(document.activeElement).toBe(b);
-    expect(screen.getByTestId("selected-keys").textContent).toContain('"b"');
+    expect(screen.getByTestId("selected-keys").textContent).not.toContain('"b"');
   });
 
-  it("supports Home/End key focus movement", () => {
+  it("does not handle Home/End (they fall through to the browser)", () => {
+    // v3 `useActionGroup.onKeyDown` handles ONLY the four arrows; Home/End are
+    // not intercepted (no focus move). The port had added Home/End jumps — removed.
     render(() => <ActionGroupExample selectionMode="none" />);
 
     const a = screen.getByRole("button", { name: "A" });
     const b = screen.getByRole("button", { name: "B" });
 
-    a.focus();
-    fireEvent.keyDown(a, { key: "End" });
+    b.focus();
+    fireEvent.keyDown(b, { key: "Home" });
     expect(document.activeElement).toBe(b);
 
-    fireEvent.keyDown(b, { key: "Home" });
+    a.focus();
+    fireEvent.keyDown(a, { key: "End" });
     expect(document.activeElement).toBe(a);
   });
 
-  it("uses a single roving tab stop when no item is focused", () => {
+  it("keeps every enabled item tabbable until focus engages the group", () => {
+    // v3 `useActionGroupItem` tabIndex is `isFocused || focusedKey == null ? 0 : -1`
+    // — there is NO single default tab stop. Before any item is focused, all
+    // items are tabbable; a disabled item is made non-tabbable by its native
+    // `disabled` attribute, not by a -1 tabIndex. (The port had invented a
+    // `getDefaultTabStopKey` single stop — reverted.)
     render(() => <ActionGroupExample selectionMode="single" disabledKeys={["a"]} />);
 
     const a = screen.getByRole("radio", { name: "A" });
     const b = screen.getByRole("radio", { name: "B" });
 
-    expect(a).toHaveAttribute("tabindex", "-1");
+    expect(a).toHaveAttribute("tabindex", "0");
     expect(b).toHaveAttribute("tabindex", "0");
+    expect(a).toBeDisabled();
   });
 
-  it("uses selected key as default tab stop when selection exists", () => {
+  it("does not bias the tab stop toward the selected key", () => {
+    // No selection bias: a default-selected key does not become the single tab
+    // stop. All enabled items stay tabbable at rest. (The port had biased the
+    // default tab stop to the selected key — reverted.)
     render(() => <ActionGroupExample selectionMode="single" defaultSelectedKeys={["b"]} />);
 
     const a = screen.getByRole("radio", { name: "A" });
     const b = screen.getByRole("radio", { name: "B" });
 
-    expect(a).toHaveAttribute("tabindex", "-1");
+    expect(a).toHaveAttribute("tabindex", "0");
     expect(b).toHaveAttribute("tabindex", "0");
   });
 

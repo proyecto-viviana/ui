@@ -103,22 +103,10 @@ export function createActionGroup<T>(
 
   const focusRelative = (
     root: HTMLElement,
-    direction: "next" | "previous" | "first" | "last",
+    direction: "next" | "previous",
   ): HTMLElement | null => {
     const focusables = getFocusableItems(root);
     if (focusables.length === 0) return null;
-
-    if (direction === "first") {
-      const first = focusables[0];
-      focusSafely(first);
-      return first;
-    }
-
-    if (direction === "last") {
-      const last = focusables[focusables.length - 1];
-      focusSafely(last);
-      return last;
-    }
 
     const active = root.ownerDocument.activeElement as HTMLElement | null;
     const currentIndex = active ? focusables.indexOf(active) : -1;
@@ -134,79 +122,42 @@ export function createActionGroup<T>(
     return next;
   };
 
-  const resolveKeyFromElement = (element: HTMLElement | null): Key | null => {
-    if (!element) return null;
-    const keyedElement = element.closest("[data-key]");
-    if (!(keyedElement instanceof HTMLElement)) return null;
-    const rawKey = keyedElement.getAttribute("data-key");
-    if (!rawKey) return null;
-    for (const item of state.collection()) {
-      if (String(item.key) === rawKey) {
-        return item.key;
-      }
-    }
-    return null;
-  };
-
-  const handleFocusMove = (movedTo: HTMLElement | null): void => {
-    const key = resolveKeyFromElement(movedTo);
-    if (key == null) return;
-    state.setFocusedKey(key);
-    if (state.selectionMode() === "single") {
-      state.replaceSelection(key);
-    }
-  };
-
+  // Mirrors react-aria `useActionGroup.onKeyDown` (3.50.0): only the four arrows
+  // are handled and they are ORIENTATION-AGNOSTIC — ArrowRight/ArrowDown always
+  // move next, ArrowLeft/ArrowUp always move previous (orientation only drives
+  // `aria-orientation`). `flipDirection` swaps ArrowRight/ArrowLeft under RTL for
+  // horizontal groups. No Home/End (they fall through to the browser). Focus
+  // moves via `focusRelative` → `focusSafely` → the item's own `onFocus`, which
+  // sets the focused key — so there is no selection-follows-focus here.
   const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
     const root = groupRef;
     if (!root || isActionGroupDisabled(props, state)) return;
     if (!nodeContains(e.currentTarget, getEventTarget(e))) return;
 
     const orientation = props.orientation ?? "horizontal";
-    const isHorizontal = orientation === "horizontal";
-    const isRTL = locale().direction === "rtl" && isHorizontal;
+    const flipDirection = locale().direction === "rtl" && orientation === "horizontal";
 
     switch (e.key) {
       case "ArrowRight":
       case "ArrowDown": {
-        if (e.key === "ArrowRight" && isHorizontal && isRTL) {
-          e.preventDefault();
-          e.stopPropagation();
-          handleFocusMove(focusRelative(root, "previous"));
-          return;
-        }
-        if ((e.key === "ArrowRight" && isHorizontal) || (e.key === "ArrowDown" && !isHorizontal)) {
-          e.preventDefault();
-          e.stopPropagation();
-          handleFocusMove(focusRelative(root, "next"));
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key === "ArrowRight" && flipDirection) {
+          focusRelative(root, "previous");
+        } else {
+          focusRelative(root, "next");
         }
         return;
       }
       case "ArrowLeft":
       case "ArrowUp": {
-        if (e.key === "ArrowLeft" && isHorizontal && isRTL) {
-          e.preventDefault();
-          e.stopPropagation();
-          handleFocusMove(focusRelative(root, "next"));
-          return;
-        }
-        if ((e.key === "ArrowLeft" && isHorizontal) || (e.key === "ArrowUp" && !isHorizontal)) {
-          e.preventDefault();
-          e.stopPropagation();
-          handleFocusMove(focusRelative(root, "previous"));
-        }
-        return;
-      }
-      case "Home": {
         e.preventDefault();
         e.stopPropagation();
-        handleFocusMove(focusRelative(root, "first"));
-        return;
-      }
-      case "End": {
-        e.preventDefault();
-        e.stopPropagation();
-        handleFocusMove(focusRelative(root, "last"));
+        if (e.key === "ArrowLeft" && flipDirection) {
+          focusRelative(root, "next");
+        } else {
+          focusRelative(root, "previous");
+        }
         return;
       }
     }
@@ -266,32 +217,6 @@ export function createActionGroupItem<T>(
   });
 
   const isFocused = () => props.key === state.focusedKey();
-  const getFirstEnabledKey = (): Key | null => {
-    const collection = state.collection();
-    let key = collection.getFirstKey();
-    while (key != null && state.isDisabled(key)) {
-      key = collection.getKeyAfter(key);
-    }
-    return key;
-  };
-
-  const getDefaultTabStopKey = (): Key | null => {
-    const selectionMode = state.selectionMode();
-    if (selectionMode !== "none") {
-      const selectedKeys = state.selectedKeys();
-      if (selectedKeys === "all") {
-        return getFirstEnabledKey();
-      }
-
-      for (const item of state.collection()) {
-        if (!state.isDisabled(item.key) && selectedKeys.has(item.key)) {
-          return item.key;
-        }
-      }
-    }
-
-    return getFirstEnabledKey();
-  };
 
   onCleanup(() => {
     if (isFocused()) {
@@ -308,21 +233,13 @@ export function createActionGroupItem<T>(
       if (mode === "none") return undefined;
       return state.isSelected(props.key);
     },
+    // Mirrors react-aria `useActionGroupItem` (3.50.0): every enabled item is
+    // tabbable until focus engages the group, then the roving stop follows the
+    // focused key. There is NO single default tab stop and NO selection bias —
+    // disabled items are made non-tabbable by their native `disabled` attribute
+    // (via createButton), not by this getter.
     get tabIndex() {
-      if (state.isDisabled(props.key)) {
-        return -1;
-      }
-
-      if (isFocused()) {
-        return 0;
-      }
-
-      if (state.focusedKey() != null) {
-        return -1;
-      }
-
-      const defaultTabStopKey = getDefaultTabStopKey();
-      return defaultTabStopKey === props.key ? 0 : -1;
+      return isFocused() || state.focusedKey() == null ? 0 : -1;
     },
     "data-key": String(props.key),
     onFocus: () => {

@@ -10,6 +10,21 @@ import {
   Input as AriaInput,
   useFilter as useAriaFilter,
 } from "react-aria-components";
+// ActionGroup has no react-aria-components component and S2 1.5.1 removed the
+// styled ActionGroup, so the pair oracle is the pinned v3 `useActionGroup` /
+// `useActionGroupItem` hooks (react-aria 3.50.0) wired by hand exactly as
+// Adobe's own `@adobe/react-spectrum` ActionGroup does — the hooks our
+// `createActionGroup` is a faithful port of. Same private-subpath specifier
+// that vendored ActionGroup.tsx imports.
+import { useActionGroup } from "react-aria/private/actiongroup/useActionGroup";
+import { useActionGroupItem } from "react-aria/private/actiongroup/useActionGroupItem";
+// react-aria's OWN bundled `I18nProvider` — the public re-export of the same
+// private `../private/i18n/I18nProvider` module `useActionGroup.useLocale`
+// reads. S2's `Provider` populates a *different* `@react-aria/i18n` context
+// instance, so it never reaches the hook; wrapping the hook-calling body in
+// this provider is what feeds the RTL direction into `useActionGroup` (D10).
+import { I18nProvider } from "react-aria";
+import { Item as StatelyItem, useListState } from "react-stately";
 import {
   Accordion as SpectrumAccordion,
   AccordionItem as SpectrumAccordionItem,
@@ -327,6 +342,14 @@ import {
   normalizeListBoxDemoProps,
   serializeListBoxDemoProps,
 } from "@comparison/data/listbox-demo";
+import {
+  actionGroupDemoItems,
+  actionGroupDemoPropsFromWindow,
+  actionGroupDemoLocaleFromWindow,
+  actionGroupKeysFromValue,
+  normalizeActionGroupDemoProps,
+  serializeActionGroupDemoProps,
+} from "@comparison/data/actiongroup-demo";
 import {
   autocompleteDemoItems,
   autocompleteDemoPropsFromWindow,
@@ -843,6 +866,7 @@ export const reactStyledFixtures = {
   listbox: () => jsx(ReactListBoxDemo, {}),
   autocomplete: () => jsx(ReactAutocompleteDemo, {}),
   gridlist: () => jsx(ReactGridListDemo, {}),
+  actiongroup: () => jsx(ReactActionGroupDemo, {}),
   meter: () => jsx(ReactMeterDemo, {}),
   menu: () => jsx(ReactMenuDemo, {}),
   numberfield: () => jsx(ReactNumberFieldDemo, {}),
@@ -1471,6 +1495,87 @@ function ReactGridListDemo() {
     colorScheme,
     locale,
   );
+}
+
+// Hand-wired v3 ActionGroup oracle: one `useActionGroupItem` per collection node
+// rendered as a bare native <button>. `onPress` is React Aria's press
+// abstraction (not a DOM prop) and the D5/D6 cert never clicks, so it is dropped
+// and only the DOM-relevant props (role, tabIndex, aria-checked, onFocus) are
+// spread. Native `disabled` is what v3's ActionGroupItem→ActionButton renders
+// for a disabled key, reproduced here.
+function ReactActionGroupItem({ node, state }) {
+  const { buttonProps } = useActionGroupItem({ key: node.key }, state);
+  const isDisabled = state.disabledKeys.has(node.key);
+  // eslint-disable-next-line no-unused-vars
+  const { onPress, ...domButtonProps } = buttonProps;
+  return jsx(
+    "button",
+    { ...domButtonProps, disabled: isDisabled, children: node.rendered },
+    node.key,
+  );
+}
+
+// The hook-calling body. `useActionGroup`/`useListState` run HERE so they sit
+// under the `I18nProvider` the outer component wraps us in — that is what lets
+// `useActionGroup.useLocale` observe the RTL direction (D10). `renderReactSpectrumReference`
+// still adds the S2 `Provider` for styling; the hooks don't read that context.
+function ReactActionGroupBody({ demoProps, colorScheme, locale }) {
+  const ref = useRef(null);
+  const listProps = {
+    "aria-label": "Text style",
+    selectionMode: demoProps.selectionMode,
+    orientation: demoProps.orientation,
+    disabledKeys: actionGroupKeysFromValue(demoProps.disabledKeys),
+    defaultSelectedKeys: actionGroupKeysFromValue(demoProps.defaultSelectedKeys),
+    items: actionGroupDemoItems,
+    children: (item) => jsx(StatelyItem, { children: item.label }, item.id),
+    suppressTextValueWarning: true,
+  };
+  const state = useListState(listProps);
+  const { actionGroupProps } = useActionGroup(listProps, state, ref);
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx("div", {
+          ...actionGroupProps,
+          ref,
+          "data-comparison-control-root": "actiongroup",
+          "data-comparison-control-props": serializeActionGroupDemoProps(demoProps),
+          children: [...state.collection].map((node) =>
+            jsx(ReactActionGroupItem, { node, state }, node.key),
+          ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
+    }),
+    colorScheme,
+    locale,
+  );
+}
+
+function ReactActionGroupDemo() {
+  const [demoProps, setDemoProps] = useState(actionGroupDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+  const locale = actionGroupDemoLocaleFromWindow();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actiongroup") {
+        setDemoProps(normalizeActionGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  // Wrap the hook-calling body in react-aria's own I18nProvider so
+  // `useActionGroup.useLocale` sees `ar-AE` under the D10 RTL walk.
+  return jsx(I18nProvider, {
+    locale,
+    children: jsx(ReactActionGroupBody, { demoProps, colorScheme, locale }),
+  });
 }
 
 function ReactListViewDemo() {

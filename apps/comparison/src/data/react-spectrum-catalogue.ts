@@ -23,6 +23,7 @@ export const reactSpectrumCatalogue = [
   component("ActionBar"),
   component("ActionButton"),
   component("ActionButtonGroup"),
+  component("ActionGroup"),
   component("ActionMenu"),
   component("Autocomplete"),
   component("Avatar"),

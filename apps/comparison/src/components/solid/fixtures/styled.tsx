@@ -19,6 +19,7 @@ import {
   AccordionItemPanel as SolidSpectrumAccordionItemPanel,
   AccordionItemTitle as SolidSpectrumAccordionItemTitle,
   ActionBar as SolidSpectrumActionBar,
+  ActionGroup as SolidSpectrumActionGroup,
   ActionButton as SolidSpectrumActionButton,
   ActionButtonGroup as SolidSpectrumActionButtonGroup,
   ActionMenu as SolidSpectrumActionMenu,
@@ -369,6 +370,15 @@ import {
   type GridListDemoItem,
   type GridListDemoProps,
 } from "@comparison/data/gridlist-demo";
+import {
+  actionGroupDemoItems,
+  actionGroupDemoPropsFromWindow,
+  actionGroupDemoLocaleFromWindow,
+  actionGroupKeysFromValue,
+  normalizeActionGroupDemoProps,
+  serializeActionGroupDemoProps,
+  type ActionGroupDemoProps,
+} from "@comparison/data/actiongroup-demo";
 import {
   comparisonControlsEvent as treeViewControlsEvent,
   initialTreeViewExpandedKeys,
@@ -1066,6 +1076,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   listbox: () => h(SolidSpectrumListBoxDemo, {}),
   autocomplete: () => h(SolidSpectrumAutocompleteDemo, {}),
   gridlist: () => h(SolidSpectrumGridListDemo, {}),
+  actiongroup: () => h(SolidSpectrumActionGroupDemo, {}),
   menu: () => h(SolidSpectrumMenuDemo, {}),
   meter: () => h(SolidSpectrumMeterDemo, {}),
   numberfield: () => h(SolidSpectrumNumberFieldDemo, {}),
@@ -2038,6 +2049,80 @@ function SolidSpectrumGridListDemo() {
           class: "comparison-gridlist-row",
         },
         [h("button", {}, "Before"), renderedGridList, h("button", {}, "After")],
+      ),
+    ],
+  );
+}
+
+function SolidSpectrumActionGroupDemo() {
+  const [demoProps, setDemoProps] = createSignal<ActionGroupDemoProps>(
+    actionGroupDemoPropsFromWindow(),
+  );
+  const locale = actionGroupDemoLocaleFromWindow();
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleControlsChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "actiongroup") {
+        setDemoProps(normalizeActionGroupDemoProps(event.detail.props ?? {}));
+      }
+    };
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
+  const renderedActionGroup = createMemo(() =>
+    hc(SolidSpectrumActionGroup, {
+      "aria-label": "Text style",
+      get selectionMode() {
+        return demoProps().selectionMode;
+      },
+      get orientation() {
+        return demoProps().orientation;
+      },
+      get defaultSelectedKeys() {
+        return actionGroupKeysFromValue(demoProps().defaultSelectedKeys);
+      },
+      get disabledKeys() {
+        return actionGroupKeysFromValue(demoProps().disabledKeys);
+      },
+      "data-comparison-control-root": "actiongroup",
+      get "data-comparison-control-props"() {
+        return serializeActionGroupDemoProps(demoProps());
+      },
+      items: actionGroupDemoItems,
+    }),
+  );
+
+  return hc(
+    SolidSpectrumProvider,
+    {
+      get colorScheme() {
+        return colorScheme();
+      },
+      locale,
+      background: "base",
+      style: providerShellStyle,
+    },
+    [
+      hc(
+        "div",
+        {
+          class: "comparison-gridlist-row",
+        },
+        [h("button", {}, "Before"), renderedActionGroup, h("button", {}, "After")],
       ),
     ],
   );

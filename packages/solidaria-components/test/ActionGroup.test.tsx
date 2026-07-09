@@ -125,7 +125,10 @@ describe("ActionGroup (headless)", () => {
       expect(screen.getByRole("radio", { name: "Italic" })).toHaveAttribute("aria-checked", "true");
     });
 
-    it("uses selected key as default roving tab stop", () => {
+    it("keeps every item tabbable at rest (no selection-biased tab stop)", () => {
+      // v3 `useActionGroupItem` tabIndex is `isFocused || focusedKey == null ? 0 : -1`
+      // — every enabled item is tabbable until focus engages, and a default
+      // selection does NOT collapse the group to a single tab stop.
       render(() => (
         <ActionGroup
           items={items}
@@ -137,7 +140,7 @@ describe("ActionGroup (headless)", () => {
         </ActionGroup>
       ));
 
-      expect(screen.getByRole("radio", { name: "Bold" })).toHaveAttribute("tabindex", "-1");
+      expect(screen.getByRole("radio", { name: "Bold" })).toHaveAttribute("tabindex", "0");
       expect(screen.getByRole("radio", { name: "Italic" })).toHaveAttribute("tabindex", "0");
     });
   });
@@ -171,7 +174,27 @@ describe("ActionGroup (headless)", () => {
       expect(document.activeElement).toBe(underline);
     });
 
-    it("supports Home/End navigation", () => {
+    it("navigates with orientation-agnostic arrows (ArrowDown/ArrowUp move too)", () => {
+      // v3 `useActionGroup.onKeyDown` moves NEXT on ArrowRight OR ArrowDown and
+      // PREVIOUS on ArrowLeft OR ArrowUp, independent of orientation.
+      render(() => (
+        <ActionGroup items={items} aria-label="Formatting">
+          {(item) => item.label}
+        </ActionGroup>
+      ));
+
+      const bold = screen.getByRole("button", { name: "Bold" });
+      const italic = screen.getByRole("button", { name: "Italic" });
+      bold.focus();
+      fireEvent.keyDown(bold, { key: "ArrowDown" });
+      expect(document.activeElement).toBe(italic);
+      fireEvent.keyDown(italic, { key: "ArrowUp" });
+      expect(document.activeElement).toBe(bold);
+    });
+
+    it("does not handle Home/End (they fall through to the browser)", () => {
+      // v3 `useActionGroup.onKeyDown` handles ONLY the four arrows; Home/End are
+      // not intercepted.
       render(() => (
         <ActionGroup items={items} aria-label="Formatting">
           {(item) => item.label}
@@ -183,13 +206,16 @@ describe("ActionGroup (headless)", () => {
 
       bold.focus();
       fireEvent.keyDown(bold, { key: "End" });
-      expect(document.activeElement).toBe(underline);
-
-      fireEvent.keyDown(underline, { key: "Home" });
       expect(document.activeElement).toBe(bold);
+
+      underline.focus();
+      fireEvent.keyDown(underline, { key: "Home" });
+      expect(document.activeElement).toBe(underline);
     });
 
-    it("updates selection while arrow navigating in single mode", () => {
+    it("moves focus without changing selection while arrow navigating (single mode)", () => {
+      // No selection-follows-focus: arrows move the roving focus only; selection
+      // changes solely on press.
       render(() => (
         <ActionGroup items={items} selectionMode="single" aria-label="Formatting">
           {(item) => item.label}
@@ -202,7 +228,7 @@ describe("ActionGroup (headless)", () => {
       bold.focus();
       fireEvent.keyDown(bold, { key: "ArrowRight" });
       expect(document.activeElement).toBe(italic);
-      expect(italic).toHaveAttribute("data-selected");
+      expect(italic).not.toHaveAttribute("data-selected");
     });
   });
 

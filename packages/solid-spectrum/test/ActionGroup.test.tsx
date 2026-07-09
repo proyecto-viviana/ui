@@ -24,13 +24,17 @@ describe("ActionGroup (solid-spectrum)", () => {
       expect(screen.getByText("Paste")).toBeInTheDocument();
     });
 
-    it("renders with vui-action-group class", () => {
-      const { container } = render(() => (
+    it("styles the container via the S2 style macro", () => {
+      // The styled layer applies the S2 `style` macro (Tailwind-removal Phase 0),
+      // so the container carries a generated atomic class string rather than the
+      // former invented `vui-action-group` Tailwind class.
+      render(() => (
         <ActionGroup items={items} aria-label="Edit">
           {(item) => item.label}
         </ActionGroup>
       ));
-      expect(container.querySelector(".vui-action-group")).toBeInTheDocument();
+      const group = screen.getByRole("toolbar");
+      expect(group.getAttribute("class")).toBeTruthy();
     });
 
     it("applies custom class", () => {
