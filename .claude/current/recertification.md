@@ -363,9 +363,16 @@ March order (dependency/leverage; within a tier, top to bottom):
   against a missing oracle. Wrong-oracle jsdom units (the four invented contracts)
   inverted across `createActionGroup`, `solidaria-components` ActionGroup, and
   `solid-spectrum` ActionGroup suites. Verification: ActionGroup certified e2e
-  9/9 green; package unit suites 5527 pass / 1 expected-fail; solid-spectrum
-  typecheck clean. **NEXT: Toolbar**, then TableView, TreeView, StepList,
-  Virtualizer (via its hosts), DnD (via its hosts).
+  7/7 green; package unit suites 5527 pass / 1 expected-fail; solid-spectrum
+  typecheck clean. (Corrected 2026-07-09 during CP9.52: the original 9/9 count
+  was measured against a stale comparison build — the pre-S2-macro-restyle
+  ActionGroup — so its `registerRtlDriver` still ran the RTL *state-matrix* half,
+  which after the restyle diffs the styled Solid stack against the unstyled
+  react-aria reference and can never match. That half has no valid oracle here,
+  per the "paint scoped out" note above, so D10 is now `focusOnly: true` — the
+  RTL focus trail only, which still asserts `direction: "rtl"`.) **NEXT:
+  Toolbar**, then TableView, TreeView, StepList, Virtualizer (via its hosts), DnD
+  (via its hosts).
 
   **Toolbar ✓ certified 2026-07-09 (CP9.52)** — THIRTEENTH Tier-4 unit. Oracle is
   the react-aria-components `Toolbar` — a *real* component (unlike ActionGroup's

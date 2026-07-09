@@ -59,6 +59,16 @@ export interface RtlConfig {
   cases?: readonly string[];
   /** Case ids re-run for the focus-trail half; defaults to `cases`. */
   focusCases?: readonly string[];
+  /**
+   * Skip the RTL state-matrix (paint) half and re-run only the focus trail.
+   * For scenarios with no styled paint oracle — e.g. ActionGroup, whose S2
+   * component was removed so its React reference is unstyled react-aria hooks:
+   * a full computed-style diff of a styled Solid stack against an unstyled
+   * reference can never match and is not a meaningful oracle. The focus-trail
+   * half still asserts `direction: "rtl"`, so the "RTL actually applied" sanity
+   * check is preserved.
+   */
+  focusOnly?: boolean;
 }
 
 interface FocusTrailEntry {
@@ -70,43 +80,45 @@ export function registerRtlDriver(scenario: DriverScenario, config: RtlConfig = 
   const properties = Array.from(new Set([...resolveStyleAllowlist(scenario), rtlProperty]));
   const styleCases = driverCases(scenario, config.cases).map(rtlCase);
 
-  test.describe(`D10 RTL state matrix — ${scenario.title}`, () => {
-    for (const caseDef of styleCases) {
-      for (const theme of scenarioThemes(scenario, caseDef)) {
-        test(`${caseDef.id} · ${theme}`, async ({ page }) => {
-          test.setTimeout(120_000);
+  if (!config.focusOnly) {
+    test.describe(`D10 RTL state matrix — ${scenario.title}`, () => {
+      for (const caseDef of styleCases) {
+        for (const theme of scenarioThemes(scenario, caseDef)) {
+          test(`${caseDef.id} · ${theme}`, async ({ page }) => {
+            test.setTimeout(120_000);
 
-          const captures: Record<PanelFramework, Map<GestureStateId, PartStyles>> = {
-            react: new Map(),
-            solid: new Map(),
-          };
+            const captures: Record<PanelFramework, Map<GestureStateId, PartStyles>> = {
+              react: new Map(),
+              solid: new Map(),
+            };
 
-          await walkScenario(page, scenario, caseDef, theme, async (step) => {
-            captures[step.framework].set(step.state, await capturePartStyles(step, properties));
-          });
+            await walkScenario(page, scenario, caseDef, theme, async (step) => {
+              captures[step.framework].set(step.state, await capturePartStyles(step, properties));
+            });
 
-          for (const framework of ["react", "solid"] as const) {
-            const defaultCapture = captures[framework].get("default");
-            expect(
-              defaultCapture?.target[rtlProperty],
-              `${framework} panel did not render RTL — locale=${rtlLocale} routing is missing for "${scenario.slug}"`,
-            ).toBe("rtl");
-          }
-
-          for (const [state, reactParts] of captures.react) {
-            const solidParts = captures.solid.get(state);
-            expect(solidParts, `solid panel produced no capture for state "${state}"`).toBeTruthy();
-            for (const [part, reactStyles] of Object.entries(reactParts)) {
+            for (const framework of ["react", "solid"] as const) {
+              const defaultCapture = captures[framework].get("default");
               expect(
-                solidParts![part],
-                `${scenario.slug} · ${caseDef.id} · ${theme} · ${state} · ${part} (rtl)`,
-              ).toEqual(reactStyles);
+                defaultCapture?.target[rtlProperty],
+                `${framework} panel did not render RTL — locale=${rtlLocale} routing is missing for "${scenario.slug}"`,
+              ).toBe("rtl");
             }
-          }
-        });
+
+            for (const [state, reactParts] of captures.react) {
+              const solidParts = captures.solid.get(state);
+              expect(solidParts, `solid panel produced no capture for state "${state}"`).toBeTruthy();
+              for (const [part, reactStyles] of Object.entries(reactParts)) {
+                expect(
+                  solidParts![part],
+                  `${scenario.slug} · ${caseDef.id} · ${theme} · ${state} · ${part} (rtl)`,
+                ).toEqual(reactStyles);
+              }
+            }
+          });
+        }
       }
-    }
-  });
+    });
+  }
 
   const focusConfig = scenario.focus;
   if (!focusConfig) {

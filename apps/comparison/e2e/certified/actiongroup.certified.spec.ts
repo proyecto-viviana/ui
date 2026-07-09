@@ -177,5 +177,9 @@ registerFocusTrailDriver(scenario);
 registerAxTreeDriver(scenario);
 registerFocusTrailDriver(verticalFocusScenario);
 // D10 — re-run the horizontal (`none`) D5 walk under `ar-AE`, certifying the
-// RTL-flipped ArrowRight/ArrowLeft navigation.
-registerRtlDriver(scenario, { cases: ["none"] });
+// RTL-flipped ArrowRight/ArrowLeft navigation. `focusOnly`: ActionGroup has no
+// styled paint oracle (S2 removed the component, so the React reference is the
+// unstyled react-aria hooks panel), so the RTL state-matrix half — a full
+// computed-style diff — has nothing valid to diff against; the focus-trail half
+// still asserts `direction: "rtl"`, keeping the "RTL actually applied" check.
+registerRtlDriver(scenario, { cases: ["none"], focusOnly: true });
