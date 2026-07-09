@@ -5,8 +5,14 @@ import { describe, it, expect } from "vitest";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { Toolbar } from "../src/toolbar";
 
+// S2 1.5.1 ships Toolbar as a bare passthrough over the react-aria-components
+// Toolbar (no styling, no variant, no size), and solid-spectrum's Toolbar mirrors
+// it as a passthrough over the base solidaria-components Toolbar. So the styled
+// layer adds nothing of its own — these assert the passthrough forwards role,
+// orientation, and arrow navigation, and defaults to the base `solidaria-Toolbar`
+// class.
 describe("Toolbar (solid-spectrum)", () => {
-  it("renders with toolbar role and default classes", () => {
+  it("renders with toolbar role and the base default class", () => {
     const { container } = render(() => (
       <Toolbar aria-label="Formatting tools">
         <button>Bold</button>
@@ -15,25 +21,21 @@ describe("Toolbar (solid-spectrum)", () => {
     ));
 
     expect(screen.getByRole("toolbar", { name: "Formatting tools" })).toBeInTheDocument();
-    expect(container.querySelector(".vui-toolbar")).toBeInTheDocument();
+    expect(container.querySelector(".solidaria-Toolbar")).toBeInTheDocument();
   });
 
-  it("applies variant, size, and custom class", () => {
+  it("forwards a custom class through the passthrough", () => {
     const { container } = render(() => (
-      <Toolbar aria-label="Formatting tools" variant="bordered" size="lg" class="my-toolbar">
+      <Toolbar aria-label="Formatting tools" class="my-toolbar">
         <button>Bold</button>
       </Toolbar>
     ));
 
-    const toolbar = container.querySelector(".my-toolbar");
-    expect(toolbar).toBeInTheDocument();
-    expect(toolbar).toHaveClass("border");
-    expect(toolbar).toHaveClass("gap-3");
-    expect(toolbar).toHaveClass("p-3");
+    expect(container.querySelector(".my-toolbar")).toBeInTheDocument();
   });
 
-  it("supports vertical orientation styles and attributes", () => {
-    const { container } = render(() => (
+  it("supports vertical orientation attributes", () => {
+    render(() => (
       <Toolbar aria-label="Formatting tools" orientation="vertical">
         <button>Bold</button>
         <button>Italic</button>
@@ -43,7 +45,6 @@ describe("Toolbar (solid-spectrum)", () => {
     const toolbar = screen.getByRole("toolbar", { name: "Formatting tools" });
     expect(toolbar).toHaveAttribute("aria-orientation", "vertical");
     expect(toolbar).toHaveAttribute("data-orientation", "vertical");
-    expect(container.querySelector(".vui-toolbar")).toHaveClass("flex-col");
   });
 
   it("supports arrow navigation (Home/End are no-ops, upstream useToolbar parity)", () => {

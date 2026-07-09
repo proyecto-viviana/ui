@@ -668,7 +668,7 @@ export type {
 
 // Toolbar
 export { Toolbar } from "./toolbar";
-export type { ToolbarProps, ToolbarSize, ToolbarVariant } from "./toolbar";
+export type { ToolbarProps, ToolbarRenderProps } from "./toolbar";
 
 // Tooltip
 export { Tooltip, TooltipTrigger } from "./tooltip";

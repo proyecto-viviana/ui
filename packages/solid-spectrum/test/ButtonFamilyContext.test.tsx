@@ -216,7 +216,7 @@ describe("button-family S2 contexts", () => {
     expect(document.activeElement).toBe(paste);
   });
 
-  it("omits toolbar orientation when ActionButtonGroup is nested as a group", () => {
+  it("keeps toolbar orientation when ActionButtonGroup is nested as a group", () => {
     render(() => (
       <ActionButtonGroup aria-label="Outer actions">
         <ActionButton>Copy</ActionButton>
@@ -228,7 +228,9 @@ describe("button-family S2 contexts", () => {
 
     const nested = screen.getByRole("group", { name: "Nested actions" });
 
-    expect(nested).not.toHaveAttribute("aria-orientation");
+    // Upstream useToolbar emits aria-orientation unconditionally — the nested
+    // role="group" carries it too (S2's ActionButtonGroup wraps RAC Toolbar).
+    expect(nested).toHaveAttribute("aria-orientation", "horizontal");
     expect(nested).toHaveAttribute("data-orientation", "horizontal");
   });
 

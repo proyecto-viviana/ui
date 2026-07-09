@@ -91,6 +91,7 @@ export const reactSpectrumCatalogue = [
   component("Toast"),
   component("ToggleButton"),
   component("ToggleButtonGroup"),
+  component("Toolbar"),
   component("Tooltip"),
   component("TreeView"),
 ] as const satisfies readonly ReactSpectrumCatalogueEntry[];

@@ -1356,7 +1356,17 @@ the checkmark (unselected `visibility: hidden`, selected `visibility: visible`) 
 no layout shift; ARIA state is unchanged; both stay consistent with React Aria / S2
 Picker parity.
 
-## createToolbar keeps an invented text-input arrow guard (`toolbar-text-input-guard`)
+## ~~createToolbar keeps an invented text-input arrow guard (`toolbar-text-input-guard`)~~ — RESOLVED 2026-07-09 (CP9.52)
+
+**RESOLVED** by the Toolbar cert (CP9.52, 2026-07-09). The dedicated toolbar cert
+with a native text-input child case (`toolbar.certified.spec.ts`, flat walk that
+drives real `document.activeElement` onto a "Size" `<input>` and presses an
+arrow) confirmed against the RAC/`useToolbar` oracle that **upstream steals the
+arrows** — no guard. The `isTextInputLikeElement` / `TEXT_INPUT_TYPES` guard was
+deleted from `createToolbar.ts`; the wrong-oracle `createToolbar` unit was
+inverted to assert arrows move focus off the input. (ActionBar's path had already
+been cleared in CP9.50 by dropping `createToolbar` from its base root.) Original
+entry preserved below for history.
 
 `packages/solidaria/src/toolbar/createToolbar.ts` guards arrow keys when the
 focused descendant is a text-entry control (`isTextInputLikeElement`): inputs of

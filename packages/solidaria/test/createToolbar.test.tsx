@@ -80,6 +80,19 @@ describe("createToolbar", () => {
     expect(toolbar).not.toHaveAttribute("aria-labelledby");
   });
 
+  it("suppresses aria-labelledby for an explicit empty aria-label (== null parity)", () => {
+    // Upstream useToolbar gates on `aria-label == null`, not truthiness: an
+    // explicit empty-string label still suppresses aria-labelledby.
+    render(() => (
+      <>
+        <span id="toolbar-label">From labelledby</span>
+        <TestToolbar aria-label="" aria-labelledby="toolbar-label" />
+      </>
+    ));
+    const toolbar = screen.getByRole("toolbar");
+    expect(toolbar).not.toHaveAttribute("aria-labelledby");
+  });
+
   describe("keyboard navigation", () => {
     it("should navigate forward with ArrowRight in horizontal orientation", () => {
       render(() => (
@@ -250,7 +263,7 @@ describe("createToolbar", () => {
       expect(document.activeElement).toBe(buttons[0]);
     });
 
-    it("should not hijack arrow/home/end keys from text inputs", () => {
+    it("moves arrow focus off text inputs (upstream useToolbar has no guard)", () => {
       render(() => (
         <TestToolbar aria-label="Tools">
           <input aria-label="Search" />
@@ -264,17 +277,20 @@ describe("createToolbar", () => {
       search.focus();
       expect(document.activeElement).toBe(search);
 
+      // Upstream useToolbar has NO text-input guard: an arrow key with the input
+      // focused moves focus to the next/previous control (and preventDefaults the
+      // caret). A browser cert (toolbar.certified.spec) pins the real focus move.
       fireEvent.keyDown(search, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(apply);
+
+      fireEvent.keyDown(apply, { key: "ArrowLeft" });
       expect(document.activeElement).toBe(search);
 
+      // Home/End are still not handled — they fall through to the browser.
       fireEvent.keyDown(search, { key: "End" });
       expect(document.activeElement).toBe(search);
 
       fireEvent.keyDown(search, { key: "Home" });
-      expect(document.activeElement).toBe(search);
-
-      apply.focus();
-      fireEvent.keyDown(apply, { key: "ArrowLeft" });
       expect(document.activeElement).toBe(search);
     });
   });
@@ -326,7 +342,9 @@ describe("createToolbar", () => {
 
       expect(outer).toHaveAttribute("role", "toolbar");
       expect(inner).toHaveAttribute("role", "group");
-      expect(inner).not.toHaveAttribute("aria-orientation");
+      // Upstream useToolbar emits aria-orientation unconditionally — the nested
+      // role="group" carries it too, not only the root role="toolbar".
+      expect(inner).toHaveAttribute("aria-orientation", "horizontal");
     });
   });
 });

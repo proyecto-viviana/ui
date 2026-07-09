@@ -1,0 +1,59 @@
+---
+// Toolbar pair-comparison surface. React Spectrum S2's Toolbar
+// (@react-spectrum/s2 1.5.1) is a bare passthrough — `<RACToolbar {...props} />`
+// with no styling and no extra props — so the pair oracle is the
+// react-aria-components `Toolbar` it forwards to, the direct upstream of our
+// solidaria-components Toolbar / createToolbar port. The Solid solid-spectrum
+// Toolbar mirrors S2 as a passthrough over the base. See comparison-manifest.ts
+// "toolbar" entry.
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "toolbar";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "Toolbar";
+const widthPerEm = getTextWidth(title);
+const toc = [{ href: "#api", label: "API", depth: 2 }];
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="toolbar" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A toolbar is a container for a set of interactive controls, such as buttons, menus, or
+    checkboxes, with arrow key navigation between them.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

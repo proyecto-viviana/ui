@@ -79,47 +79,6 @@ function getActiveElement(doc: Document): Element | null {
   return activeElement;
 }
 
-const TEXT_INPUT_TYPES = new Set([
-  "",
-  "text",
-  "search",
-  "url",
-  "tel",
-  "password",
-  "email",
-  "number",
-  "date",
-  "datetime-local",
-  "month",
-  "time",
-  "week",
-]);
-
-function isTextInputLikeElement(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  if (target.isContentEditable || !!target.closest('[contenteditable="true"]')) {
-    return true;
-  }
-
-  if (target.getAttribute("role") === "textbox") {
-    return true;
-  }
-
-  if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
-    return true;
-  }
-
-  if (target instanceof HTMLInputElement) {
-    const type = target.type.toLowerCase();
-    return TEXT_INPUT_TYPES.has(type);
-  }
-
-  return false;
-}
-
 function createFocusManager(ref: Accessor<HTMLElement | undefined>): FocusManager {
   return {
     focusNext(opts: FocusManagerOptions = {}) {
@@ -283,20 +242,6 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
 
     const doc = getOwnerDocument(root);
 
-    // Text entry controls keep the arrow keys for caret/value navigation.
-    // Upstream useToolbar has no such guard; a text input placed inside a
-    // toolbar would otherwise lose caret movement. Kept (narrowed to arrows)
-    // as a suspected divergence pending a dedicated ActionBar/Toolbar cert.
-    if (isTextInputLikeElement(target)) {
-      switch (e.key) {
-        case "ArrowRight":
-        case "ArrowLeft":
-        case "ArrowDown":
-        case "ArrowUp":
-          return;
-      }
-    }
-
     const dir = locale().direction;
     const isRTL = dir === "rtl";
     const isHorizontal = orientation() === "horizontal";
@@ -411,14 +356,17 @@ export function createToolbar(props: AriaToolbarProps = {}): ToolbarAria {
         return isInToolbar() ? "group" : "toolbar";
       },
       get "aria-orientation"() {
-        return isInToolbar() ? undefined : orientation();
+        // Upstream useToolbar emits aria-orientation unconditionally, on the
+        // nested role="group" too — not only on the root role="toolbar".
+        return orientation();
       },
       get "aria-label"() {
         return ariaLabel();
       },
       get "aria-labelledby"() {
-        // Only use aria-labelledby if no aria-label is provided
-        return ariaLabel() ? undefined : ariaLabelledby();
+        // Mirror useToolbar: `aria-label == null ? aria-labelledby : undefined`.
+        // An explicit empty-string aria-label still suppresses labelledby.
+        return ariaLabel() == null ? ariaLabelledby() : undefined;
       },
       ref: setRef,
     },

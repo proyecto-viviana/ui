@@ -584,6 +584,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/useActionGroup.html",
   },
 
+  toolbar: {
+    ...styledLiveOfficialEntry({
+      slug: "toolbar",
+      title: "Toolbar",
+      category: "Components",
+      summary:
+        "Container for a set of interactive controls mounted on both stacks, with arrow-key navigation (no roving tabindex — every control stays tabbable), Tab escaping the whole toolbar, orientation-aware and RTL-flipped Left/Right nav, and nested toolbars downgraded to role=group.",
+      styledSummary:
+        "react-aria-components Toolbar (base, the component S2's Toolbar forwards to) vs Solid solid-spectrum Toolbar (passthrough).",
+      styledNote:
+        "S2's Toolbar (@react-spectrum/s2 1.5.1) is a bare passthrough — `<RACToolbar {...props} />` with no styling and no extra props — so the React oracle is the react-aria-components Toolbar it forwards to, the direct upstream of the Solid createToolbar port. The Solid solid-spectrum Toolbar mirrors S2 as a passthrough over the solidaria-components base (no invented variant/size).",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/Toolbar.html",
+  },
+
   autocomplete: {
     ...styledLiveOfficialEntry({
       slug: "autocomplete",

@@ -366,6 +366,56 @@ March order (dependency/leverage; within a tier, top to bottom):
   9/9 green; package unit suites 5527 pass / 1 expected-fail; solid-spectrum
   typecheck clean. **NEXT: Toolbar**, then TableView, TreeView, StepList,
   Virtualizer (via its hosts), DnD (via its hosts).
+
+  **Toolbar ✓ certified 2026-07-09 (CP9.52)** — THIRTEENTH Tier-4 unit. Oracle is
+  the react-aria-components `Toolbar` — a *real* component (unlike ActionGroup's
+  hand-wired hooks), because S2 1.5.1 ships Toolbar as a bare passthrough
+  (`export function Toolbar(props) { return <RACToolbar {...props} />; }`, zero
+  style/variant/size, re-exports `ToolbarProps` from RAC), so the pair oracle is
+  the RAC Toolbar it forwards to, a thin wrapper over react-aria 3.50 `useToolbar`
+  — the direct upstream of `createToolbar`. The Solid `solid-spectrum` Toolbar was
+  stripped to the same bare passthrough over the base `solidaria-components`
+  Toolbar (Tailwind-removal Phase 0: dropped the invented `vui-toolbar`
+  Tailwind + `variant`/`size` props + `ToolbarSize`/`ToolbarVariant` exports),
+  matching S2. Registered **D5** (focus trail — a horizontal `flat-h` walk and a
+  vertical `flat-v` walk, each Tab-trampolined from a boundary button, driven
+  across the on-axis arrows THROUGH a native "Size" text input + the off-axis
+  arrow + Home/End), **D6** (AX tree across `flat-h`/`flat-v`/`nested-h`), **D10**
+  (RTL re-run of the horizontal walk under `ar-AE`). **The browser (D5) caught the
+  real divergence — the invented text-input guard.** `createToolbar` had an
+  `isTextInputLikeElement` / `TEXT_INPUT_TYPES` guard that swallowed the arrow keys
+  while a text input inside the toolbar was focused (to preserve caret movement) —
+  the `toolbar-text-input-guard` tech-debt. Upstream `useToolbar.onKeyDown` has NO
+  such guard: an arrow key moves focus to the next/previous control and
+  preventDefaults the caret. The flat walks drive real `document.activeElement`
+  onto the Size input and press an arrow — the port stayed stuck on the input, the
+  oracle moved off it. Faithful fix: removed the guard (+ its two helpers) from
+  `createToolbar.ts`. **Two more parity divergences** were fixed alongside — static
+  attributes Chromium's `ariaSnapshot` does not surface (empirically: the
+  `nested-h` AX case passed RED with the bug live), so they are certified at the
+  jsdom unit layer, not the browser: (2) `aria-orientation` was suppressed on the
+  nested `role="group"` (`isInToolbar() ? undefined : orientation()`), but
+  `useToolbar` emits it unconditionally — this also propagated to
+  `ActionButtonGroup` (both stacks wrap RAC Toolbar), where the wrong-oracle
+  `ButtonFamilyContext` "omits orientation when nested" unit was inverted; (3)
+  `aria-labelledby` was gated on `ariaLabel()` truthiness, but `useToolbar` gates
+  on `aria-label == null` — an explicit empty-string label still suppresses
+  labelledby (new `== null`-parity unit). Wrong-oracle jsdom units inverted across
+  `createToolbar` (text-input-guard → moves-focus; nested `aria-orientation`
+  present), `solid-spectrum` Toolbar (dropped `.vui-toolbar`/variant/size, now
+  asserts the base `solidaria-Toolbar` class + passthrough), and
+  `solid-spectrum` `ButtonFamilyContext`. D5 also confirmed the port's ALREADY
+  faithful behavior — orientation-GATED arrows (unlike ActionGroup, horizontal
+  handles only Left/Right, vertical only Up/Down; the off-axis key is a no-op), no
+  roving tabindex (every control natively tabbable), Tab escaping the whole
+  toolbar, and the RTL `shouldReverse = rtl && horizontal` flip. Paint
+  (D1/D3/D7/D8/D9), motion (D2), events (D4) scoped out — S2 adds zero style so
+  there is no paint oracle. This retires the last `toolbar-text-input-guard`
+  tech-debt (ActionBar's path was cleared in CP9.50; the guard itself is now gone
+  from `createToolbar`). Verification: Toolbar certified e2e 8/8 green; package
+  unit suites 5528 pass / 1 expected-fail / 8 skipped; solidaria +
+  solidaria-components + solid-spectrum typecheck clean. **NEXT: TableView**, then
+  TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor

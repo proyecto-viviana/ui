@@ -1,83 +1,30 @@
-import { type JSX, splitProps } from "solid-js";
+import { type JSX } from "solid-js";
 import {
   Toolbar as HeadlessToolbar,
   type ToolbarProps as HeadlessToolbarProps,
   type ToolbarRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { useProviderProps } from "../provider";
 
-export type ToolbarSize = "sm" | "md" | "lg";
-export type ToolbarVariant = "default" | "bordered" | "ghost";
-
-export interface ToolbarProps extends Omit<HeadlessToolbarProps, "class" | "style"> {
-  /** The visual variant of the toolbar. @default 'default' */
-  variant?: ToolbarVariant;
-  /** The size of the toolbar. @default 'md' */
-  size?: ToolbarSize;
-  /** Additional CSS class name. */
-  class?: string;
-  /** Inline styles. */
-  style?: JSX.CSSProperties;
-}
-
-const baseStyles = "vui-toolbar inline-flex items-center";
-
-const variantStyles: Record<ToolbarVariant, string> = {
-  default: "bg-bg-50 rounded-md",
-  bordered: "border border-bg-200 rounded-md",
-  ghost: "",
-};
-
-const sizeStyles: Record<ToolbarSize, string> = {
-  sm: "gap-1 p-1",
-  md: "gap-2 p-2",
-  lg: "gap-3 p-3",
-};
-
-const orientationStyles = {
-  horizontal: "flex-row",
-  vertical: "flex-col",
-};
+export type { ToolbarRenderProps };
+export type ToolbarProps = HeadlessToolbarProps;
 
 /**
- * A styled toolbar for grouping interactive controls with keyboard navigation.
+ * A toolbar is a container for a set of interactive controls, such as buttons,
+ * menus, or checkboxes, with arrow key navigation between them.
+ *
+ * React Spectrum S2 (1.5.1) ships Toolbar as a bare passthrough over the
+ * react-aria-components `Toolbar` — no styling, no variant, no size — so this
+ * mirrors it exactly. See `@react-spectrum/s2/src/Toolbar.tsx`.
  *
  * @example
  * ```tsx
  * <Toolbar aria-label="Text formatting">
  *   <Button>Bold</Button>
  *   <Button>Italic</Button>
- *   <Separator orientation="vertical" />
- *   <Button>Align Left</Button>
- *   <Button>Align Center</Button>
- * </Toolbar>
- *
- * // Vertical toolbar
- * <Toolbar orientation="vertical" variant="bordered">
- *   <Button>Cut</Button>
- *   <Button>Copy</Button>
- *   <Button>Paste</Button>
+ *   <Button>Underline</Button>
  * </Toolbar>
  * ```
  */
 export function Toolbar(props: ToolbarProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["variant", "size", "class", "style"]);
-
-  const variant = () => local.variant ?? "default";
-  const size = () => local.size ?? "md";
-
-  const getClassName = (renderProps: ToolbarRenderProps): string => {
-    return [
-      baseStyles,
-      variantStyles[variant()],
-      sizeStyles[size()],
-      orientationStyles[renderProps.orientation],
-      local.class ?? "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-  };
-
-  return <HeadlessToolbar {...headlessProps} class={getClassName} style={local.style} />;
+  return <HeadlessToolbar {...props} />;
 }
