@@ -736,6 +736,14 @@ export function DisclosurePanel(props: DisclosurePanelProps): JSX.Element {
     "style",
     "slot",
     "ref",
+    // `role` is split off and dropped to mirror S2's `DisclosurePanel`, which runs
+    // its props through `filterDOMProps(otherProps)` (no `propNames`) before handing
+    // them to RAC — that allowlist (id + data-*/aria-*) excludes `role`, so S2
+    // silently discards the `group`/`region` override and the panel is ALWAYS a
+    // `group`. Forwarding `role` to the headless panel (which honours it) would make
+    // the port emit a `region` landmark S2 never renders. See Disclosure.tsx:387
+    // (`const domProps = filterDOMProps(otherProps)`).
+    "role",
   ] as const);
   const headlessProps = forwardedProps;
   const context = getDisclosureContext();

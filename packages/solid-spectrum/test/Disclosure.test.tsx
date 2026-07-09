@@ -114,12 +114,15 @@ describe("Disclosure (solid-spectrum)", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("passes a caller-supplied role through to the disclosure panel (upstream parity)", () => {
-    // Upstream react-aria-components DisclosurePanel defaults to role="group" but
-    // accepts a `role` prop so callers can override it (e.g. role="region" for landmark).
-    // Our solid-spectrum DisclosurePanel was stripping `role` with splitProps before passing
-    // it to HeadlessDisclosurePanel, silently preventing the override.  Without the fix,
-    // the panel always renders with role="group" even when role="region" is passed.
+  it("discards a caller-supplied panel role to match S2 (upstream parity)", () => {
+    // S2's DisclosurePanel type accepts `role` (it extends RACDisclosurePanelProps),
+    // but the implementation runs its props through `filterDOMProps(otherProps)` with
+    // no `propNames` before handing them to RAC (S2 Disclosure.tsx:387). That allowlist
+    // is id + data-*/aria-* only — `role` is NOT in it — so S2 SILENTLY DROPS the
+    // `group`/`region` override and the panel is always `role="group"`. Verified in a
+    // real browser by disclosure.certified.spec.ts (the styled S2 oracle renders
+    // `group` for a `panelRole="region"` case). Our styled DisclosurePanel therefore
+    // splits `role` off and never forwards it, matching S2 rather than bare RAC.
     render(() => (
       <Disclosure defaultExpanded>
         <DisclosureTitle>Landmark panel</DisclosureTitle>
@@ -127,9 +130,10 @@ describe("Disclosure (solid-spectrum)", () => {
       </Disclosure>
     ));
 
-    // Without the fix: getByRole("region") would throw because the panel is role="group"
-    const panel = screen.getByRole("region", { hidden: true });
-    expect(panel).toBeInTheDocument();
+    // The `region` override is discarded — no landmark is created…
+    expect(screen.queryByRole("region", { hidden: true })).toBeNull();
+    // …and the panel stays the default `group`, exactly as S2 renders it.
+    const panel = screen.getByRole("group", { hidden: true });
     expect(panel).toHaveAttribute("data-rsp-slot", "disclosure-panel");
   });
 });

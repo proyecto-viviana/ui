@@ -275,9 +275,31 @@ March order (dependency/leverage; within a tier, top to bottom):
   case rides a documented `knownDivergence`: in the fixed-width harness the React
   oracle's ResizeObserver never re-fires, so it renders a STALE tail=0 collapse while
   Solid correctly re-measures to tail=2 — forcing byte-parity would regress Solid's
-  correct behavior. **NEXT: Disclosure/Accordion**, then ActionBar,
-  ActionGroup, Toolbar, TableView, TreeView, StepList, Virtualizer (via its hosts),
-  DnD (via its hosts).
+  correct behavior.
+  **Disclosure/Accordion ✓ certified 2026-07-09 (CP9.49)** — TENTH Tier-4 unit;
+  styled-S2 oracle (Accordion IS `DisclosureGroup`; the port exports `Accordion*`
+  as thin aliases over `Disclosure*`). Registered **D5** (focus trail — a
+  not-a-roving-composite walk: the trigger and the header action are INDEPENDENT
+  native tab stops, the panel body is not focusable) + **D6** (AX tree —
+  disclosure `standard`/`collapsed`/`region`/`heading-level` + accordion
+  `single`/`disabled`). The pair-oracle caught two port divergences the jsdom
+  units missed (both had asserted the *wrong* parity): (1) the trigger was missing
+  the always-`tabindex="0"` that RAC's `<Button>` applies via `useFocusable`
+  (`useFocusable.tsx:114` — "always set a tabIndex so Safari can focus native
+  buttons"); the port's bespoke `DisclosureTrigger` built the `<button>` from
+  `createFocusRing` (focus-visible only, no tabIndex). (2) S2's `DisclosurePanel`
+  runs its props through `filterDOMProps(otherProps)` (S2 `Disclosure.tsx:387`, no
+  `propNames`), whose allowlist (id + data-*/aria-*) EXCLUDES `role`, so S2
+  silently discards the `group`/`region` opt-in and the panel is ALWAYS `group` —
+  but the styled port forwarded `role` raw to the headless panel (bare RAC honors
+  it), emitting a `region` landmark S2 never renders. Faithful fixes: emit
+  `tabindex={isDisabled ? undefined : 0}` on the trigger, and split `role` off in
+  the styled `DisclosurePanel` so it is dropped (the base RAC-layer panel stays
+  role-honoring — the divergence was only the styled S2 layer being over-faithful
+  to RAC). Paint (D1/D3/D7/D8), motion (D2), events (D4), RTL (D10) scoped out —
+  carried by `disclosure-visual`/`accordion-visual`/`accordion-contract`. **NEXT:
+  ActionBar**, then ActionGroup, Toolbar, TableView, TreeView, StepList,
+  Virtualizer (via its hosts), DnD (via its hosts).
   Both gates that preceded this tier are resolved (the D4 event-ordering policy
   and the D9/D10 sequencing decision — see "Director pass 2026-07-06" below).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
@@ -3422,6 +3444,64 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     `packages` run: 268 files, **5528 passed** / 1 expected-fail / 8 skipped, incl. the regenerated
     `solid-spectrum` regression snapshot and the `solidaria-components` nav→list realignments) +
     `typecheck` clean (packages + comparison). Next Tier-4 unit: **Disclosure/Accordion**.
+
+- ✓ **Disclosure/Accordion certified 2026-07-09 (CP9.49 — Tier-4, tenth collections unit) — the browser
+  pair-oracle caught two divergences whose jsdom units asserted the WRONG parity.** Disclosure is the
+  first Tier-4 unit that is a styled-S2 header/trigger/panel triad rather than a roving collection;
+  Accordion IS S2's `DisclosureGroup` (the `solid-spectrum` port exports
+  `Accordion`/`AccordionItem`/`AccordionItemHeader`/`AccordionItemPanel`/`AccordionItemTitle` as thin
+  aliases over `Disclosure*`). Oracle = the styled `@react-spectrum/s2` `Disclosure`/`Accordion` (both
+  panels render the styled layer; this unit certifies STRUCTURE / AX / focus — paint lives in the
+  existing `disclosure-visual`/`accordion-visual`/`accordion-contract` specs). Registered **D5** (focus
+  trail) + **D6** (AX tree). Both divergences were diagnosed against vendored `react-aria`
+  `useFocusable.tsx` + `@react-spectrum/s2` `Disclosure.tsx` before any fix:
+  - **D-A — the trigger was missing react-aria's always-tabindex (D5).** RAC's `<Button>` (which S2's
+    disclosure trigger IS) runs `useFocusable`, which emits an explicit tabIndex on EVERY focusable:
+    `tabIndex = props.excludeFromTabOrder ? -1 : 0; if (props.isDisabled) tabIndex = undefined`
+    (`react-aria/src/interactions/useFocusable.tsx:114-118`, comment "Always set a tabIndex so Safari
+    allows focusing native buttons"). So S2's trigger renders `tabindex="0"`. The port's bespoke
+    `DisclosureTrigger` (`solidaria-components/src/Disclosure.tsx`) hand-builds the `<button>` from
+    `createDisclosure`'s buttonProps + `createFocusRing` (focus-VISIBLE only — no tabIndex), so the
+    trigger was absent from the roving `[tabindex]` snapshot the D5 driver captures. A native `<button>`
+    is focusable regardless, so keyboard behavior was already identical — but the explicit attribute is a
+    faithful upstream detail (the port already ships the same logic in `createFocusable.ts:157`; the
+    trigger just wasn't routed through it). Faithful fix: emit `tabindex={isDisabled() ? undefined : 0}`
+    on the trigger button (mirrors useFocusable exactly).
+  - **D-B — S2 SILENTLY STRIPS the panel `role`; the styled port was over-faithful to bare RAC (D6).**
+    RAC's `DisclosurePanel` accepts `role: 'group' | 'region'` and honors it (the `region` landmark
+    opt-in). S2's `DisclosurePanel` extends `RACDisclosurePanelProps` so its TYPE still accepts `role` —
+    but the IMPL runs `const domProps = filterDOMProps(otherProps)` (S2 `Disclosure.tsx:387`, NO
+    `propNames` option) before handing props to RAC, and that allowlist is `id` + `data-*`/`aria-*` only
+    (`@react-aria/utils` `filterDOMProps`: `DOMPropNames = {id}` + the `data-`/`aria-` regex) — `role` is
+    NOT in it. So S2 discards the override and the panel is ALWAYS `group`; the `region` opt-in is
+    effectively dead upstream. Our styled `solid-spectrum` `DisclosurePanel`
+    (`packages/solid-spectrum/src/disclosure/index.tsx`) forwarded `role` raw to the headless panel, and
+    the base `solidaria-components` panel (faithful to RAC) honors it — so the port emitted a `region`
+    landmark S2 never renders. Identical Chromium: oracle = `group`, port = `region`. Faithful fix: split
+    `role` off in the styled `DisclosurePanel` so it is dropped, mirroring S2's `filterDOMProps`. The base
+    `solidaria-components` `DisclosurePanel` STAYS role-honoring (it is the bare-RAC layer, and bare RAC
+    does support the override) — the fix is scoped to the styled S2 layer. A prior "fix" had ADDED role
+    forwarding to the styled port plus a unit test `passes a caller-supplied role through to the
+    disclosure panel (upstream parity)` asserting RAC parity — the wrong oracle for a styled S2 component;
+    it was rewritten to `discards a caller-supplied panel role to match S2` (asserts `queryByRole("region")`
+    null + `getByRole("group")`). The D6 `region` case now certifies both stacks render `group` — a
+    lock-in: re-adding role forwarding would break the S2 match; the cert docblock was rewritten from
+    "opt-in region landmark" to the filterDOMProps-strips-role truth.
+  - **Pre-existing pixel reds are NOT this unit (documented, not silent):** the `disclosure-visual` /
+    `accordion-visual` pixel-identical + geometry cases fail an exact-zero-tolerance chevron sub-pixel
+    diff (38/29250 px, bounds ~9×6 over the chevron glyph). Proven pre-existing by stashing the two source
+    edits, rebuilding, and re-running: the mismatch ratio is byte-identical (`0.001299145299145299`) at
+    HEAD `143bfe7d` without any CP9.49 change — the same measurement-layer family as the **D3 sub-pixel
+    burn-down** note below (Tooltip/ContextualHelp/Toast glyph phase), not a port divergence.
+    `accordion-contract` passes.
+  - Verified: **Disclosure/Accordion certified e2e 8/8 green** (D5 disclosure `tab-through` + accordion
+    `tab-through`; D6 disclosure `standard`/`collapsed`/`region`/`heading-level` + accordion
+    `single`/`disabled`) + **units green** (full `packages` run: 268 files, **5528 passed** / 1
+    expected-fail / 8 skipped — the tabindex fix re-baselined 2 `solid-spectrum` `regression.test.tsx`
+    snapshots [Disclosure + Accordion, sole diff = `tabindex="0"`], and the role unit test was inverted to
+    assert S2's strip) + `typecheck` clean (packages + comparison) + **full `e2e/certified` suite: 1574
+    passed / 5 skipped / 0 failed — no regression** (the chevron pixel reds above live in the
+    `disclosure-visual`/`accordion-visual` specs, not the certified suite). Next Tier-4 unit: **ActionBar**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer

@@ -406,6 +406,10 @@ export function DisclosureTrigger(props: DisclosureTriggerProps): JSX.Element {
       {...mergeProps(domProps() as Record<string, unknown>, getButtonProps(), cleanFocusProps())}
       ref={(el) => assignRef(local.ref, el)}
       type="button"
+      // Mirror react-aria's `useFocusable` (useFocusable.tsx:114-118): always emit
+      // an explicit tabIndex so the native trigger is a real, discoverable tab stop
+      // (Safari won't focus a native button otherwise). Disabled → attribute absent.
+      tabindex={isDisabled() ? undefined : 0}
       class={local.class}
       style={local.style}
       data-expanded={dataAttr(isExpanded())}
