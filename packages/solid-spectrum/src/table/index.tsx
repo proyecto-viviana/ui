@@ -26,6 +26,7 @@ import {
   TableColumnResizeStateContext as HeadlessTableColumnResizeStateContext,
   TableSelectionCheckbox as HeadlessTableSelectionCheckbox,
   TableStateContext as HeadlessTableStateContext,
+  VisuallyHidden as HeadlessVisuallyHidden,
   Form as HeadlessForm,
   Popover as HeadlessPopover,
   OverlayTriggerStateContext,
@@ -1001,13 +1002,23 @@ const selectionCell = style<TableCellRenderProps & { density?: TableDensity }>({
   verticalAlign: "middle",
 });
 
-const selectionCheckbox = style({
+const selectionCheckbox = style<{ isDisabled?: boolean }>({
   position: "relative",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
   width: 16,
   height: 16,
+  // Mirrors S2 TableView's `selectionCheckbox` style
+  // (`[slot="selection"][data-disabled="true"]` → `visibility: hidden`): a
+  // disabled row's selection checkbox is visually hidden, which also removes it
+  // from the accessibility tree (matching the S2 oracle, whose disabled
+  // selection checkbox is pruned from the AX snapshot). The select-all checkbox
+  // uses S2's separate `selectAllCheckbox` style and is never hidden this way.
+  visibility: {
+    default: "visible",
+    isDisabled: "hidden",
+  },
 });
 
 const selectionCheckboxInput = style({
@@ -1942,17 +1953,19 @@ export function TableSelectionCheckbox(props: {
     >
       {(renderProps: TableCellRenderProps) => (
         <>
-          <span class={selectionCheckbox} data-rsp-slot="selection-indicator">
+          <span
+            class={selectionCheckbox({ isDisabled: !!props.isDisabled })}
+            data-rsp-slot="selection-indicator"
+          >
             <HeadlessTableSelectionCheckbox rowKey={props.rowKey} class={selectionCheckboxInput} />
             <span
               class={selectionCheckboxBox({
                 isSelected: !!props.isSelected,
                 isDisabled: !!props.isDisabled,
               })}
-              aria-hidden="true"
             >
               {props.isSelected ? (
-                <Checkmark size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
+                <Checkmark size="XS" class={selectionCheckboxIcon} />
               ) : null}
             </span>
           </span>
@@ -1987,24 +2000,33 @@ export function TableSelectAllCheckbox(): JSX.Element {
       selectionColumn,
     );
 
+  // Mirrors S2's `TableColumnHeader`: in single-selection mode there is no
+  // select-all checkbox — the header column instead exposes a `VisuallyHidden`
+  // "Select" label (S2 `VisuallyHiddenSelectAllLabel`). Only `multiple` mode
+  // renders the real select-all checkbox.
+  const isSingle = () => state?.selectionMode === "single";
+
   return (
     <HeadlessTableColumn id="__selection__" class={className}>
-      <span class={selectionCheckbox} data-rsp-slot="select-all-indicator">
-        <HeadlessTableSelectAllCheckbox class={selectionCheckboxInput} />
-        <span
-          class={selectionCheckboxBox({
-            isSelected: isSelected() || isIndeterminate(),
-            isDisabled: isDisabled(),
-          })}
-          aria-hidden="true"
-        >
-          {isSelected() ? (
-            <Checkmark size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
-          ) : isIndeterminate() ? (
-            <Dash size="XS" class={selectionCheckboxIcon} aria-hidden="true" />
-          ) : null}
+      {isSingle() ? (
+        <HeadlessVisuallyHidden>Select</HeadlessVisuallyHidden>
+      ) : (
+        <span class={selectionCheckbox({})} data-rsp-slot="select-all-indicator">
+          <HeadlessTableSelectAllCheckbox class={selectionCheckboxInput} />
+          <span
+            class={selectionCheckboxBox({
+              isSelected: isSelected() || isIndeterminate(),
+              isDisabled: isDisabled(),
+            })}
+          >
+            {isSelected() ? (
+              <Checkmark size="XS" class={selectionCheckboxIcon} />
+            ) : isIndeterminate() ? (
+              <Dash size="XS" class={selectionCheckboxIcon} />
+            ) : null}
+          </span>
         </span>
-      </span>
+      )}
     </HeadlessTableColumn>
   );
 }

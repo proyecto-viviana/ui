@@ -192,7 +192,9 @@ describe("TableView (solid-spectrum)", () => {
     const alice = screen.getByRole("row", { name: /Alice/ });
     const bob = screen.getByRole("row", { name: /Bob/ });
     expect(alice).toHaveAttribute("data-selected", "true");
-    expect(within(alice).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    // The selection checkbox is labelled by its own "Select" text plus the
+    // row's row-header cell ("Alice"), matching useTableSelectionCheckbox.
+    expect(within(alice).getByRole("checkbox", { name: "Select Alice" })).toBeChecked();
     expect(bob).toHaveAttribute("aria-disabled", "true");
   });
 
@@ -305,7 +307,7 @@ describe("TableView (solid-spectrum)", () => {
     // Select-all and per-row checkboxes remain in the default checkbox style.
     expect(screen.getByRole("checkbox", { name: "Select All" })).toBeTruthy();
     const alice = screen.getByRole("row", { name: /Alice/ });
-    expect(within(alice).getByRole("checkbox", { name: "Select" })).toBeTruthy();
+    expect(within(alice).getByRole("checkbox", { name: "Select Alice" })).toBeTruthy();
   });
 
   it("supports highlight selection with replace behavior and no checkboxes", () => {

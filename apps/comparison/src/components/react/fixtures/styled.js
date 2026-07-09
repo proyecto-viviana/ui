@@ -392,6 +392,7 @@ import {
   serializeTableViewSortDescriptor,
   sortTableViewRows,
   tableViewDemoItems,
+  tableViewDemoLocaleFromWindow,
   tableViewDemoPropsFromWindow,
   tableViewInitialSortDescriptor,
   tableViewKeysFromValue,
@@ -1817,6 +1818,7 @@ function ReactTableViewDemo() {
   );
   const [actionKey, setActionKey] = useState("");
   const colorScheme = useComparisonResolvedTheme();
+  const locale = tableViewDemoLocaleFromWindow();
   useEffect(() => {
     const handleControlsChange = (event) => {
       if (event instanceof CustomEvent && event.detail?.component === "tableview") {
@@ -1870,7 +1872,9 @@ function ReactTableViewDemo() {
       "data-comparison-selected-keys": serializeTableViewKeys(selectedKeys),
       "data-comparison-action-key": actionKey,
       "data-comparison-sort-descriptor": serializeTableViewSortDescriptor(sortDescriptor),
-      children: jsxs(
+      children: [
+        jsx("button", { children: "Before" }, "before"),
+        jsxs(
         SpectrumTableView,
         {
           "aria-label": "Project documents",
@@ -1953,8 +1957,11 @@ function ReactTableViewDemo() {
         },
         renderKey,
       ),
+        jsx("button", { children: "After" }, "after"),
+      ],
     }),
     colorScheme,
+    locale,
   );
 }
 

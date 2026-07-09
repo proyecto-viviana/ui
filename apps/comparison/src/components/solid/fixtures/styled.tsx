@@ -412,6 +412,7 @@ import {
   serializeTableViewSortDescriptor,
   sortTableViewRows,
   tableViewDemoItems,
+  tableViewDemoLocaleFromWindow,
   tableViewDemoPropsFromWindow,
   tableViewInitialSortDescriptor,
   tableViewKeysFromValue,
@@ -2448,6 +2449,7 @@ function SolidSpectrumTableViewDemo() {
   );
   const [actionKey, setActionKey] = createSignal("");
   const colorScheme = createComparisonResolvedThemeSignal();
+  const locale = tableViewDemoLocaleFromWindow();
   const baseRows = createMemo(() => tableViewDemoItems(demoProps()));
   const itemKeys = createMemo(() => baseRows().map((item) => item.id));
   const rows = createMemo(() => sortTableViewRows(baseRows(), sortDescriptor()));
@@ -2477,6 +2479,7 @@ function SolidSpectrumTableViewDemo() {
       get colorScheme() {
         return colorScheme();
       },
+      locale,
       background: "base",
       style: providerShellStyle,
     },
@@ -2500,6 +2503,7 @@ function SolidSpectrumTableViewDemo() {
           },
         },
         [
+          hc("button", {}, ["Before"]),
           hc(
             SolidSpectrumTableView,
             {
@@ -2666,6 +2670,7 @@ function SolidSpectrumTableViewDemo() {
               ),
             ]),
           ),
+          hc("button", {}, ["After"]),
         ],
       ),
     ],

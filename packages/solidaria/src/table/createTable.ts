@@ -10,6 +10,7 @@ import type { TableState, TableCollection, Key, GridNode } from "@proyecto-vivia
 import type { AriaTableProps, TableAria } from "./types";
 import { useLocale } from "../i18n";
 import { announce } from "../live-announcer";
+import { createDescription } from "../utils/createDescription";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
 
@@ -590,16 +591,40 @@ export function createTable<T extends object>(
     }
   });
 
+  // A sorted table exposes a persistent sort description on the grid ("sorted by
+  // column {name} in {direction} order"), mirroring `useTable`'s
+  // `useDescription(sortDescription)` — separate from the transient live-region
+  // announcement above. `columnName` follows upstream exactly
+  // (`columns.find(c => c.key === column)?.textValue ?? ''`) so a header with no
+  // plain-text value yields an empty name, matching the S2 oracle.
+  const sortDescription = () => {
+    const s = state();
+    const descriptor = s.sortDescriptor;
+    const column = descriptor?.column;
+    const direction = descriptor?.direction;
+    if (!direction || column == null) {
+      return undefined;
+    }
+    const columnName = s.collection.columns.find((c) => c.key === column)?.textValue ?? "";
+    return `sorted by column ${columnName} in ${direction} order`;
+  };
+  const sortDescriptionProps = createDescription(sortDescription);
+
   const gridProps = createMemo(() => {
     const p = props();
     const s = state();
+
+    const describedBy =
+      [sortDescriptionProps["aria-describedby"], p["aria-describedby"]]
+        .filter(Boolean)
+        .join(" ") || undefined;
 
     const baseProps: Record<string, unknown> = {
       role: "grid",
       id,
       "aria-label": p["aria-label"],
       "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": p["aria-describedby"],
+      "aria-describedby": describedBy,
       "aria-multiselectable": s.selectionMode === "multiple" ? "true" : undefined,
       // Keep the grid itself tabbable so keyboard users can enter
       // row/cell navigation without requiring a prior pointer interaction.

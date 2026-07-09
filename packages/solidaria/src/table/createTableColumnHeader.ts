@@ -8,6 +8,7 @@ import type { JSX } from "solid-js";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableColumnHeaderProps, TableColumnHeaderAria } from "./types";
 import { getTableData } from "./createTable";
+import { createDescription } from "../utils/createDescription";
 
 /**
  * Creates accessibility props for a table column header.
@@ -26,6 +27,14 @@ export function createTableColumnHeader<T extends object>(
     const p = props();
     return s.focusedKey === p.node.key;
   });
+
+  // A sortable column header is described as "sortable column" — mirrors
+  // `useTableColumnHeader`'s `useDescription(stringFormatter.format('sortable'))`.
+  // Backed by a shared hidden element (ref-counted) and referenced via
+  // aria-describedby.
+  const sortDescriptionProps = createDescription(() =>
+    props().allowsSorting ? "sortable column" : undefined,
+  );
 
   const sortColumn = () => {
     const s = state();
@@ -125,6 +134,7 @@ export function createTableColumnHeader<T extends object>(
       role: "columnheader",
       id: tableData ? `${tableData.tableId}-${node.key}` : undefined,
       "aria-sort": ariaSort,
+      "aria-describedby": sortDescriptionProps["aria-describedby"],
       tabIndex: isFocused() ? 0 : -1,
       onFocus,
     };

@@ -523,6 +523,8 @@ export const TableColumnResizeStateContext = createContext<{
 interface TableRowContextValue {
   rowKey: Key;
   rowNode: GridNode<unknown>;
+  /** The row's resolved disabled state, so a child selection checkbox can gate on it. */
+  isRowDisabled: boolean;
   getCellColumnKey(cellId: string, explicitId?: Key): Key | undefined;
 }
 
@@ -622,7 +624,12 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   const collection = () => state.collection;
   const parentCollectionRenderer = useCollectionRenderer<T>();
 
-  const { gridProps } = createTable<T>(
+  // Keep the hook's return object (do NOT destructure `gridProps`): the grid's
+  // sort-description `aria-describedby` is emitted via a `createDescription`
+  // effect that resolves its id AFTER the first render, so `gridProps` must be
+  // read reactively through the getter. Destructuring would freeze the initial
+  // (describedby-less) snapshot. Mirrors how columnHeader/row aria is consumed.
+  const tableAria = createTable<T>(
     () => ({
       id: ariaProps.id,
       "aria-label": ariaProps["aria-label"],
@@ -665,7 +672,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   });
 
   const cleanGridProps = () => {
-    const { ref: _ref1, ...rest } = gridProps as Record<string, unknown>;
+    const { ref: _ref1, ...rest } = tableAria.gridProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -1735,6 +1742,9 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   const rowContextValue: TableRowContextValue = {
     rowKey: rowKey(),
     rowNode: rowNode(),
+    get isRowDisabled() {
+      return isDisabled();
+    },
     getCellColumnKey(cellId, explicitId) {
       if (explicitId === "__selection__") {
         return explicitId;
@@ -2152,9 +2162,10 @@ export function TableSelectionCheckbox(props: TableSelectionCheckboxProps): JSX.
   }
 
   const { state } = context;
+  const rowContext = useContext(TableRowContext);
 
   const selectionCheckboxAria = createTableSelectionCheckbox<object>(
-    () => ({ key: props.rowKey }),
+    () => ({ key: props.rowKey, isRowDisabled: rowContext?.isRowDisabled }),
     () => state as TableState<object, TableCollection<object>>,
   );
 

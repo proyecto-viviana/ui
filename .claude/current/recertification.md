@@ -423,6 +423,64 @@ March order (dependency/leverage; within a tier, top to bottom):
   unit suites 5528 pass / 1 expected-fail / 8 skipped; solidaria +
   solidaria-components + solid-spectrum typecheck clean. **NEXT: TableView**, then
   TreeView, StepList, Virtualizer (via its hosts), DnD (via its hosts).
+
+  **TableView ✓ certified 2026-07-09 (CP9.53)** — FOURTEENTH Tier-4 unit; the 2D
+  data grid, and the first unit certified on the **D6 accessibility tree ALONE**.
+  Oracle is `@react-spectrum/s2` `TableView`. **Why D6-only — a deliberate,
+  unwaivable architecture divergence.** S2's `TableView` is *always* virtualized:
+  it wraps its collection in a `Virtualizer` + `S2TableLayout` (s2
+  `TableView.tsx:97,336`), and RAC's `Table` renders a `<div role="grid">` tree
+  of absolutely-positioned rows/cells (`display: grid`/`flex`) whenever
+  `isVirtualized` is set (`react-aria-components/src/Table.tsx:670-675`). Our port
+  instead renders a SEMANTIC NATIVE `<table>`/`<thead>`/`<tbody>`/`<tr>`/`<th>`/
+  `<td>` tree with a SPACER-BASED virtualizer (windows by slice + spacer rows on a
+  1D scroll axis — the established `virtualizer-decomposition` design), faithful
+  to RAC's *non-virtualized* `<table>` default and the more semantic DOM. That
+  makes the two stacks structurally incomparable at every paint/geometry
+  dimension: **D1** state-matrix / **D7** contrast (cell `display` is
+  `table-cell`/`table-row` here vs `flex`/`grid` in S2 — an exact-string diff that
+  can never be waived), **D3** pixel (native table-layout columns vs S2's
+  grid-template tiles), **D5**/**D10** focus trail (the D5 descriptor pins `tag`,
+  and every element's tag differs — `table`/`tr`/`td`/`th` here vs `div` there —
+  so strict trail equality can never reconcile them), and **D8** target size
+  (same divergent box model). These are not port bugs; they are the downstream
+  shadow of one foundation choice, tracked as tech-debt `tableview-div-grid-paint`
+  (a future BEHAVIOR cert could pair-diff against RAC's *non-virtualized* `Table`,
+  whose native-`<table>` DOM matches the port tag-for-tag, restoring D5/D10 —
+  wants new RAC-Table fixtures, deferred). **The D6 AX tree is the one
+  structure-agnostic dimension** — it compares role / accessible name / state /
+  description, never tag or box model — so it is where a native-`<table>` port
+  meaningfully pair-diffs against S2's div-grid, and where the real contract
+  lives. Registered **D6** across five cases (`default`/`single`/`sorted`/`none`/
+  `disabled`). The driver caught and drove **four faithful port fixes**: (1) the
+  grid's sort live-region `aria-describedby` was frozen by a destructured
+  `gridProps` snapshot (read `tableAria.gridProps` fresh); (2) the column-header
+  "sortable column" description; (3) the selection-checkbox `aria-labelledby` —
+  now its own "Select" text + the row-header cell, matching
+  `useTableSelectionCheckbox` (so SRs read "Select Project brief.pdf"); (4) the
+  disabled-row selection checkbox — ported S2's `selectionCheckbox` `visibility:
+  hidden` variant (`[slot="selection"][data-disabled="true"]`), which prunes it
+  from the AX tree exactly as the S2 oracle prunes its disabled checkbox
+  (React sets `visibility: hidden`; Playwright's `ariaSnapshot` prunes those
+  nodes — the Solid port kept it `visible` and over-exposed it). Alongside, the
+  checkbox visual box `<div>` + Checkmark/Dash icons dropped their invented
+  `aria-hidden` to match S2's plain-`<div>`/un-hidden-icon Checkbox rendering
+  (`s2 Checkbox.mjs:323-341`), and single-selection mode swapped the select-all
+  checkbox for S2's `VisuallyHidden` "Select" label. **One documented known
+  divergence — the `sorted` case (fixme):** the sort description reads the sorted
+  column's `textValue` in both ports (faithful to react-aria `useTable`), but they
+  diverge on what it is — this data-driven TableView carries a real column
+  `textValue` ("Name" from its `columns` prop), while S2's JSX-driven `Column`
+  passes a render-function child to `RACColumn` and no explicit `textValue`, so
+  RAC derives none and the S2 oracle announces "sorted by column&nbsp;&nbsp;in
+  ascending order" (empty name). Ours is richer ("…column Name…") but diverges
+  from the oracle — a data-model difference, not a port bug. Verification:
+  TableView D6 cert e2e 4/4 green (1 documented fixme); package unit suites 5528
+  pass / 1 expected-fail / 8 skipped (Table regression snapshot re-baselined for
+  the new `aria-labelledby`/visibility DOM; two `Table.test.tsx` selection-checkbox
+  name assertions updated "Select" → "Select Alice"); solidaria +
+  solidaria-components + solid-spectrum typecheck clean. **NEXT: TreeView**, then
+  StepList, Virtualizer (via its hosts), DnD (via its hosts).
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor

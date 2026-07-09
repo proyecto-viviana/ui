@@ -180,6 +180,14 @@ export interface TableRowGroupAria {
 export interface AriaTableSelectionCheckboxProps {
   /** The key of the row. */
   key: Key;
+  /**
+   * Whether the owning row is disabled. In upstream RAC the row's `isDisabled`
+   * lives on the shared collection node, so `selectionManager.canSelectItem`
+   * can read it. In this data-driven port per-row `isDisabled` is a render-time
+   * prop threaded through `createTableRow`, so it is surfaced to the sibling
+   * checkbox via `TableRowContext` and forwarded here.
+   */
+  isRowDisabled?: boolean;
 }
 
 /**

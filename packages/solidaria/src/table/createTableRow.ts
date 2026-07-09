@@ -14,6 +14,7 @@ import type {
 } from "@proyecto-viviana/solid-stately";
 import type { AriaTableRowProps, TableRowAria, ExpandButtonProps } from "./types";
 import { getTableData } from "./createTable";
+import { getRowLabelledBy } from "./utils";
 import { useLocale } from "../i18n";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeProps } from "../utils/mergeProps";
@@ -200,6 +201,15 @@ export function createTableRow<T extends object>(
       "aria-selected": s.selectionMode !== "none" ? isSelected() : undefined,
       "aria-disabled": isDisabled() || undefined,
     };
+
+    // A row is labelled by its row-header cell(s) — mirrors `useTableRow`'s
+    // `'aria-labelledby': getRowLabelledBy(state, node.key)`. Without it the
+    // browser falls back to concatenating every cell (incl. the selection
+    // checkbox), so the row's accessible name reads "Select Foo.pdf PDF …".
+    const labelledBy = getRowLabelledBy(s, node.key);
+    if (labelledBy) {
+      baseProps["aria-labelledby"] = labelledBy;
+    }
 
     // Tree-grid rows expose their nesting depth, position and expansion state.
     if (s.treeColumn != null) {

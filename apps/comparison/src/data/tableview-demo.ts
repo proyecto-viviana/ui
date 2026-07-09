@@ -10,6 +10,10 @@ export const tableViewItemCountOptions = ["3", "2", "0"] as const;
 export const tableViewColumnSetOptions = ["all", "withoutOwner", "nameStatus"] as const;
 export const tableViewSortColumnOptions = ["none", "name", "type", "owner", "status"] as const;
 export const tableViewSortDirectionOptions = ["ascending", "descending"] as const;
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// TableView fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
+// gets `dir="rtl"` (mirrored column order + flipped ArrowLeft/ArrowRight cell nav).
+export const tableViewDemoLocaleOptions = ["en-US", "ar-AE"] as const;
 
 export type TableViewDensity = (typeof tableViewDensityOptions)[number];
 export type TableViewOverflowMode = (typeof tableViewOverflowModeOptions)[number];
@@ -360,6 +364,22 @@ export function tableViewDemoPropsFromWindow(): TableViewDemoProps {
   }
 
   return tableViewDemoPropsFromSearch(window.location.search);
+}
+
+// Locale is threaded separately from the demo props: the D10 (RTL/i18n) driver
+// re-mounts the fixture with `?locale=ar-AE` so the S2 `Provider` computes
+// `dir="rtl"`, and the TableView fixture passes it straight into that Provider.
+export function tableViewDemoLocaleFromSearch(search: string) {
+  const locale = new URLSearchParams(search).get("locale");
+  return isOneOf(locale, tableViewDemoLocaleOptions) ? locale : undefined;
+}
+
+export function tableViewDemoLocaleFromWindow() {
+  if (typeof window === "undefined") {
+    return undefined;
+  }
+
+  return tableViewDemoLocaleFromSearch(window.location.search);
 }
 
 export function serializeTableViewDemoProps(props: TableViewDemoProps) {
