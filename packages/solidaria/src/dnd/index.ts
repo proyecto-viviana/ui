@@ -52,6 +52,7 @@ export {
   EFFECT_ALLOWED,
   DROP_EFFECT_TO_DROP_OPERATION,
   DROP_OPERATION_TO_DROP_EFFECT,
+  getDragModality,
   getTypes,
   writeToDataTransfer,
   readFromDataTransfer,

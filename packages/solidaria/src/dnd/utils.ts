@@ -12,6 +12,7 @@ import type {
   DropOperation,
 } from "@proyecto-viviana/solid-stately";
 import { DIRECTORY_DRAG_TYPE } from "@proyecto-viviana/solid-stately";
+import { getInteractionModality } from "../interactions";
 
 // Native drag types that can be transferred between applications
 export const NATIVE_DRAG_TYPES: Set<string> = new Set(["text/plain", "text/uri-list", "text/html"]);
@@ -72,6 +73,41 @@ export const DROP_OPERATION_TO_DROP_EFFECT: Record<DropOperation, string> = {
   copy: "copy",
   move: "move",
 };
+
+/**
+ * Maps the current interaction modality onto the drag modality used for
+ * announcements and descriptions. Mirrors @react-aria/dnd `mapModality`:
+ * pointer collapses to virtual, and a virtual modality on a coarse pointer
+ * (touch screen reader) becomes touch.
+ */
+function mapModality(modality: string | null): string {
+  if (!modality) {
+    modality = "virtual";
+  }
+
+  if (modality === "pointer") {
+    modality = "virtual";
+  }
+
+  if (
+    modality === "virtual" &&
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches
+  ) {
+    modality = "touch";
+  }
+
+  return modality;
+}
+
+/**
+ * Returns the drag modality ('keyboard' | 'virtual' | 'touch') for the current
+ * interaction. Mirrors @react-aria/dnd `getDragModality`.
+ */
+export function getDragModality(): string {
+  return mapModality(getInteractionModality());
+}
 
 /**
  * Get the types present in drag items.
