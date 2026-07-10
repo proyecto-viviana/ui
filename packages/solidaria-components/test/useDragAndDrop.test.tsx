@@ -79,56 +79,19 @@ describe("useDragAndDrop", () => {
     });
   });
 
-  it("passes keyboardDelegate and onKeyDown through droppable collection adapter", () => {
-    createRoot((dispose) => {
-      const onKeyDown = vi.fn();
-      const { dragAndDropHooks } = useDragAndDrop({
-        onInsert: () => {},
-        onKeyDown,
-      });
-
-      const dropState = dragAndDropHooks.useDroppableCollectionState?.({});
-      expect(dropState).toBeDefined();
-      if (!dropState || !dragAndDropHooks.useDroppableCollection) {
-        dispose();
-        return;
-      }
-
-      const root = document.createElement("div");
-      document.body.append(root);
-
-      const droppableCollection = dragAndDropHooks.useDroppableCollection(
-        {
-          dropTargetDelegate: {
-            getDropTargetFromPoint: () => ({ type: "root" }),
-            getKeyboardNavigationTarget: () => ({ type: "item", key: "row-1", dropPosition: "on" }),
-          },
-          keyboardDelegate: {
-            getKeyBelow: () => "row-1",
-            getFirstKey: () => "row-1",
-            getLastKey: () => "row-1",
-          },
-        },
-        dropState,
-        () => root,
-      );
-
-      const event = new KeyboardEvent("keydown", {
-        key: "ArrowDown",
-        bubbles: true,
-        cancelable: true,
-      });
-      (droppableCollection.collectionProps.onKeyDown as ((e: KeyboardEvent) => void) | undefined)?.(
-        event,
-      );
-
-      expect(onKeyDown).toHaveBeenCalledTimes(1);
-      expect(dropState.target).toEqual({ type: "item", key: "row-1", dropPosition: "on" });
-
-      root.remove();
-      dispose();
-    });
-  });
+  // NOTE: the pre-port droppable adapter exposed a self-contained
+  // `collectionProps.onKeyDown` navigation engine plus an invented `onKeyDown`
+  // passthrough option. Neither exists upstream — `DragAndDropOptions`
+  // (RAC 1.19.0) has no `onKeyDown`, and `useDroppableCollection` routes
+  // keyboard-drag navigation through the framework-agnostic `DragManager`
+  // singleton during an active drag session, not a DOM `onKeyDown` on the
+  // collection element (see `createDroppableCollection.ts` — the DragManager
+  // DropTarget's `onKeyDown(e, drag)`). The faithful port (CP9.57) removed both
+  // inventions, so the former white-box unit test asserted a contract that no
+  // longer exists. Keyboard-drag reorder navigation is now certified end-to-end
+  // against the RAC oracle in
+  // `apps/comparison/e2e/certified/dnd-listbox.certified.spec.ts` (the D-reorder
+  // driver), which is the authoritative oracle for this behavior.
 
   it("forwards onDrop through droppable collection adapter", () => {
     createRoot((dispose) => {

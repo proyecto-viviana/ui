@@ -44,6 +44,7 @@ import { focusSafely } from "../utils/focus";
 import { getOwnerDocument, getEventTarget, openLink } from "../utils/dom";
 import { getCollectionId, isNonContiguousSelectionModifier } from "./utils";
 import { selectItem, type SelectItemState } from "./selectItem";
+import { createDragSession } from "../dnd/DragManager";
 
 /**
  * DOM event dispatched when an item action is performed. Mirrors upstream's
@@ -289,7 +290,20 @@ export function createSelectableItem<T>(
   // Focus the associated DOM node when this item becomes the focused key. This
   // is the imperative half of roving tabindex — the tabIndex 0/-1 swap below is
   // only declarative.
+  const dragSession = createDragSession();
   createEffect(() => {
+    // While a keyboard drag session is active, real DOM focus is owned by the
+    // DragManager (it lives on drop indicators / the collection), and upstream's
+    // React `useSelectableItem` focus effect provably cannot re-run mid-drag —
+    // its dep array `[ref, key, focusedKey, childFocusStrategy, isFocused]` stays
+    // frozen. Our reactive effect would otherwise re-fire and steal focus back
+    // onto the focused option, bouncing focus off the drop indicator. Reading the
+    // reactive drag-session accessor here also re-runs this effect once the drag
+    // ends, restoring normal roving-tabindex focus.
+    if (dragSession()) {
+      return;
+    }
+
     if (key() !== manager.focusedKey() || !manager.isFocused()) {
       return;
     }

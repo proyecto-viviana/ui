@@ -102,14 +102,6 @@ export interface DragAndDrop<T = object> {
 export interface DragAndDropOptions<T = object>
   extends Partial<Omit<DraggableCollectionProps<T>, "preview">>, Partial<DroppableCollectionProps> {
   /**
-   * Optional keyboard delegate forwarded to the collection droppable hook.
-   */
-  keyboardDelegate?: DroppableCollectionOptions["keyboardDelegate"];
-  /**
-   * Optional keydown handler composed with collection droppable keyboard behavior.
-   */
-  onKeyDown?: DroppableCollectionOptions["onKeyDown"];
-  /**
    * A function that returns the items being dragged.
    * If omitted, draggable hooks are not added.
    */
@@ -261,14 +253,14 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
         () => ({
           ref,
           dropTargetDelegate: options.dropTargetDelegate ?? props.dropTargetDelegate,
-          keyboardDelegate: options.keyboardDelegate ?? props.keyboardDelegate,
+          keyboardDelegate: props.keyboardDelegate,
           // Host collection + selection/focus setters, forwarded so keyboard
           // drop-target navigation and post-drop focus restoration work.
           collection: props.collection,
           selectedKeys: props.selectedKeys,
           setSelectedKeys: props.setSelectedKeys,
           setFocusedKey: props.setFocusedKey,
-          onKeyDown: options.onKeyDown ?? props.onKeyDown,
+          onKeyDown: props.onKeyDown,
           acceptedDragTypes: normalizedAcceptedDragTypes,
           isDisabled: options.isDisabled ?? props.isDisabled,
           onDropActivate: (e) => {

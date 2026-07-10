@@ -23,6 +23,12 @@ import {
   createOption,
   createFocusRing,
   createScrollIntoViewOnFocus,
+  createStringFormatter,
+  createDragSession,
+  getGlobalDraggingCollectionRef,
+  getGlobalDraggingKeys,
+  registerDropItem,
+  dndIntlStrings,
   mergeProps,
   moveVirtualFocus,
   useLocale,
@@ -60,7 +66,10 @@ import {
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
+  DropIndicatorContext,
+  type DropIndicatorProps,
 } from "./DragAndDrop";
+import type { ItemDropTarget } from "@proyecto-viviana/solid-stately";
 import {
   CollectionRendererContext,
   Section,
@@ -575,6 +584,165 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!target || target.type !== "item") return undefined;
     return dndRenderDropIndicator()?.(target);
   };
+
+  // ── Drop indicator (Fix B: labeled, self-focusing) ─────────────────────────
+  // The port of react-aria-components' ListBoxDropIndicatorWrapper +
+  // useDropIndicator. The droppable-collection state layer diverged to a minimal
+  // reactive target-holder with no collection reference, so the label (which
+  // needs the collection's text values) and the self-focus (which needs the live
+  // drag session) are computed here in the host layer, where both are available.
+  const dndFormatter = createStringFormatter(dndIntlStrings);
+  const dragSession = createDragSession();
+  const dropIndicatorTargetsEqual = (
+    a: DropTarget | null | undefined,
+    b: ItemDropTarget,
+  ): boolean =>
+    !!a && a.type === "item" && a.key === b.key && a.dropPosition === b.dropPosition;
+  // Faithful port of useDropIndicator's label logic: "Drop on X" for an on-item
+  // target, else "Insert between X and Y" / "Insert before X" / "Insert after X"
+  // resolved from the target's neighbours in the collection.
+  const dropIndicatorLabel = (target: ItemDropTarget): string => {
+    const collection = state.collection();
+    const getText = (key: Key | null): string => {
+      if (key == null) return "";
+      return collection.getTextValue(key) ?? collection.getItem(key)?.textValue ?? "";
+    };
+    if (target.dropPosition === "on") {
+      return dndFormatter().format("dropOnItem", { itemText: getText(target.key) });
+    }
+    let before: Key | null;
+    let after: Key | null;
+    if (target.dropPosition === "before") {
+      const prevKey = collection.getKeyBefore(target.key);
+      const prevNode = prevKey != null ? collection.getItem(prevKey) : null;
+      before = prevNode?.type === "item" ? prevNode.key : null;
+    } else {
+      before = target.key;
+    }
+    if (target.dropPosition === "after") {
+      const nextKey = collection.getKeyAfter(target.key);
+      const nextNode = nextKey != null ? collection.getItem(nextKey) : null;
+      after = nextNode?.type === "item" ? nextNode.key : null;
+    } else {
+      after = target.key;
+    }
+    if (before != null && after != null) {
+      return dndFormatter().format("insertBetween", {
+        beforeItemText: getText(before),
+        afterItemText: getText(after),
+      });
+    }
+    if (before != null) {
+      return dndFormatter().format("insertAfter", { itemText: getText(before) });
+    }
+    if (after != null) {
+      return dndFormatter().format("insertBefore", { itemText: getText(after) });
+    }
+    return "";
+  };
+  // Wrap the raw Set<string> the DragManager hands drop items into the DragTypes
+  // delegate the port state expects (mirrors createDroppableCollection.wrapTypes).
+  const wrapDropTypes = (types: Set<string>) => ({
+    has: (type: string | string[]) => {
+      if (typeof type === "string") return types.has(type);
+      if (Array.isArray(type)) return type.some((t) => typeof t === "string" && types.has(t));
+      return false;
+    },
+  });
+  const ListBoxDropIndicator = (props: { target: ItemDropTarget }): JSX.Element => {
+    const [indicatorRef, setIndicatorRef] = createSignal<HTMLDivElement | null>(null);
+    const isDropTarget = createMemo(() =>
+      dropIndicatorTargetsEqual(dropState()?.target, props.target),
+    );
+    // aria-hidden mirrors useDropIndicator: outside a drag session, or on a
+    // non-active target, the indicator is hidden from AT ('true'); the active
+    // target during a session is exposed (undefined). isHidden then tells us
+    // whether to omit the element entirely (RAC returns null when hidden).
+    const ariaHidden = createMemo(() =>
+      !dragSession() ? "true" : isDropTarget() ? undefined : "true",
+    );
+    const isHidden = createMemo(() => !isDropTarget() && !!ariaHidden());
+    // Faithful port of useDroppableItem. Registration (of the indicator element as
+    // a DragManager droppable item) and the self-focus must happen in one effect,
+    // registration first: the DragManager's onFocus keys off the dropItems map, so
+    // if the element self-focused before it was registered, onFocus would treat it
+    // as an unknown target and redirect focus back to the collection (a pickup
+    // bounce). React's two useDroppableItem effects run in guaranteed order after
+    // the ref is attached; Solid's independent effects race, so we fuse them. The
+    // dropItems map keys off live elements — the ref nulls itself on Show cleanup
+    // (below), so a hidden indicator unregisters instead of lingering as a stale
+    // detached entry.
+    createEffect(() => {
+      const el = indicatorRef();
+      if (!el) return;
+      const unregister = registerDropItem({
+        element: el,
+        target: props.target,
+        getDropOperation: (types, allowedOperations) => {
+          const st = dropState();
+          if (!st) return "cancel";
+          // Thread the same drag identity the collection uses (see
+          // createDroppableCollection.isInternalDropOperation): an internal
+          // keyboard reorder must report `isInternal` so the state's feature
+          // detection keeps before/after indicators valid (and rejects "on" for a
+          // reorder-only host). Without it every indicator would return "cancel"
+          // and drop out of the DragManager's ariaHideOutside keep-set.
+          const isInternal = getGlobalDraggingCollectionRef() === listRef();
+          return st.getDropOperation(
+            props.target,
+            wrapDropTypes(types) as Parameters<typeof st.getDropOperation>[1],
+            allowedOperations,
+            isInternal,
+            getGlobalDraggingKeys(),
+          );
+        },
+      });
+      onCleanup(unregister);
+      // While a drag session is active, the current drop target moves real DOM
+      // focus onto itself, so keyboard drop navigation lands on the labeled
+      // insertion point rather than the collection element. The self-focus is
+      // deferred to an animation frame to mirror upstream's timing: in
+      // useDroppableItem the focus is a *passive* useEffect, so it commits only
+      // after the browser's microtask checkpoint. That ordering matters because
+      // the DragManager keeps the active drop indicator visible via
+      // ariaHideOutside, whose keep-set is `[dragSource, ...registered drop
+      // items]` (the collection is dropped from the set once it owns items). A
+      // freshly-mounted indicator is momentarily `inert` — it only leaves the
+      // keep-set's blind spot once the DragManager's MutationObserver re-runs
+      // updateValidDropTargets on a later microtask. Focusing synchronously (or
+      // on a microtask) would call .focus() while the element is still inert and
+      // silently no-op; the animation frame runs after that refresh, exactly as
+      // React's passive effect does.
+      if (dragSession() && isDropTarget()) {
+        requestAnimationFrame(() => {
+          if (dragSession() && isDropTarget() && indicatorRef() === el) {
+            el.focus();
+          }
+        });
+      }
+    });
+    return (
+      <Show when={!isHidden()}>
+        <div
+          ref={(el) => {
+            setIndicatorRef(el);
+            onCleanup(() => setIndicatorRef(null));
+          }}
+          role="option"
+          class="solidaria-DropIndicator"
+          aria-roledescription={dndFormatter().format("dropIndicator")}
+          aria-label={dropIndicatorLabel(props.target)}
+          aria-hidden={ariaHidden()}
+          tabindex={-1}
+          data-drop-target={isDropTarget() || undefined}
+        />
+      </Show>
+    );
+  };
+  const dropIndicatorContextValue = {
+    render: (p: DropIndicatorProps) => <ListBoxDropIndicator target={p.target} />,
+  };
+
   const virtualizer = useVirtualizerContext();
   const persistedKeys = useDndPersistedKeys(
     { focusedKey: state.focusedKey },
@@ -692,6 +860,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     >
       <ListBoxStateContext.Provider value={state}>
         <CollectionRendererContext.Provider value={collectionRenderer()}>
+         <DropIndicatorContext.Provider value={dropIndicatorContextValue}>
           <>
             <Show when={ariaProps.label}>
               <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
@@ -816,6 +985,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
               )}
             </div>
           </>
+         </DropIndicatorContext.Provider>
         </CollectionRendererContext.Provider>
       </ListBoxStateContext.Provider>
     </ListBoxContext.Provider>
@@ -906,6 +1076,9 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
     return listContext.dragAndDropHooks.useDraggableItem(
       {
         key: local.id as string | number,
+        // Surfaces the drag-affordance description (aria-describedby) only for
+        // selectable collections, mirroring upstream useDraggableItem.
+        selectionMode: state.selectionManager.selectionMode,
       },
       listContext.dragState as Parameters<NonNullable<DragAndDropHooks<T>["useDraggableItem"]>>[1],
     );

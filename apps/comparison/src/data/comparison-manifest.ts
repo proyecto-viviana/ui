@@ -554,6 +554,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/ListBox.html",
   },
 
+  "dnd-listbox": {
+    ...styledLiveOfficialEntry({
+      slug: "dnd-listbox",
+      title: "ListBox drag and drop",
+      category: "Components",
+      summary:
+        "Keyboard drag-and-drop reordering certified on a ListBox host: Enter picks up the focused option, arrows navigate drop positions, Enter drops, and the resulting order is pair-diffed against the RAC oracle.",
+      styledSummary:
+        "react-aria-components useDragAndDrop + useListData reorderable ListBox (base) vs the Solid useDragAndDrop + createListData port.",
+      styledNote:
+        "S2 exposes no styled drag-and-drop ListBox, so the oracle is react-aria-components' own useDragAndDrop reorderable ListBox — the direct upstream of the Solid port's DragManager keyboard subsystem and useDroppableCollection engine.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/dnd.html",
+  },
+
   virtualizer: {
     ...styledLiveOfficialEntry({
       slug: "virtualizer",

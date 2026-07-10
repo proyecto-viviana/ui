@@ -42,6 +42,16 @@ export type {
 export type { DraggableItemOptions, DraggableItemAria } from "./createDraggableItem";
 export type { DroppableItemOptions, DroppableItemAria } from "./createDroppableItem";
 
+// Keyboard drag session (reactive mirror of the DragManager singleton), consumed
+// by drop indicators to self-focus while a drag is active.
+export { createDragSession, isVirtualDragging, registerDropItem } from "./DragManager";
+export type { DragSession } from "./DragManager";
+
+// Localized drag-and-drop strings, so hosts can build drop-indicator labels
+// (insertBefore/Between/After, dropOnItem/Root) with the same formatter upstream uses.
+export { dndIntlStrings } from "./intl";
+export type { DndIntlStrings } from "./intl";
+
 // Utilities
 export {
   CUSTOM_DRAG_TYPE,

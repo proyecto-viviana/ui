@@ -194,7 +194,13 @@ export function createDroppableCollection(
     types: DragTypes,
     allowedOperations: DropOperation[],
   ): DropOperation => {
-    return state.getDropOperation(target, types, allowedOperations);
+    return state.getDropOperation(
+      target,
+      types,
+      allowedOperations,
+      isInternalDropOperation(),
+      getGlobalDraggingKeys(),
+    );
   };
 
   // Create base drop behavior
@@ -302,6 +308,13 @@ export function createDroppableCollection(
   ) => {
     const opts = getOptions();
     const isInternal = isInternalDropOperation();
+    // Capture the dragging keys ONCE up front, mirroring upstream's
+    // `let {draggingKeys} = globalDndState` at the top of `defaultOnDrop`. In
+    // Solid the global keys live in a signal whose drag-teardown effect flushes
+    // synchronously during this same drop flow (React batches, so upstream never
+    // observes the clear mid-handler). Re-reading the global in the onMove/onReorder
+    // branches would therefore see an already-emptied set; the snapshot preserves it.
+    const draggingKeys = getGlobalDraggingKeys();
 
     // Filter items by accepted types
     let filteredItems = items;
@@ -332,7 +345,6 @@ export function createDroppableCollection(
 
       // Handle move for internal operations
       if (opts.onMove && isInternal) {
-        const draggingKeys = getGlobalDraggingKeys();
         await opts.onMove({
           keys: draggingKeys,
           target,
@@ -350,7 +362,6 @@ export function createDroppableCollection(
         }
 
         if (isInternal && opts.onReorder) {
-          const draggingKeys = getGlobalDraggingKeys();
           await opts.onReorder({
             keys: draggingKeys,
             target,
@@ -444,7 +455,7 @@ export function createDroppableCollection(
         const next = getNext(target, wrap);
         if (!next) return null;
         target = next;
-        operation = state.getDropOperation(next, wrapTypes(types), allowedDropOperations);
+        operation = getDropOperationForTarget(next, wrapTypes(types), allowedDropOperations);
         if (target.type === "root") {
           seenRoot++;
         }
@@ -462,7 +473,7 @@ export function createDroppableCollection(
       preventFocusOnDrop: true,
       getDropOperation(types, allowedOperations) {
         if (state.target) {
-          return state.getDropOperation(state.target, wrapTypes(types), allowedOperations);
+          return getDropOperationForTarget(state.target, wrapTypes(types), allowedOperations);
         }
 
         // Check if any of the targets accept the drop.
@@ -476,12 +487,58 @@ export function createDroppableCollection(
         // Update the drop collection ref tracker for createDroppableItem's isInternal check.
         setGlobalDropCollectionRef(getOptions().ref());
 
-        // The port state has no selectionManager/focusedKey, so the default drop
-        // target on entry is the first valid target from the root (upstream's
-        // no-focused-key fallback).
-        const target = nextValidTarget(null, types, drag.allowedDropOperations, (t, wrap) =>
-          getNextTarget(t, wrap),
-        );
+        // When entering the droppable collection for the first time, upstream's
+        // default drop target is AFTER the focused key
+        // (useDroppableCollection.ts:505-559). The port's DroppableCollectionState
+        // carries no selectionManager, but at keyboard pickup the dragged item IS
+        // the collection's focused item, so we recover the focused key from the
+        // drag target element's `data-key` (createSelectableItem stamps it).
+        const opts = getOptions();
+        let key = keyFromDragElement(drag.element, opts.collection);
+        let dropPosition: "before" | "on" | "after" = "after";
+
+        // Mirror upstream's reorder heuristic: if the focused item is also
+        // selected, drop after the last selected item; but if it is the first of
+        // a multi-selection, drop before the first (select-down → move down,
+        // select-up → move up). Single-key keyboard drags never hit this branch.
+        const selected = normalizeSelection(opts.selectedKeys);
+        if (key != null && opts.collection && selectionHas(selected, key)) {
+          const ordered = orderedSelectedKeys(selected, opts.collection);
+          if (ordered.length > 1 && ordered[0] === key) {
+            dropPosition = "before";
+          } else if (ordered.length > 0) {
+            key = ordered[ordered.length - 1];
+          }
+        }
+
+        let target: DropTarget | null = null;
+        if (key != null) {
+          target = { type: "item", key, dropPosition };
+          // If the default target is not valid, find the next one that is, then
+          // fall back to the previous. Mirrors useDroppableCollection.ts:538-551.
+          if (
+            getDropOperationForTarget(target, wrapTypes(types), drag.allowedDropOperations) ===
+            "cancel"
+          ) {
+            target =
+              nextValidTarget(
+                target,
+                types,
+                drag.allowedDropOperations,
+                (t, wrap) => getNextTarget(t, wrap),
+                false,
+              ) ??
+              nextValidTarget(target, types, drag.allowedDropOperations, getPreviousTarget, false);
+          }
+        }
+
+        // If no focused key, start from the root (upstream's fallback).
+        if (!target) {
+          target = nextValidTarget(null, types, drag.allowedDropOperations, (t, wrap) =>
+            getNextTarget(t, wrap),
+          );
+        }
+
         state.setTarget(target);
       },
       onDropExit() {
@@ -625,7 +682,7 @@ export function createDroppableCollection(
 
                 // If the target does not accept the drop, find the next valid target.
                 // If no next valid target, find the previous valid target.
-                const operation = state.getDropOperation(
+                const operation = getDropOperationForTarget(
                   target,
                   wrapTypes(types),
                   drag.allowedDropOperations,
@@ -692,7 +749,7 @@ export function createDroppableCollection(
 
               // If the target does not accept the drop, find the previous valid target.
               // If no next valid target, find the next valid target.
-              const operation = state.getDropOperation(
+              const operation = getDropOperationForTarget(
                 target,
                 wrapTypes(types),
                 drag.allowedDropOperations,
@@ -746,6 +803,40 @@ function normalizeSelection(selection: "all" | Iterable<Key> | undefined): "all"
   if (selection == null) return null;
   if (selection === "all") return "all";
   return new Set(selection);
+}
+
+// Recover the collection key of a dragged/dropped DOM element. createSelectableItem
+// stamps `data-key={String(key)}`, so the attribute is the stringified key; map it
+// back to the real (possibly numeric) collection key by matching against the
+// collection's nodes.
+function keyFromDragElement(element: HTMLElement | null, collection: Collection | undefined): Key | null {
+  if (!element) return null;
+  const raw = element.getAttribute("data-key") ?? element.closest("[data-key]")?.getAttribute("data-key");
+  if (raw == null) return null;
+  if (!collection) return raw;
+  // Fast path: the raw string is already a valid key.
+  if ((collection as unknown as CollectionLike).getItem(raw) != null) return raw;
+  for (const node of collection as unknown as CollectionLike) {
+    if (String(node.key) === raw) return node.key;
+  }
+  return raw;
+}
+
+function selectionHas(selection: "all" | Set<Key> | null, key: Key): boolean {
+  if (selection === "all") return true;
+  return selection != null && selection.has(key);
+}
+
+// The selected keys in collection (DOM) order, so [0] is the first selected item
+// and [length-1] the last — mirroring upstream's firstSelectedKey/lastSelectedKey.
+function orderedSelectedKeys(selection: "all" | Set<Key> | null, collection: Collection): Key[] {
+  const out: Key[] = [];
+  for (const node of collection as unknown as CollectionLike) {
+    if (node.type === "item" && selectionHas(selection, node.key)) {
+      out.push(node.key);
+    }
+  }
+  return out;
 }
 
 function selectionEquals(a: "all" | Set<Key> | null, b: "all" | Set<Key> | null): boolean {

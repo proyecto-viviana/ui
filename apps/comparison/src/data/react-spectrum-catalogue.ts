@@ -63,6 +63,7 @@ export const reactSpectrumCatalogue = [
   component("Link"),
   component("LinkButton"),
   component("ListBox"),
+  component("ListBox drag and drop", "dnd-listbox"),
   component("ListView"),
   component("Menu"),
   component("Meter"),

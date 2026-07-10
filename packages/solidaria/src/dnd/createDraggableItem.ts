@@ -14,6 +14,7 @@ import type {
 import {
   getTypes,
   writeToDataTransfer,
+  getDragModality,
   DROP_OPERATION,
   EFFECT_ALLOWED,
   DROP_EFFECT_TO_DROP_OPERATION,
@@ -21,16 +22,30 @@ import {
   setGlobalDropEffect,
   getGlobalDropEffect,
 } from "./utils";
+import { createInteractionModality } from "../interactions";
 import { setGlobalDraggingTypes } from "./createDraggableCollection";
 import { beginDragging } from "./DragManager";
 import { createStringFormatter } from "../i18n/createStringFormatter";
 import { dndIntlStrings } from "./intl";
+import { createDescription } from "../utils/createDescription";
 
 export interface DraggableItemOptions {
   /** The unique key of the item. */
   key: string | number;
   /** Whether the item has a separate drag button affordance. */
   hasDragButton?: boolean;
+  /**
+   * Whether the host item has a primary action (e.g. Enter on a GridList/Table
+   * row) that conflicts with the Enter keyboard drag pickup. When true the drag
+   * description switches to the Alt variant (mirrors upstream `hasAction`).
+   */
+  hasAction?: boolean;
+  /**
+   * The host collection's selection mode. Upstream only surfaces the drag
+   * affordance description (aria-describedby → "Press Enter to start dragging.")
+   * when the mode is not `'none'`.
+   */
+  selectionMode?: "none" | "single" | "multiple";
   /** Whether this item is disabled for dragging. */
   isDisabled?: boolean;
   /** Preview renderer function ref. */
@@ -53,6 +68,15 @@ export interface DraggableItemAria {
  * @param state - Draggable collection state
  * @returns Draggable item ARIA props
  */
+// Drag description keys per interaction modality, mirroring upstream
+// useDraggableItem's MESSAGES table. The port always drags the single focused
+// key, so isSelected is always false → the `notSelected` row is used.
+const DRAG_DESCRIPTION_MESSAGES: Record<string, string> = {
+  keyboard: "dragDescriptionKeyboard",
+  touch: "dragDescriptionLongPress",
+  virtual: "dragDescriptionVirtual",
+};
+
 export function createDraggableItem(
   options: Accessor<DraggableItemOptions>,
   state: DraggableCollectionState,
@@ -60,6 +84,7 @@ export function createDraggableItem(
   const getOptions = createMemo(() => options());
 
   const stringFormatter = createStringFormatter(dndIntlStrings);
+  const { modality } = createInteractionModality();
 
   // Track position for drag move
   let lastX = 0;
@@ -69,6 +94,29 @@ export function createDraggableItem(
     const key = getOptions().key;
     return state.draggingKeys.has(key);
   });
+
+  // Drag affordance description (aria-describedby → "Press Enter to start
+  // dragging."). Mirrors upstream useDraggableItem: surfaced only when the item
+  // has no explicit drag button and the host selection mode is not 'none'. The
+  // port only ever drags the single focused key (getKeysForDrag), so
+  // numKeysForDrag === 1 → isSelected is always false → the base (notSelected)
+  // keyboard message; a host primary action swaps in the Alt variant.
+  const dragDescription = createMemo(() => {
+    const opts = getOptions();
+    if (opts.hasDragButton) return undefined;
+    if (opts.selectionMode == null || opts.selectionMode === "none") return undefined;
+    // Subscribe to modality changes, then resolve the drag modality the same way
+    // upstream does (pointer → virtual, coarse-pointer virtual → touch). At rest
+    // with no keyboard interaction this is 'virtual' → "Click to start dragging.".
+    modality();
+    const dragModality = getDragModality();
+    let msg = DRAG_DESCRIPTION_MESSAGES[dragModality] ?? "dragDescriptionVirtual";
+    if (opts.hasAction && dragModality === "keyboard") {
+      msg += "Alt";
+    }
+    return stringFormatter().format(msg as Parameters<ReturnType<typeof stringFormatter>["format"]>[0]);
+  });
+  const descriptionProps = createDescription(dragDescription);
 
   const getKeysForDrag = (): Set<string | number> => {
     const { key } = getOptions();
@@ -247,10 +295,22 @@ export function createDraggableItem(
       onDragEnd,
     };
 
-    // Add keyboard handlers if no separate drag button
+    // Add keyboard handlers if no separate drag button. Mirrors upstream
+    // useDrag: the Enter pickup is wired in the CAPTURE phase so it runs before
+    // the collection item's own press/selection handlers (which also claim
+    // Enter) and can stopPropagation to suppress them — a bubble-phase handler
+    // would never see the Enter keyup, since press consumes it first. In Solid,
+    // capture-phase spread props use the `oncapture:` prefix.
     if (!opts.hasDragButton) {
-      baseProps.onKeyDown = onKeyDown;
-      baseProps.onKeyUp = onKeyUp;
+      baseProps["oncapture:keydown"] = onKeyDown;
+      baseProps["oncapture:keyup"] = onKeyUp;
+    }
+
+    // Reading the reactive getter here keeps this memo subscribed, so the id
+    // appears once createDescription's effect has mounted the hidden element.
+    const describedBy = descriptionProps["aria-describedby"];
+    if (describedBy) {
+      baseProps["aria-describedby"] = describedBy;
     }
 
     return baseProps;

@@ -1,0 +1,58 @@
+---
+// Keyboard drag-and-drop pair-comparison surface, hosted on a reorderable
+// ListBox. There is no React Spectrum S2 styled drag-and-drop ListBox, so the
+// React oracle is react-aria-components' own `useDragAndDrop` + `useListData`
+// reorderable ListBox (base/unstyled) vs the Solid `useDragAndDrop` +
+// `createListData` port driving the headless ListBox/ListBoxOption. See
+// comparison-manifest.ts "dnd-listbox" entry.
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
+import PropTable from "@comparison/components/PropTable.astro";
+import ParityDisclosure from "@comparison/components/ParityDisclosure.astro";
+import PortingNote from "@comparison/components/PortingNote.astro";
+import { getComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  docsTypographyH1,
+  docsTypographyH2,
+  docsTypographyPageDescription,
+  staticClassName,
+} from "@comparison/components/solid/chrome/styles";
+import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+
+const slug = "dnd-listbox";
+const entry = getComparisonEntry(slug);
+const h1Class = staticClassName(docsTypographyH1);
+const h2Class = staticClassName(docsTypographyH2);
+const descClass = staticClassName(docsTypographyPageDescription);
+const title = "ListBox drag and drop";
+const widthPerEm = getTextWidth(title);
+const toc = [{ href: "#api", label: "API", depth: 2 }];
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={entry?.docsUrl}
+  sidebarActiveSlug={slug}
+  sidebarNavigationLabel="Components"
+  sidebarReferenceLabel="S2 docs"
+  sidebarReferenceUrl={entry?.docsUrl}
+  title={`${title} | Solid Spectrum`}
+  tocItems={toc}
+  tocSourceLabel="S2 source"
+  tocSourceUrl={entry?.docsUrl}
+  tocVariant="page"
+>
+  <h1 id="dnd-listbox" class={h1Class} style={`--width-per-em: ${widthPerEm}`}>{title}</h1>
+  <p class={descClass}>
+    A reorderable listbox whose options can be moved with a keyboard drag: focus an
+    option, press Enter to pick it up, arrow to a drop position, and press Enter to drop.
+  </p>
+
+  {entry && <ComponentExampleSectionMount entry={entry} />}
+
+  <h2 id="api" class={h2Class}>API</h2>
+  <PropTable component={slug} />
+
+  <PortingNote component={slug} />
+
+  <ParityDisclosure slug={slug} />
+</DocsPageLayout>

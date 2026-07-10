@@ -21,6 +21,7 @@ import type {
   DroppableCollectionReorderEvent,
   ItemDropTarget,
 } from "./types";
+import type { Collection } from "../collections/types";
 
 export interface DroppableCollectionStateOptions {
   /**
@@ -56,6 +57,14 @@ export interface DroppableCollectionStateOptions {
   onMove?: (e: DroppableCollectionReorderEvent) => void;
   /** A function returning whether a given target is a valid "on" drop target. */
   shouldAcceptItemDrop?: (target: ItemDropTarget, types: DragTypes) => boolean;
+  /**
+   * The host collection. Used by the default drop-operation feature detection to
+   * confirm a reorder stays within the same parent and to prevent dropping an
+   * item onto itself or a descendant. Optional: a flat collection (e.g. a plain
+   * ListBox) is always "within parent" and has no descendants, so omitting it is
+   * faithful for flat hosts.
+   */
+  collection?: Collection<unknown>;
   /** Whether the droppable collection is disabled. */
   isDisabled?: boolean;
 }
@@ -86,11 +95,19 @@ export interface DroppableCollectionState {
     isInternal: boolean,
     draggingKeys?: Set<string | number>,
   ): void;
-  /** Get the drop operation for a target. */
+  /**
+   * Get the drop operation for a target. `isInternal` is true when the active
+   * drag originated from this same collection; `draggingKeys` are the keys being
+   * dragged. Both feed the handler-aware feature detection that decides whether a
+   * given drop position (before/after/on/root) is a valid target — e.g. a
+   * reorder-only collection rejects "on" targets, matching React Aria.
+   */
   getDropOperation(
     target: DropTarget,
     types: DragTypes,
     allowedOperations: DropOperation[],
+    isInternal?: boolean,
+    draggingKeys?: Set<string | number>,
   ): DropOperation;
   /** Check if an item drop should be accepted. */
   shouldAcceptItemDrop(target: ItemDropTarget, types: DragTypes): boolean;
@@ -287,22 +304,124 @@ export function createDroppableCollectionState(
     }
   };
 
-  const getDropOperation = (
-    dropTarget: DropTarget,
+  // Faithful of react-stately's `isDraggingWithinParent`: every dragged item must
+  // share the target's parent for a reorder to be valid. A flat collection (no
+  // `collection` provided) has a single implicit parent, so this is always true.
+  const isDraggingWithinParent = (
+    target: ItemDropTarget,
+    draggingKeys: Set<string | number>,
+  ): boolean => {
+    const collection = getProps().collection;
+    if (!collection) return true;
+    const targetNode = collection.getItem(target.key);
+    for (const key of draggingKeys) {
+      const node = collection.getItem(key);
+      if (node?.parentKey !== targetNode?.parentKey) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Faithful of react-stately's `defaultGetDropOperation`: decide whether a drop
+  // position is a valid target from the handlers that are actually wired. A
+  // reorder-only collection (only `onReorder`) accepts before/after but rejects
+  // "on"; an item-drop collection accepts "on"; and so on.
+  const defaultGetDropOperation = (
+    target: DropTarget,
     types: DragTypes,
     allowedOperations: DropOperation[],
+    isInternal: boolean,
+    draggingKeys: Set<string | number>,
   ): DropOperation => {
     const p = getProps();
+
+    if (p.isDisabled || !target) {
+      return "cancel";
+    }
 
     if (!isAccepted(types)) {
       return "cancel";
     }
 
-    if (typeof p.getDropOperation === "function") {
-      return p.getDropOperation(dropTarget, types, allowedOperations);
+    const isValidInsert =
+      p.onInsert &&
+      target.type === "item" &&
+      !isInternal &&
+      (target.dropPosition === "before" || target.dropPosition === "after");
+    const isValidReorder =
+      p.onReorder &&
+      target.type === "item" &&
+      isInternal &&
+      (target.dropPosition === "before" || target.dropPosition === "after") &&
+      isDraggingWithinParent(target, draggingKeys);
+
+    const isItemDropAllowed =
+      target.type !== "item" ||
+      target.dropPosition !== "on" ||
+      !p.shouldAcceptItemDrop ||
+      p.shouldAcceptItemDrop(target, types);
+
+    const isValidMove = p.onMove && target.type === "item" && isInternal && isItemDropAllowed;
+
+    // Feedback was that internal root drop was weird, so it is prevented.
+    const isValidRootDrop = p.onRootDrop && target.type === "root" && !isInternal;
+
+    // Automatically prevent items (e.g. folders) from being dropped on themselves.
+    const isValidOnItemDrop =
+      p.onItemDrop &&
+      target.type === "item" &&
+      target.dropPosition === "on" &&
+      !(isInternal && target.key != null && draggingKeys.has(target.key)) &&
+      isItemDropAllowed;
+
+    if (
+      p.onDrop ||
+      isValidInsert ||
+      isValidReorder ||
+      isValidMove ||
+      isValidRootDrop ||
+      isValidOnItemDrop
+    ) {
+      if (typeof p.getDropOperation === "function") {
+        return p.getDropOperation(target, types, allowedOperations);
+      }
+      return allowedOperations[0] ?? "cancel";
     }
 
-    return allowedOperations[0] ?? "cancel";
+    return "cancel";
+  };
+
+  const getDropOperation = (
+    dropTarget: DropTarget,
+    types: DragTypes,
+    allowedOperations: DropOperation[],
+    isInternal: boolean = false,
+    draggingKeys: Set<string | number> = new Set(),
+  ): DropOperation => {
+    // Prevent dropping items onto themselves or their descendants (faithful of
+    // react-stately's `getDropOperation` guard). Only meaningful for a nested
+    // collection; a flat host has no descendants.
+    if (isInternal && dropTarget.type === "item" && draggingKeys.size > 0) {
+      if (draggingKeys.has(dropTarget.key) && dropTarget.dropPosition === "on") {
+        return "cancel";
+      }
+
+      const collection = getProps().collection;
+      if (collection) {
+        let currentKey: string | number | null = dropTarget.key;
+        while (currentKey != null) {
+          const item = collection.getItem(currentKey);
+          const parentKey = item?.parentKey;
+          if (parentKey != null && draggingKeys.has(parentKey)) {
+            return "cancel";
+          }
+          currentKey = parentKey ?? null;
+        }
+      }
+    }
+
+    return defaultGetDropOperation(dropTarget, types, allowedOperations, isInternal, draggingKeys);
   };
 
   const shouldAcceptItemDrop = (dropTarget: ItemDropTarget, types: DragTypes): boolean => {

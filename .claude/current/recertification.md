@@ -636,6 +636,107 @@ March order (dependency/leverage; within a tier, top to bottom):
   CP9.54's `regression.test.tsx` and 3 `createTree.test.ts` failures — were
   confirmed identical on the stashed clean tree, i.e. not introduced here.)
   **NEXT: DnD (via its hosts).**
+
+  **Drag-and-drop ✓ certified 2026-07-10 (CP9.57)** — EIGHTEENTH and FINAL
+  Tier-4 unit; keyboard drag-and-drop certified through its host (a reorderable
+  multi-select `ListBox`) rather than in isolation, because DnD is not a
+  standalone component with an ARIA contract — it is a behavior a collection host
+  mounts (same host-behavior pattern as the Virtualizer's scroll-window, CP9.56).
+  React Spectrum S2 ships no styled drag-and-drop ListBox, so the oracle is RAC's
+  own `useDragAndDrop` + `useListData` reorderable ListBox
+  (`react-aria-components@1.19.0`, pinned) — the direct upstream of the Solid
+  port's keyboard subsystem. Modality was scoped keyboard + pointer, but
+  **pointer drag is DEFERRED** (native HTML5 drag-and-drop cannot be driven by
+  Playwright's synthetic mouse) and tracked as a separate follow-up; host scope is
+  **ListBox only**; the owner's phasing was "port the keyboard DragManager
+  first." The faithful architecture that this unit both landed and certified:
+  keyboard-drag navigation routes through the framework-agnostic **`DragManager`
+  singleton** during an active drag session — NOT a self-contained
+  `collectionProps.onKeyDown` engine on the collection element (which the pre-port
+  port had invented). Mirroring vendored `react-aria/useDroppableCollection.ts`,
+  the DragManager `DropTarget`'s `onKeyDown(e, drag)`
+  (`createDroppableCollection.ts:567` ≡ vendored `:588`) walks the
+  `keyboardDelegate` (getKeyBelow/Above/LeftOf/RightOf/getFirst/getLast) and
+  composes the host `opts.onKeyDown?.(e)` at the end (`:780` ≡ vendored `:788`);
+  `collectionProps = mergeProps(dropProps, {…, 'aria-describedby': null})` carries
+  no keyboard handler. The port + wiring landed in two prior commits
+  (`a0e4471b` "Port the DnD keyboard DragManager subsystem (unwired)" —
+  `DragManager.ts` singleton + `DropTargetKeyboardNavigation.navigate()` +
+  34-locale `intl/` + `getDragModality`; `8e132ec4` "Route keyboard DnD through
+  the DragManager singleton"); this checkpoint is the cert + its red→green fixes.
+  Cert surface: `apps/comparison/e2e/certified/dnd-listbox.certified.spec.ts`
+  drives a reorderable ListBox via the new **D-reorder driver**
+  (`e2e/drivers/reorder.ts`, `registerReorderDriver`). A keyboard reorder = Tab in
+  from a `Before` boundary button (a real roving-focus seed inherited from the
+  ListBox cert, not a synthetic `.focus()`) → **Enter** (pick up the focused
+  option, handing control to the DragManager document-level session) → **Arrow**
+  (walk the before/on/after drop positions, routed through the current drop
+  target's `onKeyDown` → the ported `navigate()`) → **Enter** (drop → `onReorder` →
+  `moveBefore`/`moveAfter`) or **Escape** (cancel — order restored). Each keypress
+  captures a `{active, order}` trail — `active` = the drop target's role+label,
+  `order` = the live item order the listbox root publishes as
+  `data-comparison-order` — and the full trail is cross-diffed port==oracle after
+  every key. Two walks (`reorder-down` = Enter/ArrowDown×2/Enter; `cancel` =
+  Enter/ArrowDown/Escape) plus a **D6** AX-tree diff of the resting `role=listbox`
+  subtree (roles/names/states + the `aria-describedby` drag-affordance
+  descriptions). Scoped out (documented, not silent): pointer drag (undrivable);
+  D1/D3/D7/D8 (both panels are the unstyled base layer, no styled S2 oracle — same
+  rationale as the standalone ListBox cert; the host's own paint/focus certified at
+  CP9.41); D9/D10 (the drop-position walk is DOM-order-based, so RTL reorder is
+  order-stable — deferred with the paint pass); D2 (the drag has no animation of
+  its own). The browser driver forced **four faithful red→green fixes**: (1) a
+  **draggingKeys teardown race** — `createDroppableCollection.handleDrop` must
+  capture `const draggingKeys = getGlobalDraggingKeys()` ONCE at the top (≡
+  upstream `defaultOnDrop`) and reuse it in both the `onMove` and `onReorder`
+  branches, because Solid flushes the global dragging-keys teardown effect
+  SYNCHRONOUSLY mid-drop (React batches, so upstream never observes the clear) and
+  a per-branch re-read saw an emptied Set → the dropped item vanished; (2) a
+  **spread-attribute freeze** — Solid's `{...spread}` binds attributes statically
+  (reads getters once), so a reactive `data-comparison-order` routed through the
+  ListBox DOM-prop spread froze at first paint (the React oracle re-renders so its
+  spread attr stays live); resolved at the FIXTURE layer via a `ref` effect
+  (`el.setAttribute(...)` inside `createEffect`, the same explicit reactive path
+  the component's own `data-focused`/`data-orientation` use), NOT by touching
+  shared `filterDOMProps` (that speculative change was reverted — too broad a blast
+  radius); (3) a **drag-session focus guard** — shared `createSelectableItem`'s
+  roving-focus `createEffect` needed a `const dragSession = createDragSession(); if
+  (dragSession()) return;` early-return so it does not steal DOM focus back from the
+  drop indicator mid-drag (upstream React `useSelectableItem`'s effect provably
+  can't re-run mid-drag — frozen dep array); (4) a **default drop-indicator
+  regression** — the new inline `ListBoxDropIndicator` was missing
+  `class="solidaria-DropIndicator"` (≡ RAC `react-aria-DropIndicator`, the shared
+  `DefaultDropIndicator` default class), proven real (green at HEAD, red in the
+  working tree). Three parity cleanups reverted self-inflicted divergences the port
+  had accreted: removed **two invented PUBLIC fields** (`keyboardDelegate`,
+  `onKeyDown`) from `useDragAndDrop.ts`'s `DragAndDropOptions` — upstream RAC 1.19.0
+  `DragAndDropOptions = Omit<DraggableCollectionProps,'preview'|'getItems'> &
+  DroppableCollectionProps` plus only `getItems`/`renderDragPreview`/
+  `renderDropIndicator`/`dropTargetDelegate`/`isDisabled`, and vendored
+  `useDragAndDrop.tsx:194` = `useDroppableCollection({...props, ...options})` so a
+  user literally cannot pass them — collapsing the two threading sites from
+  `options.X ?? props.X` to just `props.X` (the host-only channel; `dropTargetDelegate`
+  IS public upstream and kept its public merge); removed the **obsolete white-box
+  unit test** that asserted the removed self-contained engine (coverage now lives in
+  the certified e2e); and rewrote **`scripts/check-dnd-keyboard-parity.ts`**, whose
+  core-file assertion still pinned the PRE-PORT engine (`resolveFallbackKeyboardTarget`
+  + inline fallback + SSR guards, all removed by the faithful port, so the guard had
+  been RED since `a0e4471b`/`8e132ec4`) — the new assertion pins the DragManager
+  architecture (the `keyboardDelegate`/`onKeyDown` option types, the `onKeyDown(e,
+  drag)` DropTarget walking `keyboardDelegate.getKeyBelow/getKeyAbove`, and the host
+  `opts.onKeyDown?.(e)` composition); component-path checks unchanged, guard green
+  (6/6 ✓). Verification: dnd-listbox cert e2e **3/3 green** (2 D-reorder walks + D6)
+  on the rebuilt chain (solidaria → solidaria-components → comparison; solid-stately
+  rebuilt too — its `createDroppableCollectionState.ts` +125 is part of the
+  increment); `guard:dnd-keyboard-parity` green; root typecheck exit 0; every
+  CP9.57-touched unit file green in isolation (solidaria-components
+  useDragAndDrop/ListBox/DragAndDrop = 103; solidaria createDroppableCollection×3/
+  createDroppableItem/createDraggableCollection/createSelectableItem = 39); full
+  certified suite **1615 pass / 6 skip / 0 fail** (up exactly 3 from CP9.56's 1612 —
+  the two reorder walks + D6) — no regression. (The full unit suite's 4 failures —
+  3 in `createTree.test.ts` (RTL/LTR expand-collapse + focus-entry 'all') and 1
+  treegrid snapshot in `solid-spectrum/regression.test.tsx` — are the PRE-EXISTING
+  Tree tech-debt failures proven identical at pre-port baseline `e4430cd7`, not
+  introduced here.) **NEXT: Tier 5 — date/time/color, opening with Calendar.**
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor

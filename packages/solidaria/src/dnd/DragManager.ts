@@ -690,4 +690,4 @@ function findValidDropTargets(options: DragTarget): DropTarget[] {
   });
 }
 
-export type { DragTarget, DropTarget, DroppableItem };
+export type { DragTarget, DropTarget, DroppableItem, DragSession };

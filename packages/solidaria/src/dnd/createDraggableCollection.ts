@@ -5,37 +5,52 @@
  * component like ListBox, GridList, or Table.
  */
 
-import { createMemo, createEffect, onCleanup, type Accessor } from "solid-js";
+import {
+  createMemo,
+  createEffect,
+  createSignal,
+  onCleanup,
+  untrack,
+  type Accessor,
+} from "solid-js";
 import type { DraggableCollectionState } from "@proyecto-viviana/solid-stately";
 import { getTypes } from "./utils";
 
-// Global state for tracking the dragging collection
-let globalDraggingCollectionRef: HTMLElement | null = null;
-let globalDraggingKeys: Set<string | number> = new Set();
-let globalDraggingTypes: Set<string> = new Set();
+// Global state for tracking the dragging collection. These back the reactive
+// `isVirtualDragging` gate that decides whether drop indicators render across
+// every mounted collection, so they must be Solid signals — React re-renders the
+// whole collection tree on a drag-state change, but Solid's fine-grained
+// reactivity only re-runs the indicator JSX if it subscribed to a signal. Plain
+// module `let`s would make the gate read a stale snapshot and never re-render.
+const [globalDraggingCollectionRef, setGlobalDraggingCollectionRefSignal] =
+  createSignal<HTMLElement | null>(null);
+const [globalDraggingKeys, setGlobalDraggingKeysSignal] = createSignal<Set<string | number>>(
+  new Set(),
+);
+const [globalDraggingTypes, setGlobalDraggingTypesSignal] = createSignal<Set<string>>(new Set());
 
 export function setGlobalDraggingCollectionRef(ref: HTMLElement | null): void {
-  globalDraggingCollectionRef = ref;
+  setGlobalDraggingCollectionRefSignal(ref);
 }
 
 export function getGlobalDraggingCollectionRef(): HTMLElement | null {
-  return globalDraggingCollectionRef;
+  return globalDraggingCollectionRef();
 }
 
 export function setGlobalDraggingKeys(keys: Set<string | number>): void {
-  globalDraggingKeys = new Set(keys);
+  setGlobalDraggingKeysSignal(new Set(keys));
 }
 
 export function getGlobalDraggingKeys(): Set<string | number> {
-  return new Set(globalDraggingKeys);
+  return new Set(globalDraggingKeys());
 }
 
 export function setGlobalDraggingTypes(types: Set<string>): void {
-  globalDraggingTypes = new Set(types);
+  setGlobalDraggingTypesSignal(new Set(types));
 }
 
 export function getGlobalDraggingTypes(): Set<string> {
-  return new Set(globalDraggingTypes);
+  return new Set(globalDraggingTypes());
 }
 
 export interface DraggableCollectionOptions {
@@ -61,11 +76,14 @@ export function createDraggableCollection(
 ): DraggableCollectionAria {
   const ref = createMemo(() => options.ref());
 
-  // Track dragging state globally
+  // Track dragging state globally. This effect subscribes to THIS collection's
+  // `state.draggingKeys`; the global-ref reads are untracked so writing the
+  // globals (which are now signals) can't re-trigger this same effect into a
+  // loop — only a real change in this collection's dragging keys should re-run it.
   createEffect(() => {
     const currentRef = ref();
     if (state.draggingKeys.size > 0) {
-      if (globalDraggingCollectionRef !== currentRef) {
+      if (untrack(getGlobalDraggingCollectionRef) !== currentRef) {
         setGlobalDraggingCollectionRef(currentRef);
       }
       setGlobalDraggingKeys(state.draggingKeys);
@@ -74,7 +92,7 @@ export function createDraggableCollection(
     }
 
     // Clear global drag tracking when this collection is no longer dragging.
-    if (globalDraggingCollectionRef === currentRef) {
+    if (untrack(getGlobalDraggingCollectionRef) === currentRef) {
       setGlobalDraggingCollectionRef(null);
       setGlobalDraggingKeys(new Set());
       setGlobalDraggingTypes(new Set());
@@ -83,7 +101,7 @@ export function createDraggableCollection(
 
   // Clean up on unmount
   onCleanup(() => {
-    if (globalDraggingCollectionRef === ref()) {
+    if (untrack(getGlobalDraggingCollectionRef) === ref()) {
       setGlobalDraggingCollectionRef(null);
       setGlobalDraggingKeys(new Set());
       setGlobalDraggingTypes(new Set());

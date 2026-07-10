@@ -12,6 +12,7 @@ import {
   Virtualizer as AriaVirtualizer,
   ListLayout as AriaListLayout,
   useFilter as useAriaFilter,
+  useDragAndDrop as useAriaDragAndDrop,
 } from "react-aria-components";
 // ActionGroup has no react-aria-components component and S2 1.5.1 removed the
 // styled ActionGroup, so the pair oracle is the pinned v3 `useActionGroup` /
@@ -37,7 +38,7 @@ import { useStepListState } from "react-stately/private/steplist/useStepListStat
 // instance, so it never reaches the hook; wrapping the hook-calling body in
 // this provider is what feeds the RTL direction into `useActionGroup` (D10).
 import { I18nProvider } from "react-aria";
-import { Item as StatelyItem, useListState } from "react-stately";
+import { Item as StatelyItem, useListState, useListData as useAriaListData } from "react-stately";
 import {
   Accordion as SpectrumAccordion,
   AccordionItem as SpectrumAccordionItem,
@@ -355,6 +356,13 @@ import {
   normalizeListBoxDemoProps,
   serializeListBoxDemoProps,
 } from "@comparison/data/listbox-demo";
+import {
+  dndListBoxDemoItems,
+  dndListBoxDemoPropsFromWindow,
+  normalizeDndListBoxDemoProps,
+  serializeDndListBoxDemoProps,
+  serializeDndListBoxOrder,
+} from "@comparison/data/dnd-listbox-demo";
 import {
   virtualizerDemoItems,
   virtualizerDemoPropsFromWindow,
@@ -901,6 +909,7 @@ export const reactStyledFixtures = {
   link: () => jsx(ReactLinkDemo, {}),
   listview: () => jsx(ReactListViewDemo, {}),
   listbox: () => jsx(ReactListBoxDemo, {}),
+  "dnd-listbox": () => jsx(ReactDndListBoxDemo, {}),
   virtualizer: () => jsx(ReactVirtualizerDemo, {}),
   autocomplete: () => jsx(ReactAutocompleteDemo, {}),
   gridlist: () => jsx(ReactGridListDemo, {}),
@@ -1443,6 +1452,63 @@ function ReactListBoxDemo() {
           children: listBoxDemoItems.map((item) =>
             jsx(AriaListBoxItem, { id: item.id, children: item.label }, item.id),
           ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+// Keyboard-DnD oracle: RAC's own reorderable ListBox — `useDragAndDrop`
+// (getItems + onReorder) wired to a `useListData` list, exactly as the vendored
+// `ListBoxDnd` story does. The live item order is published on the listbox root
+// as `data-comparison-order` so the reorder cert can pair-diff the result of a
+// keyboard drag against the Solid port. Before/After boundary buttons let the
+// D5-style walk cross the tab boundary to enter the collection by keyboard.
+function ReactDndListBoxDemo() {
+  const [demoProps, setDemoProps] = useState(dndListBoxDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+  const list = useAriaListData({ initialItems: dndListBoxDemoItems });
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "dnd-listbox") {
+        setDemoProps(normalizeDndListBoxDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  const { dragAndDropHooks } = useAriaDragAndDrop({
+    getItems: (keys) =>
+      [...keys].map((key) => {
+        const item = list.getItem(key);
+        return { "text/plain": item?.label ?? String(key) };
+      }),
+    onReorder(e) {
+      if (e.target.dropPosition === "before") {
+        list.moveBefore(e.target.key, e.keys);
+      } else if (e.target.dropPosition === "after") {
+        list.moveAfter(e.target.key, e.keys);
+      }
+    },
+  });
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx(AriaListBox, {
+          "aria-label": "Permissions",
+          selectionMode: demoProps.selectionMode,
+          items: list.items,
+          dragAndDropHooks,
+          "data-comparison-control-root": "dnd-listbox",
+          "data-comparison-control-props": serializeDndListBoxDemoProps(demoProps),
+          "data-comparison-order": serializeDndListBoxOrder(list.items),
+          children: (item) => jsx(AriaListBoxItem, { id: item.id, children: item.label }, item.id),
         }),
         jsx("button", { children: "After" }),
       ],
