@@ -262,6 +262,12 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
           ref,
           dropTargetDelegate: options.dropTargetDelegate ?? props.dropTargetDelegate,
           keyboardDelegate: options.keyboardDelegate ?? props.keyboardDelegate,
+          // Host collection + selection/focus setters, forwarded so keyboard
+          // drop-target navigation and post-drop focus restoration work.
+          collection: props.collection,
+          selectedKeys: props.selectedKeys,
+          setSelectedKeys: props.setSelectedKeys,
+          setFocusedKey: props.setFocusedKey,
           onKeyDown: options.onKeyDown ?? props.onKeyDown,
           acceptedDragTypes: normalizedAcceptedDragTypes,
           isDisabled: options.isDisabled ?? props.isDisabled,

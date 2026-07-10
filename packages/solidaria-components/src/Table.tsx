@@ -50,6 +50,7 @@ import {
   type ColumnSize,
   type GridNode,
   type DropTarget,
+  type Collection,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -764,8 +765,11 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
           getKeyPageBelow: (key) => state.collection.getKeyAfter?.(key) ?? null,
           getKeyPageAbove: (key) => state.collection.getKeyBefore?.(key) ?? null,
         },
+        // TableCollection carries a wider node.type union (GridNode's 'cell'/
+        // 'column') than the narrow Collection option, but is structurally a
+        // valid Collection for navigate()/focus restoration — cast at the seam.
         get collection() {
-          return state.collection;
+          return state.collection as unknown as Collection;
         },
         get selectedKeys() {
           return state.selectedKeys;

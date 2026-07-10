@@ -551,6 +551,14 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
           getKeyPageBelow: (key) => state.collection().getKeyAfter(key),
           getKeyPageAbove: (key) => state.collection().getKeyBefore(key),
         },
+        // The real collection drives keyboard drop-target navigation
+        // (`navigate()` walks getKeyAfter/getKeyBefore) and post-drop focus
+        // restoration. Reading it here re-registers the drop target when the
+        // collection changes (mirrors upstream keying its effect on the state).
+        collection: state.collection(),
+        selectedKeys: state.selectionManager.selectedKeys,
+        setSelectedKeys: (keys) => state.selectionManager.setSelectedKeys(keys),
+        setFocusedKey: (key) => state.setFocusedKey(key),
       },
       activeDropState,
       () => listRef(),

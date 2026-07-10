@@ -9,6 +9,7 @@ import type { JSX } from "solid-js";
 import type {
   DraggableCollectionState,
   DragPreviewRenderer,
+  DropOperation,
 } from "@proyecto-viviana/solid-stately";
 import {
   getTypes,
@@ -21,6 +22,9 @@ import {
   getGlobalDropEffect,
 } from "./utils";
 import { setGlobalDraggingTypes } from "./createDraggableCollection";
+import { beginDragging } from "./DragManager";
+import { createStringFormatter } from "../i18n/createStringFormatter";
+import { dndIntlStrings } from "./intl";
 
 export interface DraggableItemOptions {
   /** The unique key of the item. */
@@ -54,6 +58,8 @@ export function createDraggableItem(
   state: DraggableCollectionState,
 ): DraggableItemAria {
   const getOptions = createMemo(() => options());
+
+  const stringFormatter = createStringFormatter(dndIntlStrings);
 
   // Track position for drag move
   let lastX = 0;
@@ -187,13 +193,16 @@ export function createDraggableItem(
       const opts = getOptions();
       if (opts.isDisabled || state.isDisabled) return;
 
+      const el = e.currentTarget as HTMLElement;
       const keys = getKeysForDrag();
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      const rect = el.getBoundingClientRect();
       state.startDrag(keys, rect.x + rect.width / 2, rect.y + rect.height / 2);
+
       const items = state.getItems(keys);
       setGlobalDraggingTypes(getTypes(items));
-      let allowed = DROP_OPERATION.all;
+
       const allowedOps = state.getAllowedDropOperations();
+      let allowed = DROP_OPERATION.all;
       if (allowedOps.length > 0) {
         allowed = DROP_OPERATION.none;
         for (const op of allowedOps) {
@@ -201,6 +210,24 @@ export function createDraggableItem(
         }
       }
       setGlobalAllowedDropOperations(allowed);
+
+      // Hand control to the keyboard DragManager session, which drives
+      // Tab-cycling across drop targets and Enter/Escape drop/cancel.
+      beginDragging(
+        {
+          element: el,
+          items,
+          allowedDropOperations:
+            allowedOps.length > 0 ? allowedOps : (["move", "copy", "link"] as DropOperation[]),
+          onDragEnd: (ev) => {
+            state.endDrag(ev.x, ev.y, ev.dropOperation, false);
+            setGlobalAllowedDropOperations(DROP_OPERATION.none);
+            setGlobalDraggingTypes(new Set());
+            setGlobalDropEffect(undefined);
+          },
+        },
+        stringFormatter(),
+      );
     }
   };
 

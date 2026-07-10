@@ -40,6 +40,7 @@ import {
   type Key,
   type DropTarget,
   type ItemDropTarget,
+  type Collection,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -1060,8 +1061,11 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
           getKeyPageBelow: (key) => state.collection.getKeyAfter(key),
           getKeyPageAbove: (key) => state.collection.getKeyBefore(key),
         },
+        // TreeCollection carries a wider node.type union than the narrow
+        // Collection option but is structurally a valid Collection for
+        // navigate()/focus restoration — cast at the seam.
         get collection() {
-          return state.collection;
+          return state.collection as unknown as Collection;
         },
         get selectedKeys() {
           return state.selectedKeys;

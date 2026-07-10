@@ -5,9 +5,10 @@
  * component like ListBox, GridList, or Table.
  */
 
-import { createMemo, onCleanup, type Accessor } from "solid-js";
+import { createEffect, createMemo, onCleanup, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import type {
+  Collection,
   DroppableCollectionState,
   DropTarget,
   DropOperation,
@@ -18,12 +19,11 @@ import type {
 } from "@proyecto-viviana/solid-stately";
 import { DIRECTORY_DRAG_TYPE } from "@proyecto-viviana/solid-stately";
 import { createDrop } from "./createDrop";
-import {
-  getGlobalDraggingCollectionRef,
-  getGlobalDraggingKeys,
-  getGlobalDraggingTypes,
-} from "./createDraggableCollection";
-import { getGlobalAllowedDropOperations, DROP_OPERATION } from "./utils";
+import { getGlobalDraggingCollectionRef, getGlobalDraggingKeys } from "./createDraggableCollection";
+import { getTypes } from "./utils";
+import { registerDropTarget } from "./DragManager";
+import { navigate, type DropNavigationKeyboardDelegate } from "./DropTargetKeyboardNavigation";
+import { useLocale } from "../i18n/locale";
 
 // Global state for tracking the drop collection
 let globalDropCollectionRef: HTMLElement | null = null;
@@ -129,8 +129,12 @@ export interface DroppableCollectionOptions {
   keyboardDelegate?: KeyboardDelegateLike;
   /** Optional keyboard handler composed with internal drop target navigation keys. */
   onKeyDown?: (e: KeyboardEvent) => void;
-  /** Collection snapshot used to restore focus and selection after a drop mutates items. */
-  collection?: CollectionLike;
+  /**
+   * The collection backing the droppable. Used both to restore focus/selection
+   * after a drop mutates items and to drive keyboard drop-target navigation
+   * (`navigate()` walks `getKeyAfter`/`getKeyBefore`).
+   */
+  collection?: Collection;
   /** Current collection selection used to avoid replacing user-updated selection after a drop. */
   selectedKeys?: "all" | Iterable<Key>;
   /** Sets collection selection after a drop when new rows were inserted and selection was unchanged. */
@@ -170,6 +174,10 @@ export function createDroppableCollection(
   state: DroppableCollectionState,
 ): DroppableCollectionAria {
   const getOptions = createMemo(() => options());
+
+  // Layout direction drives keyboard drop-target navigation (Left/Right flip in
+  // RTL). Read at the reactive owner so the registration effect re-runs on change.
+  const locale = useLocale();
 
   // Track the next target during drag operations
   let nextTarget: DropTarget | null = null;
@@ -256,28 +264,36 @@ export function createDroppableCollection(
       }
     },
     onDrop: (e) => {
-      const opts = getOptions();
-      setGlobalDropCollectionRef(opts.ref());
-
+      setGlobalDropCollectionRef(getOptions().ref());
       if (state.target) {
-        const target = state.target;
-        const previousCollection = opts.collection;
-        const previousSelectedKeys = normalizeSelection(opts.selectedKeys);
-        opts.onDrop?.({
-          items: e.items,
-          target,
-          dropOperation: e.dropOperation,
-          x: e.x,
-          y: e.y,
-        });
-        void Promise.resolve(handleDrop(e.items, target, e.dropOperation)).then(() => {
-          queueMicrotask(() => {
-            updateFocusAfterDrop(getOptions(), previousCollection, previousSelectedKeys, target);
-          });
-        });
+        runDrop(e, state.target);
       }
     },
   }));
+
+  // Shared drop handler for both the native-pointer path (createDrop, above) and
+  // the keyboard path (the DragManager-registered drop target, below). Mirrors
+  // upstream's `defaultOnDrop`, which `useDrop` and `DragManager` both invoke.
+  const runDrop = (
+    e: { items: DropItem[]; dropOperation: DropOperation; x: number; y: number },
+    target: DropTarget,
+  ) => {
+    const opts = getOptions();
+    const previousCollection = opts.collection;
+    const previousSelectedKeys = normalizeSelection(opts.selectedKeys);
+    opts.onDrop?.({
+      items: e.items,
+      target,
+      dropOperation: e.dropOperation,
+      x: e.x,
+      y: e.y,
+    });
+    void Promise.resolve(handleDrop(e.items, target, e.dropOperation)).then(() => {
+      queueMicrotask(() => {
+        updateFocusAfterDrop(getOptions(), previousCollection, previousSelectedKeys, target);
+      });
+    });
+  };
 
   const handleDrop = async (
     items: DropItem[],
@@ -353,368 +369,371 @@ export function createDroppableCollection(
     }
   });
 
-  const collectionProps = createMemo(() => {
-    const baseDropProps = drop.dropProps;
-    const onKeyDownBase = baseDropProps.onKeyDown as ((e: KeyboardEvent) => void) | undefined;
-    const onKeyDown = (e: KeyboardEvent): void => {
-      onKeyDownBase?.(e);
-      const opts = getOptions();
-      if (opts.isDisabled) return;
-      const resolveDirection = (): "ltr" | "rtl" => {
-        const refEl = opts.ref();
-        if (
-          refEl &&
-          typeof window !== "undefined" &&
-          typeof window.getComputedStyle === "function"
-        ) {
-          const computedDir = window.getComputedStyle(refEl).direction;
-          if (computedDir === "rtl") return "rtl";
-        }
-        return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-      };
-      const isRtl = resolveDirection() === "rtl";
-      const forwardHorizontalKey = isRtl ? "ArrowLeft" : "ArrowRight";
-      const backwardHorizontalKey = isRtl ? "ArrowRight" : "ArrowLeft";
-      const callUserOnKeyDown = () => opts.onKeyDown?.(e);
-      const getKeyboardAllowedOperations = (): DropOperation[] => {
-        const allowedBits = getGlobalAllowedDropOperations();
-        if (!allowedBits) return ["copy", "move", "link"];
-        const allowed: DropOperation[] = [];
-        if (allowedBits & DROP_OPERATION.copy) allowed.push("copy");
-        if (allowedBits & DROP_OPERATION.move) allowed.push("move");
-        if (allowedBits & DROP_OPERATION.link) allowed.push("link");
-        return allowed.length > 0 ? allowed : ["copy", "move", "link"];
-      };
-      const getKeyboardDragTypes = (): DragTypes => {
-        const draggingTypes = getGlobalDraggingTypes();
-        if (draggingTypes.size === 0) {
-          return { has: () => true };
-        }
-        return {
-          // Keyboard drag mirrors upstream's raw Set<string> delegate: no
-          // wildcard expansion (that lives in the DataTransfer-backed DragTypes).
-          has: (type: DragType | DragType[]) => typeof type === "string" && draggingTypes.has(type),
-        };
-      };
-      const isValidDropTarget = (target: DropTarget) =>
-        state.getDropOperation(target, getKeyboardDragTypes(), getKeyboardAllowedOperations()) !==
-        "cancel";
-      const targetsEqual = (a: DropTarget, b: DropTarget): boolean => {
-        if (a.type !== b.type) return false;
-        if (a.type === "root" && b.type === "root") return true;
-        if (a.type !== "item" || b.type !== "item") return false;
-        return a.key === b.key && a.dropPosition === b.dropPosition;
-      };
-      const findNextValidTarget = (
-        start: DropTarget | null,
-        getNext: (target: DropTarget | null) => DropTarget | null,
-      ): DropTarget | null => {
-        let current = start;
-        let seenRoot = 0;
-        let safety = 0;
-        while (safety < 256) {
-          safety += 1;
-          const next = getNext(current);
-          if (!next) return null;
-          if (current && targetsEqual(current, next)) {
-            return isValidDropTarget(next) ? next : null;
-          }
-          current = next;
-          if (next.type === "root") {
-            seenRoot += 1;
-            if (seenRoot >= 2) {
-              return isValidDropTarget(next) ? next : null;
-            }
-          }
-          if (isValidDropTarget(next)) return next;
-        }
-        return null;
-      };
-      const resolveTargetForKey = (
-        key: string | number | null,
-        direction: "next" | "previous",
-      ): DropTarget | null => {
-        if (key == null) return null;
-        const onTarget: DropTarget = { type: "item", key, dropPosition: "on" };
-        if (isValidDropTarget(onTarget)) return onTarget;
-        const insertionOrder: Array<"before" | "after"> =
-          direction === "next" ? ["before", "after"] : ["after", "before"];
-        for (const position of insertionOrder) {
-          const insertionTarget: DropTarget = { type: "item", key, dropPosition: position };
-          if (isValidDropTarget(insertionTarget)) return insertionTarget;
-        }
-        return null;
-      };
-      const resolveBoundaryTargetForDirection = (
-        key: string | number | null,
-        direction: "next" | "previous",
-      ): DropTarget | null => {
-        if (key == null) return null;
-        const boundaryOrder: Array<"before" | "on" | "after"> =
-          direction === "next" ? ["before", "on", "after"] : ["after", "on", "before"];
-        for (const position of boundaryOrder) {
-          const candidate: DropTarget = { type: "item", key, dropPosition: position };
-          if (isValidDropTarget(candidate)) return candidate;
-        }
-        return null;
-      };
-      const resolveFallbackKeyboardTarget = (
-        keyName: string,
-        currentTarget: DropTarget | null = state.target,
-      ): DropTarget | null => {
-        const keyboardDelegate = opts.keyboardDelegate;
-        if (!keyboardDelegate) return null;
-        const currentKey = currentTarget?.type === "item" ? currentTarget.key : null;
-        const keyForDirection = (
-          direction: "next" | "previous",
-          getter: ((key: string | number) => string | number | null) | undefined,
-        ): DropTarget | null => {
-          if (currentKey == null) {
-            const boundaryKey =
-              direction === "next"
-                ? keyboardDelegate.getFirstKey?.()
-                : keyboardDelegate.getLastKey?.();
-            return resolveBoundaryTargetForDirection(boundaryKey ?? null, direction);
-          }
-          if (!getter) return null;
-          let nextKey = getter(currentKey);
-          let safety = 0;
-          while (nextKey != null && safety < 256) {
-            const resolvedTarget = resolveTargetForKey(nextKey, direction);
-            if (resolvedTarget) return resolvedTarget;
-            const candidate = getter(nextKey);
-            if (candidate === nextKey) break;
-            nextKey = candidate;
-            safety += 1;
-          }
-          return null;
-        };
-
-        if (keyName === "ArrowDown") return keyForDirection("next", keyboardDelegate.getKeyBelow);
-        if (keyName === "ArrowUp") return keyForDirection("previous", keyboardDelegate.getKeyAbove);
-        if (keyName === forwardHorizontalKey) {
-          return keyForDirection(
-            "next",
-            isRtl ? keyboardDelegate.getKeyLeftOf : keyboardDelegate.getKeyRightOf,
-          );
-        }
-        if (keyName === backwardHorizontalKey) {
-          return keyForDirection(
-            "previous",
-            isRtl ? keyboardDelegate.getKeyRightOf : keyboardDelegate.getKeyLeftOf,
-          );
-        }
-        if (keyName === "Home")
-          return resolveBoundaryTargetForDirection(
-            keyboardDelegate.getFirstKey?.() ?? null,
-            "next",
-          );
-        if (keyName === "End")
-          return resolveBoundaryTargetForDirection(
-            keyboardDelegate.getLastKey?.() ?? null,
-            "previous",
-          );
-        if (keyName === "PageDown") {
-          if (currentKey != null && keyboardDelegate.getKeyPageBelow) {
-            return resolveTargetForKey(keyboardDelegate.getKeyPageBelow(currentKey), "next");
-          }
-          return keyForDirection("next", keyboardDelegate.getKeyBelow);
-        }
-        if (keyName === "PageUp") {
-          if (currentKey != null && keyboardDelegate.getKeyPageAbove) {
-            return resolveTargetForKey(keyboardDelegate.getKeyPageAbove(currentKey), "previous");
-          }
-          return keyForDirection("previous", keyboardDelegate.getKeyAbove);
-        }
-        return null;
-      };
-      const resolvePageTargetForState = (
-        direction: "next" | "previous",
-        currentTarget: DropTarget,
-      ): DropTarget | null => {
-        const keyboardDelegate = opts.keyboardDelegate;
-        if (!keyboardDelegate) return null;
-        if (direction === "next") {
-          let targetKey = keyboardDelegate.getFirstKey?.() ?? null;
-          let dropPosition: "before" | "on" | "after" = "after";
-          if (currentTarget.type === "item") {
-            targetKey = currentTarget.key;
-            dropPosition = currentTarget.dropPosition;
-          }
-          let nextKey =
-            targetKey != null ? (keyboardDelegate.getKeyPageBelow?.(targetKey) ?? null) : null;
-          if (
-            nextKey == null ||
-            (currentTarget.type === "item" && currentTarget.key === keyboardDelegate.getLastKey?.())
-          ) {
-            nextKey = keyboardDelegate.getLastKey?.() ?? null;
-            dropPosition = "after";
-          }
-          if (nextKey == null) return null;
-          return {
-            type: "item",
-            key: nextKey,
-            dropPosition,
-          };
-        }
-
-        if (currentTarget.type === "item") {
-          if (currentTarget.key === keyboardDelegate.getFirstKey?.()) {
-            return { type: "root" };
-          }
-          let nextKey = keyboardDelegate.getKeyPageAbove?.(currentTarget.key) ?? null;
-          let dropPosition: "before" | "on" | "after" = currentTarget.dropPosition;
-          if (nextKey == null) {
-            nextKey = keyboardDelegate.getFirstKey?.() ?? null;
-            dropPosition = "before";
-          }
-          if (nextKey == null) return null;
-          return {
-            type: "item",
-            key: nextKey,
-            dropPosition,
-          };
-        }
-
-        return currentTarget.type === "root" ? currentTarget : null;
-      };
-      if (e.key === "PageDown" || e.key === "PageUp") {
-        if (
-          (e.key === "PageDown" && !opts.keyboardDelegate?.getKeyPageBelow) ||
-          (e.key === "PageUp" && !opts.keyboardDelegate?.getKeyPageAbove)
-        ) {
-          callUserOnKeyDown();
-          return;
-        }
-        const direction = e.key === "PageDown" ? "next" : "previous";
-        const pageNavigation = opts.dropTargetDelegate.getKeyboardPageNavigationTarget;
-        const stepNavigation = opts.dropTargetDelegate.getKeyboardNavigationTarget;
-        const resolveStepTarget = (
-          target: DropTarget | null,
-          navDirection: "next" | "previous",
-        ): DropTarget | null =>
-          stepNavigation?.(target, navDirection, isValidDropTarget) ??
-          resolveFallbackKeyboardTarget(
-            navDirection === "next" ? "ArrowDown" : "ArrowUp",
-            target,
-          ) ??
-          resolveFallbackKeyboardTarget(navDirection === "next" ? "Home" : "End", target) ??
-          null;
-        let nextTarget: DropTarget | null = null;
-        if (!state.target) {
-          nextTarget = findNextValidTarget(null, (target) => resolveStepTarget(target, direction));
-        } else {
-          const pageTarget =
-            pageNavigation?.(state.target, direction, isValidDropTarget) ??
-            resolvePageTargetForState(direction, state.target) ??
-            null;
-          if (pageTarget && isValidDropTarget(pageTarget)) {
-            nextTarget = pageTarget;
-          } else {
-            const startTarget = pageTarget ?? state.target;
-            nextTarget =
-              findNextValidTarget(startTarget, (target) => resolveStepTarget(target, direction)) ??
-              findNextValidTarget(startTarget, (target) =>
-                resolveStepTarget(target, direction === "next" ? "previous" : "next"),
-              );
-          }
-        }
-        if (nextTarget) {
-          e.preventDefault();
-          state.setTarget(nextTarget);
-        }
-        callUserOnKeyDown();
-        return;
-      }
-      if (
-        (e.key === "ArrowDown" ||
-          e.key === "ArrowUp" ||
-          e.key === "ArrowRight" ||
-          e.key === "ArrowLeft" ||
-          e.key === "Home" ||
-          e.key === "End") &&
-        opts.dropTargetDelegate.getKeyboardNavigationTarget
-      ) {
-        if (
-          (e.key === "ArrowDown" && !opts.keyboardDelegate?.getKeyBelow) ||
-          (e.key === "ArrowUp" && !opts.keyboardDelegate?.getKeyAbove) ||
-          (e.key === "ArrowLeft" && !opts.keyboardDelegate?.getKeyLeftOf) ||
-          (e.key === "ArrowRight" && !opts.keyboardDelegate?.getKeyRightOf) ||
-          (e.key === "Home" && !opts.keyboardDelegate?.getFirstKey) ||
-          (e.key === "End" && !opts.keyboardDelegate?.getLastKey)
-        ) {
-          callUserOnKeyDown();
-          return;
-        }
-        const isForwardKey =
-          e.key === "ArrowDown" || e.key === forwardHorizontalKey || e.key === "Home";
-        const direction = isForwardKey ? "next" : "previous";
-        const navigationStart = e.key === "Home" || e.key === "End" ? null : state.target;
-        const nextTarget = findNextValidTarget(
-          navigationStart,
-          (target) =>
-            opts.dropTargetDelegate.getKeyboardNavigationTarget?.(
-              target,
-              direction,
-              isValidDropTarget,
-            ) ?? resolveFallbackKeyboardTarget(e.key, target),
-        );
-        if (nextTarget) {
-          e.preventDefault();
-          state.setTarget(nextTarget);
-        }
-        callUserOnKeyDown();
-        return;
-      }
-      if (
-        e.key === "ArrowDown" ||
-        e.key === "ArrowUp" ||
-        e.key === "ArrowRight" ||
-        e.key === "ArrowLeft" ||
-        e.key === "Home" ||
-        e.key === "End"
-      ) {
-        if (
-          (e.key === "ArrowDown" && !opts.keyboardDelegate?.getKeyBelow) ||
-          (e.key === "ArrowUp" && !opts.keyboardDelegate?.getKeyAbove) ||
-          (e.key === "ArrowLeft" && !opts.keyboardDelegate?.getKeyLeftOf) ||
-          (e.key === "ArrowRight" && !opts.keyboardDelegate?.getKeyRightOf) ||
-          (e.key === "Home" && !opts.keyboardDelegate?.getFirstKey) ||
-          (e.key === "End" && !opts.keyboardDelegate?.getLastKey)
-        ) {
-          callUserOnKeyDown();
-          return;
-        }
-        const navigationStart = e.key === "Home" || e.key === "End" ? null : state.target;
-        const nextTarget = findNextValidTarget(navigationStart, (target) =>
-          resolveFallbackKeyboardTarget(e.key, target),
-        );
-        if (nextTarget) {
-          e.preventDefault();
-          state.setTarget(nextTarget);
-        }
-        callUserOnKeyDown();
-        return;
-      }
-      if (e.key === "Enter" && state.target) {
-        e.preventDefault();
-        state.activateTarget(0, 0);
-        callUserOnKeyDown();
-        return;
-      }
-      if (e.key === "Escape" && state.target) {
-        e.preventDefault();
-        state.exitTarget(0, 0);
-        callUserOnKeyDown();
-        return;
-      }
-      callUserOnKeyDown();
-    };
-    return {
-      ...baseDropProps,
-      onKeyDown,
-    };
+  // Wrap the raw `Set<string>` the DragManager hands keyboard drop targets into
+  // the `DragTypes` delegate the port state expects. Mirrors upstream, which
+  // passes the raw Set to `state.getDropOperation` (no wildcard expansion — that
+  // lives in the DataTransfer-backed DragTypes used by the native-pointer path).
+  const wrapTypes = (types: Set<string>): DragTypes => ({
+    has: (type: DragType | DragType[]) => {
+      if (typeof type === "string") return types.has(type);
+      if (Array.isArray(type)) return type.some((t) => typeof t === "string" && types.has(t));
+      return false;
+    },
   });
+
+  const targetsEqual = (
+    a: DropTarget | null | undefined,
+    b: DropTarget | null | undefined,
+  ): boolean => {
+    if (!a || !b) return false;
+    if (a.type !== b.type) return false;
+    if (a.type === "root") return true;
+    if (a.type !== "item" || b.type !== "item") return false;
+    return a.key === b.key && a.dropPosition === b.dropPosition;
+  };
+
+  // Port substitute for upstream's `state.isDropTarget(target)` (the port state
+  // exposes `isDropTarget` only as a "drag is over this collection" boolean, not
+  // a per-target predicate): whether `target` equals the current drop target.
+  const isCurrentTarget = (target: DropTarget | null | undefined): boolean =>
+    targetsEqual(state.target, target);
+
+  // Register the collection element as a keyboard/virtual drop target on the
+  // DragManager singleton. This is the faithful port of upstream
+  // `useDroppableCollection`'s `useEffect` (react-aria 3.50) that installs the
+  // DragManager DropTarget — replacing the port's former self-contained
+  // `collectionProps.onKeyDown` engine. Re-runs when the element or locale
+  // direction changes (upstream keys the effect on `[localState, ref, onDrop, direction]`).
+  createEffect(() => {
+    const refEl = getOptions().ref();
+    if (!refEl) return;
+    const rtl = locale().direction === "rtl";
+
+    const getNextTarget = (
+      target: DropTarget | null | undefined,
+      wrap = true,
+      key: "left" | "right" | "up" | "down" = "down",
+    ): DropTarget | null => {
+      const opts = getOptions();
+      const collection = opts.collection;
+      const keyboardDelegate = opts.keyboardDelegate;
+      if (!collection || !keyboardDelegate) return null;
+      return navigate(
+        keyboardDelegate as DropNavigationKeyboardDelegate,
+        collection,
+        target,
+        key,
+        rtl,
+        wrap,
+      );
+    };
+
+    const getPreviousTarget = (target: DropTarget | null | undefined, wrap = true) =>
+      getNextTarget(target, wrap, "up");
+
+    const nextValidTarget = (
+      target: DropTarget | null | undefined,
+      types: Set<string>,
+      allowedDropOperations: DropOperation[],
+      getNext: (target: DropTarget | null | undefined, wrap: boolean) => DropTarget | null,
+      wrap = true,
+    ): DropTarget | null => {
+      let seenRoot = 0;
+      let operation: DropOperation;
+      do {
+        const next = getNext(target, wrap);
+        if (!next) return null;
+        target = next;
+        operation = state.getDropOperation(next, wrapTypes(types), allowedDropOperations);
+        if (target.type === "root") {
+          seenRoot++;
+        }
+      } while (operation === "cancel" && !isCurrentTarget(target) && seenRoot < 2);
+
+      if (operation === "cancel") {
+        return null;
+      }
+
+      return target;
+    };
+
+    const unregister = registerDropTarget({
+      element: refEl,
+      preventFocusOnDrop: true,
+      getDropOperation(types, allowedOperations) {
+        if (state.target) {
+          return state.getDropOperation(state.target, wrapTypes(types), allowedOperations);
+        }
+
+        // Check if any of the targets accept the drop.
+        const target = nextValidTarget(null, types, allowedOperations, (t, wrap) =>
+          getNextTarget(t, wrap),
+        );
+        return target ? "move" : "cancel";
+      },
+      onDropEnter(_e, drag) {
+        const types = getTypes(drag.items);
+        // Update the drop collection ref tracker for createDroppableItem's isInternal check.
+        setGlobalDropCollectionRef(getOptions().ref());
+
+        // The port state has no selectionManager/focusedKey, so the default drop
+        // target on entry is the first valid target from the root (upstream's
+        // no-focused-key fallback).
+        const target = nextValidTarget(null, types, drag.allowedDropOperations, (t, wrap) =>
+          getNextTarget(t, wrap),
+        );
+        state.setTarget(target);
+      },
+      onDropExit() {
+        setGlobalDropCollectionRef(null);
+        state.setTarget(null);
+      },
+      onDropTargetEnter(target) {
+        state.setTarget(target);
+      },
+      onDropActivate(e, target) {
+        const opts = getOptions();
+        if (
+          target?.type === "item" &&
+          target?.dropPosition === "on" &&
+          typeof opts.onDropActivate === "function"
+        ) {
+          opts.onDropActivate({ target, x: e.x, y: e.y });
+        }
+      },
+      onDrop(e, target) {
+        setGlobalDropCollectionRef(getOptions().ref());
+        if (state.target) {
+          runDrop(e, target || state.target);
+        }
+      },
+      onKeyDown(e, drag) {
+        const opts = getOptions();
+        const keyboardDelegate = opts.keyboardDelegate;
+        if (!keyboardDelegate) {
+          opts.onKeyDown?.(e);
+          return;
+        }
+        const types = getTypes(drag.items);
+        switch (e.key) {
+          case "ArrowDown": {
+            if (keyboardDelegate.getKeyBelow) {
+              const target = nextValidTarget(
+                state.target,
+                types,
+                drag.allowedDropOperations,
+                (t, wrap) => getNextTarget(t, wrap, "down"),
+              );
+              state.setTarget(target);
+            }
+            break;
+          }
+          case "ArrowUp": {
+            if (keyboardDelegate.getKeyAbove) {
+              const target = nextValidTarget(
+                state.target,
+                types,
+                drag.allowedDropOperations,
+                (t, wrap) => getNextTarget(t, wrap, "up"),
+              );
+              state.setTarget(target);
+            }
+            break;
+          }
+          case "ArrowLeft": {
+            if (keyboardDelegate.getKeyLeftOf) {
+              const target = nextValidTarget(
+                state.target,
+                types,
+                drag.allowedDropOperations,
+                (t, wrap) => getNextTarget(t, wrap, "left"),
+              );
+              state.setTarget(target);
+            }
+            break;
+          }
+          case "ArrowRight": {
+            if (keyboardDelegate.getKeyRightOf) {
+              const target = nextValidTarget(
+                state.target,
+                types,
+                drag.allowedDropOperations,
+                (t, wrap) => getNextTarget(t, wrap, "right"),
+              );
+              state.setTarget(target);
+            }
+            break;
+          }
+          case "Home": {
+            if (keyboardDelegate.getFirstKey) {
+              const target = nextValidTarget(null, types, drag.allowedDropOperations, (t, wrap) =>
+                getNextTarget(t, wrap),
+              );
+              state.setTarget(target);
+            }
+            break;
+          }
+          case "End": {
+            if (keyboardDelegate.getLastKey) {
+              const target = nextValidTarget(
+                null,
+                types,
+                drag.allowedDropOperations,
+                getPreviousTarget,
+              );
+              state.setTarget(target);
+            }
+            break;
+          }
+          case "PageDown": {
+            if (keyboardDelegate.getKeyPageBelow) {
+              let target = state.target;
+              if (!target) {
+                target = nextValidTarget(null, types, drag.allowedDropOperations, (t, wrap) =>
+                  getNextTarget(t, wrap),
+                );
+              } else {
+                // If on the root, go to the item a page below the top. Otherwise a page below the current item.
+                let targetKey = keyboardDelegate.getFirstKey?.();
+                if (target.type === "item") {
+                  targetKey = target.key;
+                }
+                let nextKey: Key | null = null;
+                if (targetKey != null) {
+                  nextKey = keyboardDelegate.getKeyPageBelow(targetKey);
+                }
+                let dropPosition: "before" | "on" | "after" =
+                  target.type === "item" ? target.dropPosition : "after";
+
+                // If there is no next key, or we are starting on the last key, jump to the last possible position.
+                if (
+                  nextKey == null ||
+                  (target.type === "item" && target.key === keyboardDelegate.getLastKey?.())
+                ) {
+                  nextKey = keyboardDelegate.getLastKey?.() ?? null;
+                  dropPosition = "after";
+                }
+
+                if (nextKey == null) {
+                  break;
+                }
+                target = {
+                  type: "item",
+                  key: nextKey,
+                  dropPosition,
+                };
+
+                // If the target does not accept the drop, find the next valid target.
+                // If no next valid target, find the previous valid target.
+                const operation = state.getDropOperation(
+                  target,
+                  wrapTypes(types),
+                  drag.allowedDropOperations,
+                );
+                if (operation === "cancel") {
+                  target =
+                    nextValidTarget(
+                      target,
+                      types,
+                      drag.allowedDropOperations,
+                      (t, wrap) => getNextTarget(t, wrap),
+                      false,
+                    ) ??
+                    nextValidTarget(
+                      target,
+                      types,
+                      drag.allowedDropOperations,
+                      getPreviousTarget,
+                      false,
+                    );
+                }
+              }
+
+              state.setTarget(target ?? state.target);
+            }
+            break;
+          }
+          case "PageUp": {
+            if (!keyboardDelegate.getKeyPageAbove) {
+              break;
+            }
+
+            let target = state.target;
+            if (!target) {
+              target = nextValidTarget(
+                null,
+                types,
+                drag.allowedDropOperations,
+                getPreviousTarget,
+              );
+            } else if (target.type === "item") {
+              // If at the top already, switch to the root. Otherwise navigate a page up.
+              if (target.key === keyboardDelegate.getFirstKey?.()) {
+                target = {
+                  type: "root",
+                };
+              } else {
+                let nextKey: Key | null | undefined = keyboardDelegate.getKeyPageAbove(target.key);
+                let dropPosition: "before" | "on" | "after" = target.dropPosition;
+                if (nextKey == null) {
+                  nextKey = keyboardDelegate.getFirstKey?.();
+                  dropPosition = "before";
+                }
+
+                if (nextKey == null) {
+                  break;
+                }
+                target = {
+                  type: "item",
+                  key: nextKey,
+                  dropPosition,
+                };
+              }
+
+              // If the target does not accept the drop, find the previous valid target.
+              // If no next valid target, find the next valid target.
+              const operation = state.getDropOperation(
+                target,
+                wrapTypes(types),
+                drag.allowedDropOperations,
+              );
+              if (operation === "cancel") {
+                target =
+                  nextValidTarget(
+                    target,
+                    types,
+                    drag.allowedDropOperations,
+                    getPreviousTarget,
+                    false,
+                  ) ??
+                  nextValidTarget(
+                    target,
+                    types,
+                    drag.allowedDropOperations,
+                    (t, wrap) => getNextTarget(t, wrap),
+                    false,
+                  );
+              }
+            }
+
+            state.setTarget(target ?? state.target);
+            break;
+          }
+        }
+        opts.onKeyDown?.(e);
+      },
+    });
+
+    onCleanup(unregister);
+  });
+
+  const collectionProps = createMemo<Record<string, unknown>>(() => ({
+    ...drop.dropProps,
+    // Remove description from the collection element. If dropping on the entire
+    // collection, there should be a drop indicator that carries this
+    // description, so no need to double-announce.
+    "aria-describedby": null,
+  }));
 
   return {
     get collectionProps() {
@@ -758,11 +777,15 @@ function getNewItemKeys(collection: CollectionLike, previousCollection: Collecti
 
 function updateFocusAfterDrop(
   opts: DroppableCollectionOptions,
-  previousCollection: CollectionLike | undefined,
+  previousCollectionRaw: Collection | undefined,
   previousSelectedKeys: "all" | Set<Key> | null,
   target: DropTarget,
 ): void {
-  const collection = opts.collection;
+  // Read the (real) collection through the structural `CollectionLike` view: it
+  // exposes the optional cell/rowheader/isExpanded fields upstream inspects, which
+  // are simply absent (undefined) for flat collections like ListBox.
+  const collection = opts.collection as CollectionLike | undefined;
+  const previousCollection = previousCollectionRaw as unknown as CollectionLike | undefined;
   if (!collection || !previousCollection) return;
 
   const newKeys = getNewItemKeys(collection, previousCollection);

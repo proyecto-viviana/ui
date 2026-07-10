@@ -1,14 +1,63 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
 import { afterEach } from "vitest";
-import { createDroppableCollection } from "../src/dnd/createDroppableCollection";
 import {
   setGlobalDraggingCollectionRef,
   setGlobalDraggingKeys,
   setGlobalDraggingTypes,
 } from "../src/dnd/createDraggableCollection";
 import { setGlobalAllowedDropOperations, DROP_OPERATION } from "../src/dnd/utils";
-import type { DropTarget, DroppableCollectionState } from "@proyecto-viviana/solid-stately";
+import type {
+  Collection,
+  DropOperation,
+  DropTarget,
+  DroppableCollectionState,
+} from "@proyecto-viviana/solid-stately";
+
+// The faithful keyboard engine lives on the DragManager singleton: the ported
+// `useDroppableCollection` effect calls `registerDropTarget({...onKeyDown})`, and
+// the DragSession's document-capture listener invokes that `onKeyDown(e, drag)`
+// per keystroke (react-aria 3.50). We unit-test the engine at exactly that seam —
+// capturing the registered descriptor and driving its handlers the way the live
+// DragSession would — without needing rAF / getDragModality / ariaHideOutside.
+// Full-session integration (Enter pick-up → Tab cycle → Enter drop) is certified
+// end-to-end by the browser cert (dnd on the ListBox host).
+const dragManagerMock = vi.hoisted(() => {
+  type Descriptor = {
+    element: HTMLElement;
+    getDropOperation?: (types: Set<string>, ops: DropOperation[]) => DropOperation;
+    onDropEnter?: (e: unknown, drag: unknown) => void;
+    onDropExit?: (e: unknown) => void;
+    onDropTargetEnter?: (target: DropTarget | null) => void;
+    onDropActivate?: (e: unknown, target: DropTarget | null) => void;
+    onDrop?: (e: unknown, target: DropTarget | null) => void;
+    onKeyDown?: (e: KeyboardEvent, drag: unknown) => void;
+  };
+  let captured: Descriptor | null = null;
+  return {
+    registerDropTarget: (target: Descriptor) => {
+      captured = target;
+      return () => {
+        if (captured === target) captured = null;
+      };
+    },
+    getCaptured: (): Descriptor => {
+      if (!captured) throw new Error("no drop target was registered");
+      return captured;
+    },
+    reset: () => {
+      captured = null;
+    },
+  };
+});
+
+vi.mock("../src/dnd/DragManager", () => ({
+  registerDropTarget: dragManagerMock.registerDropTarget,
+}));
+
+// Import after the mock is declared so the effect's `registerDropTarget` resolves
+// to the capturing stub.
+const { createDroppableCollection } = await import("../src/dnd/createDroppableCollection");
 
 afterEach(() => {
   setGlobalDraggingCollectionRef(null);
@@ -17,1515 +66,361 @@ afterEach(() => {
   setGlobalAllowedDropOperations(DROP_OPERATION.none);
   document.dir = "";
   cleanup();
+  dragManagerMock.reset();
 });
 
-describe("createDroppableCollection keyboard behavior", () => {
-  it("navigates targets with arrows/home/end and supports enter/escape", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-          return;
-        }
-        calls.push(`set:${target?.type ?? "null"}`);
-      },
-      activateTarget() {
-        calls.push("activate");
-      },
-      exitTarget() {
-        currentTarget = null;
-        calls.push("exit");
-      },
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+// ---------------------------------------------------------------------------
+// Faithful test fixtures: a real flat collection + keyboard delegate feed the
+// ported `navigate()` (DropTargetKeyboardNavigation) exactly as a live ListBox
+// host would. `navigate()` reads only getKeyAfter/getKeyBefore/getItem; the
+// delegate supplies getFirst/Last/Below/Above (+ horizontal/page variants).
+// ---------------------------------------------------------------------------
+type SimpleKey = string | number;
 
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardPageNavigationTarget(_target, direction) {
-              if (direction === "next") {
-                return { type: "item", key: 7, dropPosition: "on" };
-              }
-              return { type: "item", key: 3, dropPosition: "on" };
-            },
-            getKeyboardNavigationTarget(target, direction) {
-              if (target?.type === "root" && direction === "next") {
-                return { type: "item", key: 1, dropPosition: "on" };
-              }
-              if (target?.type === "root" && direction === "previous") {
-                return { type: "item", key: 9, dropPosition: "on" };
-              }
-              if (target?.type === "item" && direction === "previous") {
-                return { type: "root" };
-              }
-              if (target?.type === "item" && direction === "next") {
-                return { type: "item", key: 2, dropPosition: "on" };
-              }
-              return null;
-            },
+function makeFlatCollection(keys: SimpleKey[]): Collection {
+  const indexOf = (k: SimpleKey) => keys.indexOf(k);
+  const node = (k: SimpleKey) => ({
+    key: k,
+    type: "item" as const,
+    level: 0,
+    parentKey: null,
+    childNodes: [] as unknown[],
+  });
+  return {
+    getKeyAfter: (k: SimpleKey) => {
+      const i = indexOf(k);
+      return i >= 0 && i < keys.length - 1 ? keys[i + 1] : null;
+    },
+    getKeyBefore: (k: SimpleKey) => {
+      const i = indexOf(k);
+      return i > 0 ? keys[i - 1] : null;
+    },
+    getFirstKey: () => keys[0] ?? null,
+    getLastKey: () => keys[keys.length - 1] ?? null,
+    getItem: (k: SimpleKey) => (indexOf(k) >= 0 ? node(k) : null),
+    getSize: () => keys.length,
+    [Symbol.iterator]: function* () {
+      for (const k of keys) yield node(k);
+    },
+  } as unknown as Collection;
+}
+
+interface DelegateOptions {
+  horizontal?: boolean;
+  omitVertical?: boolean;
+  omitPage?: boolean;
+}
+
+function makeDelegate(keys: SimpleKey[], collection: Collection, opts: DelegateOptions = {}) {
+  const after = (k: SimpleKey) => collection.getKeyAfter(k);
+  const before = (k: SimpleKey) => collection.getKeyBefore(k);
+  const delegate: Record<string, unknown> = {
+    getFirstKey: () => keys[0] ?? null,
+    getLastKey: () => keys[keys.length - 1] ?? null,
+  };
+  if (!opts.omitVertical) {
+    delegate.getKeyBelow = (k: SimpleKey) => after(k);
+    delegate.getKeyAbove = (k: SimpleKey) => before(k);
+  }
+  if (opts.horizontal) {
+    delegate.getKeyRightOf = (k: SimpleKey) => after(k);
+    delegate.getKeyLeftOf = (k: SimpleKey) => before(k);
+  }
+  if (!opts.omitPage) {
+    delegate.getKeyPageBelow = (k: SimpleKey) => after(k);
+    delegate.getKeyPageAbove = (k: SimpleKey) => before(k);
+  }
+  return delegate;
+}
+
+type GetDropOperation = (target: DropTarget) => DropOperation;
+
+function makeState(getDropOperation?: GetDropOperation) {
+  let currentTarget: DropTarget | null = null;
+  const calls: string[] = [];
+  const label = (target: DropTarget | null) => {
+    if (target?.type === "item") return `item:${String(target.key)}:${target.dropPosition}`;
+    return target?.type ?? "null";
+  };
+  const state = {
+    get target() {
+      return currentTarget;
+    },
+    get isDropTarget() {
+      return currentTarget != null;
+    },
+    get isDisabled() {
+      return false;
+    },
+    setTarget(target: DropTarget | null) {
+      currentTarget = target;
+      calls.push(label(target));
+    },
+    activateTarget() {
+      calls.push("activate");
+    },
+    exitTarget() {
+      currentTarget = null;
+      calls.push("exit");
+    },
+    getDropOperation(target: DropTarget) {
+      return getDropOperation ? getDropOperation(target) : ("move" as const);
+    },
+    enterTarget() {},
+    moveToTarget() {},
+    drop() {},
+    isAccepted() {
+      return true;
+    },
+    shouldAcceptItemDrop() {
+      return true;
+    },
+  } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+  return { state, calls, getTarget: () => currentTarget };
+}
+
+interface HarnessConfig {
+  keys: SimpleKey[];
+  state: DroppableCollectionState;
+  delegateOptions?: DelegateOptions;
+  extra?: Record<string, unknown>;
+}
+
+let harnessCounter = 0;
+
+/** Render a droppable collection and return its registered DragManager descriptor. */
+function mountHarness(config: HarnessConfig) {
+  const id = `drop-host-${++harnessCounter}`;
+  const collection = makeFlatCollection(config.keys);
+  const keyboardDelegate = makeDelegate(config.keys, collection, config.delegateOptions);
+
+  function TestComponent() {
+    const { collectionProps } = createDroppableCollection(
+      () => ({
+        ref: () => document.getElementById(id) as HTMLElement | null,
+        dropTargetDelegate: {
+          getDropTargetFromPoint() {
+            return null;
           },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 9,
-            getKeyBelow: (key) => (key === 1 ? 2 : null),
-            getKeyAbove: (key) => (key === 2 ? 1 : null),
-            getKeyPageBelow: (key) => (key === 9 ? 9 : Number(key) + 1),
-            getKeyPageAbove: (key) => (key === 1 ? 1 : Number(key) - 1),
-            getKeyRightOf: (key) => (key === 1 ? 2 : null),
-            getKeyLeftOf: (key) => (key === 2 ? 1 : null),
-          },
-        }),
-        state,
-      );
+        },
+        collection,
+        keyboardDelegate,
+        ...config.extra,
+      }),
+      config.state,
+    );
+    return <div id={id} tabIndex={0} data-testid={id} {...collectionProps} />;
+  }
 
-      return <div id="drop-root" tabIndex={0} data-testid="drop-root" {...collectionProps} />;
-    }
+  render(() => <TestComponent />);
+  return { descriptor: dragManagerMock.getCaptured(), id };
+}
 
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root");
+// A drag session payload as the DragSession hands it to `onKeyDown(e, drag)`.
+const DRAG = {
+  element: document.body,
+  items: [{ "text/plain": "payload" }],
+  allowedDropOperations: ["move"] as DropOperation[],
+};
 
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:1");
+const keyDown = (key: string): KeyboardEvent => ({ key }) as KeyboardEvent;
 
-    fireEvent.keyDown(root, { key: "ArrowUp" });
-    expect(calls.at(-1)).toBe("set:root");
-
-    fireEvent.keyDown(root, { key: "ArrowRight" });
-    expect(calls.at(-1)).toBe("set:item:1");
-
-    fireEvent.keyDown(root, { key: "ArrowLeft" });
-    expect(calls.at(-1)).toBe("set:root");
-
-    fireEvent.keyDown(root, { key: "Home" });
-    expect(calls.at(-1)).toBe("set:item:1");
-
-    fireEvent.keyDown(root, { key: "End" });
-    expect(calls.at(-1)).toBe("set:item:9");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(calls.at(-1)).toBe("set:item:7");
-
-    fireEvent.keyDown(root, { key: "PageUp" });
-    expect(calls.at(-1)).toBe("set:item:3");
-
-    fireEvent.keyDown(root, { key: "Enter" });
-    expect(calls.at(-1)).toBe("activate");
-
-    fireEvent.keyDown(root, { key: "Escape" });
-    expect(calls.at(-1)).toBe("exit");
+describe("createDroppableCollection keyboard engine (DragManager seam)", () => {
+  it("registers a DragManager drop target for the collection element", () => {
+    const { state } = makeState();
+    const { descriptor, id } = mountHarness({ keys: [1, 2, 3], state });
+    expect(descriptor.element).toBe(document.getElementById(id));
+    expect(typeof descriptor.onKeyDown).toBe("function");
+    expect(typeof descriptor.onDropEnter).toBe("function");
   });
 
-  it("falls back to keyboard navigation delegate for page keys", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "item", key: 1, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+  it("enters at the root, then ArrowDown walks before/on drop positions across items", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
 
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-fallback") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(target, direction) {
-              if (target?.type !== "item") return null;
-              if (direction === "next") {
-                return { type: "item", key: Number(target.key) + 1, dropPosition: "on" };
-              }
-              return { type: "item", key: Number(target.key) - 1, dropPosition: "on" };
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-            getKeyPageBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyPageAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
+    descriptor.onDropEnter?.({}, DRAG);
+    expect(calls.at(-1)).toBe("root");
 
-      return (
-        <div
-          id="drop-root-fallback"
-          tabIndex={0}
-          data-testid="drop-root-fallback"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-fallback");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(calls.at(-1)).toBe("set:item:2");
-
-    fireEvent.keyDown(root, { key: "PageUp" });
-    expect(calls.at(-1)).toBe("set:item:1");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:1:before");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:1:on");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:2:before");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:2:on");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:before");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:on");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:after");
   });
 
-  it("moves PageUp from first item to root target when root is valid", () => {
-    let currentTarget: DropTarget | null = { type: "item", key: 1, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+  it("ArrowUp reverses the drop-position walk from the last item", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
 
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-pageup-first") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-            getKeyPageBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyPageAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
+    // Seat the current target on the last item's "after" position (End).
+    descriptor.onKeyDown?.(keyDown("End"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:after");
 
-      return (
-        <div
-          id="drop-root-pageup-first"
-          tabIndex={0}
-          data-testid="drop-root-pageup-first"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-pageup-first");
-
-    fireEvent.keyDown(root, { key: "PageUp" });
-    expect(currentTarget).toEqual({ type: "root" });
+    descriptor.onKeyDown?.(keyDown("ArrowUp"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:on");
+    descriptor.onKeyDown?.(keyDown("ArrowUp"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:before");
+    descriptor.onKeyDown?.(keyDown("ArrowUp"), DRAG);
+    expect(calls.at(-1)).toBe("item:2:on");
   });
 
-  it("moves PageDown from last item to after-last insertion target", () => {
-    let currentTarget: DropTarget | null = { type: "item", key: 3, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+  it("Home resets to the root; End jumps to the last item's after position", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
 
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-pagedown-last") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-            getKeyPageBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyPageAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
+    descriptor.onKeyDown?.(keyDown("Home"), DRAG);
+    expect(calls.at(-1)).toBe("root");
 
-      return (
-        <div
-          id="drop-root-pagedown-last"
-          tabIndex={0}
-          data-testid="drop-root-pagedown-last"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-pagedown-last");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(currentTarget).toEqual({ type: "item", key: 3, dropPosition: "after" });
+    descriptor.onKeyDown?.(keyDown("End"), DRAG);
+    expect(calls.at(-1)).toBe("item:3:after");
   });
 
-  it("ignores horizontal keys when keyboardDelegate does not provide horizontal getters", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-          return;
-        }
-        calls.push(`set:${target?.type ?? "null"}`);
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+  it("skips targets the state rejects via getDropOperation (nextValidTarget)", () => {
+    // Reject every drop position on item 1 — navigation should land on item 2.
+    const reject1: GetDropOperation = (t) =>
+      t.type === "item" && t.key === 1 ? "cancel" : "move";
+    const { state, calls } = makeState(reject1);
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
 
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-no-horizontal") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(_target, direction) {
-              if (direction === "next") {
-                return { type: "item", key: 1, dropPosition: "on" };
-              }
-              return { type: "item", key: 9, dropPosition: "on" };
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 9,
-            getKeyBelow: (key) => (key === 1 ? 2 : null),
-            getKeyAbove: (key) => (key === 2 ? 1 : null),
-          },
-        }),
-        state,
-      );
+    descriptor.onDropEnter?.({}, DRAG);
+    expect(calls.at(-1)).toBe("root");
 
-      return (
-        <div
-          id="drop-root-no-horizontal"
-          tabIndex={0}
-          data-testid="drop-root-no-horizontal"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-no-horizontal");
-
-    fireEvent.keyDown(root, { key: "ArrowRight" });
-    expect(calls).toHaveLength(0);
-
-    fireEvent.keyDown(root, { key: "ArrowLeft" });
-    expect(calls).toHaveLength(0);
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:1");
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:2:before");
   });
 
-  it("ignores vertical and boundary keys when keyboardDelegate methods are missing", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-          return;
-        }
-        calls.push(`set:${target?.type ?? "null"}`);
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-no-vertical") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(_target, direction) {
-              if (direction === "next") {
-                return { type: "item", key: 1, dropPosition: "on" };
-              }
-              return { type: "item", key: 9, dropPosition: "on" };
-            },
-          },
-          keyboardDelegate: {
-            getKeyRightOf: (key) => (key === 1 ? 2 : null),
-            getKeyLeftOf: (key) => (key === 2 ? 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-no-vertical"
-          tabIndex={0}
-          data-testid="drop-root-no-vertical"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-no-vertical");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    fireEvent.keyDown(root, { key: "ArrowUp" });
-    fireEvent.keyDown(root, { key: "Home" });
-    fireEvent.keyDown(root, { key: "End" });
-    expect(calls).toHaveLength(0);
-
-    fireEvent.keyDown(root, { key: "ArrowRight" });
-    expect(calls.at(-1)).toBe("set:item:1");
-  });
-
-  it("ignores page keys when keyboardDelegate page methods are missing", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "item", key: 1, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-no-page") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardPageNavigationTarget(target, direction) {
-              if (target?.type !== "item") return null;
-              return {
-                type: "item",
-                key: direction === "next" ? Number(target.key) + 1 : Number(target.key) - 1,
-                dropPosition: "on",
-              };
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-no-page"
-          tabIndex={0}
-          data-testid="drop-root-no-page"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-no-page");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(calls).toHaveLength(0);
-
-    fireEvent.keyDown(root, { key: "PageUp" });
-    expect(calls).toHaveLength(0);
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:2");
-  });
-
-  it("uses keyboardDelegate fallback when drop target delegate has no keyboard methods", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = null;
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        } else {
-          calls.push(`set:${target?.type ?? "null"}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(target: DropTarget) {
-        if (target.type === "item" && target.key === 2 && target.dropPosition === "on") {
-          return "cancel" as const;
-        }
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-kbd-fallback") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-            getKeyPageBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyPageAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-kbd-fallback"
-          tabIndex={0}
-          data-testid="drop-root-kbd-fallback"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-kbd-fallback");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:1:before");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(calls.at(-1)).toBe("set:item:2:before");
-
-    fireEvent.keyDown(root, { key: "End" });
-    expect(calls.at(-1)).toBe("set:item:3:after");
-  });
-
-  it("prefers boundary insertion targets for fallback start navigation", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        } else {
-          calls.push(`set:${target?.type ?? "null"}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-boundary-fallback") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-            getKeyPageBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyPageAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-boundary-fallback"
-          tabIndex={0}
-          data-testid="drop-root-boundary-fallback"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-boundary-fallback");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:1:before");
-
-    currentTarget = { type: "root" };
-    fireEvent.keyDown(root, { key: "ArrowUp" });
-    expect(calls.at(-1)).toBe("set:item:3:after");
-  });
-
-  it("falls back to keyboardDelegate when delegate keyboard method returns null", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "item", key: 1, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-kbd-null-fallback") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-kbd-null-fallback"
-          tabIndex={0}
-          data-testid="drop-root-kbd-null-fallback"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-kbd-null-fallback");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:2:on");
-  });
-
-  it("skips invalid intermediate keys in keyboardDelegate fallback traversal", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "item", key: 1, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(target: DropTarget) {
-        if (target.type === "item" && target.key === 2) {
-          return "cancel" as const;
-        }
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-kbd-skip-invalid") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-kbd-skip-invalid"
-          tabIndex={0}
-          data-testid="drop-root-kbd-skip-invalid"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-kbd-skip-invalid");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:3:on");
-  });
-
-  it("iteratively skips invalid keyboard targets until a valid target is found", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        } else {
-          calls.push(`set:${target?.type ?? "null"}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(target: DropTarget) {
-        if (target.type === "item" && (target.key === 1 || target.key === 2)) {
-          return "cancel" as const;
-        }
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-iterative") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(target, direction) {
-              if (direction !== "next") return null;
-              if (!target || target.type === "root") {
-                return { type: "item", key: 1, dropPosition: "on" };
-              }
-              if (target.type === "item" && target.key === 1) {
-                return { type: "item", key: 2, dropPosition: "on" };
-              }
-              if (target.type === "item" && target.key === 2) {
-                return { type: "item", key: 3, dropPosition: "on" };
-              }
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getKeyBelow: (key) => (key < 3 ? key + 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-iterative"
-          tabIndex={0}
-          data-testid="drop-root-iterative"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-iterative");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:3:on");
-  });
-
-  it("respects global allowed drop operations when validating keyboard targets", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    setGlobalAllowedDropOperations(DROP_OPERATION.copy);
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(
-        target: DropTarget,
-        _types: { has: (type: string) => boolean },
-        allowedOperations: Array<"copy" | "move" | "link">,
-      ) {
-        if (target.type !== "item") return "cancel" as const;
-        if (target.key === 1) {
-          return allowedOperations.includes("move") ? ("move" as const) : ("cancel" as const);
-        }
-        if (target.key === 2) {
-          return allowedOperations.includes("copy") ? ("copy" as const) : ("cancel" as const);
-        }
-        return "cancel" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-allowed-ops") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(target, direction) {
-              if (direction !== "next") return null;
-              if (!target || target.type === "root") {
-                return { type: "item", key: 1, dropPosition: "on" };
-              }
-              if (target.type === "item" && target.key === 1) {
-                return { type: "item", key: 2, dropPosition: "on" };
-              }
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getKeyBelow: (key) => (key < 2 ? key + 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-allowed-ops"
-          tabIndex={0}
-          data-testid="drop-root-allowed-ops"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-allowed-ops");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:2:on");
-  });
-
-  it("respects global dragging types when validating keyboard targets", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    setGlobalDraggingTypes(new Set(["application/json"]));
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(_target: DropTarget, types: { has: (type: string) => boolean }) {
-        return types.has("text/plain") ? ("move" as const) : ("cancel" as const);
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-drag-types") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(target, direction) {
-              if (direction !== "next") return null;
-              if (!target || target.type === "root") {
-                return { type: "item", key: 1, dropPosition: "on" };
-              }
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getKeyBelow: (key) => (key < 1 ? key + 1 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-drag-types"
-          tabIndex={0}
-          data-testid="drop-root-drag-types"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-drag-types");
-
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls).toHaveLength(0);
-
-    setGlobalDraggingTypes(new Set(["text/plain"]));
-    fireEvent.keyDown(root, { key: "ArrowDown" });
-    expect(calls.at(-1)).toBe("set:item:1:on");
-  });
-
-  it("falls back to step-wise scanning when page target is invalid", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "item", key: 1, dropPosition: "on" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(target: DropTarget) {
-        if (target.type !== "item") return "cancel" as const;
-        if (target.key === 3) return "move" as const;
-        return "cancel" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-page-scan") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardPageNavigationTarget(target, direction) {
-              if (target?.type === "item" && direction === "next") {
-                return { type: "item", key: 5, dropPosition: "on" };
-              }
-              return null;
-            },
-            getKeyboardNavigationTarget(target, direction) {
-              if (direction !== "next" || target?.type !== "item") return null;
-              const key = Number(target.key);
-              if (key >= 5) return { type: "item", key: 4, dropPosition: "on" };
-              if (key === 4) return { type: "item", key: 3, dropPosition: "on" };
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 5,
-            getKeyBelow: (key) => (key < 5 ? key + 1 : null),
-            getKeyAbove: (key) => (key > 1 ? key - 1 : null),
-            getKeyPageBelow: (key) => (key < 5 ? key + 4 : 5),
-            getKeyPageAbove: (key) => (key > 1 ? key - 4 : 1),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-page-scan"
-          tabIndex={0}
-          data-testid="drop-root-page-scan"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-page-scan");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(calls.at(-1)).toBe("set:item:3:on");
-  });
-
-  it("starts page-key navigation from boundaries when only boundary delegates are available", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = null;
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}:${target.dropPosition}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation(target: DropTarget) {
-        if (target.type !== "item") return "cancel" as const;
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-page-boundary-start") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-          },
-          keyboardDelegate: {
-            getFirstKey: () => 1,
-            getLastKey: () => 3,
-            getKeyPageBelow: (key) => (key < 3 ? key + 1 : 3),
-            getKeyPageAbove: (key) => (key > 1 ? key - 1 : 1),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-page-boundary-start"
-          tabIndex={0}
-          data-testid="drop-root-page-boundary-start"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-page-boundary-start");
-
-    fireEvent.keyDown(root, { key: "PageDown" });
-    expect(calls.at(-1)).toBe("set:item:1:before");
-  });
-
-  it("uses rtl-aware horizontal direction for delegate keyboard navigation", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-        } else {
-          calls.push(`set:${target?.type ?? "null"}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-rtl") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(_target, direction) {
-              if (direction === "next") {
-                return { type: "item", key: 2, dropPosition: "on" };
-              }
-              return { type: "item", key: 8, dropPosition: "on" };
-            },
-          },
-          keyboardDelegate: {
-            getKeyLeftOf: (key) => (key === 2 ? 1 : null),
-            getKeyRightOf: (key) => (key === 8 ? 9 : null),
-          },
-        }),
-        state,
-      );
-
-      return (
-        <div
-          id="drop-root-rtl"
-          dir="rtl"
-          tabIndex={0}
-          data-testid="drop-root-rtl"
-          {...collectionProps}
-        />
-      );
-    }
-
-    render(() => <TestComponent />);
-    const root = screen.getByTestId("drop-root-rtl");
-
-    fireEvent.keyDown(root, { key: "ArrowLeft" });
-    expect(calls.at(-1)).toBe("set:item:2");
-
-    fireEvent.keyDown(root, { key: "ArrowRight" });
-    expect(calls.at(-1)).toBe("set:item:8");
-  });
-
-  it("falls back to document direction when getComputedStyle is unavailable", () => {
-    const calls: string[] = [];
-    let currentTarget: DropTarget | null = { type: "root" };
-    const state = {
-      get target() {
-        return currentTarget;
-      },
-      get isDropTarget() {
-        return currentTarget != null;
-      },
-      get isDisabled() {
-        return false;
-      },
-      setTarget(target: DropTarget | null) {
-        currentTarget = target;
-        if (target?.type === "item") {
-          calls.push(`set:item:${String(target.key)}`);
-        } else {
-          calls.push(`set:${target?.type ?? "null"}`);
-        }
-      },
-      activateTarget() {},
-      exitTarget() {},
-      getDropOperation() {
-        return "move" as const;
-      },
-      enterTarget() {},
-      moveToTarget() {},
-      drop() {},
-      isAccepted() {
-        return true;
-      },
-      shouldAcceptItemDrop() {
-        return true;
-      },
-    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
-
-    const originalDir = document.dir;
-    const originalGetComputedStyle = window.getComputedStyle;
-    document.dir = "rtl";
-    Object.defineProperty(window, "getComputedStyle", {
-      configurable: true,
-      writable: true,
-      value: undefined,
+  it("horizontal ArrowRight/ArrowLeft navigate when the delegate provides horizontal getters", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({
+      keys: [1, 2, 3],
+      state,
+      delegateOptions: { horizontal: true },
     });
 
-    function TestComponent() {
-      const { collectionProps } = createDroppableCollection(
-        () => ({
-          ref: () => document.getElementById("drop-root-rtl-fallback") as HTMLElement | null,
-          dropTargetDelegate: {
-            getDropTargetFromPoint() {
-              return null;
-            },
-            getKeyboardNavigationTarget(_target, direction) {
-              if (direction === "next") {
-                return { type: "item", key: 2, dropPosition: "on" };
-              }
-              return { type: "item", key: 8, dropPosition: "on" };
-            },
-          },
-          keyboardDelegate: {
-            getKeyLeftOf: (key) => (key === 2 ? 1 : null),
-            getKeyRightOf: (key) => (key === 8 ? 9 : null),
-          },
-        }),
-        state,
-      );
+    descriptor.onDropEnter?.({}, DRAG);
+    expect(calls.at(-1)).toBe("root");
 
-      return (
-        <div
-          id="drop-root-rtl-fallback"
-          tabIndex={0}
-          data-testid="drop-root-rtl-fallback"
-          {...collectionProps}
-        />
-      );
-    }
+    descriptor.onKeyDown?.(keyDown("ArrowRight"), DRAG);
+    expect(calls.at(-1)).toBe("item:1:before");
+    descriptor.onKeyDown?.(keyDown("ArrowRight"), DRAG);
+    expect(calls.at(-1)).toBe("item:1:on");
 
-    try {
-      render(() => <TestComponent />);
-      const root = screen.getByTestId("drop-root-rtl-fallback");
-
-      fireEvent.keyDown(root, { key: "ArrowLeft" });
-      expect(calls.at(-1)).toBe("set:item:2");
-
-      fireEvent.keyDown(root, { key: "ArrowRight" });
-      expect(calls.at(-1)).toBe("set:item:8");
-    } finally {
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: originalGetComputedStyle,
-      });
-      document.dir = originalDir;
-    }
+    descriptor.onKeyDown?.(keyDown("ArrowLeft"), DRAG);
+    expect(calls.at(-1)).toBe("item:1:before");
   });
 
+  it("ignores horizontal keys when the delegate provides no horizontal getters", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
+
+    descriptor.onDropEnter?.({}, DRAG);
+    const afterEnter = calls.length;
+
+    descriptor.onKeyDown?.(keyDown("ArrowRight"), DRAG);
+    descriptor.onKeyDown?.(keyDown("ArrowLeft"), DRAG);
+    expect(calls.length).toBe(afterEnter);
+  });
+
+  it("ignores vertical keys when the delegate omits getKeyBelow/getKeyAbove", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({
+      keys: [1, 2, 3],
+      state,
+      delegateOptions: { omitVertical: true },
+    });
+
+    descriptor.onDropEnter?.({}, DRAG);
+    const afterEnter = calls.length;
+
+    descriptor.onKeyDown?.(keyDown("ArrowDown"), DRAG);
+    descriptor.onKeyDown?.(keyDown("ArrowUp"), DRAG);
+    expect(calls.length).toBe(afterEnter);
+  });
+
+  it("PageDown/PageUp move by the delegate's page getters", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
+
+    descriptor.onDropEnter?.({}, DRAG);
+    expect(calls.at(-1)).toBe("root");
+
+    // From the root, PageDown targets the item a page below the first key.
+    descriptor.onKeyDown?.(keyDown("PageDown"), DRAG);
+    expect(calls.at(-1)).toBe("item:2:after");
+
+    descriptor.onKeyDown?.(keyDown("PageUp"), DRAG);
+    expect(calls.at(-1)).toBe("item:1:after");
+  });
+
+  it("ignores page keys when the delegate omits page getters", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({
+      keys: [1, 2, 3],
+      state,
+      delegateOptions: { omitPage: true },
+    });
+
+    descriptor.onDropEnter?.({}, DRAG);
+    const afterEnter = calls.length;
+
+    descriptor.onKeyDown?.(keyDown("PageDown"), DRAG);
+    descriptor.onKeyDown?.(keyDown("PageUp"), DRAG);
+    expect(calls.length).toBe(afterEnter);
+  });
+
+  it("onDropExit clears the current target", () => {
+    const { state, calls } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
+
+    descriptor.onDropEnter?.({}, DRAG);
+    expect(state.target).not.toBeNull();
+
+    descriptor.onDropExit?.({});
+    expect(state.target).toBeNull();
+    expect(calls.at(-1)).toBe("null");
+  });
+
+  it("onDropTargetEnter sets the pointer-resolved target directly", () => {
+    const { state } = makeState();
+    const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
+
+    const target: DropTarget = { type: "item", key: 2, dropPosition: "on" };
+    descriptor.onDropTargetEnter?.(target);
+    expect(state.target).toEqual(target);
+  });
+
+  it("forwards onDropActivate only for item on-targets", () => {
+    const onDropActivate = vi.fn();
+    const { state } = makeState();
+    const { descriptor } = mountHarness({
+      keys: [1, 2, 3],
+      state,
+      extra: { onDropActivate },
+    });
+
+    descriptor.onDropActivate?.({ x: 1, y: 2 }, { type: "item", key: 2, dropPosition: "before" });
+    expect(onDropActivate).not.toHaveBeenCalled();
+
+    descriptor.onDropActivate?.({ x: 3, y: 4 }, { type: "item", key: 2, dropPosition: "on" });
+    expect(onDropActivate).toHaveBeenCalledTimes(1);
+    expect(onDropActivate).toHaveBeenCalledWith({
+      target: { type: "item", key: 2, dropPosition: "on" },
+      x: 3,
+      y: 4,
+    });
+  });
+});
+
+describe("createDroppableCollection native pointer drop", () => {
   it("passes internal dragging keys to onMove for on-item drops", () => {
     const onMoveCalls: Array<Set<string | number>> = [];
     const dropTarget: DropTarget = { type: "item", key: "b", dropPosition: "on" };

@@ -6,7 +6,7 @@
  */
 
 import { createMemo, type Accessor } from "solid-js";
-import { createDragState } from "@proyecto-viviana/solid-stately";
+import { createDragState, type DropOperation } from "@proyecto-viviana/solid-stately";
 import type { AriaDragOptions, DragAria } from "./types";
 import {
   getTypes,
@@ -19,6 +19,9 @@ import {
   getGlobalDropEffect,
 } from "./utils";
 import { setGlobalDraggingTypes } from "./createDraggableCollection";
+import { beginDragging } from "./DragManager";
+import { createStringFormatter } from "../i18n/createStringFormatter";
+import { dndIntlStrings } from "./intl";
 
 /**
  * Creates ARIA props for a draggable element.
@@ -39,6 +42,8 @@ export function createDrag(props: Accessor<AriaDragOptions>): DragAria {
     hasDragButton: getProps().hasDragButton,
     preview: getProps().preview,
   }));
+
+  const stringFormatter = createStringFormatter(dndIntlStrings);
 
   let lastX = 0;
   let lastY = 0;
@@ -145,14 +150,16 @@ export function createDrag(props: Accessor<AriaDragOptions>): DragAria {
     if (e.key === "Enter" && e.target === e.currentTarget) {
       e.preventDefault();
       e.stopPropagation();
-      // Would initiate keyboard-based drag mode
-      // This is a simplified version - full implementation needs DragManager
-      const rect = (e.target as HTMLElement).getBoundingClientRect();
+
+      const el = e.currentTarget as HTMLElement;
+      const rect = el.getBoundingClientRect();
       state.startDrag(rect.x + rect.width / 2, rect.y + rect.height / 2);
+
       const items = state.getItems();
       setGlobalDraggingTypes(getTypes(items));
-      let allowed = DROP_OPERATION.all;
+
       const allowedOps = state.getAllowedDropOperations();
+      let allowed = DROP_OPERATION.all;
       if (allowedOps.length > 0) {
         allowed = DROP_OPERATION.none;
         for (const op of allowedOps) {
@@ -160,6 +167,25 @@ export function createDrag(props: Accessor<AriaDragOptions>): DragAria {
         }
       }
       setGlobalAllowedDropOperations(allowed);
+
+      // Hand control to the keyboard DragManager session: it installs the
+      // document-capture listeners that drive Tab-cycling across drop targets,
+      // Arrow navigation within a target, and Enter/Escape drop/cancel.
+      beginDragging(
+        {
+          element: el,
+          items,
+          allowedDropOperations:
+            allowedOps.length > 0 ? allowedOps : (["move", "copy", "link"] as DropOperation[]),
+          onDragEnd: (ev) => {
+            state.endDrag(ev.x, ev.y, ev.dropOperation);
+            setGlobalAllowedDropOperations(DROP_OPERATION.none);
+            setGlobalDraggingTypes(new Set());
+            setGlobalDropEffect(undefined);
+          },
+        },
+        stringFormatter(),
+      );
     }
   };
 
