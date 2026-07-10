@@ -9,6 +9,8 @@ import {
   SearchField as AriaSearchField,
   Input as AriaInput,
   Toolbar as AriaToolbar,
+  Virtualizer as AriaVirtualizer,
+  ListLayout as AriaListLayout,
   useFilter as useAriaFilter,
 } from "react-aria-components";
 // ActionGroup has no react-aria-components component and S2 1.5.1 removed the
@@ -353,6 +355,14 @@ import {
   normalizeListBoxDemoProps,
   serializeListBoxDemoProps,
 } from "@comparison/data/listbox-demo";
+import {
+  virtualizerDemoItems,
+  virtualizerDemoPropsFromWindow,
+  normalizeVirtualizerDemoProps,
+  serializeVirtualizerDemoProps,
+  virtualizerRowHeight,
+  virtualizerViewportHeight,
+} from "@comparison/data/virtualizer-demo";
 import {
   actionGroupDemoItems,
   actionGroupDemoPropsFromWindow,
@@ -891,6 +901,7 @@ export const reactStyledFixtures = {
   link: () => jsx(ReactLinkDemo, {}),
   listview: () => jsx(ReactListViewDemo, {}),
   listbox: () => jsx(ReactListBoxDemo, {}),
+  virtualizer: () => jsx(ReactVirtualizerDemo, {}),
   autocomplete: () => jsx(ReactAutocompleteDemo, {}),
   gridlist: () => jsx(ReactGridListDemo, {}),
   actiongroup: () => jsx(ReactActionGroupDemo, {}),
@@ -1432,6 +1443,69 @@ function ReactListBoxDemo() {
           children: listBoxDemoItems.map((item) =>
             jsx(AriaListBoxItem, { id: item.id, children: item.label }, item.id),
           ),
+        }),
+        jsx("button", { children: "After" }),
+      ],
+    }),
+    colorScheme,
+  );
+}
+
+// Virtualizer oracle: RAC's own `Virtualizer` + `ListLayout` wrapping a base
+// ListBox. `rowSize` on the layout is aligned to the Solid port's `itemSize`,
+// and every ListBoxItem is forced to the shared row height, so the two stacks
+// present an identical scroll geometry (content height = itemCount × rowSize).
+function ReactVirtualizerDemo() {
+  const [demoProps, setDemoProps] = useState(virtualizerDemoPropsFromWindow);
+  const colorScheme = useComparisonResolvedTheme();
+
+  useEffect(() => {
+    const handleControlsChange = (event) => {
+      if (event instanceof CustomEvent && event.detail?.component === "virtualizer") {
+        setDemoProps(normalizeVirtualizerDemoProps(event.detail.props ?? {}));
+      }
+    };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    return () => window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+  }, []);
+
+  return renderReactSpectrumReference(
+    jsxs(Fragment, {
+      children: [
+        jsx("button", { children: "Before" }),
+        jsx(AriaVirtualizer, {
+          layout: AriaListLayout,
+          layoutOptions: { rowSize: virtualizerRowHeight },
+          children: jsx(AriaListBox, {
+            "aria-label": "Files",
+            selectionMode: demoProps.selectionMode,
+            "data-comparison-control-root": "virtualizer",
+            "data-comparison-control-props": serializeVirtualizerDemoProps(demoProps),
+            style: {
+              height: virtualizerViewportHeight,
+              width: 240,
+              display: "block",
+              padding: 0,
+              margin: 0,
+              overflow: "auto",
+              boxSizing: "border-box",
+            },
+            children: virtualizerDemoItems.map((item) =>
+              jsx(
+                AriaListBoxItem,
+                {
+                  id: item.id,
+                  style: {
+                    height: "100%",
+                    minHeight: 0,
+                    boxSizing: "border-box",
+                  },
+                  children: item.label,
+                },
+                item.id,
+              ),
+            ),
+          }),
         }),
         jsx("button", { children: "After" }),
       ],

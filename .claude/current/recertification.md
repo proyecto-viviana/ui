@@ -577,6 +577,65 @@ March order (dependency/leverage; within a tier, top to bottom):
   now asserts on the `stepStateText` render prop the headless exposes instead of a
   name it never sets); `solid-stately` **887 pass**; workspace typecheck clean.
   **NEXT: Virtualizer (via its hosts)**, then DnD (via its hosts).
+
+  **Virtualizer ✓ certified 2026-07-09 (CP9.56)** — SEVENTEENTH Tier-4 unit;
+  virtualization certified through its host (a scrollable single-selection
+  `ListBox` fed a 60-row collection) rather than in isolation, because our
+  `Virtualizer` is not a standalone component with an ARIA contract — it is a
+  windowing renderer a collection host mounts. Per `virtualizer-decomposition`
+  the DOM windowing STRUCTURE is a known, scoped divergence — RAC positions rows
+  via absolute layout rects inside one full-height scroller where the ListBox
+  element *is* the scroll container; our port computes a 1D scroll axis, slices
+  the collection, and pads with `data-virtualizer-spacer` top/bottom divs inside a
+  wrapping `[data-virtualizer]` scroll container — so the cert deliberately does
+  **not** diff DOM structure. The certifiable observable is the *logical* windowed
+  behavior: at each scroll offset, which `[data-key]` rows are majority-visible,
+  their **windowed AX** (`aria-posinset`/`aria-setsize`), and whether keyboard
+  focus survives row recycling. A new **D-scroll-window** driver
+  (`e2e/drivers/scroll-window.ts`, `registerScrollWindowDriver`) locates each
+  stack's real scroll container in-page (walks self→ancestors→descendants for the
+  first `scrollHeight − clientHeight > 1` element with `overflow-y:auto|scroll`,
+  which transparently absorbs the spacer-vs-rect structural difference), sets
+  `scrollTop` to fixed offsets `[0, 800, 1600, 2160]`, and captures the
+  majority-visible option set (`overlap > rect.height/2`) with per-row
+  `{label, posinset, setsize, selected}`. Two walks per case: **visible window +
+  windowed AX** (cross-diff the RAC-vs-port window at every offset; per-stack
+  assert `rendered < itemCount` to prove windowing actually happened) and **focus
+  retention across recycling** (Tab in from a Before button, scroll to the max
+  offset and back to 0, cross-diff the active-row label sequence). Paint/motion
+  scoped out (the host ListBox already certified its own D1/D3/D5/D6/D7/D8 at
+  CP9.41; this unit adds only the scroll-window axis). The browser driver caught
+  **one faithful port divergence**: under virtualization the DOM holds only the
+  windowed rows, so `@react-aria/listbox` `useOption` publishes each option's
+  absolute `aria-posinset = item.index + 1` and `aria-setsize =
+  getItemCount(collection)` **only when `isVirtualized`** (a flag that flows
+  ListBox→option through the list data context) — assistive tech can no longer
+  derive set position from the incomplete DOM. Our `createOption` emitted neither.
+  Fixed faithfully end-to-end: ported the missing `getItemCount` helper into
+  `solid-stately` (WeakMap-cached, recurses sections, counts `type === "item"`,
+  mirroring react-stately `getItemCount`); wired `isVirtualized` from the
+  `Virtualizer`'s `CollectionRendererContext` through `ListBox` →
+  `createListBox` (stored into the shared `listBoxData`) → `createOption`; and
+  emitted `aria-posinset`/`aria-setsize` in `createOption.optionProps` gated on
+  `isVirtualized()`. Gotcha reused: the Solid demo fixture crashed twice inside
+  the comparison `hc` wrapper — a bare inner `hc(ListBox, …)` child tripped the
+  render-prop guard (fix: wrap the child in an array), and passing the
+  `ListLayout` *class* as a value prop made `unwrapAccessorProps` invoke the
+  constructor without `new` ("Class constructor cannot be invoked without 'new'")
+  (fix: pass `layout` as a getter — getters are skipped by `unwrapAccessorProps`).
+  Guard units are meaningful here because posinset/setsize is rendered ARIA, not
+  real DOM focus, so jsdom verifies it faithfully. Verification: Virtualizer cert
+  e2e **2/2 green** (1 window walk + 1 focus-retention walk); new `createOption`
+  posinset/setsize + parent-inheritance guards and `getItemCount` collection
+  guards green (`createListBox` + `collections` **112 pass** together); the three
+  changed packages (`solidaria`, `solid-stately`, `solidaria-components`) and the
+  comparison app typecheck clean (6 pre-existing demo-codec `params.get()`
+  string→union errors in `actiongroup`/`steplist`/`toolbar-demo.ts` are unrelated);
+  full certified suite **1612 pass / 6 skip / 0 fail** — no regression. (Two
+  pre-existing unit failures — a stale TreeView chevron-`aria-hidden` snapshot from
+  CP9.54's `regression.test.tsx` and 3 `createTree.test.ts` failures — were
+  confirmed identical on the stashed clean tree, i.e. not introduced here.)
+  **NEXT: DnD (via its hosts).**
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor

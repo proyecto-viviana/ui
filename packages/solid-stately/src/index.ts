@@ -50,6 +50,7 @@ export {
   type MultipleSelection,
   ListCollection,
   createListCollection,
+  getItemCount,
   createSelectionState,
   type SelectionStateProps,
   type SelectionState,

@@ -9,7 +9,7 @@ import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { getListBoxData } from "./createListBox";
-import type { ListState, Key } from "@proyecto-viviana/solid-stately";
+import { getItemCount, type ListState, type Key } from "@proyecto-viviana/solid-stately";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 
 export interface AriaOptionProps {
@@ -164,6 +164,19 @@ export function createOption<T>(
       const selectionMode = state.selectionMode();
       const ariaLabel = getProps()["aria-label"];
 
+      // When the listbox is virtualized the DOM only holds the windowed rows, so
+      // (mirroring @react-aria/listbox useOption) publish the item's absolute
+      // position in the full collection for assistive tech. Only under
+      // virtualization — an un-windowed listbox exposes every row and the browser
+      // derives posinset/setsize itself.
+      let ariaPosInSet: number | undefined;
+      let ariaSetSize: number | undefined;
+      if (isVirtualized()) {
+        const index = Number(state.collection().getItem(key)?.index);
+        ariaPosInSet = Number.isNaN(index) ? undefined : index + 1;
+        ariaSetSize = getItemCount(state.collection());
+      }
+
       return mergeProps(
         selectableItem.itemProps as Record<string, unknown>,
         hoverProps as Record<string, unknown>,
@@ -176,6 +189,8 @@ export function createOption<T>(
           "aria-label": ariaLabel,
           "aria-labelledby": !ariaLabel ? labelId : undefined,
           "aria-describedby": descriptionId,
+          "aria-posinset": ariaPosInSet,
+          "aria-setsize": ariaSetSize,
           "data-selected": selectableItem.isSelected() || undefined,
           "data-focused": selectableItem.isFocused() || undefined,
           "data-focus-visible": (selectableItem.isFocused() && isFocusVisible()) || undefined,

@@ -95,6 +95,7 @@ export const reactSpectrumCatalogue = [
   component("Toolbar"),
   component("Tooltip"),
   component("TreeView"),
+  component("Virtualizer"),
 ] as const satisfies readonly ReactSpectrumCatalogueEntry[];
 
 export type ReactSpectrumComponentSlug = (typeof reactSpectrumCatalogue)[number]["slug"];

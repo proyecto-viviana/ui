@@ -47,6 +47,37 @@ export function getLastItem<T>(iterable: Iterable<T>): T | undefined {
   return lastItem;
 }
 
+const itemCountCache = new WeakMap<Collection<unknown>, number>();
+
+/**
+ * Counts the item nodes (recursing into sections, ignoring section headers and
+ * other non-item nodes) in a collection. Faithful port of
+ * @react-stately/collections `getItemCount`; used by createOption to populate
+ * `aria-setsize` when the listbox is virtualized. Cached per (immutable)
+ * collection identity, exactly like upstream.
+ */
+export function getItemCount<T>(collection: Collection<T>): number {
+  const cached = itemCountCache.get(collection);
+  if (cached != null) {
+    return cached;
+  }
+
+  let counter = 0;
+  const countItems = (items: Iterable<CollectionNode<T>>) => {
+    for (const item of items) {
+      if (item.type === "section") {
+        countItems(getChildNodes(item, collection));
+      } else if (item.type === "item") {
+        counter++;
+      }
+    }
+  };
+
+  countItems(collection);
+  itemCountCache.set(collection, counter);
+  return counter;
+}
+
 export function compareNodeOrder<T>(
   collection: Collection<T>,
   a: CollectionNode<T>,

@@ -996,6 +996,43 @@ describe("createOption", () => {
         dispose();
       });
     });
+
+    it("omits aria-posinset/aria-setsize when not virtualized", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        const { optionProps } = createOption({ key: "c" }, state);
+
+        // Un-windowed listbox: the full DOM is present, so the browser derives
+        // set position itself (mirrors @react-aria/listbox useOption).
+        expect(optionProps["aria-posinset"]).toBeUndefined();
+        expect(optionProps["aria-setsize"]).toBeUndefined();
+        dispose();
+      });
+    });
+
+    it("sets aria-posinset/aria-setsize when virtualized (option prop)", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        // "c" is the 3rd of 5 items → posinset 3, setsize 5.
+        const { optionProps } = createOption({ key: "c", isVirtualized: true }, state);
+
+        expect(optionProps["aria-posinset"]).toBe(3);
+        expect(optionProps["aria-setsize"]).toBe(5);
+        dispose();
+      });
+    });
+
+    it("inherits virtualization from parent listbox metadata", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState();
+        createListBox({ isVirtualized: true }, state);
+        const { optionProps } = createOption({ key: "a" }, state);
+
+        expect(optionProps["aria-posinset"]).toBe(1);
+        expect(optionProps["aria-setsize"]).toBe(5);
+        dispose();
+      });
+    });
   });
 
   describe("state tracking", () => {

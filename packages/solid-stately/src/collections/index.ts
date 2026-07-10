@@ -21,6 +21,7 @@ export {
   getFirstItem,
   getNthItem,
   getLastItem,
+  getItemCount,
   compareNodeOrder,
 } from "./getChildNodes";
 

@@ -312,9 +312,16 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   };
 
   const locale = useLocale();
+  // A parent Virtualizer publishes `isVirtualized` through the collection
+  // renderer context; the base ListBox forwards it into createListBox so each
+  // option emits aria-posinset/aria-setsize for the windowed (incomplete) DOM.
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const listBoxAria = createListBox(
     {
       ...ariaProps,
+      get isVirtualized() {
+        return parentCollectionRenderer?.isVirtualized ?? ariaProps.isVirtualized;
+      },
       // Under Autocomplete, the input owns the collection's id (its
       // aria-controls target), accessible name, and virtual-focus/type-ahead
       // config; prefer the bridged values over any locally-passed props.
@@ -467,7 +474,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   }
 
   const isEmpty = () => stateProps.items.length === 0;
-  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const getItemNodes = createMemo(() =>
     Array.from(state.collection()).filter((node) => node.type === "item"),
   );

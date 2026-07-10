@@ -9,6 +9,7 @@ import {
   createListCollection,
   createListState,
   createSelectionState,
+  getItemCount,
   useMultipleSelectionState,
   useMenuTriggerState,
   createMenuState,
@@ -97,6 +98,38 @@ describe("ListCollection", () => {
 
     expect(collection.getFirstKey()).toBe(0);
     expect(collection.getLastKey()).toBe(2);
+  });
+});
+
+// ============================================
+// getItemCount tests
+// ============================================
+describe("getItemCount", () => {
+  it("counts the item nodes in a flat collection", () => {
+    const collection = createListCollection(
+      [
+        { key: "a", label: "Apple" },
+        { key: "b", label: "Banana" },
+        { key: "c", label: "Cherry" },
+      ],
+      { getKey: (item) => item.key },
+    );
+
+    expect(getItemCount(collection)).toBe(3);
+  });
+
+  it("caches the count per collection identity", () => {
+    const collection = createListCollection(["one", "two"]);
+
+    // Second call returns the cached value (same immutable collection).
+    expect(getItemCount(collection)).toBe(2);
+    expect(getItemCount(collection)).toBe(2);
+  });
+
+  it("returns zero for an empty collection", () => {
+    const collection = createListCollection<string>([]);
+
+    expect(getItemCount(collection)).toBe(0);
   });
 });
 

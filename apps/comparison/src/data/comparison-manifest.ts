@@ -554,6 +554,21 @@ const entryOverrides: Record<string, ComparisonEntry> = {
     docsUrl: "https://react-spectrum.adobe.com/react-aria/ListBox.html",
   },
 
+  virtualizer: {
+    ...styledLiveOfficialEntry({
+      slug: "virtualizer",
+      title: "Virtualizer",
+      category: "Components",
+      summary:
+        "Fixed-height virtualized listbox mounted on both stacks, windowing a 60-item collection so only the visible rows render, with matching scroll geometry and focus retention across recycling.",
+      styledSummary:
+        "react-aria-components Virtualizer + ListLayout vs Solid solidaria-components Virtualizer + ListLayout.",
+      styledNote:
+        "S2 keeps its Virtualizer private (no public styled export), so the React oracle is react-aria-components' own Virtualizer + ListLayout wrapping a base ListBox — the direct upstream of the Solid port. RAC positions rows via absolute layout rects; the Solid port windows by slicing the collection and padding with spacer divs, so the certifiable contract is the scroll-window behavior (visible key-set + scroll extent + focus survival), not the internal DOM windowing structure.",
+    }),
+    docsUrl: "https://react-spectrum.adobe.com/react-aria/Virtualizer.html",
+  },
+
   gridlist: {
     ...styledLiveOfficialEntry({
       slug: "gridlist",
