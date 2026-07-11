@@ -11,6 +11,8 @@ export interface DateRangePickerFieldContextValue {
   aria: {
     labelProps: Record<string, unknown>;
     inputProps: Record<string, unknown>;
+    /** Optional hidden validation <input> props (unused by the range fields). */
+    hiddenInputProps?: Record<string, unknown>;
     descriptionProps: Record<string, unknown>;
     errorMessageProps: Record<string, unknown>;
   };

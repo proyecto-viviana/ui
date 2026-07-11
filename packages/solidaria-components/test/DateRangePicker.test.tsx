@@ -372,16 +372,16 @@ describe("DateRangePicker", () => {
 
     const startInput = screen.getByTestId("start-input");
     const endInput = screen.getByTestId("end-input");
-    expect(within(startInput).getByRole("spinbutton", { name: "Month" })).toHaveAttribute(
+    expect(within(startInput).getByRole("spinbutton", { name: "month" })).toHaveAttribute(
       "aria-valuenow",
       "6",
     );
-    expect(within(endInput).getByRole("spinbutton", { name: "Day" })).toHaveAttribute(
+    expect(within(endInput).getByRole("spinbutton", { name: "day" })).toHaveAttribute(
       "aria-valuenow",
       "7",
     );
 
-    fireEvent.keyDown(within(startInput).getByRole("spinbutton", { name: "Day" }), {
+    fireEvent.keyDown(within(startInput).getByRole("spinbutton", { name: "day" }), {
       key: "ArrowUp",
     });
 
@@ -412,7 +412,7 @@ describe("DateRangePicker", () => {
     await waitForHydration();
 
     const startInput = screen.getByTestId("start-input");
-    const startHour = within(startInput).getByRole("spinbutton", { name: "Hour" });
+    const startHour = within(startInput).getByRole("spinbutton", { name: "hour" });
     expect(startHour).toHaveAttribute("aria-valuenow", "8");
 
     fireEvent.keyDown(startHour, { key: "ArrowUp" });

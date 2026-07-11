@@ -1,5 +1,15 @@
 // Date Field
-export { createDateField, type AriaDateFieldProps, type DateFieldAria } from "./createDateField";
+export {
+  createDateField,
+  hookData,
+  roleSymbol,
+  focusManagerSymbol,
+  type AriaDateFieldProps,
+  type DateFieldAria,
+} from "./createDateField";
+
+// Display names (localized date-field segment names)
+export { createDisplayNames, type DisplayNames } from "./createDisplayNames";
 
 // Date Segment
 export {
@@ -27,11 +37,7 @@ export {
 } from "./createDatePicker";
 
 // Date Picker Group
-export {
-  createDatePickerGroup,
-  type AriaDatePickerGroupProps,
-  type DatePickerGroupAria,
-} from "./createDatePickerGroup";
+export { createDatePickerGroup, type DatePickerGroupState } from "./createDatePickerGroup";
 
 // Date Range Picker
 export {

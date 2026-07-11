@@ -1,149 +1,155 @@
 /**
  * createDatePickerGroup hook for Solidaria
  *
- * Provides keyboard and pointer behavior for the date picker field group.
- * Based on @react-aria/datepicker useDatePickerGroup
+ * Provides keyboard (arrow navigation between segments) and pointer (focus the
+ * last non-placeholder segment on press) behavior for the date field group.
+ * Faithful port of @react-aria/datepicker `useDatePickerGroup`: LTR arrow
+ * navigation goes through the focus manager, RTL uses geometric segment lookup,
+ * and alt+ArrowDown/Up opens the popover only when the state exposes `setOpen`
+ * (i.e. a date picker, never a standalone field).
  */
 
-import { createMemo } from "solid-js";
-import { type MaybeAccessor, access } from "../utils/reactivity";
+import { createMemo, type Accessor } from "solid-js";
 import { mergeProps } from "../utils/mergeProps";
 import { useLocale } from "../i18n";
 import { createPress } from "../interactions/createPress";
+import { createFocusManager } from "../focus/FocusScope";
+import { getFocusableTreeWalker } from "../utils/dom";
 import { nodeContains, getEventTarget } from "../utils";
-import { focusSafely } from "../utils/focus";
 
-export interface AriaDatePickerGroupProps {
-  isDisabled?: boolean;
+export interface DatePickerGroupState {
+  setOpen?: (isOpen: boolean) => void;
 }
 
-export interface DatePickerGroupAria {
-  groupProps: Record<string, unknown>;
-}
-
+/**
+ * Provides keyboard and pointer behavior for the date field/picker segment group.
+ */
 export function createDatePickerGroup(
-  props: MaybeAccessor<AriaDatePickerGroupProps>,
-  state: { setOpen: (isOpen: boolean) => void; isOpen: boolean; isDisabled: () => boolean },
+  state: DatePickerGroupState,
   ref: () => HTMLElement | null,
   disableArrowNavigation?: boolean,
-): DatePickerGroupAria {
-  const locale = useLocale();
-  const resolvedProps = createMemo(() => access(props));
+): Accessor<Record<string, unknown>> {
+  const localeInfo = useLocale();
+  const focusManager = createFocusManager(ref);
+
+  // Geometric segment lookup for RTL, where DOM order does not match visual order.
+  const findNextSegment = (group: HTMLElement, fromX: number, direction: number): HTMLElement | null => {
+    const walker = getFocusableTreeWalker(group, { tabbable: true });
+    let node = walker.nextNode() as HTMLElement | null;
+    let closest: HTMLElement | null = null;
+    let closestDistance = Infinity;
+    while (node) {
+      const x = node.getBoundingClientRect().left;
+      const distance = x - fromX;
+      const absoluteDistance = Math.abs(distance);
+      if (Math.sign(distance) === direction && absoluteDistance < closestDistance) {
+        closest = node;
+        closestDistance = absoluteDistance;
+      }
+      node = walker.nextNode() as HTMLElement | null;
+    }
+    return closest;
+  };
 
   const onKeyDown = (e: KeyboardEvent) => {
     if (!nodeContains(e.currentTarget as Node | null, getEventTarget(e) as Node | null)) {
       return;
     }
-
-    // Open the popover on alt + arrow down/up
-    if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+    // Open the popover on alt + arrow down (date pickers only).
+    if (e.altKey && (e.key === "ArrowDown" || e.key === "ArrowUp") && "setOpen" in state) {
       e.preventDefault();
       e.stopPropagation();
-      state.setOpen(true);
+      state.setOpen?.(true);
+    }
+    if (disableArrowNavigation) {
       return;
     }
-
-    if (disableArrowNavigation) return;
-
-    const root = ref();
-    if (!root) return;
-
-    const segments = Array.from(root.querySelectorAll('[role="spinbutton"]')) as HTMLElement[];
-    if (segments.length === 0) return;
-
-    const activeElement = root.ownerDocument.activeElement;
-    let currentIndex = -1;
-    if (activeElement) {
-      currentIndex = segments.indexOf(activeElement as HTMLElement);
-    }
-
-    const direction = locale().direction;
-
+    const direction = localeInfo().direction;
     switch (e.key) {
       case "ArrowLeft": {
         e.preventDefault();
         e.stopPropagation();
+        const root = ref();
         if (direction === "rtl") {
-          // geometric fallback: in RTL, left arrow moves toward the end (next)
-          const nextIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
-          if (nextIndex < segments.length) {
-            focusSafely(segments[nextIndex]);
+          if (root) {
+            const target = getEventTarget(e) as HTMLElement;
+            const prev = findNextSegment(root, target.getBoundingClientRect().left, -1);
+            prev?.focus();
           }
         } else {
-          const prevIndex = currentIndex >= 0 ? currentIndex - 1 : segments.length - 1;
-          if (prevIndex >= 0) {
-            focusSafely(segments[prevIndex]);
-          }
+          focusManager.focusPrevious();
         }
         break;
       }
       case "ArrowRight": {
         e.preventDefault();
         e.stopPropagation();
+        const root = ref();
         if (direction === "rtl") {
-          // geometric fallback: in RTL, right arrow moves toward the start (previous)
-          const prevIndex = currentIndex >= 0 ? currentIndex - 1 : segments.length - 1;
-          if (prevIndex >= 0) {
-            focusSafely(segments[prevIndex]);
+          if (root) {
+            const target = getEventTarget(e) as HTMLElement;
+            const next = findNextSegment(root, target.getBoundingClientRect().left, 1);
+            next?.focus();
           }
         } else {
-          const nextIndex = currentIndex >= 0 ? currentIndex + 1 : 0;
-          if (nextIndex < segments.length) {
-            focusSafely(segments[nextIndex]);
-          }
+          focusManager.focusNext();
         }
         break;
       }
     }
   };
 
-  const focusLast = (event?: Event) => {
+  // Focus the last non-placeholder segment on press within the field.
+  const focusLast = () => {
     const root = ref();
-    if (!root) return;
-
-    const target = event ? getEventTarget(event) : null;
-
-    const segments = Array.from(root.querySelectorAll('[role="spinbutton"]')) as HTMLElement[];
-    if (segments.length === 0) return;
-
-    let startIndex = segments.length - 1;
+    if (!root) {
+      return;
+    }
+    // Try to find the segment prior to the element that was clicked on.
+    let target = (typeof window !== "undefined" ? (window.event as Event | undefined)?.target : null) as
+      | HTMLElement
+      | null;
+    const walker = getFocusableTreeWalker(root, { tabbable: true });
     if (target) {
-      const targetIndex = segments.indexOf(target as HTMLElement);
-      if (targetIndex >= 0) {
-        startIndex = targetIndex;
+      walker.currentNode = target;
+      target = walker.previousNode() as HTMLElement | null;
+    }
+    // If no target found, find the last element from the end.
+    if (!target) {
+      let last: Node | null;
+      do {
+        last = walker.lastChild();
+        if (last) {
+          target = last as HTMLElement;
+        }
+      } while (last);
+    }
+    // Now go backwards until we find an element that is not a placeholder.
+    while (target?.hasAttribute("data-placeholder")) {
+      const prev = walker.previousNode() as HTMLElement | null;
+      if (prev && prev.hasAttribute("data-placeholder")) {
+        target = prev;
+      } else {
+        break;
       }
     }
-
-    for (let i = startIndex; i >= 0; i--) {
-      const segment = segments[i];
-      if (segment.getAttribute("data-placeholder") !== "true") {
-        focusSafely(segment);
-        return;
-      }
-    }
+    target?.focus();
   };
 
   const { pressProps } = createPress({
-    isDisabled: () => resolvedProps().isDisabled || state.isDisabled(),
     preventFocusOnPress: true,
     allowTextSelectionOnPress: true,
     onPressStart(e) {
       if (e.pointerType === "mouse") {
-        focusLast(e as unknown as Event);
+        focusLast();
       }
     },
     onPress(e) {
       if (e.pointerType === "touch" || e.pointerType === "pen") {
-        focusLast(e as unknown as Event);
+        focusLast();
       }
     },
   });
 
-  return {
-    get groupProps() {
-      return mergeProps(pressProps, {
-        onKeyDown,
-      });
-    },
-  };
+  return createMemo(() => mergeProps(pressProps, { onKeyDown }));
 }

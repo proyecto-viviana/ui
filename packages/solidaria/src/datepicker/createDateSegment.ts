@@ -1,15 +1,32 @@
 /**
  * createDateSegment hook for Solidaria
  *
- * Provides the behavior and accessibility implementation for a date segment.
- * Based on @react-aria/datepicker useDateSegment
+ * Provides the behavior and accessibility implementation for a single editable
+ * date segment. Faithful port of @react-aria/datepicker `useDateSegment` — the
+ * spinbutton wiring (value stepping + live announcements) is delegated to
+ * `createSpinButton`, numeric text entry flows through native `beforeinput`
+ * events, and segment focus recovery on unmount mirrors upstream's layout effect.
  */
 
-import { createSignal, createMemo, onCleanup } from "solid-js";
+import { createMemo, createEffect, onCleanup } from "solid-js";
+import { toCalendar, CalendarDate } from "@internationalized/date";
+import { NumberParser } from "@internationalized/number";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import { scrollIntoViewport, getScrollParent } from "../utils";
+import { mergeProps } from "../utils/mergeProps";
+import {
+  isMac,
+  isIOS,
+  scrollIntoViewport,
+  getScrollParent,
+  nodeContains,
+} from "../utils";
+import { createId } from "../ssr";
+import { createLabels } from "../label/createLabels";
+import { useLocale, createDateFormatter, createFilter } from "../i18n";
+import { createSpinButton } from "../spinbutton";
+import { createDisplayNames } from "./createDisplayNames";
+import { hookData } from "./createDateField";
 import type { DateFieldState, DateSegment, DateSegmentType } from "@proyecto-viviana/solid-stately";
-import { useLocale } from "../i18n";
 
 export interface AriaDateSegmentProps {
   /** The segment data. */
@@ -23,18 +40,18 @@ export interface AriaDateSegmentProps {
 export interface DateSegmentAria {
   /** Props for the segment element. */
   segmentProps: Record<string, unknown>;
-  /** Whether the segment is focused. */
-  isFocused: boolean;
-  /** Whether the segment is editable. */
-  isEditable: boolean;
-  /** Whether the segment is a placeholder. */
-  isPlaceholder: boolean;
-  /** The text to display. */
-  text: string;
-  /** Whether the segment is hovered. */
-  isHovered: boolean;
-  /** Whether the segment has keyboard focus visible. */
-  isFocusVisible: boolean;
+}
+
+function commonPrefixLength(strings: string[]): number {
+  strings.sort();
+  const first = strings[0];
+  const last = strings[strings.length - 1];
+  for (let i = 0; i < first.length; i++) {
+    if (first[i] !== last[i]) {
+      return i;
+    }
+  }
+  return 0;
 }
 
 /**
@@ -43,433 +60,413 @@ export interface DateSegmentAria {
 export function createDateSegment<T extends DateFieldState>(
   props: MaybeAccessor<AriaDateSegmentProps>,
   state: T,
-  ref?: () => HTMLElement | null,
+  ref: () => HTMLElement | null,
 ): DateSegmentAria {
   const getProps = () => access(props);
-  const [isFocused, setIsFocused] = createSignal(false);
-  const [isFocusVisible, setIsFocusVisible] = createSignal(false);
-  const [isHovered, setIsHovered] = createSignal(false);
-  const [enteredKeys, setEnteredKeys] = createSignal("");
-  const [isComposing, setIsComposing] = createSignal(false);
-  const locale = useLocale();
+  const segment = () => getProps().segment;
+  let enteredKeys = "";
+  const localeInfo = useLocale();
+  const locale = () => localeInfo().locale;
+  const direction = () => localeInfo().direction;
+  const displayNames = createDisplayNames();
+  const hd = hookData.get(state as unknown as object) as
+    | {
+        ariaLabel?: string;
+        ariaLabelledBy?: string;
+        ariaDescribedBy?: () => string | undefined;
+        focusManager: {
+          focusNext: () => HTMLElement | null;
+          focusPrevious: () => HTMLElement | null;
+        };
+      }
+    | undefined;
+  const focusManager = hd?.focusManager;
+  const segmentId = createId();
 
-  // Get the segment from props
-  const segment = createMemo(() => getProps().segment);
-
-  // Check if editable
-  const isEditable = createMemo(() => {
-    const seg = segment();
-    return seg.isEditable && !state.isDisabled() && !state.isReadOnly();
+  const resolvedOptions = state.dateFormatter.resolvedOptions();
+  const monthDateFormatter = createDateFormatter({
+    month: "long",
+    timeZone: resolvedOptions.timeZone,
+  });
+  const hourDateFormatter = createDateFormatter({
+    hour: "numeric",
+    hour12: resolvedOptions.hour12,
+    timeZone: resolvedOptions.timeZone,
   });
 
-  // Long press state for ArrowUp / ArrowDown
-  let longPressTimeout: ReturnType<typeof setTimeout> | null = null;
-  let longPressInterval: ReturnType<typeof setInterval> | null = null;
-  let hadPointerDown = false;
-
-  const clearLongPress = () => {
-    if (longPressTimeout) {
-      clearTimeout(longPressTimeout);
-      longPressTimeout = null;
+  const textValue = createMemo(() => {
+    const seg = segment();
+    let value = seg.isPlaceholder ? "" : seg.text;
+    if (seg.type === "month" && !seg.isPlaceholder) {
+      const monthTextValue = monthDateFormatter().format(state.dateValue());
+      value = monthTextValue !== value ? `${value} \u{2013} ${monthTextValue}` : monthTextValue;
+    } else if (seg.type === "hour" && !seg.isPlaceholder) {
+      value = hourDateFormatter().format(state.dateValue());
     }
-    if (longPressInterval) {
-      clearInterval(longPressInterval);
-      longPressInterval = null;
-    }
-  };
-
-  const startLongPress = (action: () => void) => {
-    clearLongPress();
-    longPressTimeout = setTimeout(() => {
-      action();
-      longPressInterval = setInterval(() => {
-        action();
-      }, 100);
-    }, 300);
-  };
-
-  onCleanup(() => {
-    clearLongPress();
+    return value;
   });
 
-  const focusSegment = (target: "first" | "last" | "prev" | "next") => {
-    const el = ref?.();
-    if (!el) return;
-
-    const container = el.parentElement;
-    if (!container) return;
-
-    const segments = Array.from(container.querySelectorAll<HTMLElement>('[role="spinbutton"]'));
-
-    if (segments.length === 0) return;
-
-    if (target === "first") {
-      segments[0]?.focus();
-      return;
-    }
-
-    if (target === "last") {
-      segments[segments.length - 1]?.focus();
-      return;
-    }
-
-    const currentIndex = segments.indexOf(el);
-    if (currentIndex < 0) return;
-
-    const nextIndex = target === "next" ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex >= 0 && nextIndex < segments.length) {
-      segments[nextIndex]?.focus();
-    }
-  };
-
-  const clearCurrentSegment = (type: DateSegmentType) => {
-    state.clearSegment(type);
-    setEnteredKeys("");
-  };
-
-  // Handle keyboard input
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!isEditable()) return;
-    if (isComposing()) return;
-
+  const spinButton = createSpinButton(() => {
     const seg = segment();
-    const type = seg.type;
-
-    if (type === "literal") return;
-
-    // Keyboard interaction means focus is visible
-    setIsFocusVisible(true);
-
-    switch (e.key) {
-      case "ArrowRight":
-        e.preventDefault();
-        focusSegment(locale().direction === "rtl" ? "prev" : "next");
-        break;
-      case "ArrowLeft":
-        e.preventDefault();
-        focusSegment(locale().direction === "rtl" ? "next" : "prev");
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        state.incrementSegment(type);
-        if (!e.repeat) {
-          startLongPress(() => state.incrementSegment(type));
-        }
-        break;
-      case "ArrowDown":
-        e.preventDefault();
-        state.decrementSegment(type);
-        if (!e.repeat) {
-          startLongPress(() => state.decrementSegment(type));
-        }
-        break;
-      case "Home":
-        e.preventDefault();
-        focusSegment("first");
-        break;
-      case "End":
-        e.preventDefault();
-        focusSegment("last");
-        break;
-      case "Backspace":
-        e.preventDefault();
-        // Match common date-field UX: backspace on an empty placeholder moves to previous segment.
-        if (seg.isPlaceholder) {
-          focusSegment("prev");
-        } else {
-          clearCurrentSegment(type);
-        }
-        break;
-      case "Delete":
-        e.preventDefault();
-        clearCurrentSegment(type);
-        break;
-      default:
-        // Handle numeric input
-        const normalizedDigit = normalizeDigit(e.key);
-        if (normalizedDigit) {
-          e.preventDefault();
-          handleNumericInput(normalizedDigit, type, seg);
-        }
-        break;
-    }
-  };
-
-  const handleKeyUp = () => {
-    clearLongPress();
-  };
-
-  // Handle numeric input
-  const handleNumericInput = (key: string, type: DateSegmentType, seg: DateSegment) => {
-    const newKeys = enteredKeys() + key;
-    const numValue = parseInt(newKeys, 10);
-    const maxValue = seg.maxValue ?? 99;
-    const minValue = seg.minValue ?? 0;
-    const maxDigits = String(maxValue).length;
-
-    // Check if we should accept more digits
-    if (numValue <= maxValue) {
-      state.setSegment(type, numValue);
-
-      // If entering more digits wouldn't make sense, clear entered keys
-      const potentialNextValue = parseInt(newKeys + "0", 10);
-      if (potentialNextValue > maxValue || newKeys.length >= maxDigits) {
-        setEnteredKeys("");
-        focusSegment("next");
-      } else {
-        setEnteredKeys(newKeys);
-      }
-    } else {
-      // Start fresh with just this key
-      const singleValue = parseInt(key, 10);
-      if (singleValue >= minValue && singleValue <= maxValue) {
-        state.setSegment(type, singleValue);
-        const potentialNextValue = parseInt(key + "0", 10);
-        if (potentialNextValue > maxValue || key.length >= maxDigits) {
-          setEnteredKeys("");
-          focusSegment("next");
-        } else {
-          setEnteredKeys(key);
-        }
-      } else {
-        setEnteredKeys("");
-      }
-    }
-  };
-
-  const handleBeforeInput = (e: InputEvent) => {
-    if (!isEditable()) return;
-    if (isComposing()) return;
-
-    const seg = segment();
-    if (seg.type === "literal") return;
-
-    if (e.inputType === "deleteContentBackward" || e.inputType === "deleteContentForward") {
-      e.preventDefault();
-      clearCurrentSegment(seg.type);
-      return;
-    }
-
-    if (e.inputType === "insertText" && e.data) {
-      const normalizedDigit = normalizeDigit(e.data);
-      if (!normalizedDigit) return;
-      e.preventDefault();
-      handleNumericInput(normalizedDigit, seg.type, seg);
-    }
-  };
-
-  const handleCompositionStart = () => {
-    if (!isEditable()) return;
-    setIsComposing(true);
-    setEnteredKeys("");
-  };
-
-  const handleCompositionEnd = (e: CompositionEvent) => {
-    if (!isEditable()) return;
-    setIsComposing(false);
-
-    const seg = segment();
-    if (seg.type === "literal") return;
-
-    const digits = extractNormalizedDigits(e.data ?? "");
-    if (digits.length === 0) return;
-
-    for (const digit of digits) {
-      handleNumericInput(digit, seg.type, seg);
-    }
-  };
-
-  // Handle focus
-  const handleFocus = () => {
-    setIsFocused(true);
-    setEnteredKeys("");
-
-    if (!hadPointerDown) {
-      setIsFocusVisible(true);
-    }
-    hadPointerDown = false;
-
-    const el = ref?.();
-    if (el) {
-      scrollIntoViewport(el, { containingElement: getScrollParent(el) });
-    }
-
-    // Select all text in the segment
-    if (el && typeof window !== "undefined") {
-      const selection = window.getSelection();
-      if (selection) {
-        const range = new Range();
-        range.selectNodeContents(el);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-    }
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    setIsFocusVisible(false);
-    setEnteredKeys("");
-    clearLongPress();
-    state.confirmPlaceholder();
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-  };
-
-  // Segment props
-  const segmentProps = createMemo(() => {
-    const seg = segment();
-    const type = seg.type;
-    const p = getProps();
-
-    // Literal segments don't need interaction props
-    if (type === "literal") {
-      return {
-        "aria-hidden": true,
-      };
-    }
-
     return {
-      role: "spinbutton",
-      tabIndex: isEditable() ? 0 : -1,
-      "aria-label": getSegmentLabel(type, locale().locale),
-      "aria-valuenow": seg.value,
-      "aria-valuemin": seg.minValue,
-      "aria-valuemax": seg.maxValue,
-      "aria-valuetext": seg.isPlaceholder ? "" : seg.text,
-      "aria-readonly": state.isReadOnly() || undefined,
-      "aria-disabled": state.isDisabled() || undefined,
-      "aria-invalid": state.isInvalid() || undefined,
-      "aria-controls": p["aria-controls"] || undefined,
-      "aria-describedby": p["aria-describedby"] || undefined,
-      contentEditable: isEditable(),
-      suppressContentEditableWarning: true,
-      inputMode: "numeric" as const,
-      autoCorrect: "off",
-      enterKeyHint: "next" as const,
-      spellCheck: false,
-      "data-placeholder": seg.isPlaceholder ? "true" : undefined,
-      "data-readonly": state.isReadOnly() || undefined,
-      "data-disabled": state.isDisabled() || undefined,
-      "data-invalid": state.isInvalid() || undefined,
-      "data-type": seg.type,
-      "data-hovered": isHovered() || undefined,
-      "data-focused": isFocused() || undefined,
-      "data-focus-visible": isFocusVisible() || undefined,
-      onKeyDown: handleKeyDown,
-      onKeyUp: handleKeyUp,
-      onFocus: handleFocus,
-      onBlur: handleBlur,
-      onBeforeInput: handleBeforeInput,
-      onCompositionStart: handleCompositionStart,
-      onCompositionEnd: handleCompositionEnd,
-      onMouseEnter: handleMouseEnter,
-      onMouseLeave: handleMouseLeave,
-      onPointerDown: (e: PointerEvent) => {
-        // Prevent cursor positioning in the middle of the segment
-        e.preventDefault();
-        hadPointerDown = true;
-        setIsFocusVisible(false);
+      // The ARIA spec says aria-valuenow is optional if there's no value, but aXe requires it.
+      value: seg.value ?? undefined,
+      textValue: textValue(),
+      minValue: seg.minValue,
+      maxValue: seg.maxValue,
+      isDisabled: state.isDisabled(),
+      isReadOnly: state.isReadOnly() || !seg.isEditable,
+      isRequired: state.isRequired(),
+      onIncrement: () => {
+        enteredKeys = "";
+        state.increment(seg.type);
       },
-      onPointerUp: () => {
-        clearLongPress();
+      onDecrement: () => {
+        enteredKeys = "";
+        state.decrement(seg.type);
+      },
+      onIncrementPage: () => {
+        enteredKeys = "";
+        state.incrementPage(seg.type);
+      },
+      onDecrementPage: () => {
+        enteredKeys = "";
+        state.decrementPage(seg.type);
+      },
+      onIncrementToMax: () => {
+        enteredKeys = "";
+        state.incrementToMax(seg.type);
+      },
+      onDecrementToMin: () => {
+        enteredKeys = "";
+        state.decrementToMin(seg.type);
       },
     };
   });
 
-  // Text to display
-  const text = createMemo(() => {
+  const parser = createMemo(() => new NumberParser(locale(), { maximumFractionDigits: 0 }));
+
+  const backspace = () => {
     const seg = segment();
-    return seg.isPlaceholder ? seg.placeholder : seg.text;
+    if (seg.text === seg.placeholder) {
+      focusManager?.focusPrevious();
+    }
+    if (parser().isValidPartialNumber(seg.text) && !state.isReadOnly() && !seg.isPlaceholder) {
+      let newValue = seg.text.slice(0, -1);
+      const parsed = parser().parse(newValue);
+      newValue = parsed === 0 ? "" : newValue;
+      if (newValue.length === 0 || parsed === 0) {
+        state.clearSegment(seg.type);
+      } else {
+        state.setSegment(seg.type, parsed);
+      }
+      enteredKeys = newValue;
+    } else if (seg.type === "dayPeriod" || seg.type === "era") {
+      state.clearSegment(seg.type);
+    }
+  };
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    // Firefox does not fire selectstart for Ctrl/Cmd + A
+    if (e.key === "a" && (isMac() ? e.metaKey : e.ctrlKey)) {
+      e.preventDefault();
+    }
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) {
+      return;
+    }
+    switch (e.key) {
+      case "Backspace":
+      case "Delete":
+        // Safari on iOS does not fire beforeinput for the backspace key because the cursor is at the start.
+        e.preventDefault();
+        e.stopPropagation();
+        backspace();
+        break;
+    }
+  };
+
+  const { startsWith } = createFilter({ sensitivity: "base" })();
+  const amPmFormatter = createDateFormatter({ hour: "numeric", hour12: true });
+  const am = createMemo(() => {
+    const date = new Date();
+    date.setHours(0);
+    return amPmFormatter().formatToParts(date).find((part) => part.type === "dayPeriod")?.value ?? "";
+  });
+  const pm = createMemo(() => {
+    const date = new Date();
+    date.setHours(12);
+    return amPmFormatter().formatToParts(date).find((part) => part.type === "dayPeriod")?.value ?? "";
+  });
+
+  // Get a list of formatted era names so users can type the first character to choose one.
+  const eraFormatter = createDateFormatter({ year: "numeric", era: "narrow", timeZone: "UTC" });
+  const eras = createMemo(() => {
+    if (segment().type !== "era") {
+      return [] as Array<{ era: string; formatted: string }>;
+    }
+    const date = toCalendar(new CalendarDate(1, 1, 1), state.calendar);
+    const list = state.calendar.getEras().map((era) => {
+      const eraDate = date.set({ year: 1, month: 1, day: 1, era }).toDate("UTC");
+      const parts = eraFormatter().formatToParts(eraDate);
+      const formatted = parts.find((p) => p.type === "era")?.value ?? "";
+      return { era, formatted };
+    });
+    const prefixLength = commonPrefixLength(list.map((era) => era.formatted));
+    if (prefixLength) {
+      for (const era of list) {
+        era.formatted = era.formatted.slice(prefixLength);
+      }
+    }
+    return list;
+  });
+
+  const onInput = (key: string) => {
+    const seg = segment();
+    if (state.isDisabled() || state.isReadOnly()) {
+      return;
+    }
+    const newValue = enteredKeys + key;
+    switch (seg.type) {
+      case "dayPeriod":
+        if (startsWith(am(), key)) {
+          state.setSegment("dayPeriod", 0);
+        } else if (startsWith(pm(), key)) {
+          state.setSegment("dayPeriod", 1);
+        } else {
+          break;
+        }
+        focusManager?.focusNext();
+        break;
+      case "era": {
+        const matched = eras().find((e) => startsWith(e.formatted, key));
+        if (matched) {
+          state.setSegment("era", matched.era as unknown as number);
+          focusManager?.focusNext();
+        }
+        break;
+      }
+      case "day":
+      case "hour":
+      case "minute":
+      case "second":
+      case "month":
+      case "year": {
+        if (!parser().isValidPartialNumber(newValue)) {
+          return;
+        }
+        const numberValue = parser().parse(newValue);
+        let segmentValue = numberValue;
+        if (seg.maxValue !== undefined && numberValue > seg.maxValue) {
+          segmentValue = parser().parse(key);
+        }
+        if (isNaN(numberValue)) {
+          return;
+        }
+        state.setSegment(seg.type, segmentValue);
+        if (
+          seg.maxValue !== undefined &&
+          (Number(numberValue + "0") > seg.maxValue || newValue.length >= String(seg.maxValue).length)
+        ) {
+          enteredKeys = "";
+          focusManager?.focusNext();
+        } else {
+          enteredKeys = newValue;
+        }
+        break;
+      }
+    }
+  };
+
+  const onFocus = () => {
+    enteredKeys = "";
+    const el = ref();
+    if (el) {
+      scrollIntoViewport(el, { containingElement: getScrollParent(el) });
+      // Collapse selection to start or Chrome won't fire input events.
+      const selection = window.getSelection();
+      selection?.collapse(el);
+    }
+  };
+
+  // Enforce that the selection is collapsed when inside a date segment. Otherwise, when tapping on a
+  // segment in Android Chrome and then entering text, composition events break the DOM structure.
+  createEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+    const handler = () => {
+      const selection = window.getSelection();
+      if (selection?.anchorNode && nodeContains(ref(), selection.anchorNode)) {
+        selection.collapse(ref());
+      }
+    };
+    document.addEventListener("selectionchange", handler);
+    onCleanup(() => document.removeEventListener("selectionchange", handler));
+  });
+
+  let compositionValue = "";
+  createEffect(() => {
+    const el = ref();
+    if (!el) {
+      return;
+    }
+    const onBeforeInput = (e: InputEvent) => {
+      if (!ref()) {
+        return;
+      }
+      e.preventDefault();
+      switch (e.inputType) {
+        case "deleteContentBackward":
+        case "deleteContentForward":
+          if (parser().isValidPartialNumber(segment().text) && !state.isReadOnly()) {
+            backspace();
+          }
+          break;
+        case "insertCompositionText":
+          // insertCompositionText cannot be canceled. Record current state to restore in `input`.
+          compositionValue = el.textContent ?? "";
+          // Safari gets stuck in a composition state unless we also assign to the value here.
+          // eslint-disable-next-line no-self-assign
+          el.textContent = el.textContent;
+          break;
+        default:
+          if (e.data != null) {
+            onInput(e.data);
+          }
+          break;
+      }
+    };
+    const onInputEvent = (e: InputEvent) => {
+      const { inputType, data } = e;
+      switch (inputType) {
+        case "insertCompositionText":
+          if (ref()) {
+            el.textContent = compositionValue;
+          }
+          if (data != null && (startsWith(am(), data) || startsWith(pm(), data))) {
+            onInput(data);
+          }
+          break;
+      }
+    };
+    el.addEventListener("beforeinput", onBeforeInput as EventListener);
+    el.addEventListener("input", onInputEvent as EventListener);
+    onCleanup(() => {
+      el.removeEventListener("beforeinput", onBeforeInput as EventListener);
+      el.removeEventListener("input", onInputEvent as EventListener);
+    });
+  });
+
+  // If the focused segment is removed, focus the previous one, or the next one if there was no previous one.
+  let focusedElement: HTMLElement | null = null;
+  createEffect(() => {
+    focusedElement = ref();
+  });
+  onCleanup(() => {
+    if (typeof document !== "undefined" && document.activeElement === focusedElement) {
+      const prev = focusManager?.focusPrevious();
+      if (!prev) {
+        focusManager?.focusNext();
+      }
+    }
+  });
+
+  const segmentProps = createMemo<Record<string, unknown>>(() => {
+    const seg = segment();
+    const p = getProps();
+
+    // spinbuttons cannot be focused with VoiceOver on iOS.
+    const touchPropOverrides =
+      isIOS() || seg.type === "timeZoneName"
+        ? {
+            role: "textbox",
+            "aria-valuemax": null,
+            "aria-valuemin": null,
+            "aria-valuetext": null,
+            "aria-valuenow": null,
+          }
+        : {};
+
+    // Only apply aria-describedby to the first segment, unless the field is invalid.
+    let ariaDescribedBy = hd?.ariaDescribedBy?.();
+    const firstEditable = state.segments().find((s) => s.isEditable);
+    if (firstEditable && firstEditable.type !== seg.type && !state.isInvalid()) {
+      ariaDescribedBy = undefined;
+    }
+    // Allow an explicitly passed describedby (e.g. from a datepicker) to compose.
+    ariaDescribedBy = [p["aria-describedby"], ariaDescribedBy].filter(Boolean).join(" ") || undefined;
+
+    const isEditable = !state.isDisabled() && !state.isReadOnly() && seg.isEditable;
+    // Prepend the label passed from the field to each segment name.
+    const name = seg.type === "literal" ? "" : displayNames().of(seg.type);
+    const ariaLabel = hd?.ariaLabel;
+    const ariaLabelledBy = hd?.ariaLabelledBy;
+    // Upstream generates a separate id inside useLabels and lets react-aria's
+    // mergeProps collapse it with the segment's own id via mergeIds' SSR ref
+    // registry. Solid has no such registry, so we thread the segment id straight
+    // into createLabels: the self-reference token then IS the element id, which
+    // is the exact observable result mergeIds produces ("month, <field label>").
+    const labelProps = createLabels({
+      id: segmentId,
+      "aria-label": `${name}${ariaLabel ? `, ${ariaLabel}` : ""}${ariaLabelledBy ? ", " : ""}`,
+      "aria-labelledby": ariaLabelledBy,
+    });
+
+    // Literal segments should not be visible to screen readers.
+    if (seg.type === "literal") {
+      return { "aria-hidden": true };
+    }
+
+    // Kebab-case CSS property names: this style object is merged via mergeProps
+    // and applied by Solid's runtime `style()` spread helper, which calls
+    // `el.style.setProperty(key, value)` with the raw key. setProperty ignores
+    // camelCase names (`unicodeBidi`, `caretColor`) but honors real CSS property
+    // names, so upstream's React CSSProperties must be written kebab here to
+    // actually take effect (React auto-kebabs camelCase; a Solid spread does
+    // not). `direction` matched already precisely because it is single-word.
+    const segmentStyle: Record<string, string> = { "caret-color": "transparent" };
+    if (direction() === "rtl") {
+      segmentStyle["unicode-bidi"] = "embed";
+      const format = (resolvedOptions as unknown as Record<string, unknown>)[seg.type];
+      if (format === "numeric" || format === "2-digit") {
+        segmentStyle.direction = "ltr";
+      }
+    }
+
+    return mergeProps(spinButton.spinButtonProps as Record<string, unknown>, labelProps as Record<string, unknown>, {
+      id: segmentId,
+      ...touchPropOverrides,
+      "aria-invalid": state.isInvalid() ? "true" : undefined,
+      "aria-describedby": ariaDescribedBy,
+      "aria-readonly": state.isReadOnly() || !seg.isEditable ? "true" : undefined,
+      "aria-controls": (p["aria-controls"] as string | undefined) || undefined,
+      "data-placeholder": seg.isPlaceholder || undefined,
+      contentEditable: isEditable,
+      suppressContentEditableWarning: isEditable,
+      spellCheck: isEditable ? "false" : undefined,
+      autoCorrect: isEditable ? "off" : undefined,
+      enterKeyHint: isEditable ? "next" : undefined,
+      inputMode:
+        state.isDisabled() || seg.type === "dayPeriod" || seg.type === "era" || !isEditable
+          ? undefined
+          : "numeric",
+      tabIndex: state.isDisabled() ? undefined : 0,
+      onKeyDown,
+      onFocus,
+      style: segmentStyle,
+      // Prevent pointer events from reaching the group's press handler, and allow native focus.
+      onPointerDown(e: PointerEvent) {
+        e.stopPropagation();
+      },
+      onMouseDown(e: MouseEvent) {
+        e.stopPropagation();
+      },
+    });
   });
 
   return {
     get segmentProps() {
       return segmentProps();
     },
-    get isFocused() {
-      return isFocused();
-    },
-    get isEditable() {
-      return isEditable();
-    },
-    get isPlaceholder() {
-      return segment().isPlaceholder;
-    },
-    get text() {
-      return text();
-    },
-    get isHovered() {
-      return isHovered();
-    },
-    get isFocusVisible() {
-      return isFocusVisible();
-    },
   };
-}
-
-const SEGMENT_LABELS: Record<string, Record<Exclude<DateSegmentType, "literal">, string>> = {
-  en: {
-    year: "Year",
-    month: "Month",
-    day: "Day",
-    hour: "Hour",
-    minute: "Minute",
-    second: "Second",
-    dayPeriod: "AM/PM",
-    era: "Era",
-    timeZoneName: "Time zone",
-  },
-  es: {
-    year: "Año",
-    month: "Mes",
-    day: "Día",
-    hour: "Hora",
-    minute: "Minuto",
-    second: "Segundo",
-    dayPeriod: "AM/PM",
-    era: "Era",
-    timeZoneName: "Zona horaria",
-  },
-};
-
-function getSegmentLabel(type: DateSegmentType, locale: string): string {
-  if (type === "literal") return "";
-
-  const language = locale.toLowerCase().split("-")[0] ?? "en";
-  const labels = SEGMENT_LABELS[language] ?? SEGMENT_LABELS.en;
-  return labels[type];
-}
-
-function normalizeDigit(input: string): string | null {
-  if (/^[0-9]$/.test(input)) {
-    return input;
-  }
-
-  const codePoint = input.codePointAt(0);
-  if (codePoint == null) return null;
-
-  // Full-width digits ０-９
-  if (codePoint >= 0xff10 && codePoint <= 0xff19) {
-    return String(codePoint - 0xff10);
-  }
-
-  return null;
-}
-
-function extractNormalizedDigits(value: string): string[] {
-  const digits: string[] = [];
-  for (const char of value) {
-    const normalized = normalizeDigit(char);
-    if (normalized) {
-      digits.push(normalized);
-    }
-  }
-  return digits;
 }

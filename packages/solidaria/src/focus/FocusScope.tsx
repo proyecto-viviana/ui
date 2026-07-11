@@ -15,7 +15,13 @@ import {
   onMount,
 } from "solid-js";
 import { isServer } from "solid-js/web";
-import { getOwnerDocument, isFocusable, isTabbable } from "../utils";
+import {
+  getOwnerDocument,
+  isFocusable,
+  isTabbable,
+  getFocusableTreeWalker,
+  getActiveElement,
+} from "../utils";
 import { focusSafely } from "../utils/focus";
 
 export interface FocusScopeProps {
@@ -62,6 +68,119 @@ interface FocusScopeContextValue {
   scopeRef: Accessor<Element[]>;
 }
 
+/**
+ * Walks a TreeWalker to its final (deepest-last) node, mirroring the `last`
+ * helper in @react-aria/focus.
+ */
+function lastFocusable(walker: TreeWalker): HTMLElement | null {
+  let next: HTMLElement | undefined;
+  let last: Node | null;
+  do {
+    last = walker.lastChild();
+    if (last) {
+      next = last as HTMLElement;
+    }
+  } while (last);
+  return next ?? null;
+}
+
+/**
+ * Creates a FocusManager rooted at the given ref element, independent of any
+ * FocusScope. Mirrors @react-aria/focus's `createFocusManager`: it walks the
+ * focusable tree with `getFocusableTreeWalker` so segment/spinbutton navigation
+ * inside a date field group behaves exactly like upstream.
+ */
+export function createFocusManager(
+  ref: () => HTMLElement | null | undefined,
+  defaultOptions: FocusManagerOptions = {},
+): FocusManager {
+  return {
+    focusNext(opts: FocusManagerOptions = {}) {
+      const root = ref();
+      if (!root) return null;
+      const {
+        from,
+        tabbable = defaultOptions.tabbable,
+        wrap = defaultOptions.wrap,
+        accept = defaultOptions.accept,
+      } = opts;
+      const node = from || getActiveElement(getOwnerDocument(root));
+      const walker = getFocusableTreeWalker(root, { tabbable, accept });
+      if (node && root.contains(node)) {
+        walker.currentNode = node;
+      }
+      let nextNode = walker.nextNode() as HTMLElement | null;
+      if (!nextNode && wrap) {
+        walker.currentNode = root;
+        nextNode = walker.nextNode() as HTMLElement | null;
+      }
+      if (nextNode) {
+        focusSafely(nextNode);
+      }
+      return nextNode;
+    },
+
+    focusPrevious(opts: FocusManagerOptions = {}) {
+      const root = ref();
+      if (!root) return null;
+      const {
+        from,
+        tabbable = defaultOptions.tabbable,
+        wrap = defaultOptions.wrap,
+        accept = defaultOptions.accept,
+      } = opts;
+      const node = from || getActiveElement(getOwnerDocument(root));
+      const walker = getFocusableTreeWalker(root, { tabbable, accept });
+      if (node && root.contains(node)) {
+        walker.currentNode = node;
+      } else {
+        const next = lastFocusable(walker);
+        if (next) {
+          focusSafely(next);
+        }
+        return next;
+      }
+      let previousNode = walker.previousNode() as HTMLElement | null;
+      if (!previousNode && wrap) {
+        walker.currentNode = root;
+        const lastNode = lastFocusable(walker);
+        if (!lastNode) {
+          return null;
+        }
+        previousNode = lastNode;
+      }
+      if (previousNode) {
+        focusSafely(previousNode);
+      }
+      return previousNode;
+    },
+
+    focusFirst(opts: FocusManagerOptions = {}) {
+      const root = ref();
+      if (!root) return null;
+      const { tabbable = defaultOptions.tabbable, accept = defaultOptions.accept } = opts;
+      const walker = getFocusableTreeWalker(root, { tabbable, accept });
+      const nextNode = walker.nextNode() as HTMLElement | null;
+      if (nextNode) {
+        focusSafely(nextNode);
+      }
+      return nextNode;
+    },
+
+    focusLast(opts: FocusManagerOptions = {}) {
+      const root = ref();
+      if (!root) return null;
+      const { tabbable = defaultOptions.tabbable, accept = defaultOptions.accept } = opts;
+      const walker = getFocusableTreeWalker(root, { tabbable, accept });
+      const next = lastFocusable(walker);
+      if (next) {
+        focusSafely(next);
+      }
+      return next;
+    },
+  };
+}
+
 const FocusScopeContext = createContext<FocusScopeContextValue | null>(null);
 
 /**
@@ -105,17 +224,6 @@ function getFocusableElements(scope: Element[], tabbable = false): HTMLElement[]
 function isElementInScope(element: Element | null, scope: Element[]): boolean {
   if (!element) return false;
   return scope.some((node) => node.contains(element));
-}
-
-/**
- * Gets the active element, accounting for shadow DOM.
- */
-function getActiveElement(doc: Document): Element | null {
-  let activeElement = doc.activeElement;
-  while (activeElement?.shadowRoot?.activeElement) {
-    activeElement = activeElement.shadowRoot.activeElement;
-  }
-  return activeElement;
 }
 
 /**

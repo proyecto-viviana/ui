@@ -30,7 +30,7 @@ describe("DateField (solid-spectrum)", () => {
     const group = document.querySelector('[role="group"]') as HTMLElement;
     const error = screen.getByText("Date is required");
 
-    expect(error.tagName).toBe("P");
+    expect(error.tagName).toBe("SPAN");
     expect(error).toHaveAttribute("id");
     expect(group).toHaveAttribute("aria-describedby");
     expect(group.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));

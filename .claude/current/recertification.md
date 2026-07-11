@@ -855,7 +855,136 @@ March order (dependency/leverage; within a tier, top to bottom):
   1662) — no regression; root typecheck exit 0; the full unit suite's only failures
   are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1 treegrid
   `regression.test.tsx` snapshot), not introduced here.
-  **NEXT: DateField (Tier 5 continues).**
+  **DateField ✓ certified 2026-07-11 (CP9.60)** — Tier-5 unit 3, the third
+  oracle owning BOTH paint and behavior, so it certifies in one spec
+  (`apps/comparison/e2e/certified/datefield.certified.spec.ts`, 69 tests)
+  against the styled `@react-spectrum/s2` DateField. DateField is NOT a calendar
+  grid — it is a SEGMENTED SPINBUTTON text input: a roleless field root wrapping
+  a labelled `role="group"` of per-part `role="spinbutton"` segments
+  (month/day/year plus `aria-hidden` literals), each an INDEPENDENT tab stop
+  (`tabIndex 0` on every editable segment, NO roving), spun with
+  ArrowUp/Down + PageUp/Down + Home/End, typed with digit auto-advance, cleared
+  with Backspace, and walked with ArrowLeft/Right via the group's keyboard layer
+  (react-aria `useDatePickerGroup`), so the oracle shape differs from
+  Calendar/RangeCalendar on every axis. The paint scenario (D1 state-matrix
+  targeting the month segment — the S2 `dateSegment` macro's focused accent fill
+  + inverted text and its placeholder colour — with the styled FieldGroup shell,
+  the inner group's `unicode-bidi: isolate`, the day segment's unfocused
+  treatment and the help-text row as parts; cases default/placeholder/invalid/
+  disabled/readonly; states default + focus-visible only because the macro has
+  no hover branch and segments have no press state — press lives on the group;
+  D3 pixel of the field root, D7 contrast, D8 target size, D9 forced-colors with
+  the macro's explicit Highlight branches + `forcedColorAdjust: none` on the
+  focused fill) and a behavior scenario (D5 focus trails, D6 AX + spin
+  announcements, D10 RTL under `ar-AE`). D5 pins the segment keyboard model —
+  `segment-nav` (ArrowRight/Left through the focus-manager layer), `tab-walk`
+  (every editable segment a real tab stop, with the always-rendered clipped
+  `HiddenDateInput` `<input tabindex="-1" type="date">` also pinned in the
+  layout), `spin-keys` (ArrowUp/PageUp/End/Home/ArrowDown must NOT move focus —
+  they route to the spinbutton value model, so an invented Home/End =
+  first/last-segment nav would diverge), `typed-entry` (a maxing digit
+  auto-advances) and `backspace`; because segment accessible names carry no
+  value, D6 certifies the value model through the assertive live-region
+  announcements `useSpinButton` emits on change (`spin-up` "3 – March",
+  `page-up` "4 – April", `end-max` "12 – December" = incrementToMax, NOT
+  navigation), with disabled/readonly producing IDENTICAL empty transcripts.
+  The browser drivers caught eight DateField divergences, each fixed FAITHFULLY
+  against pinned `@react-aria/datepicker@3.16.0` / RAC 1.19.0 `DateSegment` /
+  `DateInputInner`: (1) **segment name self-reference** — React `mergeIds`
+  collapses each segment's own `useId` and the `useLabels` self-ref token so the
+  DOM `id` equals the labelledby token and the accname resolves to
+  "month, Appointment date"; Solid has no `mergeIds` registry, so the faithful
+  adaptation threads the segment's `createId()` INTO `createLabels({ id:
+  segmentId, "aria-labelledby": … })` in `createDateSegment` — the self-ref
+  token then IS the element id; (2) **frozen-context describedby** — the
+  `DateFieldContext` `aria` object literal captured `fieldAria.fieldProps`
+  EAGERLY at first render, before `createDescription`'s deferred effect appended
+  the hidden "Selected Date: …" node, so the group's (and the FieldGroup's)
+  `aria-describedby` never picked up the value description; fixed by converting
+  the context `aria` fields to GETTERS so each read re-derives the live props
+  (the recurring Solid landmine: reading a getter eagerly freezes a snapshot);
+  (3) **missing native-validation input** — RAC `DateInputInner` renders a
+  sibling `<input hidden type="text" required>` (the `validationBehavior:
+  "native"` default for a standalone field) that blocks empty-required form
+  submission; it was absent, so `createDateField.inputProps` now seeds the
+  native branch (`type → "text"`, `hidden`, `required`, no-op `onChange`) and
+  the `DateInput` component renders the gated sibling; (4) **FieldGroup ARIA
+  identity** — S2's outer styled FieldGroup is a RAC `<Group
+  role="presentation">` and the inner `DateInput` is a RAC `<Group
+  role="group">`, and BOTH read the SAME `fieldProps` (shared
+  id/labelledby/describedby, differing only in role); the port's presentation
+  FieldGroup now mirrors `aria-labelledby`/`aria-describedby` from the shared
+  props (only the ARIA identity, NOT the group's keyboard handlers — duplicating
+  those would double-fire nav, since `useDatePickerGroup` `stopPropagation`s the
+  arrow keys on the inner group precisely to stop the outer group seeing them);
+  (5) **segment focus-ring + hover + faithful data-attrs** — a local `isFocused`
+  signal + an invented `data-editable` were replaced with `createFocusRing()` +
+  `createHover(() => ({ isDisabled: state.isDisabled() || segment.type ===
+  "literal" }))` (mirroring RAC `DateSegment`'s `useFocusRing`/`useHover`),
+  emitting the faithful `data-hovered`/`data-focused`/`data-focus-visible` (all
+  `X || undefined` so booleans don't stringify to `"true"`) and re-shaping
+  `DateSegmentRenderProps` to the RAC set (isHovered/isFocused/isFocusVisible/
+  isPlaceholder/isReadOnly/isDisabled/isInvalid/type/text, dropping the invented
+  `isEditable`). (6) **FieldGroup focus-visible paint** — S2's styled FieldGroup
+  paints the focused accent border/ring and brightens the segment text only under
+  keyboard modality (`isFocusVisibleWithin`), but the solid-spectrum `DateField`
+  presentation wrapper (a non-focusable `role="presentation"` element, separate
+  from the headless group that actually holds focus) tracked no focus, so the D1
+  state-matrix focus-visible cases painted the unfocused treatment; fixed by
+  tracking `isFocusWithin` via the reliably-bubbling `onFocusIn`/`onFocusOut`
+  (Solid's `onFocus` does not bubble to a container) plus `isFocusVisibleModality`
+  via `createFocusVisibleListener` + `isGlobalFocusVisible`, deriving
+  `isFocusVisibleWithin = isFocusWithin() && isFocusVisibleModality()` (exactly how
+  `createFocusRing` composes `isFocused && focusVisibleFlag`) and feeding it to the
+  `dateFieldGroup` class + `data-focus-visible`. (7) **Root autofill input +
+  validation-input rewiring** — RAC `DateField` renders TWO hidden inputs: besides
+  the native-validation `<input hidden type="text">` DateInput sibling of fix (3)
+  (which SUBMITS via name/form/value and is the field's `inputRef` target for
+  form reset), the root also renders an unconditional clipped `position:fixed`
+  `aria-hidden` `tabindex="-1"` `<input type="date" form="">` whose `form=""`
+  detaches it from submission, so it exists only for browser autofill / native
+  form value; the port had neither, so this increment adds `RootHiddenDateInput`
+  (a Solid port of RAC `HiddenDateInput`) as the trailing sibling inside the
+  `DateFieldContext` provider and threads the validation input's ref through a
+  `validationInputRef` signal into `createDateField({ inputRef })` — the two
+  inputs prevent double form submission; D5 `tab-walk` pins the trailing
+  `{tag:input, tabindex:"-1"}` in the layout, certifying the root input's presence
+  and position. (8) **Segment style kebab-case (Solid `setProperty` raw-key
+  landmine)** — the RTL numeric-segment override painted `unicode-bidi: normal` in
+  Solid because a `style` object passed through `mergeProps` and SPREAD is applied
+  by Solid's runtime `style()` helper via `el.style.setProperty(rawKey, val)`, and
+  `setProperty` silently ignores camelCase CSS names (`unicodeBidi`, `caretColor`)
+  — only real kebab property names take (React auto-kebabs `CSSProperties`; a Solid
+  spread does not); fixed by emitting kebab-case `caret-color` / `unicode-bidi`
+  keys in `createDateSegment`'s segment style, closing the D10 RTL state-matrix
+  `unicode-bidi: embed` cases. Behind the fixes this increment also extracted the
+  port substance the segment/field lean on: a standalone `spinbutton` subsystem
+  (`packages/solidaria/src/spinbutton/createSpinButton.ts` + intl) faithfully
+  porting react-aria `useSpinButton` (PageUp/Down inline the arrow branch,
+  non-reactive `isFocused` flag, assertive announce via `createEffect`);
+  `createDisplayNames` (`useDisplayNames` month/era long names); the datepicker
+  `intl` table; a rewritten `createDatePickerGroup` (onKeyDown guards
+  `nodeContains`, arrow cases `preventDefault` + `stopPropagation`); and
+  `createFocusManager` on `FocusScope`. Scope-outs (documented, not silent): D2
+  (no S2 mount animation), D4 (the value-change event surface → the composed
+  DatePicker unit later in this tier, per the NumberField/RangeCalendar
+  precedent), time granularities (hour/minute/second, hourCycle, zoned values →
+  the TimeField unit, NEXT), and RTL paint (D10 runs on the behavior scenario,
+  diffing `direction`/`unicode-bidi` on the group + month segment — numeric
+  segments carry an explicit `direction: ltr; unicode-bidi: embed` override
+  inside the RTL group, which is why the RTL behavior target is the GROUP). This
+  unit supersedes the pre-certified `e2e/datefield-visual.spec.ts` (`git rm`'d)
+  by re-expressing its coverage in the certified pair-oracle `register*Driver`
+  form; the `test:datefield` npm script now points at the cert. Verification:
+  DateField cert e2e **69/69 green** on the rebuilt comparison chain (the cert
+  file carries 69 pair-oracle tests across D1/D3/D5/D6/D7/D8/D9/D10 — an earlier
+  "29 passed" reading was a false green from a `| tail` pipe that masked
+  Playwright's real exit code and truncated the run to a passing subset); full
+  certified suite **1770 pass / 6 skip / 0 fail** (up exactly 69 from CP9.59's
+  1701) — no regression; root typecheck exit 0; the full unit suite's only
+  failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
+  treegrid `regression.test.tsx` snapshot), not introduced here.
+  **NEXT: TimeField (Tier 5 continues).**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

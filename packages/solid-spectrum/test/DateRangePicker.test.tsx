@@ -135,7 +135,7 @@ describe("DateRangePicker (solid-spectrum)", () => {
 
       const startInput = screen.getByLabelText("Start date");
       const startDay = Array.from(startInput.querySelectorAll('[role="spinbutton"]')).find(
-        (segment) => segment.getAttribute("aria-label") === "Day",
+        (segment) => segment.getAttribute("data-type") === "day",
       );
       expect(startDay).toHaveAttribute("aria-valuenow", "3");
 

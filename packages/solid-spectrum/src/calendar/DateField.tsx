@@ -1,5 +1,15 @@
 // @ts-nocheck - style-system generics need the same dedicated pass as DatePicker.
-import { createContext, type JSX, mergeProps, Show, splitProps, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createSignal,
+  type JSX,
+  mergeProps,
+  onCleanup,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   DateField as HeadlessDateField,
   DateFieldLabel as HeadlessDateFieldLabel,
@@ -14,7 +24,11 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import {
+  useLocale,
+  createFocusVisibleListener,
+  isFocusVisible as isGlobalFocusVisible,
+} from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import {
@@ -75,6 +89,7 @@ interface DateFieldStyleProps extends DateFieldRenderProps {
   labelPosition?: DateFieldLabelPosition;
   labelAlign?: DateFieldLabelAlign;
   isFocusWithin?: boolean;
+  isFocusVisible?: boolean;
   isInForm?: boolean;
 }
 
@@ -306,10 +321,42 @@ function DateFieldContent(props: {
   labelAlign: DateFieldLabelAlign;
   necessityIndicator: DateFieldNecessityIndicator;
 }): JSX.Element {
-  const { state } = useDateFieldContext();
+  const { state, aria } = useDateFieldContext();
   const isDisabled = () => state.isDisabled();
   const isInvalid = () => state.isInvalid();
   const isRequired = () => state.isRequired();
+  // S2's FieldGroup is a RAC <Group role="presentation"> that consumes the SAME
+  // GroupContext as the inner DateInput group, so upstream both elements carry
+  // the field's aria-labelledby (label) and aria-describedby (value description
+  // + help text). We render the FieldGroup as a styled div, so surface those two
+  // identity attributes here; the D6 AX driver walks every element with
+  // aria-describedby, and the presentation wrapper must match React's. The group
+  // event handlers stay local — they're pruned from the AX tree and duplicating
+  // the arrow-nav onKeyDown would double-advance focus (RAC relies on synthetic
+  // stopPropagation ordering we can't guarantee across Solid's delegation).
+  const groupAria = () => aria.inputProps as Record<string, string | undefined>;
+  // Mirror the RAC Group that S2's FieldGroup renders on. Its `useFocusRing({
+  // within: true })` exposes TWO states the styled FieldGroup reads
+  // (Field.tsx:281-284): `isFocusWithin` drives the border color, while
+  // `isFocusVisible` (focus-within AND keyboard modality) drives the outline
+  // focus ring (`...focusRing()`) and brightens the text to `neutral:focused`
+  // (`baseColor('neutral').isFocusVisible`). The headless field tracks focus on
+  // the inner role="group"; this bordered presentation wrapper is a separate,
+  // non-focusable element, so track focus-within here via the reliably-bubbling
+  // onFocusIn/onFocusOut (Solid's onFocus does not bubble to a container) and
+  // compose focus-visible from the global interaction modality — exactly how
+  // createFocusRing derives `isFocusVisible = isFocused && focusVisibleFlag`.
+  const [isFocusWithin, setIsFocusWithin] = createSignal(false);
+  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
+    isGlobalFocusVisible(),
+  );
+  createEffect(() => {
+    const cleanup = createFocusVisibleListener((visible) =>
+      setIsFocusVisibleModality(visible),
+    );
+    onCleanup(cleanup);
+  });
+  const isFocusVisibleWithin = () => isFocusWithin() && isFocusVisibleModality();
 
   return (
     <>
@@ -359,10 +406,15 @@ function DateFieldContent(props: {
       </Show>
 
       <div
+        role="presentation"
+        aria-labelledby={groupAria()["aria-labelledby"]}
+        aria-describedby={groupAria()["aria-describedby"]}
         class={dateFieldGroup({
           size: props.size,
           isInvalid: isInvalid(),
           isDisabled: isDisabled(),
+          isFocusWithin: isFocusWithin(),
+          isFocusVisible: isFocusVisibleWithin(),
         })}
         onPointerDown={(event) => {
           if (event.pointerType === "mouse") {
@@ -370,23 +422,39 @@ function DateFieldContent(props: {
           }
         }}
         onTouchEnd={focusFirstEditableSegment}
+        onFocusIn={() => setIsFocusWithin(true)}
+        onFocusOut={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setIsFocusWithin(false);
+          }
+        }}
+        data-focused={isFocusWithin() ? "true" : undefined}
+        data-focus-visible={isFocusVisibleWithin() ? "true" : undefined}
         data-disabled={isDisabled() ? "true" : undefined}
         data-invalid={isInvalid() ? "true" : undefined}
       >
-        <DateInput class={segmentContainer}>
-          {(segment) => (
-            <DateSegment
-              segment={segment}
-              class={(renderProps) =>
-                dateSegment({
-                  ...renderProps,
-                  isDisabled: isDisabled(),
-                  isPunctuation: segment.type === "literal",
-                })
-              }
-            />
-          )}
-        </DateInput>
+        {/*
+          S2 layers the segments: FieldGroup (this bordered role="presentation"
+          wrapper) → DateInputContainer (segmentContainer div) → AriaDateInput
+          (the unstyled role="group"). Keep the segmentContainer styling on the
+          wrapper and leave the group unstyled so its computed box matches.
+        */}
+        <div class={segmentContainer}>
+          <DateInput class="">
+            {(segment) => (
+              <DateSegment
+                segment={segment}
+                class={(renderProps) =>
+                  dateSegment({
+                    ...renderProps,
+                    isDisabled: isDisabled(),
+                    isPunctuation: segment.type === "literal",
+                  })
+                }
+              />
+            )}
+          </DateInput>
+        </div>
 
         <Show when={isInvalid() && !isDisabled()}>
           <CenterBaseline>

@@ -215,7 +215,7 @@ describe("createDateFieldState", () => {
       });
 
       expect(state.isInvalid()).toBe(true);
-      expect(state.displayValidation().validationErrors).toContain("Date is unavailable.");
+      expect(state.displayValidation().validationErrors).toContain("Selected date unavailable.");
 
       dispose();
     });

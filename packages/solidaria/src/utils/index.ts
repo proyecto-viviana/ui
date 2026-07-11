@@ -33,6 +33,8 @@ export {
   getScrollParent,
   getScrollParents,
   willOpenKeyboard,
+  getActiveElement,
+  getFocusableTreeWalker,
 } from "./dom";
 
 export { scrollIntoView, scrollIntoViewport } from "./scrollIntoView";

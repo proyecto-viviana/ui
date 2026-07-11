@@ -15,14 +15,25 @@ import {
   onCleanup,
   splitProps,
   useContext,
-  For,
+  Index,
   Show,
 } from "solid-js";
 import {
   createDateField,
   createDateSegment,
+  createFocusRing,
+  createHover,
+  createVisuallyHidden,
+  mergeProps,
   type AriaDateFieldProps,
 } from "@proyecto-viviana/solidaria";
+import {
+  parseDate,
+  parseDateTime,
+  toCalendarDate,
+  toCalendarDateTime,
+  toLocalTimeZone,
+} from "@internationalized/date";
 import {
   createDateFieldState,
   access,
@@ -43,7 +54,6 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
-import { HiddenDateInput } from "./HiddenDateInput";
 import { FormContext, type FormProps } from "./Form";
 import {
   DateRangePickerContext,
@@ -95,12 +105,20 @@ export interface DateInputProps extends SlotProps {
 }
 
 export interface DateSegmentRenderProps {
+  /** Whether the segment is hovered. */
+  isHovered: boolean;
   /** Whether the segment is focused. */
   isFocused: boolean;
-  /** Whether the segment is editable. */
-  isEditable: boolean;
+  /** Whether the segment is keyboard focused. */
+  isFocusVisible: boolean;
   /** Whether the segment is a placeholder. */
   isPlaceholder: boolean;
+  /** Whether the segment is read only. */
+  isReadOnly: boolean;
+  /** Whether the segment is disabled. */
+  isDisabled: boolean;
+  /** Whether the segment is invalid. */
+  isInvalid: boolean;
   /** The segment type. */
   type: DateSegmentType["type"];
   /** The text to display. */
@@ -123,6 +141,10 @@ export interface DateFieldContextValue {
   aria: {
     labelProps: Record<string, unknown>;
     inputProps: Record<string, unknown>;
+    // The hidden validation <input> props (native type/required/onChange). Only
+    // the standalone DateField provides these; DatePicker/DateRangePicker manage
+    // their own hidden inputs, so this stays optional and its <input> is gated.
+    hiddenInputProps?: Record<string, unknown>;
     descriptionProps: Record<string, unknown>;
     errorMessageProps: Record<string, unknown>;
   };
@@ -278,14 +300,37 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
   );
 
   const [fieldRef, setFieldRef] = createSignal<HTMLDivElement | null>(null);
+  // Ref to the hidden validation <input> (the DateInput's `<Input>` sibling).
+  // RAC's DateField creates this ref, passes it to useDateField, and threads it
+  // onto the <Input> via InputContext so useFormReset/useFormValidation target
+  // that element. We mirror that: create it here, hand it to createDateField
+  // below, and attach it to the same input through the context getter.
+  const [validationInputRef, setValidationInputRef] =
+    createSignal<HTMLInputElement | null>(null);
 
   const state = createDateFieldState(stateProps);
 
   const fieldAria = createDateField(
     () => ({
       ...(rest as Record<string, unknown>),
+      // RAC threads the same props into both useDateFieldState and useDateField;
+      // these live in `stateProps` here, so forward them so the field hook can
+      // build aria-disabled and the native validation <input> (type/required).
+      // access() unwraps the MaybeAccessor state-prop declarations.
+      isDisabled: access(stateProps.isDisabled),
+      isReadOnly: access(stateProps.isReadOnly),
+      isRequired: access(stateProps.isRequired),
+      // Mirror RAC DateField: validationBehavior ?? formValidationBehavior ??
+      // 'native'. withFormValidationBehavior already folds the form default into
+      // stateProps.validationBehavior; the last `?? 'native'` is the standalone
+      // default that flips the hidden input to type="text".
+      validationBehavior: stateProps.validationBehavior ?? "native",
       description: stateProps.description,
       errorMessage: stateProps.errorMessage,
+      // Form-reset + native constraint validation are wired onto this input by
+      // createDateField (see its createFormReset/createFormValidation calls),
+      // exactly as RAC's useDateField wires them onto props.inputRef.
+      inputRef: () => validationInputRef() ?? undefined,
     }),
     state as unknown as DateFieldState<DateValue>,
     fieldRef,
@@ -307,11 +352,6 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
     renderValues,
   );
 
-  const validationBehavior = () =>
-    (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior ??
-    formContext?.validationBehavior ??
-    "native";
-
   const textSlots = {
     slots: {
       get description() {
@@ -328,17 +368,41 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
       <DateFieldContext.Provider
         value={{
           state: state as unknown as DateFieldState<DateValue>,
+          // Read through getters so consumers see the LIVE memo values, not a
+          // snapshot frozen at first render. `createDescription` appends the
+          // value-description id via a deferred effect; the group's
+          // aria-describedby only picks it up if the props stay reactive here.
           aria: {
-            labelProps: fieldAria.labelProps,
-            inputProps: fieldAria.inputProps,
-            descriptionProps: fieldAria.descriptionProps,
-            errorMessageProps: fieldAria.errorMessageProps,
+            get labelProps() {
+              return fieldAria.labelProps;
+            },
+            // The segment group props (role="group", aria-labelledby, unicode-bidi
+            // isolate style, arrow-key nav, focus-within handlers) are routed to the
+            // DateInput element — mirroring RAC, where useDateField.fieldProps is
+            // published through GroupContext and consumed by the DateInput <Group>.
+            // The outer wrapper stays roleless.
+            get inputProps() {
+              return fieldAria.fieldProps;
+            },
+            // The REAL hidden validation input props (type/hidden/required/onChange
+            // under native validation). Rendered as the DateInput's <input> sibling.
+            // Thread the validation-input ref through here — mirroring RAC's
+            // `[InputContext, {...inputProps, ref: inputRef}]` — so createDateField's
+            // form-reset/validation wiring resolves to the mounted element.
+            get hiddenInputProps() {
+              return mergeProps(fieldAria.inputProps, { ref: setValidationInputRef });
+            },
+            get descriptionProps() {
+              return fieldAria.descriptionProps;
+            },
+            get errorMessageProps() {
+              return fieldAria.errorMessageProps;
+            },
           },
         }}
       >
         <div
           ref={setFieldRef}
-          {...fieldAria.fieldProps}
           class={renderProps.class()}
           style={renderProps.style()}
           data-disabled={dataAttr(state.isDisabled())}
@@ -350,26 +414,118 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
             {local.children as JSX.Element}
           </Provider>
         </div>
-        <Show when={(rest as Record<string, unknown>).name}>
-          <HiddenDateInput
-            name={(rest as Record<string, unknown>).name as string | undefined}
-            form={(rest as Record<string, unknown>).form as string | undefined}
-            value={state.value()}
-            autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
-            isDisabled={state.isDisabled()}
-            isRequired={state.isRequired()}
-            validationBehavior={validationBehavior()}
-            validationState={state}
-            focus={() => {
-              fieldRef()?.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
-            }}
-            minValue={access(stateProps.minValue) as DateValue | undefined}
-            maxValue={access(stateProps.maxValue) as DateValue | undefined}
-            granularity={state.granularity}
-          />
-        </Show>
+        {/*
+          RAC renders <HiddenDateInput> UNCONDITIONALLY at the DateField root
+          (react-aria-components DateField.mjs). It is NOT a validation input — it
+          is a clipped, aria-hidden, tabIndex={-1} native date input that mirrors
+          the value for browser autofill. Its `form=""` detaches it from form
+          submission (the DateInput's <Input> above is what submits), so it never
+          double-counts in FormData. It renders regardless of `name` — hence no
+          <Show> gate — which is why it appears in the focus trail as the trailing
+          tabindex="-1" element.
+        */}
+        <RootHiddenDateInput
+          autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
+          name={(rest as Record<string, unknown>).name as string | undefined}
+          isDisabled={state.isDisabled()}
+          state={state as unknown as DateFieldState<DateValue>}
+        />
       </DateFieldContext.Provider>
     </DateFieldStateContext.Provider>
+  );
+}
+
+const HIDDEN_DATE_SEGMENTS: readonly string[] = ["day", "month", "year"];
+const HIDDEN_TIME_SEGMENTS: readonly string[] = ["hour", "minute", "second"];
+const HIDDEN_GRANULARITY_MAP: Record<string, number> = { hour: 1, minute: 2, second: 3 };
+
+interface RootHiddenDateInputProps {
+  autoComplete?: string;
+  name?: string;
+  isDisabled?: boolean;
+  state: DateFieldState<DateValue>;
+}
+
+/**
+ * The always-rendered hidden date input at the DateField root — a faithful port
+ * of react-aria-components' HiddenDateInput (private/HiddenDateInput.mjs). It is
+ * NOT a validation input: it is a clipped, aria-hidden, tabIndex={-1} native
+ * date input that mirrors the current value for browser autofill. `form=""`
+ * detaches it from form submission (the DateInput's <Input> submits), so it
+ * never double-counts in FormData. RAC renders it unconditionally, which is why
+ * it appears as the trailing tabindex="-1" element in the focus trail.
+ */
+function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
+  // RAC uses useVisuallyHidden with position:fixed/top:0/left:0 to keep the
+  // clipped input from scrolling the page.
+  const { visuallyHiddenProps } = createVisuallyHidden(() => ({
+    style: { position: "fixed", top: "0", left: "0" },
+  }));
+
+  const granularity = () => props.state.granularity ?? "day";
+  const inputStep = () => {
+    const g = granularity();
+    if (g === "second") return 1;
+    if (g === "hour") return 3600;
+    return 60;
+  };
+  const inputType = () => (granularity() === "day" ? "date" : "datetime-local");
+  const dateValue = () => {
+    const value = props.state.value();
+    if (!value) return "";
+    if (granularity() === "day") return toCalendarDate(value).toString();
+    return toCalendarDateTime(
+      "timeZone" in value ? toLocalTimeZone(value) : value,
+    ).toString();
+  };
+
+  const onChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
+    const targetString = (event.currentTarget.value ?? "").toString();
+    if (!targetString) return;
+    try {
+      const g = granularity();
+      const targetValue = (g === "day" ? parseDate(targetString) : parseDateTime(targetString)) as
+        unknown as Record<string, number>;
+      let timeSegments = HIDDEN_TIME_SEGMENTS;
+      if (HIDDEN_TIME_SEGMENTS.includes(g)) {
+        timeSegments = HIDDEN_TIME_SEGMENTS.slice(0, HIDDEN_GRANULARITY_MAP[g]);
+      }
+      const state = props.state as unknown as {
+        setSegment?: (type: string, value: number) => void;
+        setValue: (value: unknown) => void;
+      };
+      // Only DateFieldState (not DatePickerState) exposes setSegment; validate
+      // each parsed segment before committing the new value, mirroring RAC.
+      if (typeof state.setSegment === "function") {
+        for (const type in targetValue) {
+          if (HIDDEN_DATE_SEGMENTS.includes(type)) state.setSegment(type, targetValue[type]);
+          if (timeSegments.includes(type)) state.setSegment(type, targetValue[type]);
+        }
+      }
+      state.setValue(targetValue);
+    } catch {
+      // ignore unparseable autofill values
+    }
+  };
+
+  return (
+    <div
+      {...(visuallyHiddenProps() as unknown as Record<string, unknown>)}
+      aria-hidden="true"
+      data-testid="hidden-dateinput-container"
+    >
+      <input
+        tabIndex={-1}
+        autocomplete={props.autoComplete}
+        disabled={props.isDisabled}
+        type={inputType()}
+        form=""
+        name={props.name}
+        step={inputStep()}
+        value={dateValue()}
+        onChange={onChange}
+      />
+    </div>
   );
 }
 
@@ -396,6 +552,20 @@ export function DateInput(props: DateInputProps): JSX.Element {
     renderValues,
   );
 
+  // The group props (role="group", aria-labelledby, unicode-bidi:isolate,
+  // arrow-key nav, focus-within handlers) carry the field's own `style` and
+  // focus handlers. Merge — not clobber — so the group keeps its unicode-bidi
+  // isolation and the local isFocused signal chains onto the field's
+  // focusWithin handlers. Solid onFocus/onBlur do not bubble, so track focus
+  // via onFocusIn/onFocusOut.
+  const inputDivProps = createMemo(() =>
+    mergeProps(aria.inputProps, {
+      onFocusIn: () => setIsFocused(true),
+      onFocusOut: () => setIsFocused(false),
+      style: renderProps.style(),
+    }),
+  );
+
   createEffect(() => {
     const element = inputRef();
     const handler = props.onPointerDownCapture;
@@ -411,16 +581,41 @@ export function DateInput(props: DateInputProps): JSX.Element {
     <DateFieldContext.Provider value={context as DateFieldContextValue}>
       <div
         ref={setInputRef}
-        {...aria.inputProps}
+        {...inputDivProps()}
         class={renderProps.class()}
-        style={renderProps.style()}
         data-disabled={dataAttr(state.isDisabled())}
         data-focused={dataAttr(isFocused())}
-        onFocusIn={() => setIsFocused(true)}
-        onFocusOut={() => setIsFocused(false)}
       >
-        <For each={state.segments()}>{(segment) => props.children?.(segment)}</For>
+        {/*
+          <Index> keys by position, not identity, so each DateSegment instance
+          stays alive across keystrokes (state.segments() re-mints segment
+          objects every edit). A stable Proxy forwards property reads to the
+          live per-index accessor so the child stays reactive.
+        */}
+        <Index each={state.segments()}>
+          {(segment) => {
+            const liveSegment = new Proxy({} as DateSegmentType, {
+              get: (_t, key) => (segment() as unknown as Record<PropertyKey, unknown>)[key],
+              has: (_t, key) => key in (segment() as object),
+            });
+            return props.children?.(liveSegment);
+          }}
+        </Index>
       </div>
+      {/*
+        The hidden validation input, sibling of the group — mirrors RAC's
+        DateInputInner `<><Group/><Input/></>`. Under native validation
+        (default) `useDateField` publishes it as `type="text" hidden required`
+        so browser constraint validation fires; under aria validation it stays
+        `type="hidden"`. Both carry the ISO value string. Only the standalone
+        DateField supplies these props; inside a DatePicker/DateRangePicker the
+        field is presentation and its owner renders the hidden input instead.
+      */}
+      <Show when={aria.hiddenInputProps}>
+        {(hiddenInputProps) => (
+          <input {...(hiddenInputProps() as JSX.InputHTMLAttributes<HTMLInputElement>)} />
+        )}
+      </Show>
     </DateFieldContext.Provider>
   );
 }
@@ -432,14 +627,34 @@ export function DateSegment(props: DateSegmentProps): JSX.Element {
   const { state } = useDateFieldContext();
   const [segmentRef, setSegmentRef] = createSignal<HTMLElement | null>(null);
 
-  const segmentAria = createDateSegment({ segment: props.segment }, state, segmentRef);
+  const segmentAria = createDateSegment(
+    {
+      get segment() {
+        return props.segment;
+      },
+    },
+    state,
+    segmentRef,
+  );
+
+  // Mirror upstream DateSegment: focus/focus-visible come from useFocusRing()
+  // and hover from useHover({isDisabled: field disabled || literal segment}).
+  // Literals never hover; the field being disabled suppresses hover entirely.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const { isHovered, hoverProps } = createHover(() => ({
+    isDisabled: state.isDisabled() || props.segment.type === "literal",
+  }));
 
   const renderValues = createMemo<DateSegmentRenderProps>(() => ({
-    isFocused: segmentAria.isFocused,
-    isEditable: segmentAria.isEditable,
-    isPlaceholder: segmentAria.isPlaceholder,
+    isHovered: isHovered(),
+    isFocused: isFocused(),
+    isFocusVisible: isFocusVisible(),
+    isPlaceholder: props.segment.isPlaceholder,
+    isReadOnly: state.isReadOnly(),
+    isDisabled: state.isDisabled(),
+    isInvalid: state.isInvalid(),
     type: props.segment.type,
-    text: segmentAria.text,
+    text: props.segment.text,
   }));
 
   const renderProps = useRenderProps(
@@ -459,19 +674,37 @@ export function DateSegment(props: DateSegmentProps): JSX.Element {
     if (typeof props.children === "function") {
       return renderProps.renderChildren();
     }
-    return segmentAria.text;
+    return props.segment.text;
   };
+
+  // Mirror upstream's `mergeProps(filterDOMProps(otherProps), segmentProps,
+  // focusProps, hoverProps)`: the segment's behavior/style props (caretColor +
+  // RTL direction) chain with the focus-ring and hover handlers so neither
+  // clobbers the other.
+  const segmentElementProps = createMemo(() =>
+    mergeProps(
+      segmentAria.segmentProps,
+      focusProps as Record<string, unknown>,
+      hoverProps as Record<string, unknown>,
+      {
+        style: renderProps.style(),
+      },
+    ),
+  );
 
   return (
     <span
       ref={setSegmentRef}
-      {...segmentAria.segmentProps}
+      {...segmentElementProps()}
       class={renderProps.class()}
-      style={renderProps.style()}
-      data-focused={dataAttr(segmentAria.isFocused)}
-      data-editable={dataAttr(segmentAria.isEditable)}
-      data-placeholder={dataAttr(segmentAria.isPlaceholder)}
+      data-placeholder={props.segment.isPlaceholder || undefined}
+      data-invalid={state.isInvalid() || undefined}
+      data-readonly={state.isReadOnly() || undefined}
+      data-disabled={state.isDisabled() || undefined}
       data-type={props.segment.type}
+      data-hovered={isHovered() || undefined}
+      data-focused={isFocused() || undefined}
+      data-focus-visible={isFocusVisible() || undefined}
     >
       {getChildren()}
     </span>
@@ -500,9 +733,9 @@ export interface DateFieldDescriptionProps {
 export function DateFieldDescription(props: DateFieldDescriptionProps): JSX.Element {
   const { aria } = useDateFieldContext();
   return (
-    <p {...aria.descriptionProps} class={props.class}>
+    <span {...aria.descriptionProps} class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -514,9 +747,9 @@ export interface DateFieldErrorMessageProps {
 export function DateFieldErrorMessage(props: DateFieldErrorMessageProps): JSX.Element {
   const { aria } = useDateFieldContext();
   return (
-    <p {...aria.errorMessageProps} class={props.class}>
+    <span {...aria.errorMessageProps} class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 

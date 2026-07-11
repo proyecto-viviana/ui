@@ -89,13 +89,17 @@ describe("DateField", () => {
       expect(group.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
     });
 
-    it("should render DateInput with presentation role", async () => {
+    it("should render DateInput as the labelled segment group", async () => {
       render(() => <TestDateField />);
       await waitForDateFieldHydration();
 
+      // Mirroring RAC: useDateField.fieldProps (role="group", aria-labelledby) is
+      // published through GroupContext and consumed by the DateInput element, so
+      // the .solidaria-DateInput div itself IS the labelled group. It only becomes
+      // role="presentation" when the field is embedded in a DatePicker.
       const input = document.querySelector(".solidaria-DateInput");
       expect(input).toBeInTheDocument();
-      expect(input).toHaveAttribute("role", "presentation");
+      expect(input).toHaveAttribute("role", "group");
     });
 
     it("should render with custom class", async () => {
@@ -320,14 +324,17 @@ describe("DateField", () => {
       expect(segments.length).toBe(3);
     });
 
-    it("should have editable segments", async () => {
+    it("should expose the segment type via data-type", async () => {
       render(() => <TestDateField />);
       await waitForDateFieldHydration();
 
       const segments = screen.getAllByRole("spinbutton");
-      // Each segment should have data-editable
+      // Faithful to RAC's DateSegment, each editable segment carries a
+      // `data-type` (month/day/year/…) — not the previously invented
+      // `data-editable`, which upstream never emits.
       segments.forEach((segment) => {
-        expect(segment).toHaveAttribute("data-editable");
+        expect(segment).toHaveAttribute("data-type");
+        expect(segment.getAttribute("data-type")).toBeTruthy();
       });
     });
 
@@ -375,11 +382,13 @@ describe("DateField", () => {
       ));
       await waitForDateFieldHydration();
 
-      const field = document.querySelector(".solidaria-DateField") as HTMLElement;
+      // The describedby wiring lives on the labelled segment group (the roleless
+      // wrapper carries no ARIA), mirroring upstream useDateField.fieldProps.
+      const group = screen.getByRole("group", { name: "Test Date Field" });
       const error = screen.getByText("Date is required");
 
       expect(error).toHaveAttribute("id");
-      expect(field.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
+      expect(group.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
     });
 
     it("should mark field as invalid when value is below minValue", async () => {
@@ -585,12 +594,14 @@ describe("DateField", () => {
       expect(spinbuttons.length).toBeGreaterThan(0);
     });
 
-    it("should have aria-label on field", async () => {
+    it("should have aria-label on the field group", async () => {
       render(() => <TestDateField />);
       await waitForDateFieldHydration();
 
-      const field = document.querySelector(".solidaria-DateField");
-      expect(field).toHaveAttribute("aria-label", "Test Date Field");
+      // aria-label rides on the labelled segment group (useDateField.fieldProps),
+      // not the roleless wrapper.
+      const group = screen.getByRole("group", { name: "Test Date Field" });
+      expect(group).toHaveAttribute("aria-label", "Test Date Field");
     });
 
     it("should have aria-valuenow on segments with values", async () => {

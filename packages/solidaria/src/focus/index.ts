@@ -1,6 +1,7 @@
 export {
   FocusScope,
   useFocusManager,
+  createFocusManager,
   type FocusScopeProps,
   type FocusManager,
   type FocusManagerOptions,

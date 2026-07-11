@@ -502,9 +502,10 @@ export function isFocusWithin(element: Element): boolean {
  */
 export function getFocusableTreeWalker(
   root: Element,
-  opts?: { tabbable?: boolean; from?: Node },
+  opts?: { tabbable?: boolean; from?: Node; accept?: (node: Element) => boolean },
 ): TreeWalker {
-  const accept = (node: Element) => (opts?.tabbable ? isTabbable(node) : isFocusable(node));
+  const accept = (node: Element) =>
+    (opts?.tabbable ? isTabbable(node) : isFocusable(node)) && (!opts?.accept || opts.accept(node));
   const walker = getOwnerDocument(root).createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
     acceptNode(node) {
       // Skip nodes inside the optional starting node.
