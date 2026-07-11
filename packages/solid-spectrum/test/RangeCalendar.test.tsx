@@ -155,7 +155,7 @@ describe("RangeCalendar (solid-spectrum)", () => {
     expect(contextRef.current).toBe(root);
     expect(localRef).toBe(root);
     expect(root).toHaveStyle({ margin: "3px", width: "224px" });
-    expect(screen.getByRole("button", { name: "Previous month" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     const headers = Array.from(document.querySelectorAll("th")).map((cell) => cell.textContent);
     expect(headers[0]).toBe("M");
   });
@@ -175,7 +175,9 @@ describe("RangeCalendar (solid-spectrum)", () => {
 
     expect(screen.getByText("February 2025")).toBeInTheDocument();
     expect(screen.getByText("March 2025")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Next month" }));
+    // Two buttons carry the "Next" label (visible header nav + the trailing
+    // VisuallyHidden next-button); the visible one is first in DOM order.
+    await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
     expect(screen.getByText("April 2025")).toBeInTheDocument();
     expect(screen.getByText("May 2025")).toBeInTheDocument();
 
@@ -194,7 +196,9 @@ describe("RangeCalendar (solid-spectrum)", () => {
     ));
     await waitForRangeCalendar();
 
-    await user.click(screen.getByRole("button", { name: "Next month" }));
+    // Two buttons carry the "Next" label (visible header nav + the trailing
+    // VisuallyHidden next-button); the visible one is first in DOM order.
+    await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
     expect(screen.getByText("March 2025")).toBeInTheDocument();
     expect(screen.getByText("April 2025")).toBeInTheDocument();
   });

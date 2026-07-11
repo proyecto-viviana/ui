@@ -789,7 +789,73 @@ March order (dependency/leverage; within a tier, top to bottom):
   (up exactly 47 from CP9.57's 1615) — no regression; root typecheck exit 0; the
   full unit suite's 4 failures are the SAME pre-existing Tree tech-debt
   (3 `createTree.test.ts` + 1 treegrid `regression.test.tsx` snapshot), not
-  introduced here. **NEXT: RangeCalendar (Tier 5 continues).**
+  introduced here. **RangeCalendar ✓ certified 2026-07-11 (CP9.59)** — Tier-5
+  unit 2, the second oracle that owns BOTH paint and behavior, so it certifies in
+  one spec (`apps/comparison/e2e/certified/rangecalendar.certified.spec.ts`, 39
+  tests) against the styled `@react-spectrum/s2` RangeCalendar: a paint scenario
+  (D1 state-matrix, D3 pixel of the `role="application"` root, D7 contrast, D8
+  target size, D9 forced-colors; cases default-range/unavailable/invalid/
+  multi-month/disabled) and a behavior scenario (D5 focus-trail over the grid
+  arrow model, D6 AX of the resting subtree, D10 RTL re-run under `ar-AE`), same
+  scope-outs as Calendar (D2 no mount animation, D4 → composed DateRangePicker,
+  RTL paint DOM-order-mirrored). The unit's distinct surface is the RANGE: the
+  start/end cells carry the accent fill and the interior days render two
+  `role="presentation"` sibling layers — a range background (`z-index:-1`,
+  `blue-subtle`) and a range border (`z-index:1`, top/bottom `blue-800`
+  hairlines) — that stitch the days into one pill. This unit supersedes the
+  pre-certified `e2e/rangecalendar-visual.spec.ts` (559-line strict pixel +
+  range-layer + forced-colors + `ar-AE` arrow-flip spec, `git rm`'d) by
+  re-expressing its coverage in the certified pair-oracle `register*Driver` form;
+  the `test:rangecalendar` npm script now points at the cert. The browser drivers
+  caught one RangeCalendar-only behavior divergence — cell recreation on focus —
+  traced to reactive identity churn: the grid renders cells through nested
+  `<Index each={allDates()}>` / `<Index each={weekDates()}>` → `props.children(date())`,
+  and Solid's `Index` compares its accessor by `===`, so
+  `createRangeCalendarState.setFocusedDate` UNCONDITIONALLY calling
+  `setVisibleRangeStart(alignVisibleRangeStart(constrained))` minted a fresh
+  equal-valued startDate on every focus (even a no-op same-date focus) →
+  `visibleRange`/`startDate`/`allDates` recompute → a new `CalendarDate` identity
+  per cell → all 42 cells and their DOM nodes recreate, detaching the roving cell
+  mid-walk (broke the D10 RTL nav trail) and re-mounting the range-prompt cells.
+  Two faithful red→green fixes mirror the sibling `createCalendarState.ts` +
+  vendored `@react-stately/calendar@3.9.2` `useCalendarState`: (1) `setFocusedDate`
+  now early-returns on `Object.is(constrained, focusedDate())` and calls a new
+  `syncVisibleRangeForFocusedDate` helper that realigns the window ONLY when the
+  focused date leaves it (`< range.start` → `alignEnd`; `> range.end` →
+  `alignStart`), exactly upstream `focusCell` (which sets focusedDate only) plus
+  the render-time realign; (2) `focusPreviousPage`/`focusNextPage` now EXPLICITLY
+  realign `setVisibleRangeStart(startOfMonth(visibleRangeStart() ∓ pageMonths))`
+  alongside the focusedDate move (mirroring upstream `focusNextPage`/
+  `focusPreviousPage`, which set both), needed because once the setFocusedDate side
+  effect became conditional, single-month paging inside a multi-month window no
+  longer advanced the grid. Behind the range work the increment also carried the
+  CP9.58 Calendar paint/behavior mirror into RangeCalendar: `createRangeCalendarCell`
+  gates `isFocused` on `isCellFocused(date) && !isOutsideMonth()` (drives the
+  focusSafely effect + range-selection prompt, never on mount) with the roving
+  `tabIndex = isDisabled ? undefined : isSameDay(d, focusedDate()) ? 0 : -1`
+  (ungated by calendar focus); `createRangeCalendar` localizes the nav labels via
+  `formatCalendarLabel(locale, "previous"/"next")` = "Previous"/"Next" (dropping
+  the hardcoded "…month" and the invented `tabIndex:-1`) and GATES the
+  `setCalendarHookData` write on an identifying prop (id/aria-*/errorMessage) so
+  the bare `RangeCalendarButton` re-invocation of `createRangeCalendar({}, state)`
+  stops clobbering the calendar's published ariaLabel/selectedDateDescription;
+  `RangeCalendar.tsx` (solidaria-components) adds the RAC visually-hidden trailing
+  next-button (a touch-SR affordance → two "Next" buttons, visible nav DOM-first)
+  plus `RangeCalendarButton` tabindex 0/undefined. Unit-test updates track the
+  faithful upstream behavior (not port fixes): five solidaria-components
+  `RangeCalendar` range-prompt tests now `.focus()` the roving cell before
+  asserting (the prompt is gated on calendar `isFocused`); the solid-spectrum
+  `RangeCalendar` nav queries switched "Previous month"/"Next month" →
+  "Previous"/"Next" and the dual "Next" click to `getAllByRole(...,{name:"Next"})[0]`;
+  and `createRangeCalendarState.test` tracks the conditional realign. Blast radius:
+  `createRangeCalendarState` also backs DateRangePicker (`DatePicker.tsx`) — the
+  full unit suite confirmed no DateRangePicker regression. Verification:
+  RangeCalendar cert e2e **39/39 green** on the rebuilt comparison chain; full
+  certified suite **1701 pass / 6 skip / 0 fail** (up exactly 39 from CP9.58's
+  1662) — no regression; root typecheck exit 0; the full unit suite's only failures
+  are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1 treegrid
+  `regression.test.tsx` snapshot), not introduced here.
+  **NEXT: DateField (Tier 5 continues).**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

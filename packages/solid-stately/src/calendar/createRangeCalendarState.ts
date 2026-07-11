@@ -443,6 +443,23 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return { start, end: visibleRangeEndFromStart(start) };
   });
 
+  // Realign the visible range only when the focused date moves outside it,
+  // mirroring @react-stately/calendar useCalendarState (the render-time
+  // `focusedDate.compare(startDate) < 0 → alignEnd` / `compare(endDate) > 0 →
+  // alignStart` branches — focusCell itself never touches the range). Guarding
+  // on out-of-range keeps a same-month focus from re-firing visibleRangeStart
+  // with a fresh equal-valued object, which would otherwise recompute the grid
+  // and recreate every cell on focus.
+  const syncVisibleRangeForFocusedDate = (nextFocusedDate: CalendarDate) => {
+    const range = visibleRange();
+
+    if (nextFocusedDate.compare(range.start) < 0) {
+      setVisibleRangeStart(alignEnd(nextFocusedDate));
+    } else if (nextFocusedDate.compare(range.end) > 0) {
+      setVisibleRangeStart(alignStart(nextFocusedDate));
+    }
+  };
+
   createEffect(() => {
     const controlledFocused = access(props.focusedValue);
     if (!controlledFocused) {
@@ -553,8 +570,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       return;
     }
 
+    syncVisibleRangeForFocusedDate(constrained);
     setFocusedDateInternal(constrained);
-    setVisibleRangeStart(alignVisibleRangeStart(constrained));
     props.onFocusChange?.(constrained);
   };
 
@@ -564,7 +581,17 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     if (!range) return false;
 
     const calDate = toDisplayCalendarDate(date);
-    return calDate.compare(range.start) >= 0 && calDate.compare(range.end) <= 0;
+    // Mirror @react-stately/calendar useRangeCalendarState isSelected: a disabled
+    // or unavailable cell is NOT reported selected, so its accessible name drops
+    // the "… selected" suffix + aria-selected (e.g. when the whole calendar is
+    // disabled). The "Selected Range: …" description prefix is separate and still
+    // applies to the range endpoints.
+    return (
+      calDate.compare(range.start) >= 0 &&
+      calDate.compare(range.end) <= 0 &&
+      !isCellDisabled(date) &&
+      !isCellUnavailable(date)
+    );
   };
 
   // Check if a date is the start of the selection
@@ -583,7 +610,13 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
   // Check if a date is focused
   const isCellFocused = (date: DateValue): boolean => {
-    return isSameDay(toDisplayCalendarDate(date), focusedDate());
+    // Gate on the calendar-level `isFocused` flag, mirroring @react-stately
+    // useCalendarState (`isFocused && focusedDate && isSameDay`, inherited by
+    // useRangeCalendarState). The roving tabIndex tracks `focusedDate` directly
+    // at the cell layer, so one cell stays tabbable without this being true —
+    // this drives focusSafely + the range-selection prompt, which must NOT fire
+    // until the calendar actually holds focus.
+    return isFocused() && isSameDay(toDisplayCalendarDate(date), focusedDate());
   };
 
   // Check if a date is unavailable
@@ -599,6 +632,16 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     const min = effectiveMinValue();
     const max = effectiveMaxValue();
     const calDate = toDisplayCalendarDate(date);
+
+    // Dates outside the visible range are disabled, mirroring @react-stately
+    // useCalendarState isCellDisabled (`date.compare(startDate) < 0 ||
+    // date.compare(endDate) > 0` over the visible range, inherited by
+    // useRangeCalendarState). This marks the leading/trailing padding cells
+    // (days from adjacent months filling the first/last grid weeks) as
+    // aria-disabled.
+    const range = visibleRange();
+    if (calDate.compare(toDisplayCalendarDate(range.start)) < 0) return true;
+    if (calDate.compare(toDisplayCalendarDate(range.end)) > 0) return true;
 
     if (min && calDate.compare(min) < 0) return true;
     if (max && calDate.compare(max) > 0) return true;
@@ -630,14 +673,26 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   };
 
   // Navigation methods
+  // Paging realigns the visible range start explicitly, mirroring
+  // @react-stately/calendar focusPreviousPage/focusNextPage (which set both
+  // focusedDate and startDate directly). This must NOT route through
+  // setFocusedDate: that only realigns the range when the focused date leaves
+  // the window, so a single-month page whose focus stays in view would never
+  // advance the grid.
   const focusPreviousPage = () => {
     const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths;
-    setFocusedDate(focusedDate().subtract({ months: pageMonths }));
+    const nextFocusedDate = constrainDate(focusedDate().subtract({ months: pageMonths }));
+    setFocusedDateInternal(nextFocusedDate);
+    setVisibleRangeStart(startOfMonth(visibleRangeStart().subtract({ months: pageMonths })));
+    props.onFocusChange?.(nextFocusedDate);
   };
 
   const focusNextPage = () => {
     const pageMonths = access(props.pageBehavior) === "single" ? 1 : visibleMonths;
-    setFocusedDate(focusedDate().add({ months: pageMonths }));
+    const nextFocusedDate = constrainDate(focusedDate().add({ months: pageMonths }));
+    setFocusedDateInternal(nextFocusedDate);
+    setVisibleRangeStart(startOfMonth(visibleRangeStart().add({ months: pageMonths })));
+    props.onFocusChange?.(nextFocusedDate);
   };
 
   const focusPreviousSection = () => {
@@ -691,26 +746,51 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
   };
 
   const selectDate = (date: CalendarDate) => {
+    // Mirror @react-stately/calendar useRangeCalendarState.selectDate: NO
+    // isCellDisabled/isCellUnavailable guard here. Upstream gates selection at
+    // the cell layer (createRangeCalendarCell handlePointerDown/handleClick check
+    // isSelectable before calling selectDate); the state method itself constrains
+    // to [minValue, maxValue] (narrowed by the available range) and walks back
+    // over unavailable dates, refusing only when no available date remains — and
+    // when the whole calendar is disabled/readOnly. Double-guarding on
+    // isCellDisabled also broke programmatic selection of dates outside the
+    // current visible range (now that isCellDisabled bounds on the visible range,
+    // like upstream useCalendarState).
     if (isReadOnly() || isDisabled()) return;
-    if (isCellDisabled(date) || isCellUnavailable(date)) return;
+
+    // constrainDate == upstream constrainValue(date, min, max): clamp into the
+    // (available-range-narrowed) [minValue, maxValue] interval.
+    const constrainedDate = constrainDate(date);
+    // Availability is evaluated relative to the current anchor, matching
+    // isCellUnavailable, then previousAvailableDate walks back to the last
+    // available date at/before the constrained date within the visible range.
+    const predicate = props.isDateUnavailable
+      ? (d: CalendarDate) => props.isDateUnavailable!(d, anchorDate())
+      : undefined;
+    const selectableDate = previousAvailableDate(
+      constrainedDate,
+      toDisplayCalendarDate(visibleRange().start),
+      predicate,
+    );
+    if (!selectableDate) return;
 
     const anchor = anchorDate();
 
     if (!anchor) {
       // First click - set anchor
-      setAnchorDate(date);
+      setAnchorDate(selectableDate);
       setDragging(true);
     } else {
       // Second click - complete selection
       let start: CalendarDate;
       let end: CalendarDate;
 
-      if (date.compare(anchor) < 0) {
-        start = date;
+      if (selectableDate.compare(anchor) < 0) {
+        start = selectableDate;
         end = anchor;
       } else {
         start = anchor;
-        end = date;
+        end = selectableDate;
       }
 
       setValue({
@@ -721,7 +801,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
       setDragging(false);
     }
 
-    setFocusedDate(date);
+    setFocusedDate(selectableDate);
   };
 
   // Get dates in a specific week
@@ -830,6 +910,32 @@ function isDateOutsideRange(
     (minValue != null && date.compare(minValue) < 0) ||
     (maxValue != null && date.compare(maxValue) > 0)
   );
+}
+
+/**
+ * Walks backward from `date` one day at a time while the date is unavailable and
+ * still at/after `minValue` (the visible-range start), returning the last
+ * available date — or null when the walk falls before `minValue`. With no
+ * `isDateUnavailable` predicate the date is returned unchanged. Mirrors
+ * @react-stately/calendar previousAvailableDate.
+ */
+function previousAvailableDate(
+  date: CalendarDate,
+  minValue: CalendarDate,
+  isDateUnavailable?: (date: CalendarDate) => boolean,
+): CalendarDate | null {
+  if (!isDateUnavailable) {
+    return date;
+  }
+
+  while (date.compare(minValue) >= 0 && isDateUnavailable(date)) {
+    date = date.subtract({ days: 1 });
+  }
+
+  if (date.compare(minValue) >= 0) {
+    return date;
+  }
+  return null;
 }
 
 /**

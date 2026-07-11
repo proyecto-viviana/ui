@@ -284,6 +284,18 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
             <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
           </VisuallyHidden>
           {props.children}
+          {/* For touch screen readers, a visually hidden next button after the
+           * month grid so it's easy to navigate after reaching the end without
+           * going all the way back to the start. Mirrors react-aria-components
+           * Calendar (and the headless Calendar). */}
+          <VisuallyHidden>
+            <button
+              aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
+              disabled={Boolean(calendarAria.nextButtonProps.disabled)}
+              onClick={() => state.focusNextPage()}
+              tabIndex={-1}
+            />
+          </VisuallyHidden>
         </div>
       </RangeCalendarContext.Provider>
     </RangeCalendarStateContext.Provider>
@@ -350,6 +362,11 @@ export function RangeCalendarButton(props: RangeCalendarButtonProps): JSX.Elemen
       class={props.class ?? "solidaria-RangeCalendarButton"}
       style={props.style}
       disabled={isDisabled()}
+      // Mirror useFocusable (same as CalendarButton): always set an explicit
+      // tabIndex on an enabled focusable nav button (0), and drop it entirely
+      // when disabled — so the prev/next buttons appear in the roving tab order
+      // exactly as the S2 oracle does.
+      tabindex={isDisabled() ? undefined : 0}
     >
       {props.children}
     </button>

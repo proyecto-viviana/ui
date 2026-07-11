@@ -13,9 +13,9 @@ import type { RangeCalendarState } from "@proyecto-viviana/solid-stately";
 import {
   formatSelectedDateDescription,
   formatVisibleRangeDescription,
-  getCalendarHookData,
   setCalendarHookData,
 } from "./utils";
+import { formatCalendarLabel } from "./intl";
 
 export interface AriaRangeCalendarProps {
   /** An ID for the calendar. */
@@ -80,18 +80,30 @@ export function createRangeCalendar<T extends RangeCalendarState>(
   const selectedDateDescription = createMemo(() => formatSelectedDateDescription(state));
 
   const initialProps = getProps();
-  const existingHookData = getCalendarHookData(state);
-  setCalendarHookData(state, {
-    errorMessageId:
-      initialProps.errorMessage || initialProps.errorMessageId
-        ? errorMessageId
-        : existingHookData?.errorMessageId,
-    ariaLabel: initialProps["aria-label"],
-    ariaLabelledBy: initialProps["aria-labelledby"],
-    get selectedDateDescription() {
-      return selectedDateDescription();
-    },
-  });
+  // Gate the hook-data write on an identifying prop, mirroring createCalendar.
+  // The headless RangeCalendarButton re-invokes createRangeCalendar({}, state)
+  // to read prev/next button props from context; without this gate that bare
+  // call would clobber the ariaLabel / selectedDateDescription the owning
+  // RangeCalendar published, dropping the calendar label from every grid name.
+  if (
+    initialProps.id ||
+    initialProps["aria-label"] ||
+    initialProps["aria-labelledby"] ||
+    initialProps["aria-describedby"] ||
+    initialProps["aria-details"] ||
+    initialProps.errorMessage ||
+    initialProps.errorMessageId
+  ) {
+    setCalendarHookData(state, {
+      errorMessageId:
+        initialProps.errorMessage || initialProps.errorMessageId ? errorMessageId : undefined,
+      ariaLabel: initialProps["aria-label"],
+      ariaLabelledBy: initialProps["aria-labelledby"],
+      get selectedDateDescription() {
+        return selectedDateDescription();
+      },
+    });
+  }
 
   // Previous button props
   const prevButtonProps = createMemo(() => {
@@ -99,14 +111,13 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     const isDisabled = p.isDisabled || state.isDisabled() || state.isPreviousVisibleRangeInvalid();
 
     return {
-      "aria-label": "Previous month",
+      "aria-label": formatCalendarLabel(state.locale(), "previous"),
       onClick: () => {
         if (!isDisabled) {
           state.focusPreviousPage();
         }
       },
       disabled: isDisabled,
-      tabIndex: -1,
     };
   });
 
@@ -116,14 +127,13 @@ export function createRangeCalendar<T extends RangeCalendarState>(
     const isDisabled = p.isDisabled || state.isDisabled() || state.isNextVisibleRangeInvalid();
 
     return {
-      "aria-label": "Next month",
+      "aria-label": formatCalendarLabel(state.locale(), "next"),
       onClick: () => {
         if (!isDisabled) {
           state.focusNextPage();
         }
       },
       disabled: isDisabled,
-      tabIndex: -1,
     };
   });
 

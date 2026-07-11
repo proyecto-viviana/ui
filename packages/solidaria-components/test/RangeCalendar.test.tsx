@@ -579,7 +579,11 @@ describe("RangeCalendar", () => {
       ));
       await waitForRangeCalendarHydration();
 
+      // The range-selection prompt is gated on the calendar being focused
+      // (upstream isCellFocused = calendar isFocused && isSameDay), so focus the
+      // roving cell before asserting the description.
       const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
 
       await waitFor(() => {
         expect(getDescribedByText(day15)).toContain("Click to start selecting date range");
@@ -598,6 +602,7 @@ describe("RangeCalendar", () => {
       await waitForRangeCalendarHydration();
 
       const day15 = screen.getByRole("button", { name: /15 juin 2024/i });
+      day15.focus();
 
       await waitFor(() => {
         expect(getDescribedByText(day15)).toContain(
@@ -613,6 +618,7 @@ describe("RangeCalendar", () => {
       await waitForRangeCalendarHydration();
 
       const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      day10.focus();
       fireEvent.pointerDown(day10);
       fireEvent.pointerUp(day10);
 
@@ -631,6 +637,7 @@ describe("RangeCalendar", () => {
 
       const calendar = document.querySelector(".solidaria-RangeCalendar");
       const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      day10.focus();
       fireEvent.pointerDown(day10);
       fireEvent.pointerUp(day10);
 
@@ -676,6 +683,7 @@ describe("RangeCalendar", () => {
       await waitForRangeCalendarHydration();
 
       const day10 = screen.getByRole("button", { name: /June 10, 2024/i });
+      day10.focus();
 
       await waitFor(() => {
         const ids = day10.getAttribute("aria-describedby")?.split(/\s+/) ?? [];

@@ -13,6 +13,7 @@ import {
 } from "solid-js";
 import {
   RangeCalendar as HeadlessRangeCalendar,
+  RangeCalendarButton,
   RangeCalendarCell,
   RangeCalendarGrid,
   useRangeCalendarContext,
@@ -24,7 +25,7 @@ import {
 import { useLocale } from "@proyecto-viviana/solidaria";
 import { DateFormatter, type RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { focusRing, lightDark, setColorScheme, style } from "../style" with { type: "macro" };
+import { baseColor, focusRing, lightDark, setColorScheme, style } from "../style" with { type: "macro" };
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";
@@ -38,7 +39,6 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
-import { ActionButton, type ActionButtonSize } from "../button/ActionButton";
 
 export type RangeCalendarSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg" | "xl";
 type NormalizedRangeCalendarSize = "sm" | "md" | "lg" | "xl";
@@ -150,20 +150,6 @@ function normalizeFirstDayOfWeek(
   }
 }
 
-function actionButtonSize(size: NormalizedRangeCalendarSize): ActionButtonSize {
-  switch (size) {
-    case "sm":
-      return "S";
-    case "lg":
-      return "L";
-    case "xl":
-      return "XL";
-    case "md":
-    default:
-      return "M";
-  }
-}
-
 function monthTitle(date: CalendarDate, locale: string | undefined, timeZone: string): string {
   const formattableMonth = date.calendar.getFormattableMonth?.(date) ?? date;
   return new DateFormatter(locale ?? "en-US", {
@@ -187,35 +173,32 @@ const rangeCalendarRoot = style<{ isMultiMonth?: boolean }>({
   width: "fit",
 });
 
+// Mirrors @react-spectrum/s2 Calendar headerStyles (shared with Calendar).
 const rangeCalendarHeader = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
+  columnGap: 24,
 });
 
+// Mirrors @react-spectrum/s2 Calendar headingStyles: one per visible month,
+// laying out [prev button?, title, next button?] with the title flex-growing.
 const rangeCalendarHeading = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   margin: 0,
   flexGrow: 1,
+  width: "full",
 });
 
+// Mirrors @react-spectrum/s2 Calendar titleStyles.
 const rangeCalendarTitle = style({
   font: "title-lg",
   textAlign: "center",
   flexGrow: 1,
   flexShrink: 0,
-});
-
-const rangeCalendarTitleSpacer32 = style({
-  visibility: "hidden",
-  width: 32,
-});
-
-const rangeCalendarTitleSpacer24 = style({
-  visibility: "hidden",
-  width: 24,
+  marginY: 0,
 });
 
 const rangeCalendarMonths = style<{ isMultiMonth?: boolean }>({
@@ -229,12 +212,33 @@ const rangeCalendarMonths = style<{ isMultiMonth?: boolean }>({
   width: "[max-content]",
 });
 
-const rangeCalendarNavButtonWrapper = style<{ direction?: "ltr" | "rtl" }>({
-  scale: {
-    direction: {
-      rtl: -1,
-    },
+// Mirrors @react-spectrum/s2 Calendar navButton (shared with Calendar). A bare
+// native <button> (via the headless RangeCalendarButton), so the disabled gray
+// keys off the `:disabled` pseudo — the button carries the `disabled` attribute
+// for both whole-calendar and range-boundary disable — rather than a runtime
+// render prop. The chevron icon inherits it via `--iconPrimary: currentColor`.
+const rangeCalendarNavButton = style<{ buttonSize: number }>({
+  ...focusRing(),
+  font: "ui",
+  fontWeight: "medium",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "[var(--s2-calendar-button-size)]",
+  height: "[var(--s2-calendar-button-size)]",
+  borderStyle: "none",
+  borderRadius: "full",
+  backgroundColor: {
+    default: "transparent",
+    isHovered: baseColor("gray-100"),
+    isPressed: baseColor("gray-200"),
   },
+  color: {
+    default: baseColor("neutral"),
+    ":disabled": "disabled",
+  },
+  cursor: "default",
+  transition: "default",
 });
 
 const rangeCalendarGrid = style({
@@ -564,9 +568,12 @@ const rangeCalendarNavIcon = style({
   forcedColorAdjust: "none",
 });
 
+// Mirrors @react-spectrum/s2 Field helpTextStyles at size M (controlFont() → the
+// base `ui` font), shared with the certified Calendar. `--field-gap` is
+// undefined outside a Field, so paddingTop resolves to 0 here — matching S2's
+// standalone RangeCalendar.
 const rangeCalendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
   font: "ui",
@@ -581,9 +588,24 @@ const rangeCalendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean 
       forcedColors: "GrayText",
     },
   },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
 });
 
-function RangeCalendarHeading(props: { visibleMonths: number; locale?: string }): JSX.Element {
+function RangeCalendarHeading(props: {
+  visibleMonths: number;
+  locale?: string;
+  prevButton: JSX.Element;
+  nextButton: JSX.Element;
+}): JSX.Element {
   const state = useRangeCalendarContext();
   const months = () =>
     Array.from({ length: props.visibleMonths }, (_, index) =>
@@ -591,63 +613,24 @@ function RangeCalendarHeading(props: { visibleMonths: number; locale?: string })
     );
 
   return (
-    <h2 aria-live="polite" class={rangeCalendarHeading}>
-      <For each={months()}>
-        {(title, index) =>
-          index() === 0 ? (
-            <div class={rangeCalendarTitle}>{title}</div>
-          ) : (
-            <>
-              <div class={rangeCalendarTitleSpacer32} />
-              <div class={rangeCalendarTitleSpacer24} />
-              <div class={rangeCalendarTitleSpacer32} />
-              <div class={rangeCalendarTitle}>{title}</div>
-            </>
-          )
-        }
-      </For>
-    </h2>
-  );
-}
-
-function RangeCalendarNavigationButton(props: {
-  slot: "previous" | "next";
-  size: NormalizedRangeCalendarSize;
-  children: JSX.Element;
-}): JSX.Element {
-  const state = useRangeCalendarContext();
-  const locale = useLocale();
-  const isDisabled = () =>
-    state.isDisabled() ||
-    (props.slot === "previous"
-      ? state.isPreviousVisibleRangeInvalid()
-      : state.isNextVisibleRangeInvalid());
-  const label = () => (props.slot === "previous" ? "Previous month" : "Next month");
-  const onPress = () => {
-    if (isDisabled()) {
-      return;
-    }
-
-    if (props.slot === "previous") {
-      state.focusPreviousPage();
-    } else {
-      state.focusNextPage();
-    }
-  };
-
-  return (
-    <div class={rangeCalendarNavButtonWrapper({ direction: locale().direction })}>
-      <ActionButton
-        aria-label={label()}
-        isDisabled={isDisabled()}
-        isQuiet
-        onPress={onPress}
-        size={actionButtonSize(props.size)}
-        tabIndex={-1}
-      >
-        {props.children}
-      </ActionButton>
-    </div>
+    // Mirror @react-spectrum/s2 CalendarHeader (shared with Calendar): one flex
+    // row per visible month, laying out [prev button (first month only), title,
+    // next button (last month only)]. When a single month is visible both
+    // buttons share its row. The per-month title mirrors react-aria-components
+    // CalendarHeading, whose HeadingContext marks it aria-hidden (the visible
+    // range is already named on the application root + each grid) — so it stays
+    // out of the AX tree.
+    <For each={months()}>
+      {(title, index) => (
+        <div class={rangeCalendarHeading}>
+          <Show when={index() === 0}>{props.prevButton}</Show>
+          <h2 aria-hidden="true" class={rangeCalendarTitle}>
+            {title}
+          </h2>
+          <Show when={index() === props.visibleMonths - 1}>{props.nextButton}</Show>
+        </div>
+      )}
+    </For>
   );
 }
 
@@ -802,15 +785,34 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
       style={rootStyle()}
     >
       <header class={rangeCalendarHeader}>
-        <RangeCalendarNavigationButton slot="previous" size={size()}>
-          <ChevronLeftIcon styles={rangeCalendarNavIcon} />
-        </RangeCalendarNavigationButton>
-
-        <RangeCalendarHeading visibleMonths={visibleMonths()} locale={locale()} />
-
-        <RangeCalendarNavigationButton slot="next" size={size()}>
-          <ChevronRightIcon styles={rangeCalendarNavIcon} />
-        </RangeCalendarNavigationButton>
+        <RangeCalendarHeading
+          visibleMonths={visibleMonths()}
+          locale={locale()}
+          prevButton={
+            <RangeCalendarButton
+              slot="previous"
+              class={rangeCalendarNavButton({ buttonSize: sizeConfig().buttonSize })}
+              style={{
+                width: `${sizeConfig().buttonSize}px`,
+                height: `${sizeConfig().buttonSize}px`,
+              }}
+            >
+              <ChevronLeftIcon styles={rangeCalendarNavIcon} />
+            </RangeCalendarButton>
+          }
+          nextButton={
+            <RangeCalendarButton
+              slot="next"
+              class={rangeCalendarNavButton({ buttonSize: sizeConfig().buttonSize })}
+              style={{
+                width: `${sizeConfig().buttonSize}px`,
+                height: `${sizeConfig().buttonSize}px`,
+              }}
+            >
+              <ChevronRightIcon styles={rangeCalendarNavIcon} />
+            </RangeCalendarButton>
+          }
+        />
       </header>
 
       <div class={rangeCalendarMonths({ isMultiMonth: visibleMonths() > 1 })}>

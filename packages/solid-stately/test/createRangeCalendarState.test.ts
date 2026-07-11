@@ -523,6 +523,10 @@ describe("createRangeCalendarState", () => {
         const minDate = new CalendarDate(2024, 6, 10);
         const state = createRangeCalendarState({
           minValue: minDate,
+          // Focus June 2024 so the tested dates are inside the visible range —
+          // isCellDisabled bounds on the visible range (mirrors upstream
+          // useCalendarState), so only the min/max boundary is under test here.
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
         });
 
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(true);
@@ -548,17 +552,22 @@ describe("createRangeCalendarState", () => {
       });
     });
 
-    it("should not select disabled dates", () => {
+    it("should clamp a below-min selection to the minimum date", () => {
       createRoot((dispose) => {
         const minDate = new CalendarDate(2024, 6, 10);
         const state = createRangeCalendarState({
           minValue: minDate,
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
         });
 
+        // Selecting a date before minValue clamps into [minValue, maxValue] and
+        // anchors on the boundary (mirrors upstream useRangeCalendarState, which
+        // runs selectDate through constrainValue rather than rejecting) — the
+        // cell layer is what prevents clicking a disabled cell in the UI.
         const disabledDate = new CalendarDate(2024, 6, 5);
         state.selectDate(disabledDate);
 
-        expect(state.anchorDate()).toBe(null);
+        expect(state.anchorDate()).toEqual(minDate);
 
         dispose();
       });
@@ -629,6 +638,11 @@ describe("createRangeCalendarState", () => {
           defaultFocusedValue: focusDate,
         });
 
+        // isCellFocused gates on the calendar-level isFocused flag (mirrors
+        // upstream useCalendarState `isFocused && isSameDay`), so the calendar
+        // must actually hold focus before any cell reports focused.
+        state.setFocused(true);
+
         expect(state.isCellFocused(new CalendarDate(2024, 6, 14))).toBe(false);
         expect(state.isCellFocused(new CalendarDate(2024, 6, 15))).toBe(true);
         expect(state.isCellFocused(new CalendarDate(2024, 6, 16))).toBe(false);
@@ -661,6 +675,9 @@ describe("createRangeCalendarState", () => {
             const calDate = date as CalendarDate;
             return calDate.day === 15;
           },
+          // Focus June 2024 so the tested dates are inside the visible range —
+          // isInvalid folds isCellDisabled, which bounds on the visible range.
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
         });
 
         expect(state.isInvalid(new CalendarDate(2024, 6, 14))).toBe(false);
@@ -1149,7 +1166,13 @@ describe("createRangeCalendarState", () => {
 
     it("narrows the selectable range to the contiguous span around the anchor", () => {
       createRoot((dispose) => {
-        const state = createRangeCalendarState({ isDateUnavailable });
+        // Focus June 2024 so the tested dates are inside the visible range;
+        // isCellDisabled bounds on the visible range, so the assertions below
+        // isolate the available-range (contiguous span) narrowing.
+        const state = createRangeCalendarState({
+          isDateUnavailable,
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
+        });
 
         // No anchor yet: nothing outside the unavailable dates is narrowed.
         expect(state.isCellDisabled(new CalendarDate(2024, 6, 5))).toBe(false);
@@ -1179,6 +1202,8 @@ describe("createRangeCalendarState", () => {
         const state = createRangeCalendarState({
           isDateUnavailable,
           allowsNonContiguousRanges: true,
+          // Focus June 2024 so the tested dates are inside the visible range.
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
         });
 
         state.setAnchorDate(new CalendarDate(2024, 6, 15));
