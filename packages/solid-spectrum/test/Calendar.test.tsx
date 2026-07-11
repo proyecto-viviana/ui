@@ -99,7 +99,12 @@ describe("Calendar (solid-spectrum)", () => {
 
     expect(screen.getByText("February 2025")).toBeInTheDocument();
     expect(screen.getByText("March 2025")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Next month" }));
+    // Two buttons carry the "Next" label: the visible header nav button and a
+    // visually-hidden trailing next button after the grid (a touch-SR affordance
+    // mirroring react-aria-components Calendar). The header nav button is first
+    // in DOM order — this is exactly `getAllByLabelText('Next')[0]` in the
+    // upstream @react-spectrum Calendar tests.
+    await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
     expect(screen.getByText("April 2025")).toBeInTheDocument();
     expect(screen.getByText("May 2025")).toBeInTheDocument();
 
@@ -115,7 +120,12 @@ describe("Calendar (solid-spectrum)", () => {
     ));
     await waitForCalendar();
 
-    await user.click(screen.getByRole("button", { name: "Next month" }));
+    // Two buttons carry the "Next" label: the visible header nav button and a
+    // visually-hidden trailing next button after the grid (a touch-SR affordance
+    // mirroring react-aria-components Calendar). The header nav button is first
+    // in DOM order — this is exactly `getAllByLabelText('Next')[0]` in the
+    // upstream @react-spectrum Calendar tests.
+    await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
     expect(screen.getByText("March 2025")).toBeInTheDocument();
     expect(screen.getByText("April 2025")).toBeInTheDocument();
   });
@@ -149,7 +159,7 @@ describe("Calendar (solid-spectrum)", () => {
     expect(contextRef.current).toBe(root);
     expect(localRef).toBe(root);
     expect(root).toHaveStyle({ margin: "3px", width: "224px" });
-    expect(screen.getByRole("button", { name: "Previous month" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();
     const headers = Array.from(document.querySelectorAll("th")).map((cell) => cell.textContent);
     expect(headers[0]).toBe("M");
   });

@@ -180,16 +180,17 @@ export function createCalendarGrid<T extends CalendarState>(
       "aria-readonly": state.isReadOnly() || undefined,
       "aria-disabled": state.isDisabled() || undefined,
       "aria-multiselectable": isMultiSelectable() || undefined,
-      tabIndex: state.isFocused() ? 0 : -1,
       onFocus: () => state.setFocused(true),
       onBlur: () => state.setFocused(false),
       onKeyDown: handleKeyDown,
     };
   });
 
-  // Header props are intentionally empty. Consumers render this on <thead>,
-  // which already has correct table semantics.
-  const headerProps = createMemo(() => ({}));
+  // Column headers are hidden to screen readers to make navigating with a touch
+  // screen reader easier — the day names are already included in each cell's
+  // label, so there's no need to announce them twice. Consumers render this on
+  // <thead>. Mirrors @react-aria/calendar useCalendarGrid headerProps.
+  const headerProps = createMemo(() => ({ "aria-hidden": true }));
 
   return {
     get gridProps() {

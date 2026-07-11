@@ -172,35 +172,32 @@ const calendarRoot = style<{ isMultiMonth?: boolean }>({
   width: "fit",
 });
 
+// Mirrors @react-spectrum/s2 Calendar headerStyles.
 const calendarHeader = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
+  columnGap: 24,
 });
 
-const calendarHeading = style<{ isMultiMonth?: boolean }>({
+// Mirrors @react-spectrum/s2 Calendar headingStyles: one per visible month,
+// laying out [prev button?, title, next button?] with the title flex-growing.
+const calendarHeading = style({
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   margin: 0,
   flexGrow: 1,
+  width: "full",
 });
 
+// Mirrors @react-spectrum/s2 Calendar titleStyles.
 const calendarTitle = style({
   font: "title-lg",
   textAlign: "center",
   flexGrow: 1,
   flexShrink: 0,
-});
-
-const calendarTitleSpacer32 = style({
-  visibility: "hidden",
-  width: 32,
-});
-
-const calendarTitleSpacer24 = style({
-  visibility: "hidden",
-  width: 24,
+  marginY: 0,
 });
 
 const calendarMonths = style<{ isMultiMonth?: boolean }>({
@@ -230,14 +227,16 @@ const calendarNavButton = style<{ buttonSize: number }>({
     isHovered: baseColor("gray-100"),
     isPressed: baseColor("gray-200"),
   },
+  // Gray the chevron when disabled, mirroring S2's disabled ActionButton. This
+  // is a bare native <button>, so the disabled color keys off the `:disabled`
+  // pseudo (the button carries the `disabled` attribute for both whole-calendar
+  // and range-boundary disable) rather than a runtime render prop. The chevron
+  // icon inherits it via `--iconPrimary: currentColor`.
   color: {
     default: baseColor("neutral"),
-    isDisabled: "disabled",
+    ":disabled": "disabled",
   },
-  cursor: {
-    default: "default",
-    isDisabled: "default",
-  },
+  cursor: "default",
   transition: "default",
 });
 
@@ -374,11 +373,14 @@ const calendarCellInner = style<{
       isSelected: "Highlight",
     },
   },
+  // Mirrors @react-spectrum/s2 Calendar cellInnerStyles color: unavailable dates
+  // stay `neutral` (only the strikethrough slash marks them), so there is NO
+  // isUnavailable branch here. The port previously invented `isUnavailable:
+  // "disabled"`, graying the text and its currentColor slash.
   color: {
     default: "neutral",
     isSelected: "white",
     isDisabled: "disabled",
-    isUnavailable: "disabled",
     forcedColors: {
       default: "ButtonText",
       isSelected: "HighlightText",
@@ -423,12 +425,15 @@ const calendarNavIcon = style({
   forcedColorAdjust: "none",
 });
 
+// Mirrors @react-spectrum/s2 Field helpTextStyles at size M (controlFont() → the
+// base `ui` font). The port previously invented `font: "body-sm"`, giving the
+// error text a taller line box than S2. `--field-gap` is undefined outside a
+// Field, so paddingTop resolves to 0 here — matching S2's standalone Calendar.
 const calendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
   display: "flex",
-  margin: 0,
   alignItems: "baseline",
   gap: "text-to-visual",
-  font: "body-sm",
+  font: "ui",
   color: {
     default: "neutral-subdued",
     isInvalid: {
@@ -440,9 +445,24 @@ const calendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
       forcedColors: "GrayText",
     },
   },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
 });
 
-function CalendarHeading(props: { visibleMonths: number; locale?: string }): JSX.Element {
+function CalendarHeading(props: {
+  visibleMonths: number;
+  locale?: string;
+  prevButton: JSX.Element;
+  nextButton: JSX.Element;
+}): JSX.Element {
   const state = useCalendarContext();
   const months = () =>
     Array.from({ length: props.visibleMonths }, (_, index) =>
@@ -450,22 +470,23 @@ function CalendarHeading(props: { visibleMonths: number; locale?: string }): JSX
     );
 
   return (
-    <h2 aria-live="polite" class={calendarHeading}>
-      <For each={months()}>
-        {(title, index) =>
-          index() === 0 ? (
-            <div class={calendarTitle}>{title}</div>
-          ) : (
-            <>
-              <div class={calendarTitleSpacer32} />
-              <div class={calendarTitleSpacer24} />
-              <div class={calendarTitleSpacer32} />
-              <div class={calendarTitle}>{title}</div>
-            </>
-          )
-        }
-      </For>
-    </h2>
+    // Mirror @react-spectrum/s2 CalendarHeader: one flex row per visible month,
+    // laying out [prev button (first month only), title, next button (last month
+    // only)]. When a single month is visible both buttons share its row. The
+    // per-month title mirrors react-aria-components CalendarHeading, whose
+    // HeadingContext marks it aria-hidden (the visible range is already named on
+    // the application root + each grid) — so it stays out of the AX tree.
+    <For each={months()}>
+      {(title, index) => (
+        <div class={calendarHeading}>
+          <Show when={index() === 0}>{props.prevButton}</Show>
+          <h2 aria-hidden="true" class={calendarTitle}>
+            {title}
+          </h2>
+          <Show when={index() === props.visibleMonths - 1}>{props.nextButton}</Show>
+        </div>
+      )}
+    </For>
   );
 }
 
@@ -573,29 +594,34 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
       style={rootStyle()}
     >
       <header class={calendarHeader}>
-        <CalendarButton
-          slot="previous"
-          class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
-          style={{
-            width: `${sizeConfig().buttonSize}px`,
-            height: `${sizeConfig().buttonSize}px`,
-          }}
-        >
-          <ChevronLeftIcon styles={calendarNavIcon} />
-        </CalendarButton>
-
-        <CalendarHeading visibleMonths={visibleMonths()} locale={locale()} />
-
-        <CalendarButton
-          slot="next"
-          class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
-          style={{
-            width: `${sizeConfig().buttonSize}px`,
-            height: `${sizeConfig().buttonSize}px`,
-          }}
-        >
-          <ChevronRightIcon styles={calendarNavIcon} />
-        </CalendarButton>
+        <CalendarHeading
+          visibleMonths={visibleMonths()}
+          locale={locale()}
+          prevButton={
+            <CalendarButton
+              slot="previous"
+              class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
+              style={{
+                width: `${sizeConfig().buttonSize}px`,
+                height: `${sizeConfig().buttonSize}px`,
+              }}
+            >
+              <ChevronLeftIcon styles={calendarNavIcon} />
+            </CalendarButton>
+          }
+          nextButton={
+            <CalendarButton
+              slot="next"
+              class={calendarNavButton({ buttonSize: sizeConfig().buttonSize })}
+              style={{
+                width: `${sizeConfig().buttonSize}px`,
+                height: `${sizeConfig().buttonSize}px`,
+              }}
+            >
+              <ChevronRightIcon styles={calendarNavIcon} />
+            </CalendarButton>
+          }
+        />
       </header>
 
       <div class={calendarMonths({ isMultiMonth: visibleMonths() > 1 })}>
@@ -643,12 +669,12 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
       </div>
 
       <Show when={isInvalid() && local.errorMessage}>
-        <p
+        <span
           id={errorMessageId}
           class={calendarHelpText({ isInvalid: true, isDisabled: Boolean(rest.isDisabled) })}
         >
           {local.errorMessage}
-        </p>
+        </span>
       </Show>
     </HeadlessCalendar>
   );

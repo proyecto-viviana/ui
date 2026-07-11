@@ -10,6 +10,8 @@ type CalendarLabelKey =
   | "dateSelected"
   | "maximumDate"
   | "minimumDate"
+  | "next"
+  | "previous"
   | "selectedDateDescription"
   | "selectedRangeDescription"
   | "todayDate"
@@ -169,6 +171,8 @@ const calendarLabelStrings: LocalizedStrings<CalendarLabelKey, CalendarLabelMess
     dateSelected: (args) => `${args?.date} selected`,
     maximumDate: "Last available date",
     minimumDate: "First available date",
+    next: "Next",
+    previous: "Previous",
     selectedDateDescription: (args) => `Selected Date: ${args?.date}`,
     selectedRangeDescription: (args) => `Selected Range: ${args?.dateRange}`,
     todayDate: (args) => `Today, ${args?.date}`,
@@ -181,6 +185,8 @@ const calendarLabelStrings: LocalizedStrings<CalendarLabelKey, CalendarLabelMess
     minimumDate: "Première date disponible",
     selectedDateDescription: (args) => `Date sélectionnée : ${args?.date}`,
     selectedRangeDescription: (args) => `Plage sélectionnée : ${args?.dateRange}`,
+    next: "Suivant",
+    previous: "Précédent",
     todayDate: (args) => `Aujourd'hui, ${args?.date}`,
     todayDateSelected: (args) => `Aujourd’hui, ${args?.date} sélectionné`,
   },
@@ -189,6 +195,8 @@ const calendarLabelStrings: LocalizedStrings<CalendarLabelKey, CalendarLabelMess
     dateSelected: (args) => `${args?.date} المحدد`,
     maximumDate: "آخر تاريخ متاح",
     minimumDate: "أول تاريخ متاح",
+    next: "التالي",
+    previous: "السابق",
     selectedDateDescription: (args) => `تاريخ محدد: ${args?.date}`,
     selectedRangeDescription: (args) => `المدى الزمني المحدد: ${args?.dateRange}`,
     todayDate: (args) => `اليوم، ${args?.date}`,

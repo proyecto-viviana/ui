@@ -287,7 +287,10 @@ export function createCalendarState<
   const [visibleRangeStart, setVisibleRangeStart] = createSignal<CalendarDate>(
     alignVisibleRangeStart(initialFocusedDate),
   );
-  const [isFocused, setFocused] = createSignal(false);
+  // Init from autoFocus, mirroring @react-stately useCalendarState
+  // (`useState(props.autoFocus || false)`). Without autoFocus the calendar
+  // mounts unfocused and never steals DOM focus.
+  const [isFocused, setFocused] = createSignal(props.autoFocus ?? false);
   const [isPaginating, setIsPaginating] = createSignal(false);
 
   // Controlled vs uncontrolled value
@@ -457,9 +460,13 @@ export function createCalendarState<
     return isSameDay(target, toDisplayCalendarDate(v));
   };
 
-  // Check if a date is focused
+  // Check if a date is focused. Mirrors @react-stately/calendar isCellFocused
+  // (`isFocused && focusedDate && isSameDay(date, focusedDate)`): the
+  // calendar-level `isFocused` flag gates cell focus so the calendar does NOT
+  // steal DOM focus on mount. The roving tabbable cell is tracked separately by
+  // the cell's `tabIndex` (isSameDay against focusedDate, ungated).
   const isCellFocused = (date: DateValue): boolean => {
-    return isSameDay(toDisplayCalendarDate(date), focusedDate());
+    return isFocused() && isSameDay(toDisplayCalendarDate(date), focusedDate());
   };
 
   // Check if a date is unavailable
@@ -475,6 +482,15 @@ export function createCalendarState<
     const minValue = access(props.minValue);
     const maxValue = access(props.maxValue);
     const calDate = toDisplayCalendarDate(date);
+
+    // Dates outside the visible range are disabled, mirroring
+    // @react-stately/calendar isCellDisabled (`date.compare(startDate) < 0 ||
+    // date.compare(endDate) > 0` over the visible range). This is what marks the
+    // leading/trailing padding cells (days from the adjacent months that fill out
+    // the first/last grid weeks) as aria-disabled.
+    const range = visibleRange();
+    if (calDate.compare(toDisplayCalendarDate(range.start)) < 0) return true;
+    if (calDate.compare(toDisplayCalendarDate(range.end)) > 0) return true;
 
     if (minValue && calDate.compare(toDisplayCalendarDate(minValue)) < 0) return true;
     if (maxValue && calDate.compare(toDisplayCalendarDate(maxValue)) > 0) return true;
@@ -557,8 +573,14 @@ export function createCalendarState<
   };
 
   const selectDate = (date: CalendarDate) => {
+    // Mirror @react-stately/calendar `selectDate(date) { setValue(date); }`:
+    // no isCellDisabled/isCellUnavailable guard here. Upstream gates selection
+    // at the cell layer (createCalendarCell handlePointerDown/handleClick guard
+    // on isDisabled/isUnavailable before calling selectDate); the state method
+    // only refuses when the whole calendar is disabled/readOnly (setValue's
+    // guard). Double-guarding here also broke programmatic selection of dates
+    // outside the current visible range.
     if (isReadOnly() || isDisabled()) return;
-    if (isCellDisabled(date) || isCellUnavailable(date)) return;
 
     if (selectionMode() === "multiple") {
       const current = value();

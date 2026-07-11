@@ -601,7 +601,13 @@ describe("createCalendarState", () => {
     it("should report date as disabled when before minValue", () => {
       createRoot((dispose) => {
         const minDate = new CalendarDate(2024, 6, 10);
+        // Align the visible range to the probed month. @react-stately/calendar
+        // isCellDisabled reports any date outside the visible range as disabled
+        // (the padding-cell contract), so probing min/max requires the range to
+        // cover those dates — otherwise every June 2024 date reads disabled
+        // regardless of minValue.
         const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
           minValue: minDate,
         });
 
@@ -616,6 +622,7 @@ describe("createCalendarState", () => {
       createRoot((dispose) => {
         const maxDate = new CalendarDate(2024, 6, 20);
         const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
           maxValue: maxDate,
         });
 
@@ -649,6 +656,12 @@ describe("createCalendarState", () => {
           defaultFocusedValue: focusDate,
         });
 
+        // @react-stately/calendar gates isCellFocused on the calendar-level
+        // isFocused flag (`isFocused && focusedDate && isSameDay(...)`), which
+        // starts false. A cell only reads focused once the calendar itself is
+        // focused, so raise the flag before asserting.
+        state.setFocused(true);
+
         expect(state.isCellFocused(focusDate)).toBe(true);
         expect(state.isCellFocused(new CalendarDate(2024, 6, 16))).toBe(false);
 
@@ -673,6 +686,7 @@ describe("createCalendarState", () => {
     it("should correctly identify disabled dates with isDateDisabled", () => {
       createRoot((dispose) => {
         const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
           isDateDisabled: (date) => date.day === 15,
         });
 
@@ -686,6 +700,7 @@ describe("createCalendarState", () => {
     it("should correctly identify invalid dates", () => {
       createRoot((dispose) => {
         const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2024, 6, 15),
           isDateDisabled: (date) => date.day === 15,
           isDateUnavailable: (date) => date.day === 16,
         });

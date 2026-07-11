@@ -14,7 +14,12 @@ import { getInteractionModality } from "../interactions/createInteractionModalit
 import { useLocale } from "../i18n";
 import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
-import { isToday as isTodayUtil, DateFormatter, getLocalTimeZone } from "@internationalized/date";
+import {
+  isToday as isTodayUtil,
+  DateFormatter,
+  getLocalTimeZone,
+  isSameDay,
+} from "@internationalized/date";
 import { getCalendarHookData } from "./utils";
 import { formatCalendarLabel } from "./intl";
 
@@ -76,7 +81,6 @@ export function createCalendarCell<T extends CalendarState>(
 
   // Check states
   const isSelected = createMemo(() => state.isSelected(date()));
-  const isFocused = createMemo(() => state.isCellFocused(date()));
   const isInvalid = createMemo(() => state.isValueInvalid() && isSelected());
   const isDisabled = createMemo(() => {
     return getProps().isDisabled || state.isCellDisabled(date());
@@ -85,6 +89,11 @@ export function createCalendarCell<T extends CalendarState>(
   const isOutsideMonth = createMemo(
     () => getProps().isOutsideMonth ?? state.isOutsideVisibleRange(date()),
   );
+  // Mirror @react-aria/calendar useCalendarCell: `isCellFocused(date) &&
+  // !isOutsideMonth`. isCellFocused is gated on the calendar-level focus flag,
+  // so this drives the focusSafely effect (never on mount) — NOT the roving
+  // tabIndex, which tracks focusedDate directly below.
+  const isFocused = createMemo(() => state.isCellFocused(date()) && !isOutsideMonth());
   const isToday = createMemo(() => isTodayUtil(date(), timeZone));
   const isCellFocusVisible = createMemo(
     () => isFocused() && isRingFocusVisible() && getInteractionModality() !== null,
@@ -193,7 +202,12 @@ export function createCalendarCell<T extends CalendarState>(
       focusProps as Record<string, unknown>,
       {
         role: "button",
-        tabIndex: isFocused() ? 0 : -1,
+        // Roving tabbable cell = the focusedDate cell, ungated by calendar
+        // focus, mirroring @react-aria/calendar useCalendarCell
+        // (`tabIndex = isSameDay(date, state.focusedDate) ? 0 : -1`, undefined
+        // when disabled). Keeps one cell tabbable on mount without stealing
+        // focus, and prunes tabindex from disabled cells like upstream.
+        tabIndex: isDisabled() ? undefined : isSameDay(date(), state.focusedDate()) ? 0 : -1,
         "aria-label": label,
         "aria-disabled": isDisabled() || isUnavailable() || undefined,
         "aria-invalid": isInvalid() || undefined,

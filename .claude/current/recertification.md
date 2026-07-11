@@ -739,7 +739,57 @@ March order (dependency/leverage; within a tier, top to bottom):
   introduced here.) **NEXT: Tier 5 — date/time/color, opening with Calendar.**
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
-  ColorEditor
+  ColorEditor. **Calendar ✓ certified 2026-07-10 (CP9.58)** — the Tier-5 opener
+  and the first unit whose oracle owns BOTH paint and behavior, so it certifies
+  in one spec against the styled `@react-spectrum/s2` Calendar with a paint
+  scenario (D1 state-matrix on the day-3 cell, D3 pixel of the whole
+  `role="application"` root, D7 contrast, D8 target size, D9 forced-colors; cases
+  default/selected/unavailable/invalid/multimonth/disabled) and a behavior
+  scenario (D5 focus-trail over the grid arrow model, D6 AX tree of the resting
+  application subtree, D10 RTL re-run of the D5 walk under `ar-AE`). D2 (no
+  Calendar mount animation), D4 (value-change event surface, better certified on
+  the composed DatePicker) and RTL *paint* (D10 runs focus-only; the grid is
+  DOM-order-mirrored) scoped out with rationale in the spec docblock. The browser
+  drivers caught four styled paint divergences, each fixed against the S2 style
+  macros: (1) D7 contrast ×6 + multimonth D3 — the heading was one
+  `<h2 aria-hidden>` flanked by spacer divs, restructured into per-month flex rows
+  (`<h2 class={calendarTitle}>` between the prev/next buttons, `columnGap`/
+  `width:full`/`marginY:0`) mirroring S2 header/heading/title styles; (2) invalid
+  D3 — the port invented `font:"body-sm"` on the error text, replaced with S2's
+  `helpTextStyles` (`controlFont()`='ui', `--iconPrimary`, `contain inline-size`,
+  field-gap padding); (3) disabled D3 — S2 grays the nav chevrons when the whole
+  calendar is disabled and the port didn't, fixed via a `:disabled` pseudo-class
+  color on `calendarNavButton`; (4) unavailable D3 — the port invented an
+  `isUnavailable:"disabled"` gray in `calendarCellInner` color, removed (S2 keeps
+  unavailable text neutral, slash-mark only). Behind the paint, the increment also
+  reverted three self-inflicted BEHAVIOR divergences to match vendored
+  `@react-stately/calendar@3.9.2` + `@react-aria/calendar`: `selectDate(date)` had
+  an invented `isCellDisabled||isCellUnavailable` guard (upstream is bare
+  `setValue(date)`; gating lives at the cell layer — the guard also broke
+  programmatic selection outside the visible range); `isCellFocused` is now gated
+  on calendar-level `isFocused` (`isFocused && focusedDate && isSameDay`) with the
+  roving `tabIndex` kept separate + ungated; `isCellDisabled` now bounds the
+  visible range (padding cells aria-disabled, upstream line 319); `createCalendar`
+  nav-button labels are localized via `formatCalendarLabel(locale, "previous"/
+  "next")` = "Previous"/"Next" (not hardcoded "Previous month"/"Next month") with
+  the invented `tabIndex:-1` dropped; `createCalendarGrid` headerProps now carry
+  `aria-hidden:true` (the column-header row is AX-hidden upstream) with the invented
+  grid tabIndex dropped; and `Calendar.tsx` adds the RAC visually-hidden trailing
+  next-button (a touch-SR affordance) plus `CalendarButton` tabindex 0/undefined.
+  Six unit-test updates track the faithful upstream behavior (not port fixes): five
+  `createCalendarState` tests pinned to a `defaultFocusedValue` so their probes
+  align with the visible range (+ `setFocused(true)` for the isFocused gate);
+  rowgroup/columnheader queries switched to `{hidden:true}` mirroring RAC
+  `Calendar.test.js`; "Next month"/"Previous month" → "Next"/"Previous"; the dual
+  "Next" nav click disambiguated with `getAllByRole(..., {name:"Next"})[0]` (the
+  `@adobe/react-spectrum` `getAllByLabelText('Next')[0]` precedent); and the
+  `solid-spectrum` Calendar regression snapshot regenerated (Calendar-only, Tree
+  snapshot untouched). Verification: Calendar cert e2e **47/47 green** on the
+  rebuilt comparison chain; full certified suite **1662 pass / 6 skip / 0 fail**
+  (up exactly 47 from CP9.57's 1615) — no regression; root typecheck exit 0; the
+  full unit suite's 4 failures are the SAME pre-existing Tree tech-debt
+  (3 `createTree.test.ts` + 1 treegrid `regression.test.tsx` snapshot), not
+  introduced here. **NEXT: RangeCalendar (Tier 5 continues).**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

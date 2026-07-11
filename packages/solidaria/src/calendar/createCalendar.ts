@@ -11,6 +11,7 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import type { CalendarState } from "@proyecto-viviana/solid-stately";
 import { formatVisibleRangeDescription, setCalendarHookData } from "./utils";
+import { formatCalendarLabel } from "./intl";
 
 export interface AriaCalendarProps {
   /** An ID for the calendar. */
@@ -99,14 +100,13 @@ export function createCalendar<T extends CalendarState>(
     const isDisabled = p.isDisabled || state.isDisabled();
 
     return {
-      "aria-label": "Previous month",
+      "aria-label": formatCalendarLabel(state.locale(), "previous"),
       onClick: () => {
         if (!isDisabled) {
           state.focusPreviousPage();
         }
       },
       disabled: isDisabled,
-      tabIndex: -1,
     };
   });
 
@@ -116,14 +116,13 @@ export function createCalendar<T extends CalendarState>(
     const isDisabled = p.isDisabled || state.isDisabled();
 
     return {
-      "aria-label": "Next month",
+      "aria-label": formatCalendarLabel(state.locale(), "next"),
       onClick: () => {
         if (!isDisabled) {
           state.focusNextPage();
         }
       },
       disabled: isDisabled,
-      tabIndex: -1,
     };
   });
 

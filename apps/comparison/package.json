@@ -16,7 +16,7 @@
     "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
     "test:buttons": "vp run build && playwright test e2e/button-family-contract.spec.ts --reporter=line",
     "test:catalogue": "vp run build && playwright test e2e/catalogue-controls.spec.ts --reporter=line",
-    "test:calendar": "vp run build && playwright test e2e/calendar-contract.spec.ts e2e/calendar-visual.spec.ts --reporter=line",
+    "test:calendar": "vp run build && playwright test e2e/certified/calendar.certified.spec.ts --reporter=line",
     "test:collections": "vp run build && playwright test e2e/listview-visual.spec.ts e2e/tableview-visual.spec.ts e2e/treeview-visual.spec.ts --reporter=line",
     "test:theme": "vp run build && playwright test e2e/component-theme-contract.spec.ts --reporter=line",
     "test:contract": "vp run build && playwright test e2e/styled-contract.spec.ts e2e/button-family-contract.spec.ts --reporter=line",

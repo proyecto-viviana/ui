@@ -305,6 +305,17 @@ function CalendarWithState<
         <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
       </VisuallyHidden>
       {props.children}
+      {/* For touch screen readers, a visually hidden next button after the month
+       * grid so it's easy to navigate after reaching the end without going all
+       * the way back to the start. Mirrors react-aria-components Calendar. */}
+      <VisuallyHidden>
+        <button
+          aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
+          disabled={Boolean(calendarAria.nextButtonProps.disabled)}
+          onClick={() => state().focusNextPage()}
+          tabIndex={-1}
+        />
+      </VisuallyHidden>
     </div>
   );
 }
@@ -387,6 +398,18 @@ function CalendarInner<
           <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
         </VisuallyHidden>
         {props.children}
+        {/* For touch screen readers, a visually hidden next button after the
+         * month grid so it's easy to navigate after reaching the end without
+         * going all the way back to the start. Mirrors react-aria-components
+         * Calendar. */}
+        <VisuallyHidden>
+          <button
+            aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
+            disabled={Boolean(calendarAria.nextButtonProps.disabled)}
+            onClick={() => state.focusNextPage()}
+            tabIndex={-1}
+          />
+        </VisuallyHidden>
       </div>
     </CalendarContext.Provider>
   );
@@ -455,12 +478,18 @@ export function CalendarButton(props: CalendarButtonProps): JSX.Element {
     return calendarAria.nextButtonProps;
   });
 
+  const isDisabled = () => props.isDisabled || state.isDisabled();
+
   return (
     <button
       {...buttonProps()}
       class={props.class ?? "solidaria-CalendarButton"}
       style={props.style}
-      disabled={props.isDisabled || state.isDisabled()}
+      disabled={isDisabled()}
+      // Mirror useFocusable: always set an explicit tabIndex on an enabled
+      // focusable button (0), and drop it entirely when disabled — so the
+      // nav buttons appear in the roving tab order exactly as upstream does.
+      tabindex={isDisabled() ? undefined : 0}
     >
       {props.children}
     </button>

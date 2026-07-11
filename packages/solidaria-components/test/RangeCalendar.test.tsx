@@ -96,8 +96,10 @@ describe("RangeCalendar", () => {
       await waitForRangeCalendarHydration();
 
       const grid = screen.getByRole("grid");
-      // header rowgroup + body rowgroup
-      expect(within(grid).getAllByRole("rowgroup")).toHaveLength(2);
+      // header rowgroup + body rowgroup. The header rowgroup carries
+      // `aria-hidden` (mirroring @react-aria/calendar useCalendarGrid), so query
+      // it with `hidden: true` like react-aria-components Calendar.test.js.
+      expect(within(grid).getAllByRole("rowgroup", { hidden: true })).toHaveLength(2);
       // header row + one row per week
       expect(within(grid).getAllByRole("row").length).toBeGreaterThanOrEqual(5);
       // a gridcell per day in the month (empty padding <td> carry no role)
@@ -557,7 +559,9 @@ describe("RangeCalendar", () => {
       render(() => <TestRangeCalendar />);
       await waitForRangeCalendarHydration();
 
-      const columnHeaders = screen.getAllByRole("columnheader");
+      // Column headers live inside the aria-hidden header rowgroup (mirroring
+      // @react-aria/calendar useCalendarGrid), so query with `hidden: true`.
+      const columnHeaders = screen.getAllByRole("columnheader", { hidden: true });
       expect(columnHeaders.length).toBe(7);
     });
 
