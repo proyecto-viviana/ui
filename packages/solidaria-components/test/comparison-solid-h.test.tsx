@@ -360,6 +360,11 @@ describe("comparison Solid h helper", () => {
             DatePicker,
             {
               "aria-label": "Due date",
+              // The faithful createDatePicker seeds buttonProps.aria-label from the
+              // localized "calendar" string ("Calendar"), which overrides the button's
+              // text child for the accessible name. Set it explicitly so the trigger's
+              // name matches this demo's intent ("Open calendar").
+              buttonAriaLabel: "Open calendar",
               onChange: (nextValue: unknown) =>
                 setValue(nextValue == null ? "" : String(nextValue)),
             },
