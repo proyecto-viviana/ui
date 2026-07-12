@@ -73,9 +73,13 @@ export function normalizeActionGroupDemoProps(
 
 export function actionGroupDemoPropsFromSearch(search: string): ActionGroupDemoProps {
   const params = new URLSearchParams(search);
+  const selectionMode = params.get("selectionMode");
+  const orientation = params.get("orientation");
   return normalizeActionGroupDemoProps({
-    selectionMode: params.get("selectionMode") ?? undefined,
-    orientation: params.get("orientation") ?? undefined,
+    selectionMode: isOneOf(selectionMode, actionGroupSelectionModeOptions)
+      ? selectionMode
+      : undefined,
+    orientation: isOneOf(orientation, actionGroupOrientationOptions) ? orientation : undefined,
     defaultSelectedKeys: params.get("defaultSelectedKeys") ?? undefined,
     disabledKeys: params.get("disabledKeys") ?? undefined,
   });

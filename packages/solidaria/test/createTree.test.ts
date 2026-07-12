@@ -93,6 +93,13 @@ function createRowPointerEvent(
   return event;
 }
 
+function enterTree(onFocusIn: unknown) {
+  const currentTarget = document.createElement("div");
+  const event = new FocusEvent("focusin", { relatedTarget: null });
+  Object.defineProperty(event, "currentTarget", { value: currentTarget });
+  (onFocusIn as ((event: FocusEvent) => void) | undefined)?.(event);
+}
+
 describe("createTree", () => {
   it("should return treeProps with correct role", () => {
     createRoot((dispose) => {
@@ -195,7 +202,7 @@ describe("createTree", () => {
         ref,
       );
 
-      (treeProps.onFocus as ((e: FocusEvent) => void) | undefined)?.({} as FocusEvent);
+      enterTree(treeProps.onFocusIn);
 
       expect(state.isSelected("1")).toBe(false);
 
@@ -224,7 +231,7 @@ describe("createTree", () => {
         ref,
       );
 
-      (treeProps.onFocus as ((e: FocusEvent) => void) | undefined)?.({} as FocusEvent);
+      enterTree(treeProps.onFocusIn);
 
       const preventDefault = vi.fn();
       (treeProps.onKeyDown as ((e: KeyboardEvent) => void) | undefined)?.({
@@ -530,7 +537,7 @@ describe("createTree RTL direction parity", () => {
       );
 
       // Focus the tree → auto-focuses first item (key '1' which is expandable)
-      (treeProps.onFocus as ((e: FocusEvent) => void) | undefined)?.({} as FocusEvent);
+      enterTree(treeProps.onFocusIn);
       expect(state.focusedKey).toBe("1");
       expect(state.isExpanded("1")).toBe(false);
 
@@ -568,7 +575,7 @@ describe("createTree RTL direction parity", () => {
         ref,
       );
 
-      (treeProps.onFocus as ((e: FocusEvent) => void) | undefined)?.({} as FocusEvent);
+      enterTree(treeProps.onFocusIn);
 
       // ArrowRight in LTR = expand
       const preventDefault = vi.fn();
@@ -926,7 +933,7 @@ describe("createTree disabled key navigation parity", () => {
         ref,
       );
 
-      (treeProps.onFocus as ((e: FocusEvent) => void) | undefined)?.({} as FocusEvent);
+      enterTree(treeProps.onFocusIn);
       expect(state.focusedKey).toBe("1.1");
 
       dispose();

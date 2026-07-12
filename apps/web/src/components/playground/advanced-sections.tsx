@@ -2593,7 +2593,7 @@ function ToolbarDemo(props: { onLastAction: (value: string) => void }) {
 
       <div>
         <h4 class="text-sm font-medium text-primary-300 mb-2">Vertical Toolbar</h4>
-        <StyledToolbar orientation="vertical" variant="bordered" aria-label="Edit toolbar">
+        <StyledToolbar orientation="vertical" aria-label="Edit toolbar">
           <button
             type="button"
             class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"

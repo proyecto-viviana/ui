@@ -78,9 +78,11 @@ export function normalizeToolbarDemoProps(props: Partial<ToolbarDemoProps> = {})
 
 export function toolbarDemoPropsFromSearch(search: string): ToolbarDemoProps {
   const params = new URLSearchParams(search);
+  const orientation = params.get("orientation");
+  const content = params.get("content");
   return normalizeToolbarDemoProps({
-    orientation: params.get("orientation") ?? undefined,
-    content: params.get("content") ?? undefined,
+    orientation: isOneOf(orientation, toolbarOrientationOptions) ? orientation : undefined,
+    content: isOneOf(content, toolbarContentOptions) ? content : undefined,
   });
 }
 

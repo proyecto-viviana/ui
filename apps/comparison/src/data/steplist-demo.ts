@@ -92,8 +92,8 @@ export function stepListDemoPropsFromSearch(search: string): StepListDemoProps {
     defaultSelectedKey: params.get("defaultSelectedKey") ?? undefined,
     defaultLastCompletedStep: params.get("defaultLastCompletedStep") ?? undefined,
     disabledKeys: params.get("disabledKeys") ?? undefined,
-    isDisabled: params.get("isDisabled") ?? undefined,
-    isReadOnly: params.get("isReadOnly") ?? undefined,
+    isDisabled: params.get("isDisabled") === "true",
+    isReadOnly: params.get("isReadOnly") === "true",
   });
 }
 
