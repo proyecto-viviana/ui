@@ -19,9 +19,10 @@ import {
   TimeFieldLabel,
   TimeFieldDescription,
   TimeFieldErrorMessage,
-  TimeInput,
-  TimeSegment,
 } from "../src/TimeField";
+// TimeField reuses the certified DateField segment stack — there is no
+// TimeInput/TimeSegment upstream (RAC TimeField renders DateInput/DateSegment).
+import { DateInput, DateSegment } from "../src/DateField";
 import { Text } from "../src/Text";
 import { Form } from "../src/Form";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -36,7 +37,7 @@ async function waitForTimeFieldHydration() {
       const field = document.querySelector(".solidaria-TimeField");
       expect(field).toBeInTheDocument();
       // Also check for segments to ensure hydration is complete
-      const segments = document.querySelectorAll(".solidaria-TimeSegment");
+      const segments = document.querySelectorAll(".solidaria-DateSegment");
       expect(segments.length).toBeGreaterThan(0);
     },
     { timeout: 2000 },
@@ -47,7 +48,7 @@ async function waitForTimeFieldHydration() {
 function TestTimeField(props: { fieldProps?: Partial<Parameters<typeof TimeField>[0]> }) {
   return (
     <TimeField aria-label="Test Time" {...props.fieldProps}>
-      <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+      <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
     </TimeField>
   );
 }
@@ -80,7 +81,7 @@ describe("TimeField", () => {
       render(() => <TestTimeField />);
       await waitForTimeFieldHydration();
 
-      const input = document.querySelector(".solidaria-TimeInput");
+      const input = document.querySelector(".solidaria-DateInput");
       expect(input).toBeInTheDocument();
     });
 
@@ -88,7 +89,7 @@ describe("TimeField", () => {
       render(() => <TestTimeField />);
       await waitForTimeFieldHydration();
 
-      const segments = document.querySelectorAll(".solidaria-TimeSegment");
+      const segments = document.querySelectorAll(".solidaria-DateSegment");
       expect(segments.length).toBeGreaterThan(0);
     });
 
@@ -98,7 +99,7 @@ describe("TimeField", () => {
       // Wait for segments since custom class overrides default class
       await waitFor(
         () => {
-          const segments = document.querySelectorAll(".solidaria-TimeSegment");
+          const segments = document.querySelectorAll(".solidaria-DateSegment");
           expect(segments.length).toBeGreaterThan(0);
         },
         { timeout: 2000 },
@@ -114,7 +115,7 @@ describe("TimeField", () => {
       // references — the faithful upstream wiring path.
       render(() => (
         <TimeField aria-label="Test Time" description="Help text">
-          <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <Text slot="description">Help text</Text>
         </TimeField>
       ));
@@ -143,7 +144,9 @@ describe("TimeField", () => {
       expect(input).toBeInTheDocument();
       expect(input).toHaveAttribute("type", "text");
       expect(input).toHaveAttribute("hidden");
-      expect(input).toHaveValue("09:30");
+      // Faithful to upstream useTimeField: the hidden input serializes
+      // state.timeValue, and Time.toString() always includes seconds.
+      expect(input).toHaveValue("09:30:00");
     });
 
     it("should render a native required input for native validation behavior", async () => {
@@ -223,7 +226,7 @@ describe("TimeField", () => {
       const form = document.getElementById("scheduleForm") as HTMLFormElement;
       expect(input).toHaveAttribute("form", "scheduleForm");
       expect(form).toBeInTheDocument();
-      expect(new FormData(form).getAll("startTime").map(String)).toEqual(["09:30"]);
+      expect(new FormData(form).getAll("startTime").map(String)).toEqual(["09:30:00"]);
     });
   });
 
@@ -332,18 +335,22 @@ describe("TimeField", () => {
     it("should support explicit invalid state without a value", async () => {
       render(() => (
         <TimeField aria-label="Test Time" validationState="invalid" errorMessage="Time is required">
-          <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <TimeFieldErrorMessage>Time is required</TimeFieldErrorMessage>
         </TimeField>
       ));
       await waitForTimeFieldHydration();
 
+      // data-invalid rides on the roleless field root; the aria-describedby
+      // linkage lives on the role="group" (the DateInput), matching upstream
+      // useDateField which puts group ARIA on the field grouping element.
       const field = document.querySelector(".solidaria-TimeField") as HTMLElement;
+      const group = screen.getByRole("group", { name: "Test Time" });
       const error = screen.getByText("Time is required");
 
       expect(field).toHaveAttribute("data-invalid");
       expect(error).toHaveAttribute("id");
-      expect(field.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
+      expect(group.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
     });
 
     it("should mark field as invalid when value is outside min and max values", async () => {
@@ -418,7 +425,11 @@ describe("TimeField", () => {
       expect(spinbuttons[1]).toHaveFocus();
     });
 
-    it("should follow RTL segment navigation with ArrowRight", async () => {
+    // Skipped: RTL segment navigation resolves the visual-next segment
+    // geometrically via getBoundingClientRect (matching upstream
+    // useDatePickerGroup), which returns all-zeros in jsdom's layout-less DOM,
+    // so no segment is ever found. Certified in the real-browser pair-oracle spec.
+    it.skip("should follow RTL segment navigation with ArrowRight", async () => {
       render(() => (
         <I18nProvider locale="he-IL">
           <TestTimeField fieldProps={{ defaultValue: new Time(10, 30) }} />
@@ -485,7 +496,12 @@ describe("TimeField", () => {
       });
     });
 
-    it("should accept full-width digits in numeric input", async () => {
+    // Skipped: typed digits (including full-width) reach the value model through
+    // the contenteditable's onBeforeInput → onInput path (matching upstream
+    // useDateSegment), not onKeyDown. jsdom does not fire beforeinput on
+    // contenteditable, so a bare keyDown never reaches the parser. Certified in
+    // the real-browser pair-oracle spec.
+    it.skip("should accept full-width digits in numeric input", async () => {
       const onChange = vi.fn();
       render(() => <TestTimeField fieldProps={{ defaultValue: new Time(10, 30), onChange }} />);
       await waitForTimeFieldHydration();
@@ -598,8 +614,10 @@ describe("TimeField", () => {
       render(() => <TestTimeField fieldProps={{ defaultValue: new Time(10, 30) }} />);
       await waitForTimeFieldHydration();
 
+      // Faithful to the certified DateSegment: each segment self-refs its field
+      // label via createLabels — "<lowercase segment name>, <field label>".
       const hourSegment = document.querySelector('[data-type="hour"]');
-      expect(hourSegment).toHaveAttribute("aria-label", "Hour");
+      expect(hourSegment).toHaveAttribute("aria-label", "hour, Test Time");
     });
 
     it("should have aria-valuenow on segments", async () => {
@@ -614,12 +632,12 @@ describe("TimeField", () => {
       render(() => (
         <TimeField label="Meeting time">
           <TimeFieldLabel>Meeting time</TimeFieldLabel>
-          <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
         </TimeField>
       ));
       await waitForTimeFieldHydration();
 
-      const group = document.querySelector(".solidaria-TimeField") as HTMLElement;
+      const group = screen.getByRole("group", { name: "Meeting time" });
       const label = screen.getByText("Meeting time");
 
       expect(label.tagName).toBe("SPAN");
@@ -636,14 +654,14 @@ describe("TimeField", () => {
           description="Choose your preferred time"
           errorMessage="Time is required"
         >
-          <TimeInput>{(segment) => <TimeSegment segment={segment} />}</TimeInput>
+          <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
           <TimeFieldDescription>Choose your preferred time</TimeFieldDescription>
           <TimeFieldErrorMessage>Time is required</TimeFieldErrorMessage>
         </TimeField>
       ));
       await waitForTimeFieldHydration();
 
-      const group = document.querySelector(".solidaria-TimeField") as HTMLElement;
+      const group = screen.getByRole("group", { name: "Time" });
       const description = screen.getByText("Choose your preferred time");
       const error = screen.getByText("Time is required");
 
@@ -671,12 +689,19 @@ describe("TimeField", () => {
       expect(minuteSegment).toBeInTheDocument();
     });
 
-    it("should have data-editable on editable segments", async () => {
+    it("should expose the segment type via data-type", async () => {
       render(() => <TestTimeField fieldProps={{ defaultValue: new Time(10, 30) }} />);
       await waitForTimeFieldHydration();
 
-      const hourSegment = document.querySelector('[data-type="hour"]');
-      expect(hourSegment).toHaveAttribute("data-editable");
+      // Segments carry the certified DateSegment attribute `data-type`
+      // (hour/minute/…) — not the previously invented `data-editable`, which
+      // upstream never emits.
+      const segments = document.querySelectorAll('[role="spinbutton"]');
+      expect(segments.length).toBeGreaterThan(0);
+      segments.forEach((segment) => {
+        expect(segment).toHaveAttribute("data-type");
+        expect(segment.getAttribute("data-type")).toBeTruthy();
+      });
     });
 
     it("should have data-placeholder on placeholder segments", async () => {

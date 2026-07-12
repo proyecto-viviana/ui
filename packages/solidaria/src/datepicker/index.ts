@@ -18,15 +18,8 @@ export {
   type DateSegmentAria,
 } from "./createDateSegment";
 
-// Time Field
+// Time Field (thin wrapper over createDateField — reuses the DateSegment stack)
 export { createTimeField, type AriaTimeFieldProps, type TimeFieldAria } from "./createTimeField";
-
-// Time Segment
-export {
-  createTimeSegment,
-  type AriaTimeSegmentProps,
-  type TimeSegmentAria,
-} from "./createTimeSegment";
 
 // Date Picker
 export {

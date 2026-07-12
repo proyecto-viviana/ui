@@ -114,8 +114,11 @@ describe("createTimeFieldState", () => {
       });
 
       expect(state.isInvalid()).toBe(true);
+      // Faithful: TimeFieldState wraps DateFieldState (anchoring the Time on a
+      // CalendarDateTime), so range validation emits the standard RAC
+      // range-underflow message, formatted as a time since maxGranularity is "hour".
       expect(state.displayValidation().validationErrors).toContain(
-        "Value is below the minimum time.",
+        "Value must be 8:00 AM or later.",
       );
 
       dispose();

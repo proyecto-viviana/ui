@@ -984,7 +984,73 @@ March order (dependency/leverage; within a tier, top to bottom):
   1701) — no regression; root typecheck exit 0; the full unit suite's only
   failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
   treegrid `regression.test.tsx` snapshot), not introduced here.
-  **NEXT: TimeField (Tier 5 continues).**
+  **TimeField ✓ certified 2026-07-12 (CP9.61)** — Tier-5 unit 4, again an oracle
+  owning BOTH paint and behavior, so it certifies in one spec
+  (`apps/comparison/e2e/certified/timefield.certified.spec.ts`, 69 tests) against
+  the styled `@react-spectrum/s2` TimeField. The governing fact is that upstream
+  TimeField is NOT its own primitive: RAC `TimeField` reuses `DateInput`/
+  `DateSegment` (there is no `TimeInput`/`TimeSegment`), `useTimeField(props,
+  state, ref)` = `useDateField(...)` with a single line rewriting
+  `inputProps.value` to the value in the `Time` domain, and `useTimeFieldState`
+  wraps `useDateFieldState` (anchoring the `Time` on a `CalendarDateTime` — or a
+  zoned date when the value/default carries a zone — with `maxGranularity: 'hour'`
+  and `granularity || 'minute'`) returning `{...state, timeValue}` without
+  overriding `value`/`setValue`. So the faithful port is a THIN WRAPPER over the
+  certified DateField stack, and this unit REWROTE it as one (476 insertions /
+  890 deletions): the standalone fork was deleted — `createTimeSegment.ts` (+ its
+  test), `HiddenTimeInput.tsx`, and the forked body of `createTimeFieldState` —
+  and re-expressed as reuse. `createTimeFieldState` now drives
+  `createDateFieldState` (Time → CalendarDateTime via `convertValue`,
+  `maxGranularity: 'hour'`), layering the `timeValue` accessor with a **Proxy,
+  NOT an object spread** — spreading would invoke and freeze `DateFieldState`'s
+  `calendar`/`dateFormatter`/`granularity`/`locale`/`timeZone` getters (the same
+  Solid getter-freezing landmine that recurs across this tier); `createTimeField`
+  calls `createDateField` and rewrites only `inputProps.value =
+  state.timeValue()?.toString() || ""` through a getter; and the
+  solidaria-components `TimeField` provides the shared `DateFieldContext`/
+  `DateFieldStateContext` that the reused `DateInput`/`DateSegment` read, renders
+  the segments through that certified stack, and — a documented divergence from
+  DateField — renders NO root autofill `<input>` (RAC TimeField renders none),
+  keeping only the inner `DateInput`'s native-validation `<input>` sibling. The
+  distinct certifiable surface vs DateField is the SUB-DAY domain: hour/minute
+  (optionally second/dayPeriod) segments, `hourCycle` 12/24,
+  `shouldForceLeadingZeros`, and Time-domain serialization — `Time.toString()`
+  ALWAYS emits seconds, so the faithful hidden-input value is "09:30:00" (the unit
+  tests now assert this, correcting the fork's stale "09:30"). The paint scenario
+  targets the hour segment with the FieldGroup shell, the inner group's
+  `unicode-bidi: isolate`, the minute segment and help-text row as parts (cases
+  default/placeholder/invalid/disabled/readonly; D3 pixel, D7 contrast, D8 target
+  size, D9 forced-colors); the behavior scenario reuses DateField's model
+  wholesale (D5 segment tab-walk + spin-keys that must NOT move focus, D6
+  assertive `useSpinButton` announcements since segment names carry no value, D10
+  RTL on the group). The browser driver caught ONE faithful divergence, a
+  **FieldGroup `white-space`**: S2 TimeField's FieldGroup `styles` prop is only
+  `{...fieldInput(), paddingX: 'edge-to-text'}` — it deliberately DROPS the
+  `textWrap: 'nowrap'` that S2 DateField's FieldGroup carries — so the FieldGroup
+  computes `white-space: normal`; the port's `timeFieldGroup` had copied
+  DateField's `textWrap: 'nowrap'` and computed `nowrap`. Fixed by removing that
+  line (the inner `segmentContainer` still pins `nowrap`, exactly as S2 does via
+  the shared `DateInputContainer`). This cert's paint scenario adds `white-space`
+  to the D1/D9 diff allowlist — which DateField's cert did not — so it is also a
+  coverage improvement, not just a port fix. Scope-outs mirror DateField: D2 (no
+  S2 mount animation), D4 (value-change events → the composed DatePicker unit,
+  NEXT), and the root autofill input (N/A — RAC TimeField renders none). Two unit
+  skips carry the same jsdom-limit rationale DateField documented: RTL segment nav
+  (`getBoundingClientRect` returns all-zeros, so geometric `findNextSegment` can't
+  run) and full-width digit entry (typed input flows through `onBeforeInput`,
+  which jsdom does not fire). This unit supersedes the pre-certified
+  `e2e/timefield-visual.spec.ts` (`git rm`'d) by re-expressing its coverage in the
+  certified pair-oracle `register*Driver` form; the `test:timefield` npm script now
+  points at the cert. Verification: TimeField cert e2e **69/69 green** (exit 0 read
+  from a captured code, not a `| tail` pipe); full certified suite **1838 pass / 6
+  skip** (up exactly 69 from CP9.60's 1770 — the single full-suite failure was a
+  pre-existing `D4 Dialog close button · escape-close` flake that passes 7/7 in
+  isolation, with no Dialog files touched); root typecheck exit 0; TimeField unit
+  suites **59 pass / 2 documented jsdom skips**; the full unit suite's only other
+  failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
+  treegrid `regression.test.tsx` snapshot), not introduced here.
+  **NEXT: DatePicker (Tier 5 continues) — the composed unit that also closes the
+  deferred D4 value-change surface for the date/time fields.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

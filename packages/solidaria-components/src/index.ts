@@ -682,17 +682,11 @@ export {
   TimeFieldLabel,
   TimeFieldDescription,
   TimeFieldErrorMessage,
-  TimeInput,
-  TimeSegment,
   TimeFieldContext,
   TimeFieldStateContext,
   useTimeFieldContext,
   type TimeFieldProps,
   type TimeFieldRenderProps,
-  type TimeInputProps,
-  type TimeInputRenderProps,
-  type TimeSegmentProps,
-  type TimeSegmentRenderProps,
   type TimeFieldLabelProps,
   type TimeFieldDescriptionProps,
   type TimeFieldErrorMessageProps,
@@ -701,8 +695,6 @@ export {
   type TimeSegmentType,
   type TimeValue,
 } from "./TimeField";
-
-export { HiddenTimeInput, type HiddenTimeInputProps } from "./HiddenTimeInput";
 
 export {
   DatePicker,

@@ -1,19 +1,33 @@
 // @ts-nocheck - style-system generics need the same dedicated pass as DateField.
-import { createContext, type JSX, mergeProps, Show, splitProps, useContext } from "solid-js";
+import {
+  createContext,
+  createEffect,
+  createSignal,
+  type JSX,
+  mergeProps,
+  onCleanup,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
 import {
   TimeField as HeadlessTimeField,
   TimeFieldLabel as HeadlessTimeFieldLabel,
   TimeFieldDescription as HeadlessTimeFieldDescription,
   TimeFieldErrorMessage as HeadlessTimeFieldErrorMessage,
-  TimeInput,
-  TimeSegment,
-  useTimeFieldContext,
+  DateInput,
+  DateSegment,
+  useDateFieldContext,
   type TimeFieldProps as HeadlessTimeFieldProps,
   type TimeFieldRenderProps,
-  type TimeSegmentRenderProps,
+  type DateSegmentRenderProps,
   type TimeValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import {
+  useLocale,
+  createFocusVisibleListener,
+  isFocusVisible as isGlobalFocusVisible,
+} from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import {
@@ -53,12 +67,12 @@ export interface TimeFieldProps<T extends TimeValue = TimeValue> extends Omit<
   class?: string;
   /** Label for the field. */
   label?: JSX.Element;
+  /** A ContextualHelp element to render next to the label. */
+  contextualHelp?: JSX.Element;
   /** Description text. */
   description?: JSX.Element;
   /** Error message. */
   errorMessage?: JSX.Element;
-  /** Contextual help shown next to the label. */
-  contextualHelp?: JSX.Element;
   /** Position of the label relative to the field. */
   labelPosition?: TimeFieldLabelPosition;
   /** Label alignment for side labels. */
@@ -74,6 +88,7 @@ interface TimeFieldStyleProps extends TimeFieldRenderProps {
   labelPosition?: TimeFieldLabelPosition;
   labelAlign?: TimeFieldLabelAlign;
   isFocusWithin?: boolean;
+  isFocusVisible?: boolean;
   isInForm?: boolean;
 }
 
@@ -115,7 +130,10 @@ const timeFieldGroup = style<TimeFieldStyleProps>({
   ...fieldInput(),
   borderWidth: 2,
   borderStyle: "solid",
-  textWrap: "nowrap",
+  // Unlike S2 DateField, S2 TimeField's FieldGroup does NOT set textWrap:'nowrap'
+  // (see @react-spectrum/s2 TimeField.tsx — the styles prop is only fieldInput()
+  // + paddingX). The segmentContainer below still pins nowrap; keeping it here
+  // too would make the FieldGroup compute white-space:nowrap where S2 is normal.
   paddingX: "edge-to-text",
   transition: "default",
   borderColor: {
@@ -166,9 +184,7 @@ const segmentContainer = style({
   textWrap: "nowrap",
 });
 
-const timeSegment = style<
-  TimeSegmentRenderProps & { isPunctuation?: boolean; isDisabled?: boolean }
->({
+const timeSegment = style<DateSegmentRenderProps & { isPunctuation?: boolean }>({
   outlineStyle: "none",
   caretColor: "transparent",
   backgroundColor: {
@@ -188,21 +204,6 @@ const timeSegment = style<
     },
   },
   borderRadius: "[2px]",
-  display: {
-    default: "inline-flex",
-    isPunctuation: "inline",
-  },
-  alignItems: "center",
-  justifyContent: "center",
-  boxSizing: "border-box",
-  height: {
-    default: "[24px]",
-    isPunctuation: "auto",
-  },
-  minHeight: {
-    default: "[24px]",
-    isPunctuation: "auto",
-  },
   paddingX: {
     default: 2,
     isPunctuation: 0,
@@ -314,18 +315,42 @@ function focusFirstEditableSegment(event: Event & { currentTarget: HTMLDivElemen
 
 function TimeFieldContent(props: {
   label?: JSX.Element;
+  contextualHelp?: JSX.Element;
   description?: JSX.Element;
   errorMessage?: JSX.Element;
-  contextualHelp?: JSX.Element;
   size: S2TimeFieldSize;
   labelPosition: TimeFieldLabelPosition;
   labelAlign: TimeFieldLabelAlign;
   necessityIndicator: TimeFieldNecessityIndicator;
 }): JSX.Element {
-  const state = useTimeFieldContext();
+  // TimeField reuses the DateField segment stack, so it reads the shared
+  // DateFieldContext (state + group aria) exactly like DateFieldContent.
+  const { state, aria } = useDateFieldContext();
   const isDisabled = () => state.isDisabled();
   const isInvalid = () => state.isInvalid();
   const isRequired = () => state.isRequired();
+  // S2's FieldGroup is a RAC <Group role="presentation"> that consumes the SAME
+  // GroupContext as the inner DateInput group, so both elements carry the
+  // field's aria-labelledby (label) and aria-describedby (value description +
+  // help text). We render the FieldGroup as a styled div, so surface those two
+  // identity attributes here; the group event handlers stay local (duplicating
+  // the arrow-nav onKeyDown would double-advance focus).
+  const groupAria = () => aria.inputProps as Record<string, string | undefined>;
+  // Track focus-within on this separate, non-focusable presentation wrapper via
+  // the reliably-bubbling onFocusIn/onFocusOut (Solid's onFocus does not bubble),
+  // and compose focus-visible from the global interaction modality — exactly how
+  // createFocusRing derives `isFocusVisible = isFocused && focusVisibleFlag`.
+  const [isFocusWithin, setIsFocusWithin] = createSignal(false);
+  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
+    isGlobalFocusVisible(),
+  );
+  createEffect(() => {
+    const cleanup = createFocusVisibleListener((visible) =>
+      setIsFocusVisibleModality(visible),
+    );
+    onCleanup(cleanup);
+  });
+  const isFocusVisibleWithin = () => isFocusWithin() && isFocusVisibleModality();
 
   return (
     <>
@@ -375,10 +400,15 @@ function TimeFieldContent(props: {
       </Show>
 
       <div
+        role="presentation"
+        aria-labelledby={groupAria()["aria-labelledby"]}
+        aria-describedby={groupAria()["aria-describedby"]}
         class={timeFieldGroup({
           size: props.size,
           isInvalid: isInvalid(),
           isDisabled: isDisabled(),
+          isFocusWithin: isFocusWithin(),
+          isFocusVisible: isFocusVisibleWithin(),
         })}
         onPointerDown={(event) => {
           if (event.pointerType === "mouse") {
@@ -386,23 +416,39 @@ function TimeFieldContent(props: {
           }
         }}
         onTouchEnd={focusFirstEditableSegment}
+        onFocusIn={() => setIsFocusWithin(true)}
+        onFocusOut={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setIsFocusWithin(false);
+          }
+        }}
+        data-focused={isFocusWithin() ? "true" : undefined}
+        data-focus-visible={isFocusVisibleWithin() ? "true" : undefined}
         data-disabled={isDisabled() ? "true" : undefined}
         data-invalid={isInvalid() ? "true" : undefined}
       >
-        <TimeInput class={segmentContainer}>
-          {(segment) => (
-            <TimeSegment
-              segment={segment}
-              class={(renderProps) =>
-                timeSegment({
-                  ...renderProps,
-                  isDisabled: isDisabled(),
-                  isPunctuation: segment.type === "literal",
-                })
-              }
-            />
-          )}
-        </TimeInput>
+        {/*
+          S2 layers the segments: FieldGroup (this bordered role="presentation"
+          wrapper) → DateInputContainer (segmentContainer div) → AriaDateInput
+          (the unstyled role="group"). Keep the segmentContainer styling on the
+          wrapper and leave the group unstyled so its computed box matches.
+        */}
+        <div class={segmentContainer}>
+          <DateInput class="">
+            {(segment) => (
+              <DateSegment
+                segment={segment}
+                class={(renderProps) =>
+                  timeSegment({
+                    ...renderProps,
+                    isDisabled: isDisabled(),
+                    isPunctuation: segment.type === "literal",
+                  })
+                }
+              />
+            )}
+          </DateInput>
+        </div>
 
         <Show when={isInvalid() && !isDisabled()}>
           <CenterBaseline>
@@ -447,9 +493,9 @@ export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps
     "UNSAFE_style",
     "class",
     "label",
+    "contextualHelp",
     "description",
     "errorMessage",
-    "contextualHelp",
     "isInvalid",
     "labelPosition",
     "labelAlign",
@@ -498,9 +544,9 @@ export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps
     >
       <TimeFieldContent
         label={local.label}
+        contextualHelp={local.contextualHelp}
         description={local.description}
         errorMessage={local.errorMessage}
-        contextualHelp={local.contextualHelp}
         size={size()}
         labelPosition={labelPosition()}
         labelAlign={labelAlign()}

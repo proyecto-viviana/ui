@@ -1,8 +1,16 @@
 /**
  * TimeField component for solidaria-components
  *
- * Pre-wired headless time field component with segment-based editing.
- * Port of react-aria-components/src/TimeField.tsx
+ * Pre-wired headless time field. Faithful port of react-aria-components'
+ * TimeField, which does NOT define its own segment primitives — it reuses
+ * `DateInput`/`DateSegment` (there is no `TimeInput`/`TimeSegment` upstream).
+ * `TimeFieldState` IS a `DateFieldState` (plus `timeValue`), so this component
+ * drives the certified DateField segment/group stack directly: it provides the
+ * shared `DateFieldContext`/`DateFieldStateContext` that `DateInput`/`DateSegment`
+ * read, plus a `TimeFieldContext` for the time-field label/description/error
+ * chrome. Unlike DateField, TimeField renders NO root hidden autofill input (RAC
+ * TimeField renders none); its native-validation `<input>` is still emitted by
+ * the inner DateInput sibling.
  */
 
 import {
@@ -13,14 +21,9 @@ import {
   createSignal,
   splitProps,
   useContext,
-  For,
   Show,
 } from "solid-js";
-import {
-  createTimeField,
-  createTimeSegment,
-  type AriaTimeFieldProps,
-} from "@proyecto-viviana/solidaria";
+import { createTimeField, mergeProps, type AriaTimeFieldProps } from "@proyecto-viviana/solidaria";
 import {
   createTimeFieldState,
   access,
@@ -30,7 +33,11 @@ import {
   type TimeValue,
 } from "@proyecto-viviana/solid-stately";
 import {
-  type RenderChildren,
+  DateFieldContext,
+  DateFieldStateContext,
+  type DateFieldContextValue,
+} from "./DateField";
+import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
@@ -40,7 +47,6 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
-import { HiddenTimeInput } from "./HiddenTimeInput";
 import { FormContext, type FormProps } from "./Form";
 
 export interface TimeFieldRenderProps {
@@ -67,46 +73,6 @@ export interface TimeFieldProps<T extends TimeValue = TimeValue>
   style?: StyleOrFunction<TimeFieldRenderProps>;
   /** The locale to use for formatting. */
   locale?: string;
-}
-
-export interface TimeInputRenderProps {
-  /** Whether the input is disabled. */
-  isDisabled: boolean;
-  /** Whether the input is focused. */
-  isFocused: boolean;
-}
-
-export interface TimeInputProps extends SlotProps {
-  /** The children of the component (render function receiving segments). */
-  children?: (segment: TimeSegmentType) => JSX.Element;
-  /** The CSS className for the element. */
-  class?: ClassNameOrFunction<TimeInputRenderProps>;
-  /** The inline style for the element. */
-  style?: StyleOrFunction<TimeInputRenderProps>;
-}
-
-export interface TimeSegmentRenderProps {
-  /** Whether the segment is focused. */
-  isFocused: boolean;
-  /** Whether the segment is editable. */
-  isEditable: boolean;
-  /** Whether the segment is a placeholder. */
-  isPlaceholder: boolean;
-  /** The segment type. */
-  type: TimeSegmentType["type"];
-  /** The text to display. */
-  text: string;
-}
-
-export interface TimeSegmentProps extends SlotProps {
-  /** The segment data. */
-  segment: TimeSegmentType;
-  /** The children of the component. A function may be provided to receive render props. */
-  children?: RenderChildren<TimeSegmentRenderProps>;
-  /** The CSS className for the element. */
-  class?: ClassNameOrFunction<TimeSegmentRenderProps>;
-  /** The inline style for the element. */
-  style?: StyleOrFunction<TimeSegmentRenderProps>;
 }
 
 export interface TimeFieldContextValue {
@@ -188,9 +154,9 @@ export function useTimeFieldContext(): TimeFieldState<TimeValue> {
  * ```tsx
  * <TimeField label="Time">
  *   <Label>Time</Label>
- *   <TimeInput>
- *     {(segment) => <TimeSegment segment={segment} />}
- *   </TimeInput>
+ *   <DateInput>
+ *     {(segment) => <DateSegment segment={segment} />}
+ *   </DateInput>
  * </TimeField>
  * ```
  */
@@ -239,6 +205,7 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
       "locale",
       "granularity",
       "hourCycle",
+      "hideTimeZone",
       "shouldForceLeadingZeros",
       "validationState",
       "validationBehavior",
@@ -250,14 +217,29 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
   );
 
   const [fieldRef, setFieldRef] = createSignal<HTMLDivElement | null>(null);
+  // Ref to the hidden validation <input> (the DateInput's `<Input>` sibling).
+  // Mirrors DateField: create it here, hand it to createTimeField below, and
+  // attach it to the same input through the DateFieldContext getter.
+  const [validationInputRef, setValidationInputRef] =
+    createSignal<HTMLInputElement | null>(null);
 
   const state = createTimeFieldState(stateProps);
 
   const fieldAria = createTimeField(
     () => ({
       ...(rest as Record<string, unknown>),
+      // RAC threads these props into both useTimeFieldState and useTimeField;
+      // they live in `stateProps` here, so forward them for the field hook's
+      // aria-disabled and the native validation <input> (type/required).
+      isDisabled: access(stateProps.isDisabled),
+      isReadOnly: access(stateProps.isReadOnly),
+      isRequired: access(stateProps.isRequired),
+      // Standalone default flips the hidden input to type="text" so an empty
+      // required value blocks HTML form submission (mirrors DateField).
+      validationBehavior: stateProps.validationBehavior ?? "native",
       description: stateProps.description,
       errorMessage: stateProps.errorMessage,
+      inputRef: () => validationInputRef() ?? undefined,
     }),
     state as unknown as TimeFieldState<TimeValue>,
     fieldRef,
@@ -279,11 +261,6 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
     renderValues,
   );
 
-  const validationBehavior = () =>
-    (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior ??
-    formContext?.validationBehavior ??
-    "native";
-
   const textSlots = {
     slots: {
       get description() {
@@ -295,146 +272,86 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
     },
   };
 
-  return (
-    <TimeFieldStateContext.Provider value={state as unknown as TimeFieldState<TimeValue>}>
-      <TimeFieldContext.Provider
-        value={{
-          state: state as unknown as TimeFieldState<TimeValue>,
-          aria: {
-            labelProps: fieldAria.labelProps,
-            inputProps: fieldAria.inputProps,
-            descriptionProps: fieldAria.descriptionProps,
-            errorMessageProps: fieldAria.errorMessageProps,
-          },
-        }}
-      >
-        <div
-          ref={setFieldRef}
-          {...fieldAria.fieldProps}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          data-disabled={dataAttr(state.isDisabled())}
-          data-readonly={dataAttr(state.isReadOnly())}
-          data-required={dataAttr(state.isRequired())}
-          data-invalid={dataAttr(state.isInvalid())}
-        >
-          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
-            {local.children as JSX.Element}
-          </Provider>
-        </div>
-        <Show when={(rest as Record<string, unknown>).name}>
-          <HiddenTimeInput
-            name={(rest as Record<string, unknown>).name as string | undefined}
-            form={(rest as Record<string, unknown>).form as string | undefined}
-            value={state.value()}
-            autoComplete={(rest as Record<string, unknown>).autoComplete as string | undefined}
-            isDisabled={state.isDisabled()}
-            isRequired={state.isRequired()}
-            validationBehavior={validationBehavior()}
-            validationState={state}
-            focus={() => {
-              fieldRef()?.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
-            }}
-            minValue={access(stateProps.minValue) as TimeValue | undefined}
-            maxValue={access(stateProps.maxValue) as TimeValue | undefined}
-            granularity={state.granularity}
-          />
-        </Show>
-      </TimeFieldContext.Provider>
-    </TimeFieldStateContext.Provider>
-  );
-}
-
-/**
- * The input area containing time segments.
- */
-export function TimeInput(props: TimeInputProps): JSX.Element {
-  const { state, aria } = useTimeFieldContextValue();
-  const [isFocused, setIsFocused] = createSignal(false);
-
-  const renderValues = createMemo<TimeInputRenderProps>(() => ({
-    isDisabled: state.isDisabled(),
-    isFocused: isFocused(),
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      class: props.class,
-      style: props.style,
-      defaultClassName: "solidaria-TimeInput",
+  // The shared context read by the reused DateInput/DateSegment. Read through
+  // getters so consumers see the LIVE memo values (createDescription appends the
+  // value-description id via a deferred effect; a frozen snapshot would miss it).
+  const dateFieldContextValue: DateFieldContextValue = {
+    get state() {
+      return state as unknown as DateFieldContextValue["state"];
     },
-    renderValues,
-  );
-
-  return (
-    <div
-      {...aria.inputProps}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      data-disabled={dataAttr(state.isDisabled())}
-      data-focused={dataAttr(isFocused())}
-      onFocusIn={() => setIsFocused(true)}
-      onFocusOut={() => setIsFocused(false)}
-    >
-      <For each={state.segments()}>{(segment) => props.children?.(segment)}</For>
-    </div>
-  );
-}
-
-/**
- * A segment of a time field (hour, minute, second, AM/PM).
- */
-export function TimeSegment(props: TimeSegmentProps): JSX.Element {
-  const state = useTimeFieldContext();
-  const [segmentRef, setSegmentRef] = createSignal<HTMLDivElement | null>(null);
-
-  const segmentAria = createTimeSegment(
-    { segment: props.segment },
-    state as unknown as TimeFieldState,
-    segmentRef,
-  );
-
-  const renderValues = createMemo<TimeSegmentRenderProps>(() => ({
-    isFocused: segmentAria.isFocused,
-    isEditable: segmentAria.isEditable,
-    isPlaceholder: segmentAria.isPlaceholder,
-    type: props.segment.type,
-    text: segmentAria.text,
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      get children() {
-        return props.children;
+    aria: {
+      get labelProps() {
+        return fieldAria.labelProps;
       },
-      class: props.class,
-      style: props.style,
-      defaultClassName: "solidaria-TimeSegment",
+      // The segment group props (role="group", aria-labelledby, unicode-bidi
+      // isolate, arrow-key nav, focus-within handlers) are routed to the
+      // DateInput element; the outer wrapper stays roleless.
+      get inputProps() {
+        return fieldAria.fieldProps;
+      },
+      // The native validation <input> props (type/hidden/required/onChange under
+      // native validation), rendered as the DateInput's sibling. Thread the
+      // validation-input ref so createTimeField's form-reset/validation wiring
+      // resolves to the mounted element.
+      get hiddenInputProps() {
+        return mergeProps(fieldAria.inputProps, { ref: setValidationInputRef });
+      },
+      get descriptionProps() {
+        return fieldAria.descriptionProps;
+      },
+      get errorMessageProps() {
+        return fieldAria.errorMessageProps;
+      },
     },
-    renderValues,
-  );
-
-  // Determine children content - avoid Show for SSR hydration compatibility
-  const getChildren = () => {
-    if (typeof props.children === "function") {
-      return renderProps.renderChildren();
-    }
-    return segmentAria.text;
   };
 
   return (
-    <div
-      ref={setSegmentRef}
-      {...segmentAria.segmentProps}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      data-focused={dataAttr(segmentAria.isFocused)}
-      data-editable={dataAttr(segmentAria.isEditable)}
-      data-placeholder={dataAttr(segmentAria.isPlaceholder)}
-      data-type={props.segment.type}
-    >
-      {getChildren()}
-    </div>
+    <TimeFieldStateContext.Provider value={state as unknown as TimeFieldState<TimeValue>}>
+      <DateFieldStateContext.Provider
+        value={state as unknown as DateFieldContextValue["state"]}
+      >
+        <DateFieldContext.Provider value={dateFieldContextValue}>
+          <TimeFieldContext.Provider
+            value={{
+              state: state as unknown as TimeFieldState<TimeValue>,
+              aria: {
+                get labelProps() {
+                  return fieldAria.labelProps;
+                },
+                get inputProps() {
+                  return fieldAria.fieldProps;
+                },
+                get descriptionProps() {
+                  return fieldAria.descriptionProps;
+                },
+                get errorMessageProps() {
+                  return fieldAria.errorMessageProps;
+                },
+              },
+            }}
+          >
+            <div
+              ref={setFieldRef}
+              class={renderProps.class()}
+              style={renderProps.style()}
+              data-disabled={dataAttr(state.isDisabled())}
+              data-readonly={dataAttr(state.isReadOnly())}
+              data-required={dataAttr(state.isRequired())}
+              data-invalid={dataAttr(state.isInvalid())}
+            >
+              <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+                {local.children as JSX.Element}
+              </Provider>
+            </div>
+            {/*
+              Unlike DateField, TimeField renders NO root hidden autofill input —
+              RAC TimeField renders none (react-aria-components TimeField.mjs). The
+              native-validation <input> is emitted by the inner DateInput sibling.
+            */}
+          </TimeFieldContext.Provider>
+        </DateFieldContext.Provider>
+      </DateFieldStateContext.Provider>
+    </TimeFieldStateContext.Provider>
   );
 }
 
@@ -460,9 +377,9 @@ export interface TimeFieldDescriptionProps {
 export function TimeFieldDescription(props: TimeFieldDescriptionProps): JSX.Element {
   const { aria } = useTimeFieldContextValue();
   return (
-    <p {...aria.descriptionProps} class={props.class}>
+    <span {...aria.descriptionProps} class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -474,9 +391,9 @@ export interface TimeFieldErrorMessageProps {
 export function TimeFieldErrorMessage(props: TimeFieldErrorMessageProps): JSX.Element {
   const { aria } = useTimeFieldContextValue();
   return (
-    <p {...aria.errorMessageProps} class={props.class}>
+    <span {...aria.errorMessageProps} class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 

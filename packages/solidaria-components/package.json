@@ -182,12 +182,6 @@
       "import": "./dist/GridList.js",
       "default": "./dist/GridList.js"
     },
-    "./HiddenTimeInput": {
-      "types": "./dist/HiddenTimeInput.d.ts",
-      "solid": "./dist/HiddenTimeInput.jsx",
-      "import": "./dist/HiddenTimeInput.js",
-      "default": "./dist/HiddenTimeInput.js"
-    },
     "./Icon": {
       "types": "./dist/Icon.d.ts",
       "solid": "./dist/Icon.jsx",

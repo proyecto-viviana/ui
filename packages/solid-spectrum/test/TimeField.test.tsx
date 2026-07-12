@@ -30,7 +30,7 @@ describe("TimeField (solid-spectrum)", () => {
     const group = document.querySelector('[role="group"]') as HTMLElement;
     const description = screen.getByText("Choose a start time");
 
-    expect(description.tagName).toBe("P");
+    expect(description.tagName).toBe("SPAN");
     expect(description).toHaveAttribute("id");
     expect(group).toHaveAttribute("aria-describedby");
     expect(group.getAttribute("aria-describedby")).toContain(description.getAttribute("id"));
@@ -43,7 +43,7 @@ describe("TimeField (solid-spectrum)", () => {
     const group = document.querySelector('[role="group"]') as HTMLElement;
     const error = screen.getByText("Time is required");
 
-    expect(error.tagName).toBe("P");
+    expect(error.tagName).toBe("SPAN");
     expect(error).toHaveAttribute("id");
     expect(group).toHaveAttribute("aria-describedby");
     expect(group.getAttribute("aria-describedby")).toContain(error.getAttribute("id"));
@@ -99,7 +99,7 @@ describe("TimeField (solid-spectrum)", () => {
     expect(input).toBeInTheDocument();
     expect(input).toHaveAttribute("type", "text");
     expect(input).toHaveAttribute("hidden");
-    expect(input).toHaveValue("09:30");
+    expect(input).toHaveValue("09:30:00");
   });
 
   it("passes form ownership through to the hidden input", async () => {
@@ -120,7 +120,7 @@ describe("TimeField (solid-spectrum)", () => {
     const input = document.querySelector('input[name="startTime"]') as HTMLInputElement;
     const form = document.getElementById("scheduleForm") as HTMLFormElement;
     expect(input).toHaveAttribute("form", "scheduleForm");
-    expect(new FormData(form).getAll("startTime").map(String)).toEqual(["09:30"]);
+    expect(new FormData(form).getAll("startTime").map(String)).toEqual(["09:30:00"]);
   });
 
   it("does not treat errorMessage alone as invalid", async () => {
