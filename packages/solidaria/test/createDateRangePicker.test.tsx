@@ -3,30 +3,40 @@ import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createDateRangePicker } from "../src/datepicker/createDateRangePicker";
 import { I18nProvider } from "../src/i18n";
 
+// The hook reads a small slice of RangeCalendarState: the disabled/read-only
+// flags, the selected value, and `formatValue` (for the selected-range SR
+// description). Mirror exactly that surface — a bare mock throws at render,
+// because the value-description memo runs eagerly.
 function createMockRangeState(
   overrides: Partial<{
     isDisabled: () => boolean;
     isReadOnly: () => boolean;
+    value: () => unknown;
+    formatValue: () => { start: string; end: string } | null;
   }> = {},
 ) {
   return {
     isDisabled: () => false,
     isReadOnly: () => false,
+    value: () => null,
+    // Mirrors RangeCalendarState.formatValue: null when there is no value, so
+    // createDateRangePicker publishes no "Selected Range" describedby.
+    formatValue: () => null,
     ...overrides,
   };
 }
 
 function TestDateRangePickerAria(props: {
   "aria-label"?: string;
+  isDisabled?: boolean;
   isRequired?: boolean;
   isInvalid?: boolean;
   buttonAriaLabel?: string;
   dialogAriaLabel?: string;
   calendarAriaLabel?: string;
-  startFieldAriaLabel?: string;
-  endFieldAriaLabel?: string;
   stateIsDisabled?: boolean;
   stateIsReadOnly?: boolean;
+  stateFormatValue?: () => { start: string; end: string } | null;
   isOpen?: boolean;
   onOpen?: () => void;
 }) {
@@ -35,6 +45,7 @@ function TestDateRangePickerAria(props: {
     createMockRangeState({
       isDisabled: () => props.stateIsDisabled ?? false,
       isReadOnly: () => props.stateIsReadOnly ?? false,
+      formatValue: props.stateFormatValue ?? (() => null),
     }) as any,
     {
       isOpen: props.isOpen ?? false,
@@ -49,8 +60,6 @@ function TestDateRangePickerAria(props: {
       <div data-testid="group" {...aria.groupProps} />
       <div data-testid="start" {...aria.startFieldProps} />
       <div data-testid="end" {...aria.endFieldProps} />
-      <div data-testid="start-input" {...aria.startInputProps} />
-      <div data-testid="end-input" {...aria.endInputProps} />
       <button data-testid="button" {...aria.buttonProps} />
       <div data-testid="dialog" {...aria.dialogProps} />
       <div data-testid="calendar" {...aria.calendarProps} />
@@ -63,28 +72,40 @@ describe("createDateRangePicker", () => {
     cleanup();
   });
 
-  it("supports custom aria labels for button/dialog/calendar/start/end fields", () => {
+  it("honors button/calendar labels, keeps the dialog labelledby-only, and localizes the field defaults", () => {
     render(() => (
       <TestDateRangePickerAria
         aria-label="Range"
         buttonAriaLabel="Choose range"
-        dialogAriaLabel="Date range dialog"
         calendarAriaLabel="Range month grid"
-        startFieldAriaLabel="From"
-        endFieldAriaLabel="To"
       />
     ));
 
+    // useDateRangePicker: buttonProps `aria-label` defaults to the "calendar"
+    // string; the port exposes a buttonAriaLabel escape hatch over it.
     expect(screen.getByTestId("button")).toHaveAttribute("aria-label", "Choose range");
-    expect(screen.getByTestId("dialog")).toHaveAttribute("aria-label", "Date range dialog");
+    // calendarProps upstream carries no aria-label; the port threads the
+    // calendarAriaLabel escape hatch (largely vestigial — the popover calendar
+    // reads its state via context).
     expect(screen.getByTestId("calendar")).toHaveAttribute("aria-label", "Range month grid");
-    expect(screen.getByTestId("start")).toHaveAttribute("aria-label", "From");
-    expect(screen.getByTestId("end")).toHaveAttribute("aria-label", "To");
-    expect(screen.getByTestId("start-input")).toHaveAttribute("aria-label", "From");
-    expect(screen.getByTestId("end-input")).toHaveAttribute("aria-label", "To");
+    // Faithful RAC dialogProps = { id, aria-labelledby } only — never aria-label.
+    const dialog = screen.getByTestId("dialog");
+    expect(dialog).not.toHaveAttribute("aria-label");
+    expect(dialog).toHaveAttribute("aria-labelledby");
+    // The start/end fields always take the localized startDate/endDate labels —
+    // there is no per-field override upstream.
+    expect(screen.getByTestId("start")).toHaveAttribute("aria-label", "Start Date");
+    expect(screen.getByTestId("end")).toHaveAttribute("aria-label", "End Date");
   });
 
-  it("uses localized start/end defaults for spanish locale", () => {
+  it("falls the dialog label back onto the calendar, never onto the dialog itself", () => {
+    render(() => <TestDateRangePickerAria aria-label="Range" dialogAriaLabel="Range dialog" />);
+
+    expect(screen.getByTestId("dialog")).not.toHaveAttribute("aria-label");
+    expect(screen.getByTestId("calendar")).toHaveAttribute("aria-label", "Range dialog");
+  });
+
+  it("uses localized start/end/button defaults for spanish locale", () => {
     render(() => (
       <I18nProvider locale="es-ES">
         <TestDateRangePickerAria aria-label="Rango" />
@@ -92,24 +113,47 @@ describe("createDateRangePicker", () => {
     ));
 
     expect(screen.getByTestId("start")).toHaveAttribute("aria-label", "Fecha de inicio");
-    expect(screen.getByTestId("end")).toHaveAttribute("aria-label", "Fecha de fin");
+    expect(screen.getByTestId("end")).toHaveAttribute("aria-label", "Fecha final");
+    expect(screen.getByTestId("button")).toHaveAttribute("aria-label", "Calendario");
+    expect(screen.getByTestId("dialog")).not.toHaveAttribute("aria-label");
   });
 
-  it("applies aria-required and aria-invalid on group", () => {
-    render(() => <TestDateRangePickerAria aria-label="Range" isRequired isInvalid />);
+  it("groupProps carries aria-disabled but not aria-required/aria-invalid (faithful useDateRangePicker)", () => {
+    render(() => (
+      <TestDateRangePickerAria aria-label="Range" isDisabled isRequired isInvalid />
+    ));
 
     const group = screen.getByTestId("group");
-    expect(group).toHaveAttribute("aria-required", "true");
-    expect(group).toHaveAttribute("aria-invalid", "true");
+    // useDateRangePicker groupProps = { role:'group', aria-disabled, aria-labelledby,
+    // aria-describedby, onKeyDown, onKeyUp } — required/invalid live on the fields.
+    expect(group).toHaveAttribute("role", "group");
+    expect(group).toHaveAttribute("aria-disabled", "true");
+    expect(group).not.toHaveAttribute("aria-required");
+    expect(group).not.toHaveAttribute("aria-invalid");
   });
 
-  it("opens overlay when pressing Enter on start/end fields", () => {
+  it("publishes a selected-range description on the group when the state has a value", () => {
+    render(() => (
+      <TestDateRangePickerAria
+        aria-label="Range"
+        stateFormatValue={() => ({ start: "February 3", end: "February 14, 2025" })}
+      />
+    ));
+
+    const group = screen.getByTestId("group");
+    const describedBy = group.getAttribute("aria-describedby");
+    expect(describedBy).toBeTruthy();
+    // The hidden description node holds the localized "selectedRangeDescription".
+    const desc = document.getElementById(describedBy!.split(" ")[0]);
+    expect(desc?.textContent).toBe("Selected Range: February 3 to February 14, 2025");
+  });
+
+  it("opens the popover on Alt+ArrowDown over the group (faithful useDatePickerGroup)", () => {
     const onOpen = vi.fn();
     render(() => <TestDateRangePickerAria aria-label="Range" onOpen={onOpen} />);
 
-    fireEvent.keyDown(screen.getByTestId("start"), { key: "Enter" });
-    fireEvent.keyDown(screen.getByTestId("end"), { key: "ArrowDown" });
+    fireEvent.keyDown(screen.getByTestId("group"), { key: "ArrowDown", altKey: true });
 
-    expect(onOpen).toHaveBeenCalledTimes(2);
+    expect(onOpen).toHaveBeenCalledTimes(1);
   });
 });

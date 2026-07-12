@@ -13,13 +13,35 @@ async function waitForHydration() {
   });
 }
 
+// S2 overrides RAC's <Group> to role="presentation"; the label/describedby
+// associations ride on that presentation FieldGroup (createDateRangePicker
+// groupProps). role="presentation" is not in the a11y tree, so it is queried by
+// attribute rather than getByRole("group").
+function getFieldGroup(): HTMLElement {
+  const fieldGroup = document.querySelector(
+    '[role="presentation"][aria-labelledby]',
+  ) as HTMLElement | null;
+  expect(fieldGroup).toBeTruthy();
+  return fieldGroup as HTMLElement;
+}
+
+function labelledByText(el: HTMLElement): string {
+  return (el.getAttribute("aria-labelledby") ?? "")
+    .split(" ")
+    .map((id) => document.getElementById(id)?.textContent ?? "")
+    .join(" ");
+}
+
 describe("DateRangePicker (solid-spectrum)", () => {
   describe("basic rendering", () => {
     it("renders start and end segmented date fields", async () => {
       render(() => <DateRangePicker aria-label="Date range" />);
       await waitForHydration();
-      expect(screen.getByLabelText("Start date")).toBeInTheDocument();
-      expect(screen.getByLabelText("End date")).toBeInTheDocument();
+      // The range sub-fields are role="presentation" (no queryable field label);
+      // createDateField folds each field's localized label ("Start Date"/"End Date")
+      // into its segments' accessible names.
+      expect(screen.getAllByRole("spinbutton", { name: /Start Date/i })).toHaveLength(3);
+      expect(screen.getAllByRole("spinbutton", { name: /End Date/i })).toHaveLength(3);
       expect(screen.getAllByRole("spinbutton")).toHaveLength(6);
     });
 
@@ -46,8 +68,9 @@ describe("DateRangePicker (solid-spectrum)", () => {
       render(() => <DateRangePicker aria-label="Date range" />);
       await waitForHydration();
 
-      expect(screen.getByLabelText("Start date")).toBeInTheDocument();
-      expect(screen.getByLabelText("End date")).toBeInTheDocument();
+      // The localized startDate/endDate labels ride on the segment accessible names.
+      expect(screen.getByRole("spinbutton", { name: /month, Start Date/i })).toBeInTheDocument();
+      expect(screen.getByRole("spinbutton", { name: /month, End Date/i })).toBeInTheDocument();
     });
   });
 
@@ -133,13 +156,11 @@ describe("DateRangePicker (solid-spectrum)", () => {
       ));
       await waitForHydration();
 
-      const startInput = screen.getByLabelText("Start date");
-      const startDay = Array.from(startInput.querySelectorAll('[role="spinbutton"]')).find(
-        (segment) => segment.getAttribute("data-type") === "day",
-      );
+      // The start "day" segment carries the folded field label in its name.
+      const startDay = screen.getByRole("spinbutton", { name: /day, Start Date/i });
       expect(startDay).toHaveAttribute("aria-valuenow", "3");
 
-      fireEvent.keyDown(startDay as HTMLElement, { key: "ArrowUp" });
+      fireEvent.keyDown(startDay, { key: "ArrowUp" });
 
       await waitFor(() => {
         expect(document.querySelector('input[name="startDate"]')).toHaveValue("2025-02-04");
@@ -167,7 +188,9 @@ describe("DateRangePicker (solid-spectrum)", () => {
         />
       ));
 
-      const dialog = await screen.findByRole("dialog", { name: "Range calendar" });
+      // Faithful useDateRangePicker dialogProps are aria-labelledby-only (button +
+      // field labels), never aria-label — so the popup dialog carries no fixed name.
+      const dialog = await screen.findByRole("dialog");
       await waitFor(() => {
         expect(dialog.querySelectorAll('[role="grid"]')).toHaveLength(2);
       });
@@ -237,7 +260,7 @@ describe("DateRangePicker (solid-spectrum)", () => {
 
       render(() => <ControlledDateRangePicker />);
 
-      const dialog = await screen.findByRole("dialog", { name: "Range calendar" });
+      const dialog = await screen.findByRole("dialog");
       await waitFor(() => {
         expect(screen.getByText("Start time")).toBeInTheDocument();
         expect(screen.getByText("End time")).toBeInTheDocument();
@@ -265,13 +288,18 @@ describe("DateRangePicker (solid-spectrum)", () => {
   });
 
   describe("accessibility", () => {
-    it("has a group role container", async () => {
-      const { container } = render(() => <DateRangePicker aria-label="Date range" />);
+    it("renders a presentation field-group container (S2 overrides RAC's group)", async () => {
+      render(() => <DateRangePicker aria-label="Date range" />);
       await waitForHydration();
-      expect(container.querySelector('[role="group"]')).toBeInTheDocument();
+
+      // S2 seeds its FieldGroup's RAC <Group> with role="presentation", overriding
+      // the faithful role="group" createDateRangePicker returns — so there is no
+      // group in the a11y tree, only the presentation FieldGroup.
+      expect(document.querySelector('[role="group"]')).not.toBeInTheDocument();
+      expect(getFieldGroup()).toBeInTheDocument();
     });
 
-    it("links description and error ids via aria-describedby", async () => {
+    it("links label and error ids to the presentation field group", async () => {
       render(() => (
         <DateRangePicker
           label="Trip dates"
@@ -282,10 +310,11 @@ describe("DateRangePicker (solid-spectrum)", () => {
       ));
       await waitForHydration();
 
-      const group = screen.getByRole("group", { name: "Trip dates" });
-      const describedby = group.getAttribute("aria-describedby") ?? "";
+      const fieldGroup = getFieldGroup();
+      const describedby = fieldGroup.getAttribute("aria-describedby") ?? "";
       const error = screen.getByText("Invalid range");
 
+      expect(labelledByText(fieldGroup)).toContain("Trip dates");
       expect(error.id).toBeTruthy();
       expect(describedby.split(" ")).toContain(error.id);
     });

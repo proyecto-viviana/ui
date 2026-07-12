@@ -121,8 +121,10 @@ describe("DateRangePicker", () => {
     render(() => <TestDateRangePicker />);
     await waitForHydration();
 
-    expect(screen.getByTestId("start-field")).toHaveAttribute("aria-label", "Start date");
-    expect(screen.getByTestId("end-field")).toHaveAttribute("aria-label", "End date");
+    // Faithful useDateRangePicker: the fields take the localized startDate/endDate
+    // strings ("Start Date"/"End Date" in en-US), not lower-cased ad-hoc labels.
+    expect(screen.getByTestId("start-field")).toHaveAttribute("aria-label", "Start Date");
+    expect(screen.getByTestId("end-field")).toHaveAttribute("aria-label", "End Date");
   });
 
   // ===== Data attributes =====
@@ -154,18 +156,11 @@ describe("DateRangePicker", () => {
 
   // ===== Keyboard interactions =====
 
-  it("opens popup from start field via keyboard", async () => {
-    render(() => <TestDateRangePicker />);
-    await waitForHydration();
-
-    const start = screen.getByTestId("start-field");
-    start.focus();
-    await user.keyboard("{Enter}");
-
-    await waitFor(() => {
-      expect(document.querySelector(".solidaria-DateRangePickerContent")).toBeInTheDocument();
-    });
-  });
+  // NOTE: Faithful useDateRangePicker opens the popover on Alt+ArrowDown over the
+  // group shell (useDatePickerGroup), which lives on groupProps — applied only by
+  // the styled FieldGroup, never the bare roleless headless root. Pressing Enter on
+  // a date field does NOT open the popover upstream, so there is no headless-layer
+  // keyboard-open test here; the hook suite covers Alt+ArrowDown directly.
 
   it("closes popup via Escape key", async () => {
     render(() => <TestDateRangePicker />);
@@ -372,16 +367,18 @@ describe("DateRangePicker", () => {
 
     const startInput = screen.getByTestId("start-input");
     const endInput = screen.getByTestId("end-input");
-    expect(within(startInput).getByRole("spinbutton", { name: "month" })).toHaveAttribute(
+    // createDateField folds each field's aria-label into its segments' names, so a
+    // segment reads "month, Start Date," etc. — match the segment type by regex.
+    expect(within(startInput).getByRole("spinbutton", { name: /month/i })).toHaveAttribute(
       "aria-valuenow",
       "6",
     );
-    expect(within(endInput).getByRole("spinbutton", { name: "day" })).toHaveAttribute(
+    expect(within(endInput).getByRole("spinbutton", { name: /day/i })).toHaveAttribute(
       "aria-valuenow",
       "7",
     );
 
-    fireEvent.keyDown(within(startInput).getByRole("spinbutton", { name: "day" }), {
+    fireEvent.keyDown(within(startInput).getByRole("spinbutton", { name: /day/i }), {
       key: "ArrowUp",
     });
 
@@ -412,7 +409,7 @@ describe("DateRangePicker", () => {
     await waitForHydration();
 
     const startInput = screen.getByTestId("start-input");
-    const startHour = within(startInput).getByRole("spinbutton", { name: "hour" });
+    const startHour = within(startInput).getByRole("spinbutton", { name: /hour/i });
     expect(startHour).toHaveAttribute("aria-valuenow", "8");
 
     fireEvent.keyDown(startHour, { key: "ArrowUp" });
@@ -514,12 +511,15 @@ describe("DateRangePicker", () => {
     expect(label).toBeInTheDocument();
   });
 
-  it('has role="group" on the field container', async () => {
+  it("renders a bare roleless field container (no group shell in the headless layer)", async () => {
     render(() => <TestDateRangePicker />);
     await waitForHydration();
 
-    const group = document.querySelector('[role="group"]');
-    expect(group).toBeInTheDocument();
+    // Faithful to createDateRangePicker: the headless root is a bare roleless
+    // <div>. groupProps (role="group") is applied only by the styled layer's
+    // FieldGroup, which S2 further overrides to role="presentation". So no
+    // element carries role="group" in a pure-headless render.
+    expect(document.querySelector('[role="group"]')).not.toBeInTheDocument();
   });
 
   // ===== Calendar date selection =====

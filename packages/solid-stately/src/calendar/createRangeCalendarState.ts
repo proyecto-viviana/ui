@@ -30,6 +30,7 @@ import {
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 import type { CalendarDayOfWeek, ValidationState } from "./createCalendarState";
+import { getFormatOptions } from "./createDateFieldState";
 
 const dayOfWeekNames: CalendarDayOfWeek[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 type RangeCalendarSelectionAlignment = "start" | "center" | "end";
@@ -189,6 +190,16 @@ export interface RangeCalendarState<T extends DateValue = DateValue> {
   isDragging: Accessor<boolean>;
   /** Sets whether the user is dragging to select. */
   setDragging: (dragging: boolean) => void;
+  /**
+   * Formats the selected range as a `{ start, end }` pair of localized strings,
+   * or `null` when the range is incomplete. Mirrors upstream
+   * `DateRangePickerState.formatValue` — the port collapses that state into the
+   * range calendar state, so the range picker reads its SR description from here.
+   */
+  formatValue: (
+    locale: string,
+    fieldOptions: Intl.DateTimeFormatOptions,
+  ) => { start: string; end: string } | null;
 }
 
 /**
@@ -831,6 +842,89 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return getWeeksInMonth(monthDate, locale(), firstDayOfWeekName());
   };
 
+  // Format the selected range as `{ start, end }` strings. Faithful port of
+  // @react-stately/datepicker `useDateRangePickerState.formatValue`: when both
+  // endpoints share timezone + granularity and are distinct, it uses
+  // `formatRangeToParts` to split at the last shared literal so shared fields
+  // (e.g. the month/year) render once (=> "February 3" / "14, 2025").
+  const formatValue = (
+    locale2: string,
+    fieldOptions: Intl.DateTimeFormatOptions,
+  ): { start: string; end: string } | null => {
+    const v = value();
+    if (!v || !v.start || !v.end) {
+      return null;
+    }
+
+    const start = v.start as unknown as DateValue;
+    const end = v.end as unknown as DateValue;
+    const startTimeZone = "timeZone" in start ? (start as { timeZone: string }).timeZone : undefined;
+    const startGranularity = "minute" in start ? "minute" : "day";
+    const endTimeZone = "timeZone" in end ? (end as { timeZone: string }).timeZone : undefined;
+    const endGranularity = "minute" in end ? "minute" : "day";
+
+    const startOptions = getFormatOptions(fieldOptions, {
+      granularity: startGranularity,
+      timeZone: startTimeZone,
+      showEra:
+        (start.calendar.identifier === "gregory" && (start as { era: string }).era === "BC") ||
+        (end.calendar.identifier === "gregory" && (end as { era: string }).era === "BC"),
+    });
+
+    const startDate = start.toDate(startTimeZone || "UTC");
+    const endDate = end.toDate(endTimeZone || "UTC");
+
+    const startFormatter = new DateFormatter(locale2, startOptions);
+    let endFormatter: DateFormatter;
+    if (
+      startTimeZone === endTimeZone &&
+      startGranularity === endGranularity &&
+      start.compare(end) !== 0
+    ) {
+      // Use formatRange, as it results in shorter output when some of the fields
+      // are shared between the start and end dates (e.g. the same month).
+      try {
+        const parts = startFormatter.formatRangeToParts(startDate, endDate);
+
+        // Find the separator between the start and end date: the last shared
+        // literal before the end range begins.
+        let separatorIndex = -1;
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i];
+          if (part.source === "shared" && part.type === "literal") {
+            separatorIndex = i;
+          } else if (part.source === "endRange") {
+            break;
+          }
+        }
+
+        let startStr = "";
+        let endStr = "";
+        for (let i = 0; i < parts.length; i++) {
+          if (i < separatorIndex) startStr += parts[i].value;
+          else if (i > separatorIndex) endStr += parts[i].value;
+        }
+
+        return { start: startStr, end: endStr };
+      } catch {
+        // ignore — fall through to per-endpoint formatting
+      }
+
+      endFormatter = startFormatter;
+    } else {
+      const endOptions = getFormatOptions(fieldOptions, {
+        granularity: endGranularity,
+        timeZone: endTimeZone,
+      });
+      endFormatter = new DateFormatter(locale2, endOptions);
+    }
+
+    return {
+      start: startFormatter.format(startDate),
+      end: endFormatter.format(endDate),
+    };
+  };
+
   return {
     value,
     setValue,
@@ -880,6 +974,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     visibleMonths,
     isDragging,
     setDragging,
+    formatValue,
   };
 }
 

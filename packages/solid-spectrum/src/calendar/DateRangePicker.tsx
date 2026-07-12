@@ -1,6 +1,15 @@
 // @ts-nocheck - style-system types need a dedicated pass; removing this would require
 // fixing style-definition type mismatches unrelated to component behavior.
-import { createContext, type JSX, mergeProps, Show, splitProps, useContext } from "solid-js";
+import {
+  createContext,
+  createSignal,
+  type JSX,
+  mergeProps,
+  Show,
+  splitProps,
+  useContext,
+} from "solid-js";
+import { pressScale } from "../pressScale";
 import {
   DateRangePicker as HeadlessDateRangePicker,
   DateRangePickerLabel as HeadlessDateRangePickerLabel,
@@ -15,7 +24,7 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createHover, useLocale } from "@proyecto-viviana/solidaria";
 import {
   type CalendarDateTime,
   type TimeValue,
@@ -125,11 +134,6 @@ function normalizeFirstDayOfWeek(
   }
 }
 
-const popoverEnterStyle: JSX.CSSProperties = {
-  animation: "s2-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1)",
-  "max-height": "none",
-};
-
 const dateRangePickerRoot = style(
   {
     ...field(),
@@ -192,16 +196,21 @@ const dateRangePickerFieldGroup = style({
   },
   color: {
     default: baseColor("neutral"),
-    isDisabled: "disabled",
     forcedColors: "ButtonText",
+    // Mirror S2 `fieldGroupStyles.color` (Field.tsx): the disabled color nests
+    // its own forced-colors branch so a disabled field in forced-colors resolves
+    // to `GrayText`, not the flat `ButtonText`. A flat `isDisabled: "disabled"`
+    // loses that branch and paints ButtonText in forced-colors (matches the
+    // certified single DatePicker).
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
   },
   cursor: {
     default: "text",
     isDisabled: "default",
   },
-  display: "flex",
-  alignItems: "center",
-  minWidth: 0,
 });
 
 const dateRangeInputContainer = style({
@@ -297,6 +306,9 @@ const noWrap = style({
 const calendarButton = style<{
   isOpen?: boolean;
   isDisabled?: boolean;
+  isHovered?: boolean;
+  isPressed?: boolean;
+  isFocusVisible?: boolean;
   size: NormalizedDateRangePickerSize;
 }>({
   ...focusRing(),
@@ -314,7 +326,6 @@ const calendarButton = style<{
   display: "flex",
   textAlign: "center",
   borderStyle: "none",
-  padding: 0,
   alignItems: "center",
   justifyContent: "center",
   width: {
@@ -369,11 +380,28 @@ const helpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
       forcedColors: "GrayText",
     },
   },
+  // Mirror S2's `helpTextStyles` (Field.mjs) exactly — the same style the
+  // certified DateField/DatePicker help text carries. `--iconPrimary` tints the
+  // FieldError icon and `cursor` is set on the help text ITSELF (not inherited):
+  // `text` at rest, `default` when disabled.
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
   contain: "inline-size",
   paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
 });
 
-const dateRangePickerPopover = style<{ colorScheme: "light" | "dark" | "light dark" }>({
+const dateRangePickerPopover = style<{
+  colorScheme: "light" | "dark" | "light dark";
+  placement?: "top" | "bottom" | "left" | "right";
+  isEntering?: boolean;
+  isExiting?: boolean;
+}>({
   ...setColorScheme(),
   "--s2-container-bg": {
     type: "backgroundColor",
@@ -387,6 +415,7 @@ const dateRangePickerPopover = style<{ colorScheme: "light" | "dark" | "light da
   borderRadius: "lg",
   display: "flex",
   width: "[max-content]",
+  maxWidth: "calc(100vw - 24px)",
   padding: 0,
   minHeight: 0,
   overflow: "visible",
@@ -397,6 +426,47 @@ const dateRangePickerPopover = style<{ colorScheme: "light" | "dark" | "light da
   outlineColor: {
     default: lightDark("transparent-white-25", "gray-200"),
     forcedColors: "ButtonBorder",
+  },
+  // Byte-copied from the single DatePicker's `datePickerPopover` motion, which
+  // is itself the shared `popover()` enter/exit fade. S2's DateRangePicker
+  // popover is a plain `<Popover>`, so the enter transition IS this generic
+  // opacity/translate fade — driven here by `createEnterAnimation`
+  // (data-entering) inside the shared `DateRangePickerContent`.
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  translateY: {
+    placement: {
+      top: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      bottom: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  translateX: {
+    placement: {
+      left: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      right: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  transition: "[opacity, translate]",
+  transitionDuration: 200,
+  transitionTimingFunction: {
+    isExiting: "in",
+  },
+  pointerEvents: {
+    isExiting: "none",
   },
 });
 
@@ -446,6 +516,19 @@ function DateRangeDisplay(props: {
   const theme = useTheme();
   const state = context.calendarState;
   const isDisabled = () => state.isDisabled();
+  // S2's FieldGroup renders on RAC's <Group>, whose `useHover` publishes
+  // `data-hovered`; the field text `baseColor("neutral")` brightens one gray step
+  // on hover via a renderProps-gated atomic class (NOT a bare `[data-hovered]`
+  // selector). So the class must be recomputed with `isHovered`; emitting the
+  // attribute alone never brightens the text (D7). Suppress hover while disabled.
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return isDisabled();
+    },
+  });
+  // Mirrors S2's shared CalendarButton `buttonRef` → `pressScale(buttonRef)`: the
+  // port sizes the press transform against the real trigger element.
+  const [buttonEl, setButtonEl] = createSignal<HTMLButtonElement>();
   const timeGranularity = () => {
     const granularity = context.startFieldState.granularity;
     return granularity === "hour" || granularity === "minute" || granularity === "second"
@@ -507,11 +590,17 @@ function DateRangeDisplay(props: {
       </Show>
 
       <div
+        {...context.pickerAria.groupProps}
+        {...hoverProps}
+        // S2 seeds its FieldGroup's RAC <Group> with role="presentation", overriding
+        // the faithful role="group" that `createDateRangePicker` returns (RAC
+        // useDateRangePicker groupProps). Placed after the spread so it wins.
         role="presentation"
         class={dateRangePickerFieldGroup({
           size: props.size,
           isInvalid: props.isInvalid,
           isDisabled: isDisabled(),
+          isHovered: isHovered(),
         })}
         onClick={(event) => {
           const target = event.target as HTMLElement;
@@ -520,6 +609,7 @@ function DateRangeDisplay(props: {
           }
           event.currentTarget.querySelector<HTMLElement>('[role="spinbutton"]')?.focus();
         }}
+        data-hovered={isHovered() ? "true" : undefined}
       >
         <div class={dateRangeInputContainer}>
           <DateInput slot="start" class="">
@@ -563,17 +653,32 @@ function DateRangeDisplay(props: {
 
         <div class={calendarButtonWrapper}>
           <DateRangePickerButton
-            class={({ isDisabled, isOpen }) =>
-              calendarButton({ isDisabled, isOpen, size: props.size })
+            ref={setButtonEl}
+            class={({ isDisabled, isOpen, isHovered, isPressed, isFocusVisible }) =>
+              calendarButton({
+                isDisabled,
+                isOpen,
+                isHovered,
+                isPressed,
+                isFocusVisible,
+                size: props.size,
+              })
             }
+            style={pressScale(buttonEl)}
           >
             <S2CalendarIcon styles={calendarIcon} />
           </DateRangePickerButton>
         </div>
 
         <DateRangePickerContent
-          class={dateRangePickerPopover({ colorScheme: theme.colorScheme })}
-          style={popoverEnterStyle}
+          class={(rp) =>
+            dateRangePickerPopover({
+              colorScheme: theme.colorScheme,
+              placement: rp.placement ?? undefined,
+              isEntering: rp.isEntering,
+              isExiting: rp.isExiting,
+            })
+          }
         >
           <div class={dateRangePickerPopoverFrame} style={{ "min-width": "240px" }}>
             <RangeCalendar

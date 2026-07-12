@@ -196,6 +196,13 @@ export function useRangeCalendarContext(): RangeCalendarState<DateValue> {
 export function RangeCalendar<T extends DateValue = CalendarDate>(
   props: RangeCalendarProps<T>,
 ): JSX.Element {
+  // When rendered inside a composite that owns the range state (e.g.
+  // DateRangePicker provides `RangeCalendarContext`), reuse that shared state
+  // instead of minting a fresh one — otherwise the composite's focus/anchor
+  // flags (e.g. the popover-open `setFocused(true)`) drive a different state
+  // instance than the one this grid renders. Mirrors the single `Calendar`.
+  const inheritedState = useContext(RangeCalendarContext);
+
   // Use hydration-safe pattern for client-only rendering
   const isHydrated = useIsHydrated();
 
@@ -209,8 +216,103 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
         />
       }
     >
-      <RangeCalendarInner {...props} />
+      <Show when={inheritedState} fallback={<RangeCalendarInner {...props} />}>
+        <RangeCalendarWithState
+          state={inheritedState as RangeCalendarState<DateValue>}
+          {...props}
+        />
+      </Show>
     </Show>
+  );
+}
+
+/**
+ * RangeCalendar variant that renders against an externally-owned state (from
+ * `RangeCalendarContext`) rather than creating its own. Mirrors the single
+ * `CalendarWithState`.
+ */
+function RangeCalendarWithState<T extends DateValue = CalendarDate>(
+  props: RangeCalendarProps<T> & { state: RangeCalendarState<DateValue> },
+): JSX.Element {
+  const [local, , rest] = splitProps(
+    props,
+    ["children", "class", "style", "slot", "state", "ref"],
+    [
+      "value",
+      "defaultValue",
+      "onChange",
+      "minValue",
+      "maxValue",
+      "isDisabled",
+      "isReadOnly",
+      "focusedValue",
+      "defaultFocusedValue",
+      "onFocusChange",
+      "locale",
+      "createCalendar",
+      "isDateUnavailable",
+      "visibleMonths",
+      "pageBehavior",
+      "selectionAlignment",
+      "isDateDisabled",
+      "validationState",
+      "allowsNonContiguousRanges",
+      "firstDayOfWeek",
+    ],
+  );
+
+  const state = () => props.state;
+
+  const calendarAria = createRangeCalendar(rest, state());
+
+  const renderValues = createMemo<RangeCalendarRenderProps>(() => ({
+    isDisabled: state().isDisabled(),
+    isReadOnly: state().isReadOnly(),
+    isInvalid: state().isValueInvalid(),
+    isDragging: state().isDragging(),
+  }));
+
+  const renderProps = useRenderProps(
+    {
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-RangeCalendar",
+    },
+    renderValues,
+  );
+
+  return (
+    <RangeCalendarStateContext.Provider value={state()}>
+      <RangeCalendarContext.Provider value={state()}>
+        <div
+          {...calendarAria.calendarProps}
+          ref={(el) => assignRef(local.ref, el)}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-disabled={dataAttr(state().isDisabled())}
+          data-readonly={dataAttr(state().isReadOnly())}
+          data-invalid={dataAttr(state().isValueInvalid())}
+          data-dragging={dataAttr(state().isDragging())}
+        >
+          <VisuallyHidden>
+            <h2>{String(calendarAria.calendarProps["aria-label"] ?? "")}</h2>
+          </VisuallyHidden>
+          {props.children}
+          {/* For touch screen readers, a visually hidden next button after the
+           * month grid so it's easy to navigate after reaching the end without
+           * going all the way back to the start. Mirrors react-aria-components
+           * Calendar (and the headless Calendar). */}
+          <VisuallyHidden>
+            <button
+              aria-label={String(calendarAria.nextButtonProps["aria-label"] ?? "")}
+              disabled={Boolean(calendarAria.nextButtonProps.disabled)}
+              onClick={() => state().focusNextPage()}
+              tabIndex={-1}
+            />
+          </VisuallyHidden>
+        </div>
+      </RangeCalendarContext.Provider>
+    </RangeCalendarStateContext.Provider>
   );
 }
 

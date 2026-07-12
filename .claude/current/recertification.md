@@ -1116,6 +1116,99 @@ March order (dependency/leverage; within a tier, top to bottom):
   retargeted at the certified spec.
   **NEXT: DateRangePicker (Tier 5 continues) — the range twin, reusing the
   certified DatePicker + RangeCalendar stacks.**
+
+  **DateRangePicker ✓ certified 2026-07-12 (CP9.63)** — Tier-5 unit 6, the
+  composed RANGE twin: two segmented date fields (start + end) sharing one focus
+  manager, plus a range-calendar-popover trigger, wired by
+  `createDateRangePicker` (hook) → `HeadlessDateRangePicker` (headless) → the
+  styled `@react-spectrum/s2` DateRangePicker. Certified in one paint+behavior
+  spec against styled S2 (56 pass / 1 skip). The governing fact is the SAME
+  **three-layer role split** the single DatePicker established (CP9.62), now over
+  a two-field group:
+  - **Hook `createDateRangePicker` `groupProps` = `role="group"` +
+    `aria-disabled`** (plus `aria-labelledby`/`aria-describedby` + the OUTER
+    arrow-navigation via `createDatePickerGroup`), faithfully mirroring
+    `@react-aria/datepicker` `useDateRangePicker`. **Alt+ArrowDown** on the group
+    opens the popover (the group's `onKeyDown` only forwards when closed).
+  - **Headless `DateRangePicker` root = a BARE ROLELESS `<div>`** carrying only
+    `ref` (which scopes the shared segment focus manager across both fields); the
+    group semantics ride on a downstream `<Group>` consumer, never the container.
+  - **Styled `DateRangePickerFieldGroup` = `role="presentation"`**: it spreads
+    `pickerAria.groupProps` then overrides `role="presentation"` (later JSX attr
+    wins), so the label/describedby associations ride an out-of-tree node —
+    byte-identical to the S2 oracle.
+
+  The window's biggest faithful move: `createDateRangePicker` was REWRITTEN from
+  an invented self-contained implementation (hand-rolled
+  `startInputProps`/`endInputProps`, a bespoke `getDateRangePickerLabelDefaults`
+  i18n table, a manual `role="alert"` error, `onClick`-opens-on-the-fields) into
+  a faithful port that COMPOSES `createDateField` per field — exactly as
+  `createDatePicker` composes it. Each field's `startFieldProps`/`endFieldProps`
+  carry `[roleSymbol]="presentation"` + a SHARED `[focusManagerSymbol]`, handed
+  to `createDateField`, which names the segments and publishes them through the
+  shared `hookData` WeakMap. Consequences pinned by this unit:
+  - **Segment-name folding over TWO fields**: each field's localized label
+    ("Start Date"/"End Date", from `stringFormatter.format('startDate'/'endDate')`)
+    folds into its OWN segments' accessible names (`aria-label="month, Start Date, "`
+    + `aria-labelledby`). The range field groups are `role="presentation"` with NO
+    queryable `aria-label` — the ONLY place the "Start Date"/"End Date" labels
+    surface is folded into the segment names. So
+    `getAllByRole("spinbutton", { name: /Start Date/i })` → 3, `/End Date/i` → 3,
+    `/day, Start Date/i` → 1 (unique). The single-picker equivalent folds "Date".
+  - **Shared focus manager**: `createFocusManager(ref)` scoped to the roleless
+    root, handed to BOTH fields — so auto-advance and arrow keys walk ACROSS the
+    start→end boundary (each inner presentation field disables its own arrow-nav
+    and lets the key bubble to the group).
+  - **`dialogProps` = `{id, role:"dialog", 'aria-labelledby': "<buttonId>
+    <labelId>"}`** with NO `aria-label` (query the popup with a bare
+    `getByRole("dialog")`); `buttonProps` carries `aria-describedby` +
+    `aria-labelledby` too; the trigger's default `aria-label` is the `"calendar"`
+    string ("Calendar"); the group carries neither `aria-required` nor
+    `aria-invalid`.
+  - **Selected-range SR description** via a new
+    `createRangeCalendarState.formatValue(locale, {month:'long'})` — a faithful
+    port of `@react-stately/datepicker` `useDateRangePickerState.formatValue`
+    (`formatRangeToParts`, split at the last shared literal so a shared month/year
+    renders once: "February 3 to 14, 2025"). The port collapses
+    DateRangePickerState into the range-calendar state, so `formatValue` lives on
+    `RangeCalendarState`.
+
+  Other faithful fixes: the popover surface was unfolded to an OUTER role-null
+  `<div>` (carries the enter motion + `data-entering`) wrapping a nested
+  `<section role="dialog">` (the D5 roving trail records the `section` tag),
+  mirroring the single `DatePickerContent`; description/error render as `<span>`
+  (AX "text"), not `<p>`; the trigger wires its own
+  `createFocusRing`/`createHover`/`pressScale` and `isButtonDisabled = disabled ||
+  readOnly`; a popover-open `setFocused(true)` effect reproduces RAC re-mounting a
+  fresh range state per open (autoFocus); `RangeCalendarWithState` reuses the
+  composite's shared `RangeCalendarContext` state instead of minting its own
+  (mirrors the single `CalendarWithState`); the styled popover motion tokens were
+  byte-copied from the single `datePickerPopover` (the shared `popover()` fade),
+  and the FieldGroup/helpText forced-colors branches + `--iconPrimary` were
+  aligned to S2's `Field.tsx`.
+
+  Verification: DateRangePicker cert e2e **56 pass / 1 skip** (exit 0, captured
+  code — not a `| tail` pipe); cumulative certified suite **1950 pass / 8 skip**
+  (up exactly 56 pass + 1 skip from CP9.62's 1894/7 — the DateRangePicker cert's
+  own e2e totals). Full unit suite (`vp test run packages`, base+ssr+hydrate =
+  5539 tests) **5524 pass / 4 fail / 1 xfail / 10 skip**; the 4 failures are the
+  SAME pre-existing CP9.54 Tree tech-debt (3 `createTree.test.ts` RTL/disabled-nav
+  behavioral + 1 treegrid `regression.test.tsx` snapshot), NOT introduced here —
+  PROVEN by a git-stash at the pre-CP9.63 HEAD showing the identical failure set.
+  A prior-window slip surfaced and was fixed in a SEPARATE CP9.62-followup commit
+  (not folded here): the CP9.62 faithful DatePicker refactor had left 2 stale aux
+  tests red — the `comparison-solid-h` "Open calendar" trigger-name query (the
+  faithful default is the `"Calendar"` aria-label) and the DatePicker
+  `regression.test.tsx` HTML snapshot (pre-refactor named-group root). Both are now
+  green; the Tree snapshot in that same file was deliberately left untouched.
+  DateRangePicker unit suites green across `solidaria` createDateRangePicker
+  `.ts`+`.tsx`, `solidaria-components`, and `solid-spectrum`. The old
+  `daterangepicker-visual.spec.ts` was retired and `test:daterangepicker`
+  retargeted at the certified spec.
+  **NEXT: Color* (ColorField / ColorArea / ColorWheel / ColorSlider /
+  ColorSwatch) then ColorEditor — Tier 5 continues with the color units; their
+  i18n/RTL intl is already ported (see the Color memories), so the cert focus is
+  the paint + drag (D4) surfaces, not the string tables.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
