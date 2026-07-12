@@ -27,7 +27,7 @@
     "test:dialog": "vp run build && playwright test e2e/dialog-visual.spec.ts --reporter=line",
     "test:datefield": "vp run build && playwright test e2e/certified/datefield.certified.spec.ts --reporter=line",
     "test:timefield": "vp run build && playwright test e2e/certified/timefield.certified.spec.ts --reporter=line",
-    "test:datepicker": "vp run build && playwright test e2e/datepicker-visual.spec.ts --reporter=line",
+    "test:datepicker": "vp run build && playwright test e2e/certified/datepicker.certified.spec.ts --reporter=line",
     "test:daterangepicker": "vp run build && playwright test e2e/daterangepicker-visual.spec.ts --reporter=line",
     "test:rangecalendar": "vp run build && playwright test e2e/certified/rangecalendar.certified.spec.ts --reporter=line",
     "preview": "astro preview",

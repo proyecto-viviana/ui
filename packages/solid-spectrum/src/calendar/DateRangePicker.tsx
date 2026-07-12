@@ -168,7 +168,10 @@ const dateRangePickerFieldGroup = style({
   paddingStart: "edge-to-text",
   paddingEnd: 4,
   backgroundColor: {
-    default: baseColor("gray-25"),
+    // Flat `gray-25` to match S2 `fieldGroupStyles` — see the DatePicker note.
+    // `baseColor("gray-25")` would inject a phantom hover-darkening the field
+    // surface does not have.
+    default: "gray-25",
     forcedColors: "Field",
   },
   borderColor: {

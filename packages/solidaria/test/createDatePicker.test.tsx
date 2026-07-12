@@ -11,12 +11,27 @@ function createMockFieldState(
     isInvalid: () => boolean;
   }> = {},
 ) {
-  return {
+  const base = {
     isDisabled: () => false,
     isReadOnly: () => false,
     isRequired: () => false,
     isInvalid: () => false,
     ...overrides,
+  };
+  // createDatePicker reads the value model (value/formatValue for the selected-date
+  // description) and displayValidation (via createField); a bare mock without these
+  // throws at render. Mirror the real DateFieldState surface the hook touches.
+  return {
+    ...base,
+    value: () => null,
+    defaultValue: undefined,
+    setValue: () => {},
+    formatValue: () => "",
+    displayValidation: () => ({
+      isInvalid: base.isInvalid(),
+      validationErrors: [] as string[],
+      validationDetails: {},
+    }),
   };
 }
 
@@ -31,6 +46,7 @@ function createMockOverlayState() {
 
 function TestDatePickerAria(props: {
   "aria-label"?: string;
+  isDisabled?: boolean;
   isRequired?: boolean;
   isInvalid?: boolean;
   buttonAriaLabel?: string;
@@ -64,25 +80,29 @@ describe("createDatePicker", () => {
     cleanup();
   });
 
-  it("supports custom aria labels for button, dialog, and calendar", () => {
+  it("supports custom aria labels for button and calendar; dialog is labelledby-only", () => {
     render(() => (
       <TestDatePickerAria
         aria-label="Date"
         buttonAriaLabel="Choose date"
-        dialogAriaLabel="Date chooser"
         calendarAriaLabel="Month grid"
       />
     ));
 
     expect(screen.getByTestId("button")).toHaveAttribute("aria-label", "Choose date");
-    expect(screen.getByTestId("dialog")).toHaveAttribute("aria-label", "Date chooser");
     expect(screen.getByTestId("calendar")).toHaveAttribute("aria-label", "Month grid");
+    // Faithful RAC dialogProps = { id, aria-labelledby } only — no aria-label.
+    const dialog = screen.getByTestId("dialog");
+    expect(dialog).not.toHaveAttribute("aria-label");
+    expect(dialog).toHaveAttribute("aria-labelledby");
   });
 
-  it("falls back to dialog label for calendar when calendar label is not provided", () => {
+  it("falls back dialog label onto the calendar when no calendar label is provided", () => {
     render(() => <TestDatePickerAria aria-label="Date" dialogAriaLabel="Picker dialog" />);
 
-    expect(screen.getByTestId("dialog")).toHaveAttribute("aria-label", "Picker dialog");
+    // The dialog itself never takes an aria-label; the dialogAriaLabel escape hatch
+    // only seeds the calendar's aria-label fallback.
+    expect(screen.getByTestId("dialog")).not.toHaveAttribute("aria-label");
     expect(screen.getByTestId("calendar")).toHaveAttribute("aria-label", "Picker dialog");
   });
 
@@ -93,16 +113,23 @@ describe("createDatePicker", () => {
       </I18nProvider>
     ));
 
-    expect(screen.getByTestId("button")).toHaveAttribute("aria-label", "Abrir calendario");
-    expect(screen.getByTestId("dialog")).toHaveAttribute("aria-label", "Calendario");
+    // Button label = @react-aria/datepicker "calendar" string (Calendario in es-ES),
+    // mirroring useDatePicker's `stringFormatter.format('calendar')`.
+    expect(screen.getByTestId("button")).toHaveAttribute("aria-label", "Calendario");
+    expect(screen.getByTestId("dialog")).not.toHaveAttribute("aria-label");
     expect(screen.getByTestId("calendar")).toHaveAttribute("aria-label", "Calendario");
   });
 
-  it("applies aria-required and aria-invalid on group from props/state", () => {
-    render(() => <TestDatePickerAria aria-label="Date" isRequired stateIsInvalid />);
+  it("groupProps carries aria-disabled but not aria-required/aria-invalid (faithful useDatePicker)", () => {
+    render(() => <TestDatePickerAria aria-label="Date" isDisabled isRequired isInvalid />);
 
     const group = screen.getByTestId("group");
-    expect(group).toHaveAttribute("aria-required", "true");
-    expect(group).toHaveAttribute("aria-invalid", "true");
+    // useDatePicker groupProps = { role:'group', aria-disabled, aria-labelledby,
+    // aria-describedby, onKeyDown, onKeyUp } — required/invalid live on the segments,
+    // never on the group shell.
+    expect(group).toHaveAttribute("role", "group");
+    expect(group).toHaveAttribute("aria-disabled", "true");
+    expect(group).not.toHaveAttribute("aria-required");
+    expect(group).not.toHaveAttribute("aria-invalid");
   });
 });

@@ -1,6 +1,15 @@
 // @ts-nocheck - style-system types need a dedicated pass; removing this would require
 // fixing ~20 style-definition type mismatches unrelated to component behavior.
-import { createContext, type JSX, mergeProps, splitProps, Show, useContext } from "solid-js";
+import {
+  createContext,
+  createSignal,
+  type JSX,
+  mergeProps,
+  splitProps,
+  Show,
+  useContext,
+} from "solid-js";
+import { pressScale } from "../pressScale";
 import {
   DatePicker as HeadlessDatePicker,
   DatePickerLabel as HeadlessDatePickerLabel,
@@ -15,7 +24,7 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createHover, useLocale } from "@proyecto-viviana/solidaria";
 import { Calendar } from "./index";
 import { TimeField } from "../datepicker";
 import {
@@ -133,11 +142,6 @@ function datePickerFieldGroupStyle(size: NormalizedDatePickerSize): JSX.CSSPrope
   };
 }
 
-const popoverEnterStyle: JSX.CSSProperties = {
-  animation: "s2-datepicker-popover-in 200ms cubic-bezier(0.45, 0, 0.4, 1)",
-  "max-width": "calc(100vw - 24px)",
-};
-
 const datePickerRoot = style(
   {
     ...field(),
@@ -183,7 +187,13 @@ const datePickerFieldGroup = style({
     },
   },
   backgroundColor: {
-    default: baseColor("gray-25"),
+    // S2 `fieldGroupStyles.backgroundColor` (Field.tsx) is a FLAT `gray-25` with
+    // no `isHovered` variant — the field surface does not lighten/darken on hover
+    // (only its `color: baseColor("neutral")` does). Wrapping this in
+    // `baseColor("gray-25")` injected a phantom `gray-25:hovered` that darkened
+    // the field to 248 on hover while S2 stays at 255 (matches certified
+    // DateField/TimeField, which use the flat token).
+    default: "gray-25",
     forcedColors: "Field",
   },
   borderColor: {
@@ -204,8 +214,15 @@ const datePickerFieldGroup = style({
   },
   color: {
     default: baseColor("neutral"),
-    isDisabled: "disabled",
     forcedColors: "ButtonText",
+    // Mirror S2 `fieldGroupStyles.color` (Field.tsx): the disabled color nests
+    // its own forced-colors branch so a disabled field in forced-colors resolves
+    // to `GrayText`, not the flat `ButtonText`. A flat `isDisabled: "disabled"`
+    // loses that branch and paints CanvasText in forced-colors.
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
   },
   cursor: {
     default: "text",
@@ -290,6 +307,9 @@ const noWrap = style({
 const calendarButton = style<{
   isOpen?: boolean;
   isDisabled?: boolean;
+  isHovered?: boolean;
+  isPressed?: boolean;
+  isFocusVisible?: boolean;
   size: NormalizedDatePickerSize;
 }>({
   ...focusRing(),
@@ -307,7 +327,6 @@ const calendarButton = style<{
   display: "flex",
   textAlign: "center",
   borderStyle: "none",
-  padding: 0,
   alignItems: "center",
   justifyContent: "center",
   width: {
@@ -362,11 +381,28 @@ const helpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
       forcedColors: "GrayText",
     },
   },
+  // Mirror S2's `helpTextStyles` (Field.mjs) exactly — the same style the
+  // certified DateField help text carries. `--iconPrimary` tints the FieldError
+  // icon and `cursor` is set on the help text ITSELF (class `rD151`/`ri151`), not
+  // inherited: `text` at rest, `default` when disabled.
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
   contain: "inline-size",
   paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
+  },
 });
 
-const datePickerPopover = style<{ colorScheme: "light" | "dark" | "light dark" }>({
+const datePickerPopover = style<{
+  colorScheme: "light" | "dark" | "light dark";
+  placement?: "top" | "bottom" | "left" | "right";
+  isEntering?: boolean;
+  isExiting?: boolean;
+}>({
   ...setColorScheme(),
   "--s2-container-bg": {
     type: "backgroundColor",
@@ -380,6 +416,7 @@ const datePickerPopover = style<{ colorScheme: "light" | "dark" | "light dark" }
   borderRadius: "lg",
   display: "flex",
   width: "[max-content]",
+  maxWidth: "calc(100vw - 24px)",
   padding: 0,
   minHeight: 0,
   overflow: "visible",
@@ -390,6 +427,48 @@ const datePickerPopover = style<{ colorScheme: "light" | "dark" | "light dark" }
   outlineColor: {
     default: lightDark("transparent-white-25", "gray-200"),
     forcedColors: "ButtonBorder",
+  },
+  // Byte-copied from the shared `popoverStyles` enter/exit motion (which is
+  // itself S2 `Popover.tsx`'s `popover()` motion). S2's DatePicker popover is a
+  // plain `<Popover>`, so its enter transition IS this generic opacity/translate
+  // fade — NOT a bespoke keyframe. The port's DatePicker owns a private
+  // `DatePickerContent` that bypasses the shared Popover, so the same tokens are
+  // mirrored here and driven by `createEnterAnimation` (data-entering) below.
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  translateY: {
+    placement: {
+      top: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      bottom: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  translateX: {
+    placement: {
+      left: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      right: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  transition: "[opacity, translate]",
+  transitionDuration: 200,
+  transitionTimingFunction: {
+    isExiting: "in",
+  },
+  pointerEvents: {
+    isExiting: "none",
   },
 });
 
@@ -423,6 +502,60 @@ const datePickerCalendarPopoverStyle: JSX.CSSProperties = {
 /**
  * A date picker combines a date field and a calendar popup.
  */
+/**
+ * The presentation FieldGroup shell. Mirrors the S2/RAC oracle's `_r_3_` node:
+ * a `role="presentation"` div carrying the field label (`aria-labelledby`) +
+ * describedby + the arrow-navigation/press layer, all sourced from
+ * `pickerAria.groupProps`. A context-consuming component (not inline JSX in the
+ * DatePicker body) so `useDatePickerContext()` resolves the provider inside
+ * `HeadlessDatePicker`. The styled class/style/onClick layer on top.
+ */
+function DatePickerFieldGroup(props: {
+  size: NormalizedDatePickerSize;
+  isInvalid: boolean;
+  isDisabled: boolean;
+  style?: JSX.CSSProperties;
+  onClick?: JSX.EventHandlerUnion<HTMLDivElement, MouseEvent>;
+  children?: JSX.Element;
+}): JSX.Element {
+  const datePicker = useDatePickerContext();
+  // S2's FieldGroup renders on RAC's <Group>, whose `useHover` publishes
+  // `data-hovered`. The field text color is `baseColor("neutral")`, which
+  // brightens one gray step (gray-800 → gray-900) on hover. S2's style macro
+  // applies that hover step as a *renderProps-gated atomic class* — the class
+  // is included in `fieldGroupStyles({isHovered})` only when the Group reports
+  // `isHovered`, NOT via a bare `[data-hovered]` CSS selector. So the class
+  // itself must be recomputed here with `isHovered`; emitting the attribute
+  // alone never brightens the text (D7). Suppress hover while disabled,
+  // matching `useHover({isDisabled})`.
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return props.isDisabled;
+    },
+  });
+  return (
+    <div
+      {...datePicker.pickerAria.groupProps}
+      {...hoverProps}
+      // S2 seeds its FieldGroup's RAC <Group> with role="presentation", overriding
+      // the faithful role="group" that `createDatePicker` returns (RAC useDatePicker
+      // groupProps). Placed after the spread so it wins (JSX later-attr precedence).
+      role="presentation"
+      class={datePickerFieldGroup({
+        size: props.size,
+        isInvalid: props.isInvalid,
+        isDisabled: props.isDisabled,
+        isHovered: isHovered(),
+      })}
+      style={props.style}
+      onClick={props.onClick}
+      data-hovered={isHovered() ? "true" : undefined}
+    >
+      {props.children}
+    </div>
+  );
+}
+
 export function DatePicker<T extends DateValue = CalendarDate>(
   props: DatePickerProps<T>,
 ): JSX.Element {
@@ -458,6 +591,9 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const isDisabled = () => rest.isDisabled === true;
   const visibleMonths = () => Math.max(1, Number(local.maxVisibleMonths ?? 1));
   const locale = useLocale();
+  // Mirrors S2's CalendarButton `buttonRef` → `pressScale(buttonRef)`: the port
+  // sizes the press transform against the real trigger element.
+  const [buttonEl, setButtonEl] = createSignal<HTMLButtonElement>();
 
   const hasTime = () => {
     const granularity = (rest as { granularity?: string }).granularity;
@@ -520,13 +656,10 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         </div>
       </Show>
 
-      <div
-        role="presentation"
-        class={datePickerFieldGroup({
-          size: size(),
-          isInvalid: isInvalid(),
-          isDisabled: isDisabled(),
-        })}
+      <DatePickerFieldGroup
+        size={size()}
+        isInvalid={isInvalid()}
+        isDisabled={isDisabled()}
         style={datePickerFieldGroupStyle(size())}
         onClick={(e) => {
           const target = e.target as HTMLElement;
@@ -546,20 +679,32 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           }
         }}
       >
-        <DateInput class={dateInputContainer}>
-          {(segment) => (
-            <DateSegment
-              segment={segment}
-              class={({ isFocused, isDisabled }) =>
-                dateSegment({
-                  isFocused,
-                  isDisabled,
-                  isPunctuation: segment.type === "literal",
-                })
-              }
-            />
-          )}
-        </DateInput>
+        {/*
+          Mirror S2 DatePicker's `<DateInputContainer><DateInput /></…>` nesting
+          (DatePicker.tsx line 248) — and the port's own DateField. The flex
+          container (`dateInputContainer`) lives on a WRAPPING div; the
+          AriaDateInput group keeps an EMPTY class so it stays an unstyled block
+          div. This matters: if the flex class sits on the group itself, the
+          segments become direct flex items and CSS blockifies them
+          (display:inline → block) and sizes them as flex items — the segment
+          must stay inline/auto to match the S2 oracle.
+        */}
+        <div class={dateInputContainer}>
+          <DateInput class="">
+            {(segment) => (
+              <DateSegment
+                segment={segment}
+                class={({ isFocused, isDisabled }) =>
+                  dateSegment({
+                    isFocused,
+                    isDisabled,
+                    isPunctuation: segment.type === "literal",
+                  })
+                }
+              />
+            )}
+          </DateInput>
+        </div>
 
         <Show when={isInvalid()}>
           <CenterBaseline>
@@ -568,7 +713,11 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         </Show>
 
         <DatePickerButton
-          class={({ isDisabled, isOpen }) => calendarButton({ isDisabled, isOpen, size: size() })}
+          ref={setButtonEl}
+          class={({ isDisabled, isOpen, isHovered, isPressed, isFocusVisible }) =>
+            calendarButton({ isDisabled, isOpen, isHovered, isPressed, isFocusVisible, size: size() })
+          }
+          style={pressScale(buttonEl)}
         >
           <S2CalendarIcon styles={calendarIcon} />
         </DatePickerButton>
@@ -583,7 +732,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
             (rest as { shouldForceLeadingZeros?: boolean }).shouldForceLeadingZeros
           }
         />
-      </div>
+      </DatePickerFieldGroup>
 
       <Show when={local.description && !isInvalid()}>
         <HeadlessDatePickerDescription
@@ -621,8 +770,14 @@ function DatePickerPopup(props: {
 
   return (
     <DatePickerContent
-      class={datePickerPopover({ colorScheme: theme.colorScheme })}
-      style={popoverEnterStyle}
+      class={(rp) =>
+        datePickerPopover({
+          colorScheme: theme.colorScheme,
+          placement: rp.placement ?? undefined,
+          isEntering: rp.isEntering,
+          isExiting: rp.isExiting,
+        })
+      }
     >
       <div class={datePickerPopoverInner}>
         <div class={datePickerPopoverFrame}>

@@ -92,8 +92,11 @@ describe("DatePicker", () => {
 
     it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
       // DatePicker provides descriptionProps as a TextContext slot, so the
-      // <Text slot="description"> picks up the id the group's aria-describedby
-      // references — the faithful upstream wiring path.
+      // <Text slot="description"> picks up the description id. Faithful RAC
+      // useDatePicker seeds that same id onto BOTH groupProps and buttonProps
+      // (useDatePicker.mjs: buttonProps['aria-describedby'] = ariaDescribedBy).
+      // The bare roleless container renders no group shell here, so the
+      // DatePickerButton is the observable carrier of the linkage.
       render(() => (
         <DatePicker aria-label="Test Date Picker" description="Help text">
           <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
@@ -103,12 +106,15 @@ describe("DatePicker", () => {
       ));
       await waitForDatePickerHydration();
 
-      const group = screen.getByRole("group", { name: "Test Date Picker" });
-      const describedById = group.getAttribute("aria-describedby");
-      expect(describedById).toBeTruthy();
-      const description = document.getElementById(describedById!);
+      const description = document.querySelector(".solidaria-Text[id]") as HTMLElement;
       expect(description).toHaveTextContent("Help text");
       expect(description).toHaveClass("solidaria-Text");
+      const descId = description.id;
+      expect(descId).toBeTruthy();
+
+      const button = document.querySelector(".solidaria-DatePickerButton") as HTMLElement;
+      const describedby = button.getAttribute("aria-describedby") ?? "";
+      expect(describedby.split(" ")).toContain(descId);
     });
 
     it("should not apply popup trigger ARIA attrs to DateInput container", async () => {
@@ -641,12 +647,23 @@ describe("DatePicker", () => {
       expect(spinbuttons.length).toBe(3);
     });
 
-    it("should have aria-label on picker", async () => {
+    it("keeps the picker container roleless; the aria-label names the field", async () => {
       render(() => <TestDatePicker />);
       await waitForDatePickerHydration();
 
+      // Faithful RAC-components DatePicker: the container <div> is BARE and
+      // ROLELESS — no role, no aria-label. The label is threaded onto the field
+      // semantics (segments + trigger) via useDatePicker's fieldProps flow; the
+      // group shell (role="presentation" at the S2 layer) is what carries the
+      // label association, never this outer container.
       const picker = document.querySelector(".solidaria-DatePicker");
-      expect(picker).toHaveAttribute("aria-label", "Test Date Picker");
+      expect(picker).not.toHaveAttribute("role");
+      expect(picker).not.toHaveAttribute("aria-label");
+
+      // The name reaches the field: each editable segment folds "Test Date Picker"
+      // into its accessible label.
+      const segment = screen.getAllByRole("spinbutton")[0];
+      expect(segment.getAttribute("aria-label")).toContain("Test Date Picker");
     });
 
     it("should forward shouldForceLeadingZeros to DateInput segments", async () => {

@@ -33,6 +33,17 @@ import { forEachScenarioPanel } from "./walk";
 const defaultGestureSettleMs = 350;
 
 async function centerOf(target: Locator): Promise<{ x: number; y: number }> {
+  // The comparison route stacks the React panel above the Solid panel, so a
+  // Solid target can sit below the viewport fold (page-y ~900+ for a tall
+  // composite like DatePicker). `boundingBox()` reports that off-fold page
+  // coordinate faithfully, but the raw `page.mouse`/`touchscreen` gestures
+  // below fire at viewport coordinates — a click at y≈933 lands off-screen and
+  // hits nothing, so the driven panel never receives the press. Scroll the
+  // target into view first (a no-op when it is already fully visible, so the
+  // in-view React panel and every already-passing gesture are unaffected) and
+  // re-read the box at its post-scroll viewport position. `scroll` is not a
+  // recorded event type, so this cannot perturb the D4 event-sequence diff.
+  await target.scrollIntoViewIfNeeded();
   const box = await target.boundingBox();
   if (!box) {
     throw new Error("Gesture target has no bounding box");

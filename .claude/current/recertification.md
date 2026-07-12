@@ -1049,8 +1049,73 @@ March order (dependency/leverage; within a tier, top to bottom):
   suites **59 pass / 2 documented jsdom skips**; the full unit suite's only other
   failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
   treegrid `regression.test.tsx` snapshot), not introduced here.
-  **NEXT: DatePicker (Tier 5 continues) — the composed unit that also closes the
-  deferred D4 value-change surface for the date/time fields.**
+
+  **DatePicker ✓ certified 2026-07-12 (CP9.62)** — Tier-5 unit 5, the composed
+  unit: a date field + a calendar-popover trigger button, wired by
+  `createDatePicker` (hook) → `HeadlessDatePicker` (headless) → the styled
+  `@react-spectrum/s2` DatePicker. Certified in one paint+behavior spec against
+  styled S2 (56 pass / 1 skip). The governing fact is a **three-layer role
+  split** that the port must reproduce exactly:
+  - **Hook `createDatePicker` `groupProps` = `role="group"` + `aria-disabled`**
+    (plus `aria-labelledby`/`aria-describedby` + `onKeyDown`/`onKeyUp`),
+    faithfully mirroring `@react-aria/datepicker` `useDatePicker.mjs`
+    (`mergeProps(domProps, groupProps, fieldProps, descProps, focusWithinProps,
+    {role:'group', 'aria-disabled': isDisabled || null, …})`). The `fieldProps`
+    merged in is the **label-association** object (id/labelledby/describedby),
+    NOT the value-model fieldProps — value/onChange never leak onto the group.
+  - **Headless `DatePicker` root = a BARE ROLELESS `<div>`** (mirrors
+    RAC-components `DatePicker.mjs`'s outer div; the group semantics are
+    published for a downstream `<Group>` consumer, never rendered on the
+    container). A `role`/`aria-label` here would be a spurious AX node the S2
+    oracle lacks.
+  - **Styled `DatePickerFieldGroup` = `role="presentation"`**: it spreads
+    `pickerAria.groupProps` then overrides `role="presentation"` (S2 seeds its
+    RAC `<Group>` with presentation), the later JSX attr winning. So the
+    label/describedby associations ride on a `role="presentation"` node — out of
+    the a11y tree — exactly as the S2 oracle renders them.
+
+  The ONE faithful red→green **source** fix this window: an earlier increment had
+  regressed the hook's `groupProps` to `role="presentation"` (an unfaithful,
+  self-inflicted divergence — `useDatePicker` returns `role='group'`) and dropped
+  `aria-disabled`. Reverted to `role="group"` + restored `aria-disabled`, and
+  made the styled `DatePickerFieldGroup` carry the explicit `role="presentation"`
+  override so the S2 paint/AX is byte-identical. Because the styled layer
+  overrides to presentation regardless, the cert AX tree was unchanged (56/1skip
+  held before and after) — the fix corrects the **headless-hook contract** and
+  the unit characterization tests, not the styled ground truth. Faithful details
+  pinned by this unit: `buttonProps` carries `aria-describedby` too
+  (`useDatePicker.mjs` seeds `descProps` + `ariaDescribedBy` onto BOTH groupProps
+  and buttonProps) — so in the headless render (no `<Group>` element) the
+  `DatePickerButton` is the observable carrier of the description linkage;
+  `dialogProps` = `{id, role:'dialog', 'aria-labelledby': "<buttonId> <labelId>"}`
+  with **no** `aria-label` (the `dialogAriaLabel` escape hatch only seeds the
+  calendar's `aria-label` fallback); the trigger's default `aria-label` is the
+  `@react-aria/datepicker` `"calendar"` string ("Calendario" in es-ES) via
+  `stringFormatter.format('calendar')`, not `defaults.button`; the required
+  marker is an `aria-hidden` `AsteriskIcon` inside the label, NOT `aria-required`
+  on the group (faithful `groupProps` carries neither `aria-required` nor
+  `aria-invalid`). **This unit CLOSES the deferred D4 value-change surface** for
+  the date/time fields: the cert's D4 runs `segment-spin-up` and `mouse-click`
+  value-change sequences plus `open-escape-close` on the trigger. Scope-outs:
+  `GroupContext` wiring is deliberately NOT done (the port's `Group` in
+  `Collection.tsx` does not consume `GroupContext`; the date components thread
+  group props via `DateFieldContext`/`DatePickerContext` `pickerAria` instead — a
+  documented divergence, fragile to retrofit reactively, out of scope here), and
+  full pointer-driven date *selection* stays a browser-only concern (jsdom can't
+  drive it; the cert covers it). Twelve unit tests across four files
+  (`solidaria` createDatePicker `.ts`+`.tsx`, `solidaria-components`,
+  `solid-spectrum`) were retargeted from the pre-cert **named-group-root**
+  contract to the faithful **roleless-root / presentation-FieldGroup** contract.
+  Verification: DatePicker cert e2e **56 pass / 1 skip** (exit 0, captured code —
+  not a `| tail` pipe); full certified suite **1894 pass / 7 skip** (up exactly
+  56 pass + 1 skip from CP9.61's 1838/6 — the datepicker cert's own totals; the
+  single full-suite failure is the SAME pre-existing `D4 Dialog trigger ·
+  open-escape-close` flake noted at CP9.61, which passes 5/5 in isolation with no
+  Dialog files touched here); DatePicker unit suites **92 pass across 7 files**;
+  the old `datepicker-visual.spec.ts` was retired and `test:datepicker`
+  retargeted at the certified spec.
+  **NEXT: DateRangePicker (Tier 5 continues) — the range twin, reusing the
+  certified DatePicker + RangeCalendar stacks.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

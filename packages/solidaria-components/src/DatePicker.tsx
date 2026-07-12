@@ -20,13 +20,19 @@ import {
 import { Portal } from "solid-js/web";
 import {
   createDatePicker,
+  createDateField,
   createDateRangePicker,
+  createEnterAnimation,
+  createFocusRing,
+  createHover,
   createPopover,
+  mergeProps,
   FocusScope,
   useUNSAFE_PortalContext,
   type AriaDatePickerProps,
   type AriaDateRangePickerProps,
   type DatePickerState as AriaDatePickerState,
+  type PlacementAxis,
 } from "@proyecto-viviana/solidaria";
 import {
   createDateFieldState,
@@ -176,6 +182,25 @@ export interface DatePickerButtonRenderProps {
   isDisabled: boolean;
   /** Whether the calendar is open. */
   isOpen: boolean;
+  /**
+   * Whether the button is currently pressed. Provided by the single
+   * DatePicker (fed from `createDatePicker().isButtonPressed()`); the range
+   * variant does not yet publish press state, so this is optional.
+   */
+  isPressed?: boolean;
+  /**
+   * Whether the button is hovered. Fed from the trigger's own `createHover`;
+   * mirrors RAC `Button`'s `isHovered` renderProp so the styled S2
+   * `baseColor("gray-100")` hover-step background compiles into the className.
+   */
+  isHovered?: boolean;
+  /**
+   * Whether the button is keyboard-focused (focus-visible). Fed from
+   * `createFocusRing`; mirrors RAC `Button`'s `isFocusVisible` so the styled
+   * S2 `focusRing()` outline (a renderProps-gated class, not a CSS
+   * `[data-focus-visible]` selector) compiles into the className.
+   */
+  isFocusVisible?: boolean;
 }
 
 export interface DatePickerButtonProps extends SlotProps {
@@ -187,6 +212,12 @@ export interface DatePickerButtonProps extends SlotProps {
   style?: StyleOrFunction<DatePickerButtonRenderProps>;
   /** Whether the button is disabled. */
   isDisabled?: boolean;
+  /**
+   * Ref callback for the underlying button element. Mirrors S2's CalendarButton,
+   * whose `buttonRef` feeds `pressScale(buttonRef)`; the styled layer forwards a
+   * setter here so it can size the press transform against the real element.
+   */
+  ref?: (element: HTMLButtonElement) => void;
 }
 
 export interface DateRangePickerButtonProps extends DatePickerButtonProps {}
@@ -454,6 +485,23 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     isDateDisabled: stateProps.isDateDisabled,
   });
 
+  // RAC's useDatePicker re-mounts a FRESH useCalendarState every popover open
+  // and passes autoFocus:true, so useCalendarState seeds isFocused=true and the
+  // focused cell auto-focuses (useCalendarState.mjs line 80:
+  // `useState(props.autoFocus || false)`). The port SHARES one persistent
+  // calendarState across opens, so isFocused would stay whatever it last was
+  // (false after the first close). Mirror the fresh-mount behavior by flagging
+  // the shared state focused on each false->true open transition; the
+  // CalendarCell focus effect then pulls DOM focus to the value/today cell.
+  let wasOpen = false;
+  createEffect(() => {
+    const open = datePickerState.isOpen();
+    if (open && !wasOpen) {
+      calendarState.setFocused(true);
+    }
+    wasOpen = open;
+  });
+
   // Create date picker ARIA props
   const pickerAria = createDatePicker(
     () => ({
@@ -464,6 +512,18 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     fieldState as unknown as DateFieldState<DateValue>,
     overlayState as AriaDatePickerState,
     calendarState as unknown as CalendarState<DateValue>,
+    () => fieldRef(),
+  );
+
+  // The composed picker's fieldProps (stamped role="presentation") are fed
+  // through createDateField — mirroring RAC's DateField consuming
+  // useDatePicker().fieldProps. This is what actually names the segments and
+  // publishes the value description through the shared hookData WeakMap; without
+  // it the segments would be unnamed and carry no selected-date announcement.
+  const fieldAria = createDateField(
+    () => pickerAria.fieldProps,
+    fieldState as unknown as DateFieldState<DateValue>,
+    () => fieldRef(),
   );
 
   const contextValue: DatePickerContextValue = {
@@ -518,18 +578,35 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
         <DateFieldContext.Provider
           value={{
             state: fieldState as unknown as DateFieldState<DateValue>,
+            // Read through getters so the DateInput/DateSegment consumers see the
+            // LIVE memo values (createDescription appends the value-description id
+            // via a deferred effect; froze snapshots would miss it). inputProps are
+            // the createDateField group props (role="presentation" here), which name
+            // the segments — NOT the raw pickerAria.fieldProps.
             aria: {
-              labelProps: pickerAria.labelProps,
-              inputProps: pickerAria.fieldProps,
-              descriptionProps: pickerAria.descriptionProps,
-              errorMessageProps: pickerAria.errorMessageProps,
+              get labelProps() {
+                return pickerAria.labelProps;
+              },
+              get inputProps() {
+                return fieldAria.fieldProps;
+              },
+              get descriptionProps() {
+                return pickerAria.descriptionProps;
+              },
+              get errorMessageProps() {
+                return pickerAria.errorMessageProps;
+              },
             },
           }}
         >
           <CalendarContext.Provider value={calendarState as unknown as CalendarState<DateValue>}>
+            {/* BARE ROLELESS root — mirrors RAC `DatePicker`'s outer `<div>`. The
+              * presentation FieldGroup shell (rendered as a child via
+              * `DatePickerFieldGroup`) is what carries `pickerAria.groupProps`
+              * (role="presentation" + label/describedby + arrow-nav/press). A
+              * described node here would be a spurious AX entry the S2 oracle lacks. */}
             <div
               ref={setFieldRef}
-              {...pickerAria.groupProps}
               class={renderProps.class()}
               style={renderProps.style()}
               data-disabled={dataAttr(fieldState.isDisabled())}
@@ -907,9 +984,31 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
 export function DatePickerButton(props: DatePickerButtonProps): JSX.Element {
   const context = useDatePickerContext();
 
+  // Mirror RAC's `buttonProps.isDisabled = props.isDisabled || props.isReadOnly`
+  // (a read-only picker can't open its calendar) — `createDatePicker` computes
+  // this as `isButtonDisabled()`. Reading `fieldState.isDisabled()` alone would
+  // miss the read-only case (read-only ≠ disabled on the field), so the trigger
+  // would paint enabled while the S2 oracle dims it.
+  const isDisabled = () => context.pickerAria.isButtonDisabled() || (props.isDisabled ?? false);
+
+  // Mirror RAC: the trigger is a `<Button>` whose own `useFocusRing`/`useHover`/
+  // `usePress` drive its interaction paint state. The press signal is owned by
+  // `createDatePicker` (`isButtonPressed`); focus-visible and hover are wired
+  // here so the S2 `focusRing()`/`baseColor()` selectors (`data-focus-visible`,
+  // `data-hovered`, `data-pressed`) resolve exactly as they do upstream.
+  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
+  const { isHovered, hoverProps } = createHover({
+    get isDisabled() {
+      return isDisabled();
+    },
+  });
+
   const renderValues = createMemo<DatePickerButtonRenderProps>(() => ({
-    isDisabled: context.fieldState.isDisabled() || (props.isDisabled ?? false),
+    isDisabled: isDisabled(),
     isOpen: context.overlayState.isOpen,
+    isPressed: context.pickerAria.isButtonPressed(),
+    isHovered: isHovered(),
+    isFocusVisible: isFocusVisible(),
   }));
 
   const renderProps = useRenderProps(
@@ -932,17 +1031,30 @@ export function DatePickerButton(props: DatePickerButtonProps): JSX.Element {
     return props.children ?? "📅";
   };
 
+  const buttonProps = createMemo(() =>
+    mergeProps(
+      context.pickerAria.buttonProps as Record<string, unknown>,
+      focusProps as Record<string, unknown>,
+      hoverProps as Record<string, unknown>,
+    ),
+  );
+
   return (
     <button
       ref={(el) => {
         context.setTriggerRef(el);
+        props.ref?.(el);
       }}
-      {...context.pickerAria.buttonProps}
+      {...buttonProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      disabled={context.fieldState.isDisabled() || props.isDisabled}
-      data-disabled={dataAttr(context.fieldState.isDisabled() || props.isDisabled)}
+      disabled={isDisabled()}
+      data-disabled={dataAttr(isDisabled())}
       data-open={dataAttr(context.overlayState.isOpen)}
+      attr:data-hovered={isHovered() ? "true" : undefined}
+      attr:data-focused={isFocused() ? "true" : undefined}
+      attr:data-focus-visible={isFocusVisible() ? "true" : undefined}
+      attr:data-pressed={context.pickerAria.isButtonPressed() ? "true" : undefined}
     >
       {getChildren()}
     </button>
@@ -991,11 +1103,26 @@ export function DateRangePickerButton(props: DateRangePickerButtonProps): JSX.El
   );
 }
 
+/**
+ * Render props for the popover surface, mirroring RAC `Popover`'s
+ * enter/exit/placement renderProps. The styled layer keys the S2
+ * opacity/translate enter transition on these (a renderProps-gated class, not a
+ * CSS `[data-entering]` selector).
+ */
+export interface DatePickerContentRenderProps {
+  /** Whether the popover is playing its enter transition (`data-entering`). */
+  isEntering: boolean;
+  /** Whether the popover is playing its exit transition (`data-exiting`). */
+  isExiting: boolean;
+  /** The resolved placement axis, for the direction-dependent translate. */
+  placement: PlacementAxis | null;
+}
+
 export interface DatePickerContentProps extends SlotProps {
   /** The children of the component. */
   children?: JSX.Element;
-  /** The CSS className for the element. */
-  class?: string;
+  /** The CSS className for the element, or a function of the render props. */
+  class?: string | ((renderProps: DatePickerContentRenderProps) => string);
   /** The inline style for the element. */
   style?: JSX.CSSProperties;
 }
@@ -1023,10 +1150,12 @@ export interface DatePickerDescriptionProps {
 
 export function DatePickerDescription(props: DatePickerDescriptionProps): JSX.Element {
   const context = useDatePickerContext();
+  // Rendered as <span> (→ AX role "text"), mirroring S2's <Text slot="description">
+  // and the standalone DateFieldDescription — NOT a <p> (paragraph).
   return (
-    <p {...context.pickerAria.descriptionProps} class={props.class}>
+    <span {...context.pickerAria.descriptionProps} class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -1037,10 +1166,12 @@ export interface DatePickerErrorMessageProps {
 
 export function DatePickerErrorMessage(props: DatePickerErrorMessageProps): JSX.Element {
   const context = useDatePickerContext();
+  // Rendered as <span> (→ AX role "text"), mirroring S2's <FieldError> and the
+  // standalone DateFieldErrorMessage — NOT a <p> and NOT role="alert".
   return (
-    <p {...context.pickerAria.errorMessageProps} class={props.class}>
+    <span {...context.pickerAria.errorMessageProps} class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
@@ -1106,13 +1237,16 @@ function createEscapeDismissFallback(isOpen: () => boolean, close: () => void): 
 export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
   const context = useDatePickerContext();
   const portalContext = useUNSAFE_PortalContext();
-  let contentRef: HTMLDivElement | undefined;
+  // A signal (not a plain `let`) so the enter-animation effect re-runs when the
+  // section mounts on open — `createEnterAnimation` reads this to know the
+  // element exists before removing the initial `data-entering` styles.
+  const [contentRef, setContentRef] = createSignal<HTMLElement>();
   const portalContainer = () => portalContext.getContainer?.() ?? undefined;
 
   const popoverAria = createPopover(
     {
       triggerRef: () => context.triggerRef()?.parentElement ?? context.triggerRef(),
-      popoverRef: () => contentRef ?? null,
+      popoverRef: () => contentRef() ?? null,
       placement: "bottom start",
       offset: 8,
       isNonModal: false,
@@ -1127,6 +1261,35 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
   );
 
   createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
+
+  // Mirror S2's `<Popover>` enter transition (RAC `useEnterAnimation`): the
+  // surface mounts carrying `data-entering` (opacity 0 + a small placement-ward
+  // translate), which an effect removes on the next frame so the CSS transition
+  // plays. The exit half is out of scope for this unit — the popover unmounts on
+  // close (no `isOpen || isExiting` gate), so `isExiting` stays false; only the
+  // enter motion is certified (D2).
+  const isEntering = createEnterAnimation(contentRef, () => context.overlayState.isOpen);
+
+  const renderProps = (): DatePickerContentRenderProps => ({
+    isEntering: isEntering(),
+    isExiting: false,
+    // Seed the base placement so the ENTER frame already carries the
+    // placement-ward `translate` (S2's popover motion is placement-gated:
+    // `translateY: { placement: { bottom: { isEntering: -4 } } }`). RAC resolves
+    // placement in a `useLayoutEffect` BEFORE the first paint, so no painted
+    // frame is ever null-placement; the port's positioning `createEffect` lands
+    // one frame later, so without this seed the entering frame drops `translateY`
+    // and only `opacity` transitions (D2 caught the missing translate). The
+    // desired placement is `bottom start` (see `createPopover` above), so the
+    // base axis is always `bottom` until the measure refines it.
+    placement: popoverAria.placement() ?? "bottom",
+  });
+
+  const resolvedClass = (): string => {
+    const c = props.class;
+    if (typeof c === "function") return c(renderProps());
+    return c ?? "solidaria-DatePickerContent";
+  };
 
   const cleanPopoverProps = () => {
     const {
@@ -1147,28 +1310,39 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
     };
   };
 
-  // Return focus to trigger when overlay closes
-  createEffect(() => {
-    const open = context.overlayState.isOpen;
-    if (!open) {
-      requestAnimationFrame(() => context.triggerRef()?.focus());
-    }
-  });
+  // Close-focus restoration is delegated to the overlay's `FocusScope`
+  // (`restoreFocus`) — exactly as RAC's DatePicker does, and as certified Select
+  // and Menu do. The prior ad-hoc effect (`if (!open) triggerRef().focus()`)
+  // fired once on mount with `open === false`, stealing focus to the trigger and
+  // painting a phantom focus ring at rest.
 
   return (
     <Show when={context.overlayState.isOpen}>
       <Portal mount={portalContainer()}>
         <FocusScope contain restoreFocus>
+          {/* Un-folded to mirror S2's `<Popover>` DOM. The OUTER role-null `<div>`
+            * is the positioned surface that carries the enter motion + chrome —
+            * this is the element RAC/S2 animate (`AriaPopover`'s div: role null, no
+            * tabindex, accessible name computed from the calendar's textContent).
+            * A nested `role="dialog"` element (RAC's `Dialog`, which S2's
+            * CalendarPopover wraps the Calendar in) carries the dialog semantics.
+            * Folding both onto one `<section role="dialog">` made D2 animate the
+            * dialog node instead of the role-null div; the role-null wrapper is
+            * pruned from the AX tree so D5/D6 are unaffected. */}
           <div
-            ref={contentRef}
+            ref={setContentRef}
             {...cleanPopoverProps()}
-            {...context.pickerAria.dialogProps}
-            tabIndex={-1}
-            class={props.class ?? "solidaria-DatePickerContent"}
+            class={resolvedClass()}
             style={mergedStyle()}
-            data-placement={popoverAria.placement() ?? undefined}
+            data-placement={popoverAria.placement() ?? "bottom"}
+            data-entering={dataAttr(isEntering())}
           >
-            {props.children}
+            {/* RAC's `Dialog` renders a `<section role="dialog">` by default — the
+              * D5 roving trail records this element's tag, so it must be `section`
+              * (a `<div>` here regressed the focus-trail tag match). */}
+            <section {...context.pickerAria.dialogProps} tabIndex={-1}>
+              {props.children}
+            </section>
           </div>
         </FocusScope>
       </Portal>
@@ -1220,13 +1394,21 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
     };
   };
 
-  // Return focus to trigger when overlay closes
-  createEffect(() => {
-    const open = context.overlayState.isOpen;
-    if (!open) {
-      requestAnimationFrame(() => context.triggerRef()?.focus());
+  // Range popover shares `DatePickerContentProps` (string | render-prop class) but
+  // does not yet drive an enter transition — that lands with the DateRangePicker
+  // cert. Resolve a function class against static render props so a styled
+  // consumer's motion tokens collapse to their rest values until then.
+  const resolvedClass = (): string => {
+    const c = props.class;
+    if (typeof c === "function") {
+      return c({ isEntering: false, isExiting: false, placement: popoverAria.placement() });
     }
-  });
+    return c ?? "solidaria-DateRangePickerContent";
+  };
+
+  // Close-focus restoration is delegated to the overlay's `FocusScope`
+  // (`restoreFocus`) — see the single-value `DatePickerContent` note. The prior
+  // ad-hoc effect fired on mount and painted a phantom focus ring at rest.
 
   return (
     <Show when={context.overlayState.isOpen}>
@@ -1237,7 +1419,7 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
             {...cleanPopoverProps()}
             {...context.pickerAria.dialogProps}
             tabIndex={-1}
-            class={props.class ?? "solidaria-DateRangePickerContent"}
+            class={resolvedClass()}
             style={mergedStyle()}
             data-placement={popoverAria.placement() ?? undefined}
           >

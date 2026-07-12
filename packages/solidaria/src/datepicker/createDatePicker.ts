@@ -1,18 +1,33 @@
 /**
  * createDatePicker hook for Solidaria
  *
- * Provides the behavior and accessibility implementation for a date picker component.
- * Based on @react-aria/datepicker useDatePicker
+ * Provides the behavior and accessibility implementation for a date picker
+ * component. Faithful port of @react-aria/datepicker `useDatePicker`.
+ *
+ * The composed picker does NOT re-implement the segmented field; it hands its
+ * `fieldProps` (stamped `[roleSymbol]="presentation"`) to `createDateField`,
+ * which is what actually names the segments and publishes the value description
+ * through the shared `hookData` WeakMap. Here we only provide:
+ *  - `groupProps`: a ROLELESS wrapper carrying the outer arrow-navigation
+ *    (`createDatePickerGroup` with arrow-nav ENABLED — the inner presentation
+ *    field disables its own and lets the key event bubble up to this handler).
+ *  - `fieldProps`: the presentation marker + labelledby/describedby + value model.
+ *  - `buttonProps` / `dialogProps` / `calendarProps` for the trigger + popover.
  */
 
 import { createMemo } from "solid-js";
 import { createId } from "../ssr";
-import { createLabel } from "../label/createLabel";
+import { createField } from "../label/createField";
+import { createDescription } from "../utils/createDescription";
+import { createFocusManager } from "../focus/FocusScope";
+import { createStringFormatter } from "../i18n";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
 import { useLocale } from "../i18n";
 import { createPress } from "../interactions/createPress";
-import { DateFormatter, getLocalTimeZone } from "@internationalized/date";
+import { datePickerStrings } from "./intl";
+import { createDatePickerGroup } from "./createDatePickerGroup";
+import { roleSymbol } from "./createDateField";
 import type { DateFieldState, CalendarState } from "@proyecto-viviana/solid-stately";
 
 export interface AriaDatePickerProps {
@@ -62,10 +77,16 @@ export interface AriaDatePickerProps {
   onFocus?: (e: FocusEvent) => void;
   /** Callback when blurred. */
   onBlur?: (e: FocusEvent) => void;
+  /** Callback for key down (forwarded to the field when the popover is closed). */
+  onKeyDown?: (e: KeyboardEvent) => void;
+  /** Callback for key up (forwarded to the field when the popover is closed). */
+  onKeyUp?: (e: KeyboardEvent) => void;
   /** The name attribute for form submission. */
   name?: string;
   /** The form attribute. */
   form?: string;
+  /** Whether HTML form validation is used. */
+  validationBehavior?: "aria" | "native";
   /** Auto focus the field. */
   autoFocus?: boolean;
   /** The placeholder value. */
@@ -98,6 +119,21 @@ export interface DatePickerAria {
   fieldProps: Record<string, unknown>;
   /** Props for the button that opens the calendar. */
   buttonProps: Record<string, unknown>;
+  /**
+   * Whether the trigger button is currently pressed. Upstream RAC renders the
+   * trigger as a `<Button>` whose own `usePress` drives its `data-pressed`
+   * paint state; the port owns the press here (see `buttonPress`), so it
+   * surfaces the same signal for the button element to emit `data-pressed`.
+   */
+  isButtonPressed: () => boolean;
+  /**
+   * Whether the trigger button is disabled. Upstream RAC's `buttonProps`
+   * carries `isDisabled: props.isDisabled || props.isReadOnly` (a read-only
+   * picker can't open its calendar), which drives the `<Button>`'s disabled
+   * paint. The port's `buttonProps` only reflects `aria-disabled`, so it
+   * surfaces the same signal here for the button's render `isDisabled`.
+   */
+  isButtonDisabled: () => boolean;
   /** Props for the calendar dialog. */
   dialogProps: Record<string, unknown>;
   /** Props for the calendar. */
@@ -116,9 +152,6 @@ export interface DatePickerAria {
   focusManager: {
     focusFirst: () => void;
     focusLast: () => void;
-  } & {
-    /** @internal Wires the actual focus implementations from the component layer */
-    _register?: (first: () => void, last: () => void) => void;
   };
 }
 
@@ -130,90 +163,106 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
   state: T,
   overlayState: DatePickerState,
   _calendarState?: C,
+  ref: () => HTMLElement | null = () => null,
 ): DatePickerAria {
   const locale = useLocale();
   const getProps = () => access(props);
-  const id = createId(getProps().id);
-  const descriptionId = createId();
-  const errorMessageId = createId();
   const dialogId = createId();
   const buttonId = createId();
   const fieldId = createId();
 
-  // Create label handling
-  const { labelProps, fieldProps: labelFieldProps } = createLabel({
-    get label() {
-      return getProps().label;
-    },
-    get "aria-label"() {
-      return getProps()["aria-label"];
-    },
-    get "aria-labelledby"() {
-      return getProps()["aria-labelledby"];
-    },
-    labelElementType: "span",
-  });
-
-  // Build aria-describedby
-  const getAriaDescribedBy = () => {
+  // Label + description/error-message ids, mirroring upstream `useField`.
+  const field = createField(() => {
     const p = getProps();
-    const ids: string[] = [];
-    if (p["aria-describedby"]) {
-      ids.push(p["aria-describedby"]);
-    }
-    if (valueDescription()) {
-      ids.push(valueDescriptionId);
-    }
-    if (p.description) {
-      ids.push(descriptionId);
-    }
-    if ((p.isInvalid || state.isInvalid()) && p.errorMessage) {
-      ids.push(errorMessageId);
-    }
-    return ids.length > 0 ? ids.join(" ") : undefined;
-  };
-
-  // Selected date description for screen readers
-  const valueDescriptionId = createId();
-  const valueDescription = createMemo(() => {
-    const v = state.value?.();
-    if (!v) return "";
-    const formatter = new DateFormatter(locale().locale, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-    return formatter.format(v.toDate(getLocalTimeZone()));
-  });
-
-  // Group props
-  const groupProps = createMemo(() => {
-    const p = getProps();
-    const isInvalid = p.isInvalid || state.isInvalid();
-    const describedBy = getAriaDescribedBy();
-    const labelField = labelFieldProps as Record<string, unknown>;
-
+    const dv = state.displayValidation();
     return {
-      id,
-      role: "group",
-      "aria-label": labelField["aria-label"] || undefined,
-      "aria-labelledby": labelField["aria-labelledby"] || undefined,
-      "aria-disabled": p.isDisabled || state.isDisabled() || undefined,
-      "aria-readonly": p.isReadOnly || state.isReadOnly() || undefined,
-      "aria-required": p.isRequired || state.isRequired() || undefined,
-      "aria-invalid": isInvalid || undefined,
-      "aria-describedby": describedBy,
+      id: p.id,
+      label: p.label,
+      "aria-label": p["aria-label"],
+      "aria-labelledby": p["aria-labelledby"],
+      "aria-describedby": p["aria-describedby"],
+      description: p.description,
+      labelElementType: "span",
+      isInvalid: p.isInvalid || dv.isInvalid,
+      errorMessage: p.errorMessage || dv.validationErrors,
     };
   });
 
-  // Field props - applied to DateInput container
+  // labelledBy = the field label id (or the field id when there is no label),
+  // reused by the button and dialog. Mirrors useDatePicker.
+  const labelledBy = (): string | undefined => {
+    const fp = field.fieldProps as Record<string, string | undefined>;
+    return fp["aria-labelledby"] || fp.id;
+  };
+
+  // Selected-date description for screen readers: "Selected Date: February 14, 2025".
+  const stringFormatter = createStringFormatter(datePickerStrings, "@react-aria/datepicker");
+  const valueDescription = createMemo(() => {
+    if (!state.value?.()) {
+      return "";
+    }
+    const date = state.formatValue({ month: "long" });
+    return date ? stringFormatter().format("selectedDateDescription", { date }) : "";
+  });
+  const descProps = createDescription(valueDescription);
+
+  // The picker's own describedby = value description + the field's describedby
+  // (which already folds in the visible description / error message ids).
+  const ariaDescribedBy = (): string | undefined => {
+    const fp = field.fieldProps as Record<string, string | undefined>;
+    return (
+      [descProps["aria-describedby"], fp["aria-describedby"]].filter(Boolean).join(" ") || undefined
+    );
+  };
+
+  // FieldGroup props. Mirrors RAC `useDatePicker`, whose `groupProps.role` is
+  // 'group' (useDatePicker.mjs) — the field label (`aria-labelledby`), describedby
+  // (value description + help/error), `aria-disabled`, and the arrow-navigation /
+  // press layer all live on this shell. The styled S2 layer OVERRIDES this to
+  // role="presentation" at `DatePickerFieldGroup` (S2 seeds its FieldGroup's Group
+  // with role="presentation"); keeping the hook faithful to 'group' means a bare
+  // RAC-style consumer gets the correct group semantics. The OUTER root stays
+  // bare/roleless — putting the describedby on the roleless root would surface a
+  // spurious described node in the AX tree that the oracle (bare root) does not
+  // have, so it lands on this shell instead. The nested DateInput group is
+  // role="presentation" and carries NO aria (createDateField's presentation branch
+  // drops it) and lets ArrowLeft/Right bubble up here.
+  const outerGroup = createDatePickerGroup(
+    {
+      setOpen: (isOpen: boolean) => (isOpen ? overlayState.open() : overlayState.close()),
+    },
+    ref,
+    false,
+  );
+
+  const groupProps = createMemo(() =>
+    mergeProps(outerGroup(), {
+      role: "group" as const,
+      "aria-disabled": getProps().isDisabled || undefined,
+      "aria-labelledby": labelledBy(),
+      "aria-describedby": ariaDescribedBy(),
+      onKeyDown(e: KeyboardEvent) {
+        if (!overlayState.isOpen) {
+          getProps().onKeyDown?.(e);
+        }
+      },
+      onKeyUp(e: KeyboardEvent) {
+        if (!overlayState.isOpen) {
+          getProps().onKeyUp?.(e);
+        }
+      },
+    }),
+  );
+
+  // Field props — handed to createDateField, which turns them into the segmented
+  // spinbutton group (role="presentation" here) and names the segments.
   const fieldProps = createMemo(() => {
     const p = getProps();
-    const describedBy = getAriaDescribedBy();
-
-    return {
+    return mergeProps(field.fieldProps as Record<string, unknown>, {
       id: fieldId,
-      "aria-describedby": describedBy,
+      [roleSymbol]: "presentation",
+      "aria-labelledby": labelledBy(),
+      "aria-describedby": ariaDescribedBy(),
       value: state.value?.(),
       defaultValue: state.defaultValue,
       onChange: (value: unknown) => {
@@ -227,17 +276,23 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
       isDisabled: p.isDisabled || state.isDisabled(),
       isReadOnly: p.isReadOnly || state.isReadOnly(),
       isRequired: p.isRequired || state.isRequired(),
+      validationBehavior: p.validationBehavior,
       autoFocus: p.autoFocus,
       name: p.name,
       form: p.form,
-    };
+    });
   });
 
-  // Button props with createPress for keyboard/mouse/touch activation
+  // Trigger button. Disabled when the picker is disabled OR read-only (upstream:
+  // `isDisabled: props.isDisabled || props.isReadOnly`).
+  const isButtonDisabled = () => {
+    const p = getProps();
+    return p.isDisabled || state.isDisabled() || p.isReadOnly || state.isReadOnly();
+  };
+
   const buttonPress = createPress({
     get isDisabled() {
-      const p = getProps();
-      return p.isDisabled || state.isDisabled();
+      return isButtonDisabled();
     },
     onPress: () => {
       overlayState.open();
@@ -246,41 +301,27 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
 
   const buttonProps = createMemo(() => {
     const p = getProps();
-    const isDisabled = p.isDisabled || state.isDisabled();
-    const defaults = getDatePickerLabelDefaults(locale().locale);
-    const labelId = (labelProps as Record<string, unknown>)["id"] as string | undefined;
-    const labelledBy = labelId ? `${buttonId} ${labelId}` : buttonId;
-    const describedBy = getAriaDescribedBy();
-
     return mergeProps(buttonPress.pressProps as Record<string, unknown>, {
       id: buttonId,
       type: "button" as const,
-      "aria-label": p.buttonAriaLabel ?? defaults.button,
-      "aria-labelledby": labelledBy,
       "aria-haspopup": "dialog" as const,
+      "aria-label": p.buttonAriaLabel ?? stringFormatter().format("calendar"),
+      "aria-labelledby": `${buttonId} ${labelledBy()}`,
+      "aria-describedby": ariaDescribedBy(),
       "aria-expanded": overlayState.isOpen,
-      "aria-controls": overlayState.isOpen ? dialogId : undefined,
-      "aria-describedby": describedBy,
-      "aria-disabled": isDisabled || undefined,
+      "aria-disabled": isButtonDisabled() || undefined,
       tabIndex: 0,
     });
   });
 
-  // Dialog props
-  const dialogProps = createMemo(() => {
-    const p = getProps();
-    const defaults = getDatePickerLabelDefaults(locale().locale);
-    const labelId = (labelProps as Record<string, unknown>)["id"] as string | undefined;
-    const labelledBy = labelId ? `${buttonId} ${labelId}` : buttonId;
-
-    return {
-      id: dialogId,
-      role: "dialog",
-      "aria-modal": true,
-      "aria-labelledby": labelledBy,
-      "aria-label": p.dialogAriaLabel ?? defaults.dialog,
-    };
-  });
+  // Dialog props. Upstream is only `{id, 'aria-labelledby'}`; the port keeps
+  // `role="dialog"` because DatePickerContent spreads these props onto the popover
+  // container and this is the only role source there (RAC's Dialog would add it).
+  const dialogProps = createMemo(() => ({
+    id: dialogId,
+    role: "dialog" as const,
+    "aria-labelledby": `${buttonId} ${labelledBy()}`,
+  }));
 
   // Calendar props
   const calendarProps = createMemo(() => {
@@ -315,48 +356,21 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
     };
   });
 
-  // Description props for the description element
-  const descriptionProps = createMemo(() => ({
-    id: descriptionId,
+  // Label click focuses the first segment.
+  const labelFocusManager = createFocusManager(ref);
+  const enhancedLabelProps = createMemo(() => ({
+    ...(field.labelProps as Record<string, unknown>),
+    onClick: () => {
+      labelFocusManager.focusFirst();
+    },
   }));
-
-  // Value description element props
-  const valueDescriptionProps = createMemo(() => ({
-    id: valueDescriptionId,
-    "aria-hidden": true,
-  }));
-
-  // Error message props
-  const errorMessageProps = createMemo(() => ({
-    id: errorMessageId,
-    role: "alert",
-  }));
-
-  // Label click focuses first segment — component layer wires the actual ref
-  let focusFirstSegment: (() => void) | undefined;
-  let focusLastSegment: (() => void) | undefined;
-
-  const enhancedLabelProps = createMemo(() => {
-    return {
-      ...labelProps,
-      onClick: () => {
-        focusFirstSegment?.();
-      },
-    };
-  });
 
   const isInvalid = createMemo(() => {
     const p = getProps();
     return p.isInvalid || state.isInvalid();
   });
 
-  const validationErrors = createMemo(() => {
-    const p = getProps();
-    if (p.isInvalid && typeof p.errorMessage === "string") {
-      return [p.errorMessage];
-    }
-    return [];
-  });
+  const validationErrors = createMemo(() => state.displayValidation().validationErrors);
 
   const validationDetails = createMemo(() => {
     const p = getProps();
@@ -381,6 +395,8 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
     get buttonProps() {
       return buttonProps();
     },
+    isButtonPressed: () => buttonPress.isPressed(),
+    isButtonDisabled: () => isButtonDisabled(),
     get dialogProps() {
       return dialogProps();
     },
@@ -388,10 +404,10 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
       return calendarProps();
     },
     get descriptionProps() {
-      return descriptionProps();
+      return field.descriptionProps as Record<string, unknown>;
     },
     get errorMessageProps() {
-      return errorMessageProps();
+      return field.errorMessageProps as Record<string, unknown>;
     },
     get isInvalid() {
       return isInvalid();
@@ -403,13 +419,8 @@ export function createDatePicker<T extends DateFieldState, C extends CalendarSta
       return validationDetails();
     },
     focusManager: {
-      focusFirst: () => focusFirstSegment?.(),
-      focusLast: () => focusLastSegment?.(),
-      /** @internal Wires the actual focus implementations from the component layer */
-      _register: (first: () => void, last: () => void) => {
-        focusFirstSegment = first;
-        focusLastSegment = last;
-      },
+      focusFirst: () => labelFocusManager.focusFirst(),
+      focusLast: () => labelFocusManager.focusLast(),
     },
   };
 }

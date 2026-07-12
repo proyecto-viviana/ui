@@ -21,27 +21,46 @@ describe("DatePicker (solid-spectrum)", () => {
     cleanup();
   });
 
-  it("links visible label to picker group semantics", async () => {
+  // S2 overrides RAC's <Group> to role="presentation"; the label/describedby
+  // associations ride on that presentation FieldGroup (createDatePicker groupProps).
+  // role="presentation" is not in the a11y tree, so it is queried by attribute.
+  function getFieldGroup(): HTMLElement {
+    const fieldGroup = document.querySelector(
+      '[role="presentation"][aria-labelledby]',
+    ) as HTMLElement | null;
+    expect(fieldGroup).toBeTruthy();
+    return fieldGroup as HTMLElement;
+  }
+
+  function labelledByText(el: HTMLElement): string {
+    return (el.getAttribute("aria-labelledby") ?? "")
+      .split(" ")
+      .map((id) => document.getElementById(id)?.textContent ?? "")
+      .join(" ");
+  }
+
+  it("links visible label and description to the presentation field group", async () => {
     render(() => <DatePicker label="Event date" description="Select an event day" />);
     await waitForHydration();
 
-    const group = screen.getByRole("group", { name: "Event date" });
+    const fieldGroup = getFieldGroup();
     const description = screen.getByText("Select an event day");
-    const describedby = group.getAttribute("aria-describedby") ?? "";
+    const describedby = fieldGroup.getAttribute("aria-describedby") ?? "";
 
-    expect(group).toBeInTheDocument();
+    expect(labelledByText(fieldGroup)).toContain("Event date");
     expect(description.id).toBeTruthy();
     expect(describedby.split(" ")).toContain(description.id);
   });
 
-  it("links error message when invalid", async () => {
+  it("links error message to the presentation field group when invalid", async () => {
     render(() => <DatePicker label="Birth date" isInvalid errorMessage="Date is required" />);
     await waitForHydration();
 
-    const group = screen.getByRole("group", { name: "Birth date" });
+    const fieldGroup = getFieldGroup();
     const error = screen.getByText("Date is required");
-    const describedby = group.getAttribute("aria-describedby") ?? "";
+    const describedby = fieldGroup.getAttribute("aria-describedby") ?? "";
 
+    expect(labelledByText(fieldGroup)).toContain("Birth date");
     expect(error.id).toBeTruthy();
     expect(describedby.split(" ")).toContain(error.id);
   });
@@ -50,8 +69,16 @@ describe("DatePicker (solid-spectrum)", () => {
     render(() => <DatePicker label="Appointment" isRequired />);
     await waitForHydration();
 
-    const group = screen.getByRole("group", { name: "Appointment" });
-    expect(group).toHaveAttribute("aria-required", "true");
+    // S2 renders the required marker as an aria-hidden AsteriskIcon inside the
+    // label, NOT as aria-required on the group — faithful useDatePicker groupProps
+    // carries no aria-required.
+    const fieldGroup = getFieldGroup();
+    expect(fieldGroup).not.toHaveAttribute("aria-required");
+
+    const labelledby = fieldGroup.getAttribute("aria-labelledby") ?? "";
+    const label = document.getElementById(labelledby.split(" ")[0]) as HTMLElement;
+    expect(label).toHaveTextContent("Appointment");
+    expect(label.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
   });
 
   it("renders contextual help next to the visible label", async () => {
@@ -243,12 +270,11 @@ describe("DatePicker (solid-spectrum)", () => {
     render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2024, 6, 15)} />);
     await waitForHydration();
 
-    const root = screen.getByRole("group", { name: "Event" });
-    const fieldGroup = Array.from(root.children).find((child) =>
-      child.querySelector("button"),
-    ) as HTMLElement;
-
-    expect(fieldGroup).toBeTruthy();
+    // The presentation FieldGroup is itself the click target that routes focus into
+    // the date input (createDatePicker groupProps + the S2 onClick handler); it holds
+    // both the segments and the trigger button.
+    const fieldGroup = getFieldGroup();
+    expect(fieldGroup.querySelector("button")).toBeTruthy();
 
     await user.click(fieldGroup);
 
