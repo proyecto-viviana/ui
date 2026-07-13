@@ -1439,11 +1439,100 @@ March order (dependency/leverage; within a tier, top to bottom):
     10 skip / 0 unexpected fail** — identical to CP9.65 (the tabIndex revert + snapshot
     edit have zero unit blast radius). The old `colorwheel-visual.spec.ts` was retired
     (git rm) and a new `test:colorwheel` script points at the certified spec.
-  **NEXT: ColorSlider then ColorSwatch, then ColorEditor — Tier 5 finishes with the
-  remaining color units. ColorSlider is the next to survey; verify whether its thumb is
-  genuinely the inverted `div[role=slider]` pattern (D5/D6-value deferred under
-  `slider-thumb-native-input-semantics`) or, like ColorArea/ColorWheel, a roleless thumb
-  backed by a native `<input>` — do not assume from the recalled note.**
+  **ColorSlider ✓ certified 2026-07-13 (CP9.67)** — Tier-5 unit 10, the 1D color
+  slider (a single channel dragged along a horizontal or vertical track). Port stack:
+  `createColorSlider` (hook, `solidaria`) → headless ColorSlider
+  (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorSlider
+  (`solid-spectrum/src/color`); state = `createColorSliderState` (`solid-stately`);
+  color model = the shared `solid-stately/src/color/Color.ts`. Certified in one
+  paint+behavior spec vs styled S2 (**28 pass / 0 skip**). Upstream oracle: S2
+  `ColorSlider.tsx` = `AriaColorSlider` (react-aria-components/ColorSlider →
+  `useColorSlider` → `useSlider` + `useSliderThumb`) rendering (for a horizontal
+  slider) a `FieldLabel`, a `SliderOutput`, and a `SliderTrack` holding one
+  `ColorHandle`/`ColorThumb` — a VERBATIM match to the port's styled
+  `colorSliderRoot`/`colorSliderLabel`/`colorSliderOutput`/`colorSliderTrack`/`colorSliderThumb`
+  macros and the label/output/track render order.
+  - **NOT the slider inversion — the same distinguishing strength as ColorArea /
+    ColorWheel, and it RESOLVES the recalled "Slider / RangeSlider / ColorSlider
+    inverted the thumb" open question.** Reading the actual code settled it: upstream
+    `useColorSlider` spreads `useSliderThumb`'s roleless `thumbProps` (adding only
+    `forced-color-adjust`) and the port likewise puts ALL semantics on a single native
+    `<input type="range">` (the channel, min/max/step, `aria-valuetext`,
+    `aria-orientation`, focusable at rest). The thumb `<div>` is NOT the classic
+    `div[role=slider]` inversion. So ColorSlider certifies BOTH D5 (the channel input is
+    the sole real tab stop) AND D6 (the native slider surfaces its AX value) with NO
+    `slider-thumb-native-input-semantics` waiver — structurally the ColorArea/ColorWheel
+    pattern, not the classic Slider's.
+  - **Fix 1 — the shared color model's HSL/HSB → RGB rounding (the D1 red).** The port's
+    `Color.ts` converted HSL→RGB via the classic `hue2rgb` algorithm and HSB→RGB via the
+    classic sextant switch, where upstream `@react-stately/color` uses the Wikipedia
+    "alternative" closed forms (`fn(n) = lightness - a·max(min(k-3, 9-k, 1), -1)` for
+    HSL; `brightness - saturation·brightness·max(min(k, 4-k, 1), 0)` for HSB). The two
+    are equal in the reals but round a channel differently at .5 boundaries in float64:
+    the default `hsl(50,100%,50%)` has green = 212.5, which the classic path rounds to
+    213 while upstream rounds to 212. D1's rest-state style matrix caught it on the
+    `rgb-red` case's track `background-image` (the red-channel gradient stops
+    `rgb(0,213,0)`/`rgb(255,213,0)` vs the oracle's `rgb(0,212,0)`/`rgb(255,212,0)`),
+    both dark and light. Porting both conversion functions to upstream's exact formulas
+    makes the rounding bit-identical. This is the FORWARD complement to CP9.65's
+    reverse-direction (rgb→hsl/hsb) `toFixedNumber(_,2)` precision revert, and it
+    underpins every color unit that paints an RGB gradient from an HSL/HSB value. Zero
+    unit blast radius — no regression snapshot exercises a color on a .5 boundary, so the
+    full 5539-test suite is byte-identical before and after (only the cert's rgb-red
+    gradient stop reveals the divergence).
+  - **Fix 2 — the thumb's self-inflicted `role="presentation"` (survey-caught,
+    driver-blind).** The port's `createColorSlider` thumbProps carried
+    `role: "presentation"`. Upstream `useColorSlider` adds no role (it spreads
+    `useSliderThumb`'s roleless props), and S2's `ColorHandle` wraps RAC `ColorThumb`
+    passing no role — so the S2 thumb is roleless. (Contrast ColorArea, whose
+    `useColorArea` genuinely DOES set `role:'presentation'` on its thumb → that port
+    stays faithful; and ColorWheel, whose thumb is roleless → also faithful. ColorSlider
+    was the one outlier.) Removing the line matches upstream and the roleless ColorWheel
+    thumb. The divergence is invisible to all four drivers — `presentation` ≡ roleless in
+    the Chromium AX tree (both are pruned generic nodes; the native input remains the
+    slider child either way), and D1/D3 do not capture `role` — so it was found by
+    reading the oracle, not produced as a red; it is reverted on Parity Rule #1
+    principle. The four drivers stay green either way.
+  - **The one dependent snapshot update:** `solid-spectrum/test/__snapshots__/
+    regression.test.tsx.snap`'s ColorSlider entry had captured the thumb WITH
+    `role="presentation"`; the faithful output drops it, so that one `<div>`'s attribute
+    was removed (surgically targeted at the `grid-area: track` thumb so ColorArea's
+    identically-classed — but genuinely-`presentation` — thumb was untouched). Fix 1
+    needed no snapshot edit (zero blast radius, above).
+  - **Scope:** D1/D3 at `states:["default"]` (rest) — the focusable surface is the
+    clipped 1px `<input>`, not the painted track, so nothing is focusable-and-styled and
+    everything prop-driven is captured at rest. The parts are anchored on the stable
+    `role="group"` track (the root's children shift by case — the visible label appears
+    only when labelled, the output only when horizontal): track = `[role="group"]`,
+    thumb = its sole `<div>` child, ring = the sole `<div>` grandchild (the `<input>` is
+    skipped since it is not a `<div>`). `styleProps.add` reaches the geometry +
+    gradient-detail longhands the default allowlist omits: `position`, thumb
+    `left`/`top`/`right`/`bottom`, `box-sizing`, and the four `background-*` companions
+    the layered `<gradient>, checkerboard` needs. Cases: `default` (hue, horizontal,
+    aria-labelled → children `[output, track]`), `labeled` (a visible label → `[label,
+    output, track]`), `disabled` (track outline/bg + thumb border to disabled tokens),
+    `rgb-red` (the 2-stop red-channel gradient that caught Fix 1), `alpha` (the
+    transparent gradient that makes the track's always-appended checkerboard show
+    through), and `vertical` (`display:block`, no output, `aria-orientation="vertical"`,
+    thumb positioned by `top`). The output/label TEXT is pinned glyph-exact by D3's
+    whole-root pixel diff rather than D1 (those nodes are conditional and so cannot be
+    always-present parts). D3 waives the anti-aliased circular thumb/ring edges + text AA
+    via the shared `slider-thumb-antialias-1lsb` (±1 LSB grayscale, dimensions exact, Δ≥2
+    still rejected). D4 (pointer drag along the track + arrow-key channel stream) is
+    DEFERRED with the slider/field family; its visual result is pinned at rest by D1/D3.
+    D2 (thumb `[width,height]` transition pinned by D1; loupe keyframes drag-only) / D7
+    (text color pinned by D3) / D8 (no extra hit target) are N/A.
+  - Verification: cert e2e **28 pass / 0 skip** (exit 0, captured code — not a `| tail`
+    pipe); full certified suite **2049 pass / 8 skip / 0 fail** (CERT_FULL_EXIT=0; up 28
+    pass from CP9.66's 2021/8, no flakes this run). Full unit suite (`vp test run
+    packages`, base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected
+    fail** — identical to CP9.66 (both fixes have zero unit blast radius). The old
+    `colorslider-visual.spec.ts` was retired (git rm) and a new `test:colorslider` script
+    points at the certified spec.
+  **NEXT: ColorSwatch then ColorEditor — Tier 5 finishes with the remaining color
+  units. ColorSwatch is a static color-preview swatch (no thumb/track, no gradient
+  channel) — expect the color model + slot machinery already certified here to carry it;
+  ColorEditor composes the color units certified across CP9.64–67.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

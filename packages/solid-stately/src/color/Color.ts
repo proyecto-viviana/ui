@@ -126,38 +126,25 @@ function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: n
 }
 
 /**
- * Convert HSL to RGB.
+ * Convert HSL to RGB. Mirrors upstream @react-stately/color HSLColor.toRGB
+ * bit-for-bit — the Wikipedia "HSL to RGB alternative" formula
+ * (https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB_alternative) — so the
+ * float64 LSB rounding matches the oracle exactly. The classic hue2rgb algorithm
+ * is equivalent in the reals but rounds a channel differently at .5 boundaries
+ * (e.g. hsl(50,100%,50%) green computes to 212.5 → 213 here, 212 upstream).
+ * h is in degrees [0,360]; s and l are percentages [0,100].
  */
 function hslToRgb(h: number, s: number, l: number): { r: number; g: number; b: number } {
-  h /= 360;
-  s /= 100;
-  l /= 100;
-
-  let r: number, g: number, b: number;
-
-  if (s === 0) {
-    r = g = b = l;
-  } else {
-    const hue2rgb = (p: number, q: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p + (q - p) * 6 * t;
-      if (t < 1 / 2) return q;
-      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-      return p;
-    };
-
-    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-    const p = 2 * l - q;
-    r = hue2rgb(p, q, h + 1 / 3);
-    g = hue2rgb(p, q, h);
-    b = hue2rgb(p, q, h - 1 / 3);
-  }
+  const saturation = s / 100;
+  const lightness = l / 100;
+  const a = saturation * Math.min(lightness, 1 - lightness);
+  const fn = (n: number, k = (n + h / 30) % 12) =>
+    lightness - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
 
   return {
-    r: Math.round(r * 255),
-    g: Math.round(g * 255),
-    b: Math.round(b * 255),
+    r: Math.round(fn(0) * 255),
+    g: Math.round(fn(8) * 255),
+    b: Math.round(fn(4) * 255),
   };
 }
 
@@ -199,58 +186,23 @@ function rgbToHsb(r: number, g: number, b: number): { h: number; s: number; b: n
 }
 
 /**
- * Convert HSB to RGB.
+ * Convert HSB (HSV) to RGB. Mirrors upstream @react-stately/color HSBColor.toRGB
+ * bit-for-bit — the Wikipedia "HSV to RGB alternative" formula
+ * (https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB_alternative) — so the
+ * float64 LSB rounding matches the oracle exactly. The classic sextant algorithm
+ * is equivalent in the reals but can round a channel differently at .5 boundaries.
+ * h is in degrees [0,360]; s and b are percentages [0,100].
  */
 function hsbToRgb(h: number, s: number, b: number): { r: number; g: number; b: number } {
-  h /= 360;
-  s /= 100;
-  b /= 100;
-
-  let r: number, g: number, bl: number;
-
-  const i = Math.floor(h * 6);
-  const f = h * 6 - i;
-  const p = b * (1 - s);
-  const q = b * (1 - f * s);
-  const t = b * (1 - (1 - f) * s);
-
-  switch (i % 6) {
-    case 0:
-      r = b;
-      g = t;
-      bl = p;
-      break;
-    case 1:
-      r = q;
-      g = b;
-      bl = p;
-      break;
-    case 2:
-      r = p;
-      g = b;
-      bl = t;
-      break;
-    case 3:
-      r = p;
-      g = q;
-      bl = b;
-      break;
-    case 4:
-      r = t;
-      g = p;
-      bl = b;
-      break;
-    default:
-      r = b;
-      g = p;
-      bl = q;
-      break;
-  }
+  const saturation = s / 100;
+  const brightness = b / 100;
+  const fn = (n: number, k = (n + h / 60) % 6) =>
+    brightness - saturation * brightness * Math.max(Math.min(k, 4 - k, 1), 0);
 
   return {
-    r: Math.round(r * 255),
-    g: Math.round(g * 255),
-    b: Math.round(bl * 255),
+    r: Math.round(fn(5) * 255),
+    g: Math.round(fn(3) * 255),
+    b: Math.round(fn(1) * 255),
   };
 }
 

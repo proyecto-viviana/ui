@@ -325,7 +325,6 @@ export function createColorSlider(
     const y = orientation() === "horizontal" ? 0.5 : 1 - percent;
 
     return {
-      role: "presentation" as const,
       onKeyDown,
       style: {
         position: "absolute" as const,

@@ -33,6 +33,7 @@
     "test:colorfield": "vp run build && playwright test e2e/certified/colorfield.certified.spec.ts --reporter=line",
     "test:colorarea": "vp run build && playwright test e2e/certified/colorarea.certified.spec.ts --reporter=line",
     "test:colorwheel": "vp run build && playwright test e2e/certified/colorwheel.certified.spec.ts --reporter=line",
+    "test:colorslider": "vp run build && playwright test e2e/certified/colorslider.certified.spec.ts --reporter=line",
     "preview": "astro preview",
     "typecheck": "vp run build:workspace-deps && astro check",
     "dev:worker": "XDG_CONFIG_HOME=/tmp/proyecto-viviana-wrangler vp exec wrangler dev --config wrangler.jsonc",
