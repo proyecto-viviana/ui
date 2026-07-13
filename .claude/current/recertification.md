@@ -1277,9 +1277,96 @@ March order (dependency/leverage; within a tier, top to bottom):
     across `solidaria` createColorField, `solidaria-components` Color.test, and
     `solid-spectrum` ColorField.test (87 total). The old `colorfield-visual.spec.ts` was
     retired and `test:colorfield` retargeted at the certified spec.
-  **NEXT: ColorArea (Tier 5 continues) — the first 2D drag (D4) color surface; its
-  i18n/RTL intl is already ported, so the cert focus is the 2D thumb geometry, the
-  drag gesture, and the paint.**
+  **ColorArea ✓ certified 2026-07-12 (CP9.65)** — Tier-5 unit 8, the FIRST 2D
+  color surface (a two-axis gradient thumb-drag control). Port stack:
+  `createColorArea` (hook, `solidaria`) → headless ColorArea
+  (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorArea
+  (`solid-spectrum/src/color`); state = `createColorAreaState` (`solid-stately`);
+  color model = `solid-stately/src/color/Color.ts`. Certified in one paint+behavior
+  spec vs styled S2 (**18 pass / 0 skip**). Upstream oracle: S2 `ColorArea.tsx` =
+  `AriaColorArea` (react-aria-components/ColorArea → `useColorArea`) rendering a single
+  `ColorHandle`/`ColorThumb` with the gradient painted on the ROOT.
+  - **NOT the slider inversion — the distinguishing strength of this cert.**
+    Slider / RangeSlider / ColorSlider inverted the thumb (the `<div>` carries
+    `role="slider"` + tabindex while the native `<input>` is aria-hidden +
+    tabindex -1), which forced them to DEFER D5/D6-value under
+    `slider-thumb-native-input-semantics` (a `div[role=slider]` omits the AX value in
+    Chromium). ColorArea does NOT invert: its thumb is `role="presentation"`
+    (`createColorArea.ts:344`) and the two native `<input type="range">` back the
+    2D-slider semantics — at rest the x input is `aria-hidden:undefined` + `tabIndex:0`,
+    the y input `aria-hidden:"true"` + `tabIndex:-1`. So ColorArea certifies BOTH D5
+    (the x input is a real tab stop) AND D6 (the native slider surfaces its
+    `aria-roledescription` "2D slider" + `aria-valuetext` in the AX tree) with NO known
+    divergence. (The slider cert's comment lumping ColorArea into the inversion group is
+    inaccurate for ColorArea.)
+  - **Faithful red→green fix (the color-model integer-rounding revert, source-diff
+    in `solid-stately/src/color/Color.ts`):** the D1 gradient matrix caught the port's
+    HSL/HSB color model DOUBLE-rounding channels to integers where upstream stores raw
+    floats at 2-decimal conversion precision. For the demo value `#9B80FF`, the port
+    rounded hue 252.75 → 253 (the browser resolved the pushed
+    `value.toString('css')` background-color to `rgb(55,0,255)`), while upstream S2 kept
+    252.75 → `rgb(54,0,255)` — a 1-LSB red divergence on the hsl/hsb cases (4 failures).
+    Traced through `useColorAreaGradient`: the hue-dependent stop pushes a solid
+    `parseColor('hsl(0,100%,50%)').withChannelValue(zChannel, zValue).toString('css')`,
+    while the saturation/lightness stops are hue-independent — so ONLY the hue-driven
+    background-color diverged, a precise confirmation. ROOT CAUSE = two layers both
+    rounding to integers: the conversion helpers `rgbToHsl`/`rgbToHsb`
+    (`Math.round(h*360)` / `Math.round(s*100)` / …) AND the `HSLColor`/`HSBColor`
+    constructors (`clamp(Math.round(hue) % 360, …)`). Upstream `RGBColor.toHSL`/`.toHSB`
+    apply `toFixedNumber(_, 2)` (2 decimals — verified `react-stately` `Color.ts:387-389`
+    / `:433-435`) and the `HSLColor`/`HSBColor` constructors store the value VERBATIM
+    (all clamping/normalization lives at `parse` / `normalizeHue` / `withChannelValue`
+    call sites, NOT the constructor — verified `:648-656`). Fixed both layers to mirror
+    upstream: the helpers now return `toFixed(h*360, 2)` / `toFixed(s*100, 2)` /
+    `toFixed(l*100 | v*100, 2)`, and the constructors drop the `Math.round`, storing
+    `hue % 360` / raw saturation / raw lightness|brightness (only `alpha` keeps
+    `toFixed(_, 2)`, exactly as upstream's constructor path does). `hslToRgb`/`hsbToRgb`
+    (integer `Math.round(r*255)`) and the `RGBColor` constructor were LEFT UNCHANGED —
+    they match upstream `toRGB`'s integer 8-bit rounding. `toFixedNumber(v,d) =
+    Math.round(v*10^d)/10^d` is byte-identical to the port's `toFixed`, and the port's
+    centralized-constructor clamp is a no-op for the in-range values every conversion and
+    cert path produces, so the certified gradient is now bit-exact to S2 (cert 18/18
+    green). The clamp-vs-`normalizeHue` handling of out-of-range hues is a PRE-EXISTING
+    port architecture choice, unchanged and un-exercised by any cert.
+  - **Zero blast radius from the shared color-model change:** the 75 color-model unit
+    tests (`solid-stately/test/color.test.ts` — integer-constructed inputs +
+    `toBeCloseTo`, all preserved under `toFixed(2)`) and the 250 color-adjacent tests all
+    pass; the full unit suite count is unchanged. The one certified color CONSUMER
+    already landed — ColorField (CP9.64) — re-certifies green in the same full certified
+    run (the shared model change did not regress it).
+  - **Scope:** D1/D3 at `states:["default"]` (rest) — the focusable surface is the
+    clipped 1px `<input>`, not the painted area, so no single element is
+    focusable-and-styled; disabled + colorSpace are prop-driven and captured at rest
+    (the same rest-only philosophy the slider family uses). D3's one sub-exact region is
+    the thumb's anti-aliased circular edge (±1 LSB grayscale, `slider-thumb-antialias-1lsb`,
+    shared with the slider family); the flat 2D gradient renders deterministically from
+    byte-identical CSS. `styleProps.add` reaches the thumb geometry longhands
+    (position/left/top/translate/box-sizing), root minSize (min-width/height), and the
+    four `background-*` companion longhands the layered gradients need. Cases: `default`
+    (rgb red/green), `disabled` (gradient → disabled token bg + outline none), and
+    `colorSpace-hsl` / `colorSpace-hsb` (all three `generateGradient()` branches; the
+    demo's `normalizeChannelPair` auto-remaps the channels to the space default pair). D4
+    (the 2D pointer drag + arrow-key value stream) is DEFERRED with the slider/field
+    family (per-control event bookkeeping the two fixtures wire differently); its visual
+    result is pinned at rest by D1/D3. D7 (no text — the label is an `aria-label`
+    attribute) / D8 (no extra hit target) / D2 (thumb `[width,height]` transition pinned
+    by D1; loupe keyframes are drag-only) are N/A.
+  - Verification: cert e2e **18 pass / 0 skip** (exit 0, captured code — not a `| tail`
+    pipe); full certified suite (all cert specs, both themes) **2003 pass / 8 skip /
+    0 fail** (exit 0, `CERT_FULL_EXIT=0`) — the ColorArea spec contributes exactly 18
+    (8×D1 + 8×D3 + 1×D5 + 1×D6) and the run was fully green with zero flakes (CP9.64's
+    baseline was 1984/8; the suite reads +19 because one previously-intermittent cert
+    also passed clean this run). Full unit suite (`vp test run packages`,
+    base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected fail** —
+    identical to CP9.64 (the color-model fix adds/removes no tests and has zero unit
+    blast radius; 75 color-model + 250 color-adjacent tests green). The old
+    `colorarea-visual.spec.ts` was retired (git rm) and `test:colorarea` retargeted at
+    the certified spec.
+  **NEXT: ColorWheel then ColorSlider then ColorSwatch, then ColorEditor — Tier 5
+  finishes with the remaining color units. ColorWheel/ColorSlider are the
+  inverted-thumb 1D sliders (D5/D6-value deferred under
+  `slider-thumb-native-input-semantics`); the color-model precision fix from this unit
+  now underpins every color conversion they paint.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG

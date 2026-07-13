@@ -115,10 +115,13 @@ function rgbToHsl(r: number, g: number, b: number): { h: number; s: number; l: n
     }
   }
 
+  // 2-decimal precision mirrors upstream RGBColor.toHSL (toFixedNumber(_, 2)); the
+  // old integer rounding silently shifted converted hues by up to half a degree,
+  // which surfaced as a 1-LSB gradient divergence in ColorArea.
   return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100),
+    h: toFixed(h * 360, 2),
+    s: toFixed(s * 100, 2),
+    l: toFixed(l * 100, 2),
   };
 }
 
@@ -187,10 +190,11 @@ function rgbToHsb(r: number, g: number, b: number): { h: number; s: number; b: n
     }
   }
 
+  // 2-decimal precision mirrors upstream RGBColor.toHSB (toFixedNumber(_, 2)).
   return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    b: Math.round(v * 100),
+    h: toFixed(h * 360, 2),
+    s: toFixed(s * 100, 2),
+    b: toFixed(v * 100, 2),
   };
 }
 
@@ -607,9 +611,11 @@ class HSLColorImpl implements Color {
   private alpha: number;
 
   constructor(hue: number, saturation: number, lightness: number, alpha: number = 1) {
-    this.hue = clamp(Math.round(hue) % 360, 0, 360);
-    this.saturation = clamp(Math.round(saturation), 0, 100);
-    this.lightness = clamp(Math.round(lightness), 0, 100);
+    // Store raw like upstream HSLColor's constructor — precision comes from the
+    // conversion (toFixed(_, 2)); rounding to integers here diverged from S2.
+    this.hue = clamp(hue % 360, 0, 360);
+    this.saturation = clamp(saturation, 0, 100);
+    this.lightness = clamp(lightness, 0, 100);
     this.alpha = clamp(toFixed(alpha, 2), 0, 1);
   }
 
@@ -781,9 +787,10 @@ class HSBColorImpl implements Color {
   private alpha: number;
 
   constructor(hue: number, saturation: number, brightness: number, alpha: number = 1) {
-    this.hue = clamp(Math.round(hue) % 360, 0, 360);
-    this.saturation = clamp(Math.round(saturation), 0, 100);
-    this.brightness = clamp(Math.round(brightness), 0, 100);
+    // Store raw like upstream HSBColor's constructor (see HSLColorImpl).
+    this.hue = clamp(hue % 360, 0, 360);
+    this.saturation = clamp(saturation, 0, 100);
+    this.brightness = clamp(brightness, 0, 100);
     this.alpha = clamp(toFixed(alpha, 2), 0, 1);
   }
 
