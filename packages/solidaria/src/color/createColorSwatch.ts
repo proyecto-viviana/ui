@@ -9,6 +9,7 @@ import { normalizeColor } from "@proyecto-viviana/solid-stately";
 import { useLocale } from "../i18n";
 import { createId } from "../ssr";
 import { filterDOMProps } from "../utils/filterDOMProps";
+import { createColorStringFormatter } from "./intl";
 import type { AriaColorSwatchOptions, ColorSwatchAria } from "./types";
 
 /**
@@ -17,6 +18,7 @@ import type { AriaColorSwatchOptions, ColorSwatchAria } from "./types";
 export function createColorSwatch(props: Accessor<AriaColorSwatchOptions>): ColorSwatchAria {
   const getProps = () => props();
   const locale = useLocale();
+  const stringFormatter = createColorStringFormatter();
   const generatedId = createId();
   const id = () => getProps().id ?? generatedId;
 
@@ -28,7 +30,7 @@ export function createColorSwatch(props: Accessor<AriaColorSwatchOptions>): Colo
 
     const resolvedColor = color();
     if (resolvedColor.getChannelValue("alpha") === 0) {
-      return "transparent";
+      return stringFormatter().format("transparent");
     }
 
     return resolvedColor.getColorName(locale().locale);
@@ -44,7 +46,7 @@ export function createColorSwatch(props: Accessor<AriaColorSwatchOptions>): Colo
       id: id(),
       slot: p.slot,
       role: "img" as const,
-      "aria-roledescription": "color swatch",
+      "aria-roledescription": stringFormatter().format("colorSwatch"),
       "aria-label": ariaLabel,
       "aria-labelledby": p["aria-labelledby"] ? `${id()} ${p["aria-labelledby"]}` : undefined,
       style: {

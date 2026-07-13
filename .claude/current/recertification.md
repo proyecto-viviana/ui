@@ -1529,10 +1529,85 @@ March order (dependency/leverage; within a tier, top to bottom):
     fail** — identical to CP9.66 (both fixes have zero unit blast radius). The old
     `colorslider-visual.spec.ts` was retired (git rm) and a new `test:colorslider` script
     points at the certified spec.
-  **NEXT: ColorSwatch then ColorEditor — Tier 5 finishes with the remaining color
-  units. ColorSwatch is a static color-preview swatch (no thumb/track, no gradient
-  channel) — expect the color model + slot machinery already certified here to carry it;
-  ColorEditor composes the color units certified across CP9.64–67.**
+  **ColorSwatch ✓ certified 2026-07-13 (CP9.68)** — Tier-5 unit 11, the static
+  color preview (a single `<div role="img">` painting one color — no thumb, track,
+  input, or gradient channel, and NOTHING focusable). Port stack: `createColorSwatch`
+  (hook, `solidaria`) → headless ColorSwatch (`solidaria-components/src/Color.tsx`) →
+  the styled `@react-spectrum/s2`-shaped ColorSwatch (`solid-spectrum/src/color`);
+  the color model is the shared `solid-stately/src/color/Color.ts`. Certified in one
+  paint + AX spec vs styled S2 (**31 pass / 0 skip**). Upstream oracle: S2
+  `ColorSwatch.tsx` = `AriaColorSwatch` (react-aria-components/ColorSwatch →
+  `useColorSwatch`), a LEAF `role="img"` div with `aria-roledescription="color swatch"`
+  and a background that is either a flat color over a checkerboard (`linear-gradient(c,c),
+  repeating-conic-gradient(...) 0% 50% / 16px 16px`) or, when alpha == 0, a diagonal
+  red slash (`linear-gradient(...) no-repeat`) — a byte-for-byte match to the port's
+  styled `colorSwatchRoot` macro + `getStyle`.
+  - **First Tier-5 color unit with NO D5 (nothing focusable).** The swatch is a
+    static preview — `role="img"`, no `tabIndex`, no interactive descendant — so it is
+    not in the tab order and has no focus trail. It also has no D4 (no interaction), no
+    D2 (no motion), no D7 (no text node), and no D8 (not an interactive target). The
+    applicable drivers are exactly D1 (rest-state style matrix), D3 (pixel), and D6
+    (AX). This is the leanest color unit — the color model + slot machinery certified
+    across CP9.64–67 carry it, so it is a faithful port with a single parity fix, and
+    the pair-oracle baseline was fully green (31/0/0) BEFORE that fix.
+  - **The style merge is a VERIFIED no-divergence (both sides put `background` LAST).**
+    The hook sets `{ background-color, forced-color-adjust }`; the styled layer sets the
+    `background` SHORTHAND. The port's headless `mergedStyle()` spreads
+    `{ ...swatchProps.style, ...renderStyle }` and the oracle's RAC ColorSwatch spreads
+    `{ ...colorSwatchProps.style, ...renderProps.style }` — both apply the `background`
+    shorthand after `background-color`, so the shorthand resets computed
+    `background-color` to transparent identically on each side. D1 captures
+    `background-color` + `background-image` + the `background-position`/`size`/`repeat`
+    companions (added to the allowlist) to PIN that equivalence rather than assume it —
+    all 14 D1 rows (7 cases × dark/light) matched at rest.
+  - **The ONE parity fix (survey-caught, driver-blind) — the port's `createColorSwatch`
+    hardcoded two English strings.** `"color swatch"` (the `aria-roledescription`) and
+    `"transparent"` (the alpha == 0 color name) were literals, where upstream
+    `useColorSwatch` localizes BOTH via `stringFormatter.format('colorSwatch' |
+    'transparent')` and every sibling port hook (`createColorArea`, `createColorSlider`)
+    already threads `createColorStringFormatter()`. The swatch was the lone outlier. The
+    fix imports `createColorStringFormatter`, declares `const stringFormatter =
+    createColorStringFormatter();` at the hook top (beside the existing `useLocale()`),
+    and replaces the two literals with `stringFormatter().format("transparent")` /
+    `stringFormatter().format("colorSwatch")`. The port intl catalog already carried both
+    keys (en-US identical: `"color swatch"` / `"transparent"`), so the change is en-US
+    byte-identical — invisible to all three drivers (both panels render en-US, so D6's
+    roledescription + "transparent" name match either way; D1/D3 don't read those
+    strings) — and reverted on Parity Rule #1 principle, not to clear a red. Same
+    "survey-caught, driver-blind" shape as CP9.67's ColorSlider thumb-role revert, but
+    simpler: no dependent snapshot (the unit suite runs en-US → byte-identical output).
+  - **Scope:** D1/D3 at `states:["default"]` (rest — nothing is focusable or
+    interactive). The target is the stable `[role="img"]` swatch div (its geometry is
+    entirely prop-driven: size → 16/24/32/40px width+height, rounding → sm/none/full
+    radius); there are NO named parts (`parts:{}`) since the swatch div is the only
+    styled element and D1 always captures the target itself. `styleProps.add`:
+    `box-sizing` + the three `background-position`/`size`/`repeat` companions the default
+    allowlist omits (`background-color`/`background-image` are already captured). Cases:
+    `default` (opaque #ff6600, M, `sm` radius — the baseline flat-color swatch),
+    `transparent` (#fff0, alpha == 0 → the diagonal slash + localized "transparent"
+    name — the branch the fix touches), `alpha` (a 50%-alpha color → the checkerboard
+    shows through the flat-color layer), `rounded` (rounding `full` → a circle),
+    `square-xs` (rounding `none` + size XS → a 16px sharp-cornered swatch), `large`
+    (size L → 40px), and `named` (an explicit `colorName` override for D6). D3 waives the
+    rounded/circular corner AA + checkerboard conic-gradient tile boundaries + slash
+    diagonal via `colorswatch-antialias-1lsb` (±1 LSB grayscale, dimensions exact, Δ≥2
+    still rejected). D6 captures the leaf `img` (roledescription + generated
+    `"<colorName>, <label>"` name) for `default` (auto colorName from the value),
+    `transparent` (localized "transparent"), and `named` (explicit override) — both
+    panels compute the auto name via the same ported `getColorName`, so the pair-diff
+    pins name generation without hard-coding the string. NO knownDivergences.
+  - Verification: cert e2e **31 pass / 0 skip** (exit 0, captured code — not a `| tail`
+    pipe; baseline green BEFORE the fix, re-run green AFTER — the fix is en-US
+    byte-identical); full certified suite **2080 pass / 8 skip / 0 fail** (CERT_FULL_EXIT=0;
+    up 31 pass from CP9.67's 2049/8, no flakes). Full unit suite (`vp test run packages`,
+    base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected fail** —
+    identical to CP9.67 (the fix is en-US byte-identical → zero unit blast radius). The old
+    `colorswatch-visual.spec.ts` was retired (git rm) and a new `test:colorswatch`
+    script points at the certified spec. (`colorswatchpicker-visual.spec.ts` is a
+    SEPARATE unit — ColorSwatchPicker — and was left untouched.)
+  **NEXT: ColorEditor — the FINAL Tier-5 unit, composing the color units certified
+  across CP9.64–68 (ColorField / ColorArea / ColorWheel / ColorSlider / ColorSwatch)
+  into a single editor surface. Tier 5 then completes.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
