@@ -290,7 +290,6 @@ export function createColorWheel(
       name: p.name,
       form: p.form,
       disabled: s.isDisabled || p.isDisabled,
-      tabIndex: s.isDisabled || p.isDisabled ? undefined : 0,
       "aria-label":
         p["aria-label"] ??
         (p["aria-labelledby"] ? undefined : s.value.getChannelName("hue", locale().locale)),

@@ -1362,11 +1362,88 @@ March order (dependency/leverage; within a tier, top to bottom):
     blast radius; 75 color-model + 250 color-adjacent tests green). The old
     `colorarea-visual.spec.ts` was retired (git rm) and `test:colorarea` retargeted at
     the certified spec.
-  **NEXT: ColorWheel then ColorSlider then ColorSwatch, then ColorEditor — Tier 5
-  finishes with the remaining color units. ColorWheel/ColorSlider are the
-  inverted-thumb 1D sliders (D5/D6-value deferred under
-  `slider-thumb-native-input-semantics`); the color-model precision fix from this unit
-  now underpins every color conversion they paint.**
+  **ColorWheel ✓ certified 2026-07-13 (CP9.66)** — Tier-5 unit 9, the hue wheel (a
+  hue-only ring with a thumb dragged around the circumference). Port stack:
+  `createColorWheel` (hook, `solidaria`) → headless ColorWheel
+  (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorWheel
+  (`solid-spectrum/src/color`); state = `createColorWheelState` (`solid-stately`);
+  color model = the shared `solid-stately/src/color/Color.ts`. Certified in one
+  paint+behavior spec vs styled S2 (**18 pass / 0 skip**). Upstream oracle: S2
+  `ColorWheel.tsx` = `AriaColorWheel` (react-aria-components/ColorWheel →
+  `useColorWheel`) rendering a `ColorWheelTrack`, an inner-border `<div>`, and a single
+  `ColorHandle`/`ColorThumb` — a VERBATIM match to the port's styled
+  `colorWheelRoot`/`colorWheelTrack`/`colorWheelInnerBorder`/`colorWheelThumb` macros
+  and the track/inner-border/handle render order.
+  - **NOT the slider inversion — the same distinguishing strength as ColorArea, and it
+    CORRECTS the recalled "ColorWheel is an inverted 1D slider" claim.** Reading the
+    actual code falsified that: upstream `useColorWheel` and the port `createColorWheel`
+    both leave the thumb ROLELESS (no `role` attribute at all — not even
+    `presentation` like ColorArea) and put ALL semantics on a single native
+    `<input type="range">` (hue channel, min 0 / max 360 / step, `aria-valuetext`,
+    focusable at rest). RAC `ColorThumb` renders exactly ONE `<input>` for the wheel
+    (`yInputProps` is undefined — ColorArea has two). So ColorWheel certifies BOTH D5
+    (the hue input is the sole real tab stop) AND D6 (the native slider surfaces its AX
+    value) with NO known divergence — no `slider-thumb-native-input-semantics` waiver.
+    (Whether ColorSlider is genuinely the inverted `div[role=slider]` pattern remains to
+    be verified when that unit is reached — do not assume from the recalled note.)
+  - **The one faithful red→green fix = reverting a self-inflicted `tabIndex` on the hue
+    input (`createColorWheel.ts:293`).** The port set
+    `tabIndex: s.isDisabled || p.isDisabled ? undefined : 0` on `inputProps`, emitting an
+    explicit `tabindex="0"` attribute. Upstream `useColorWheel` (react-aria
+    `useColorWheel.ts:368-385`, and the pinned `@react-aria/color@3.1.4`) sets NO
+    `tabIndex` at all — a native `<input type="range">` is focusable by default, and the
+    `disabled` attribute (which the port already sets, `createColorWheel.ts:292`) removes
+    it from the tab order when disabled, so the explicit `tabIndex` was both redundant and
+    divergent. D5's focus trail caught it two ways: the focused Hue input carried
+    `tabindex:"0"` where upstream carries none, and the roving snapshot (which keys on
+    `[tabindex]` elements) listed the Hue input as an extra entry the React panel did not
+    have. Deleting the line makes the port's rendered input byte-identical to upstream
+    (the headless thumb merges only `createFocusRing`'s event-handler `focusProps`, which
+    carries no `tabIndex` — unlike `createFocusable`, ColorField's CP9.64 culprit — so the
+    attribute vanishes entirely). Faithful revert, Parity Rule #1.
+  - **The one dependent snapshot update:** `solid-spectrum/test/__snapshots__/
+    regression.test.tsx.snap`'s ColorWheel entry had captured the input WITH
+    `tabindex="0"`; the faithful output drops it, so the snapshot's `<input>` was edited
+    to remove exactly ` tabindex="0"` (surgical one-attribute deletion, nothing else in
+    the 267-file / 5539-test suite changed — confirmed by a full run showing exactly that
+    one snapshot mismatch before the edit).
+  - **No color-model fix needed** — the CP9.65 ColorArea integer-rounding→`toFixed(2)`
+    revert (shared `Color.ts`) already underpins the wheel's 13-stop `conic-gradient`
+    hue sweep, so D1 (paint) and D3 (pixel) were green on the first run for all four
+    cases; the only red was D5.
+  - **Scope:** D1/D3 at `states:["default"]` (rest) — the focusable surface is the
+    clipped 1px `<input>`, not the painted ring. `styleProps.add` reaches the geometry +
+    gradient-detail longhands the default allowlist omits: `position` /
+    `left`/`top`/`right`/`bottom` (thumb angle position + the inner border's `inset:24`),
+    `box-sizing`, `clip-path` (the track's defining evenodd ring — outer + inner circle),
+    and the four `background-*` companions the thumb's layered checkerboard needs.
+    `transform` (the thumb's `translate(-50%,-50%)` centering) is already allowlisted.
+    Cases: `default` (size 192 → outerRadius 96 / innerRadius 72), `disabled` (track
+    outline `none` + disabled-token bg), and `size-175` / `size-256` to exercise the
+    `Math.max(size, 175)/2` radius math at the floor (fractional 87.5 / 63.5 radii — a
+    stress on the `clip-path` string) and at a large value (128 / 104). ColorWheel is
+    hue-only — there is no `colorSpace` prop. D3 waives the anti-aliased circular
+    ring/thumb edges via the shared `slider-thumb-antialias-1lsb` (±1 LSB grayscale,
+    dimensions exact, Δ≥2 still rejected). D4 (pointer drag around the ring + arrow-key
+    hue stream) is DEFERRED with the slider/field family; its visual result is pinned at
+    rest by D1/D3. D7 (no text — the label is an `aria-label`) / D8 (no extra hit target)
+    / D2 (thumb `[width,height]` transition pinned by D1; loupe keyframes drag-only) are
+    N/A.
+  - Verification: cert e2e **18 pass / 0 skip** (exit 0, captured code — not a `| tail`
+    pipe); full certified suite **2021 pass / 8 skip / 0 unexpected fail** (up 18 pass
+    from CP9.65's 2003/8) — the batch run's line reporter logged one flaky
+    `D4 event sequence — Dialog close button · mouse-click` failure (unrelated to the
+    ColorWheel-scoped change), which passed clean on an isolated re-run
+    (`DIALOG_RECHECK_EXIT=0`), so the ColorWheel-inclusive suite is fully green. Full
+    unit suite (`vp test run packages`, base+ssr+hydrate = 5539) **5528 pass / 1 xfail /
+    10 skip / 0 unexpected fail** — identical to CP9.65 (the tabIndex revert + snapshot
+    edit have zero unit blast radius). The old `colorwheel-visual.spec.ts` was retired
+    (git rm) and a new `test:colorwheel` script points at the certified spec.
+  **NEXT: ColorSlider then ColorSwatch, then ColorEditor — Tier 5 finishes with the
+  remaining color units. ColorSlider is the next to survey; verify whether its thumb is
+  genuinely the inverted `div[role=slider]` pattern (D5/D6-value deferred under
+  `slider-thumb-native-input-semantics`) or, like ColorArea/ColorWheel, a roleless thumb
+  backed by a native `<input>` — do not assume from the recalled note.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
