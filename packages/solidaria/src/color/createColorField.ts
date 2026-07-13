@@ -134,7 +134,14 @@ export function createColorField(
       disabled: isDisabled(),
       readOnly: isReadOnly(),
       required: validationBehavior() === "native" ? required || undefined : undefined,
-      tabIndex: p.excludeFromTabOrder ? -1 : undefined,
+      // Upstream routes the input through useFormattedTextField → useTextField →
+      // useFocusable, which ALWAYS sets a tabIndex ("so that Safari allows focusing
+      // native buttons and inputs"): `excludeFromTabOrder ? -1 : 0`, then `undefined`
+      // when disabled (useFocusable.mjs:65-66). We hand-roll inputProps, so replay that
+      // one focusable prop here — the port previously dropped the default `0`, so the
+      // rendered input carried no `tabindex` while React's carries `tabindex="0"` (a D5
+      // focus-trail divergence), exactly as createNumberField already replays it.
+      tabIndex: isDisabled() ? undefined : p.excludeFromTabOrder ? -1 : 0,
       autoComplete: "off",
       autoCorrect: "off",
       spellCheck: "false",

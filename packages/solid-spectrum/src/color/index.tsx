@@ -1209,7 +1209,6 @@ function createColorFieldStyles() {
     helpText: style<ColorFieldStyleProps>({
       gridArea: "helptext",
       display: "flex",
-      margin: 0,
       alignItems: "baseline",
       gap: "text-to-visual",
       font: controlFont(),
@@ -1528,6 +1527,11 @@ function ColorFieldLabel(props: { class?: string; children?: JSX.Element }): JSX
   );
 }
 
+// Upstream S2 renders help text via the shared `<HelpText>`, whose description is a
+// `<Text slot="description">` (a `<span>`), NOT a `<p>`: a `<p>` carries the UA
+// `margin` the hand-roll then had to zero out (see `helpText` style — upstream's
+// `helpTextStyles` has none) and an implicit `paragraph` role a `<span>` does not.
+// Reverted to match, exactly as NumberField/DateField/DatePicker did.
 function ColorFieldDescription(props: {
   class?: string;
   children?: JSX.Element;
@@ -1539,12 +1543,14 @@ function ColorFieldDescription(props: {
     return rest;
   };
   return (
-    <p {...descriptionProps()} class={props.class}>
+    <span {...descriptionProps()} slot="description" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 
+// Upstream S2's `<HelpText>` renders the error message via `<FieldError>` →
+// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
 function ColorFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
   const context = useContext(HeadlessColorFieldContext);
   if (!context) return null;
@@ -1553,9 +1559,9 @@ function ColorFieldError(props: { class?: string; children?: JSX.Element }): JSX
     return rest;
   };
   return (
-    <p {...errorMessageProps()} class={props.class}>
+    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
       {props.children}
-    </p>
+    </span>
   );
 }
 

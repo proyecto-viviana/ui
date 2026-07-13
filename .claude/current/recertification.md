@@ -1209,6 +1209,77 @@ March order (dependency/leverage; within a tier, top to bottom):
   ColorSwatch) then ColorEditor — Tier 5 continues with the color units; their
   i18n/RTL intl is already ported (see the Color memories), so the cert focus is
   the paint + drag (D4) surfaces, not the string tables.**
+
+  **ColorField ✓ certified 2026-07-12 (CP9.64)** — Tier-5 unit 7, the FIRST
+  color unit and the hex/channel text-input field. Port stack: `createColorField`
+  (hook, `solidaria`) → `HeadlessColorField` (headless, `solidaria-components`) →
+  the styled `@react-spectrum/s2`-shaped ColorField (`solid-spectrum/src/color`);
+  state = `createColorFieldState` (`solid-stately`). Certified in one paint+behavior
+  spec vs styled S2 (**34 pass / 0 skip**). Upstream oracle: S2 `ColorField.tsx` =
+  `AriaColorField` (react-aria-components/ColorField) rendering the SAME shared
+  `FieldLabel` / `FieldGroup` / `Input` / `HelpText` / `FieldErrorIcon` from `./Field`
+  that NumberField/TextField/SearchField compose — so ColorField is a TextField-shaped
+  input composite, NOT a bespoke primitive.
+  - **FieldGroup role = `presentation`** (verified `ColorField.mjs:122`: RAC's
+    `ColorField` seeds `GroupContext` with `{role:'presentation'}`) — UNLIKE
+    NumberField/SearchField (`role:'group'`), LIKE TextField/TextArea. The port's
+    styled group already used `role="presentation"`, so faithful as-found. Consequence
+    for D6: the presentation group is TRANSPARENT in the AX tree — the input textbox
+    sits directly under the field with NO `group` node (the opposite of the NumberField
+    cert). The lesson repeats: verify the FieldGroup role per RAC component; it does not
+    transfer.
+  - **Root data-attrs faithful as-found** (verified vs RAC `ColorField.mjs`, NOT
+    changed): `data-channel` (always `"hex"` or the channel) + `data-disabled`/
+    `data-invalid`/`data-readonly`/`data-required` are exactly RAC's render-prop attrs.
+  - **Faithful red→green fix 1 (source-diff, the field-family revert):** the styled
+    `ColorFieldDescription`/`ColorFieldError` rendered `<p>` + a hand-roll-only
+    `margin:0` in the `helpText` style. Upstream's shared `HelpText` renders
+    `<Text slot="description">` (a `<span>`, no UA margin) and — when invalid —
+    `<FieldError>` → `<span slot="errorMessage">`, with `helpTextStyles` declaring no
+    `margin`. Reverted to `<span slot="description">` / `<span slot="errorMessage">` and
+    dropped the stray `margin:0` (a `<p>` also carries an implicit `paragraph` role a
+    `<span>` does not → computed-style AND AX revert, identical to
+    NumberField/DateField/DatePicker).
+  - **Faithful red→green fix 2 (D5 focus-trail, browser-only):** the hook's input
+    dropped the default `tabIndex:0`. Upstream routes the input through
+    useFormattedTextField → useTextField → **useFocusable**, which ALWAYS sets a
+    tabIndex ("so that Safari allows focusing native buttons and inputs":
+    `excludeFromTabOrder ? -1 : 0`, then `undefined` when disabled — `useFocusable.mjs:65-66`).
+    `createColorField` had `excludeFromTabOrder ? -1 : undefined`, dropping the `0`, so
+    the rendered input carried NO `tabindex` while React's carries `tabindex="0"` — a
+    divergence only the browser focus-trail (D5) catches (jsdom unit tests were blind to
+    it). Fixed to `isDisabled() ? undefined : excludeFromTabOrder ? -1 : 0`, exactly as
+    `createNumberField` already replays it.
+  - **Hex/channel duality is DOM-attribute-only** (a native `<input type="text">` is a
+    `textbox` in the browser AX tree whether or not `role="textbox"` is also set; the
+    channel-mode `<input type="hidden">` is out of the AX tree entirely), so it produces
+    no pixel/focus/AX/contrast difference. It is fully owned by the unit suite
+    (`solid-spectrum/test/ColorField.test.tsx` pins the hex textbox name/value/
+    data-channel, the channel-mode role absence + hidden input name/form/value, and the
+    prefix labelling). The cert owns the DEFAULT hex field's paint / focus / AX / contrast.
+    Channel-mode i18n (the hook's `getChannelName` hardcodes `"en-US"`) stays tracked
+    alongside `intl-roledescription-hardcodes`, out of this hex-scoped cert.
+  - **Scope:** D1/D3 at `states:["default"]` (split-control, like the whole input
+    family — the transparent input is not the styled surface; the FieldGroup border is).
+    D6 on `default` — ColorField's default field has NO decorative ui-icons (no stepper,
+    no prefix), so it is ALREADY the clean textbox + presentation-group + description
+    tree; no `hide-stepper`-style routing is needed (contrast the NumberField cert).
+    `required` (the necessity AsteriskIcon svg) is the ONE held-out decorative-node case
+    (the GLOBAL `ui-icon-decorative-ax-node` policy). The `isInvalid` state
+    (`<span slot="errorMessage">` + AlertTriangleIcon + `aria-invalid` reflow) is
+    DEFERRED to `helptext-fielderror-visual-port` as with the other input-family units;
+    the `<span>`/`slot` markup is landed so it is faithful when invalid certifies.
+  - Verification: cert e2e **34 pass / 0 skip** (exit 0, captured code — not a `| tail`
+    pipe); cumulative certified suite **1984 pass / 8 skip** (up exactly 34 pass from
+    CP9.63's 1950/8). Full unit suite (`vp test run packages`, base+ssr+hydrate = 5539)
+    **5528 pass / 1 xfail / 10 skip / 0 unexpected fail** — fully green (the 4
+    pre-existing CP9.54 Tree fails did not recur in this run). Color unit suites green
+    across `solidaria` createColorField, `solidaria-components` Color.test, and
+    `solid-spectrum` ColorField.test (87 total). The old `colorfield-visual.spec.ts` was
+    retired and `test:colorfield` retargeted at the certified spec.
+  **NEXT: ColorArea (Tier 5 continues) — the first 2D drag (D4) color surface; its
+  i18n/RTL intl is already ported, so the cert focus is the 2D thumb geometry, the
+  drag gesture, and the paint.**
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
