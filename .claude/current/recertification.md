@@ -1888,16 +1888,31 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑
   HTML, hydrated with zero mismatch warnings, 958 cache-hits / 0 raw-throws;
   regression-checked with a full 81-page client build (green) and the Button
   certified spec (the fix is behavior-neutral/dormant for the current island-free
-  app). D12 stays ☐ pending the two follow-ups it unblocks: (1) migrate the bare-`h`
-  fixtures to hydratable JSX and stand up the `SolidMount`/`ReactMount` island, and
-  (2) fix a spike-isolated hydration nuance — a solid-spectrum `Button`'s dynamic
-  component children don't re-bind on hydrate (`btnText` stuck at `spike-count: 0`
-  while a direct host span AND a trivial local wrapper both re-bound), so it is
-  Button-specific (how it forwards/reads `children`), NOT a general Solid limit, and
-  is the same class as the client-path `hc()`/lazy `get children` fix. That fix plus
-  the permanent migrated island is what will give this toolchain change its lasting
-  regression coverage. The proven cheaper fallback (unit-level `vitest.ssr`/
-  `vitest.hydrate` harness) stays on the shelf, not chosen.
+  app). D12 stays ☐ pending the remaining follow-up it unblocks: migrate the
+  bare-`h` `SolidSpectrumButtonDemo` fixture to hydratable JSX and stand up the
+  `SolidMount`/`ReactMount` `client:load` island (the Button pilot).
+
+  The gating hydration question is now RESOLVED (2026-07-14, permanent regression
+  test `packages/solid-spectrum/test/Button.{ssr,hydrate}.test.tsx`). An early
+  browser spike flagged that a solid-spectrum `<Button>count: {count()}</Button>`
+  did not re-bind on hydrate — but that fine-grained shape is one the real fixture
+  never uses. The fixture drives the Button through a createMemo-**recreation**
+  pattern (a control event swaps `demoProps`, the memo rebuilds the whole Button
+  subtree, label always wrapped in an explicit `data-rsp-slot="text"` span), and
+  that shape re-binds cleanly after hydration (`before "count: 0"` → `after
+  "count: 1"`, zero throw / zero console.error). So NO Button fix is required
+  before the migration. The fine-grained non-reactivity is real but off the
+  critical path: its root cause is `Button.ResolvedContent` (`Button.tsx:172`)
+  returning a once-evaluated plain ternary `getSingleTextChild(...) !== undefined ?
+  <span>{textChild()}</span> : content()` — the branch selection isn't inside a
+  reactive boundary, so a multi-node dynamic child renders `content()` once and
+  never re-tracks. It's a general Button limitation (not hydration-specific); left
+  unfixed (Button is already certified — a reactive-children refactor risks that
+  cert for zero fixture benefit) and pinned by the hydrate test's documentation
+  assertion. The permanent SSR/hydrate tests plus the forthcoming migrated island
+  are what give this toolchain change its lasting regression coverage. The proven
+  cheaper fallback (unit-level `vitest.ssr`/`vitest.hydrate` harness) stays on the
+  shelf, not chosen for the primary browser pair-oracle.
 
 - D11 done 2026-07-14: landed the timing pair-oracle driver
   (`apps/comparison/e2e/drivers/timing.ts` + a `TimingConfig` on `drivers/scenario.ts`),
