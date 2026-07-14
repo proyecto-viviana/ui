@@ -187,6 +187,72 @@ export interface TargetSizeConfig {
   assert24?: boolean;
 }
 
+export interface TimingContext extends PanelContext {
+  /** The resolved timeline target (timeline override or scenario target). */
+  target: Locator;
+}
+
+/**
+ * One checkpoint in a D11 timing timeline. The driver runs `act` (an optional
+ * real input driven under the FROZEN clock), advances the frozen clock by
+ * `advanceMs` (firing exactly the timers that come due in that window), then
+ * records the `TimingConfig.probe` signal under `label`. Because the clock is
+ * frozen between `runFor` calls, the logical state can only change at a
+ * checkpoint's own `act`/`advanceMs` — never during the real-time settle the
+ * probe uses to absorb a framework's async render — so the captured timeline is
+ * deterministic to the millisecond.
+ */
+export interface TimingStep {
+  /** Stable label recorded (and pair-diffed) at this checkpoint. */
+  label: string;
+  /** A real input driven under the frozen clock before advancing (hover, unhover, focus, blur, press). */
+  act?: (ctx: TimingContext) => Promise<void>;
+  /** Milliseconds to advance the frozen clock before probing (default 0 = probe at the current instant). */
+  advanceMs?: number;
+}
+
+/** A scripted timing timeline for the D11 mocked-clock driver. */
+export interface TimingTimeline {
+  /** Stable id used in test titles. */
+  id: string;
+  /** Element the timeline drives + probes; defaults to the scenario target. */
+  target?: TargetResolver;
+  /** Ordered checkpoints; the probe signal is captured and pair-diffed after each. */
+  steps: readonly TimingStep[];
+}
+
+/**
+ * D11 timing driver config (recertification.md Phase 1). The driver installs
+ * Playwright's mocked clock, lets each panel load + become ready under the
+ * RUNNING clock (readiness awaits real `requestAnimationFrame`s a frozen clock
+ * would deadlock), then FREEZES the clock and walks each timeline: real gestures
+ * schedule timers, `advanceMs` fires them at exact boundaries, and `probe` reads
+ * the component's LOGICAL timing state — e.g. a tooltip's open state via the
+ * trigger's `aria-describedby`, NOT the tooltip element's DOM presence, which a
+ * CSS exit animation lingers under a frozen clock (that lingering is D2 motion's
+ * concern, not a timing signal). The per-panel timelines are pair-diffed
+ * (port == upstream). Runs the first scenario theme only — timing is
+ * theme-independent — and the first (canonical) case unless `cases` lists others.
+ */
+export interface TimingConfig {
+  cases?: readonly string[];
+  /** Reads the LOGICAL timing state at the current frozen instant (a short serializable descriptor). */
+  probe: (ctx: TimingContext) => Promise<string>;
+  timelines: readonly TimingTimeline[];
+  /**
+   * Milliseconds to advance before freezing, so any mount/settle timers scheduled
+   * during load drain before the timeline starts from a clean slate. Default 50.
+   */
+  freezeOffsetMs?: number;
+  /**
+   * Maps a `${caseId} · ${timelineId}` test title to a documented, tracked port
+   * gap that keeps that timeline red; registers it as `test.fixme` (visible in
+   * reports, excluded from pass/fail) instead of silently passing — the same
+   * mechanism as `events.knownDivergences`.
+   */
+  knownDivergences?: Record<string, string>;
+}
+
 /** A keyboard walk for the D5 focus-trail driver. */
 export interface FocusWalk {
   /** Stable id used in test titles. */
@@ -324,6 +390,8 @@ export interface DriverScenario {
   contrast?: ContrastConfig;
   /** D8 target-size driver config; runs the first theme at default state. */
   targetSize?: TargetSizeConfig;
+  /** D11 timing driver config; runs the first theme/case under a mocked clock. */
+  timing?: TimingConfig;
 }
 
 export const defaultStateReadiness: Record<GestureStateId, string | null> = {

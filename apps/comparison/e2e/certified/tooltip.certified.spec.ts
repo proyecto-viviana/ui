@@ -2,8 +2,14 @@ import { expect } from "@playwright/test";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
-import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
+import type {
+  DriverScenario,
+  PanelContext,
+  TargetResolver,
+  TimingContext,
+} from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
+import { registerTimingDriver } from "../drivers/timing";
 
 /**
  * Recertification march unit (Tier 3, first overlay): Tooltip.
@@ -182,3 +188,78 @@ registerStateMatrixDriver(surfaceScenario);
 registerPixelDriver(surfaceScenario);
 registerAxTreeDriver(surfaceScenario);
 registerContrastDriver(surfaceScenario);
+
+/**
+ * D11 (timing) — the TooltipTrigger warmup/cooldown state machine.
+ *
+ * This is a SEPARATE scenario from the surface cert above: that one pins
+ * `delay:0` and auto-opens the tooltip in `beforePanel` so the paint drivers can
+ * measure a live surface; D11 must instead exercise the REAL delay, so it drives
+ * the trigger itself under a frozen clock and never opens anything up front.
+ *
+ * TARGET = the trigger ActionButton (`canvas`, not the portaled surface). SIGNAL
+ * = the trigger's `aria-describedby`, which upstream sets to the tooltip id only
+ * while `state.isOpen` (`useTooltipTrigger`) and the port mirrors via the
+ * TriggerWrapper effect — i.e. the LOGICAL open state. DOM presence is the WRONG
+ * signal here: react-aria-components lingers the `role="tooltip"` element through
+ * its CSS exit transition, and the frozen clock suspends that transition so the
+ * element never unmounts on the React panel — a D2 (motion) artifact, deferred
+ * with the rest of the tooltip motion cert, that would otherwise read as a phantom
+ * cooldown divergence.
+ *
+ * The demo `delay` prop drives the OPEN warmup; `closeDelay` is unset so the close
+ * timer uses `TOOLTIP_COOLDOWN` (both from `@react-stately/tooltip`). The timeline
+ * pins BOTH boundaries to the exact millisecond — closed at `warmup-1`, open at
+ * `warmup`; open at `cooldown-1`, closed at `cooldown` — so a port that shifted
+ * either delay by a single tick would red the pair-diff. Both stacks must produce
+ * the identical seven-checkpoint timeline. (Focus-instant-open and press/blur
+ * immediate-close are the other TooltipTrigger timing paths; they need keyboard
+ * focus-visibility to open and are left to the deferred TooltipTrigger interaction
+ * unit alongside D4/D5.)
+ */
+const WARMUP_MS = 1500;
+const COOLDOWN_MS = 500;
+
+/** The trigger ActionButton — D11 drives + probes this, not the portaled surface. */
+const tooltipTrigger: TargetResolver = ({ canvas }) =>
+  canvas.getByRole("button", { name: triggerLabel }).first();
+
+/** Logical open state = the trigger's `aria-describedby` (present only while
+ *  `state.isOpen` in both stacks). NOT DOM presence — see the scenario doc. */
+const tooltipOpenState = async ({ target }: TimingContext): Promise<string> =>
+  (await target.getAttribute("aria-describedby")) ? "open" : "closed";
+
+const hoverTrigger = async ({ target }: TimingContext) => {
+  await target.hover();
+};
+const leaveTrigger = async ({ page }: TimingContext) => {
+  await page.mouse.move(0, 0);
+};
+
+const timingScenario: DriverScenario = {
+  slug: "tooltip",
+  title: "Tooltip trigger timing",
+  target: tooltipTrigger,
+  // Pin the warmup explicitly (the demo default is 1500, but tie the constant to
+  // the timeline). `closeDelay` is left to its TOOLTIP_COOLDOWN (500) default.
+  cases: [{ id: "hover", params: { delay: String(WARMUP_MS) } }],
+  timing: {
+    probe: tooltipOpenState,
+    timelines: [
+      {
+        id: "warmup-cooldown",
+        steps: [
+          { label: "rest" },
+          { label: "hover", act: hoverTrigger },
+          { label: `warm-${WARMUP_MS - 1}`, advanceMs: WARMUP_MS - 1 },
+          { label: `warm-${WARMUP_MS}`, advanceMs: 1 },
+          { label: "unhover", act: leaveTrigger },
+          { label: `cool-${COOLDOWN_MS - 1}`, advanceMs: COOLDOWN_MS - 1 },
+          { label: `cool-${COOLDOWN_MS}`, advanceMs: 1 },
+        ],
+      },
+    ],
+  },
+};
+
+registerTimingDriver(timingScenario);

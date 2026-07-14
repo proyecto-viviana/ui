@@ -1859,7 +1859,29 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑ D11 ☐ D12 ☐`
+Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑ D11 ☑ D12 ☐`
+
+- D11 done 2026-07-14: landed the timing pair-oracle driver
+  (`apps/comparison/e2e/drivers/timing.ts` + a `TimingConfig` on `drivers/scenario.ts`),
+  certifying delay-driven behavior under Playwright's mocked clock (`page.clock`).
+  Lifecycle: `install()` once — it leaves the clock RUNNING so each panel's readiness
+  `requestAnimationFrame`s fire (a frozen clock deadlocks them) — then per panel
+  freeze via `pauseAt(now + ε)` AFTER readiness, drive real gestures (which schedule
+  timers at the frozen instant), `runFor` to each boundary, probe the LOGICAL state,
+  and `resume()` before the next panel navigates. Pilot = Tooltip
+  (`tooltip.certified.spec.ts`, a second scenario beside the delay:0 surface cert):
+  the trigger's warmup(1500)/cooldown(500) state machine, pinned to the exact
+  millisecond (closed at warmup−1, open at warmup; open at cooldown−1, closed at
+  cooldown). KEY LESSON — the signal is the trigger's `aria-describedby` (the logical
+  `state.isOpen`), NOT the tooltip element's DOM presence: react-aria-components
+  lingers the element through its CSS exit transition, which a frozen clock suspends,
+  so DOM presence reads a phantom cooldown divergence that is really a D2 (motion)
+  artifact (the ported motion cert stays deferred). Calibration met: the
+  warmup/cooldown is at exact parity (no fix needed), and a perturbation proof —
+  shifting the port warmup 100 ms early, rebuild, re-run — reds the driver at
+  precisely the `warm-1499` checkpoint and nowhere else, confirming it is not
+  vacuously green. Cert 20/20 (surface D1/D3/D6/D7 + D11 `hover · warmup-cooldown`).
+  Remaining Phase-1 driver: D12 (SSR/hydration).
 
 - D9 + D10 done 2026-07-06 (`bae2edae`): landed the forced-colors (D9 — D1 re-run
   under `forcedColors: 'active'`, comparing resolved system-color keywords) and
@@ -1867,9 +1889,10 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑
   then re-ran the certified Tiers 1–3 through them (the `recert-drivers-d9-d12`
   gate the director pass required before Tier 4). D10 was subsequently wired into
   the Picker fixture (`fed13516`), which caught + fixed an app-wide portal-locale
-  `lang`/`dir` bug in the shared Popover. Remaining Phase-1 drivers: D11 (timing —
-  mocked-clock tooltip warmup/toast auto-dismiss/long-press) and D12
-  (SSR/hydration — Astro island server HTML vs hydrated DOM), both still ☐.
+  `lang`/`dir` bug in the shared Popover. Remaining Phase-1 drivers at that point:
+  D11 (timing — mocked-clock tooltip warmup/toast auto-dismiss/long-press) and D12
+  (SSR/hydration — Astro island server HTML vs hydrated DOM). D11 landed 2026-07-14
+  (above); D12 still ☐.
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
