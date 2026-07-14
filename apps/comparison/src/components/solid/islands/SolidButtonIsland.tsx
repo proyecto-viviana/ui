@@ -92,8 +92,16 @@ export default function SolidButtonIsland() {
   const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
     getComparisonResolvedThemeFromDocument(),
   );
+  // A crisp hydration-complete signal for the D12 (SSR/hydration) driver.
+  // onMount runs only on the client, once, AFTER hydration reconciles — never
+  // during SSR — so the server HTML lacks this attribute and the client adds it
+  // post-hydration (a normal client effect, not a hydration mismatch). It lives
+  // on the wrapper, outside the diffed button subtree, so it never perturbs the
+  // server-vs-hydrated button comparison.
+  const [hydrated, setHydrated] = createSignal(false);
 
   onMount(() => {
+    setHydrated(true);
     const handleControlsChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.component === "button") {
         setDemoProps(event.detail.props as ButtonDemoProps);
@@ -162,6 +170,7 @@ export default function SolidButtonIsland() {
       <div
         data-comparison-color-scheme={colorScheme()}
         data-comparison-action-count={String(actionCount())}
+        data-comparison-hydrated={hydrated() ? "true" : undefined}
         data-comparison-control-root="button"
         data-comparison-control-props={serializeButtonDemoProps(demoProps())}
         data-comparison-button-props={serializeButtonDemoProps(demoProps())}

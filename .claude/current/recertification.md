@@ -1859,9 +1859,57 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   the store via `@astrojs/react`, resolution-only. Root `check` stays
   packages-fast; apps coverage rides CI.
 
-Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑ D11 ☑ D12 ☐`
-(D12 still open — the driver isn't built; its **toolchain prerequisite** landed
-2026-07-14, see below.)
+Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑ D11 ☑ D12 ☑`
+(**Phase-1 drivers COMPLETE — all 12 built.** D12 driver + Button pilot landed
+2026-07-14, see below; its toolchain prerequisite + island migration landed the
+same day.)
+
+- D12 driver + Button pilot done 2026-07-14: the LAST Phase-1 driver.
+  `apps/comparison/e2e/drivers/ssr-hydration.ts` (`registerSsrHydrationDriver`)
+  certifies, for a pre-rendered `client:load` island surface, four things: (1) SSR
+  COMPLETENESS — the target is fully server-rendered (correct tag/name) in the raw
+  server HTML, captured from a `javaScriptEnabled: false` browser context so the DOM
+  is exactly what the server sent, nothing hydrated; (2) STABLE IDS + STRUCTURE —
+  every attribute of the target and its comment-stripped/whitespace-collapsed
+  subtree are byte-identical server vs hydrated; (3) NO MISMATCH — zero console
+  errors/pageerrors and no hydration-warning during the hydrating load; (4)
+  INTERACTIVE — a real click after hydration drives the island's action counter.
+  Pilot = Button (`button-d12.certified.spec.ts`, route `/d12/button`, the
+  `SolidButtonIsland` migrated above), baseline (default-props) case only. Cert 1/1;
+  Button D1–D8 re-run 42/42 (additive — the island is off the CSR viewer path).
+
+  KEY FINDING that shapes the whole contract — **Solid hydration TRUSTS the server
+  DOM and does not reconcile a divergent client-initial value** (React would warn +
+  patch; Solid silently keeps the server markup and binds reactivity on top). Proven
+  empirically: navigating to `/d12/button?variant=negative` (the static server always
+  SSRs the *default* primary button; the island reads its props from
+  `window.location.search` at hydration) — the client verifiably sees
+  `?variant=negative` and parses it, yet the button's class/attributes and
+  `data-comparison-control-props` stay *primary* with ZERO console warning; the
+  negative variant is invisible until a later reactive control event. CONSEQUENCES:
+  (a) a window-read / query-param divergence is NOT a valid perturbation — Solid
+  masks it by design, so it can never red a snapshot diff; (b) this is exactly WHY
+  the pilot certifies the baseline (no-params) state only — SSR and hydration both
+  resolve the same defaults, the one faithful, mismatch-free contract. Certifying a
+  non-default state needs a per-state PRE-RENDERED page that passes the state as a
+  server-known island PROP (the follow-up this pilot's infra enables), never a query
+  param. (c) Unlike D1–D11, D12 is NOT a Solid-vs-React byte diff: "server HTML ==
+  hydrated DOM" is an ABSOLUTE self-consistency invariant, so the oracle is the
+  island's own server HTML — no React positive control is needed or meaningful.
+
+  Calibrated by perturbation (the D11 discipline — a green-first cert is only trusted
+  once the driver is shown to red on a broken invariant). Three throwaway cases, each
+  falsifying one live assertion, all confirmed RED: wrong `expectTag`/`expectText`
+  red the two server-completeness gates; and — the methodological crux — a case
+  targeting the client-only hydration marker (`[data-comparison-hydrated='true']`,
+  set in `onMount`, absent from server HTML) reds the server snapshot's
+  `toBeAttached`, PROVING the JS-off capture is genuinely un-hydrated (were it
+  secretly the hydrated DOM, the marker would be present and the case would pass).
+  A scoped `tsc -p` over the two new e2e files (the D11 landmine: Playwright's esbuild
+  strips types at runtime, so type errors ship silently; e2e is outside the app
+  tsconfig's `src/**` include) came back 0 errors. The `data-comparison-hydrated`
+  marker added to `SolidButtonIsland` lives on the wrapper div, OUTSIDE the diffed
+  button subtree, so it never perturbs the server-vs-hydrated comparison.
 
 - D12 toolchain prerequisite done 2026-07-14 (user directive: "fix the toolchain
   first"): a Solid island can now SSR through the S2 `style()` macro pipeline, the
@@ -1966,8 +2014,8 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑
   the Picker fixture (`fed13516`), which caught + fixed an app-wide portal-locale
   `lang`/`dir` bug in the shared Popover. Remaining Phase-1 drivers at that point:
   D11 (timing — mocked-clock tooltip warmup/toast auto-dismiss/long-press) and D12
-  (SSR/hydration — Astro island server HTML vs hydrated DOM). D11 landed 2026-07-14
-  (above); D12 still ☐.
+  (SSR/hydration — Astro island server HTML vs hydrated DOM). Both landed
+  2026-07-14 (above); with D12 done, all 12 Phase-1 drivers are complete.
 
 - D1 done 2026-07-03: state-matrix computed-style pair diff landed as the
   shared walk harness (`apps/comparison/e2e/drivers/scenario.ts` + `walk.ts` +
