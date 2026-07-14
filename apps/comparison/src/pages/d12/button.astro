@@ -1,0 +1,30 @@
+---
+// D12 (SSR/hydration) pair-oracle surface for the Button pilot.
+//
+// Unlike the live viewer (`/components/button/`), which mounts every demo
+// client-side via `render()` and never SSRs it, this page renders the Button demo
+// as a real `client:load` Astro island so its server HTML can be compared against
+// its hydrated DOM (stable ids, no mismatch). Kept deliberately minimal and
+// separate from the shared viewer scaffold so the 80+ live pages are untouched.
+//
+// `data-resolved-theme="light"` pins the theme the island reads at hydration
+// (getComparisonResolvedThemeFromDocument), matching the SSR default (document is
+// undefined server-side → "light") so the baseline hydrates without mismatch. The
+// D12 driver can flip this / drive controls to exercise other states.
+import SolidButtonIsland from "@comparison/components/solid/islands/SolidButtonIsland";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>D12 · Button island</title>
+  </head>
+  <body data-resolved-theme="light">
+    <main data-d12-surface="button">
+      <div class="d12-panel" data-d12-framework="solid">
+        <SolidButtonIsland client:load />
+      </div>
+    </main>
+  </body>
+</html>
