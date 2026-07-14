@@ -1237,10 +1237,18 @@ describe("Color Components", () => {
   // ============================================
 
   describe("ColorSwatchPicker", () => {
+    // Roving focus lives on `tabindex="0"`; selection lives on `aria-selected`.
+    // Under the listbox's default `toggle` selection behaviour an arrow moves the
+    // roving focus without touching the selection — only Enter/Space commits.
+    const focusedIndex = () =>
+      screen.getAllByRole("option").findIndex((o) => o.getAttribute("tabindex") === "0");
+    const selectedIndex = () =>
+      screen.getAllByRole("option").findIndex((o) => o.getAttribute("aria-selected") === "true");
+
     it("should render with listbox semantics", () => {
       render(() => <TestColorSwatchPicker />);
 
-      const listbox = screen.getByRole("listbox", { name: /color swatch picker/i });
+      const listbox = screen.getByRole("listbox", { name: /color swatches/i });
       expect(listbox).toBeTruthy();
       expect(screen.getAllByRole("option")).toHaveLength(3);
     });
@@ -1311,7 +1319,7 @@ describe("Color Components", () => {
       });
     });
 
-    it("should expose disabled items and skip them during grid keyboard navigation", () => {
+    it("should skip disabled items during grid focus navigation and commit with Enter", () => {
       const onChange = vi.fn();
       render(() => (
         <ColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid">
@@ -1324,121 +1332,121 @@ describe("Color Components", () => {
       const options = screen.getAllByRole("option");
       expect(options[1]).toHaveAttribute("aria-disabled", "true");
 
+      // Clicking a disabled swatch is inert.
       fireEvent.click(options[1]!);
       expect(onChange).not.toHaveBeenCalled();
       expect(options[0]).toHaveAttribute("aria-selected", "true");
 
       const listbox = screen.getByRole("listbox", { name: "Palette" });
       listbox.focus();
-      fireEvent.keyDown(listbox, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
 
-      expect(options[2]).toHaveAttribute("aria-selected", "true");
+      // ArrowRight hops the disabled middle swatch and lands focus on the last
+      // one — without moving the selection off the first swatch.
+      fireEvent.keyDown(listbox, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(2);
+      expect(selectedIndex()).toBe(0);
+      expect(onChange).not.toHaveBeenCalled();
+
+      // Enter commits the focused swatch (createSelectableItem owns Enter/Space).
+      fireEvent.keyDown(listbox, { key: "Enter" });
+      expect(selectedIndex()).toBe(2);
       expect(onChange).toHaveBeenCalledTimes(1);
       expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#0000ffff");
     });
 
-    it("should support ArrowRight/ArrowLeft navigation in grid layout", () => {
+    it("should move roving focus with ArrowRight/ArrowLeft in grid layout without selecting", () => {
       const onChange = vi.fn();
       render(() => (
         <TestColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid" />
       ));
 
-      const getSelectedIndex = () =>
-        screen
-          .getAllByRole("option")
-          .findIndex((option) => option.getAttribute("aria-selected") === "true");
-
       const listbox = screen.getByRole("listbox", { name: "Palette" });
       listbox.focus();
+      expect(focusedIndex()).toBe(0);
+      expect(selectedIndex()).toBe(0);
 
-      expect(getSelectedIndex()).toBe(0);
       fireEvent.keyDown(listbox, { key: "ArrowRight" });
-      expect(getSelectedIndex()).toBe(1);
-      expect(onChange.mock.calls[0]?.[0]?.toString("hexa")).toBe("#00ff00ff");
+      expect(focusedIndex()).toBe(1);
+      expect(selectedIndex()).toBe(0);
 
       fireEvent.keyDown(listbox, { key: "ArrowLeft" });
-      expect(getSelectedIndex()).toBe(0);
+      expect(focusedIndex()).toBe(0);
+      expect(selectedIndex()).toBe(0);
+
+      // Focus travel alone never fires onChange — only a commit key would.
+      expect(onChange).not.toHaveBeenCalled();
     });
 
-    it("should wrap ArrowLeft navigation in grid layout", () => {
+    it("should not wrap ArrowLeft past the left edge in grid layout", () => {
       render(() => <TestColorSwatchPicker aria-label="Palette" layout="grid" />);
 
-      const getSelectedIndex = () =>
-        screen
-          .getAllByRole("option")
-          .findIndex((option) => option.getAttribute("aria-selected") === "true");
-
       const listbox = screen.getByRole("listbox", { name: "Palette" });
       listbox.focus();
+      expect(focusedIndex()).toBe(0);
 
+      // shouldFocusWrap is unset (upstream default false) → focus stops dead at
+      // the edge rather than wrapping around to the last swatch.
       fireEvent.keyDown(listbox, { key: "ArrowLeft" });
-      expect(getSelectedIndex()).toBe(2);
+      expect(focusedIndex()).toBe(0);
+      expect(selectedIndex()).toBe(0);
     });
 
-    it("should use geometry-based ArrowDown/ArrowUp navigation in multi-column grid layout", () => {
+    it("should move roving focus by geometry with ArrowDown/ArrowUp in a multi-column grid", () => {
       render(() => <TestColorSwatchPickerFourItems aria-label="Palette" layout="grid" />);
-
-      const getSelectedIndex = () =>
-        screen
-          .getAllByRole("option")
-          .findIndex((option) => option.getAttribute("aria-selected") === "true");
 
       const options = screen.getAllByRole("option") as HTMLElement[];
       mockGridOptionRects(options, 2);
 
       const listbox = screen.getByRole("listbox", { name: "Palette" });
       listbox.focus();
+      expect(focusedIndex()).toBe(0);
 
-      expect(getSelectedIndex()).toBe(0);
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
-      expect(getSelectedIndex()).toBe(2);
+      expect(focusedIndex()).toBe(2);
+      expect(selectedIndex()).toBe(0);
 
       fireEvent.keyDown(listbox, { key: "ArrowUp" });
-      expect(getSelectedIndex()).toBe(0);
+      expect(focusedIndex()).toBe(0);
+      expect(selectedIndex()).toBe(0);
     });
 
-    it("should wrap ArrowDown from bottom row to first item in multi-column grid layout", () => {
+    it("should not wrap ArrowDown past the bottom row in a multi-column grid", () => {
       render(() => <TestColorSwatchPickerFourItems aria-label="Palette" layout="grid" />);
-
-      const getSelectedIndex = () =>
-        screen
-          .getAllByRole("option")
-          .findIndex((option) => option.getAttribute("aria-selected") === "true");
 
       const options = screen.getAllByRole("option") as HTMLElement[];
       mockGridOptionRects(options, 2);
 
+      // Focus the bottom-right swatch, then drive ArrowDown off the bottom edge.
       fireEvent.click(options[3]!);
-
       const listbox = screen.getByRole("listbox", { name: "Palette" });
       listbox.focus();
+      expect(focusedIndex()).toBe(3);
 
-      expect(getSelectedIndex()).toBe(3);
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
-      expect(getSelectedIndex()).toBe(0);
+      expect(focusedIndex()).toBe(3);
     });
 
-    it("should invert horizontal arrows in RTL grid layout", () => {
+    it("should invert horizontal arrow focus movement in RTL grid layout", () => {
       const previousDir = document.dir;
       document.dir = "rtl";
 
       try {
         render(() => <TestColorSwatchPicker aria-label="Palette" layout="grid" />);
 
-        const getSelectedIndex = () =>
-          screen
-            .getAllByRole("option")
-            .findIndex((option) => option.getAttribute("aria-selected") === "true");
-
         const listbox = screen.getByRole("listbox", { name: "Palette" });
         listbox.focus();
+        expect(focusedIndex()).toBe(0);
 
-        expect(getSelectedIndex()).toBe(0);
-        fireEvent.keyDown(listbox, { key: "ArrowRight" });
-        expect(getSelectedIndex()).toBe(2);
-
+        // RTL flips the horizontal axis: ArrowLeft advances to the next swatch
+        // and ArrowRight retreats — the mirror of the LTR mapping.
         fireEvent.keyDown(listbox, { key: "ArrowLeft" });
-        expect(getSelectedIndex()).toBe(0);
+        expect(focusedIndex()).toBe(1);
+
+        fireEvent.keyDown(listbox, { key: "ArrowRight" });
+        expect(focusedIndex()).toBe(0);
+
+        expect(selectedIndex()).toBe(0);
       } finally {
         document.dir = previousDir;
       }

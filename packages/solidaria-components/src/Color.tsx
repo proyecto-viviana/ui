@@ -2121,11 +2121,10 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     () => ({
       id: local.id,
       "aria-label":
-        local["aria-label"] ?? (!local["aria-labelledby"] ? "Color swatch picker" : undefined),
+        local["aria-label"] ?? (!local["aria-labelledby"] ? "Color swatches" : undefined),
       "aria-labelledby": local["aria-labelledby"],
       "aria-describedby": local["aria-describedby"],
       "aria-details": local["aria-details"],
-      shouldFocusWrap: true,
     }),
     state,
   );
@@ -2253,32 +2252,28 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     let nextKey: Key | null = null;
     switch (e.key) {
       case "ArrowDown":
-        nextKey = getGridKeyBelow(listbox, initialKey) ?? getBoundaryEnabledKey("next");
+        nextKey = getGridKeyBelow(listbox, initialKey);
         break;
       case "ArrowUp":
-        nextKey = getGridKeyAbove(listbox, initialKey) ?? getBoundaryEnabledKey("prev");
+        nextKey = getGridKeyAbove(listbox, initialKey);
         break;
       case "ArrowRight":
-        nextKey =
-          getGridKeyRightOf(initialKey) ??
-          (resolveDirection() === "rtl"
-            ? getBoundaryEnabledKey("prev")
-            : getBoundaryEnabledKey("next"));
+        nextKey = getGridKeyRightOf(initialKey);
         break;
       case "ArrowLeft":
-        nextKey =
-          getGridKeyLeftOf(initialKey) ??
-          (resolveDirection() === "rtl"
-            ? getBoundaryEnabledKey("next")
-            : getBoundaryEnabledKey("prev"));
+        nextKey = getGridKeyLeftOf(initialKey);
         break;
     }
 
-    if (nextKey == null) return false;
-
-    state.setFocusedKey(nextKey);
-    if (state.selectionMode() === "single") {
-      state.replaceSelection(nextKey);
+    // Mirror react-aria's grid keyboard delegate: an arrow in grid layout is
+    // always consumed (blocking the linear ListBox handler and page scroll),
+    // but focus only moves when the delegate yields a next key. With
+    // shouldFocusWrap unset (upstream default false) there is no wrap, so arrows
+    // stop dead at the grid's edges. Selection is not mutated on arrow — under
+    // the default 'toggle' selection behavior focus moves without selecting, and
+    // Enter/Space commits (handled by createSelectableItem).
+    if (nextKey != null) {
+      state.setFocusedKey(nextKey);
     }
 
     e.preventDefault();
@@ -2298,12 +2293,18 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     getListBoxKeyDown()?.(e);
   };
 
-  createEffect(() => {
-    const key = selectedKey();
-    if (key) {
-      state.setFocusedKey(key);
-    }
-  });
+  // NB: we deliberately do NOT seed `state.setFocusedKey(selectedKey())` at rest.
+  // Upstream's RAC `<ListBox>` (which `AriaColorSwatchPicker` is) keeps
+  // `focusedKey == null` until the collection is focused — the listbox CONTAINER
+  // is the roving tabstop (`tabIndex 0`), and `useSelectableCollection`'s onFocus
+  // navigates to `firstSelectedKey` on entry (mirrored by `createListBox`'s
+  // `onListBoxFocus`). Pre-seeding focusedKey to the selected swatch made the
+  // selected option the rest tabstop instead (container `tabIndex -1`) — a
+  // self-inflicted divergence — and, because our `createFocusWithin` only flips
+  // `manager.setFocused(true)` on CONTAINER focus (Solid's `onFocus` is
+  // non-bubbling), it also routed entry through a direct option focus that never
+  // set `isFocused`, so arrow keys could not pull real DOM focus. Letting the
+  // container be the tabstop restores both.
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing({ within: true });
   const domProps = createMemo(() =>
@@ -2393,13 +2394,20 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
     onCleanup(() => context.unregisterItem(itemKey));
   });
 
+  const [optionRef, setOptionRef] = createSignal<HTMLElement | null>(null);
+
   const optionAria = createOption(
     () => ({
       key: key(),
       isDisabled: ariaProps.isDisabled,
-      "aria-label": ariaProps["aria-label"] ?? textValue(),
+      // No aria-label: the option is named by its content (the child swatch's
+      // role="img" aria-label), mirroring upstream ColorSwatchPickerItem which
+      // sets only textValue (typeahead, threaded via registerItem above) and
+      // never an aria-label.
+      "aria-label": ariaProps["aria-label"],
     }),
     context.state,
+    optionRef,
   );
 
   const renderValues = createMemo<ColorSwatchPickerItemRenderProps>(() => ({
@@ -2433,6 +2441,7 @@ export function ColorSwatchPickerItem(props: ColorSwatchPickerItemProps): JSX.El
 
   return (
     <div
+      ref={setOptionRef}
       {...mergeProps(domProps(), cleanOptionProps())}
       class={renderProps.class()}
       style={renderProps.style()}

@@ -5589,23 +5589,32 @@ function ReactColorSwatchPickerDemo() {
       "data-comparison-control-root": "colorswatchpicker",
       "data-comparison-control-props": serializeColorSwatchPickerDemoProps(demoProps),
       "data-comparison-value": value,
-      children: jsx(
-        SpectrumColorSwatchPicker,
-        {
-          ...pickerProps,
-          children: colorSwatchPickerPalette.map((item) =>
-            jsx(
-              SpectrumPickerColorSwatch,
-              {
-                color: item.color,
-                colorName: item.colorName,
-              },
-              item.color,
-            ),
+      // Boundary buttons flank the picker so the certified D5 walk enters the grid through a
+      // real Tab keypress (the faithful roving entry) rather than a synthetic container
+      // `.focus()`. They sit outside the `role="listbox"` roving scope.
+      children: jsxs(Fragment, {
+        children: [
+          jsx("button", { children: "Before" }),
+          jsx(
+            SpectrumColorSwatchPicker,
+            {
+              ...pickerProps,
+              children: colorSwatchPickerPalette.map((item) =>
+                jsx(
+                  SpectrumPickerColorSwatch,
+                  {
+                    color: item.color,
+                    colorName: item.colorName,
+                  },
+                  item.color,
+                ),
+              ),
+            },
+            renderKey,
           ),
-        },
-        renderKey,
-      ),
+          jsx("button", { children: "After" }),
+        ],
+      }),
     }),
     colorScheme,
     locale,

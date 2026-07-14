@@ -1605,10 +1605,110 @@ March order (dependency/leverage; within a tier, top to bottom):
     `colorswatch-visual.spec.ts` was retired (git rm) and a new `test:colorswatch`
     script points at the certified spec. (`colorswatchpicker-visual.spec.ts` is a
     SEPARATE unit — ColorSwatchPicker — and was left untouched.)
-  **NEXT: ColorSwatchPicker — the FINAL uncertified S2 color unit (a focusable
-  collection of `ColorSwatch` children; a shipped S2 export + a real S2 docs page).
-  Certifying it completes the S2 color roster 6/6 (ColorArea / ColorField / ColorSlider /
-  ColorSwatch / ColorWheel already done across CP9.64–68) and Tier 5.**
+  **ColorSwatchPicker ✓ certified 2026-07-14 (CP9.69)** — Tier-5 unit 12 and the
+  FINAL S2 color unit; certifying it completes the S2 color roster 6/6 (ColorArea /
+  ColorField / ColorSlider / ColorSwatch / ColorSwatchPicker / ColorWheel) and CLOSES
+  Tier 5. A single-select swatch GRID — a focusable collection of `ColorSwatch`
+  children. Unlike every prior color unit there is NO bespoke `@react-aria/color` hook:
+  upstream S2 `ColorSwatchPicker.tsx` = `AriaColorSwatchPicker`
+  (react-aria-components/ColorSwatchPicker) is a BARE `<ListBox layout={props.layout ||
+  'grid'} selectionMode="single" disallowEmptySelection selectedKeys={[color]}>`, so the
+  port assembles it on the certified ListBox collection spine, not a color hook. Port
+  stack: headless `ColorSwatchPicker` / `ColorSwatchPickerItem`
+  (`solidaria-components/src/Color.tsx`, built on `createListBox` + a `handleGridKeyDown`
+  2D grid delegate) → the styled `@react-spectrum/s2`-shaped ColorSwatchPicker
+  (`solid-spectrum/src/color/ColorSwatchPicker.tsx` — `colorSwatchPickerRoot` +
+  `colorSwatchPickerItemRoot` + `colorSwatchPickerSelectedOverlay` +
+  `pickerColorSwatchRoot`); the color model is the shared
+  `solid-stately/src/color/Color.ts`. Certified in one paint + focus + AX spec vs styled
+  S2 (**28 pass / 0 skip**).
+  - **S2 ColorSwatchPicker is GRID-ONLY, single-select, toggle-behavior, no-wrap.** The
+    oracle passes NO `selectionBehavior` (→ default `'toggle'` → an arrow moves roving
+    FOCUS without selecting; only Enter/Space commits) and NO `shouldFocusWrap` (→
+    default `false` → arrow nav STOPS DEAD at every grid boundary). Its
+    `ColorSwatchPickerProps` exposes only `density`/`size`/`rounding` — NO `layout` — so
+    RAC's `layout: props.layout || 'grid'` always resolves grid; the `stack` layout is a
+    RAC-parity extension S2 never uses (left in the port, out of this cert's scope). RAC
+    `ListBox` keeps `role=listbox` even under `layout="grid"` (the grid drives 2D nav,
+    not the role; items stay `role=option`).
+  - **THREE parity divergences the port carried in the headless `Color.tsx`, all reverted
+    on Rule #1 — NOT waived (zero knownDivergences):**
+    1. **aria-label default string (D6-observable).** The port HARDCODED the fallback
+       `"Color swatch picker"`; the oracle's react-aria-components string bundle resolves
+       `formatter.format('colorSwatchPicker')` → en-US `"Color swatches"`. The port has
+       no RAC-components string catalog (only its `@react-aria/color`-mirrored color
+       catalog, which lacks a `colorSwatchPicker` key), so the faithful-minimal fix
+       corrects the hardcoded English to the oracle's en-US output — full RAC-components
+       localization is a pre-existing infra gap, deferred. The D6 `unlabeled` case drives
+       the default-injection branch and pins this.
+    2. **No-wrap at grid boundaries (D5-observable).** `handleGridKeyDown` fell back to a
+       `?? getBoundaryEnabledKey(…)` WRAP on every arrow; the oracle (`shouldFocusWrap`
+       unset → false) returns null at each boundary and STAYS PUT. Both the wrap fallbacks
+       AND the stray `shouldFocusWrap: true` the port passed into `createListBox` are
+       removed; the D5 `grid-nav` walk certifies focus stops dead at all four boundaries.
+    3. **Arrow-key follow-focus (DRIVER-BLIND — reverted on principle + oracle source).**
+       `handleGridKeyDown` called `state.replaceSelection(nextKey)` on every arrow,
+       selecting-as-you-go — but the oracle's default `'toggle'` mode moves focus ONLY.
+       The D5 focus descriptor records `{tag,role,name,scope,disabled?,tabindex?}` NOT
+       `aria-selected`, and D1/D3/D6 capture only at rest, so no driver can see it (same
+       "survey-caught, driver-blind" shape as CP9.68's i18n fix). Reverted on Rule #1 and
+       guarded by a headless unit assertion (arrow moves roving focus without mutating the
+       selection; Enter commits) — the 7 pre-existing ColorSwatchPicker unit tests that
+       pinned the OLD invented select-on-arrow / wrap / "color swatch picker" label were
+       rewritten to measure roving `tabindex="0"` focus vs `aria-selected` selection.
+  - **Rest-state selection is `#ff0000`-default, not focus-derived.** `internalColor`
+    defaults to `"#ff0000"` (Color.tsx) = the first demo swatch, so option[0] is
+    `aria-selected` AT REST before any focus; D6 pins the single `[selected]` marker and
+    the 7 generated option names (Rose … Pink, both panels via the same ported
+    `getColorName`).
+  - **Scope / drivers:** D1 (rest style matrix) + D3 (pixel) + D5 (focus trail) + D6 (AX).
+    Target = the stable `[role="listbox"]` grid; named parts = the first `[role="option"]`
+    chrome (`position:relative`, rounding-driven radius), the first `[role="img"]` swatch
+    (prop-driven `width`/`height` per size, radius per rounding, the flat-color-over-
+    checkerboard `background`), and the selected item's `[aria-hidden]` overlay (the
+    `position:absolute;inset:0` border+outline selection ring, `border-radius:inherit`).
+    Paint cases: `default` (Accent color, size M, density regular, rounding none, #e11d48
+    Rose at index 0), `compact`/`spacious` (density → `gap`), `rounded-large` (L + full →
+    40px circles, overlay radius inherits), `xs-round` (XS + default → 16px sm-radius),
+    `blue-selected` (defaultValue #3b82f6 → overlay on the MID-grid index-4 option). D5 =
+    one `grid-nav` walk entered by a REAL `Tab` from a preceding `Before` button (the
+    faithful roving-collection entry lands focus on the selected swatch), then
+    ArrowRight×2 / ArrowLeft / ArrowDown / ArrowUp (linear + 2D), End, ArrowRight (no-wrap
+    at End), ArrowDown (no-wrap at bottom), Home, ArrowLeft (no-wrap at start), ArrowUp
+    (no-wrap at top). D6 on `default` (label passthrough) + `unlabeled` (the default-
+    injected "Color swatches" — fix #1) + `labelledby` (the `!aria-labelledby` gate). D3
+    waives rounded/circular corner AA + checkerboard tile boundaries + overlay
+    border/outline edges via `colorswatchpicker-antialias-1lsb` (±1 LSB grayscale,
+    dimensions exact, Δ≥2 rejected). NOT registered: D4 (no collection unit registers D4 —
+    selection proven structurally via D6 rest + the D5 roving trail + the headless
+    follow-focus guard), D2 (no motion), D7 (no rendered text run), D8 (the option hit box
+    IS the swatch, whose geometry D1 pins across the 16/24/32/40px ramp).
+  - Verification: cert e2e **28 pass / 0 skip** (exit 0, captured code — not a `| tail`
+    pipe); full certified suite **2107 pass / 1 flaky red / 8 skip** of 2116
+    (`CERT_FULL_EXIT=1`). All **28 new ColorSwatchPicker tests are green**; the lone red is the
+    known, PRE-EXISTING Dialog **D4 `modal-close-button · mouse-click`** case — NOT a
+    ColorSwatchPicker regression and NOT a real Solid↔React divergence. A 10× isolated repeat
+    today measured **7 pass / 3 fail**: BOTH panels are independently nondeterministic on the
+    close-icon hit-test (the center-click resolves to `path`, `svg`, OR the `button` ancestor
+    from run to run) plus focus-timing churn (a stray `focusout`/`focusin` pair on the dialog
+    `section`), and the case reds only when the two panels' nondeterminism fails to coincide.
+    It ran clean on the CP9.67/CP9.68 full runs and red on CP9.66/CP9.69 — a sub-pixel
+    center-click flake in the SHARED D4 events driver (`mouseClickGesture` presses the button
+    center; an icon-only button's sub-structure hit-test is unstable). Logged as harness tech
+    debt (candidate fix: normalize the recorded event target up to its nearest interactive
+    ancestor); out of scope for this ColorSwatchPicker-scoped commit. Full unit suite (`vp test
+    run packages`,
+    base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected fail** —
+    identical to CP9.68 (the aria-label / no-wrap / follow-focus reverts land inside the 7
+    rewritten ColorSwatchPicker unit tests, zero blast radius elsewhere). The old
+    `colorswatchpicker-visual.spec.ts` was retired (git rm) and a new
+    `test:colorswatchpicker` script points at the certified spec.
+  **Tier 5 COMPLETE — 12/12 (Calendar, RangeCalendar, DateField, TimeField, DatePicker,
+  DateRangePicker + the color roster 6/6). NEXT: Tier 6 — the custom Viviana layer
+  (EventCard, Chip, NavHeader, `viviana-ui/src/custom/*`), which has NO upstream pair →
+  the D1/D3 pair drivers are out of scope; D5–D11 still apply and contrast/target-size
+  assert against WCAG directly. ColorEditor stays OUT of the S2-parity march (survey
+  finding below — pinned S2 1.5.1 ships no ColorEditor oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color

@@ -9515,6 +9515,13 @@ function SolidSpectrumColorSwatchPickerDemo() {
           },
         },
         [
+          // Boundary buttons flank the picker so the certified D5 walk enters the grid via
+          // a real Tab keypress (the faithful roving entry) instead of a synthetic
+          // container `.focus()`: the latter navigates `focusedKey` but does not pull DOM
+          // focus onto the selected swatch in Solid (createFocusWithin's onFocus is
+          // non-bubbling), so it diverges from React's synchronous delegate. They sit
+          // outside the `role="listbox"` roving scope.
+          h("button", {}, "Before"),
           hc(
             SolidSpectrumColorSwatchPicker,
             {
@@ -9568,6 +9575,7 @@ function SolidSpectrumColorSwatchPickerDemo() {
               }),
             ),
           ),
+          h("button", {}, "After"),
         ],
       ),
     ],
