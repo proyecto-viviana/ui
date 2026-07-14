@@ -1860,6 +1860,44 @@ Phase 0: `0.1 ☑ 0.2 ☑ 0.3 ☑ 0.4 ☑ 0.5 ☑ 0.6 ☑` — **Phase 0 complet
   packages-fast; apps coverage rides CI.
 
 Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑ D11 ☑ D12 ☐`
+(D12 still open — the driver isn't built; its **toolchain prerequisite** landed
+2026-07-14, see below.)
+
+- D12 toolchain prerequisite done 2026-07-14 (user directive: "fix the toolchain
+  first"): a Solid island can now SSR through the S2 `style()` macro pipeline, the
+  hard blocker that gates a real browser D12 pair-oracle. D12's contract is "Astro
+  island server HTML vs hydrated DOM; stable ids, no mismatch", which needs an
+  actual SSR'd island — but the comparison app is client-only and had never SSR'd
+  one, so that path was never exercised, and a feasibility spike found Astro's
+  **server** build crashing in `unplugin-parcel-macros` raw `load`
+  (`unplugin-macros.js:149`, `assets.get(id).content` → undefined). Root cause: the
+  macro plugin keeps macro CSS in a MODULE-GLOBAL mutable map keyed by a
+  content-addressed id (`macro-<sha256>.css`) and DELETES a file's old assets on
+  every `transform`; Astro runs two build passes (client, then server) that share
+  and mutate that one global map, so a re-transform in the server pass evicts an id
+  another module still imports and the raw `load` crashes. The app builds today
+  ONLY because it's single-pass (client-only); adding an island triggers the second
+  pass. FIX (in the app's own `comparisonS2Macros()` wrapper,
+  `apps/comparison/astro.config.mjs` — NOT node_modules): the wrapper already keeps
+  its OWN content-addressed `macroCssCache`, populated during `transform` right
+  after each asset is minted and NEVER evicted; reorder `load` to serve from that
+  cache FIRST and wrap the raw fallback in try/catch that falls through to it.
+  Content-addressing makes the cache self-verifying (fileName = sha256 of content),
+  so a hit is byte-identical to raw load with zero staleness risk. Proven: a
+  throwaway `client:load` Solid JSX island SSR'd with macro classes in the server
+  HTML, hydrated with zero mismatch warnings, 958 cache-hits / 0 raw-throws;
+  regression-checked with a full 81-page client build (green) and the Button
+  certified spec (the fix is behavior-neutral/dormant for the current island-free
+  app). D12 stays ☐ pending the two follow-ups it unblocks: (1) migrate the bare-`h`
+  fixtures to hydratable JSX and stand up the `SolidMount`/`ReactMount` island, and
+  (2) fix a spike-isolated hydration nuance — a solid-spectrum `Button`'s dynamic
+  component children don't re-bind on hydrate (`btnText` stuck at `spike-count: 0`
+  while a direct host span AND a trivial local wrapper both re-bound), so it is
+  Button-specific (how it forwards/reads `children`), NOT a general Solid limit, and
+  is the same class as the client-path `hc()`/lazy `get children` fix. That fix plus
+  the permanent migrated island is what will give this toolchain change its lasting
+  regression coverage. The proven cheaper fallback (unit-level `vitest.ssr`/
+  `vitest.hydrate` harness) stays on the shelf, not chosen.
 
 - D11 done 2026-07-14: landed the timing pair-oracle driver
   (`apps/comparison/e2e/drivers/timing.ts` + a `TimingConfig` on `drivers/scenario.ts`),

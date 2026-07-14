@@ -328,8 +328,13 @@ const comparisonS2Macros = () => {
             : "";
 
       for (const match of transformedCode.matchAll(macroCssImportPattern)) {
-        const content = await plugin.load?.call(this, match[1]);
-        cacheMacroCss(match[1], content);
+        try {
+          const content = await plugin.load?.call(this, match[1]);
+          cacheMacroCss(match[1], content);
+        } catch {
+          // Asset already evicted by a competing build pass; if we cached it on
+          // a prior transform it will still resolve at `load` time.
+        }
       }
 
       return result;
@@ -356,13 +361,34 @@ const comparisonS2Macros = () => {
     },
     async load(id) {
       const normalizedId = stripViteRequestSuffix(id);
-      if (plugin.loadInclude?.(normalizedId)) {
-        const content = await plugin.load?.call(this, normalizedId);
-        const css = cacheMacroCss(normalizedId, content);
-        return css ?? content;
+      const fileName = getMacroCssFileName(id);
+
+      // Serve macro CSS from our own cache FIRST. It is populated during
+      // `transform` (right after the asset is minted, while it is still present
+      // in the raw plugin's map) and is never evicted — so it is immune to the
+      // raw plugin's file-keyed "remove old assets" deletion. Astro runs two
+      // build passes (client, then server) that share unplugin-parcel-macros'
+      // module-global, content-addressed `assets` map; a re-transform in the
+      // server pass evicts an id another module still imports, leaving the raw
+      // `load` (`assets.get(id).content`) to crash on `undefined`. Consulting
+      // the cache before the raw plugin sidesteps that race entirely, which is
+      // what lets a Solid island SSR through the macro pipeline at all.
+      if (fileName && macroCssCache.has(fileName)) {
+        return macroCssCache.get(fileName);
       }
 
-      const fileName = getMacroCssFileName(id);
+      if (plugin.loadInclude?.(normalizedId)) {
+        try {
+          const content = await plugin.load?.call(this, normalizedId);
+          const css = cacheMacroCss(normalizedId, content);
+          return css ?? content;
+        } catch {
+          // The raw asset was evicted by a competing build pass (content-addressed
+          // ids collide across Astro's client+server passes). Fall through to the
+          // cache below, which retains the content-verified CSS.
+        }
+      }
+
       return fileName ? (macroCssCache.get(fileName) ?? null) : null;
     },
     watchChange(id, change) {
