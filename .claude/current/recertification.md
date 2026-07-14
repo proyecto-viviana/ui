@@ -1888,9 +1888,31 @@ Phase 1: `D1 ☑ D2 ☑ D3 ☑ D4 ☑ D5 ☑ D6 ☑ D7 ☑ D8 ☑ D9 ☑ D10 ☑
   HTML, hydrated with zero mismatch warnings, 958 cache-hits / 0 raw-throws;
   regression-checked with a full 81-page client build (green) and the Button
   certified spec (the fix is behavior-neutral/dormant for the current island-free
-  app). D12 stays ☐ pending the remaining follow-up it unblocks: migrate the
-  bare-`h` `SolidSpectrumButtonDemo` fixture to hydratable JSX and stand up the
-  `SolidMount`/`ReactMount` `client:load` island (the Button pilot).
+  app). D12 stays ☐ pending its driver, but the follow-up this unblocked —
+  migrate the bare-`h` `SolidSpectrumButtonDemo` fixture to a hydratable
+  `client:load` island — is now DONE (2026-07-14, commit `d4544ec8`).
+
+- Button island migration done 2026-07-14 (`d4544ec8`): the comparison app's
+  first hydratable Astro island. `SolidSpectrumButtonDemo` (bare-`h`, CSR-only)
+  is ported to compiled JSX at
+  `apps/comparison/src/components/solid/islands/SolidButtonIsland.tsx` so
+  babel-preset-solid emits `solid-js/web` templates that SSR and hydrate, served
+  as a `client:load` island from a dedicated `apps/comparison/src/pages/d12/button.astro`
+  surface (route `/d12/button`) — the 80+ live-viewer pages are untouched. It uses
+  the recreation pattern proven hydration-safe above (createMemo rebuilds the whole
+  Button subtree; label always wrapped in a `data-rsp-slot="text"` span). LESSON
+  (a silent-type-error catch, cf. D11): this is the app's first *compiled-JSX*
+  Solid file, and the app inherits astro's `jsx: preserve` with no `jsxImportSource`,
+  so `astro check` resolved the file against React's global JSX namespace
+  (`className`/`ReactNode`/`React.JSX.Element`) → 10 type errors the babel transform
+  had shipped silently. Fix = a per-file `/** @jsxImportSource solid-js */` pragma
+  (works under `jsx: preserve`; TS-only — babel-preset-solid transforms the JSX
+  regardless, so runtime/build output is byte-identical). Every future D12 island
+  needs this pragma. Verified: `astro check` 0 errors, build 82 pages green, island
+  SSRs with stable `solidaria-*` ids + `data-rsp-slot="text"` + "Save", hydrates
+  clean (click → action-count 0→1, id survives, no console.error), Button cert
+  42/42 (the additive island can't touch the CSR viewer path). NEXT = the D12
+  driver + Button-pilot certification.
 
   The gating hydration question is now RESOLVED (2026-07-14, permanent regression
   test `packages/solid-spectrum/test/Button.{ssr,hydrate}.test.tsx`). An early
