@@ -1605,9 +1605,24 @@ March order (dependency/leverage; within a tier, top to bottom):
     `colorswatch-visual.spec.ts` was retired (git rm) and a new `test:colorswatch`
     script points at the certified spec. (`colorswatchpicker-visual.spec.ts` is a
     SEPARATE unit — ColorSwatchPicker — and was left untouched.)
-  **NEXT: ColorEditor — the FINAL Tier-5 unit, composing the color units certified
-  across CP9.64–68 (ColorField / ColorArea / ColorWheel / ColorSlider / ColorSwatch)
-  into a single editor surface. Tier 5 then completes.**
+  **NEXT: ColorSwatchPicker — the FINAL uncertified S2 color unit (a focusable
+  collection of `ColorSwatch` children; a shipped S2 export + a real S2 docs page).
+  Certifying it completes the S2 color roster 6/6 (ColorArea / ColorField / ColorSlider /
+  ColorSwatch / ColorWheel already done across CP9.64–68) and Tier 5.**
+
+  **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
+  `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
+  surface is exactly ColorArea / ColorField / ColorSlider / ColorSwatch /
+  ColorSwatchPicker / ColorWheel), not as a docs page, and not as a documented
+  composition recipe. Spectrum-1's `@react-spectrum/color` (which did have a
+  ColorEditor) is not installed and is not a comparison dependency. The port's
+  `ColorEditor` (`solidaria-components/src/ColorEditor.tsx` → `solid-spectrum`) is a
+  BESPOKE viviana composite — Tailwind utility classes, a native `<select>` format
+  picker, `solidaria-ColorEditor-*` layout — with no upstream S2 counterpart to be
+  faithful to, and it was never wired as a comparison control (no demo / `.astro` /
+  fixture). It therefore has no pair-oracle to certify against and is excluded from the
+  recertification march. (If it needs a guard later, that is a self/regression snapshot,
+  a separate non-parity effort — not part of this S2-parity march.)
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
