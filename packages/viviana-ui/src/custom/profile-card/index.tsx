@@ -54,14 +54,23 @@ const name = style({
 
 const bio = style({
   font: "ui-sm",
-  color: "[var(--color-text-secondary)]",
+  // WCAG AA fix: the bio is small text (`ui-sm`) on the `--color-bg-200` card, so
+  // the 4.5:1 floor applies. `--color-text-secondary` read only 3.84:1 on the
+  // light-blue card (5.86:1 dark); `--color-text` flips and clears 4.5:1 both
+  // ways (15.33:1 dark / 7.53:1 light). The bio stays visually secondary to the
+  // `heading-sm` name through its smaller size, not a sub-AA color.
+  color: "[var(--color-text)]",
 });
 
 const stats = style({
   display: "flex",
   gap: 16,
   font: "ui-sm",
-  color: "[var(--color-text-secondary)]",
+  // WCAG AA fix: the stat connector words ("seguidores" / "siguiendo") share the
+  // bio's 3.84:1-light failure on the `--color-bg-200` card and take the same
+  // flipping `--color-text`. (The stat VALUES are `--color-primary-100`, which
+  // already clears AA — 13.47:1 dark / 10.37:1 light.)
+  color: "[var(--color-text)]",
 });
 
 const statValue = style({

@@ -1714,10 +1714,13 @@ March order (dependency/leverage; within a tier, top to bottom):
   unit 3, two-surface card + list-item; large-text (bold path) vs small-text split fix.
   CalendarCard ✓ certified 2026-07-15 (CP9.73) — unit 4, followed-calendar card composing
   the certified Chip; bold accent follower-names dropped from fixed pink (2.42:1 light) to
-  the flipping `--color-text`. NEXT: the remaining `viviana-ui/src/custom/*` surfaces
-  (profile-card / project-card / lateral-nav / timeline-item / conversation / header /
-  logo / page-layout). ColorEditor stays OUT of the S2-parity march (survey finding below —
-  pinned S2 1.5.1 ships no ColorEditor oracle).**
+  the flipping `--color-text`. ProfileCard ✓ certified 2026-07-15 (CP9.74) — unit 5, S2
+  UserCard-shaped card; bio + stat connectors dropped from `--color-text-secondary`
+  (3.84:1 light on `bg-200`) to the flipping `--color-text`; footer "Seguir" Chip is the D8
+  target. NEXT: the remaining `viviana-ui/src/custom/*` surfaces (project-card / lateral-nav
+  / timeline-item / conversation / header / logo / page-layout). ColorEditor stays OUT of
+  the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
+  oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
@@ -1931,6 +1934,45 @@ March order (dependency/leverage; within a tier, top to bottom):
     CalendarCard + EventCard + NavHeader + Chip together **20 pass / 0 fail**, proving
     the new fixture wiring + Chip composition did not regress the three prior Tier-6
     certs. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted)
+    **clean (exit 0)**.
+
+  **ProfileCard ✓ certified 2026-07-15 (CP9.74)** — Tier-6 unit 5, a profile card
+  in the S2 UserCard shape (`viviana-ui/src/custom/profile-card/index.tsx`): avatar
+  + name/bio + follower/following stats + a footer action row. Like CalendarCard it
+  COMPOSES an already-certified surface — the footer action renders the CP9.70 Chip.
+  No upstream React pair → the same method: pair drivers out, Solid-only route,
+  absolute WCAG oracles.
+  - **The red→green — one run, one fix.** The card is a `--color-bg-200` surface
+    (dark-grey dark / light-blue light). Its name (`heading-sm`) and bold stat VALUES
+    are `--color-primary-100`, which already clears AA (13.47 dark / 10.37 light). The
+    one failure: the bio and the stat connector words ("seguidores" / "siguiendo")
+    were painted in `--color-text-secondary`. They render small (`ui-sm`) so the 4.5:1
+    floor applies, and text-secondary does not clear it on the light-blue card — the
+    bio `<p>` and both stat connector spans measured **3.84:1** light (5.86:1 dark),
+    the identical text-secondary-on-`bg-200` failure EventCard (CP9.72) hit. Fix: both
+    runs take the flipping `--color-text` (**15.33:1 dark / 7.53:1 light**) and stay
+    visually secondary to the `heading-sm` name through their smaller `ui-sm` size,
+    not a sub-AA color.
+  - **Harness — fifth `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+    Demo binds tokens under `data-viviana-profile-card-scope` (mandatory-scoped, so
+    the composed Chip and the S2 Avatar read tokens from the scoped island) and
+    renders one card — "María López", a bio, 12.4K followers / 320 following, and a
+    "Seguir" primary Chip as the footer action. **The footer Chip is load-bearing for
+    the harness, not just decorative:** the D8 target-size driver hard-fails when the
+    measured subtree has zero interactive elements, and the base card (avatar + text)
+    has none — the Chip is the single D8 target / D5 focus stop / D6 button, mirroring
+    the S2 UserCard footer-actions slot.
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24` on the footer
+    Chip) + inline D5/D6. `states: ["default"]` (every run state-independent). D6 = the
+    name renders as a level-3 heading, exactly one button named "Seguir" from its
+    content, the bio + compact stat values ("12.4K", "320") as visible text, no links.
+    D5 = the footer Chip is a real focus stop.
+  - Verification: ProfileCard cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+    D5, D6); calibrated by the pre-fix red run (D7 light `p:Organizadora…`,
+    `span:12.4K seguidores`, `span:320 siguiendo` all **3.84:1**; dark passed at 5.86).
+    Regression: ProfileCard + CalendarCard + EventCard + NavHeader + Chip together
+    **25 pass / 0 fail**, proving the new fixture wiring did not regress the four prior
+    Tier-6 certs. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted)
     **clean (exit 0)**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,

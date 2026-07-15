@@ -772,6 +772,7 @@ import {
 import { CalendarCard as VivianaCalendarCard } from "../../../../../../packages/viviana-ui/src/custom/calendar-card";
 import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
 import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/src/custom/nav-header";
+import { ProfileCard as VivianaProfileCard } from "../../../../../../packages/viviana-ui/src/custom/profile-card";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
@@ -1114,6 +1115,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   navheader: () => h(SolidNavHeaderDemo, {}),
   eventcard: () => h(SolidEventCardDemo, {}),
   calendarcard: () => h(SolidCalendarCardDemo, {}),
+  profilecard: () => h(SolidProfileCardDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1457,6 +1459,53 @@ function SolidCalendarCardDemo() {
             followers: [{ name: "María López" }, { name: "Ana Ruiz" }],
             followerCount: 5,
             tags: ["Música", "Comunidad"],
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaProfileCardScopedTokensCss = scopeVivianaTokens("data-viviana-profile-card-scope");
+
+const profileCardScopeStyle = {
+  display: "block",
+  width: "360px",
+  "max-width": "100%",
+};
+
+function SolidProfileCardDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-profile-card-scope": "true",
+      "data-comparison-control-root": "profilecard",
+      style: profileCardScopeStyle,
+    },
+    [
+      h("style", {}, vivianaProfileCardScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The profile card on the `--color-bg-200` surface: exercises the name
+          // (primary-100), the bio + stat connectors (the D7 red→green fix) and
+          // the bold stat values (primary-100). A "Seguir" primary Chip is the
+          // footer action — the interactive D8 target / D5 focus stop.
+          h(VivianaProfileCard, {
+            username: "María López",
+            bio: "Organizadora de eventos culturales en Madrid.",
+            followers: 12400,
+            following: 320,
+            actions: () => h(VivianaChip, { text: "Seguir", variant: "primary" }),
           }),
         ],
       ),
