@@ -1337,6 +1337,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "eventcard",
+    title: "EventCard",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana EventCard: an event-summary card (title, author/date meta, attendees) plus a compact EventListItem row built on the certified HeadlessButton, styled by the S2 style() macro. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "EventCard is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast on the card title + meta text, D8 24px list-item target) plus D5/D6 keyboard + AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled EventCard",
+        "Viviana EventCard rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui EventCard + EventListItem (S2 style() macro, HeadlessButton row). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component EventCard",
+        "No component-layer pair — EventCard is a styled-layer custom component.",
+        "na",
+        "na",
+        "EventCard has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless EventCard",
+        "The list-item row presses through the certified createButton behavior.",
+        "na",
+        "na",
+        "List-item press behavior is inherited from the already-certified HeadlessButton.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "EventCard has no independent state primitive.",
+        "na",
+        "na",
+        "No dedicated state layer for a presentational card.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

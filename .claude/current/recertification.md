@@ -1710,12 +1710,12 @@ March order (dependency/leverage; within a tier, top to bottom):
   assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
   (record below), establishing the Solid-only `frameworks` harness + absolute-WCAG
   methodology. NavHeader ✓ certified 2026-07-14 (CP9.71) — unit 2, first `<nav>`
-  landmark + `scopeVivianaTokens` helper. NEXT: the remaining `viviana-ui/src/custom/*`
-  surfaces (EventCard — its accent title + secondary meta both fail AA on the light
-  `bg-200` card — then calendar-card / profile-card / project-card / lateral-nav /
-  timeline-item / conversation / header / logo / page-layout). ColorEditor stays OUT
-  of the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
-  oracle).**
+  landmark + `scopeVivianaTokens` helper. EventCard ✓ certified 2026-07-15 (CP9.72) —
+  unit 3, two-surface card + list-item; large-text (bold path) vs small-text split fix.
+  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (calendar-card / profile-card /
+  project-card / lateral-nav / timeline-item / conversation / header / logo /
+  page-layout). ColorEditor stays OUT of the S2-parity march (survey finding below —
+  pinned S2 1.5.1 ships no ColorEditor oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
@@ -1841,6 +1841,54 @@ March order (dependency/leverage; within a tier, top to bottom):
     D5, D6). Regression: NavHeader + Chip together **10 pass / 0 fail**, proving the
     `scopeVivianaTokens` extraction did not regress the CP9.70 Chip cert. Scoped
     e2e typecheck of the new spec (temp `tsc -p`, then deleted) **clean (exit 0)**.
+
+  **EventCard ✓ certified 2026-07-15 (CP9.72)** — Tier-6 unit 3, the THIRD custom
+  Viviana surface and the first that certifies a MODULE with two exported surfaces:
+  `EventCard` (`viviana-ui/src/custom/event-card/index.tsx`, a summary card — title,
+  author/date meta, attendees, actions) and `EventListItem` (a compact pressable row
+  on the certified `HeadlessButton`). No upstream React Spectrum pair, so the same
+  Tier-6 method as Chip/NavHeader: pair drivers (D1/D2/D3) out of scope, Solid-only
+  route (`frameworks: ["solid"]`), absolute WCAG oracles.
+  - **The red→green — five sub-AA card runs, split into TWO fixes by text size.**
+    The card paints its title + meta-icon glyphs (@ / ⏱) in `--color-accent`
+    (#df5c9a, a FIXED pink in both themes) and its author/date meta in
+    `--color-text-secondary`, all over the `--color-bg-200` card. `--color-accent`
+    does not flip, and the card is dark-grey in dark mode / light-blue in light mode,
+    so the accent runs read **1.89:1 light / 4.48:1 dark** and the secondary meta
+    **3.84:1 light**. Brute-forcing the whole pink/accent ramp confirmed NO pink
+    token clears 4.5:1 on bg-200 in both modes (only `--color-text` does). The fix
+    splits by how the driver scores each run:
+    - **title → `--color-accent-500`** (keeps a pink identity). The `heading` token
+      renders **22px / weight 800** → WCAG large text via the BOLD path
+      (`fontSize>=18.66 && weight>=700`), NOT because it is ≥24px → 3:1 floor.
+      `accent-500` flips (bright pink dark / deep magenta light) and clears 3:1 both
+      (**3.87:1 dark / 4.91:1 light**). This is the COMPLEMENT to the NavHeader
+      `title-xl` lesson: there a normal-weight "xl" scored as small; here a 22px
+      *bold* `heading` scores as large. Empirically confirmed by the red run — the
+      dark title passed at 4.48 (only possible under the 3:1 large floor) while the
+      same-ratio small `ui-sm` glyph spans failed.
+    - **meta icons + meta text + "+N más" → `--color-text`** (small `ui-sm`, 4.5:1
+      floor; no pink clears 4.5:1 on both card bgs). Flips to **7.53:1 light /
+      15.33:1 dark**. Secondary de-emphasis now rides the smaller `ui-sm` size, not a
+      sub-AA color. (`EventListItem`'s own runs — `primary-100` title / secondary
+      subtitle on the `--color-bg-300` panel — already clear AA; no change.)
+  - **Harness — third `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+    Demo binds tokens under `data-viviana-event-card-scope`, renders the card (title +
+    author/date meta) plus an `EventListItem` inside a `--color-bg-300` panel div so
+    the transparent row's text composites over a known viviana surface (the way rows
+    are used in product). The list row is the D8 interactive target (full-width
+    HeadlessButton, clears 24px easily).
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24`) + inline
+    D5/D6. `states: ["default"]` (every run is state-independent). D6 = card title is
+    a level-3 heading, exactly one list-row button named from its content, author +
+    date as visible text, no links. D5 = the list row is a real focus stop.
+  - Verification: EventCard cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+    D5, D6); calibrated by the pre-fix red run (D7 dark `span:@ / span:⏱ · 4.48`;
+    D7 light `h3 · 1.89`, `span:@/⏱ · 1.89`, `span:María López / Jul 15… · 3.84`).
+    Regression: EventCard + NavHeader + Chip together **15 pass / 0 fail**, proving
+    the shared `scopeVivianaTokens` helper + new fixture wiring did not regress the
+    two prior Tier-6 certs. Scoped e2e typecheck of the new spec (temp `tsc -p`, then
+    deleted) **clean (exit 0)**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

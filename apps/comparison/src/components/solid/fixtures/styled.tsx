@@ -771,6 +771,10 @@ import {
 // scoped selector so importing them can never repaint the rest of the comparison app.
 import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
 import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/src/custom/nav-header";
+import {
+  EventCard as VivianaEventCard,
+  EventListItem as VivianaEventListItem,
+} from "../../../../../../packages/viviana-ui/src/custom/event-card";
 import vivianaTokensCss from "../../../../../../packages/viviana-ui/src/viviana-tokens.css?inline";
 
 type ActionItem = (typeof actionItems)[number];
@@ -1107,6 +1111,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   colorfield: () => h(SolidSpectrumColorFieldDemo, {}),
   chip: () => h(SolidChipDemo, {}),
   navheader: () => h(SolidNavHeaderDemo, {}),
+  eventcard: () => h(SolidEventCardDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1342,6 +1347,69 @@ function SolidNavHeaderDemo() {
             // accessible name comes from `menuAriaLabel`, not this content.
             menuIcon: h("span", { "aria-hidden": "true", style: navMenuIconStyle }, "☰"),
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaEventCardScopedTokensCss = scopeVivianaTokens("data-viviana-event-card-scope");
+
+const eventCardScopeStyle = {
+  display: "flex",
+  "flex-direction": "column",
+  gap: "16px",
+  width: "340px",
+  "max-width": "100%",
+};
+
+// A viviana-token panel behind the (transparent) EventListItem so its text runs
+// composite over a known `--color-bg-300` surface, the way the row is used in
+// product (rows live inside a panel, not on the bare page background).
+const eventListPanelStyle = {
+  display: "block",
+  padding: "8px",
+  "border-radius": "12px",
+  "background-color": "var(--color-bg-300)",
+};
+
+function SolidEventCardDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-event-card-scope": "true",
+      "data-comparison-control-root": "eventcard",
+      style: eventCardScopeStyle,
+    },
+    [
+      h("style", {}, vivianaEventCardScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The summary card: exercises the title (accent) + author/date meta
+          // (icon glyph + secondary text) contrast runs.
+          h(VivianaEventCard, {
+            title: "Weekly Team Sync",
+            author: "María López",
+            date: "Jul 15 · 10:00",
+          }),
+          // The compact row: the interactive D8 target and its own text runs,
+          // composited over a `--color-bg-300` panel.
+          hc("div", { style: eventListPanelStyle }, [
+            h(VivianaEventListItem, {
+              title: "Design Review",
+              subtitle: "Tomorrow · 14:00",
+            }),
+          ]),
         ],
       ),
     ],

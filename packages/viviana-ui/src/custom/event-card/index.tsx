@@ -58,7 +58,15 @@ const body = style({
 
 const title = style({
   font: "heading",
-  color: "[var(--color-accent)]",
+  // WCAG AA fix: the title sits on the `--color-bg-200` card. `--color-accent`
+  // (#df5c9a) is a fixed pink in BOTH themes, so it does not flip against a card
+  // that is dark-grey in dark mode and light-blue in light mode — it read 4.48:1
+  // dark / 1.89:1 light. `font: heading` renders 22px / weight 800, which is WCAG
+  // large text via the BOLD path (≥18.66px && ≥700), NOT because it is ≥24px — so
+  // the 3:1 large-text floor applies. `--color-accent-500` is the smallest ramp
+  // step that flips with the theme (bright pink dark / deep magenta light) AND
+  // clears 3:1 both ways (3.87:1 dark / 4.91:1 light), keeping the brand accent.
+  color: "[var(--color-accent-500)]",
 });
 
 const meta = style({
@@ -66,7 +74,12 @@ const meta = style({
   alignItems: "center",
   gap: 16,
   font: "ui-sm",
-  color: "[var(--color-text-secondary)]",
+  // WCAG AA fix: the meta text is small (`ui-sm`), so the 4.5:1 normal-text
+  // floor applies. `--color-text-secondary` read only 3.84:1 on the light
+  // `--color-bg-200` card; `--color-text` flips and clears 4.5:1 both ways
+  // (15.33:1 dark / 7.53:1 light). Secondary de-emphasis rides on the smaller
+  // `ui-sm` size rather than a sub-AA color.
+  color: "[var(--color-text)]",
 });
 
 const metaItem = style({
@@ -76,7 +89,12 @@ const metaItem = style({
 });
 
 const metaIcon = style({
-  color: "[var(--color-accent)]",
+  // WCAG AA fix: the meta glyphs (@ / ⏱) are small (inherit `ui-sm`), so the
+  // 4.5:1 floor applies. `--color-accent` fails on the card (4.48:1 dark /
+  // 1.89:1 light) and no pink ramp step clears 4.5:1 on both the dark-grey and
+  // light-blue card, so the glyphs take the flipping `--color-text` like the
+  // meta text they prefix.
+  color: "[var(--color-text)]",
 });
 
 const attendeesRow = style({
@@ -93,7 +111,10 @@ const avatars = style({
 
 const more = style({
   font: "ui-sm",
-  color: "[var(--color-text-secondary)]",
+  // WCAG AA fix: the "+N más" overflow count is small text on the same
+  // `--color-bg-200` card as the meta, so it shares the same 3.84:1-light
+  // failure and the same `--color-text` fix.
+  color: "[var(--color-text)]",
 });
 
 const actionRow = style({
