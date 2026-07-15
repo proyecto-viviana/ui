@@ -270,8 +270,26 @@ tasks:
     note: Cell today/selected suffix + grid accessible name now localized; segment label split out to calendar-segment-i18n
   - id: calendar-segment-i18n
     title: Route the date/time segment field label through the i18n layer
-    state: open
+    state: done
+    finished: 2026-07-15
     roadmap: upstream-api-parity
+    note: >-
+      DONE 2026-07-15 — entry was STALE; the implementation already landed with the
+      DateField cert (commit 81693117 / CP9.60, 2026-07-11), long after this was filed
+      2026-06-21. createDateSegment builds each segment's aria-label from
+      `displayNames().of(seg.type)` — a faithful createDisplayNames port over
+      Intl.DisplayNames(type:"dateTimeField") with a datePickerDictionary polyfill
+      fallback — so part names ("day"/"Tag"/"jour"/يوم) localize with NO hardcoded
+      English table; and it composes the field's own aria-label (threaded from
+      createDateField via the hookData WeakMap, `hd?.ariaLabel`) after the part name
+      → "day, <field label>" (createDateSegment.ts:401-413). The only real gap was
+      exit-criteria contract coverage: createDateSegment.test.tsx asserted only
+      /day/i in en-US. Closed here by adding (a) a field-label-threading test
+      (hookData ariaLabel "Birth date" → aria-label === "day, Birth date") and (b) an
+      it.each over the Calendar contract locales en-US/fr-FR/ar-AE (RTL) that derives
+      the expected localized name the same way the code does and asserts non-English
+      no longer contains the English "day". Full suite green: 5537 passed. No source
+      change needed — implementation was already parity-faithful.
   - id: picker-popover-anchor
     title: Anchor Popover to its trigger — make popoverRef a signal so position computes
     state: done
@@ -656,7 +674,8 @@ tasks:
       en-US output ("Number field", "Increase", "Decrease"), so every en-US cert (D5/D6) is
       green and this is invisible in the default locale; it only diverges under a non-English
       `I18nProvider`. Same class of debt as ColorArea/ColorSwatch's English hardcodes and the
-      still-open `calendar-segment-i18n` (see "i18n strings hardcoded" prose section). Faithful
+      now-resolved `calendar-segment-i18n` (see "i18n strings hardcoded" prose section — that one
+      turned out already parity-faithful; this NumberField one is a genuine hardcode). Faithful
       exit: route these through `createStringFormatter` (as `createDateField`/`createCalendar`
       already do) with the react-aria en-US/`intl/*.json` values, then extend the non-English/RTL
       contract coverage to a NumberField roledescription + stepper-label assertion. Low priority
@@ -1277,19 +1296,26 @@ joins `[ariaLabel, visibleRangeDescription]` per-grid (each month names itself),
 matching useCalendarGrid. `Calendar.test.tsx` adds the contract test across en-US,
 fr-FR, and the RTL ar-AE locale plus the per-grid name assertion.
 
-**Still open (`calendar-segment-i18n`):** the date/time segment `aria-label`
-still drops the field label — `createDateSegment.ts` sets it to just
-`getSegmentLabel(type)` where upstream useDateSegment is
-`${name}${ariaLabel ? ', ' + ariaLabel : ''}…`. Deferred deliberately: it spans
-5+ files (segment hook + DateField/TimeField/DatePicker plumbing of the field
-label down to each segment) and `getSegmentLabel` reads a hardcoded
-`SEGMENT_LABELS` table rather than the i18n dictionary, so closing it well means
-deciding whether to also move that table onto `createStringFormatter` — its own
-pass, not a rider on the cell/grid work.
+**Resolved (`calendar-segment-i18n`), 2026-07-15 — entry was STALE:** the prose
+above described a state the code had already moved past. When filed (2026-06-21)
+the plan feared a hardcoded `SEGMENT_LABELS` table and a dropped field label
+across 5+ files. But the DateField cert (commit `81693117` / CP9.60, 2026-07-11)
+already landed the faithful port: `createDateSegment.ts:401-413` builds each
+segment name from `displayNames().of(seg.type)` — `createDisplayNames` wraps
+`Intl.DisplayNames(type:"dateTimeField")` with a `datePickerDictionary` polyfill
+fallback, so part names localize (`day`/`Tag`/`jour`/يوم) with **no** hardcoded
+table and no `getSegmentLabel` — and composes the field's own aria-label
+(threaded from `createDateField` through the `hookData` WeakMap, `hd?.ariaLabel`)
+after the part name: `${name}${ariaLabel ? ', ' + ariaLabel : ''}${ariaLabelledBy ? ', ' : ''}`,
+exactly upstream useDateSegment. The only genuine gap was contract coverage:
+`createDateSegment.test.tsx` asserted only `/day/i` in en-US.
 
-**Exit:** the segment field label is threaded through to each segment and the
-hardcoded `SEGMENT_LABELS` table is evaluated against the i18n dictionary; the
-existing non-English/RTL contract coverage extends to a segment assertion.
+**Exit — MET 2026-07-15:** `createDateSegment.test.tsx` now pins (a) field-label
+threading (`hookData` ariaLabel `"Birth date"` → `aria-label === "day, Birth date"`)
+and (b) an `it.each` over the Calendar contract locales en-US/fr-FR/ar-AE (RTL)
+that derives the expected localized part name the same way the code does and
+asserts the non-English cases no longer contain the English `day`. Full suite
+green (5537 passed). No source change needed.
 
 **Still open (`color-i18n-rtl-parity`), filed 2026-07-07:** two pre-existing
 color visual-spec reds, both ar-AE (RTL) locale parity gaps — NOT introduced by

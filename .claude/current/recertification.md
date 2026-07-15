@@ -6087,5 +6087,38 @@ is **done**.
     baselines (project non-goal) — they diff live React S2 vs live Solid, so a
     correctly-anchored popover can only *improve* alignment, never regress a stale
     snapshot. `tech-debt.md` `picker-popover-anchor` → **done**. The sibling
-    `picker-item-checkmark` remains open (checkmark shows on every row; suspect is
-    the `renderProps.isSelected` threading at `picker/index.tsx:1046-1051`).
+    `picker-item-checkmark` was reconciled the same day as **already fixed** (commit
+    `094ca40e`, 2026-07-07 — checkmark routed through the raw `class` prop, since
+    `iconAllowedOverrides` strips `visibility` from the icon `styles` path); its
+    entry was stale and is now **done** too.
+
+- **2026-07-15 — `calendar-segment-i18n`: stale entry closed (segment i18n was already faithful; owed only a contract test).**
+  - **What.** The last open `upstream-api-parity` item on the date/time segment
+    accessible name. The entry (filed 2026-06-21) feared a hardcoded
+    `SEGMENT_LABELS` table and a dropped field label spread across 5+ files.
+    Investigation showed the DateField cert (commit `81693117` / CP9.60,
+    2026-07-11) had already landed the faithful port, so the entry was **stale**.
+  - **Implementation (already present, verified against source).**
+    `createDateSegment.ts:401-413` derives each segment name from
+    `displayNames().of(seg.type)` — `createDisplayNames` wraps
+    `Intl.DisplayNames(type:"dateTimeField")` with a `datePickerDictionary`
+    polyfill fallback, so part names localize (`day`/`Tag`/`jour`/يوم) with **no**
+    hardcoded table and no `getSegmentLabel` — then composes the field's own
+    aria-label (threaded from `createDateField` via the `hookData` WeakMap,
+    `hd?.ariaLabel`) after the part name:
+    `${name}${ariaLabel ? ', ' + ariaLabel : ''}${ariaLabelledBy ? ', ' : ''}`,
+    mirroring `@react-aria/datepicker` useDateSegment.
+  - **Gap closed = contract coverage.** `createDateSegment.test.tsx` asserted only
+    `/day/i` in en-US. Added (a) a field-label-threading test (`hookData` ariaLabel
+    `"Birth date"` → `aria-label === "day, Birth date"`) and (b) an `it.each` over
+    the Calendar contract locales en-US/fr-FR/ar-AE (RTL) that derives the expected
+    localized part name the same way the code does and asserts the non-English
+    cases no longer contain the English `day`. `renderSegment` gained an optional
+    `ariaLabel` that flows into its `hookData.set`.
+  - **Validation.** Full unit suite green — **5537 passed**, 1 expected fail, 10
+    skipped (267 files); +4 tests over the prior 5533, all in
+    `createDateSegment.test.tsx`. No source change needed.
+  - **Ledger.** `tech-debt.md` `calendar-segment-i18n` → **done** (with the stale
+    reconciliation note); `roadmap.md` `upstream-api-parity` bullet updated. This
+    was the last open item under that roadmap line except the `viviana-ui`
+    public-names half.

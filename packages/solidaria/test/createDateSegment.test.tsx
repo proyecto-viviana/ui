@@ -53,7 +53,7 @@ const DEFAULT_SEG: Seg = {
  * focus-movement paths (backspace-on-placeholder, numeric auto-advance) are
  * observable without relying on jsdom's unreliable real focus.
  */
-function renderSegment(options?: { locale?: string; segment?: Seg }) {
+function renderSegment(options?: { locale?: string; segment?: Seg; ariaLabel?: string }) {
   let segmentRef: HTMLElement | null = null;
   const segment = options?.segment ?? DEFAULT_SEG;
 
@@ -87,9 +87,11 @@ function renderSegment(options?: { locale?: string; segment?: Seg }) {
     focusPrevious: vi.fn(() => null),
   };
 
-  // Publish the shared focus manager the way createDateField would.
+  // Publish the shared focus manager (and, when the caller supplies one, the
+  // field's aria-label) the way createDateField would.
   hookData.set(state as unknown as object, {
     focusManager: focusManager as never,
+    ...(options?.ariaLabel ? { ariaLabel: options.ariaLabel } : {}),
   });
 
   function Inner() {
@@ -143,6 +145,37 @@ describe("createDateSegment", () => {
     // Composed from the localized part name ("day") via useDisplayNames.
     expect(segment.getAttribute("aria-label")).toMatch(/day/i);
   });
+
+  it("threads the field label from hookData into each segment's aria-label", () => {
+    // createDateField publishes the field's aria-label on hookData; the segment
+    // composes it AFTER the localized part name so SR reads "day, <field label>".
+    renderSegment({ ariaLabel: "Birth date" });
+    const segment = screen.getByTestId("segment");
+
+    expect(segment.getAttribute("aria-label")).toBe("day, Birth date");
+  });
+
+  // Localized segment names come from Intl.DisplayNames(type:"dateTimeField") via
+  // createDisplayNames — no hardcoded English table. Mirror the Calendar contract
+  // locales (en-US / fr-FR / ar-AE incl. RTL); compute the expected name the same
+  // way the code does so the assertion is not brittle to ICU data revisions.
+  it.each(["en-US", "fr-FR", "ar-AE"])(
+    "localizes the segment part name for %s (threading the field label)",
+    (locale) => {
+      const expectedName = new Intl.DisplayNames(locale, {
+        type: "dateTimeField",
+      }).of("day");
+
+      renderSegment({ locale, ariaLabel: "Fecha" });
+      const segment = screen.getByTestId("segment");
+
+      expect(segment.getAttribute("aria-label")).toBe(`${expectedName}, Fecha`);
+      if (locale !== "en-US") {
+        // Proves it is not falling back to the English part name.
+        expect(segment.getAttribute("aria-label")).not.toMatch(/\bday\b/);
+      }
+    },
+  );
 
   it("routes ArrowUp/ArrowDown to the spinbutton value model", () => {
     const { state } = renderSegment();

@@ -244,8 +244,12 @@ port-context-slots`); resume it after the spine lands.
   today/selected suffix + grid accessible name routed through
   `formatCalendarLabel`/the shared `CalendarHookData`, mirroring useCalendarCell /
   useCalendarGrid; contract test added across en-US, fr-FR, RTL ar-AE). The
-  segment field-label remainder is split out to `calendar-segment-i18n` (deferred —
-  5+ files + a `SEGMENT_LABELS`-vs-dictionary decision). `picker-api-upstream` /
+  segment field-label remainder (`calendar-segment-i18n`) is **DONE 2026-07-15** —
+  the feared `SEGMENT_LABELS` table never materialized: the DateField cert
+  (CP9.60) already landed the faithful port (segment names via
+  `Intl.DisplayNames(type:"dateTimeField")`, field label threaded through
+  `hookData`), so only the segment contract test was owed and is now added.
+  `picker-api-upstream` /
   `treeview-api-upstream` are **DONE 2026-06-21** — owner authorized the breaking
   removal ("breaking doesn't matter, parity is priority"). The real invented
   surface was narrower than the audit claimed: Picker dropped only
