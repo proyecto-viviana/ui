@@ -1,5 +1,19 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.6.1
+
+### Patch Changes
+
+- 8060dff: Keep TextField and TextArea public `onChange` callbacks string-only by preventing
+  field-wrapper event leakage, with controlled and uncontrolled hydration coverage.
+- 63dddb3: Bring DateField, TimeField, DatePicker, and DateRangePicker into upstream parity across state, ARIA, headless composition, and Spectrum styling. This release restores the segmented spinbutton and internationalized date-field behavior, composes the picker surfaces from their upstream component units, and adds strict React-versus-Solid regression coverage for observable behavior and appearance.
+- Updated dependencies 515ed20:
+- Updated dependencies 8060dff:
+- Updated dependencies 63dddb3:
+  - @proyecto-viviana/solidaria-components@0.4.1
+  - @proyecto-viviana/solid-stately@0.4.1
+  - @proyecto-viviana/solidaria@0.4.1
+
 ## 0.6.0
 
 ### Minor Changes
