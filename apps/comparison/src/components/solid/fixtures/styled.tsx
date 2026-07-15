@@ -780,6 +780,10 @@ import {
 } from "../../../../../../packages/viviana-ui/src/custom/lateral-nav";
 import { TimelineItem as VivianaTimelineItem } from "../../../../../../packages/viviana-ui/src/custom/timeline-item";
 import {
+  Conversation as VivianaConversation,
+  ConversationPreview as VivianaConversationPreview,
+} from "../../../../../../packages/viviana-ui/src/custom/conversation";
+import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
 } from "../../../../../../packages/viviana-ui/src/custom/event-card";
@@ -1125,6 +1129,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   projectcard: () => h(SolidProjectCardDemo, {}),
   lateralnav: () => h(SolidLateralNavDemo, {}),
   timelineitem: () => h(SolidTimelineItemDemo, {}),
+  conversation: () => h(SolidConversationDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1680,6 +1685,74 @@ function SolidTimelineItemDemo() {
             leftUser: { name: "María López", avatar: timelineLeftAvatar },
             rightUser: { name: "Diego Ramírez", avatar: timelineRightAvatar },
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaConversationScopedTokensCss = scopeVivianaTokens("data-viviana-conversation-scope");
+
+const conversationScopeStyle = {
+  display: "block",
+  width: "360px",
+  "max-width": "100%",
+};
+
+// A solid `--color-bg-200` chat panel so the transparent ConversationPreview's
+// text runs measure against a defined surface (the bubbles carry their own bg).
+const conversationPanelStyle = {
+  display: "flex",
+  "flex-direction": "column",
+  gap: "8px",
+  padding: "8px",
+  "border-radius": "12px",
+  background: "var(--color-bg-200)",
+};
+
+const conversationAvatar =
+  "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20fill%3D'%23df5c9a'%2F%3E%3C%2Fsvg%3E";
+
+const conversationMessages = [
+  { id: "m1", content: "¿Vienes al evento del sábado?", sender: "other" as const, timestamp: "10:02" },
+  { id: "m2", content: "¡Sí, allí estaré!", sender: "user" as const, timestamp: "10:04" },
+];
+
+function SolidConversationDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-conversation-scope": "true",
+      "data-comparison-control-root": "conversation",
+      style: conversationScopeStyle,
+    },
+    [
+      h("style", {}, vivianaConversationScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // A chat panel: a ConversationPreview row (the one interactive target /
+          // D5 focus stop — a HeadlessButton) over a two-bubble thread (an
+          // `other` bg-300 bubble + a `user` accent bubble). The muted preview
+          // text and the accent-bubble/unread-badge text are the D7 red→green fixes.
+          hc("div", { style: conversationPanelStyle }, [
+            h(VivianaConversationPreview, {
+              user: { name: "Ana Torres", avatar: conversationAvatar, online: true },
+              lastMessage: "Te espero en la entrada",
+              timestamp: "12:45",
+              unreadCount: 3,
+            }),
+            h(VivianaConversation, { messages: conversationMessages }),
+          ]),
         ],
       ),
     ],

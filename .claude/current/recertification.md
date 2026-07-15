@@ -1729,8 +1729,16 @@ March order (dependency/leverage; within a tier, top to bottom):
   nothing focusable) → D5/D8 out of scope (like the static ColorSwatch); TWO D7 fixes: the
   emphasized names (`--color-accent`, ~1.9:1 light / ~4.48:1 dark) and the message body
   (`--color-text-secondary`, 3.84:1 light) both → the flipping `--color-text`, names kept
-  apart by `bold` weight. NEXT: the remaining `viviana-ui/src/custom/*` surfaces
-  (conversation / header / logo / page-layout). ColorEditor stays OUT of
+  apart by `bold` weight. Conversation ✓ certified 2026-07-15 (CP9.78) — unit 9, a chat
+  surface (a pressable `ConversationPreview` list row over a thread of `user`/`other`
+  message bubbles); SIX D7 reds across three backgrounds, in two established families:
+  MUTED text on the light panels (preview + neutral-bubble timestamps
+  `--color-text-muted`, preview message `--color-text-secondary`) → the flipping
+  `--color-text`; and LIGHT text on the non-flipping pink `--color-accent` fill (unread
+  badge, user-bubble body + timestamp, ~2.4–2.7:1 light) → `--color-grey-900` (the Chip
+  CP9.70 accent-fill resolution); the preview row `HeadlessButton` is the D8 target.
+  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (header / logo /
+  page-layout). ColorEditor stays OUT of
   the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
   oracle).**
 
@@ -2097,6 +2105,46 @@ March order (dependency/leverage; within a tier, top to bottom):
     calibrated by the pre-fix red run (D7 light: names **1.89:1**, message **3.84:1**;
     D7 dark: names **4.48:1**). Regression across all eight Tier-6 units **38 pass / 0
     fail**. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted) **clean**.
+
+  **Conversation ✓ certified 2026-07-15 (CP9.78)** — Tier-6 unit 9, a "Silapse" chat
+  surface (`viviana-ui/src/custom/conversation/index.tsx`): a `ConversationPreview` list
+  row — a pressable `HeadlessButton` carrying an avatar, name, last-message, timestamp and
+  unread badge — over a `Conversation` thread of message bubbles (a `user` accent-filled
+  variant + an `other` neutral `bg-300` variant). No upstream React pair → same method:
+  pair drivers out, Solid-only route, absolute WCAG oracles. This is the most contrast-
+  dense Tier-6 unit so far — text runs across THREE backgrounds (the transparent preview
+  on the `bg-200` panel, the neutral bubble, the accent bubble).
+  - **The red→green — SIX D7 reds, in two already-established families.** (a) MUTED text
+    on the light panels: the preview timestamp and the neutral-bubble timestamp
+    (`--color-text-muted`, ~1.7–2.8:1) and the preview last-message (`--color-text-
+    secondary`, **3.84:1 light**) → the flipping `--color-text`, muting carried by the
+    smaller `detail-sm`/`ui-sm` size not a sub-AA color; (b) LIGHT text on the non-flipping
+    pink `--color-accent` fill (the Chip CP9.70 pattern): the unread badge number
+    (`--color-bg-400`, **2.74:1 light**), the user-bubble body (`--color-bg-400`, **2.74:1
+    light**) and the user-bubble timestamp (`--color-bg-300`, **2.42:1 light**) →
+    `--color-grey-900` (**~5.2:1 light / ~6.1:1 dark**, the darkest existing token). The
+    `other`-bubble body (`--color-primary-100` on `bg-300`) and the preview name
+    (`--color-primary-100` bold) already passed and were left untouched. `color` kept
+    AFTER `font` throughout (ProjectCard CP9.75 macro landmine).
+  - **D8 target size** — the `ConversationPreview` `HeadlessButton` is the one interactive
+    target (unlike the presentational TimelineItem), and as a padded avatar+text row it
+    clears the WCAG 2.5.8 24px floor comfortably; `registerTargetSizeDriver` + `assert24`.
+  - **Harness — ninth `customComparisonEntries` entry; `scopeVivianaTokens` reused** under
+    `data-viviana-conversation-scope`. Demo renders a preview (Ana Torres, unread 3) over a
+    two-bubble thread, with a self-contained inline-SVG data-URI avatar and preview strings
+    kept DISTINCT from the bubble content/timestamps so the D6 `getByText(exact)` checks
+    stay unambiguous.
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24`) + inline D5/D6.
+    `states: ["default"]`. D6 = exactly one button (the preview row, named from content),
+    the avatar image, the preview fields, the unread count and both bubble messages as
+    visible text, and zero links; D5 = the preview row is a real focus stop. D9/D10 deferred
+    (hard-coded strings; only symmetric gap/bubble-alignment is direction-sensitive).
+  - Verification: Conversation cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8, D5,
+    D6); calibrated by the pre-fix red run (D7 light: preview time **1.75:1**, preview
+    message **3.84:1**, unread badge **2.74:1**, other-time **2.24:1**, user body **2.74:1**,
+    user-time **2.42:1**; D7 dark: preview time **2.44:1**, other-time **2.77:1**).
+    Regression across all nine Tier-6 units **43 pass / 0 fail**. Scoped e2e typecheck of the
+    new spec (temp `tsc -p`, then deleted) **clean**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

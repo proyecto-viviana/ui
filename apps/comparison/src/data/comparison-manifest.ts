@@ -1613,6 +1613,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "conversation",
+    title: "Conversation",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana Conversation: a chat surface — a ConversationPreview list row (a pressable button with avatar, name, last message, timestamp and unread badge), message bubbles (`user` accent / `other` neutral variants) and a thread — on the S2 spacing/radius ramps in Silapse colors. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "Conversation is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast on the preview name/message/time, the unread badge, and both bubble variants' body + timestamp; D8 24px on the pressable preview row) plus D5/D6 keyboard + button AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled Conversation",
+        "Viviana Conversation rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui Conversation (a pressable ConversationPreview row over a thread of accent/neutral message bubbles on the S2 style() macro). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component Conversation",
+        "No component-layer pair — Conversation is a styled-layer custom component.",
+        "na",
+        "na",
+        "Conversation has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless Conversation",
+        "The preview row rides the shared headless Button; the bubbles are plain markup.",
+        "na",
+        "na",
+        "ConversationPreview wraps @proyecto-viviana/solidaria-components Button; no bespoke behavior hook.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "Conversation has no independent state primitive.",
+        "na",
+        "na",
+        "The messages and unread count are props, not a managed state primitive.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

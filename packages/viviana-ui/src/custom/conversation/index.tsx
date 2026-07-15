@@ -65,13 +65,18 @@ const previewName = style({
 
 const previewTime = style({
   font: "detail-sm",
-  color: "[var(--color-text-muted)]",
+  // `--color-text-muted` renders ~1.7:1 light / ~2.4:1 dark on the `bg-200`
+  // panel (fails AA both modes); the flipping `--color-text` clears it. Muting
+  // is carried by the smaller `detail-sm` size, not a sub-AA color.
+  color: "[var(--color-text)]",
   flexShrink: 0,
 });
 
 const previewMessage = style({
   font: "ui-sm",
-  color: "[var(--color-text-secondary)]",
+  // `--color-text-secondary` renders 3.84:1 on the light `bg-200` panel (fails
+  // the 4.5 small-text floor); the flipping `--color-text` clears both themes.
+  color: "[var(--color-text)]",
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
@@ -88,7 +93,11 @@ const unread = style({
   font: "detail-sm",
   fontWeight: "bold",
   backgroundColor: "[var(--color-accent)]",
-  color: "[var(--color-bg-400)]",
+  // Text on the non-flipping pink `--color-accent` fill: the near-white
+  // `--color-bg-400` gives only 2.74:1 in light mode (fail). `--color-grey-900`
+  // (the darkest token) reaches ~5.2:1 light / ~6.1:1 dark — the Chip accent-fill
+  // resolution.
+  color: "[var(--color-grey-900)]",
 });
 
 export function ConversationPreview(props: ConversationPreviewProps) {
@@ -142,16 +151,24 @@ const bubble = style<{ isUser: boolean }>({
     isUser: "[var(--color-accent)]",
   },
   color: {
+    // `other` bubble: `--color-primary-100` on the neutral `bg-300` fill (AA both
+    // themes). `user` bubble text on the pink `--color-accent` fill: the near-white
+    // `--color-bg-400` gives only 2.74:1 light (fail) → `--color-grey-900` (~5.2:1
+    // light / ~6.1:1 dark), the Chip accent-fill resolution.
     default: "[var(--color-primary-100)]",
-    isUser: "[var(--color-bg-400)]",
+    isUser: "[var(--color-grey-900)]",
   },
 });
 
 const bubbleTime = style<{ isUser: boolean }>({
   font: "detail-sm",
   color: {
-    default: "[var(--color-text-muted)]",
-    isUser: "[var(--color-bg-300)]",
+    // `other` timestamp on `bg-300`: `--color-text-muted` fails AA both modes
+    // (~2.2:1 light / ~2.8:1 dark) → the flipping `--color-text`. `user` timestamp
+    // on the `--color-accent` fill: `--color-bg-300` gives 2.42:1 light (fail) →
+    // `--color-grey-900` (matching the bubble body).
+    default: "[var(--color-text)]",
+    isUser: "[var(--color-grey-900)]",
   },
 });
 
