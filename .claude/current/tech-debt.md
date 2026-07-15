@@ -302,18 +302,27 @@ tasks:
       dist/index.js, so build:components must precede comparison:build.
   - id: picker-item-checkmark
     title: Show the PickerItem checkmark only on the selected option
-    state: open
+    state: done
+    finished: 2026-07-07
     roadmap: consumer-delivery
     note: >-
-      Found consuming Picker in Tortafritapp. ARIA correct (one aria-selected) but the
-      SVG checkmark shows on every row. Refined against source: the base style is right
-      — pickerCheckmark (picker/index.tsx:435) already declares visibility
-      {default:hidden, isSelected:visible}. So the defect is the isSelected condition
-      resolving truthy for all rows, not a missing base style; renderProps.isSelected
-      threading (HeadlessSelectOption, :1046-1051) and/or the S2 macro is/allows
-      condition compile is the suspect. Diff both against upstream S2 before patching.
-      Director pass 2026-07-06: fix alongside picker-popover-anchor as part of the
-      Picker-first Tier 4 slot.
+      DONE 2026-07-07 (commit 094ca40e); confirmed stale-and-certified 2026-07-15.
+      Found consuming Picker in Tortafritapp. ARIA was correct (one aria-selected) but
+      the SVG checkmark showed on every row. Root cause was NOT the base style —
+      pickerCheckmark already declares visibility {default:hidden, isSelected:visible}.
+      The visibility toggle was routed through the icon `styles` override prop, whose
+      path filters through iconAllowedOverrides, which faithfully omits `visibility`,
+      so the toggle atom was silently stripped and the checkmark painted on every
+      option. FIX = route the checkmark class through the raw `class` prop
+      (class={pickerCheckmark({ ...renderProps, size })}), matching sibling Menu/Table
+      and upstream S2 (checkmark applied via className on a hand-written ui-icon, raw
+      and unfiltered). Applied to all three surfaces: Picker, ComboBox, TabsPicker.
+      Static structural routing change (no timing/environment dependence), so it holds
+      identically for consumers — unlike picker-popover-anchor. Certified: the picker
+      cert adds `visibility` to the style allowlist and asserts it on BOTH a selected
+      checkmark part (visible) and an unselected one (hidden); suite green (popover+
+      picker 85 passed). Filed 2026-07-06, fixed 2026-07-07 — this tracking entry was
+      stale; reconciled during the picker-popover-anchor closeout.
   - id: taggroup-remove-pressscale
     title: Give the styled Tag remove button real on-press pressScale (not just the resting hint)
     state: open
@@ -1325,14 +1334,15 @@ so `import … from "@proyecto-viviana/ui/Tabs"` throws for an installed consume
 import from there; the `19` sub-paths are exported (or intentionally private); dead
 natives are deleted or wired to a consumer.
 
-## Picker ships broken to installed consumers (popover unanchored + checkmark on every row)
+## ~~Picker ships broken to installed consumers (popover unanchored + checkmark on every row)~~ — BOTH RESOLVED (checkmark 2026-07-07 `094ca40e`; popover 2026-07-15)
 
 Two consumer-facing Picker defects found consuming `@proyecto-viviana/ui` in
 Tortafritapp (admin role picker). An app-level workaround was applied there, but both
 fixes belong upstream in `solidaria-components` `Popover` and `solid-spectrum`
-`PickerItem`. Tracked as `picker-popover-anchor` and `picker-item-checkmark`.
-`picker-popover-anchor` is now **DONE** (2026-07-15, see below); `picker-item-checkmark`
-remains open and must be diffed against S2 before implementing (parity rule).
+`PickerItem`. Tracked as `picker-popover-anchor` and `picker-item-checkmark`. **Both
+are now DONE:** `picker-item-checkmark` was fixed 2026-07-07 (commit `094ca40e`) and
+verified stale-and-certified here 2026-07-15; `picker-popover-anchor` was fixed
+2026-07-15 (see below).
 
 **Popover never received the computed anchored position. — FIXED 2026-07-15.** The
 popover rendered with the `createOverlayPosition` fallback (`position: fixed; top: 0;
@@ -1356,23 +1366,30 @@ build + typecheck clean; all overlay certs green with zero regression (popover+p
 85; combobox/datepicker/daterangepicker/menu/actionmenu 218, 2 skipped); unit suite
 5533 passed.
 
-**Checkmark shows on every option.** ARIA is correct — only the selected option
-carries `aria-selected` / `data-selected="true"` — but the SVG checkmark is visible
-on every row. The base style is _not_ the cause (the report's first guess): the macro
-`pickerCheckmark` (`picker/index.tsx:435`) already declares `visibility { default:
-hidden, isSelected: visible }`. The real defect is the `isSelected` condition
-resolving truthy for all rows, so the suspect is how `renderProps.isSelected` is
-threaded into `pickerCheckmark({ ...renderProps, size })` inside `HeadlessSelectOption`
-(`:1046-1051`) and/or how the S2 macro `is`/`allows` condition compiles (the same
-macro-condition surface behind the earlier SSR-crash fix). Diff both against upstream
-S2 `PickerItem` before patching, and preserve row spacing so layout does not shift on
-selection.
+**Checkmark shows on every option. — FIXED 2026-07-07 (commit `094ca40e`), verified
+stale here 2026-07-15.** ARIA was correct — only the selected option carried
+`aria-selected` / `data-selected="true"` — but the SVG checkmark was visible on every
+row. The base style was _not_ the cause: the macro `pickerCheckmark` already declared
+`visibility { default: hidden, isSelected: visible }`. The real defect was that the
+`visibility` toggle was routed through the icon `styles` override prop, whose path
+filters overrides through `iconAllowedOverrides`, which faithfully omits `visibility`
+— so the toggle atom was silently stripped and the checkmark painted on every option.
+**Fix:** route the checkmark class through the raw `class` prop
+(`class={pickerCheckmark({ ...renderProps, size })}`), matching the sibling Menu/Table
+usage and upstream S2, where the checkmark is applied via `className` on a hand-written
+ui-icon (raw, unfiltered). Applied to all three surfaces — Picker, ComboBox, TabsPicker.
+Unlike the popover, this is a static structural routing change with no timing/environment
+dependence, so it holds identically for consumers. **Certified:** the picker cert
+adds `visibility` to the style allowlist and asserts it on BOTH a selected checkmark
+part (visible) and an unselected one (hidden) — the exact consumer-visible symptom —
+and the suite is green (popover+picker 85 passed this session). This entry was filed
+2026-07-06 and the fix landed 2026-07-07; it was stale.
 
-**Exit:** the popover opens anchored to its trigger (not viewport `0,0`), including
-portal-mounted popovers, and updates on resize/scroll; only the selected option shows
-the checkmark (unselected `visibility: hidden`, selected `visibility: visible`) with
-no layout shift; ARIA state is unchanged; both stay consistent with React Aria / S2
-Picker parity.
+**Exit — MET.** The popover opens anchored to its trigger (not viewport `0,0`),
+including portal-mounted popovers, and updates on resize/scroll; only the selected
+option shows the checkmark (unselected `visibility: hidden`, selected `visibility:
+visible`) with no layout shift; ARIA state is unchanged; both stay consistent with
+React Aria / S2 Picker parity. Both defects are now resolved.
 
 ## ~~createToolbar keeps an invented text-input arrow guard (`toolbar-text-input-guard`)~~ — RESOLVED 2026-07-09 (CP9.52)
 
