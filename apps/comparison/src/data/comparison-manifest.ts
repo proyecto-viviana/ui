@@ -1751,6 +1751,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "pagelayout",
+    title: "PageLayout",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana PageLayout: a full-height page shell (a flex column, `min-height: 100vh`) painted in the base `--color-background` surface and `--color-text` body color, with an optional `withHeader` prop that reserves top space for a fixed header. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "PageLayout is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "A presentational shell — a styled `<div>` that passes its children through, with nothing focusable — so D5/D8 are out of scope. The cert pins its own base surface/text pairing: `--color-text` on `--color-background` clears AA in both themes (D7 AA), plus a D6 renders-text / no-interactive-roles assertion.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled PageLayout",
+        "Viviana PageLayout rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui PageLayout (a full-height flex column painting `--color-background` / `--color-text` via the S2 style() macro). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component PageLayout",
+        "No component-layer pair — PageLayout is a styled-layer custom component.",
+        "na",
+        "na",
+        "PageLayout has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless PageLayout",
+        "PageLayout is a static layout shell — no behavior hook.",
+        "na",
+        "na",
+        "PageLayout only styles a container and passes its children through; there is no interactivity to model.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "PageLayout has no independent state primitive.",
+        "na",
+        "na",
+        "The `withHeader` flag is a prop that toggles top padding, not a managed state primitive.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

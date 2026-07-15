@@ -785,6 +785,7 @@ import {
 } from "../../../../../../packages/viviana-ui/src/custom/conversation";
 import { Logo as VivianaLogo } from "../../../../../../packages/viviana-ui/src/custom/logo";
 import { Header as VivianaHeader } from "../../../../../../packages/viviana-ui/src/custom/header";
+import { PageLayout as VivianaPageLayout } from "../../../../../../packages/viviana-ui/src/custom/page-layout";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
@@ -1134,6 +1135,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   conversation: () => h(SolidConversationDemo, {}),
   logo: () => h(SolidLogoDemo, {}),
   header: () => h(SolidHeaderDemo, {}),
+  pagelayout: () => h(SolidPageLayoutDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1863,6 +1865,76 @@ function SolidHeaderDemo() {
               h(VivianaChip, { text: "Playground", variant: "accent" }),
             ],
           ),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaPageLayoutScopedTokensCss = scopeVivianaTokens("data-viviana-page-layout-scope");
+
+// PageLayout is `min-height: 100vh` by design; the scope clips it to a
+// representative window so the preview stays bounded (a demo-harness choice,
+// like Header's 640px width — the component keeps its authentic full height).
+const pageLayoutScopeStyle = {
+  display: "block",
+  width: "480px",
+  "max-width": "100%",
+  height: "360px",
+  overflow: "hidden",
+};
+
+// The page-content region. Nothing sets `color`, so both runs inherit the
+// PageLayout's `--color-text` on its `--color-background` surface — exactly the
+// base surface/text pairing the D7 driver certifies. The heading is on the
+// large-text path (24px/700 → 3:1 floor); the body is normal text (4.5:1).
+const pageLayoutContentStyle = {
+  display: "flex",
+  "flex-direction": "column",
+  gap: "8px",
+  padding: "24px",
+};
+const pageLayoutHeadingStyle = { margin: "0", "font-size": "24px", "font-weight": "700" };
+const pageLayoutBodyStyle = { margin: "0", "font-size": "16px" };
+
+function SolidPageLayoutDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-page-layout-scope": "true",
+      "data-comparison-control-root": "pagelayout",
+      style: pageLayoutScopeStyle,
+    },
+    [
+      h("style", {}, vivianaPageLayoutScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The full-height page shell paints its own two base tokens — the
+          // `--color-background` surface and the inherited `--color-text` body
+          // color — and passes its children straight through (no chrome, no
+          // roles, nothing focusable). A heading + paragraph ride that paint as
+          // the only text runs the D7 driver measures, so the cert pins exactly
+          // the base surface/text pairing PageLayout owns, in both themes.
+          hc(VivianaPageLayout, {}, [
+            hc("div", { style: pageLayoutContentStyle }, [
+              h("h1", { style: pageLayoutHeadingStyle }, "Panel general"),
+              h(
+                "p",
+                { style: pageLayoutBodyStyle },
+                "Silapse organiza tus proyectos, tu equipo y tu calendario en un solo lugar.",
+              ),
+            ]),
+          ]),
         ],
       ),
     ],

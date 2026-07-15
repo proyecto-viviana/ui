@@ -1704,10 +1704,11 @@ March order (dependency/leverage; within a tier, top to bottom):
     `colorswatchpicker-visual.spec.ts` was retired (git rm) and a new
     `test:colorswatchpicker` script points at the certified spec.
   **Tier 5 COMPLETE — 12/12 (Calendar, RangeCalendar, DateField, TimeField, DatePicker,
-  DateRangePicker + the color roster 6/6). Tier 6 OPEN — the custom Viviana layer
-  (EventCard, Chip, NavHeader, `viviana-ui/src/custom/*`), which has NO upstream pair →
-  the D1/D3 pair drivers are out of scope; D5–D11 still apply and contrast/target-size
-  assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
+  DateRangePicker + the color roster 6/6). Tier 6 COMPLETE — 12/12, the whole custom Viviana
+  `viviana-ui/src/custom/*` layer (Chip, NavHeader, EventCard, CalendarCard, ProfileCard,
+  ProjectCard, LateralNav, TimelineItem, Conversation, Logo, Header, PageLayout), which has
+  NO upstream pair → the D1/D3 pair drivers are out of scope; D5–D11 still apply and
+  contrast/target-size assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
   (record below), establishing the Solid-only `frameworks` harness + absolute-WCAG
   methodology. NavHeader ✓ certified 2026-07-14 (CP9.71) — unit 2, first `<nav>`
   landmark + `scopeVivianaTokens` helper. EventCard ✓ certified 2026-07-15 (CP9.72) —
@@ -1753,10 +1754,15 @@ March order (dependency/leverage; within a tier, top to bottom):
   `<header>` with `position:absolute`, collapsing the canvas to `h=0`; tightened to the
   direct-child `.s2-framework-panel > header` (the label is a direct child; component
   landmarks are nested) — a root-cause fix for any future `<header>`-rendering unit.
-  NEXT: the remaining `viviana-ui/src/custom/*` surface (page-layout).
-  ColorEditor stays OUT of
-  the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
-  oracle).**
+  PageLayout ✓ certified 2026-07-15 (CP9.81) — unit 12 and the FINAL custom unit: a
+  full-height page shell (`min-height:100vh`) painting the base `--color-background` /
+  `--color-text` pairing. Purely presentational (a pass-through `<div>`, nothing focusable)
+  → D5/D8 out, like Logo/TimelineItem. A clean-green self-paint cert: the base pairing (both
+  flipping tones) clears AA huge in both themes — 21.0:1 dark, 12.63:1 light — no fix. **The
+  Tier-6 custom `viviana-ui/src/custom/*` roster is now COMPLETE — 12/12 (Chip, NavHeader,
+  EventCard, CalendarCard, ProfileCard, ProjectCard, LateralNav, TimelineItem, Conversation,
+  Logo, Header, PageLayout).** ColorEditor stays OUT of the S2-parity march (survey finding
+  below — pinned S2 1.5.1 ships no ColorEditor oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
@@ -2236,6 +2242,34 @@ March order (dependency/leverage; within a tier, top to bottom):
     Regression across all eleven Tier-6 units **51 pass / 0 fail** (the `global.css` tightening
     regressed nothing). Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted)
     **clean** (only the pre-existing `visual-diff.ts` `Buffer`/`@types/node` noise remains).
+
+  **PageLayout ✓ certified 2026-07-15 (CP9.81)** — Tier-6 unit 12 and the **FINAL custom
+  Viviana unit — the Tier-6 `viviana-ui/src/custom/*` roster is now COMPLETE (12/12)**. The
+  full-height page shell (`viviana-ui/src/custom/page-layout/index.tsx`): a flex column at
+  `min-height:100vh` / `width:100%` painting the base `--color-background` surface with the
+  inherited `--color-text` body color, plus an optional `withHeader` prop that reserves 64px
+  of top space for a fixed header. No upstream React pair → same method: pair drivers out,
+  Solid-only route, absolute WCAG oracles.
+  - **A clean-green self-paint cert — no source change.** PageLayout is purely presentational
+    (a styled `<div>` that passes its children through; nothing focusable, no roles), so — like
+    the static ColorSwatch (CP9.68), TimelineItem (CP9.77) and the Logo (CP9.79) — **D5/D8 are
+    out of scope**. Correctness is D7 contrast plus an inline D6 renders-text / no-roles check.
+    The two paint tokens are the *base* pairing every surface inherits, and both flip with the
+    theme, so `--color-text` on `--color-background` clears AA with huge margins in both modes:
+    **21.0:1 dark** (#ffffff on #000000) and **12.63:1 light** (#1a3040 on #f2f7fa). PageLayout
+    is the canonical owner/consumer of this base surface/text pairing — no fix needed.
+  - **Demo / harness:** twelfth `customComparisonEntries` entry; `scopeVivianaTokens` reused
+    under `data-viviana-page-layout-scope`. The shell's authentic `min-height:100vh` is clipped
+    to a representative 360px window by the scope wrapper (`height:360px; overflow:hidden`) — a
+    demo-harness bound like Header's 640px width, not a component change. A page-content region
+    (a 24px/700 heading on the large-text path + a normal-weight paragraph) rides the shell's
+    paint with no `color` of its own, so both inherit `--color-text` — the only text runs the
+    D7 driver measures. D6 = the heading + paragraph render as visible text, zero buttons, zero
+    links (display-only). D9/D10 deferred (hard-coded strings; block/column layout rides the
+    Provider `dir`).
+  - Verification: PageLayout cert e2e **3 pass / 0 skip** (exit 0 — D7×2 themes, D6). Regression
+    across all twelve Tier-6 units **54 pass / 0 fail**. Scoped e2e typecheck of the new spec
+    (temp `tsc -p`, then deleted) **clean** (only the pre-existing `visual-diff.ts` noise).
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host
