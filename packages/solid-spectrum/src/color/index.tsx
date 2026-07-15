@@ -812,10 +812,15 @@ function ColorAreaLoupe(props: {
                 fill={props.color.toString("css")}
               />
               <path
+                class={style({
+                  strokeWidth: 1,
+                  stroke: {
+                    default: "transparent-black-200",
+                    forcedColors: "ButtonBorder",
+                  },
+                  fill: "white",
+                })}
                 d="M25 3A21.98 21.98 0 003 25c0 6.2 4 14.794 11.568 24.853A144.233 144.233 0 0025 62.132a144.085 144.085 0 0010.4-12.239C42.99 39.816 47 31.209 47 25A21.98 21.98 0 0025 3m0-2a24 24 0 0124 24c0 16.255-24 40-24 40S1 41.255 1 25A24 24 0 0125 1z"
-                fill="white"
-                stroke="rgba(0, 0, 0, 0.42)"
-                stroke-width="1"
               />
             </svg>
           </Portal>

@@ -2308,17 +2308,44 @@ component can never silently regress.
   checkbox column, contextualhelp/toast glyphs, form label baseline, tooltip
   arrow) are real sub-pixel diffs already case-scoped — kept. See the CP9.85
   record below.
-- Retire the audit scaffolding (`audit-durable/`, session memory) once every
-  finding is either fixed-and-guarded or a tracked waiver.
+- ☑ **DONE 2026-07-15 (CP9.86)** — Retire the audit scaffolding
+  (`audit-durable/`, session memory). Reconciled the ~264 sampled-audit findings
+  against the certified suite: every finding-bearing component now carries a
+  `*.certified.spec.ts` (34 style + 2 behavior + all 7 crosscut targets), so a
+  green pair-cert forbids any live divergence on an exercised path; the 8
+  blockers were spot-verified fixed (ComboBox border-width comp, Dialog
+  backdrop + footer padding, ActionButton/ToggleButton static-color token,
+  TagGroup hover/focus states) and the last still-open concrete divergence — the
+  ColorHandle drag-loupe stroke (`rgba(0,0,0,0.42)` vs upstream
+  `transparent-black-200` + `forcedColors:ButtonBorder`, in a drag-only path no
+  driver exercises) — was **fixed to byte-faithful upstream parity** here. The
+  only survivable residuals are documented-out-of-scope unexercised paths
+  (Skeleton Image `SkeletonWrapper` clone — recertification.md §3867) and the
+  legacy hand-authored-Tailwind family (`StyledModal`, `select`, `listbox`, +11),
+  which are tracked in `tailwind-removal.md` + `tech-debt.md`. Ledger provably
+  empty → scaffolding retired. See the CP9.86 record below.
 
 ## Calibration — using the 2026-07 audit without depending on it
 
-`audit-durable/` (session storage) holds ~264 adversarially verified findings
+`audit-durable/` (session storage) held ~264 adversarially verified findings
 from the sampled audit (style A-batch-1 full JSON, behavior, cross-cutting).
-They are **not** the work list. Their one job: when a component certifies, its
+They were **not** the work list. Their one job: when a component certifies, its
 known findings must have been rediscovered by the drivers. Rediscovered →
 delete from the ledger. Missed → the driver has a gap; fix the driver first.
 When the ledger is empty, the machinery has provably subsumed the audit.
+
+**RETIRED 2026-07-15 (CP9.86).** The ledger is empty and the scaffolding is
+gone. Reconciliation (see the CP9.86 record): every finding-bearing component
+certified, so a green pair-cert forbids a live divergence on any exercised path;
+the blockers were spot-verified fixed; the last concrete still-open divergence
+(ColorHandle drag-loupe stroke) was fixed to upstream parity; and the only
+survivable residuals — documented-out-of-scope unexercised paths (Skeleton
+Image `SkeletonWrapper` clone) and the legacy hand-authored-Tailwind family
+(`StyledModal`/`select`/`listbox` + 11 more) — are tracked in `tailwind-removal.md`
++ `tech-debt.md`. Nothing open lived only in the scaffolding, so deleting the
+ephemeral session-storage `audit-durable/` dir lost nothing; the audit's totals
+also survive in git (`origin/ticket/audit-scaffolding`) and the 2026-06-15
+review synthesis. The machinery has provably subsumed the audit.
 
 ## Session protocol (strict)
 
@@ -5716,8 +5743,11 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case
   waivers keep every non-drifting case + theme under strict zero-tolerance so real regressions still fail.
 
-Phase 3: **in progress** — four closers landed (CP9.82, CP9.83, CP9.84, CP9.85).
-Remaining: audit-scaffolding retirement.
+Phase 3: **COMPLETE 2026-07-15** — five closers landed (CP9.82 style-macro-parity
+guard, CP9.83 idiomatic-Solid guard, CP9.84 AAA report, CP9.85 D3-waiver
+burn-down, CP9.86 audit-scaffolding retirement). With Phase 0–2 already complete
+across all six tiers and the audit provably subsumed, the recertification march
+is **done**.
 
 - **CP9.82 — `style()` macro output-parity guard (Phase-3 closer #1) ✓ 2026-07-15.**
   The `style()` macro engine (`packages/solid-spectrum/src/style/style-macro.ts`)
@@ -5889,3 +5919,64 @@ Remaining: audit-scaffolding retirement.
     stricter gates; scoped `tsc` on the two changed waiver shapes clean. Harness
     (`pixel.ts`, `visual-diff.ts`) reverted to a no-diff state. Cross-ref: CP9.84
     (sibling closer); D3 driver (`drivers/pixel.ts` / `visual-diff.ts`).
+
+- **CP9.86 — audit-scaffolding retirement (Phase 3 closer 5/5; 2026-07-15).**
+  The final Phase-3 unit: prove the 2026-07 sampled audit is subsumed by the
+  driver machinery, then retire `audit-durable/`. This is a *reconciliation*
+  unit, not a component cert.
+  - **What the scaffolding held.** `audit-durable/` (session storage, untracked,
+    231 files) = ~264 adversarially verified findings: `style/` (33 component
+    `.md` + `A-batch1-full-result.json`, 218 confirmed / 8 BLOCKERS), `behavior/`
+    (Breadcrumbs, Tabs), `crosscut/` (7 WCAG/contrast + tokens findings), `repro/`
+    (7 `ZZAudit_*` rerun tests). Its calibration job: each finding must be
+    rediscovered by a driver when its component certifies (or be a tracked
+    waiver); empty ledger ⇒ machinery subsumed the audit.
+  - **Structural proof.** Cross-mapped every finding-bearing component to
+    `e2e/certified/`: all 34 style-audited (`ActionButton`…`TreeView`), both
+    behavior (Breadcrumbs, Tabs), and all 7 crosscut targets (EventCard, Chip,
+    NavHeader, select/listbox, ColorHandle, viviana-tokens, spectrum-tokens) have
+    a `*.certified.spec.ts`. A green pair-cert (D1 rest-state style matrix + D3
+    pixel + D6 AX …) cannot coexist with a live divergence on an **exercised**
+    path — so certified-green ⇒ that component's findings are fixed-and-guarded,
+    except on paths a cert deliberately excludes.
+  - **Blocker spot-check (highest risk to lose).** #2/#3 ActionButton/ToggleButton
+    static-color token → fixed in Phase 0.2 (`transparent-overlay-1000`). #4
+    ComboBox `paddingEnd` now carries `- self(borderEndWidth, 2px)` (fixed). #5
+    Dialog backdrop now `transparent-black-500` (fixed). #6 Dialog footer padding
+    restructured (wrapper/footer split, pinned by dialog D1). #8 TagGroup
+    `isHovered`/`isFocusVisible` style branches present + `useTag` behavioral work
+    in the TagGroup cert (fixed). #1 Skeleton text/icon paths matched; the Image
+    `SkeletonWrapper` clone path is **documented out-of-scope** in the cert
+    (§3867) — a deferred driver-coverage expansion, tracked.
+  - **The one concrete still-open divergence — FIXED here.** ColorHandle's
+    drag-loupe outline hardcoded `stroke="rgba(0, 0, 0, 0.42)"`
+    (`color/index.tsx:817`) vs pinned upstream S2 1.5.1 `ColorHandle.tsx`
+    `style({strokeWidth:1, stroke:{default:'transparent-black-200',
+    forcedColors:'ButtonBorder'}, fill:'white'})` (resolves `#0000001f`, 12 %
+    black — ours was 3.5× too dark and lacked the WHCM `ButtonBorder` adaptation).
+    The loupe is drag-only + portals to `<body>`, so every ColorArea/Wheel/Slider
+    driver excludes it — no cert could rediscover it, the exact "driver has a
+    gap" case the calibration warns about. Replaced the raw SVG attrs with the
+    byte-faithful upstream `style()` macro. Verified: `#0000001f` + `buttonborder`
+    atoms emitted into built `dist/style.css`, old `0.42` gone from built JS,
+    scoped `tsc` clean, `comparison:build` green, `colorarea` certified suite
+    green (drag-only change is inert to the exercised paths). This is verified by
+    source-mirror + build, not a pair driver (the loupe is uncertified) — noted
+    honestly as a coverage gap, same bucket as Skeleton Image.
+  - **Residuals, all tracked.** (a) Legacy hand-authored-Tailwind family —
+    `overlays/Modal.tsx` `StyledModal` (blocker #7), `select/index.tsx`,
+    `listbox/index.tsx`, + 11 more — render only via `apps/web`'s
+    `local-utilities.css` backfill; they have no S2 pair so the pair-oracle
+    structurally can't cover them. Tracked as a dedicated epic in
+    `.claude/current/tailwind-removal.md` + `tech-debt.md` (route through
+    `style()`, delete `local-utilities.css`). (b) Documented-out-of-scope
+    unexercised paths (Skeleton Image, now the fixed loupe). No open finding
+    lived *only* in the scaffolding.
+  - **Retired.** Deleted the ephemeral session-storage `audit-durable/` dir; its
+    conclusions are preserved in this record + the Calibration note, and the
+    audit's raw totals survive in git (`origin/ticket/audit-scaffolding`) and the
+    2026-06-15 review synthesis. Left the remote branch untouched (no unprompted
+    remote deletes). No repo-tracked "session memory" of the audit exists to
+    retire beyond the fleet-incident *lesson*, which is kept deliberately.
+  - **Phase 3 (and the recertification march) COMPLETE.** Cross-ref: Calibration
+    note above; `tailwind-removal.md`; Skeleton cert §3867.
