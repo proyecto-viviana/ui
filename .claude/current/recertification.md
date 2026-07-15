@@ -1717,8 +1717,12 @@ March order (dependency/leverage; within a tier, top to bottom):
   the flipping `--color-text`. ProfileCard ✓ certified 2026-07-15 (CP9.74) — unit 5, S2
   UserCard-shaped card; bio + stat connectors dropped from `--color-text-secondary`
   (3.84:1 light on `bg-200`) to the flipping `--color-text`; footer "Seguir" Chip is the D8
-  target. NEXT: the remaining `viviana-ui/src/custom/*` surfaces (project-card / lateral-nav
-  / timeline-item / conversation / header / logo / page-layout). ColorEditor stays OUT of
+  target. ProjectCard ✓ certified 2026-07-15 (CP9.75) — unit 6, square logo/preview tile;
+  the caption's `color` was clobbered by the S2 `style()` macro `font` shorthand's default
+  text color (declared BEFORE `font`) and never painted its intended `--color-primary-200`;
+  fix = order `color` AFTER `font`; the whole card is the `href` link and is the D8 target.
+  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (lateral-nav / timeline-item /
+  conversation / header / logo / page-layout). ColorEditor stays OUT of
   the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
   oracle).**
 
@@ -1974,6 +1978,50 @@ March order (dependency/leverage; within a tier, top to bottom):
     **25 pass / 0 fail**, proving the new fixture wiring did not regress the four prior
     Tier-6 certs. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted)
     **clean (exit 0)**.
+
+  **ProjectCard ✓ certified 2026-07-15 (CP9.75)** — Tier-6 unit 6, a square
+  logo/preview tile with a caption (`viviana-ui/src/custom/project-card/index.tsx`):
+  an `<img>` on a `--color-bg-200` card + a single `--color-primary-200` caption; an
+  optional `href` turns the WHOLE card into a native `<a>` link. No upstream React
+  pair → same method: pair drivers out, Solid-only route, absolute WCAG oracles.
+  - **The red→green — an invisible design-color regression, not a floor break.** The
+    caption is the card's only text run. Its style listed `color:
+    [var(--color-primary-200)]` BEFORE a *responsive* `font: { size: {...} }` object —
+    and in the S2 `style()` macro the `font` shorthand emits a DEFAULT text color
+    (`--s2-text`, `light-dark(#292929,#dbdbdb)`) that wins on source order, so the
+    caption silently rendered `#292929`/`#dbdbdb` and NEVER painted its intended
+    Silapse `--color-primary-200`. That macro default happens to clear AA too (8.04:1
+    light / 11.07:1 dark), so nothing failed the WCAG floor — it was a pure
+    design-color drop, surfaced only because the D7 driver + a computed-style
+    diagnostic showed the winning rule was the font preset's default color, not the
+    caption's `var(--color-primary-200)`. **Fix (smallest, parity-shaped): order
+    `color` AFTER `font`** (matching every ProfileCard style), restoring
+    `--color-primary-200` → **11.26:1 dark / 8.78:1 light**. A grep of the whole
+    `custom/*` layer confirmed ProjectCard was the ONLY component with the
+    color-before-font order, so the fix is isolated.
+  - **Harness — sixth `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+    Demo binds tokens under `data-viviana-project-card-scope` and renders one card —
+    "Proyecto Aurora", an inline-SVG data-URI logo (no network fetch), and an `href`
+    so the card is a link. **The `href` is load-bearing for the harness:** the D8
+    target-size driver hard-fails when the measured subtree has zero interactive
+    elements, and the base `<div>` variant has none — the link is the single D8 target
+    / D5 focus stop / D6 link (the same ProfileCard landmine, met here by the
+    link variant instead of a footer Chip).
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24` on the card
+    link) + inline D5/D6. `states: ["default"]`. D6 = exactly one link (no buttons),
+    accessible name contains the caption, caption renders as visible text. D5 = the
+    card link is a real focus stop. OBSERVED (left as-is, not a floor break): the link
+    wraps `<img alt={name}>` + `<span>{name}</span>`, so its accessible name is the
+    project name doubled ("Proyecto Aurora Proyecto Aurora"); WCAG 2.5.3 (Label in
+    Name) is still satisfied since the visible caption is contained in the accessible
+    name, so D6 matches by substring rather than forcing an API change.
+  - Verification: ProjectCard cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+    D5, D6); calibrated by a post-fix red run (caption → `--color-text-secondary`,
+    which now that `color` applies drives D7 light red at **3.84:1** while dark and the
+    rest stay green). Regression: ProjectCard + ProfileCard + CalendarCard + EventCard
+    + NavHeader + Chip together **30 pass / 0 fail**. Scoped e2e typecheck of the new
+    spec (temp `tsc -p`, then deleted) **clean** (only pre-existing `visual-diff.ts`
+    `Buffer`/`@types/node` noise, unrelated to the unit).
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

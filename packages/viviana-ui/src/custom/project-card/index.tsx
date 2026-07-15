@@ -47,8 +47,8 @@ const caption = style<{ size: ProjectCardSize }>({
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
-  color: "[var(--color-primary-200)]",
   font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+  color: "[var(--color-primary-200)]",
 });
 
 export function ProjectCard(props: ProjectCardProps): JSX.Element {

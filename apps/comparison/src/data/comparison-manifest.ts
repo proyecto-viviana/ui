@@ -1475,6 +1475,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "projectcard",
+    title: "ProjectCard",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana ProjectCard: a square logo/preview tile with a caption, sized by the S2 spacing + type ramps and painted in Silapse colors. An `href` turns the whole card into a link and `inactive` dims it. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "ProjectCard is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast on the caption, D8 24px link target) plus D5/D6 keyboard + link AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled ProjectCard",
+        "Viviana ProjectCard rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui ProjectCard (logo tile + caption on the S2 style() macro; `href` makes the whole card a link). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component ProjectCard",
+        "No component-layer pair — ProjectCard is a styled-layer custom component.",
+        "na",
+        "na",
+        "ProjectCard has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless ProjectCard",
+        "The card is a plain anchor — no behavior hook.",
+        "na",
+        "na",
+        "As a native link, ProjectCard inherits no createButton behavior.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "ProjectCard has no independent state primitive.",
+        "na",
+        "na",
+        "No dedicated state layer for a presentational tile.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

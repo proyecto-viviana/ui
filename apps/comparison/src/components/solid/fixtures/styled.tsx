@@ -773,6 +773,7 @@ import { CalendarCard as VivianaCalendarCard } from "../../../../../../packages/
 import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
 import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/src/custom/nav-header";
 import { ProfileCard as VivianaProfileCard } from "../../../../../../packages/viviana-ui/src/custom/profile-card";
+import { ProjectCard as VivianaProjectCard } from "../../../../../../packages/viviana-ui/src/custom/project-card";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
@@ -1116,6 +1117,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   eventcard: () => h(SolidEventCardDemo, {}),
   calendarcard: () => h(SolidCalendarCardDemo, {}),
   profilecard: () => h(SolidProfileCardDemo, {}),
+  projectcard: () => h(SolidProjectCardDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1506,6 +1508,58 @@ function SolidProfileCardDemo() {
             followers: 12400,
             following: 320,
             actions: () => h(VivianaChip, { text: "Seguir", variant: "primary" }),
+          }),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaProjectCardScopedTokensCss = scopeVivianaTokens("data-viviana-project-card-scope");
+
+const projectCardScopeStyle = {
+  display: "block",
+  width: "200px",
+  "max-width": "100%",
+};
+
+// A self-contained logo tile (inline SVG data URI — no network fetch) so the card
+// renders deterministically under Playwright.
+const projectCardLogo =
+  "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20rx%3D'12'%20fill%3D'%23df5c9a'%2F%3E%3Ccircle%20cx%3D'32'%20cy%3D'32'%20r%3D'14'%20fill%3D'%23ffffff'%2F%3E%3C%2Fsvg%3E";
+
+function SolidProjectCardDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-project-card-scope": "true",
+      "data-comparison-control-root": "projectcard",
+      style: projectCardScopeStyle,
+    },
+    [
+      h("style", {}, vivianaProjectCardScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The project tile on the `--color-bg-200` surface. `href` turns the whole
+          // card into a link — the interactive D8 target / D5 focus stop (the base
+          // `<div>` variant has none, the ProfileCard landmine). The caption is
+          // `primary-200`, which already clears AA on the card (11.26:1 dark /
+          // 8.78:1 light), so this unit certifies clean on D7.
+          h(VivianaProjectCard, {
+            name: "Proyecto Aurora",
+            imageSrc: projectCardLogo,
+            href: "https://example.com/aurora",
+            size: "md",
           }),
         ],
       ),
