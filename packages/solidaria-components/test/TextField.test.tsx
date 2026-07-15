@@ -9,6 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import {
   TextField,
   TextFieldContext,
@@ -168,6 +169,68 @@ describe("TextField", () => {
       expect(textarea.isConnected).toBe(true);
       expect(screen.getByRole("textbox")).toBe(textarea);
       expect(document.activeElement).toBe(textarea);
+    });
+  });
+
+  describe("change callback contract", () => {
+    it("does not bind the public string callback to the field wrapper", () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TextField defaultValue="initial" onChange={onChange}>
+          {() => (
+            <>
+              <Label>Test</Label>
+              <Input />
+            </>
+          )}
+        </TextField>
+      ));
+
+      fireEvent.change(screen.getByText("Test"));
+
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["controlled input", Input, true],
+      ["uncontrolled input", Input, false],
+      ["controlled textarea", TextArea, true],
+      ["uncontrolled textarea", TextArea, false],
+    ] as const)("delivers one exact string for a %s edit", (_name, Component, controlled) => {
+      const onChange = vi.fn();
+
+      function ContractField() {
+        const [value, setValue] = createSignal("initial");
+        const handleChange = (nextValue: string) => {
+          onChange(nextValue);
+          if (controlled) setValue(nextValue);
+        };
+
+        return (
+          <TextField
+            value={controlled ? value() : undefined}
+            defaultValue={controlled ? undefined : "initial"}
+            onChange={handleChange}
+          >
+            {() => (
+              <>
+                <Label>Test</Label>
+                <Component />
+              </>
+            )}
+          </TextField>
+        );
+      }
+
+      render(() => <ContractField />);
+      const textbox = screen.getByRole("textbox");
+      fireEvent.input(textbox, { target: { value: "next" } });
+      fireEvent.change(textbox, { target: { value: "next" } });
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith("next");
+      expect(typeof onChange.mock.calls[0]?.[0]).toBe("string");
+      expect(textbox).toHaveValue("next");
     });
   });
 

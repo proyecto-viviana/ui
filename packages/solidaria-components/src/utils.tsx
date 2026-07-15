@@ -428,9 +428,9 @@ export function removeDataAttributes<T extends Record<string, unknown>>(props: T
  */
 export function filterDOMProps<R extends object = Record<string, unknown>>(
   props: object,
-  options: { global?: boolean } = {},
+  options: { global?: boolean; events?: boolean } = {},
 ): R {
-  const { global = false } = options;
+  const { global = false, events = true } = options;
   const result: Record<string, unknown> = {};
 
   const globalAttrs = new Set([
@@ -459,7 +459,7 @@ export function filterDOMProps<R extends object = Record<string, unknown>>(
       ((global && globalAttrs.has(key)) ||
         ariaAttrs.test(key) ||
         dataAttrs.test(key) ||
-        eventHandlers.test(key))
+        (events && eventHandlers.test(key)))
     ) {
       result[key] = (props as Record<string, unknown>)[key];
     }
