@@ -148,6 +148,12 @@ export function Header() {
 
         {/* Right: Nav + GitHub + Theme Toggle */}
         <nav class="flex items-center gap-3">
+          <NavLink href="/home" color="blue" isActive={isActive("/home")} colors={colors()}>
+            HOME
+          </NavLink>
+          <NavLink href="/theme" color="pink" isActive={isActive("/theme")} colors={colors()}>
+            THEME
+          </NavLink>
           <NavLink
             href="/solid-spectrum/docs"
             color="blue"

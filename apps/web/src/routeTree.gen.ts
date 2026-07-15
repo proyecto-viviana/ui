@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ThemeRouteImport } from './routes/theme'
+import { Route as HomeRouteImport } from './routes/home'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
@@ -65,6 +67,16 @@ import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from './ro
 import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from './routes/solid-spectrum/docs/components/actionbar'
 import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from './routes/solid-spectrum/docs/components/accordion'
 
+const ThemeRoute = ThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -392,6 +404,8 @@ const SolidSpectrumDocsComponentsAccordionRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/home': typeof HomeRoute
+  '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
@@ -449,6 +463,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/home': typeof HomeRoute
+  '/theme': typeof ThemeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
   '/solid-spectrum': typeof SolidSpectrumIndexRoute
@@ -506,6 +522,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/home': typeof HomeRoute
+  '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
@@ -565,6 +583,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/home'
+    | '/theme'
     | '/solid-spectrum/docs'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
@@ -622,6 +642,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/home'
+    | '/theme'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
     | '/solid-spectrum'
@@ -678,6 +700,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/home'
+    | '/theme'
     | '/solid-spectrum/docs'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
@@ -736,6 +760,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  HomeRoute: typeof HomeRoute
+  ThemeRoute: typeof ThemeRoute
   SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren
   SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute
   SolidSpectrumPlaygroundRoute: typeof SolidSpectrumPlaygroundRoute
@@ -744,6 +770,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/solid-router' {
   interface FileRoutesByPath {
+    '/theme': {
+      id: '/theme'
+      path: '/theme'
+      fullPath: '/theme'
+      preLoaderRoute: typeof ThemeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -1288,6 +1328,8 @@ const SolidSpectrumDocsRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  HomeRoute: HomeRoute,
+  ThemeRoute: ThemeRoute,
   SolidSpectrumDocsRouteRoute: SolidSpectrumDocsRouteRouteWithChildren,
   SolidSpectrumEcosystemRoute: SolidSpectrumEcosystemRoute,
   SolidSpectrumPlaygroundRoute: SolidSpectrumPlaygroundRoute,
