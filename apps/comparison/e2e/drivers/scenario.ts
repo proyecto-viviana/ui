@@ -321,6 +321,15 @@ export interface DriverScenario {
   /** Display title used in test names. */
   title: string;
   cases: readonly DriverCase[];
+  /**
+   * Framework panels this scenario's route renders, in walk order. Defaults to
+   * both `["react", "solid"]` (every certified pair-oracle component). Tier-6
+   * custom Viviana surfaces have no upstream React pair, so they render a
+   * Solid-only route (`["solid"]`): the pair-diff drivers self-skip the missing
+   * panel and the WCAG drivers (D7 contrast, D8 target-size) assert against an
+   * absolute floor instead of a pair.
+   */
+  frameworks?: readonly PanelFramework[];
   /** Resolves the element whose computed styles are diffed per panel. */
   target: TargetResolver;
   /**
@@ -415,6 +424,10 @@ export function scenarioStates(
   caseDef: DriverCase,
 ): readonly GestureStateId[] {
   return caseDef.states ?? scenario.states ?? allGestureStates;
+}
+
+export function scenarioFrameworks(scenario: DriverScenario): readonly PanelFramework[] {
+  return scenario.frameworks ?? (["react", "solid"] as const);
 }
 
 export function scenarioRoute(scenario: DriverScenario, caseDef: DriverCase): string {

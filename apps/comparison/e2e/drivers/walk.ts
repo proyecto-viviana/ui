@@ -5,6 +5,7 @@ import {
   allGestureStates,
   defaultSettleMs,
   readinessAttribute,
+  scenarioFrameworks,
   scenarioRoute,
   scenarioStates,
   type DriverCase,
@@ -98,10 +99,11 @@ export async function forEachScenarioPanel(
   theme: ComparisonColorScheme,
   visit: (ctx: PanelContext) => Promise<void>,
 ) {
-  for (const framework of ["react", "solid"] as const) {
+  const frameworks = scenarioFrameworks(scenario);
+  for (const framework of frameworks) {
     await pinComparisonTheme(page, theme);
     await page.goto(scenarioRoute(scenario, caseDef));
-    await waitForComparisonRouteReady(page);
+    await waitForComparisonRouteReady(page, frameworks);
     await clearPointer(page);
 
     const section = await styledSection(page);

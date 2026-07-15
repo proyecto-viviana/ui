@@ -1,20 +1,28 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import type { PanelFramework } from "./drivers/scenario";
 
 export type FrameworkName = "React Spectrum stack" | "Solidaria stack";
 
-export async function waitForComparisonRouteReady(page: Page) {
+export async function waitForComparisonRouteReady(
+  page: Page,
+  frameworks: readonly PanelFramework[] = ["react", "solid"],
+) {
   await expect(page.locator("astro-island")).toHaveCount(0);
 
   const section = page.locator("#example").filter({
     has: page.locator("h2", { hasText: "Example" }),
   });
   await expect(section).toHaveCount(1);
-  await expect(
-    section.locator('.s2-framework-panel[data-framework="react"] .comparison-reference-canvas'),
-  ).toBeVisible();
-  await expect(
-    section.locator('.s2-framework-panel[data-framework="solid"] .comparison-reference-canvas'),
-  ).toBeVisible();
+  if (frameworks.includes("react")) {
+    await expect(
+      section.locator('.s2-framework-panel[data-framework="react"] .comparison-reference-canvas'),
+    ).toBeVisible();
+  }
+  if (frameworks.includes("solid")) {
+    await expect(
+      section.locator('.s2-framework-panel[data-framework="solid"] .comparison-reference-canvas'),
+    ).toBeVisible();
+  }
   await expect(
     page.locator('.js-component-example-section-mount[data-islands-mounted="true"]'),
   ).toHaveCount(1);

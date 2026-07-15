@@ -50,7 +50,11 @@ const chip = style<{ variant: ChipVariant }>({
     variant: {
       primary: "[var(--color-primary-100)]",
       secondary: "[var(--color-primary-200)]",
-      accent: "[var(--color-bg-400)]",
+      // WCAG AA fix: accent text on the pink accent fill. The near-white
+      // `--color-bg-400` gave only 2.74:1 in light mode (fail); the darkest
+      // grey token reaches 5.24:1 light / 6.14:1 dark — the smallest existing-
+      // token change that clears the 4.5:1 floor for this ui-sm label.
+      accent: "[var(--color-grey-900)]",
       outline: "[var(--color-primary-200)]",
     },
   },

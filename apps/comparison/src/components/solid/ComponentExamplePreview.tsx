@@ -24,12 +24,12 @@ export default function ComponentExamplePreview(props: ComponentExamplePreviewPr
 
   const playgroundTrack = entry.layers[playgroundLayer];
 
-  return h(
-    "div",
-    { class: "s2-component-example-preview" },
-    h(
-      "div",
-      { class: "s2-comparison-frame", "data-preview-layout": getExamplePreviewLayout(entry.slug) },
+  // Tier-6 custom components render a Solid-only route (no upstream React pair).
+  const showReact = entry.frameworks?.includes("react") ?? true;
+
+  const panels = [];
+  if (showReact) {
+    panels.push(
       frameworkPanel({
         framework: "react",
         label: "React",
@@ -37,13 +37,25 @@ export default function ComponentExamplePreview(props: ComponentExamplePreviewPr
         slug: entry.slug,
         status: playgroundTrack.react,
       }),
-      frameworkPanel({
-        framework: "solid",
-        label: "Solid",
-        product: "solid-spectrum",
-        slug: entry.slug,
-        status: playgroundTrack.solid,
-      }),
+    );
+  }
+  panels.push(
+    frameworkPanel({
+      framework: "solid",
+      label: "Solid",
+      product: "solid-spectrum",
+      slug: entry.slug,
+      status: playgroundTrack.solid,
+    }),
+  );
+
+  return h(
+    "div",
+    { class: "s2-component-example-preview" },
+    h(
+      "div",
+      { class: "s2-comparison-frame", "data-preview-layout": getExamplePreviewLayout(entry.slug) },
+      panels,
     ),
   )();
 }

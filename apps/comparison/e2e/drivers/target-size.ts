@@ -163,9 +163,14 @@ export function registerTargetSizeDriver(scenario: DriverScenario) {
           "target-size driver measured no interactive elements — check the root resolver",
         ).toBeGreaterThan(0);
 
-        expect(JSON.stringify(captures.solid, null, 2)).toBe(
-          JSON.stringify(captures.react, null, 2),
-        );
+        // Pair diff only when a React panel exists. Tier-6 custom surfaces are
+        // Solid-only (no upstream pair); their sizing is certified against the
+        // absolute 24px floor below, not against a React capture.
+        if (captures.react) {
+          expect(JSON.stringify(captures.solid, null, 2)).toBe(
+            JSON.stringify(captures.react, null, 2),
+          );
+        }
 
         if (config.assert24 && sub24.length > 0) {
           throw new Error(`D8 24px floor failed (Tier-6 assert):\n${sub24.join("\n")}`);

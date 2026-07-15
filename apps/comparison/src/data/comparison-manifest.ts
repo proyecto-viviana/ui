@@ -9,7 +9,7 @@ export type ComponentStatus = "parity" | "composition" | "tracked-gap";
 export type ComparisonSlug = string;
 export type ParityStatus = "matched" | "partial" | "gap";
 export type DemoStatus = "live" | "tracked" | "missing" | "na";
-export type CatalogueSource = "react-spectrum-s2";
+export type CatalogueSource = "react-spectrum-s2" | "viviana-custom";
 
 export interface LayerTrack {
   label: string;
@@ -30,6 +30,12 @@ export interface ComparisonEntry {
   gapSummary: string[];
   docsUrl?: string;
   catalogueSource: CatalogueSource;
+  /**
+   * Framework panels the comparison route renders. Defaults (undefined) to the
+   * pair `["react", "solid"]`. Tier-6 custom Viviana components have no upstream
+   * React pair, so they set `["solid"]` and the route renders a single panel.
+   */
+  frameworks?: ("react" | "solid")[];
   layers: Record<ComparisonLayerId, LayerTrack>;
 }
 
@@ -1231,6 +1237,65 @@ export const missingOfficialComparisonEntries = officialComparisonEntries.filter
   (entry) => entry.layers.styled.react !== "live" || entry.layers.styled.solid !== "live",
 );
 
+/**
+ * Custom Viviana components (Tier 6) — surfaces with no upstream React Spectrum
+ * pair. These are kept OUT of `comparisonEntries` so the official sidebar,
+ * index, search, and parity stats stay byte-identical; they are consumed only
+ * by `getComparisonEntry` (page data) and the `[slug].astro` route generator.
+ * Each renders a Solid-only route (`frameworks: ["solid"]`).
+ */
+export const customComparisonEntries: ComparisonEntry[] = [
+  {
+    slug: "chip",
+    title: "Chip",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana Chip: a pill-shaped pressable label (primary, secondary, accent, outline) built on the certified HeadlessButton and styled by the S2 style() macro. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "Chip is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast, D8 24px target size) plus D5/D6 keyboard + AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled Chip",
+        "Viviana Chip rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui Chip (HeadlessButton + S2 style() macro). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component Chip",
+        "No component-layer pair — Chip is a styled-layer custom component.",
+        "na",
+        "na",
+        "Chip has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless Chip",
+        "Chip presses through the certified createButton behavior.",
+        "na",
+        "na",
+        "Press behavior is inherited from the already-certified HeadlessButton.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "Chip has no independent state primitive.",
+        "na",
+        "na",
+        "No dedicated state layer for a simple pressable label.",
+      ),
+    },
+  },
+];
+
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {
-  return comparisonEntries.find((entry) => entry.slug === slug);
+  return (
+    comparisonEntries.find((entry) => entry.slug === slug) ??
+    customComparisonEntries.find((entry) => entry.slug === slug)
+  );
 }

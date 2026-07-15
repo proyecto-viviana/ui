@@ -10,10 +10,13 @@ const { entry } = Astro.props as Props;
 const playgroundLayer: ComparisonLayerId = "styled";
 const playgroundTrack = entry.layers[playgroundLayer];
 const previewLayout = getExamplePreviewLayout(entry.slug);
+// Tier-6 custom components render a Solid-only route (no upstream React pair).
+const showReact = entry.frameworks?.includes("react") ?? true;
 ---
 
 <div class="s2-component-example-preview-fallback" data-component-example-preview-fallback>
   <div class="s2-comparison-frame" data-preview-layout={previewLayout}>
+    {showReact && (
     <article class="s2-framework-panel" data-framework="react" aria-label="React React Spectrum S2">
       <header>
         <span>React</span>
@@ -35,6 +38,7 @@ const previewLayout = getExamplePreviewLayout(entry.slug);
         </div>
       )}
     </article>
+    )}
 
     <article class="s2-framework-panel" data-framework="solid" aria-label="Solid solid-spectrum">
       <header>

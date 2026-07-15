@@ -1,7 +1,11 @@
 ---
 import ComponentExampleSectionMount from "@comparison/components/ComponentExampleSectionMount.astro";
 import ComponentDetailHeroMount from "@comparison/components/ComponentDetailHeroMount.astro";
-import { comparisonEntries, type ComparisonEntry } from "@comparison/data/comparison-manifest";
+import {
+  comparisonEntries,
+  customComparisonEntries,
+  type ComparisonEntry,
+} from "@comparison/data/comparison-manifest";
 import ComponentDetailMetaMount from "@comparison/components/ComponentDetailMetaMount.astro";
 import PortingNote from "@comparison/components/PortingNote.astro";
 import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
@@ -13,7 +17,7 @@ export function getStaticPaths() {
       .filter((slug): slug is string => slug != null && slug !== "[slug]"),
   );
 
-  return comparisonEntries
+  return [...comparisonEntries, ...customComparisonEntries]
     .filter((entry) => !explicitComponentPageSlugs.has(entry.slug))
     .map((entry) => ({
       params: { slug: entry.slug },

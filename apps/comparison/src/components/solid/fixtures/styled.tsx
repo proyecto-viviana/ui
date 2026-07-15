@@ -765,6 +765,12 @@ import {
   getComparisonResolvedThemeFromDocument,
   type ComparisonResolvedTheme,
 } from "@comparison/data/theme";
+// Tier-6 custom Viviana component: imported from source so its S2 style() macro
+// compiles in-app. Its brand color tokens ride in via `viviana-tokens.css`,
+// imported `?inline` (as a string, not injected) and rewritten to a Chip-scoped
+// selector so importing them can never repaint the rest of the comparison app.
+import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
+import vivianaTokensCss from "../../../../../../packages/viviana-ui/src/viviana-tokens.css?inline";
 
 type ActionItem = (typeof actionItems)[number];
 type TabItem = (typeof tabItems)[number];
@@ -1098,6 +1104,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   colorswatch: () => h(SolidSpectrumColorSwatchDemo, {}),
   colorswatchpicker: () => h(SolidSpectrumColorSwatchPickerDemo, {}),
   colorfield: () => h(SolidSpectrumColorFieldDemo, {}),
+  chip: () => h(SolidChipDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1200,6 +1207,75 @@ function SolidSpectrumProviderDemo() {
           h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
         ),
       ]),
+    ],
+  );
+}
+
+/**
+ * Viviana's brand tokens, rewritten from the global `:root` / `[data-color-scheme]`
+ * selectors onto a `[data-viviana-chip-scope]` island so the string can be dropped
+ * into a `<style>` inside the demo without touching any `--color-*` var elsewhere
+ * on the page (solid-spectrum icons read some of these vars globally). The light
+ * override nests under the Provider's own `data-color-scheme="light"` div, so its
+ * higher specificity wins in light mode and the pair flips together with the theme.
+ */
+const vivianaChipScopedTokensCss = vivianaTokensCss
+  .replaceAll(":root {", "[data-viviana-chip-scope] {")
+  .replaceAll(
+    '[data-color-scheme="light"] {',
+    '[data-viviana-chip-scope] [data-color-scheme="light"] {',
+  );
+
+const chipScopeStyle = {
+  display: "inline-block",
+  padding: "12px",
+};
+
+const chipRowStyle = {
+  display: "flex",
+  "align-items": "center",
+  gap: "12px",
+  "flex-wrap": "wrap",
+};
+
+const chipVariants: readonly { text: string; variant: "primary" | "secondary" | "accent" | "outline" }[] = [
+  { text: "Primary", variant: "primary" },
+  { text: "Secondary", variant: "secondary" },
+  { text: "Accent", variant: "accent" },
+  { text: "Outline", variant: "outline" },
+];
+
+function SolidChipDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-chip-scope": "true",
+      "data-comparison-control-root": "chip",
+      style: chipScopeStyle,
+    },
+    [
+      h("style", {}, vivianaChipScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          hc(
+            "div",
+            { style: chipRowStyle },
+            chipVariants.map((entry) =>
+              h(VivianaChip, { text: entry.text, variant: entry.variant }),
+            ),
+          ),
+        ],
+      ),
     ],
   );
 }

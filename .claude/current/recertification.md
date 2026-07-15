@@ -1704,11 +1704,14 @@ March order (dependency/leverage; within a tier, top to bottom):
     `colorswatchpicker-visual.spec.ts` was retired (git rm) and a new
     `test:colorswatchpicker` script points at the certified spec.
   **Tier 5 COMPLETE — 12/12 (Calendar, RangeCalendar, DateField, TimeField, DatePicker,
-  DateRangePicker + the color roster 6/6). NEXT: Tier 6 — the custom Viviana layer
+  DateRangePicker + the color roster 6/6). Tier 6 OPEN — the custom Viviana layer
   (EventCard, Chip, NavHeader, `viviana-ui/src/custom/*`), which has NO upstream pair →
   the D1/D3 pair drivers are out of scope; D5–D11 still apply and contrast/target-size
-  assert against WCAG directly. ColorEditor stays OUT of the S2-parity march (survey
-  finding below — pinned S2 1.5.1 ships no ColorEditor oracle).**
+  assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
+  (record below), establishing the Solid-only `frameworks` harness + absolute-WCAG
+  methodology. NEXT: the remaining `viviana-ui/src/custom/*` surfaces (EventCard,
+  NavHeader, …). ColorEditor stays OUT of the S2-parity march (survey finding below —
+  pinned S2 1.5.1 ships no ColorEditor oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
@@ -1727,6 +1730,70 @@ March order (dependency/leverage; within a tier, top to bottom):
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
   directly)
+
+  **Chip ✓ certified 2026-07-14 (CP9.70)** — Tier-6 OPENER and the FIRST custom
+  Viviana (`viviana-ui/src/custom/*`) component certified. Chip
+  (`packages/viviana-ui/src/custom/chip/index.tsx`) is a `HeadlessButton`
+  (`@proyecto-viviana/solidaria-components`, role=button, `onPress`→`onClick`)
+  painted by the S2 `style()` macro over four variants (`primary` /
+  `secondary` / `accent` / `outline`). It has **no upstream React Spectrum
+  pair** — Chip is a bespoke Viviana surface — so this cert establishes the
+  Tier-6 methodology in code, not just prose:
+  - **Methodology fork — pair drivers OUT, absolute WCAG floors IN.** With
+    nothing to diff against, D1 (rest state matrix), D3 (pixel), and D2 (motion)
+    are out of scope. Correctness is certified against absolute oracles: **D7
+    contrast with `assertAA: true`** (every label ≥ 4.5:1 in BOTH themes) and
+    **D8 target size with `assert24: true`** (every pressable ≥ 24px, WCAG
+    2.5.8). D5 (keyboard/focus) and D6 (AX role+name) are asserted **inline** as
+    absolute checks — the shared focus/ax drivers are pair-differs with no solid-
+    only oracle. D9/D10 deferred (labels are hard-coded English, no locale/dir-
+    sensitive formatting or layout beyond the already-certified Provider stack).
+  - **The red→green — a REAL WCAG AA failure fixed by the smallest existing-token
+    change.** The `accent` variant painted its label `--color-bg-400` (near-
+    white) on the pink `--color-accent` fill → **2.74:1 in light mode, a genuine
+    AA fail**. Fix repoints it to the darkest grey token `--color-grey-900` →
+    **5.24:1 light / 6.14:1 dark**, clearing the 4.5:1 floor in both themes with
+    zero new tokens (Tier-6 policy: auto-fix WCAG failures with the smallest
+    existing-token change). **Calibrated by perturbation:** reverting the fix to
+    `--color-bg-400` and rebuilding reds D7-light at exactly
+    `default · button:Accent · 2.74:1`; restoring greens it.
+  - **Harness — a backward-compatible `frameworks` field makes the pair panel go
+    Solid-only, proven zero-blast.** `DriverScenario.frameworks?: readonly
+    PanelFramework[]` defaults to `["react","solid"]` via `scenarioFrameworks()`;
+    `forEachScenarioPanel`/`walkScenario` iterate it and `waitForComparisonRouteReady`
+    gates each canvas wait, so all 66 prior certs keep byte-identical behavior.
+    `contrast.ts` was already solid-only-safe (its pair loop over `captures.react`
+    — an empty `Map` — runs zero iterations; `assertAA` derives from
+    `captures.solid`); `target-size.ts` got its `captures.react` pair-diff wrapped
+    in an `if (captures.react)` guard. The Chip route is registered via a SEPARATE
+    `customComparisonEntries` array (NOT appended to `comparisonEntries`) so the
+    sidebar / index / search / stats stay untouched; `getComparisonEntry` and the
+    `[slug].astro` route generation consume both. `ComponentExamplePreview.tsx` +
+    the `.astro` fallback drop the React `<article>` when `frameworks` excludes
+    `react`.
+  - **Tokens injected SCOPED, never globally.** solid-spectrum `Icon` reads
+    `--color-primary-500`/`--color-accent` globally, so a global
+    `viviana-tokens.css` import would repaint every icon on every route (a D3
+    regression). Instead `viviana-tokens.css?inline` (a CSS string, not injected)
+    is rescoped — `:root {` → `[data-viviana-chip-scope] {`, and the light-scheme
+    block nested under the scope — and dropped in a `<style>` inside the fixture's
+    `data-viviana-chip-scope` wrapper. The solid-spectrum Provider (rendered INSIDE
+    the wrapper) emits `data-color-scheme="light|dark"` on its root, so the nested
+    light selector (specificity 0,2,0 > 0,1,0) wins in light mode and the token
+    pair flips with the theme. Faithful (real tokens) with zero blast radius.
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24`) + inline
+    D5/D6. Contrast root defaults to the canvas → all four variant labels measured
+    in one pass; `states: ["default"]` (label colors are state-independent). D5 =
+    focus the first chip, Tab through the rest, each is a real focus stop in DOM
+    order. D6 = exactly four `role=button` chips, each with its label as the
+    accessible name, no other interactive role leaking in.
+  - Verification: chip cert e2e **5 pass / 0 skip** (exit 0, captured code — D7×2
+    themes, D8, D5, D6). Regression: re-ran the full **button family** (button /
+    togglebutton / togglebuttongroup, exercising the complete D1–D10 pair drivers)
+    → **179 pass / 0 fail**, proving the `frameworks`-default refactor is
+    byte-for-byte zero-blast. Scoped e2e typecheck of the new + changed e2e files
+    (temp `tsc -p` extending the app config over ONLY the e2e deltas, then deleted)
+    **clean (exit 0)** — the e2e tree is outside the app tsconfig `src/**` glob.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

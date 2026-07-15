@@ -410,6 +410,7 @@ export default defineConfig({
         "../../packages/solidaria/src/**/*",
         "../../packages/solidaria-components/src/**/*",
         "../../packages/solid-spectrum/src/**/*",
+        "../../packages/viviana-ui/src/**/*",
       ],
     }),
     solid({
@@ -419,6 +420,7 @@ export default defineConfig({
         "../../packages/solidaria/src/**/*",
         "../../packages/solidaria-components/src/**/*",
         "../../packages/solid-spectrum/src/**/*",
+        "../../packages/viviana-ui/src/**/*",
       ],
       exclude: ["src/components/react/**/*"],
     }),
