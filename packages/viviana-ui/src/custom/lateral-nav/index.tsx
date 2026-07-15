@@ -35,11 +35,20 @@ export interface NavLinkProps {
 }
 
 const link = style<{ isActive: boolean }>({
+  // A ≥24px hit target (WCAG 2.5.8): the link is a full-width flex row, not a
+  // bare inline anchor (which rendered ~15px tall on the `ui` ramp).
+  display: "flex",
+  alignItems: "center",
+  minHeight: 32,
   font: "ui",
   textDecoration: { default: "none", isActive: "underline" },
   fontWeight: { default: "normal", isActive: "medium" },
+  // `color` MUST stay after `font`: the S2 style() `font` shorthand emits a
+  // default text color that wins on source order otherwise. The resting link
+  // uses the flipping `--color-text` (AA on the light `bg-200` panel); the active
+  // link is set apart by its underline + medium weight + `--color-primary-300`.
   color: {
-    default: "[var(--color-text-secondary)]",
+    default: "[var(--color-text)]",
     isActive: "[var(--color-primary-300)]",
   },
 });

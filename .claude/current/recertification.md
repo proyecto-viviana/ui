@@ -1721,8 +1721,11 @@ March order (dependency/leverage; within a tier, top to bottom):
   the caption's `color` was clobbered by the S2 `style()` macro `font` shorthand's default
   text color (declared BEFORE `font`) and never painted its intended `--color-primary-200`;
   fix = order `color` AFTER `font`; the whole card is the `href` link and is the D8 target.
-  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (lateral-nav / timeline-item /
-  conversation / header / logo / page-layout). ColorEditor stays OUT of
+  LateralNav ✓ certified 2026-07-15 (CP9.76) — unit 7, sidebar nav; TWO fixes: the resting
+  link's `--color-text-secondary` (3.84:1 light on `bg-200`) → the flipping `--color-text`,
+  and the bare inline `<a>` links (~15px tall) → a `minHeight:32` flex row to clear the WCAG
+  2.5.8 24px target floor. NEXT: the remaining `viviana-ui/src/custom/*` surfaces
+  (timeline-item / conversation / header / logo / page-layout). ColorEditor stays OUT of
   the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
   oracle).**
 
@@ -2022,6 +2025,43 @@ March order (dependency/leverage; within a tier, top to bottom):
     + NavHeader + Chip together **30 pass / 0 fail**. Scoped e2e typecheck of the new
     spec (temp `tsc -p`, then deleted) **clean** (only pre-existing `visual-diff.ts`
     `Buffer`/`@types/node` noise, unrelated to the unit).
+
+  **LateralNav ✓ certified 2026-07-15 (CP9.76)** — Tier-6 unit 7, a sidebar
+  navigation (`viviana-ui/src/custom/lateral-nav/index.tsx`): a `--color-bg-200`
+  panel of sections, each a `heading-sm` title + an accent rail + a `<ul>` of anchor
+  links with a resting and an `active` (current-page) state. No upstream React pair →
+  same method: pair drivers out, Solid-only route, absolute WCAG oracles.
+  - **The red→green — two fixes, one per driver.** (1) D7: the section titles
+    (`--color-primary-200`, 8.78:1 light / 11.26:1 dark) and the active link
+    (`--color-primary-300`, 6.59:1 light / 8.74:1 dark) already clear AA, but the
+    RESTING link was painted `--color-text-secondary` — small (`ui`) text on the
+    light-blue panel, so the 4.5:1 floor applies and it measured **3.84:1** (the same
+    text-secondary-on-`bg-200` failure EventCard/ProfileCard hit). Fix: the resting
+    link takes the flipping `--color-text` (**7.53:1 light / 15.33:1 dark**), staying
+    quieter than the active link through its lack of underline + `normal` weight, not a
+    sub-AA color. (2) D8: the links were bare inline `<a>` on the `ui` ramp and
+    measured **~15px tall**, under the WCAG 2.5.8 24px floor. Fix: the link becomes a
+    `display:flex; align-items:center; min-height:32` row (a standard sidebar hit
+    target that fills the column), clearing the floor while keeping the compact list.
+    Both fixes kept `color` AFTER `font` (the ProjectCard CP9.75 macro landmine).
+  - **Harness — seventh `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+    Demo binds tokens under `data-viviana-lateral-nav-scope` and renders a two-section
+    nav (Panel: Panel general [active] / Proyectos / Equipo; Cuenta: Perfil / Ajustes).
+    The links are the interactive D8 targets / D5 focus stops — no zero-interactive
+    landmine here (a nav is inherently links), unlike the presentational cards.
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24` on the links) +
+    inline D5/D6. `states: ["default"]`. D6 = exactly the five links (no buttons), each
+    named from its content, section titles as visible text. D5 = the first link is a
+    focus stop and Tab walks the list in DOM order. NOTE (left as-is, not a floor
+    break): the root is a `<div>`, not a `<nav>` landmark, and each section title
+    renders as a stray `<li>` outside a list — neither is a contrast/target/name floor,
+    so the shipped structure is certified as-is rather than restructured.
+  - Verification: LateralNav cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+    D5, D6); calibrated by the pre-fix red run (D7 light: the four resting links all
+    **3.84:1**; D8: all five links **~×15px**). Regression across all seven Tier-6
+    units (lateralnav + projectcard + profilecard + calendarcard + eventcard +
+    navheader + chip) **35 pass / 0 fail**. Scoped e2e typecheck of the new spec (temp
+    `tsc -p`, then deleted) **clean**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

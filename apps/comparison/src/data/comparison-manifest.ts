@@ -1521,6 +1521,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "lateralnav",
+    title: "LateralNav",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana LateralNav: a sidebar navigation — sections with an accent rail and a list of links, on the S2 spacing/type ramps in Silapse colors. Links carry an `active` (current-page) state; the panel can render `transparent`. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "LateralNav is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast on the section titles + default/active links, D8 24px link targets) plus D5/D6 keyboard + link AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled LateralNav",
+        "Viviana LateralNav rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui LateralNav (accent-railed sections of links on the S2 style() macro; each link is a native anchor with a resting + active state). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component LateralNav",
+        "No component-layer pair — LateralNav is a styled-layer custom component.",
+        "na",
+        "na",
+        "LateralNav has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless LateralNav",
+        "The links are plain anchors — no behavior hook.",
+        "na",
+        "na",
+        "As native links, LateralNav's items inherit no createButton/createLink behavior.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "LateralNav has no independent state primitive.",
+        "na",
+        "na",
+        "The active link is a prop, not a managed state primitive.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

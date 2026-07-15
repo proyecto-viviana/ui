@@ -775,6 +775,10 @@ import { NavHeader as VivianaNavHeader } from "../../../../../../packages/vivian
 import { ProfileCard as VivianaProfileCard } from "../../../../../../packages/viviana-ui/src/custom/profile-card";
 import { ProjectCard as VivianaProjectCard } from "../../../../../../packages/viviana-ui/src/custom/project-card";
 import {
+  LateralNav as VivianaLateralNav,
+  NavSection as VivianaNavSection,
+} from "../../../../../../packages/viviana-ui/src/custom/lateral-nav";
+import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
 } from "../../../../../../packages/viviana-ui/src/custom/event-card";
@@ -1118,6 +1122,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   calendarcard: () => h(SolidCalendarCardDemo, {}),
   profilecard: () => h(SolidProfileCardDemo, {}),
   projectcard: () => h(SolidProjectCardDemo, {}),
+  lateralnav: () => h(SolidLateralNavDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1561,6 +1566,63 @@ function SolidProjectCardDemo() {
             href: "https://example.com/aurora",
             size: "md",
           }),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaLateralNavScopedTokensCss = scopeVivianaTokens("data-viviana-lateral-nav-scope");
+
+const lateralNavScopeStyle = {
+  display: "block",
+  width: "300px",
+  "max-width": "100%",
+};
+
+function SolidLateralNavDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-lateral-nav-scope": "true",
+      "data-comparison-control-root": "lateralnav",
+      style: lateralNavScopeStyle,
+    },
+    [
+      h("style", {}, vivianaLateralNavScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // A sidebar nav on the `--color-bg-200` surface: two sections, each an
+          // accent-railed list of links. The links are the interactive D8 targets /
+          // D5 focus stops; the current-page link is `active`. The default link
+          // color and the link target height are the two red→green fixes.
+          hc(VivianaLateralNav, {}, [
+            h(VivianaNavSection, {
+              title: "Panel",
+              links: [
+                { href: "/dashboard", label: "Panel general", active: true },
+                { href: "/proyectos", label: "Proyectos" },
+                { href: "/equipo", label: "Equipo" },
+              ],
+            }),
+            h(VivianaNavSection, {
+              title: "Cuenta",
+              links: [
+                { href: "/perfil", label: "Perfil" },
+                { href: "/ajustes", label: "Ajustes" },
+              ],
+            }),
+          ]),
         ],
       ),
     ],
