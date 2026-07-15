@@ -2285,9 +2285,12 @@ component can never silently regress.
 - ☑ **DONE 2026-07-15 (CP9.82)** — Full generated-CSS/tokens diff vs upstream
   (`style()` macro output corpus), as a guard: `guard:style-macro-parity`
   (`scripts/check-style-macro-parity.ts`). See the CP9.82 record below.
-- Idiomatic-Solid and idiomatic-Web-API lint sweep (destructured-props
-  reactivity, manual DOM where Solid primitives exist, event-listener hygiene)
-  — codify the findable classes as lint rules where possible.
+- ☑ **DONE 2026-07-15 (CP9.83)** — Idiomatic-Solid and idiomatic-Web-API lint
+  sweep (destructured-props reactivity, manual DOM where Solid primitives exist,
+  event-listener hygiene) — codified the findable class (reactive-`props`
+  destructure) as guard `guard:idiomatic-solid` (`scripts/check-idiomatic-solid.ts`).
+  Manual-DOM + listener-hygiene classes swept and found clean (all faithful
+  upstream utilities). See the CP9.83 record below.
 - AAA report published from D7/D8 data (informative, not blocking).
 - Burn down every D3 threshold waiver to strict.
 - Retire the audit scaffolding (`audit-durable/`, session memory) once every
@@ -5698,8 +5701,8 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case
   waivers keep every non-drifting case + theme under strict zero-tolerance so real regressions still fail.
 
-Phase 3: **in progress** — first closer landed (CP9.82). Remaining: idiomatic-Solid
-lint sweep, AAA report, D3 waiver burn-down, audit-scaffolding retirement.
+Phase 3: **in progress** — two closers landed (CP9.82, CP9.83). Remaining: AAA
+report, D3 waiver burn-down, audit-scaffolding retirement.
 
 - **CP9.82 — `style()` macro output-parity guard (Phase-3 closer #1) ✓ 2026-07-15.**
   The `style()` macro engine (`packages/solid-spectrum/src/style/style-macro.ts`)
@@ -5747,3 +5750,57 @@ lint sweep, AAA report, D3 waiver burn-down, audit-scaffolding retirement.
   solid-spectrum **dist rebuilt** → carries `POSTFIX="151"` (comparison app now
   emits `sd151` matching the updated selector). Cross-refs: guard 0.3
   `check-spectrum-tokens-pin.ts` (sibling pin guard).
+
+- **CP9.83 — idiomatic-Solid / idiomatic-Web-API lint sweep (Phase-3 closer #2)
+  ✓ 2026-07-15.** The one Solid reactivity anti-pattern that has bitten this port
+  repeatedly — destructuring a component/hook's reactive `props` (the body runs
+  ONCE, so `const {x} = props` freezes `x` and drops later reactive changes) —
+  is now codified as guard **`guard:idiomatic-solid`**
+  (`scripts/check-idiomatic-solid.ts`, wired into `package.json` +
+  `certification-gates.yml`). It scans the five hand-written Solid `src` roots
+  (1127 files), excludes test/story files and the ~420 machine-generated icons
+  (content marker `Auto-generated`), skips matches inside comments (line + block
+  — the fixes cite the very pattern they replaced), and fails on any
+  `const/let { … } = props`. A short **ALLOWLIST** (file + snippet + `why`)
+  records reviewed-benign sites; anything new trips it.
+
+  **The other two classes swept clean, no lint needed:** (a) manual DOM
+  `document.createElement` — all 10 hits are `<style>`-injection / hidden-node /
+  live-region utilities (createPreventScroll, createDescription, announce, …),
+  faithful upstream ports where no Solid primitive applies; (b) `addEventListener`
+  without `onCleanup` — the four files with zero `onCleanup` all pair listeners
+  correctly (self-contained `cleanup()` in `utils/focus.ts`, start/stop singleton
+  in `DragManager`, element-scoped listeners in RadioGroup/table that die with
+  their node). Neither is a codifiable defect class.
+
+  **Fixes (reactive-`props` destructure → reactive access):** `createLabels`
+  (direct `props.x`); `createFocus` + `createFocusWithin` (handlers read
+  `props.x` live, returns are getters re-reading `props.isDisabled` — the real
+  bug: createOverlay/createVisuallyHidden pass a *live* `isDisabled` getter that
+  the frozen early-return dropped); `createFocusVisible` (read `props.isTextInput`
+  inside the effect so it re-subscribes, matching upstream's `[isTextInput]` dep);
+  `FocusableProvider` (object-rest → `splitProps`, and read `props.children`
+  lazily in JSX — the eager `const {children,…}=props` instantiated the child
+  subtree BEFORE the context provider mounted, so a nested `useContext` missed it;
+  same lazy-children pattern as `useRenderProps`); `createToggleButtonGroupItem`
+  (object-rest `{id,…toggleProps}` → `splitProps` + reactive `mergeProps`).
+
+  **Allowlisted (11 sites, reviewed benign):** stable-reference destructures
+  `const {state}`/`{ctx}` in RadioGroup ×3 / Switch / Checkbox (created once,
+  passed via `<Show keyed>`; fields read reactively through the object);
+  `createInteractOutside` (destructure is INSIDE a `createEffect` → re-tracks
+  each run, the correct idiom); `createFocusRing` (init-only `autoFocus` + a
+  setup-time `within` branch, all callers static); `createMove` (invoke-only
+  callbacks, no callers); `useRenderProps` in `solidaria-components/utils.tsx`
+  (all 131 callers pass plain class/style; shape deliberately avoids getters for
+  SSR); `createLongPress` (upstream-faithful, invoke-only callbacks); and
+  `createAutocomplete` (setup-time config snapshot mirroring `useAutocomplete`).
+
+  **Verified:** **`guard:idiomatic-solid` GREEN** (11 allowlisted); **full
+  package unit suite 267 files / 5528 pass + 1 expected-fail + 10 skip**;
+  **`typecheck` clean**; browser regression clean — **pair suite 6/6** (incl.
+  ToggleButton/ButtonGroup) and **contract suite 93/93** (incl. Switch /
+  ToggleButton / ToggleButtonGroup / fields, real focus). Getter-based returns
+  yield the *same* handler reference as before for every static path (identical
+  when enabled, `undefined` when disabled) — behavior preserved by construction,
+  reactivity added on top. Cross-ref: CP9.82 (sibling Phase-3 guard).

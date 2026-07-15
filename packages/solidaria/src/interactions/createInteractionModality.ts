@@ -361,11 +361,13 @@ export function createFocusVisible(props: FocusVisibleProps = {}): FocusVisibleR
     return { isFocusVisible: () => false };
   }
 
-  const { isTextInput, autoFocus } = props;
-  const [isVisible, setIsVisible] = createSignal<boolean>(autoFocus || isFocusVisible());
+  // autoFocus seeds the initial value once; isTextInput is read inside the effect
+  // so it re-subscribes reactively (a top-level destructure would freeze it — the
+  // body runs once). Mirrors upstream useFocusVisible's [isTextInput] dep.
+  const [isVisible, setIsVisible] = createSignal<boolean>(props.autoFocus || isFocusVisible());
 
   createEffect(() => {
-    const cleanup = createFocusVisibleListener(setIsVisible, { isTextInput });
+    const cleanup = createFocusVisibleListener(setIsVisible, { isTextInput: props.isTextInput });
     onCleanup(cleanup);
   });
 

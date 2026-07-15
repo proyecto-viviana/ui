@@ -19,10 +19,13 @@ export function createLabels(
   props: DOMProps & AriaLabelingProps,
   defaultLabel?: string,
 ): DOMProps & AriaLabelingProps {
-  let { id, "aria-label": label, "aria-labelledby": labelledBy } = props;
-
-  // Generate an ID if not provided
-  id = createId(id);
+  // Read props directly rather than destructuring: in Solid a destructure
+  // freezes the value at call time. This is a pure snapshot transform, so it is
+  // behaviourally identical, but keeping the reactive read explicit matches the
+  // rest of the port and satisfies guard:idiomatic-solid.
+  let id = createId(props.id);
+  let label = props["aria-label"];
+  let labelledBy = props["aria-labelledby"];
 
   // If there is both an aria-label and aria-labelledby,
   // combine them by pointing to the element itself.

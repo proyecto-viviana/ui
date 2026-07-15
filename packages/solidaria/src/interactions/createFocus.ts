@@ -102,8 +102,10 @@ function createSyntheticBlurHandler(): (
  * Based on react-aria's useFocus but adapted for SolidJS.
  */
 export function createFocus(props: CreateFocusProps = {}): FocusResult {
-  const { isDisabled, onFocus: onFocusProp, onBlur: onBlurProp, onFocusChange } = props;
-
+  // Read isDisabled/handlers off `props` directly (not via destructure): a Solid
+  // hook body runs once, so a destructure would freeze them at call time. The
+  // handlers read props.x live and the returned props are getters, mirroring
+  // upstream useFocus's per-render re-read. guard:idiomatic-solid.
   let cleanupRef: (() => void) | undefined;
   const syntheticBlurHandler = createSyntheticBlurHandler();
 
@@ -117,12 +119,12 @@ export function createFocus(props: CreateFocusProps = {}): FocusResult {
   const onBlur: JSX.EventHandler<HTMLElement, FocusEvent> = (e) => {
     // Only handle if target is the currentTarget (not bubbled from children)
     if (e.target === e.currentTarget) {
-      if (onBlurProp) {
-        onBlurProp(e);
+      if (props.onBlur) {
+        props.onBlur(e);
       }
 
-      if (onFocusChange) {
-        onFocusChange(false);
+      if (props.onFocusChange) {
+        props.onFocusChange(false);
       }
 
       cleanupRef?.();
@@ -137,12 +139,12 @@ export function createFocus(props: CreateFocusProps = {}): FocusResult {
     const activeElement = ownerDocument ? getActiveElement(ownerDocument) : null;
 
     if (e.target === e.currentTarget && activeElement === getEventTarget(e)) {
-      if (onFocusProp) {
-        onFocusProp(e);
+      if (props.onFocus) {
+        props.onFocus(e);
       }
 
-      if (onFocusChange) {
-        onFocusChange(true);
+      if (props.onFocusChange) {
+        props.onFocusChange(true);
       }
 
       // Set up synthetic blur handler for Firefox bug
@@ -150,19 +152,22 @@ export function createFocus(props: CreateFocusProps = {}): FocusResult {
     }
   };
 
-  // If disabled or no handlers, return empty props
-  if (isDisabled) {
-    return {
-      focusProps: {},
-    };
-  }
-
-  const hasHandlers = onFocusProp || onFocusChange || onBlurProp;
-
+  // If disabled or no handlers, return empty props. Getters re-read props so a
+  // later isDisabled/handler change is reflected (the body itself runs once).
   return {
     focusProps: {
-      onFocus: hasHandlers ? onFocus : undefined,
-      onBlur: onBlurProp || onFocusChange ? onBlur : undefined,
+      get onFocus() {
+        if (props.isDisabled) {
+          return undefined;
+        }
+        return props.onFocus || props.onFocusChange || props.onBlur ? onFocus : undefined;
+      },
+      get onBlur() {
+        if (props.isDisabled) {
+          return undefined;
+        }
+        return props.onBlur || props.onFocusChange ? onBlur : undefined;
+      },
     },
   };
 }

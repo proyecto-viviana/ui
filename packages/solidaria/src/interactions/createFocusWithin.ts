@@ -92,7 +92,11 @@ function createSyntheticBlurHandler(): (
  * Based on react-aria's useFocusWithin but adapted for SolidJS.
  */
 export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResult {
-  const { isDisabled, onBlurWithin, onFocusWithin, onFocusWithinChange } = props;
+  // Read isDisabled/handlers off `props` directly (not via destructure): a Solid
+  // hook body runs once, so destructuring would freeze them at call time and drop
+  // reactive updates — createOverlay/createVisuallyHidden pass a live isDisabled
+  // getter. The handlers below read props.x live; the return is getter-based so a
+  // later isDisabled flip re-computes. Mirrors upstream useFocusWithin's re-read.
 
   // State tracking
   let isFocusWithin = false;
@@ -123,12 +127,12 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
       cleanupRef?.();
       cleanupRef = undefined;
 
-      if (onBlurWithin) {
-        onBlurWithin(e);
+      if (props.onBlurWithin) {
+        props.onBlurWithin(e);
       }
 
-      if (onFocusWithinChange) {
-        onFocusWithinChange(false);
+      if (props.onFocusWithinChange) {
+        props.onFocusWithinChange(false);
       }
     }
   };
@@ -145,12 +149,12 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
     const activeElement = ownerDocument ? getActiveElement(ownerDocument) : null;
 
     if (!isFocusWithin && activeElement === getEventTarget(e)) {
-      if (onFocusWithin) {
-        onFocusWithin(e);
+      if (props.onFocusWithin) {
+        props.onFocusWithin(e);
       }
 
-      if (onFocusWithinChange) {
-        onFocusWithinChange(true);
+      if (props.onFocusWithinChange) {
+        props.onFocusWithinChange(true);
       }
 
       isFocusWithin = true;
@@ -179,12 +183,12 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
               isFocusWithin = false;
               removeAllGlobalListeners();
 
-              if (onBlurWithin) {
-                onBlurWithin(nativeEvent);
+              if (props.onBlurWithin) {
+                props.onBlurWithin(nativeEvent);
               }
 
-              if (onFocusWithinChange) {
-                onFocusWithinChange(false);
+              if (props.onFocusWithinChange) {
+                props.onFocusWithinChange(false);
               }
               cleanupRef?.();
               cleanupRef = undefined;
@@ -196,19 +200,14 @@ export function createFocusWithin(props: FocusWithinProps = {}): FocusWithinResu
     }
   };
 
-  if (isDisabled) {
-    return {
-      focusWithinProps: {
-        onFocus: undefined,
-        onBlur: undefined,
-      },
-    };
-  }
-
   return {
     focusWithinProps: {
-      onFocus,
-      onBlur,
+      get onFocus() {
+        return props.isDisabled ? undefined : onFocus;
+      },
+      get onBlur() {
+        return props.isDisabled ? undefined : onBlur;
+      },
     },
   };
 }

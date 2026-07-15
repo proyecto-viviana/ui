@@ -1,4 +1,5 @@
 import type { JSX } from "solid-js";
+import { splitProps } from "solid-js";
 import type { Key, ToggleGroupProps, ToggleGroupState } from "@proyecto-viviana/solid-stately";
 import { createToolbar, type Orientation } from "../toolbar";
 import { mergeProps } from "../utils";
@@ -75,21 +76,25 @@ export function createToggleButtonGroupItem(
   props: AriaToggleButtonGroupItemProps,
   state: ToggleGroupState,
 ): ToggleButtonAria {
-  const { id: _id, ...toggleProps } = props;
+  // splitProps keeps `toggleProps` a reactive proxy; an object-rest destructure
+  // (`{ id, ...toggleProps }`) eagerly reads and freezes every key. `id` is
+  // dropped here and re-read live via props.id below. guard:idiomatic-solid.
+  const [, toggleProps] = splitProps(props, ["id"]);
 
-  const toggleButton = createToggleButton({
-    ...toggleProps,
-    get isSelected() {
-      return state.selectedKeys.has(props.id);
-    },
-    onChange(isSelected) {
-      state.setSelected(props.id, isSelected);
-      props.onChange?.(isSelected);
-    },
-    get isDisabled() {
-      return isDisabledValue(props.isDisabled) || state.isDisabled;
-    },
-  });
+  const toggleButton = createToggleButton(
+    mergeProps(toggleProps, {
+      get isSelected() {
+        return state.selectedKeys.has(props.id);
+      },
+      onChange(isSelected: boolean) {
+        state.setSelected(props.id, isSelected);
+        props.onChange?.(isSelected);
+      },
+      get isDisabled() {
+        return isDisabledValue(props.isDisabled) || state.isDisabled;
+      },
+    }) as AriaToggleButtonProps,
+  );
 
   const baseButtonProps = toggleButton.buttonProps as Record<string, unknown>;
   const buttonProps: Record<string, unknown> = {
