@@ -531,7 +531,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   };
 
   const domProps = createMemo(() => {
-    const filtered = filterDOMProps(ariaProps, { global: true });
+    const filtered = filterDOMProps(ariaProps, { global: true, events: false });
     delete (filtered as Record<string, unknown>).id;
     return filtered;
   });
