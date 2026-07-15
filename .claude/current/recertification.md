@@ -1737,8 +1737,15 @@ March order (dependency/leverage; within a tier, top to bottom):
   `--color-text`; and LIGHT text on the non-flipping pink `--color-accent` fill (unread
   badge, user-bubble body + timestamp, ~2.4–2.7:1 light) → `--color-grey-900` (the Chip
   CP9.70 accent-fill resolution); the preview row `HeadlessButton` is the D8 target.
-  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (header / logo /
-  page-layout). ColorEditor stays OUT of
+  Logo ✓ certified 2026-07-15 (CP9.79) — unit 10, a two-word wordmark; certified BEFORE
+  Header (its composer imports it — leaf-before-composer, as Chip preceded CalendarCard).
+  Presentational (a `<span>` of two colored word `<span>`s, nothing focusable) → D5/D8 out.
+  The `black`-weight `title-xl` earns the 3:1 large-text floor (unlike NavHeader CP9.71's
+  `normal`-weight wordmark, which got 4.5); the accent word was the non-flipping
+  `--color-accent` (1.89:1 light on `bg-200`, fails even 3:1) → the flipping
+  `--color-accent-500` (3.86 dark / 4.91 light), keeping the two-tone identity.
+  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (header / page-layout).
+  ColorEditor stays OUT of
   the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
   oracle).**
 
@@ -2145,6 +2152,45 @@ March order (dependency/leverage; within a tier, top to bottom):
     user-time **2.42:1**; D7 dark: preview time **2.44:1**, other-time **2.77:1**).
     Regression across all nine Tier-6 units **43 pass / 0 fail**. Scoped e2e typecheck of the
     new spec (temp `tsc -p`, then deleted) **clean**.
+
+  **Logo ✓ certified 2026-07-15 (CP9.79)** — Tier-6 unit 10, a two-word wordmark
+  (`viviana-ui/src/custom/logo/index.tsx`): the S2 title ramp sizes it (`size="lg"` →
+  `title-xl` at `black` weight) and Silapse colors paint it (a primary word + an accent
+  word; `inverted` swaps which takes accent). No upstream React pair → same method: pair
+  drivers out, Solid-only route, absolute WCAG oracles. **Certified BEFORE its composer
+  Header** — Header imports Logo, so the leaf is certified first (as Chip preceded
+  CalendarCard/ProfileCard); this reorders the plan's "header / logo" to logo → header.
+  - **Presentational surface → D5/D8 out of scope.** Logo renders a `<span>` of two
+    colored word `<span>`s; nothing is focusable or interactive. So — like ColorSwatch
+    (CP9.68) and TimelineItem (CP9.77) — D5 (keyboard/focus) and D8 (target size) are N/A
+    (asserting D8 would trip the "no interactive elements" guard). Correctness = D7 + D6.
+  - **The large-text floor is EARNED here (contrast to NavHeader CP9.71).** The rendered
+    `title-xl` is under 24px, but Logo sets `fontWeight: black` (900), so the driver puts it
+    on the large-text *bold* path (`fontSize ≥ 18.66 && weight ≥ 700`) → the **3:1** floor.
+    NavHeader's wordmark used `fontWeight: normal`, so its sub-24px `title-xl` was scored as
+    normal text (4.5 floor). Confirmed empirically: the accent word's **4.48:1 dark** run
+    PASSED (would fail a 4.5 floor), proving the 3:1 classification.
+  - **The red→green — accent word, non-flipping `--color-accent` → flipping
+    `--color-accent-500`.** The primary word (`--color-primary-100`) is a flipping
+    near-black/near-white tone and passes comfortably. The accent word was `--color-accent`
+    (#df5c9a, the SAME pink in both themes) → **1.89:1 light / 4.48:1 dark** on `bg-200`; the
+    light value fails even the 3:1 floor. No single non-flipping shade clears a near-white
+    AND a near-black panel, so it takes the *flipping* `--color-accent-500` (dark #d84a8f /
+    light #8a1e4a) → **3.86:1 dark / 4.91:1 light**, clearing the large-text floor in both
+    themes while keeping the two-tone pink/blue wordmark identity (a neutral `--color-text`
+    would clear it too but would collapse the deliberate two-tone design).
+  - **Harness — tenth `customComparisonEntries` entry; `scopeVivianaTokens` reused** under
+    `data-viviana-logo-scope`. Demo renders `<Logo size="lg" firstWord="Proyecto"
+    secondWord="Viviana" />` on a `--color-bg-200` panel — the worst-case common background
+    for the accent (its lightest light value), so a green here is green on the lighter
+    `--color-header-bg` the Logo also lives on inside Header.
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + inline D6. `states: ["default"]`.
+    D6 = both wordmark words render as visible text, with zero buttons/links (display-only).
+    D9/D10 deferred (hard-coded words; the inter-word `columnGap` is symmetric).
+  - Verification: Logo cert e2e **3 pass / 0 skip** (exit 0 — D7×2 themes, D6); calibrated
+    by the pre-fix red run (D7 light: accent word **1.89:1**, the only flagged run; D7 dark
+    PASSED at 4.48, proving the 3:1 floor). Regression across all ten Tier-6 units **46 pass
+    / 0 fail**. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted) **clean**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

@@ -1659,6 +1659,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "logo",
+    title: "Logo",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana Logo: a two-word wordmark — the S2 title ramp sizes it (`title-xl` at `black` weight for `size=\"lg\"`), Silapse colors paint it (a primary word + an accent word, `inverted` swaps which takes accent). No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "Logo is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast on both wordmark tones over the `--color-bg-200` panel — the accent word repointed from the non-flipping `--color-accent` to the flipping `--color-accent-500`) plus a D6 visible-text assertion. Presentational (no focusable element) → D5/D8 out of scope.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled Logo",
+        "Viviana Logo rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui Logo (a two-tone wordmark on the S2 title ramp via the style() macro). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component Logo",
+        "No component-layer pair — Logo is a styled-layer custom component.",
+        "na",
+        "na",
+        "Logo has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless Logo",
+        "Logo is static presentational markup — no behavior hook.",
+        "na",
+        "na",
+        "Logo renders two colored `<span>`s; nothing is focusable or interactive.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "Logo has no independent state primitive.",
+        "na",
+        "na",
+        "The words, size and inversion are props, not a managed state primitive.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

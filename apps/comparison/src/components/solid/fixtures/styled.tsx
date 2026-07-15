@@ -783,6 +783,7 @@ import {
   Conversation as VivianaConversation,
   ConversationPreview as VivianaConversationPreview,
 } from "../../../../../../packages/viviana-ui/src/custom/conversation";
+import { Logo as VivianaLogo } from "../../../../../../packages/viviana-ui/src/custom/logo";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
@@ -1130,6 +1131,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   lateralnav: () => h(SolidLateralNavDemo, {}),
   timelineitem: () => h(SolidTimelineItemDemo, {}),
   conversation: () => h(SolidConversationDemo, {}),
+  logo: () => h(SolidLogoDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1752,6 +1754,60 @@ function SolidConversationDemo() {
               unreadCount: 3,
             }),
             h(VivianaConversation, { messages: conversationMessages }),
+          ]),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaLogoScopedTokensCss = scopeVivianaTokens("data-viviana-logo-scope");
+
+const logoScopeStyle = {
+  display: "block",
+  width: "auto",
+  "max-width": "100%",
+};
+
+// A `--color-bg-200` panel — the standard Tier-6 surface and the worst-case
+// common background for the accent word (its lightest light-mode value), so a
+// Logo green here is green on the lighter header-bg it also lives on.
+const logoPanelStyle = {
+  display: "inline-flex",
+  padding: "24px",
+  "border-radius": "12px",
+  background: "var(--color-bg-200)",
+};
+
+function SolidLogoDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-logo-scope": "true",
+      "data-comparison-control-root": "logo",
+      style: logoScopeStyle,
+    },
+    [
+      h("style", {}, vivianaLogoScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The two-word wordmark on the `--color-bg-200` panel. It is purely
+          // presentational (a `<span>` of two colored word `<span>`s, nothing
+          // focusable → no D5/D8). The accent word (`--color-accent`) is the D7
+          // red→green fix; the default `size="lg"` renders `title-xl` at `black`
+          // weight, so the driver classifies it against the large-text floor.
+          hc("div", { style: logoPanelStyle }, [
+            h(VivianaLogo, { size: "lg", firstWord: "Proyecto", secondWord: "Viviana" }),
           ]),
         ],
       ),

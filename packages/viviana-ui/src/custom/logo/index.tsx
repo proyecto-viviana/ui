@@ -34,7 +34,14 @@ const word = style<{ tone: "primary" | "accent" }>({
   color: {
     tone: {
       primary: "[var(--color-primary-100)]",
-      accent: "[var(--color-accent)]",
+      // `--color-accent` (#df5c9a) is the SAME non-flipping pink in both themes;
+      // on the light `--color-bg-200` panel the wordmark reads only 1.89:1 (fails
+      // even the 3:1 large-text floor the `black`-weight `title-xl` earns). No
+      // single non-flipping shade clears a near-white AND a near-black panel, so
+      // the accent word takes the *flipping* `--color-accent-500` (dark #d84a8f /
+      // light #8a1e4a) → 3.86:1 dark / 4.91:1 light — clearing the large-text
+      // floor in both themes while keeping the two-tone wordmark identity.
+      accent: "[var(--color-accent-500)]",
     },
   },
 });
