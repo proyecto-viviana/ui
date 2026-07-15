@@ -770,7 +770,11 @@ html[data-theme="dark"] body.s2-docs {
   border-left: 0;
 }
 
-.s2-framework-panel header {
+/* Direct child only: this styles the panel's own label chrome (the small
+   "Solid"/"React" caption). A descendant selector would greedily catch a
+   `<header>` banner rendered by the component under test (e.g. the custom
+   Viviana Header), yanking it out of flow and collapsing the canvas. */
+.s2-framework-panel > header {
   position: absolute;
   z-index: 1;
   inset-block-start: 10px;

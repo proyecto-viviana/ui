@@ -1744,7 +1744,16 @@ March order (dependency/leverage; within a tier, top to bottom):
   `normal`-weight wordmark, which got 4.5); the accent word was the non-flipping
   `--color-accent` (1.89:1 light on `bg-200`, fails even 3:1) → the flipping
   `--color-accent-500` (3.86 dark / 4.91 light), keeping the two-tone identity.
-  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (header / page-layout).
+  Header ✓ certified 2026-07-15 (CP9.80) — unit 11, the first Tier-6 surface to render a
+  `<header>` banner landmark: a top app-bar composing the certified Logo wordmark (left)
+  and solid-fill nav Chips (right, in a `<nav>`). A clean-green composition cert (every
+  text run is pre-certified — Logo tones now green on the lighter `--color-header-bg`, chip
+  labels on their own fills) with NO source fix. The one blocker was a HARNESS bug: the
+  greedy panel-label rule `.s2-framework-panel header` clobbered the nested Viviana
+  `<header>` with `position:absolute`, collapsing the canvas to `h=0`; tightened to the
+  direct-child `.s2-framework-panel > header` (the label is a direct child; component
+  landmarks are nested) — a root-cause fix for any future `<header>`-rendering unit.
+  NEXT: the remaining `viviana-ui/src/custom/*` surface (page-layout).
   ColorEditor stays OUT of
   the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
   oracle).**
@@ -2191,6 +2200,42 @@ March order (dependency/leverage; within a tier, top to bottom):
     by the pre-fix red run (D7 light: accent word **1.89:1**, the only flagged run; D7 dark
     PASSED at 4.48, proving the 3:1 floor). Regression across all ten Tier-6 units **46 pass
     / 0 fail**. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted) **clean**.
+
+  **Header ✓ certified 2026-07-15 (CP9.80)** — Tier-6 unit 11, the custom Viviana top
+  app-bar (`viviana-ui/src/custom/header/index.tsx`): a centered max-width row with a logo
+  group on the start edge (the certified Logo wordmark) and a `<nav>` action slot on the
+  end edge, painted on the `--color-header-bg` bar with a `--color-border` bottom rule. No
+  upstream React pair → same method: pair drivers out, Solid-only route, absolute WCAG oracles.
+  - **A clean-green COMPOSITION cert — no source change.** The bar's own chrome carries no
+    text, so every measured run comes from two already-certified leaves it embeds: the Logo
+    wordmark (CP9.79 — its `--color-primary-100` and flipping `--color-accent-500` tones both
+    clear the large floor on the lighter `--color-header-bg` by wider margins than on the
+    `--color-bg-200` panel they were certified on) and solid-fill Chips (CP9.70) as nav
+    actions (labels sit on the chips' own opaque `--color-primary-700` / `--color-accent`
+    fills, so their contrast is exactly what the Chip cert pinned, independent of the bar).
+  - **First Tier-6 unit to render a `<header>` banner landmark — exposed a HARNESS bug.**
+    The panel-label rule `.s2-framework-panel header { position:absolute; inset… }` (styling
+    each framework panel's small "Solid"/"React" caption) used a *descendant* selector, so it
+    greedily caught the nested Viviana `<header>`, yanked it out of flow, and collapsed the
+    reference canvas to `height:0` → `waitForComparisonRouteReady` timed out on a canvas that
+    was mounted but not visible. Root-caused with a stylesheet walk (`el.matches(selectorText)`
+    over every `position`-setting rule). **Fix: tightened to the direct-child combinator
+    `.s2-framework-panel > header`** in `apps/comparison/src/styles/global.css` — the label is
+    a direct child of `.s2-framework-panel` (`ComponentExamplePreview.tsx`), so it keeps its
+    styling, while any component-under-test landmark (nested) is now immune. This is the CSS
+    cousin of the D6-landmark caveat (the docs shell owns its own `banner`/`navigation`).
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24`, the nav Chips are
+    `HeadlessButton`s at `minHeight:24`) + inline D5/D6. D6 = the `<nav>` navigation landmark
+    (canvas-scoped, since the docs shell has its own nav landmarks), the two wordmark words as
+    visible text, exactly the two chip buttons named from their text, zero stray links; D5 =
+    each chip is a real focus stop. D9/D10 deferred (hard-coded strings; `space-between` rides
+    the Provider `dir`). Eleventh `customComparisonEntries` entry; `scopeVivianaTokens` reused
+    under `data-viviana-header-scope`; demo composes `<Header logoProps={…}>` + two `<Chip>`
+    nav actions via `hc()` third-arg children (a `children` prop key does NOT render).
+  - Verification: Header cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8, D5, D6).
+    Regression across all eleven Tier-6 units **51 pass / 0 fail** (the `global.css` tightening
+    regressed nothing). Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted)
+    **clean** (only the pre-existing `visual-diff.ts` `Buffer`/`@types/node` noise remains).
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

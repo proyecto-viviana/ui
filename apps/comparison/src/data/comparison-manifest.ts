@@ -1705,6 +1705,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "header",
+    title: "Header",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana Header: a top app-bar — a centered max-width row with a logo group (the certified Logo wordmark) and a `<nav>` slot for actions — on the `--color-header-bg` bar with a bottom rule. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "Header is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "A composition cert: it embeds two already-certified leaves — the Logo (whose tones stay AA on the lighter `--color-header-bg`) and solid-fill Chips as nav actions (labels certified against their own fills) — so every text run is pre-certified (D7 AA). D8 24px on the chip actions, plus D5/D6 keyboard + landmark AX.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled Header",
+        "Viviana Header rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui Header (a logo group + a `<nav>` slot on the `--color-header-bg` bar via the S2 style() macro). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component Header",
+        "No component-layer pair — Header is a styled-layer custom component.",
+        "na",
+        "na",
+        "Header has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless Header",
+        "Header is a static layout shell — no behavior hook.",
+        "na",
+        "na",
+        "Header composes the Logo and a `<nav>` slot; the interactivity comes from the caller's nav children (here certified Chips).",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "Header has no independent state primitive.",
+        "na",
+        "na",
+        "The logo props and nav children are props, not a managed state primitive.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

@@ -784,6 +784,7 @@ import {
   ConversationPreview as VivianaConversationPreview,
 } from "../../../../../../packages/viviana-ui/src/custom/conversation";
 import { Logo as VivianaLogo } from "../../../../../../packages/viviana-ui/src/custom/logo";
+import { Header as VivianaHeader } from "../../../../../../packages/viviana-ui/src/custom/header";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
@@ -1132,6 +1133,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   timelineitem: () => h(SolidTimelineItemDemo, {}),
   conversation: () => h(SolidConversationDemo, {}),
   logo: () => h(SolidLogoDemo, {}),
+  header: () => h(SolidHeaderDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1809,6 +1811,58 @@ function SolidLogoDemo() {
           hc("div", { style: logoPanelStyle }, [
             h(VivianaLogo, { size: "lg", firstWord: "Proyecto", secondWord: "Viviana" }),
           ]),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaHeaderScopedTokensCss = scopeVivianaTokens("data-viviana-header-scope");
+
+const headerScopeStyle = {
+  display: "block",
+  width: "640px",
+  "max-width": "100%",
+};
+
+function SolidHeaderDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-header-scope": "true",
+      "data-comparison-control-root": "header",
+      style: headerScopeStyle,
+    },
+    [
+      h("style", {}, vivianaHeaderScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The Header app-bar (`--color-header-bg`) composes two already-certified
+          // leaves: the two-tone Logo wordmark (left) and certified solid-fill Chips
+          // as nav actions (right, in the `<nav>` slot). Every text run is therefore
+          // pre-certified — the Logo tones (now green on the lighter header-bg) and
+          // the chip labels (on their own solid fills) — so Header is a clean-green
+          // composition cert. The chips are the D5/D8 interactive targets.
+          hc(
+            VivianaHeader,
+            {
+              logoProps: { firstWord: "Proyecto", secondWord: "Viviana" },
+            },
+            [
+              h(VivianaChip, { text: "Docs", variant: "primary" }),
+              h(VivianaChip, { text: "Playground", variant: "accent" }),
+            ],
+          ),
         ],
       ),
     ],
