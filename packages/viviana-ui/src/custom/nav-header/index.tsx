@@ -38,7 +38,15 @@ const logoText = style({
   alignItems: "center",
   font: "title-xl",
   fontWeight: "normal",
-  color: "[var(--color-primary-700)]",
+  // WCAG AA fix: the wordmark sits on the `--color-bg-400` bar. `--color-primary-700`
+  // is a non-flipping brand fill (light blue in light mode, dark blue in dark mode) —
+  // the SAME direction as the bar, so it read only 2.10:1 light / 2.92:1 dark. The
+  // rendered `title-xl` measures under 24px, so WCAG scores it as normal text (4.5:1
+  // floor, not the 3:1 large-text exception). `--color-primary-500` is the smallest
+  // ramp step that flips with the theme (dark-on-light / light-on-dark) AND clears
+  // 4.5:1, lifting the wordmark to 5.37:1 light / 7.00:1 dark while keeping a prominent
+  // brand blue.
+  color: "[var(--color-primary-500)]",
 });
 
 const logoImage = style({

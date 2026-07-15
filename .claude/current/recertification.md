@@ -1709,9 +1709,13 @@ March order (dependency/leverage; within a tier, top to bottom):
   the D1/D3 pair drivers are out of scope; D5–D11 still apply and contrast/target-size
   assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
   (record below), establishing the Solid-only `frameworks` harness + absolute-WCAG
-  methodology. NEXT: the remaining `viviana-ui/src/custom/*` surfaces (EventCard,
-  NavHeader, …). ColorEditor stays OUT of the S2-parity march (survey finding below —
-  pinned S2 1.5.1 ships no ColorEditor oracle).**
+  methodology. NavHeader ✓ certified 2026-07-14 (CP9.71) — unit 2, first `<nav>`
+  landmark + `scopeVivianaTokens` helper. NEXT: the remaining `viviana-ui/src/custom/*`
+  surfaces (EventCard — its accent title + secondary meta both fail AA on the light
+  `bg-200` card — then calendar-card / profile-card / project-card / lateral-nav /
+  timeline-item / conversation / header / logo / page-layout). ColorEditor stays OUT
+  of the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
+  oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
@@ -1794,6 +1798,49 @@ March order (dependency/leverage; within a tier, top to bottom):
     byte-for-byte zero-blast. Scoped e2e typecheck of the new + changed e2e files
     (temp `tsc -p` extending the app config over ONLY the e2e deltas, then deleted)
     **clean (exit 0)** — the e2e tree is outside the app tsconfig `src/**` glob.
+
+  **NavHeader ✓ certified 2026-07-14 (CP9.71)** — Tier-6 unit 2, the SECOND custom
+  Viviana surface. NavHeader (`viviana-ui/src/custom/nav-header/index.tsx`) is a
+  `<nav>` landmark bar with an accent bottom rule, a logo/wordmark slot, and a
+  trailing menu button (`@proyecto-viviana/solidaria-components` `HeadlessButton`).
+  No upstream React Spectrum pair, so the same Tier-6 method as Chip applies: pair
+  drivers (D1/D2/D3) out of scope, Solid-only route (`frameworks: ["solid"]`),
+  absolute WCAG oracles. Adds the **first landmark dimension** to Tier 6.
+  - **The red→green — a wordmark that failed WCAG AA in BOTH themes.** The logo
+    wordmark (`logoText`, `title-xl`) sits on the `--color-bg-400` bar and painted
+    `--color-primary-700`, a NON-flipping brand fill: light blue in light mode,
+    dark blue in dark mode — the SAME direction as the bar. It read **2.10:1 light
+    / 2.92:1 dark**, failing in both. Fix repoints it to `--color-primary-500`,
+    which flips with the theme (dark-on-light / light-on-dark) → **5.37:1 light /
+    7.00:1 dark**. Calibrated by perturbation: reverting to `primary-700` reds D7
+    at exactly `span:Silapse · 2.1:1` (light) and `· 2.92:1` (dark); restoring
+    greens both.
+  - **DRIVER LESSON — `title-xl` is NOT WCAG "large text".** The first fix attempt
+    (`primary-600`, 4.27:1 light) still red at `span:Silapse · 4.27:1`. The D7
+    driver is large-text-aware (`largeText = fontSize>=24 || (fontSize>=18.66 &&
+    weight>=700)` → floor 3:1, else 4.5:1) and measured the RENDERED `title-xl`
+    under 24px, so it scored the wordmark as normal text (4.5:1 floor). The
+    smallest ramp step clearing 4.5:1 in both modes is `primary-500`, not the
+    `primary-600` that only clears the 3:1 large-text exception — never assume a
+    named "xl" font token renders ≥24px; the driver measures the real px.
+  - **Harness — reuses the Chip `frameworks` machinery; token scoping generalized.**
+    The Chip session's inline scoped-token rewrite is now a `scopeVivianaTokens(scopeAttr)`
+    helper in `fixtures/styled.tsx` (chip refactored onto it, re-proven green); the
+    NavHeader demo binds tokens under `data-viviana-nav-header-scope`. The route is
+    a second entry in the SEPARATE `customComparisonEntries` array (official
+    sidebar/index/search/stats stay untouched). Demo renders NavHeader with a text
+    wordmark ("Silapse") + a menu button whose icon is a 32px `aria-hidden` glyph
+    box (the button carries no intrinsic min-size, so a realistic ≥24px icon is
+    what clears D8; its accessible name comes from `menuAriaLabel`, not the glyph).
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24`) + inline
+    D5/D6. `states: ["default"]` (the lone text run is state-independent). D6 =
+    exactly one `nav` landmark + one menu button named "Open menu" from its
+    aria-label + the "Silapse" wordmark as visible non-link/non-heading text. D5 =
+    the menu button is a real focus stop.
+  - Verification: NavHeader cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+    D5, D6). Regression: NavHeader + Chip together **10 pass / 0 fail**, proving the
+    `scopeVivianaTokens` extraction did not regress the CP9.70 Chip cert. Scoped
+    e2e typecheck of the new spec (temp `tsc -p`, then deleted) **clean (exit 0)**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

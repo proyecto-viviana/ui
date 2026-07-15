@@ -1291,6 +1291,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "navheader",
+    title: "NavHeader",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana NavHeader: a nav landmark bar with an accent bottom rule, a logo/wordmark slot, and a trailing menu button built on the certified HeadlessButton. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "NavHeader is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA wordmark contrast, D8 24px menu-button target) plus D5/D6 keyboard + nav-landmark AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled NavHeader",
+        "Viviana NavHeader rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui NavHeader (nav landmark + HeadlessButton menu, S2 style() macro). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component NavHeader",
+        "No component-layer pair — NavHeader is a styled-layer custom component.",
+        "na",
+        "na",
+        "NavHeader has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless NavHeader",
+        "The menu button presses through the certified createButton behavior.",
+        "na",
+        "na",
+        "Menu-button press behavior is inherited from the already-certified HeadlessButton.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "NavHeader has no independent state primitive.",
+        "na",
+        "na",
+        "No dedicated state layer for a presentational nav bar.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

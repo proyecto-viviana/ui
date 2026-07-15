@@ -765,11 +765,12 @@ import {
   getComparisonResolvedThemeFromDocument,
   type ComparisonResolvedTheme,
 } from "@comparison/data/theme";
-// Tier-6 custom Viviana component: imported from source so its S2 style() macro
-// compiles in-app. Its brand color tokens ride in via `viviana-tokens.css`,
-// imported `?inline` (as a string, not injected) and rewritten to a Chip-scoped
-// selector so importing them can never repaint the rest of the comparison app.
+// Tier-6 custom Viviana components: imported from source so their S2 style()
+// macro compiles in-app. Their brand color tokens ride in via `viviana-tokens.css`,
+// imported `?inline` (as a string, not injected) and rewritten to a per-component
+// scoped selector so importing them can never repaint the rest of the comparison app.
 import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
+import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/src/custom/nav-header";
 import vivianaTokensCss from "../../../../../../packages/viviana-ui/src/viviana-tokens.css?inline";
 
 type ActionItem = (typeof actionItems)[number];
@@ -1105,6 +1106,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   colorswatchpicker: () => h(SolidSpectrumColorSwatchPickerDemo, {}),
   colorfield: () => h(SolidSpectrumColorFieldDemo, {}),
   chip: () => h(SolidChipDemo, {}),
+  navheader: () => h(SolidNavHeaderDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1219,12 +1221,23 @@ function SolidSpectrumProviderDemo() {
  * override nests under the Provider's own `data-color-scheme="light"` div, so its
  * higher specificity wins in light mode and the pair flips together with the theme.
  */
-const vivianaChipScopedTokensCss = vivianaTokensCss
-  .replaceAll(":root {", "[data-viviana-chip-scope] {")
-  .replaceAll(
-    '[data-color-scheme="light"] {',
-    '[data-viviana-chip-scope] [data-color-scheme="light"] {',
-  );
+// Rewrite the `?inline` viviana token sheet so every `:root` / light-scheme block
+// binds under a per-component scope attribute instead of the document root. The
+// light override stays nested one level deeper than the Provider's own
+// `data-color-scheme="light"` div, so its higher specificity still wins in light
+// mode and the dark/light token pair flips together with the theme. Scoping is
+// mandatory: solid-spectrum icons read some of these vars globally, so a document-
+// root import would repaint the rest of the comparison app.
+function scopeVivianaTokens(scopeAttr: string): string {
+  return vivianaTokensCss
+    .replaceAll(":root {", `[${scopeAttr}] {`)
+    .replaceAll(
+      '[data-color-scheme="light"] {',
+      `[${scopeAttr}] [data-color-scheme="light"] {`,
+    );
+}
+
+const vivianaChipScopedTokensCss = scopeVivianaTokens("data-viviana-chip-scope");
 
 const chipScopeStyle = {
   display: "inline-block",
@@ -1274,6 +1287,61 @@ function SolidChipDemo() {
               h(VivianaChip, { text: entry.text, variant: entry.variant }),
             ),
           ),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaNavHeaderScopedTokensCss = scopeVivianaTokens("data-viviana-nav-header-scope");
+
+const navHeaderScopeStyle = {
+  display: "block",
+  width: "420px",
+  "max-width": "100%",
+};
+
+// A ≥24px icon box so the (padding-less) menu button clears the WCAG 2.5.8 24px
+// target floor with margin — a realistic menu-icon size, not a hairline glyph.
+const navMenuIconStyle = {
+  display: "inline-flex",
+  "align-items": "center",
+  "justify-content": "center",
+  width: "32px",
+  height: "32px",
+  "font-size": "20px",
+  "line-height": "1",
+};
+
+function SolidNavHeaderDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-nav-header-scope": "true",
+      "data-comparison-control-root": "navheader",
+      style: navHeaderScopeStyle,
+    },
+    [
+      h("style", {}, vivianaNavHeaderScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          h(VivianaNavHeader, {
+            logoText: "Silapse",
+            menuAriaLabel: "Open menu",
+            // Decorative glyph (aria-hidden) sized to a real icon box; the button's
+            // accessible name comes from `menuAriaLabel`, not this content.
+            menuIcon: h("span", { "aria-hidden": "true", style: navMenuIconStyle }, "☰"),
+          }),
         ],
       ),
     ],
