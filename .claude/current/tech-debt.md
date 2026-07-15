@@ -274,22 +274,32 @@ tasks:
     roadmap: upstream-api-parity
   - id: picker-popover-anchor
     title: Anchor Popover to its trigger — make popoverRef a signal so position computes
-    state: open
+    state: done
+    finished: 2026-07-15
     roadmap: consumer-delivery
     note: >-
-      Found consuming Picker in Tortafritapp (admin role picker). The popover renders
-      at the createOverlayPosition fallback (position:fixed; top:0; left:0;
-      z-index:100000; max-height:100vh), never the anchored result. Confirmed against
-      source: Popover.tsx:283 holds `let popoverRef!: HTMLDivElement` and passes
-      `popoverRef: () => popoverRef ?? null` to createPopover (:336) — a non-reactive
-      local ref, while the sibling groupRef (:284) is already a createSignal. Solid
-      local-var ref assignment isn't reactive, so positioning can run before the
-      portal node exists and never re-runs. Likely fix = setPopoverRef signal threaded
-      into createPopover (+ optional updatePosition after portal mount). Confirm
-      against React Aria useOverlayPosition first (parity rule). Director pass
-      2026-07-06: Picker is pulled FIRST in the Tier 4 march (recertification.md) —
-      it is production-broken for installed consumers, so this is the
-      highest-value single certification.
+      DONE 2026-07-15. Found consuming Picker in Tortafritapp (admin role picker). The
+      popover rendered at the createOverlayPosition fallback (position:fixed; top:0;
+      left:0; z-index:100000; max-height:100vh), never the anchored result. Root cause
+      confirmed against source: Popover.tsx held `let popoverRef!: HTMLDivElement` and
+      passed `popoverRef: () => popoverRef ?? null` to createPopover — a non-reactive
+      local ref, while the sibling groupRef was already a createSignal. A Solid
+      local-var ref assignment notifies no reactive scope, so createOverlayPosition's
+      main effect (createOverlayPosition.ts:226-245, which tracks overlayRef()) first
+      ran with a null ref before the lazy portal node mounted and never re-ran →
+      position() stayed null → the fallback style. Whether it anchored at all was pure
+      timing luck (a stray ResizeObserver/isOpen re-run catching the assignment), which
+      is why the comparison harness cert stayed green while the external consumer broke
+      at 0,0. FIX = convert popoverRef to createSignal(setPopoverRef), mirroring the
+      sibling groupRef; the position effect now re-runs once the node mounts. This is
+      the faithful parity of React Aria useOverlayPosition, which gets correct timing
+      free from useLayoutEffect (ref populated before the effect fires). Solid does not
+      null refs on unmount, but every consumer gates on isOpen() so the retained
+      detached node is harmless (same as groupRef). Verified: build:components +
+      tsc-p clean; ALL overlay certs green with zero regression — popover+picker 85,
+      combobox+datepicker+daterangepicker+menu+actionmenu 218 (2 skipped); full unit
+      suite 5533 passed. Build-graph gotcha: comparison aliases solidaria-components to
+      dist/index.js, so build:components must precede comparison:build.
   - id: picker-item-checkmark
     title: Show the PickerItem checkmark only on the selected option
     state: open
@@ -1320,26 +1330,31 @@ natives are deleted or wired to a consumer.
 Two consumer-facing Picker defects found consuming `@proyecto-viviana/ui` in
 Tortafritapp (admin role picker). An app-level workaround was applied there, but both
 fixes belong upstream in `solidaria-components` `Popover` and `solid-spectrum`
-`PickerItem`. Tracked as `picker-popover-anchor` and `picker-item-checkmark`. Both
-suspected causes were checked against our source while filing; neither is yet fixed,
-and both must be diffed against React Aria / S2 before implementing (parity rule).
+`PickerItem`. Tracked as `picker-popover-anchor` and `picker-item-checkmark`.
+`picker-popover-anchor` is now **DONE** (2026-07-15, see below); `picker-item-checkmark`
+remains open and must be diffed against S2 before implementing (parity rule).
 
-**Popover never receives the computed anchored position.** The popover renders with
-the `createOverlayPosition` fallback (`position: fixed; top: 0; left: 0; z-index:
-100000; max-height: 100vh`) at the viewport origin instead of anchored to the
-trigger; the trigger itself renders correctly elsewhere. Confirmed against source:
-`Popover.tsx:283` holds the ref as a plain local (`let popoverRef!: HTMLDivElement`)
-and passes `popoverRef: () => popoverRef ?? null` into `createPopover` (`:336`),
-whereas the sibling `groupRef` (`:284`) is already a `createSignal`. A Solid
-local-variable ref assignment is not reactive, so `createOverlayPosition` can read
-the ref before the portal node exists and never re-runs when `ref={popoverRef}`
-(`:575`) assigns it — the `current ? "absolute" : "fixed"` / `top/left: 0` fallback
-stays latched. This is the same local/destructured-ref reactivity freeze already
-recorded for the spine port. Likely fix (verify against React Aria
-`useOverlayPosition` / `Popover` first): make the ref a signal (`const [popoverRef,
-setPopoverRef] = createSignal(...)`), pass it into `createPopover`, set it via
-`ref={setPopoverRef}`, and optionally call `popoverAria.updatePosition?.()` after
-portal mount.
+**Popover never received the computed anchored position. — FIXED 2026-07-15.** The
+popover rendered with the `createOverlayPosition` fallback (`position: fixed; top: 0;
+left: 0; z-index: 100000; max-height: 100vh`) at the viewport origin instead of
+anchored to the trigger; the trigger itself rendered correctly elsewhere. Root cause
+(confirmed against source): `Popover.tsx` held the ref as a plain local (`let
+popoverRef!: HTMLDivElement`) and passed `popoverRef: () => popoverRef ?? null` into
+`createPopover`, whereas the sibling `groupRef` was already a `createSignal`. A Solid
+local-variable ref assignment is not reactive, so `createOverlayPosition`'s main
+effect (`:226-245`, tracks `overlayRef()`) read the ref before the lazy portal node
+existed and never re-ran when `ref={popoverRef}` assigned it — the `current ?
+"absolute" : "fixed"` / `top/left: 0` fallback stayed latched. Whether it ever
+anchored was timing luck (a stray ResizeObserver/`isOpen` re-run), which is why the
+comparison cert stayed green while the external consumer broke. This is the same
+local/destructured-ref reactivity freeze already recorded for the spine port. **Fix:**
+made the ref a signal (`const [popoverRef, setPopoverRef] = createSignal<HTMLDivElement
+| null>(null)`), fed `() => popoverRef()` into `createPopover`, and bound `ref={
+setPopoverRef}` — mirroring the sibling `groupRef` and faithfully matching React Aria
+`useOverlayPosition`, which gets correct timing free from `useLayoutEffect`. Verified:
+build + typecheck clean; all overlay certs green with zero regression (popover+picker
+85; combobox/datepicker/daterangepicker/menu/actionmenu 218, 2 skipped); unit suite
+5533 passed.
 
 **Checkmark shows on every option.** ARIA is correct — only the selected option
 carries `aria-selected` / `data-selected="true"` — but the SVG checkmark is visible

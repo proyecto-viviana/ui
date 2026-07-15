@@ -6031,3 +6031,61 @@ is **done**.
     is the only `createTab` consumer, so blast radius is Tabs-only. **D4
     event-ordering epic is now fully closed** (no remaining D4 reds anywhere;
     Dialog's residual waiver is D6).
+
+- **2026-07-15 — `picker-popover-anchor`: Popover anchors to its trigger deterministically (reactive-ref/signal fix).**
+  Highest-value open consumer-delivery item (`tech-debt.md`): the `Popover` (and
+  every Picker/ComboBox/DatePicker/Menu built on it) rendered at the
+  `createOverlayPosition` fallback (`position: fixed; top: 0; left: 0; z-index:
+  100000; max-height: 100vh`) at the viewport origin for an installed consumer
+  (Tortafritapp admin role picker), never anchored to the trigger.
+  - **Root cause (Solid reactive-ref timing).** `Popover.tsx` held the overlay ref
+    as a plain local — `let popoverRef!: HTMLDivElement` — and fed
+    `popoverRef: () => popoverRef ?? null` into `createPopover`, while the sibling
+    `groupRef` in the *same file* was already a `createSignal`. A Solid `ref={…}`
+    assignment to a plain `let` notifies **no** reactive scope. `createOverlayPosition`'s
+    main effect (`createOverlayPosition.ts:226-245`) tracks `overlayRef()` as a
+    dependency, first ran while the ref was still null (the portal node mounts lazily
+    on open, *after* that first run), and — with nothing to re-trigger it — never
+    re-ran; `position()` stayed `null`, so the `overlayProps.style` getter
+    (`:346-355`) returned the `position: fixed / top: 0 / left: 0` fallback. Whether
+    it anchored at all was pure timing luck: a stray ResizeObserver (`:260`) or
+    `isOpen` re-run happening to read `overlayRef()` *after* assignment. That is
+    exactly why the comparison harness cert stayed green (lucky ordering) while the
+    external consumer latched the fallback at 0,0.
+  - **Parity confirmed first (Rule #1).** React Aria `useOverlayPosition`/`usePopover`
+    get correct timing for free from `useLayoutEffect` — the ref is populated before
+    the position effect fires. The faithful Solid equivalent of "ref is live before
+    the effect re-runs" is a **reactive ref (signal)** so the effect re-runs once the
+    node mounts. Not an invented mechanism — it mirrors the sibling `groupRef` signal
+    already in the file.
+  - **The fix (4 edits, all inside `solidaria-components/src/Popover.tsx`).**
+    (1) `let popoverRef!: HTMLDivElement` → `const [popoverRef, setPopoverRef] =
+    createSignal<HTMLDivElement | null>(null)` (with an explanatory comment; the
+    `groupRef` signal sits right below). (2) The `createPopover` call:
+    `popoverRef: () => popoverRef ?? null` → `popoverRef: () => popoverRef()`.
+    (3) The focus effect: `if (!popoverRef) return` → resolve `const node =
+    popoverRef()` once and gate on `!node` / `document.activeElement === node` /
+    `node.contains(...)` / `node.focus()`. (4) The JSX: `ref={popoverRef}` →
+    `ref={setPopoverRef}`. `createSignal` was already imported.
+  - **Why it's low-risk.** All six `popoverRef` usages are internal to `Popover.tsx`;
+    `createPopover` only ever exposes `popoverAria` outputs to consumers, never the
+    ref — so blast radius is the Popover internals. Solid does not null refs on
+    unmount (unlike React), so the signal retains the last detached node between
+    close/reopen, but every reader gates on `isOpen()` (positioning bails when
+    closed; the focus effect bails when closed) — identical to the existing
+    `groupRef` behavior, so harmless.
+  - **Build gotcha (same as the D4 unit).** The comparison app aliases
+    `solidaria-components` to `dist/index.js`, so `vp run build:components` (root)
+    must precede `vp run comparison:build`, else the stale dist is consumed and the
+    source edit silently no-ops.
+  - **Validation.** `build:components` + scoped `tsc -p tsconfig.build.json` clean;
+    `comparison:build` green (95 pages). All overlay-consuming certified suites green
+    with **zero regression**: `popover` + `picker` **85 passed**;
+    `combobox` + `datepicker` + `daterangepicker` + `menu` + `actionmenu`
+    **218 passed, 2 skipped** (both `EXIT=0`). Full unit suite **267 files, 5533
+    passed**, 1 expected-fail, 10 skipped. Pair-oracle certs carry no committed PNG
+    baselines (project non-goal) — they diff live React S2 vs live Solid, so a
+    correctly-anchored popover can only *improve* alignment, never regress a stale
+    snapshot. `tech-debt.md` `picker-popover-anchor` → **done**. The sibling
+    `picker-item-checkmark` remains open (checkmark shows on every row; suspect is
+    the `renderProps.isSelected` threading at `picker/index.tsx:1046-1051`).

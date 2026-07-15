@@ -281,7 +281,16 @@ export function Popover(props: PopoverProps): JSX.Element {
     "isExiting",
   ]);
 
-  let popoverRef!: HTMLDivElement;
+  // A reactive ref (not a plain `let`) so the overlay-position effect in
+  // createOverlayPosition — which tracks `overlayRef()` as a dependency —
+  // re-runs once the portal node actually mounts. React gets this timing for
+  // free from useLayoutEffect (the ref is populated before the position effect
+  // fires); in Solid the portal node is created lazily on open, AFTER the
+  // position effect first ran with a null ref, so a non-reactive ref left the
+  // popover stranded at the createOverlayPosition fallback (position:fixed;
+  // top:0; left:0) whenever no other dependency happened to re-fire the effect
+  // after mount. Mirrors the sibling groupRef signal below.
+  const [popoverRef, setPopoverRef] = createSignal<HTMLDivElement | null>(null);
   const [groupRef, setGroupRef] = createSignal<HTMLDivElement | null>(null);
   // False on the server and during hydration; true after onMount. Gates the Portal
   // so overlay content only ever renders client-side, post-hydration.
@@ -342,7 +351,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   const popoverAria = createPopover(
     {
       triggerRef: getTriggerRef,
-      popoverRef: () => popoverRef ?? null,
+      popoverRef: () => popoverRef(),
       groupRef: () => (isSubPopover() ? (popoverGroupContext?.() ?? null) : groupRef()),
       get placement() {
         return local.placement;
@@ -523,7 +532,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   createEffect(() => {
     if (!isOpen() || !shouldBeDialog()) return;
     if ((local.autoFocus ?? true) === false) return;
-    if (!popoverRef) return;
+    if (!popoverRef()) return;
     if (resolvedTrigger() === "SubmenuTrigger") return;
 
     let timeout: number | undefined;
@@ -531,11 +540,12 @@ export function Popover(props: PopoverProps): JSX.Element {
 
     const focusIfNeeded = () => {
       if (!isOpen() || !shouldBeDialog()) return;
-      if (!popoverRef || resolvedTrigger() === "SubmenuTrigger") return;
-      if (document.activeElement === popoverRef || popoverRef.contains(document.activeElement)) {
+      const node = popoverRef();
+      if (!node || resolvedTrigger() === "SubmenuTrigger") return;
+      if (document.activeElement === node || node.contains(document.activeElement)) {
         return;
       }
-      popoverRef.focus();
+      node.focus();
     };
 
     const scheduleFocus = () => {
@@ -581,7 +591,7 @@ export function Popover(props: PopoverProps): JSX.Element {
         <div
           {...domProps()}
           {...cleanPopoverProps()}
-          ref={popoverRef}
+          ref={setPopoverRef}
           id={overlayId()}
           role={shouldBeDialog() ? "dialog" : undefined}
           tabIndex={shouldBeDialog() ? -1 : undefined}
