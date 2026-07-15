@@ -2291,7 +2291,12 @@ component can never silently regress.
   destructure) as guard `guard:idiomatic-solid` (`scripts/check-idiomatic-solid.ts`).
   Manual-DOM + listener-hygiene classes swept and found clean (all faithful
   upstream utilities). See the CP9.83 record below.
-- AAA report published from D7/D8 data (informative, not blocking).
+- ☑ **DONE 2026-07-15 (CP9.84)** — AAA report published from D7/D8 data
+  (informative, not blocking). Surfaced the already-computed `aaa` / `meets44`
+  facts as `contrast-sub-AAA (reported)` / `target-size-sub-44 (reported)`
+  annotations and aggregated them across the suite via a gated Playwright
+  reporter (`e2e/reporters/wcag-aaa-report.ts`, self-gates on `WCAG_REPORT`) into
+  `e2e/reports/wcag-aaa-report.md`. See the CP9.84 record below.
 - Burn down every D3 threshold waiver to strict.
 - Retire the audit scaffolding (`audit-durable/`, session memory) once every
   finding is either fixed-and-guarded or a tracked waiver.
@@ -5701,8 +5706,8 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case
   waivers keep every non-drifting case + theme under strict zero-tolerance so real regressions still fail.
 
-Phase 3: **in progress** — two closers landed (CP9.82, CP9.83). Remaining: AAA
-report, D3 waiver burn-down, audit-scaffolding retirement.
+Phase 3: **in progress** — three closers landed (CP9.82, CP9.83, CP9.84).
+Remaining: D3 waiver burn-down, audit-scaffolding retirement.
 
 - **CP9.82 — `style()` macro output-parity guard (Phase-3 closer #1) ✓ 2026-07-15.**
   The `style()` macro engine (`packages/solid-spectrum/src/style/style-macro.ts`)
@@ -5804,3 +5809,36 @@ report, D3 waiver burn-down, audit-scaffolding retirement.
   yield the *same* handler reference as before for every static path (identical
   when enabled, `undefined` when disabled) — behavior preserved by construction,
   reactivity added on top. Cross-ref: CP9.82 (sibling Phase-3 guard).
+
+- **CP9.84 — WCAG AAA report published from D7/D8 data (Phase-3 closer #3)
+  ✓ 2026-07-15.** The D7 (contrast) and D8 (target-size) drivers already computed
+  the AAA-level facts per node — `aaa` (1.4.6 enhanced contrast, 7.0 normal /
+  4.5 large) and `meets44` (2.5.5 enhanced target, 44×44) — but dropped them,
+  attaching only the AA-floor annotations. CP9.84 surfaces them, keeping AAA
+  strictly **informative, never a gate** (unlike the Tier-6 `assertAA` /
+  `assert24` floors, which stay AA-level and untouched).
+  - **Driver annotations.** `drivers/contrast.ts` now pushes a
+    `contrast-sub-AAA (reported)` annotation listing every node with `aaa ===
+    false` (flagging `(also <AA)` when `aa === false`); `drivers/target-size.ts`
+    pushes `target-size-sub-44 (reported)` for every `!meets44` control (flagging
+    `(also <24)`). Both are additive — they do not perturb the existing
+    pair-oracle diffs, which remain the hard gate.
+  - **Gated reporter.** `e2e/reporters/wcag-aaa-report.ts` (a Playwright
+    `Reporter`) aggregates those annotations across the whole run into
+    `e2e/reports/wcag-aaa-report.md`: a summary (components scanned + fully-clean
+    lists) then per-component contrast/target tables, worst ratio first. It
+    self-gates on `WCAG_REPORT` (mirroring the `MOTION_REVIEW` pattern) so an
+    ordinary/CI run writes nothing; wired as
+    `reporter: [["line"], ["./e2e/reporters/wcag-aaa-report.ts"]]` in
+    `playwright.config.ts`. Gaps are keyed by **(prop-case, node)** so the same
+    descriptor (e.g. `span:Save`) that paints a different fg/bg per case stays a
+    distinct row (themes + gesture states fold into the worst ratio) — without
+    this, Button's `accent-fill` 4.81:1 hid behind `disabled` 1.41:1.
+  - **Regenerate:** `WCAG_REPORT=1 vp exec playwright test e2e/certified --grep
+    "D7 contrast|D8 target size"` (from `apps/comparison`) — the two drivers
+    cover every certified component far cheaper than the full suite.
+  - **Verified:** full sweep **270 passed (1.6m)**; report published across
+    **56 components (contrast) / 30 (target size)**, 16 fully AAA-clean on
+    contrast + 3 fully 44px-clean; scoped `tsc` on the reporter clean (exit 0).
+    Changed only e2e/config files (no component source), so no rebuild needed.
+    Cross-ref: CP9.82 / CP9.83 (sibling Phase-3 closers); D7/D8 drivers.

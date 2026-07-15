@@ -257,6 +257,27 @@ export function registerContrastDriver(scenario: DriverScenario) {
             });
           }
 
+          // AAA report (WCAG 1.4.6 enhanced contrast, 7.0 normal / 4.5 large):
+          // always informative, never a gate — AAA is a target, not a floor, so
+          // it is not promoted to an assertion even on Tier-6 asserted surfaces.
+          // A node below AAA that also fails AA is flagged so the aggregate
+          // report can rank it; the AAA set is a superset of the AA set.
+          const subAAA: string[] = [];
+          for (const [state, entries] of captures.solid) {
+            for (const entry of entries) {
+              if (entry.aaa === false) {
+                const alsoBelowAA = entry.aa === false ? " (also <AA)" : "";
+                subAAA.push(`${state} · ${entry.descriptor} · ${entry.ratio}:1${alsoBelowAA}`);
+              }
+            }
+          }
+          if (subAAA.length > 0) {
+            testInfo.annotations.push({
+              type: "contrast-sub-AAA (reported)",
+              description: subAAA.join("\n"),
+            });
+          }
+
           for (const [state, reactEntries] of captures.react) {
             const solidEntries = captures.solid.get(state);
             expect(

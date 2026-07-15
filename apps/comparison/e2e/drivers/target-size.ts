@@ -158,6 +158,24 @@ export function registerTargetSizeDriver(scenario: DriverScenario) {
           });
         }
 
+        // AAA report (WCAG 2.5.5 enhanced target size, 44×44): always
+        // informative, never a gate — the 44px target is a AAA enhancement, not
+        // a floor, so it is not promoted to an assertion even on Tier-6 asserted
+        // surfaces. A control below 44 that also fails the 24px floor is flagged;
+        // the sub-44 set is a superset of the sub-24 set.
+        const sub44 = (captures.solid ?? [])
+          .filter((entry) => !entry.meets44)
+          .map((entry) => {
+            const alsoBelow24 = !entry.meets24 ? " (also <24)" : "";
+            return `${entry.descriptor} · ${entry.width}×${entry.height}${alsoBelow24}`;
+          });
+        if (sub44.length > 0) {
+          testInfo.annotations.push({
+            type: "target-size-sub-44 (reported)",
+            description: sub44.join("\n"),
+          });
+        }
+
         expect(
           captures.solid?.length ?? 0,
           "target-size driver measured no interactive elements — check the root resolver",

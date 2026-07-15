@@ -16,7 +16,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: "line",
+  // `line` for the console; the WCAG AAA reporter self-gates on `WCAG_REPORT`
+  // (a no-op otherwise) and, when enabled, publishes the AAA report aggregated
+  // from the D7/D8 driver annotations.
+  reporter: [["line"], ["./e2e/reporters/wcag-aaa-report.ts"]],
   use: {
     baseURL,
     trace: "on-first-retry",
