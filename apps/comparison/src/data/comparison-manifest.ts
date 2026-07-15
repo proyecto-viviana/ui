@@ -1567,6 +1567,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "timelineitem",
+    title: "TimelineItem",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana TimelineItem: a social-timeline event card — two `role=img` avatars flanking an icon, over a centered message with emphasized user names — on the S2 spacing/radius ramps in Silapse colors. A presentational (display-only) surface with no interactive affordances. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "TimelineItem is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Purely presentational (avatars + icon + text, nothing focusable) → D5/D8 are out of scope; certified against absolute WCAG D7 AA contrast (emphasized names + message body) plus D6 image/AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled TimelineItem",
+        "Viviana TimelineItem rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui TimelineItem (two Avatar images + an icon over a centered event message on the S2 style() macro; the names are emphasized runs). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component TimelineItem",
+        "No component-layer pair — TimelineItem is a styled-layer custom component.",
+        "na",
+        "na",
+        "TimelineItem has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless TimelineItem",
+        "A display-only card — no behavior hook.",
+        "na",
+        "na",
+        "TimelineItem is presentational; it inherits no interaction behavior.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "TimelineItem has no independent state primitive.",
+        "na",
+        "na",
+        "The event type and users are props, not a managed state primitive.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

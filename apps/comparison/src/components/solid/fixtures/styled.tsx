@@ -778,6 +778,7 @@ import {
   LateralNav as VivianaLateralNav,
   NavSection as VivianaNavSection,
 } from "../../../../../../packages/viviana-ui/src/custom/lateral-nav";
+import { TimelineItem as VivianaTimelineItem } from "../../../../../../packages/viviana-ui/src/custom/timeline-item";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
@@ -1123,6 +1124,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   profilecard: () => h(SolidProfileCardDemo, {}),
   projectcard: () => h(SolidProjectCardDemo, {}),
   lateralnav: () => h(SolidLateralNavDemo, {}),
+  timelineitem: () => h(SolidTimelineItemDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1623,6 +1625,61 @@ function SolidLateralNavDemo() {
               ],
             }),
           ]),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaTimelineItemScopedTokensCss = scopeVivianaTokens("data-viviana-timeline-item-scope");
+
+const timelineItemScopeStyle = {
+  display: "block",
+  width: "320px",
+  "max-width": "100%",
+};
+
+// Self-contained inline-SVG data-URI avatars (no network fetch) so the two
+// `<img>` render deterministically under Playwright; each carries its user's
+// name as `alt` (the D6 accessible name).
+const timelineLeftAvatar =
+  "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20fill%3D'%23df5c9a'%2F%3E%3C%2Fsvg%3E";
+const timelineRightAvatar =
+  "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20fill%3D'%232470a5'%2F%3E%3C%2Fsvg%3E";
+
+function SolidTimelineItemDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-timeline-item-scope": "true",
+      "data-comparison-control-root": "timelineitem",
+      style: timelineItemScopeStyle,
+    },
+    [
+      h("style", {}, vivianaTimelineItemScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // A "follow" timeline event on the `--color-bg-200` card: two `role=img`
+          // avatars + an icon over a centered message. It is purely presentational
+          // (nothing focusable/interactive → no D5/D8), so the two D7 red→green
+          // fixes are its correctness surface: the emphasized names (were
+          // `--color-accent`) and the connecting message (was `--color-text-secondary`).
+          h(VivianaTimelineItem, {
+            type: "follow",
+            icon: "👋",
+            leftUser: { name: "María López", avatar: timelineLeftAvatar },
+            rightUser: { name: "Diego Ramírez", avatar: timelineRightAvatar },
+          }),
         ],
       ),
     ],

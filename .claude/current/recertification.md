@@ -1724,8 +1724,13 @@ March order (dependency/leverage; within a tier, top to bottom):
   LateralNav ✓ certified 2026-07-15 (CP9.76) — unit 7, sidebar nav; TWO fixes: the resting
   link's `--color-text-secondary` (3.84:1 light on `bg-200`) → the flipping `--color-text`,
   and the bare inline `<a>` links (~15px tall) → a `minHeight:32` flex row to clear the WCAG
-  2.5.8 24px target floor. NEXT: the remaining `viviana-ui/src/custom/*` surfaces
-  (timeline-item / conversation / header / logo / page-layout). ColorEditor stays OUT of
+  2.5.8 24px target floor. TimelineItem ✓ certified 2026-07-15 (CP9.77) — unit 8, a
+  purely-presentational social-timeline event card (two `role=img` avatars + icon + message,
+  nothing focusable) → D5/D8 out of scope (like the static ColorSwatch); TWO D7 fixes: the
+  emphasized names (`--color-accent`, ~1.9:1 light / ~4.48:1 dark) and the message body
+  (`--color-text-secondary`, 3.84:1 light) both → the flipping `--color-text`, names kept
+  apart by `bold` weight. NEXT: the remaining `viviana-ui/src/custom/*` surfaces
+  (conversation / header / logo / page-layout). ColorEditor stays OUT of
   the S2-parity march (survey finding below — pinned S2 1.5.1 ships no ColorEditor
   oracle).**
 
@@ -2062,6 +2067,36 @@ March order (dependency/leverage; within a tier, top to bottom):
     units (lateralnav + projectcard + profilecard + calendarcard + eventcard +
     navheader + chip) **35 pass / 0 fail**. Scoped e2e typecheck of the new spec (temp
     `tsc -p`, then deleted) **clean**.
+
+  **TimelineItem ✓ certified 2026-07-15 (CP9.77)** — Tier-6 unit 8, a social-timeline
+  event card (`viviana-ui/src/custom/timeline-item/index.tsx`): two `role=img` avatars
+  flanking an icon, over a centered message whose user names are emphasized runs, on a
+  `--color-bg-200` card. No upstream React pair → same method: pair drivers out,
+  Solid-only route, absolute WCAG oracles.
+  - **Presentational surface → D5/D8 out of scope.** The avatars are images, the icon
+    and message are text, and nothing is focusable or interactive (the `Avatar` renders
+    a plain `<img>`, not in the D8 interactive selector). So — like the static
+    ColorSwatch (CP9.68) — D5 (keyboard/focus) and D8 (target size) are N/A; asserting
+    D8 would (correctly) trip the "no interactive elements" guard. Correctness = D7 + D6.
+  - **The red→green — two D7 fixes, both to the flipping `--color-text`.** (1) the
+    emphasized names were `--color-accent` (#df5c9a, same both themes) → **~1.9:1 light /
+    ~4.48:1 dark**, and no accent shade clears AA on `bg-200` in BOTH modes; (2) the
+    message body was `--color-text-secondary` → the recurring **3.84:1 light** failure.
+    Both take `--color-text` (**7.53:1 light / 15.33:1 dark**); the names stay emphasized
+    through their `bold` weight, not a color — the same resolution CalendarCard (CP9.73)
+    landed. `color` kept AFTER `font` (the ProjectCard CP9.75 macro landmine).
+  - **Harness — eighth `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+    Demo binds tokens under `data-viviana-timeline-item-scope` and renders a "follow"
+    event (María López → Diego Ramírez) with self-contained inline-SVG data-URI avatars
+    (deterministic, no network fetch), each carrying its user's name as `alt`.
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + inline D6. `states: ["default"]`.
+    D6 = exactly the two avatar images (named from `alt`), the event message visible as
+    text, and zero buttons/links (display-only). D9/D10 deferred (hard-coded strings;
+    only symmetric gap/padding is direction-sensitive).
+  - Verification: TimelineItem cert e2e **3 pass / 0 skip** (exit 0 — D7×2 themes, D6);
+    calibrated by the pre-fix red run (D7 light: names **1.89:1**, message **3.84:1**;
+    D7 dark: names **4.48:1**). Regression across all eight Tier-6 units **38 pass / 0
+    fail**. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted) **clean**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

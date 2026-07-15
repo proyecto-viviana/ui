@@ -35,7 +35,11 @@ export interface TimelineItemProps {
 
 const nameEmph = style({
   fontWeight: "bold",
-  color: "[var(--color-accent)]",
+  // Emphasis via weight, not color: `--color-accent` (#df5c9a) fails AA on the
+  // `--color-bg-200` card (~1.9:1 light, ~4.48:1 dark) and no accent shade clears
+  // 4.5:1 in BOTH themes. The flipping `--color-text` does (7.53 light / 15.33
+  // dark); the `bold` weight sets the names apart from the message body.
+  color: "[var(--color-text)]",
 });
 
 const eventMessages: Record<TimelineEventType, (left: string, right: string) => JSX.Element> = {
@@ -95,7 +99,11 @@ const messageRow = style({
   justifyContent: "center",
   textAlign: "center",
   font: "ui",
-  color: "[var(--color-text-secondary)]",
+  // `--color-text-secondary` renders 3.84:1 on the light `--color-bg-200` card
+  // (fails the 4.5:1 small-text floor); the flipping `--color-text` clears it in
+  // both themes. `color` stays after `font` (the S2 macro font-shorthand default
+  // color would otherwise win on source order).
+  color: "[var(--color-text)]",
 });
 
 export function TimelineItem(props: TimelineItemProps) {
