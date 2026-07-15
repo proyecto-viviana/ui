@@ -47,32 +47,18 @@ const tabsScenario: DriverScenario = {
         },
       },
     ],
-    // touch-tap is the irreducible "React batched-effect vs Solid synchronous
-    // reactivity" commit-timing gap. Tapping a tab focuses it, and both stacks
-    // set focusedKey in the item's onFocus handler. In Solid that write flips the
-    // roving `tabIndex` reactively and synchronously *inside* the native `focus`
-    // dispatch — so the oracle's capture-phase read at the following `focusin`
-    // already sees tabIndex="0". React defers the DOM write to its post-event
-    // commit, so at `focusin` the tab still reads tabIndex="-1". The callbacks and
-    // event order are identical; only the tabIndex attribute value observed
-    // mid-flight differs. Matching React here means emulating its commit-defer for
-    // the roving-tabindex write — which would regress the D5 roving snapshots
-    // (which assert exactly-one-tab-at-0 synchronously). This is the roving-
-    // tabindex facet of the broader batched-effect-vs-sync event-ordering epic
-    // (recertification.md) — NOT the D2 SharedElement two-phase-commit work, which
-    // shipped in CP9.47.
-    knownDivergences: {
-      "horizontal-regular · touch-tap":
-        "React batched-effect vs Solid synchronous reactivity: Solid flips the " +
-        "roving tabIndex to 0 inside the native `focus` dispatch (before the " +
-        "oracle's capture-phase `focusin` read), while React defers the DOM write " +
-        "to its commit phase so the tab still reads tabIndex=-1 at `focusin`. " +
-        "Event order and callbacks are identical; only the mid-flight attribute " +
-        "value differs. A faithful fix needs React's commit-defer for the roving " +
-        "write, which would regress the D5 roving snapshots. Roving-tabindex facet " +
-        "of the event-ordering epic in recertification.md (distinct from the D2 " +
-        "SharedElement FLIP work, shipped in CP9.47).",
-    },
+    // touch-tap used to diverge on the mid-flight roving `tabIndex`: tapping a
+    // tab focuses it, and the port set `focusedKey` in the item's `onFocus`
+    // (native `focus`) handler, flipping the roving `tabIndex` to 0 a whole
+    // event before React did. React's `onFocus` is a `focusin`-delegated
+    // listener at the app root, so its roving reflection lands one event later —
+    // at `focusin`, which for a touch tap (selection on press-up, after focus)
+    // still reads tabIndex="-1". Fixed by binding the port's roving-tabindex
+    // commit to `focusin` (createTabs.ts `handleFocusIn`) to match React's
+    // delegation: the D4 oracle's document capture-phase read at `focusin` now
+    // runs before the at-target write, so touch reads -1 and mouse (which syncs
+    // focusedKey on press-start, before focus) reads 0 — both matching React. No
+    // waiver remains; all D4 gestures are green.
   },
   // D5: the roving-tabindex walk — arrows, Home, End across the tablist; the
   // roving snapshot must show exactly one tab at tabindex=0 after every key.

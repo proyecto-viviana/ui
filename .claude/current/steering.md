@@ -82,11 +82,13 @@ the same files. Dependency edges noted; the full task graph mirrors these.
   calibrate on a pilot (ToggleButton), then re-run the certified Tiers 1–3.
   *Independent of the port source — parallelizable with Track B.* Blocks Picker
   (Picker certifies against the full applicable driver set including D9/D10).
-- **Track B — D4 microtask-defer** (`d4-microtask-defer`): land the callback
-  defer mechanism in the ports and clear the 5 deferred D4 reds (Tabs ×2,
-  Dialog ×2 + the ActionButton-class memo-rebuild watch-list). *Touches
-  collection/overlay port source — must NOT run concurrently on the same files
-  as Picker.* Blocks Picker's D4 driver.
+- **Track B — D4 event-ordering reds** (`d4-microtask-defer`): **DONE
+  2026-07-15.** Triage collapsed the "5 reds" to one real port bug (`Tabs
+  touch-tap`); the rest were already green/reclassified. The fix was NOT a
+  microtask-defer (probes proved the microtask queue drains before `focusin`) —
+  it was binding the roving-tabindex commit to `focusin`, mirroring React's
+  focusin-delegated `onFocus`. No D4 reds remain. See tech-debt `d4-microtask-defer`
+  + recertification.md 2026-07-15.
 - **Track C — Picker/Select cert** (`picker-popover-anchor`,
   `picker-item-checkmark`): the highest-value single certification —
   production-broken for installed consumers (popover at 0,0; checkmark on every
@@ -115,14 +117,18 @@ they don't touch the same files; the dependency edges are in "Next".
 
 **Resolved 2026-07-06:**
 
-- **D4 event-ordering policy → (a) microtask-defer the ports.** Solid callbacks
-  are deferred to match React's batched-effect ordering so installed consumers
-  see the faithful upstream event order; this keeps the parity rule (diverge only
-  where React→Solid makes it genuinely impossible, then a documented per-case
-  waiver — not a standing oracle-normalized divergence that compounds across
-  collections). Implementation tracked as `d4-microtask-defer` in `tech-debt.md`;
-  it lands the defer mechanism + clears the 5 deferred reds (Tabs ×2, Dialog ×2,
-  and the ActionButton-class watch-list) before Picker's D4 driver runs.
+- **D4 event-ordering policy → (a) match React's ordering in the ports (not the
+  oracle).** Fix ordering divergences in the port source so installed consumers
+  see the faithful upstream event order, rather than normalizing them away in the
+  D4 oracle (diverge only where React→Solid makes it genuinely impossible, then a
+  documented per-case waiver — not a standing oracle-normalized divergence that
+  compounds across collections). *Note (2026-07-15):* the assumed primitive was a
+  post-event microtask-defer, but the one red this policy had to clear (`Tabs
+  touch-tap`) turned out to be a wrong-event binding, not a batching gap — the
+  faithful fix bound the roving commit to `focusin` (React's delegation model),
+  and probes showed a microtask-defer could not have worked (queue drains before
+  `focusin`). Tracked + CLOSED as `d4-microtask-defer` in `tech-debt.md`. No D4
+  reds remain; nothing gates Picker's D4 driver here.
 - **D9/D10 sequencing → before Tier 4.** Forced-colors (D9) + RTL/i18n (D10)
   drivers land and the certified Tiers 1–3 re-run against them first, so we don't
   re-march the certified set later. Tracked as `recert-drivers-d9-d12`.

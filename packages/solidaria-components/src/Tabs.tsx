@@ -610,6 +610,7 @@ function TabInner(props: {
         onPointerDown={tabAria.tabProps.onPointerDown}
         onClick={tabAria.tabProps.onClick}
         onFocus={tabAria.tabProps.onFocus}
+        onFocusIn={tabAria.tabProps.onFocusIn}
         onBlur={tabAria.tabProps.onBlur}
         {...hoverProps}
         data-selected={tabAria.isSelected() || undefined}

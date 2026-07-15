@@ -5980,3 +5980,54 @@ is **done**.
     retire beyond the fleet-incident *lesson*, which is kept deliberately.
   - **Phase 3 (and the recertification march) COMPLETE.** Cross-ref: Calibration
     note above; `tailwind-removal.md`; Skeleton cert §3867.
+
+- **2026-07-15 — D4 event-ordering backlog: Tabs `touch-tap` red CLOSED (faithful, no waiver).**
+  Post-march burn-down of the "deferred D4 event-ordering reds" thread. First
+  re-scoped it empirically: `grep` + a full D4 run showed the epic had already
+  collapsed from the historically-cited "4–5 reds" to **one** — `Tabs
+  horizontal-regular · touch-tap`. (Tabs `arrow-next-from-selected` and the D5
+  roving trail pass; Dialog's only remaining `knownDivergence` is a **D6**
+  aria-hidden waiver, not D4; the ActionButton-class watch-list is green.) So the
+  epic was one red, not a family.
+  - **Root cause (proven by browser-console ordering probes, not reasoning).**
+    The port set `focusedKey` in the tab item's `onFocus` (native **`focus`**)
+    handler. Solid reflects that signal write into the roving `tabIndex`
+    attribute synchronously, and the microtask checkpoint that Playwright's
+    touch-tap synthesis inserts falls **between `focus` and `focusin`** — so the
+    flip to `tabIndex=0` landed *before* the D4 oracle's document capture-phase
+    read at `focusin`. React's `onFocus` is instead a single **`focusin`**-delegated
+    listener at the app root, so its roving reflection lands one native event
+    later; for a touch tap (selection on press-up, *after* focus) React still
+    reads `tabIndex=-1` at `focusin`. Only the mid-flight attribute value diverged;
+    event order + callbacks were already identical.
+  - **Why the sanctioned "microtask-defer" primitive can't fix it.** Probes
+    confirmed the whole microtask queue drains in that single pre-`focusin`
+    checkpoint, so *no* microtask depth escapes it; only a timer-macrotask
+    (`setTimeout`) reaches past `focusin`, which would make the roving `tabIndex`
+    reflect asynchronously on a timer for every touch focus — a real behavioral
+    divergence introduced to satisfy a snapshot. Rejected.
+  - **The fix (faithful mirror of React's delegation).** Bind the roving-tabindex
+    commit to **`focusin`** instead of `focus` (`solidaria/src/tabs/createTabs.ts`
+    new `handleFocusIn`; the focus *ring* stays on `focus`). The oracle records
+    targets from a document-level **capture-phase** listener
+    (`dom-oracle.ts:429`, `addEventListener(type, listener, true)`), which runs
+    before this at-target handler — so touch reads `-1` and mouse (which syncs
+    `focusedKey` on press-start via `createTabListState`'s selection→focus
+    `createComputed`, before focus) reads `0`, both matching React. `TabAria`
+    gained `onFocusIn`; `solidaria-components/Tabs.tsx` wires it (props are spread
+    explicitly, not `{...tabProps}`). The `knownDivergences` waiver block is
+    **deleted**.
+  - **Build gotcha logged.** The comparison app aliases `@proyecto-viviana/solidaria`,
+    `solidaria-components`, and `solid-stately` to their **`dist/index.js`**
+    (astro.config.mjs ~L449–457), NOT `src` (only `solid-spectrum` aliases to
+    `src`). So editing those packages' source requires `vp run build:<pkg>` (or
+    root `build:solidaria`/`build:components`/`build:stately`) **before**
+    `comparison:build` — a plain `comparison:build` consumes stale package dist and
+    silently no-ops the source edit.
+  - **Validation.** `tabs.certified.spec.ts` **23/23 green with ZERO waivers**
+    (D1 state-matrix, D2 motion + reduced, D3 pixel, D4 all 3 gestures incl.
+    `touch-tap`, D5 focus trail, D6 AX, D7 contrast, D8 target size). Full unit
+    suite green (**267 files, 5528 passed**, 1 expected-fail, 10 skipped) — Tabs
+    is the only `createTab` consumer, so blast radius is Tabs-only. **D4
+    event-ordering epic is now fully closed** (no remaining D4 reds anywhere;
+    Dialog's residual waiver is D6).

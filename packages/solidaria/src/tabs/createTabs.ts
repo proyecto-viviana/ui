@@ -88,6 +88,7 @@ export interface TabAria {
     onPointerDown: (e: PointerEvent) => void;
     onClick: (e: MouseEvent) => void;
     onFocus: (e: FocusEvent) => void;
+    onFocusIn: (e: FocusEvent) => void;
     onBlur: (e: FocusEvent) => void;
   };
   /** Whether the tab is selected. */
@@ -403,10 +404,28 @@ export function createTab<T>(
     }
   };
 
-  // Focus management
+  // Focus management. The focus ring reacts to the native `focus` event, but the
+  // roving-tabindex commit is deliberately bound to `focusin` (see
+  // handleFocusIn) so its DOM reflection lands one event later — matching React,
+  // whose `onFocus` is a `focusin`-delegated listener at the app root.
   const handleFocus = (e: FocusEvent) => {
-    state.setFocusedKey(key());
     callHandler(focusProps.onFocus, e);
+  };
+
+  // Roving-tabindex commit (D4 event-ordering). React's `onFocus` is delegated
+  // to a single `focusin` listener at the app root, so the roving tabIndex it
+  // drives reflects one event *after* the native `focus`. Binding the
+  // focusedKey write here (to `focusin`) mirrors that timing: the D4 oracle
+  // records event targets from a document-level capture-phase listener, which
+  // runs before this at-target handler, so a touch tap — whose selection lands
+  // on press-up, after focus — is still observed with tabIndex=-1 at `focusin`,
+  // exactly as React. A mouse press selects on press-start and syncs focusedKey
+  // before focus (createTabListState's selection→focus effect), so its tab
+  // already reads tabIndex=0 at `focusin`, again matching React. Setting it on
+  // the earlier `focus` event flipped the tab a whole event too soon, so touch
+  // taps diverged at `focusin`. See recertification.md D4 event-ordering.
+  const handleFocusIn = () => {
+    state.setFocusedKey(key());
   };
 
   const handleBlur = (e: FocusEvent) => {
@@ -470,6 +489,7 @@ export function createTab<T>(
       onPointerDown: handlePointerDown,
       onClick: handleClick,
       onFocus: handleFocus,
+      onFocusIn: handleFocusIn,
       onBlur: handleBlur,
     },
     isSelected,

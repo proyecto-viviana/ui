@@ -835,22 +835,25 @@ tasks:
       normalization was rejected as a standing divergence that compounds across
       collections). Implementation is `d4-microtask-defer`.
   - id: d4-microtask-defer
-    title: Land the D4 microtask-defer mechanism in the ports and clear the 5 deferred reds
-    state: next
+    title: Clear the deferred D4 event-ordering reds
+    state: done
     roadmap: recertification
     note: >-
-      Implements the resolved `d4-event-ordering-decision` (policy a). Land a
-      callback-defer mechanism in the ports so Solid state-change callbacks fire
-      on the same microtask boundary React's batched effects do, then clear the 5
-      deferred D4 reds (Tabs touch-tap, Tabs arrow-next-from-selected, Dialog
-      escape-close, Dialog ×1 more) that trace to the sync-vs-batched divergence.
-      Scope the mechanism against upstream's batching first (parity rule) — the
-      ActionButton CP9.1 finding shows some "reds" are fixture memo-rebuilds, not
-      port defects, so triage each red (real port ordering bug vs fixture
-      anti-pattern) before deferring. Gates Track C: Picker's D4 driver runs a
-      collection through this mechanism. Exit: the defer mechanism lands with a
-      pilot red→green, the 5 reds are green or reclassified, no regression to the
-      existing certified D4 passes.
+      CLOSED 2026-07-15. Triage first (parity rule) collapsed the historically
+      cited "5 reds" to ONE real port-ordering bug — `Tabs touch-tap`; the rest
+      were already green or reclassified (Tabs arrow-next + D5 pass; Dialog's
+      residual waiver is D6 aria-hidden, not D4; ActionButton-class was fixture
+      memo-rebuilds per CP9.1). The one red was NOT a callback-defer problem: the
+      port set `focusedKey` in the item's `onFocus` (native `focus`) handler, and
+      Solid reflects that into the roving `tabIndex` before the D4 oracle's
+      document capture-phase read at `focusin` (browser-console ordering probes
+      proved the microtask queue drains in the single checkpoint *between* `focus`
+      and `focusin`, so a microtask-defer — the primitive this ticket assumed —
+      cannot escape it; only a rejected timer-macrotask could). Faithful fix:
+      React's `onFocus` is a `focusin`-delegated root listener, so bind the roving
+      commit to `focusin` (createTabs.ts `handleFocusIn`). tabs.certified 23/23
+      with ZERO waivers; unit suite 5528 green. See recertification.md
+      2026-07-15 entry. No D4 reds remain anywhere.
   - id: d6-announcement-calibration
     title: Live-transcript announcement oracle over a body-portaled toast (structural live-region done)
     state: open
