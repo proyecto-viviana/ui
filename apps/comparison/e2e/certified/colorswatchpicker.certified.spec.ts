@@ -223,18 +223,8 @@ const colorSwatchPickerScenario: DriverScenario = {
   // a single 8-bit LSB (Δ=1, grayscale) between two computed-identical DOM subtrees (all
   // D1 styles match; the swatch + grid CSS mirror upstream byte-for-byte). Tolerate one
   // LSB per channel everywhere while keeping dimensions exact and rejecting Δ≥2.
-  pixel: {
-    waivers: [
-      {
-        caseId: "*",
-        state: "*",
-        theme: "*",
-        threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason:
-          "colorswatchpicker-antialias-1lsb: rounded/circular swatch corners + checkerboard tile boundaries + selection overlay border/outline edges round ±1 LSB grayscale",
-      },
-    ],
-  },
+  // D3: no pixel waiver — every case × theme is strict pair-clean (D3 burn-down
+  // 2026-07-15 verified 0 mismatched at exactPairDiff across two runs).
   // D5: one walk. Enter through a REAL Tab keypress from the preceding `Before` boundary
   // button — the faithful roving-collection entry (a roving option is `tabIndex -1`, so you
   // cannot Tab straight to it; the container is the rest tabstop with `focusedKey == null`,

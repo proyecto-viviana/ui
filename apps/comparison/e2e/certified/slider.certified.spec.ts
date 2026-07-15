@@ -203,12 +203,23 @@ const sliderScenario: DriverScenario = {
   // Tracked: `slider-thumb-antialias-1lsb`.
   pixel: {
     waivers: [
+      // D3 burn-down 2026-07-15: the ±1 LSB thumb/track-edge noise is dark-theme
+      // only (verified deterministic across two runs), except the thick-track case
+      // which also trips one LSB in light. Every other light-theme cell is held
+      // strict (exactPairDiff). pixelThreshold:1 still fails any real ≥2-LSB shift.
       {
         caseId: "*",
         state: "*",
-        theme: "*",
+        theme: "dark",
         threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason: "slider-thumb-antialias-1lsb: thumb edge rounds ±1 LSB grayscale",
+        reason: "slider-thumb-antialias-1lsb (dark): thumb/track curved edges round ±1 LSB grayscale",
+      },
+      {
+        caseId: "track-thick",
+        state: "*",
+        theme: "light",
+        threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
+        reason: "slider-thumb-antialias-1lsb (light track-thick): thick-track edge rounds ±1 LSB grayscale",
       },
     ],
   },

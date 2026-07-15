@@ -202,17 +202,8 @@ const colorSliderScenario: DriverScenario = {
   // subtrees (all D1 styles match; the track/thumb/output/label CSS mirrors upstream). The
   // waiver tolerates that one LSB per channel everywhere while keeping dimensions exact and
   // rejecting any real divergence (Δ≥2). Shares the slider family's `slider-thumb-antialias-1lsb`.
-  pixel: {
-    waivers: [
-      {
-        caseId: "*",
-        state: "*",
-        theme: "*",
-        threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason: "slider-thumb-antialias-1lsb: circular thumb/ring edges + text AA round ±1 LSB grayscale",
-      },
-    ],
-  },
+  // D3: no pixel waiver — every case × theme is strict pair-clean (D3 burn-down
+  // 2026-07-15 verified 0 mismatched at exactPairDiff across two runs).
   // D5: the channel native slider is the sole tab stop — Tab exits, Shift+Tab returns.
   focus: {
     walks: [{ id: "tab-cycle", start: inputTarget, keys: ["Tab", "Shift+Tab"] }],

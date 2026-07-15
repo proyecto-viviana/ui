@@ -161,18 +161,8 @@ const colorSwatchScenario: DriverScenario = {
   // D1 styles match; the swatch CSS mirrors upstream byte-for-byte). The waiver
   // tolerates that one LSB per channel everywhere while keeping dimensions exact
   // and rejecting any real divergence (Δ≥2).
-  pixel: {
-    waivers: [
-      {
-        caseId: "*",
-        state: "*",
-        theme: "*",
-        threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason:
-          "colorswatch-antialias-1lsb: rounded/circular corner edges + checkerboard tile boundaries + transparent slash diagonal round ±1 LSB grayscale",
-      },
-    ],
-  },
+  // D3: no pixel waiver — every case × theme is strict pair-clean (D3 burn-down
+  // 2026-07-15 verified 0 mismatched at exactPairDiff across two runs).
   // D6: the leaf `img` with `aria-roledescription="color swatch"` and the generated
   // `"<colorName>, <label>"` name. Captured for the auto-name default, the localized
   // "transparent" (alpha == 0), and an explicit colorName override. NO

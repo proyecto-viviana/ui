@@ -169,12 +169,16 @@ const colorAreaScenario: DriverScenario = {
   // slider family's `slider-thumb-antialias-1lsb`.
   pixel: {
     waivers: [
+      // D3 burn-down 2026-07-15: only the HSB color-space case rounds ±1 LSB (its
+      // saturation/brightness gradient band; verified deterministic in both themes
+      // across two runs). Every other case is held strict (exactPairDiff), and
+      // pixelThreshold:1 still fails any real ≥2-LSB shift, resize, or recolor.
       {
-        caseId: "*",
+        caseId: "colorSpace-hsb",
         state: "*",
         theme: "*",
         threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason: "slider-thumb-antialias-1lsb: thumb edge rounds ±1 LSB grayscale",
+        reason: "colorarea-hsb-antialias-1lsb: HSB saturation/brightness gradient band rounds ±1 LSB grayscale",
       },
     ],
   },

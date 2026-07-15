@@ -2297,7 +2297,17 @@ component can never silently regress.
   annotations and aggregated them across the suite via a gated Playwright
   reporter (`e2e/reporters/wcag-aaa-report.ts`, self-gates on `WCAG_REPORT`) into
   `e2e/reports/wcag-aaa-report.md`. See the CP9.84 record below.
-- Burn down every D3 threshold waiver to strict.
+- ☑ **DONE 2026-07-15 (CP9.85)** — D3 threshold-waiver burn-down. A reusable
+  `D3_DIAG` env branch measured every waived cell's true strict-mode diff; the
+  classification was proven deterministic across two runs. Outcome: **4 of the 7
+  antialias-1lsb waivers deleted outright** (colorslider / colorswatch /
+  colorswatchpicker / colorwheel — every case × theme is strict pair-clean), and
+  **3 scoped down** (slider + rangeslider to `theme:"dark"` + the one light
+  `track-thick` cell; colorarea to `caseId:"colorSpace-hsb"`), so every other
+  cell is now held at `exactPairDiff`. The 5 non-antialias waivers (listview
+  checkbox column, contextualhelp/toast glyphs, form label baseline, tooltip
+  arrow) are real sub-pixel diffs already case-scoped — kept. See the CP9.85
+  record below.
 - Retire the audit scaffolding (`audit-durable/`, session memory) once every
   finding is either fixed-and-guarded or a tracked waiver.
 
@@ -5706,8 +5716,8 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case
   waivers keep every non-drifting case + theme under strict zero-tolerance so real regressions still fail.
 
-Phase 3: **in progress** — three closers landed (CP9.82, CP9.83, CP9.84).
-Remaining: D3 waiver burn-down, audit-scaffolding retirement.
+Phase 3: **in progress** — four closers landed (CP9.82, CP9.83, CP9.84, CP9.85).
+Remaining: audit-scaffolding retirement.
 
 - **CP9.82 — `style()` macro output-parity guard (Phase-3 closer #1) ✓ 2026-07-15.**
   The `style()` macro engine (`packages/solid-spectrum/src/style/style-macro.ts`)
@@ -5842,3 +5852,40 @@ Remaining: D3 waiver burn-down, audit-scaffolding retirement.
     contrast + 3 fully 44px-clean; scoped `tsc` on the reporter clean (exit 0).
     Changed only e2e/config files (no component source), so no rebuild needed.
     Cross-ref: CP9.82 / CP9.83 (sibling Phase-3 closers); D7/D8 drivers.
+
+- **CP9.85 — D3 threshold-waiver burn-down (Phase-3 closer #4) ✓ 2026-07-15.**
+  Twelve certified specs carried a D3 pixel waiver. Rather than eyeball them, a
+  reusable **`D3_DIAG`** env branch (temporarily) taught the D3 driver to log the
+  true strict-mode diff for every cell (`mismatched/total`, `maxΔ`, mismatch
+  bounds, both panels' dims) without failing — so the exact gap each waiver hid
+  became measurable. It was reverted before commit (the technique lives in memory
+  + here; re-add is ~8 lines: `diffScreenshots(page, react, solid, 0)` under
+  `process.env.D3_DIAG`).
+  - **What the diag showed (deterministic across two runs).** The 7
+    "antialias-1lsb" waivers split cleanly: **colorslider, colorswatch,
+    colorswatchpicker, colorwheel are 100 % strict pair-clean** (`maxΔ=0` on every
+    case × theme — the waiver was pure over-scoping); **slider / rangeslider**
+    carry ±1 LSB only in **dark** theme (all cases but `size-xl`/`thumb-precise`)
+    plus the one **light `track-thick`** cell; **colorarea** only on
+    `caseId:"colorSpace-hsb"` (both themes, its HSB gradient band). The other 5
+    waivers are **not** antialiasing — real sub-pixel diffs (`maxΔ` 5–168):
+    listview checkbox column (virtualizer, ≤5), contextualhelp + toast small
+    glyphs (10–12), form side-label half-pixel baseline (148–168, ~0.5 % of
+    pixels), tooltip `<OverlayArrow>` (104–120) — each already scoped to the exact
+    failing case(s) in both themes; **kept as-is**.
+  - **A harness phase-snap does not reach the LSB.** Rounding the clone's pinned
+    `width`/`height` in `clonedElementScreenshot` (recertification.md's suggested
+    fix) changed nothing — the panels' dims are already integer-equal; the ±1 LSB
+    comes from a sub-pixel-different *internal* thumb position between the two
+    renderers that only crosses a rounding boundary in dark theme. So the correct
+    burn-down is **scope, not snap**.
+  - **Edits (7 specs, e2e-only).** Deleted the `pixel` block on the 4 clean
+    color components (fall back to `exactPairDiff`, with a breadcrumb comment);
+    scoped slider + rangeslider to two entries (`theme:"dark"` all-cases +
+    `caseId:"track-thick", theme:"light"`); scoped colorarea to
+    `caseId:"colorSpace-hsb"`. Every unwaived cell is now strict, and the surviving
+    ±1 waivers still fail any real ≥2-LSB shift, resize, or recolor.
+  - **Verified:** D3 on the 7 changed specs **94 passed (1.6m)** at the new
+    stricter gates; scoped `tsc` on the two changed waiver shapes clean. Harness
+    (`pixel.ts`, `visual-diff.ts`) reverted to a no-diff state. Cross-ref: CP9.84
+    (sibling closer); D3 driver (`drivers/pixel.ts` / `visual-diff.ts`).
