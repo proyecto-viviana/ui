@@ -1712,9 +1712,11 @@ March order (dependency/leverage; within a tier, top to bottom):
   methodology. NavHeader ✓ certified 2026-07-14 (CP9.71) — unit 2, first `<nav>`
   landmark + `scopeVivianaTokens` helper. EventCard ✓ certified 2026-07-15 (CP9.72) —
   unit 3, two-surface card + list-item; large-text (bold path) vs small-text split fix.
-  NEXT: the remaining `viviana-ui/src/custom/*` surfaces (calendar-card / profile-card /
-  project-card / lateral-nav / timeline-item / conversation / header / logo /
-  page-layout). ColorEditor stays OUT of the S2-parity march (survey finding below —
+  CalendarCard ✓ certified 2026-07-15 (CP9.73) — unit 4, followed-calendar card composing
+  the certified Chip; bold accent follower-names dropped from fixed pink (2.42:1 light) to
+  the flipping `--color-text`. NEXT: the remaining `viviana-ui/src/custom/*` surfaces
+  (profile-card / project-card / lateral-nav / timeline-item / conversation / header /
+  logo / page-layout). ColorEditor stays OUT of the S2-parity march (survey finding below —
   pinned S2 1.5.1 ships no ColorEditor oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
@@ -1889,6 +1891,47 @@ March order (dependency/leverage; within a tier, top to bottom):
     the shared `scopeVivianaTokens` helper + new fixture wiring did not regress the
     two prior Tier-6 certs. Scoped e2e typecheck of the new spec (temp `tsc -p`, then
     deleted) **clean (exit 0)**.
+
+  **CalendarCard ✓ certified 2026-07-15 (CP9.73)** — Tier-6 unit 4, a horizontal
+  "followed calendar" card (`viviana-ui/src/custom/calendar-card/index.tsx`): square
+  thumbnail + title + a followers line (secondary connectors with emphasized bold
+  names) + primary tag Chips. It is the first Tier-6 unit that COMPOSES an
+  already-certified custom surface — the tags render the CP9.70 Chip. No upstream
+  React pair, so the same method: pair drivers out, Solid-only route, absolute WCAG
+  oracles.
+  - **The red→green — one run, one fix.** The card is a `--color-bg-300` surface
+    (dark-grey dark / light-blue light). Its title (`--color-primary-100`), followers
+    connectors (`--color-text-secondary`, 6.66 dark / 4.92 light) and primary tag
+    chips (primary-100 on primary-700, 5.69 dark / 7.14 light) all already clear AA.
+    The one failure: the emphasized follower NAMES (and the "+N más" tail) were
+    painted in `--color-accent` (#df5c9a — a FIXED pink in both themes). They render
+    small (`ui-sm`, inherited) so the 4.5:1 floor applies, and pink does not flip:
+    on the light-blue card the names measured only **2.42:1** (5.08:1 dark). No pink
+    ramp step clears 4.5:1 on both card backgrounds — `--color-accent-500` is 4.39:1
+    dark, a hair under. Fix: the names keep their emphasis via `fontWeight: bold`
+    against the secondary-grey connectors and take the flipping `--color-text`
+    (**17.40:1 dark / 9.63:1 light**). The card's pink accent moment stays on the
+    thumbnail border, which bears no text and so is not a D7 run. This is the same
+    shape as the EventCard small-glyph fix (CP9.72): when a small run can't hold pink
+    on both themes, drop to `--color-text` and let weight/size carry the emphasis.
+  - **Harness — fourth `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+    Demo binds tokens under `data-viviana-calendar-card-scope` (mandatory-scoped: the
+    composed Chip's `[var(--color-*)]` reads resolve from the scoped island, never
+    globally) and renders one card with two followers + `followerCount: 5` (so the
+    line reads "…María López, Ana Ruiz y 3 más", exercising all three name runs) and
+    two `primary` tag chips (the D8 interactive targets).
+  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24` on the chips) +
+    inline D5/D6. `states: ["default"]` (every run state-independent). D6 = the card
+    title renders as visible text (a `<span>`, NOT a heading — unlike EventCard's h3),
+    exactly two tag buttons named from their text, the followers line + names as
+    visible text, no links. D5 = the tag chips are real focus stops.
+  - Verification: CalendarCard cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+    D5, D6); calibrated by the pre-fix red run (D7 light `span:María López`,
+    `span:Ana Ruiz`, `span:3 más` all **2.42:1**; dark passed at 5.08). Regression:
+    CalendarCard + EventCard + NavHeader + Chip together **20 pass / 0 fail**, proving
+    the new fixture wiring + Chip composition did not regress the three prior Tier-6
+    certs. Scoped e2e typecheck of the new spec (temp `tsc -p`, then deleted)
+    **clean (exit 0)**.
 
 Interaction-hook families (press/hover, focus, keyboard/typeahead, selection,
 overlay dismiss, announcer, form validation) are certified **through their host

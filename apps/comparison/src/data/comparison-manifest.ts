@@ -1383,6 +1383,52 @@ export const customComparisonEntries: ComparisonEntry[] = [
       ),
     },
   },
+  {
+    slug: "calendarcard",
+    title: "CalendarCard",
+    category: "Components",
+    componentStatus: "parity",
+    summary:
+      "Custom Viviana CalendarCard: a horizontal followed-calendar card (thumbnail, title, followers line with emphasized names, and primary tag Chips built on the certified HeadlessButton), styled by the S2 style() macro. No upstream S2 pair — certified against WCAG directly.",
+    parity: "matched",
+    priority: "live",
+    gapSummary: [
+      "CalendarCard is a Viviana-original component; S2 1.5.1 ships no equivalent, so there is no React pair to diff.",
+      "Certified against absolute WCAG floors (D7 AA contrast on the title, followers line, emphasized follower names and tag chips; D8 24px chip targets) plus D5/D6 keyboard + AX assertions.",
+    ],
+    catalogueSource: "viviana-custom",
+    frameworks: ["solid"],
+    layers: {
+      styled: layerTrack(
+        "Styled CalendarCard",
+        "Viviana CalendarCard rendered on the Solid Spectrum stack.",
+        "na",
+        "live",
+        "Solid renders @proyecto-viviana/ui CalendarCard (S2 style() macro, composes the certified Chip). No React Spectrum counterpart exists.",
+      ),
+      components: layerTrack(
+        "Component CalendarCard",
+        "No component-layer pair — CalendarCard is a styled-layer custom component.",
+        "na",
+        "na",
+        "CalendarCard has no separate headless component-layer twin.",
+      ),
+      headless: layerTrack(
+        "Headless CalendarCard",
+        "The tag chips press through the certified createButton behavior.",
+        "na",
+        "na",
+        "Tag-chip press behavior is inherited from the already-certified Chip/HeadlessButton.",
+      ),
+      state: layerTrack(
+        "State Layer",
+        "CalendarCard has no independent state primitive.",
+        "na",
+        "na",
+        "No dedicated state layer for a presentational card.",
+      ),
+    },
+  },
 ];
 
 export function getComparisonEntry(slug: string): ComparisonEntry | undefined {

@@ -769,6 +769,7 @@ import {
 // macro compiles in-app. Their brand color tokens ride in via `viviana-tokens.css`,
 // imported `?inline` (as a string, not injected) and rewritten to a per-component
 // scoped selector so importing them can never repaint the rest of the comparison app.
+import { CalendarCard as VivianaCalendarCard } from "../../../../../../packages/viviana-ui/src/custom/calendar-card";
 import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
 import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/src/custom/nav-header";
 import {
@@ -1112,6 +1113,7 @@ export const solidStyledFixtures: Partial<Record<ComparisonSlug, SolidStyledFixt
   chip: () => h(SolidChipDemo, {}),
   navheader: () => h(SolidNavHeaderDemo, {}),
   eventcard: () => h(SolidEventCardDemo, {}),
+  calendarcard: () => h(SolidCalendarCardDemo, {}),
   combobox: () => h(SolidSpectrumComboBoxDemo, {}),
   contextualhelp: () => h(SolidSpectrumContextualHelpDemo, {}),
   datefield: () => h(SolidSpectrumDateFieldDemo, {}),
@@ -1410,6 +1412,52 @@ function SolidEventCardDemo() {
               subtitle: "Tomorrow · 14:00",
             }),
           ]),
+        ],
+      ),
+    ],
+  );
+}
+
+const vivianaCalendarCardScopedTokensCss = scopeVivianaTokens("data-viviana-calendar-card-scope");
+
+const calendarCardScopeStyle = {
+  display: "block",
+  width: "500px",
+  "max-width": "100%",
+};
+
+function SolidCalendarCardDemo() {
+  const colorScheme = createComparisonResolvedThemeSignal();
+
+  return hc(
+    "div",
+    {
+      "data-viviana-calendar-card-scope": "true",
+      "data-comparison-control-root": "calendarcard",
+      style: calendarCardScopeStyle,
+    },
+    [
+      h("style", {}, vivianaCalendarCardScopedTokensCss),
+      hc(
+        SolidSpectrumProvider,
+        {
+          get colorScheme() {
+            return colorScheme();
+          },
+          background: "base",
+          style: providerShellStyle,
+        },
+        [
+          // The "followed calendar" card on the `--color-bg-300` surface:
+          // exercises the title (primary-100), the followers line (secondary
+          // connectors + bold follower-name runs, the D7 red→green fix) and the
+          // primary tag chips (the interactive D8 targets / D5 focus stops).
+          h(VivianaCalendarCard, {
+            title: "Conciertos en el Parque",
+            followers: [{ name: "María López" }, { name: "Ana Ruiz" }],
+            followerCount: 5,
+            tags: ["Música", "Comunidad"],
+          }),
         ],
       ),
     ],

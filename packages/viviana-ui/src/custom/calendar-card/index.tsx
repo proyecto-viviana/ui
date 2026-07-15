@@ -63,7 +63,16 @@ const followers = style({
 
 const followerName = style({
   fontWeight: "bold",
-  color: "[var(--color-accent)]",
+  // WCAG AA fix: the follower names sit on the `--color-bg-300` card. They are
+  // small text (`ui-sm`, inherited), so the 4.5:1 normal-text floor applies.
+  // `--color-accent` (#df5c9a) is a fixed pink in both themes and read only
+  // 2.42:1 on the light-blue card (5.08:1 dark); no pink ramp step clears 4.5:1
+  // on both the dark-grey and light-blue card (`--color-accent-500` is 4.39:1
+  // dark — a hair under). The names keep their emphasis via `fontWeight: bold`
+  // against the secondary-grey connectors and take the flipping `--color-text`,
+  // which clears 4.5:1 both ways (17.40:1 dark / 9.63:1 light). The card's pink
+  // accent moment stays on the thumbnail border (bears no text).
+  color: "[var(--color-text)]",
 });
 
 const tags = style({
