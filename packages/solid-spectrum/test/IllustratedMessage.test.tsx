@@ -72,8 +72,8 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     expect(illustration).toHaveAttribute("data-slot", "illustration");
     expect(illustration).toHaveAttribute("aria-hidden", "true");
     expect(illustration).not.toHaveAttribute("size");
-    expect(illustration.className.baseVal).toContain("Zq13");
-    expect(illustration.className.baseVal).toContain("Fr13");
+    expect(illustration.className.baseVal).toContain("Zq151");
+    expect(illustration.className.baseVal).toContain("Fr151");
     expect(illustration.className.baseVal).not.toBe("");
 
     const heading = screen.getByTestId("message-heading");
@@ -129,8 +129,8 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     expect(localRef).toBe(root());
 
     const illustration = screen.getByTestId("message-illustration");
-    expect(illustration.className.baseVal).toContain("ZH13");
-    expect(illustration.className.baseVal).toContain("FB13");
+    expect(illustration.className.baseVal).toContain("ZH151");
+    expect(illustration.className.baseVal).toContain("FB151");
   });
 
   it("inherits DropZone target context and filters arbitrary DOM event props", () => {
@@ -147,8 +147,8 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     ));
 
     const illustration = screen.getByTestId("message-illustration");
-    expect(illustration.className.baseVal).toContain("Zq13");
-    expect(illustration.className.baseVal).toContain("Fr13");
+    expect(illustration.className.baseVal).toContain("Zq151");
+    expect(illustration.className.baseVal).toContain("Fr151");
     expect(illustration.className.baseVal).not.toBe("");
 
     fireEvent.click(root());

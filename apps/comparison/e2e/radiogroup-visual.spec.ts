@@ -65,7 +65,10 @@ async function radioGroupGeometry(root: Locator) {
       const text = candidate.textContent ?? "";
       return text.includes("Choose a plan") || text.includes("Select one plan");
     });
-    const itemContainer = group?.querySelector<HTMLElement>(':scope > div[class*="sd13"]');
+    // The flex-row item container carries the `display:flex` style atom (`sd`),
+    // version-postfixed with the pinned S2 version (151 for 1.5.1; see
+    // guard:style-macro-parity). Bump the suffix in lockstep on any pin bump.
+    const itemContainer = group?.querySelector<HTMLElement>(':scope > div[class*="sd151"]');
     const itemContainerStyle =
       itemContainer == null ? null : window.getComputedStyle(itemContainer);
 

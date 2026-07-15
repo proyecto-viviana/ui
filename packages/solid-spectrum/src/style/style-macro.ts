@@ -35,8 +35,13 @@ const env: Record<string, string | undefined> =
   (globalThis as typeof globalThis & { process?: { env?: Record<string, string | undefined> } })
     .process?.env ?? {};
 
-// Postfix all class names with version for now.
-const POSTFIX = "13";
+// Postfix all class names with the pinned S2 version, matching upstream, which
+// derives it as `json.version.replace(/[0.]/g, '')` from @react-spectrum/s2's
+// package.json. Our current pin is @react-spectrum/s2@1.5.1 (scripts/upstream-pin.json),
+// so 1.5.1 → "151". Hardcoded because this module is also loaded in the dts/dom
+// builds that omit Node globals (no fs.readFileSync). `guard:style-macro-parity`
+// enforces that this tracks the pin — bump it in lockstep with any S2 pin bump.
+const POSTFIX = "151";
 
 export class ArbitraryProperty<T extends Value> implements Property<T> {
   property: string;

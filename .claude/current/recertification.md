@@ -2282,8 +2282,9 @@ component can never silently regress.
 
 ## Phase 3 — Cross-cutting closers (after or interleaved late in the march)
 
-- Full generated-CSS/tokens diff vs upstream (`style()` macro output corpus),
-  as a guard.
+- ☑ **DONE 2026-07-15 (CP9.82)** — Full generated-CSS/tokens diff vs upstream
+  (`style()` macro output corpus), as a guard: `guard:style-macro-parity`
+  (`scripts/check-style-macro-parity.ts`). See the CP9.82 record below.
 - Idiomatic-Solid and idiomatic-Web-API lint sweep (destructured-props
   reactivity, manual DOM where Solid primitives exist, event-listener hygiene)
   — codify the findable classes as lint rules where possible.
@@ -5697,4 +5698,52 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   (e.g. round each panel's measured origin, or offset the clone by the panel's fractional x). Scoped per-case
   waivers keep every non-drifting case + theme under strict zero-tolerance so real regressions still fail.
 
-Phase 3: not started.
+Phase 3: **in progress** — first closer landed (CP9.82). Remaining: idiomatic-Solid
+lint sweep, AAA report, D3 waiver burn-down, audit-scaffolding retirement.
+
+- **CP9.82 — `style()` macro output-parity guard (Phase-3 closer #1) ✓ 2026-07-15.**
+  The `style()` macro engine (`packages/solid-spectrum/src/style/style-macro.ts`)
+  compiles every component's `style({...})` into (a) generated CSS and (b) the
+  class/runtime-selector output; an engine-level divergence silently mis-paints
+  the whole library, and nothing else in the suite diffs the raw macro output
+  (the D3 pixel drivers check rendered *components*; `ui:macro-smoke` only proves
+  it *runs*). New guard **`guard:style-macro-parity`**
+  (`scripts/check-style-macro-parity.ts`, wired into `package.json` +
+  `certification-gates.yml`) compiles a 20-case corpus — upstream's own
+  `style/__tests__/style-macro.test.js` feature set (nested/runtime/variant
+  conditions, self references, allowed overrides, shorthand expansion, opacity
+  colors, CSS variables) plus broadening probes — through BOTH our `style` and
+  the vendored upstream S2 1.5.1 `style` **in-process** via upstream's own
+  `style.call({ addAsset })` test idiom (no bundler), under `NODE_ENV=production`
+  (strips the loc-dependent `-macro-static/-dynamic` debug atoms), and
+  byte-compares the emitted CSS + class atoms. Self-contained resolution:
+  `Module._initPaths()` after adding `packages/solid-spectrum/node_modules` to
+  `NODE_PATH` so the oracle's `@adobe/spectrum-tokens` require resolves; dynamic
+  `import()` (the vendored tree is CJS); skips cleanly (exit 0) when the
+  `react-spectrum/` oracle or tokens dep is absent (never cry wolf).
+
+  **Red→green:** the guard first went RED on all 20 cases with the *only*
+  difference being the class-name POSTFIX — ours hardcoded `"13"` (stale, from
+  the old 1.3.0 pin), upstream derives `"151"` from `@react-spectrum/s2@1.5.1`
+  (`json.version.replace(/[0.]/g,'')`). Per Rule #1 the fix is the real
+  divergence, not normalization: `style-macro.ts` POSTFIX `"13"→"151"` (kept as a
+  build-safe hardcode — this module also loads in the dts/dom builds that omit
+  Node globals, so upstream's `fs.readFileSync` is unusable; the guard now
+  enforces it tracks the pin) + repointed the stale
+  `solid-spectrum/src/style/UPSTREAM.md` (1.3.0→1.5.1). Guard GREEN; everything
+  but the postfix is byte-identical (djb2 hash, base62 `generateName`,
+  `properties.json` all match).
+
+  **Collateral (verified before relying on the flip):** three suites hardcoded
+  the `13` suffix — `IllustratedMessage.test.tsx` (6 atom literals →`151`),
+  `radiogroup-visual.spec.ts` (`class*="sd13"`→`sd151`), and
+  `regression.test.tsx.snap` (regenerated; **proven** the only changes are
+  `13→151` plus the content-hash debug atoms that track it — `id =
+  toBase62(hash(className+loc))` — via a normalize-and-diff to byte-identity, so
+  zero style/structure drift). A broadened repo-wide sweep confirmed no other
+  test asserts on a `13` atom (`avatar-visual` `M13` path + `Calendar` `day13`
+  var are false positives). Verified: **`guard:style-macro-parity` GREEN**;
+  **full `solid-spectrum` suite 80 files / 989 pass + 1 expected-fail**;
+  solid-spectrum **dist rebuilt** → carries `POSTFIX="151"` (comparison app now
+  emits `sd151` matching the updated selector). Cross-refs: guard 0.3
+  `check-spectrum-tokens-pin.ts` (sibling pin guard).

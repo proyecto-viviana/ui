@@ -96,6 +96,11 @@ jobs:
         continue-on-error: true
         run: pnpm run guard:spectrum-tokens-pin
 
+      - name: guard style-macro-parity
+        id: guard_style_macro_parity
+        continue-on-error: true
+        run: pnpm run guard:style-macro-parity
+
       - name: guard docs-routes
         id: guard_docs_routes
         continue-on-error: true
@@ -173,6 +178,7 @@ jobs:
           O_GUARD_VIRTUALIZER: ${{ steps.guard_virtualizer_keyboard.outcome }}
           O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
+          O_GUARD_STYLE_MACRO_PARITY: ${{ steps.guard_style_macro_parity.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
@@ -207,6 +213,7 @@ jobs:
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") |"
             echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
+            echo "| \`guard:style-macro-parity\` | $(icon "$O_GUARD_STYLE_MACRO_PARITY") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
