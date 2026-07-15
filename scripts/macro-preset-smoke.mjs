@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// UC-04 in-repo macro-preset smoke.
+// UC-04 in-repo macro-preset smoke, including framework query-suffixed modules.
 //
 // Proves an app that authors its OWN style() macro calls against
-// `@proyecto-viviana/ui/style` can build for DOM and SSR using the published
-// `@proyecto-viviana/ui/vite` helper (`vivianaMacros`): the macro generates and
+// `@proyecto-viviana/ui/style` can build for DOM and SSR using the built,
+// package-exported `@proyecto-viviana/ui/vite` helper (`vivianaMacros`): the macro generates and
 // loads CSS, and the expanded class survives into both the DOM CSS asset and the
 // SSR-rendered HTML. Unlike `consume-pack-smoke` (a pre-built consumer with no
 // macros), this fixture runs the macro plugin.
@@ -11,8 +11,11 @@
 // It runs IN the workspace on purpose. The workspace pins `vite` ->
 // `@voidzero-dev/vite-plus-core` (rolldown-vite) via a pnpm override — the same
 // rolldown-vite the helper's `macros.rolldown()` targets and the same flavor the
-// real downstream apps build with (their copied wrappers also call
-// `macros.rolldown()`). So the fixture imports the *built* `@proyecto-viviana/ui`
+// real downstream apps build with. The fixture imports its styled module with a
+// TanStack-style `?tsr-split=component` suffix so this also proves the helper
+// normalizes framework-generated module IDs before macro processing while a
+// `?raw` import remains under Vite's semantic-query handling. Downstream
+// wrappers also call `macros.rolldown()`. So the fixture imports the *built* `@proyecto-viviana/ui`
 // surfaces exactly as a real consumer would, and drives the build through Vite's
 // JS API.
 //
@@ -47,6 +50,12 @@ const ssrOut = join(outRoot, "ssr");
 // grep the generated CSS for it: its presence proves the macro emitted CSS and
 // the helper loaded it through Vite's CSS pipeline.
 const SENTINEL = "abcdef";
+const STYLE_COMPILER_MARKERS = [
+  "Invalid style value: ",
+  "Unknown property ",
+  "Unknown dependency ",
+  "-macro-static-",
+];
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -63,10 +72,27 @@ function listFilesRecursive(dir) {
   return out;
 }
 
+function assertNoStyleCompiler(dir, label) {
+  const compilerFiles = listFilesRecursive(dir)
+    .filter((file) => file.endsWith(".js"))
+    .filter((file) => {
+      const code = readFileSync(file, "utf8");
+      return STYLE_COMPILER_MARKERS.every((marker) => code.includes(marker));
+    });
+
+  if (compilerFiles.length > 0) {
+    problems.push(
+      `${label} JavaScript retained the style compiler:\n    ${compilerFiles.join("\n    ")}`,
+    );
+  } else {
+    process.stdout.write(`${label} JavaScript contains no style compiler payload\n`);
+  }
+}
+
 const problems = [];
 
 // --- The helper under test is exactly what `@proyecto-viviana/ui/vite` ships ----
-// Assert the published export points at the built helper, then import that file
+// Assert the package export points at the built helper, then import that file
 // (self-referencing the package by name from outside it isn't guaranteed, so we
 // resolve via the export map ourselves).
 const pkg = readJson(join(pkgDir, "package.json"));
@@ -129,6 +155,7 @@ try {
       );
     }
   }
+  assertNoStyleCompiler(domOut, "DOM");
 
   // --- SSR build ---------------------------------------------------------------
   // generate:'ssr' for the same fixture. The core SSR proof is that the build
@@ -163,6 +190,7 @@ try {
       process.stdout.write(`SSR style() class applied: "${classMatch[1]}"\n`);
     }
   }
+  assertNoStyleCompiler(ssrOut, "SSR");
 } finally {
   rmSync(join(fixtureRoot, "node_modules"), { recursive: true, force: true });
 }
@@ -175,6 +203,7 @@ if (problems.length > 0) {
 
 process.stdout.write(
   `\n✓ Macro smoke passed: an app authoring @proyecto-viviana/ui/style macros built DOM + SSR ` +
-    `through @proyecto-viviana/ui/vite (vivianaMacros); the macro generated CSS (sentinel in the ` +
+    `through @proyecto-viviana/ui/vite (vivianaMacros), including a query-suffixed module; ` +
+    `the macro generated CSS (sentinel in the ` +
     `DOM asset) and the style() class expanded in the SSR-rendered HTML.\n`,
 );

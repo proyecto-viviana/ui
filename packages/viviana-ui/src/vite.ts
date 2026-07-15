@@ -46,6 +46,7 @@ import macros from "unplugin-parcel-macros";
 // typed `Plugin | Plugin[]`; we always get the single-plugin form.
 interface MacroPlugin {
   name?: string;
+  transformInclude?: (id: string) => boolean | void;
   transform?: (this: unknown, code: string, id: string) => unknown;
   resolveId?: (this: unknown, id: string, importer?: string, options?: object) => unknown;
   loadInclude?: (id: string) => boolean | void;
@@ -55,6 +56,14 @@ interface MacroPlugin {
 
 const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
 const macroCssImportPattern = /import\s+["']macro-[a-f0-9]+\.css["'];\n?/g;
+
+function getMacroSourceFilePath(id: string) {
+  const queryIndex = id.indexOf("?");
+  if (queryIndex === -1 || !/^\?tsr-split=[^&#]+(?:#.*)?$/.test(id.slice(queryIndex))) {
+    return id;
+  }
+  return id.slice(0, queryIndex);
+}
 
 function getMacroCssFileName(id: string) {
   const fileName = id.split("/").pop();
@@ -97,8 +106,11 @@ export function vivianaMacros(): MacroPlugin {
 
   return {
     ...plugin,
+    transformInclude(id: string) {
+      return plugin.transformInclude?.(getMacroSourceFilePath(id)) ?? false;
+    },
     async transform(this: unknown, code: string, id: string) {
-      const result = await plugin.transform?.call(this, code, id);
+      const result = await plugin.transform?.call(this, code, getMacroSourceFilePath(id));
       const transformedCode =
         typeof result === "string"
           ? result
