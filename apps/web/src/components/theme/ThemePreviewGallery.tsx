@@ -1,8 +1,10 @@
-import { createSignal, type JSX } from "solid-js";
+import { For, createSignal, type JSX } from "solid-js";
 import {
   Button,
   Badge,
-  Alert,
+  InlineAlert,
+  Heading,
+  Content,
   Checkbox,
   ToggleSwitch,
   TextField,
@@ -14,15 +16,50 @@ import {
   Tab,
   TabPanel,
   Calendar,
+  Tag,
+  TagGroup,
+  UserCard,
+  Card,
+  CardPreview,
+  Image,
+  Text,
+  Footer,
+  StatusLight,
+  Avatar,
 } from "@proyecto-viviana/ui";
-import { Chip } from "@proyecto-viviana/ui/Chip";
-import { ProfileCard } from "@proyecto-viviana/ui/ProfileCard";
-import { EventCard } from "@proyecto-viviana/ui/EventCard";
-import { ConversationBubble, ConversationPreview } from "@proyecto-viviana/ui/Conversation";
 import { Provider } from "@proyecto-viviana/ui/Provider";
 import { type TokenMap } from "@/utils/themeBase";
 import { tokensToInlineStyle } from "@/utils/themeGen";
 import "./studio.css";
+
+// Inline, theme-neutral illustrative assets so the Card/Avatar previews render
+// without a network fetch (mirrors the certified comparison fixtures, which use
+// data-URI SVGs). Kept muted so the previewed --color-* palette stays the focus.
+const CARD_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'%3E%3Crect width='320' height='180' fill='%232c7be5'/%3E%3Cpath d='M0 132 82 74l68 42 62-58 108 96v26H0z' fill='%23d6e9ff' opacity='.9'/%3E%3Ccircle cx='248' cy='48' r='24' fill='%23fff3b0'/%3E%3C/svg%3E";
+const AVATAR_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%236b7fd7'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%23fff'/%3E%3Cpath d='M12 60c0-11 9-18 20-18s20 7 20 18z' fill='%23fff'/%3E%3C/svg%3E";
+
+const TAGS = [
+  { id: "design", name: "Design" },
+  { id: "themeable", name: "Themeable" },
+  { id: "draft", name: "Draft" },
+  { id: "starred", name: "Starred" },
+];
+
+const CARDS = [
+  { title: "Palette", desc: "Indigo · Slate", status: "positive" as const, label: "Synced" },
+  { title: "Typography", desc: "Jost · Sen", status: "notice" as const, label: "Review" },
+  { title: "Spacing", desc: "8px scale", status: "neutral" as const, label: "Draft" },
+];
+
+const STATUSES = [
+  { variant: "informative" as const, label: "Informative" },
+  { variant: "positive" as const, label: "Online" },
+  { variant: "notice" as const, label: "Pending" },
+  { variant: "negative" as const, label: "Offline" },
+  { variant: "neutral" as const, label: "Idle" },
+];
 
 export interface ThemePreviewGalleryProps {
   /** Fully-resolved --color-* map for the scheme being previewed. */
@@ -84,7 +121,8 @@ const TABS = [
 /**
  * A curated slice of the design system — enough surface to judge a theme at a
  * glance (actions, selection, inputs, semantic feedback, data, a date picker,
- * and the custom Viviana cards) without turning into a swatch dump. Every panel
+ * and the Spectrum-2 card/status ports) without turning into a swatch dump. Only
+ * solid-spectrum S2 ports are shown here — no custom Viviana surfaces. Every panel
  * reads its colors from --color-* custom properties, so applying the generated
  * token map as inline properties on the wrapper re-skins the whole subtree
  * WITHOUT touching the surrounding site chrome. The scheme toggle simply swaps
@@ -144,13 +182,10 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           </div>
         </Panel>
 
-        <Panel title="Chips & badges">
-          <div class="flex flex-wrap items-center gap-2">
-            <Chip text="Design" variant="primary" />
-            <Chip text="Themeable" variant="accent" />
-            <Chip text="Draft" variant="outline" />
-            <Chip text="Starred" variant="primary" icon="★" />
-          </div>
+        <Panel title="Tags & badges">
+          <TagGroup aria-label="Topics" items={TAGS}>
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagGroup>
           <div class="mt-3 flex flex-wrap items-center gap-3">
             <Badge count={5} variant="primary" />
             <Badge count={12} variant="accent" />
@@ -195,15 +230,18 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
 
         <Panel title="Feedback">
           <div class="space-y-2">
-            <Alert variant="success" title="Saved">
-              Your theme is ready to copy.
-            </Alert>
-            <Alert variant="warning" title="Heads up">
-              Check contrast before shipping.
-            </Alert>
-            <Alert variant="error" title="Error">
-              Something needs attention.
-            </Alert>
+            <InlineAlert variant="positive">
+              <Heading>Saved</Heading>
+              <Content>Your theme is ready to copy.</Content>
+            </InlineAlert>
+            <InlineAlert variant="notice">
+              <Heading>Heads up</Heading>
+              <Content>Check contrast before shipping.</Content>
+            </InlineAlert>
+            <InlineAlert variant="negative">
+              <Heading>Error</Heading>
+              <Content>Something needs attention.</Content>
+            </InlineAlert>
           </div>
         </Panel>
 
@@ -248,43 +286,53 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
         </Panel>
 
         <Panel title="Profile">
-          <ProfileCard
-            username="@viviana_ui"
-            bio="Accessible SolidJS components, themeable to the core."
-            followers={1234}
-            following={567}
-            actions={() => (
+          <UserCard id="profile" size="M" textValue="Viviana UI" UNSAFE_style={{ width: "100%" }}>
+            <Avatar src={AVATAR_IMAGE} alt="" />
+            <Content>
+              <Text slot="title">@viviana_ui</Text>
+              <Text slot="description">Accessible SolidJS components, themeable to the core.</Text>
+            </Content>
+            <Footer>
               <div class="flex gap-2">
                 <Button variant="primary">Follow</Button>
                 <Button variant="secondary" fillStyle="outline">
                   Message
                 </Button>
               </div>
-            )}
-          />
+            </Footer>
+          </UserCard>
         </Panel>
 
-        <Panel title="Event">
-          <EventCard
-            title="Theme Studio launch"
-            date="2 days"
-            author="viviana"
-            attendees={[{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }]}
-            attendeeCount={42}
-            actions={() => <Button variant="primary">RSVP</Button>}
-          />
+        <Panel title="Status">
+          <div class="flex flex-col gap-2">
+            <For each={STATUSES}>
+              {(s) => (
+                <StatusLight variant={s.variant} role="status">
+                  {s.label}
+                </StatusLight>
+              )}
+            </For>
+          </div>
         </Panel>
 
-        <Panel title="Conversation" wide>
-          <ConversationPreview
-            user={{ name: "Alice", online: true }}
-            lastMessage="Shipping the new theme today."
-            timestamp="2m ago"
-            unreadCount={3}
-          />
-          <div class="mt-3 space-y-2 p-3" style={{ background: "var(--color-surface-elevated)" }}>
-            <ConversationBubble content="Have you seen the new palette?" sender="other" timestamp="10:30 AM" />
-            <ConversationBubble content="Love it — shipping today." sender="user" timestamp="10:31 AM" />
+        <Panel title="Cards" wide>
+          <div class="flex flex-wrap gap-4">
+            <For each={CARDS}>
+              {(c) => (
+                <Card id={c.title} size="M" variant="primary" textValue={c.title} UNSAFE_style={{ width: "220px" }}>
+                  <CardPreview>
+                    <Image src={CARD_IMAGE} alt="" />
+                  </CardPreview>
+                  <Content>
+                    <Text slot="title">{c.title}</Text>
+                    <Text slot="description">{c.desc}</Text>
+                  </Content>
+                  <Footer>
+                    <StatusLight variant={c.status}>{c.label}</StatusLight>
+                  </Footer>
+                </Card>
+              )}
+            </For>
           </div>
         </Panel>
       </Provider>
