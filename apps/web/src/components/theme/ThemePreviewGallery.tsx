@@ -39,6 +39,8 @@ export interface ThemePreviewGalleryProps {
   /** Fully-resolved --color-* map for the scheme being previewed. */
   tokens: TokenMap;
   scheme: "dark" | "light";
+  /** Rendered inside a device frame that owns the border/radius — drop our own. */
+  framed?: boolean;
 }
 
 // A titled sub-panel inside the canvas: soft rounded corners + 1px border, a
@@ -136,7 +138,9 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
   return (
     <div
       data-preview-canvas
-      style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text); border: 1px solid var(--color-border); border-radius: 16px;`}
+      style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text);${
+        props.framed ? "" : " border: 1px solid var(--color-border); border-radius: 16px;"
+      }`}
       class="p-5"
     >
       <div class="pv-gallery">

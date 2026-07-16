@@ -3,9 +3,12 @@
 // Recolors the shipped /ui token contract (themeBase.ts) from a small set of
 // per-family knobs. The design goal is FAITHFUL recoloring: each token keeps its
 // own lightness (the contrast structure /ui was certified against) and only its
-// hue/chroma follow the knob. An untouched knob reproduces the shipped default
-// byte-for-byte (families whose knob equals its default are copied verbatim), so
-// "reset" yields exactly the library defaults and the copy output stays minimal.
+// hue/chroma follow the knob. Recoloring is anchored on the shipped defaults
+// (REF_INPUTS); a knob left AT its reference reproduces that family byte-for-byte.
+//
+// The studio does NOT start from the raw shipped base, though — it starts from a
+// Spectrum-2-flavoured preset (DEFAULT_INPUTS) so the default preview reads as a
+// calm, single-accent Spectrum theme rather than the legacy pink/steel-blue brand.
 
 import { BASE_DARK, BASE_LIGHT, type TokenMap } from "./themeBase";
 import { hexToOklch, oklchToHex, hexToRgb } from "./color";
@@ -43,7 +46,7 @@ export interface FamilyMeta {
 
 export const FAMILY_META: Record<Family, FamilyMeta> = {
   primary: { label: "Primary", hint: "Brand blue — buttons, links, focus", ref: "--color-primary" },
-  accent: { label: "Accent", hint: "Secondary highlight — pink by default", ref: "--color-accent" },
+  accent: { label: "Accent", hint: "Secondary highlight — indigo by default", ref: "--color-accent" },
   background: {
     label: "Background",
     hint: "Surfaces, cards, borders (tint only)",
@@ -56,11 +59,27 @@ export const FAMILY_META: Record<Family, FamilyMeta> = {
   danger: { label: "Danger", hint: "Errors / destructive", ref: "--color-danger" },
 };
 
-// The knob's initial value = the family reference token's DARK default.
-export const DEFAULT_INPUTS: ThemeInputs = FAMILIES.reduce((acc, fam) => {
+// The recolor ANCHOR: each family's shipped DARK default. `makeXform` measures a
+// knob's hue/chroma delta FROM these, so recoloring preserves every token's
+// certified lightness. This is the reference, not the studio's starting preset.
+export const REF_INPUTS: ThemeInputs = FAMILIES.reduce((acc, fam) => {
   acc[fam] = BASE_DARK[FAMILY_META[fam].ref];
   return acc;
 }, {} as ThemeInputs);
+
+// The studio's INITIAL knob values (and the Reset target): a Spectrum-2-flavoured
+// starting point layered on the shipped contract. viviana's greys, surfaces, text
+// and status colors already read as neutral / Spectrum-adjacent, so only the two
+// brand hues start elsewhere — a vivid Spectrum blue for primary and a Spectrum
+// indigo for accent (retiring the legacy pink). Because these differ from the
+// anchor, the default preview loads recolored toward Spectrum, not the raw base.
+const SPECTRUM_PRIMARY = "#2680eb"; // Spectrum blue-400 (the canonical accent blue)
+const SPECTRUM_ACCENT = "#6767ec"; // Spectrum indigo-400 (harmonious secondary)
+export const DEFAULT_INPUTS: ThemeInputs = {
+  ...REF_INPUTS,
+  primary: SPECTRUM_PRIMARY,
+  accent: SPECTRUM_ACCENT,
+};
 
 // Classify every token into the family a knob controls (or null = leave as-is,
 // e.g. --color-fusion-glow, a deliberate primary/accent mix). Order matters:
@@ -144,7 +163,7 @@ function recolor(value: string, x: Xform): string {
 }
 
 function makeXform(fam: Family, user: string): Xform {
-  const def = DEFAULT_INPUTS[fam];
+  const def = REF_INPUTS[fam];
   const changed = user.toLowerCase() !== def.toLowerCase();
   const uo = hexToOklch(user);
   const ro = hexToOklch(def);

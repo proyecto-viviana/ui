@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
 import { Header } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
@@ -13,7 +13,7 @@ import {
   SiteFooter,
 } from "@/components/theme/primitives";
 import { buildThemeCss, THEME_HOWTO } from "@/utils/themeExport";
-import { buildThemeTokens, DEFAULT_INPUTS } from "@/utils/themeGen";
+import { buildThemeTokens, DEFAULT_INPUTS, type Scheme } from "@/utils/themeGen";
 import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/theme")({
@@ -23,16 +23,18 @@ export const Route = createFileRoute("/theme")({
 function ThemePage() {
   const [result, setResult] = createSignal<ThemeResult>({
     inputs: { ...DEFAULT_INPUTS },
-    scheme: "dark",
     dark: buildThemeTokens(DEFAULT_INPUTS, "dark"),
     light: buildThemeTokens(DEFAULT_INPUTS, "light"),
   });
+  // The preview scheme lives here on the route so the device frame's header bar
+  // can carry its toggle, independent of the knob editor.
+  const [scheme, setScheme] = createSignal<Scheme>("dark");
   const [copied, setCopied] = createSignal(false);
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
 
   const css = () => buildThemeCss({ dark: result().dark, light: result().light });
-  const activeTokens = () => (result().scheme === "dark" ? result().dark : result().light);
+  const activeTokens = () => (scheme() === "dark" ? result().dark : result().light);
 
   const copy = async () => {
     try {
@@ -147,38 +149,59 @@ function ThemePage() {
               <SectionLabel>Live preview</SectionLabel>
               <span
                 style={{
-                  "font-family": FONT_DISPLAY,
-                  "font-size": "11px",
-                  "font-weight": "700",
-                  "letter-spacing": "0.06em",
-                  "text-transform": "uppercase",
-                  padding: "5px 12px",
-                  "border-radius": "999px",
-                  color: ACCENT,
-                  background: "var(--pv-accent-tint)",
+                  "font-family": FONT_BODY,
+                  "font-size": "12px",
+                  color: "var(--docs-text-secondary)",
                 }}
               >
-                {result().scheme} scheme
+                Rethemes as you tune the knobs.
               </span>
             </div>
-            <Show
-              when={mounted()}
-              fallback={
-                <div
-                  class="flex items-center justify-center text-sm"
-                  style={{
-                    "min-height": "24rem",
-                    border: "1px dashed var(--docs-border)",
-                    "border-radius": "var(--pv-radius-lg)",
-                    color: "var(--docs-text-secondary)",
-                  }}
-                >
-                  Loading preview…
+
+            {/* Device frame: an app-window chrome around the themed canvas. Its
+                bar carries the dark/light scheme toggle; the body clips the
+                edge-to-edge preview to the frame's rounding. */}
+            <div class="pv-frame">
+              <div class="pv-frame__bar">
+                <span class="pv-frame__dots" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span class="pv-frame__title">@proyecto-viviana/ui</span>
+                <div class="pv-frame__seg" role="group" aria-label="Preview color scheme">
+                  <For each={["dark", "light"] as Scheme[]}>
+                    {(s) => (
+                      <button
+                        type="button"
+                        onClick={() => setScheme(s)}
+                        data-active={scheme() === s ? "true" : "false"}
+                      >
+                        {s}
+                      </button>
+                    )}
+                  </For>
                 </div>
-              }
-            >
-              <ThemePreviewGallery tokens={activeTokens()} scheme={result().scheme} />
-            </Show>
+              </div>
+              <div class="pv-frame__body">
+                <Show
+                  when={mounted()}
+                  fallback={
+                    <div
+                      class="flex items-center justify-center text-sm"
+                      style={{
+                        "min-height": "24rem",
+                        color: "var(--docs-text-secondary)",
+                      }}
+                    >
+                      Loading preview…
+                    </div>
+                  }
+                >
+                  <ThemePreviewGallery tokens={activeTokens()} scheme={scheme()} framed />
+                </Show>
+              </div>
+            </div>
           </div>
         </div>
       </main>

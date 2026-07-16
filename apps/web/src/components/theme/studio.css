@@ -227,6 +227,80 @@
   max-height: 18rem;
 }
 
+/* Device frame around the live preview: an app-window chrome (elevated neutral
+   surface + header bar) whose body clips the edge-to-edge themed canvas to the
+   frame's rounding. Chrome rides the site --docs-* / --pv-* tokens; the themed
+   --color-* map lives only inside the body's canvas. */
+.pv-frame {
+  border: 1px solid var(--docs-border);
+  border-radius: var(--pv-radius-lg);
+  background: var(--docs-bg-elevated);
+  box-shadow: var(--pv-shadow-md);
+  overflow: hidden;
+}
+.pv-frame__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--docs-border);
+  background: var(--docs-bg-elevated);
+}
+.pv-frame__dots {
+  display: inline-flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.pv-frame__dots > span {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--pv-radius-pill);
+  background: var(--docs-border);
+}
+.pv-frame__title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--docs-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pv-frame__seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--docs-border);
+  border-radius: var(--pv-radius-pill);
+  flex-shrink: 0;
+}
+.pv-frame__seg > button {
+  font-family: "Sen", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: capitalize;
+  padding: 4px 13px;
+  border: none;
+  border-radius: var(--pv-radius-pill);
+  background: transparent;
+  color: var(--docs-text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.pv-frame__seg > button:hover[data-active="false"] {
+  color: var(--docs-text);
+}
+.pv-frame__seg > button[data-active="true"] {
+  background: var(--pv-accent-solid);
+  color: #ffffff;
+}
+
 /* Live-preview gallery inside the canvas: single column → two across.
    `--wide` panels span the full row. */
 .pv-gallery {
