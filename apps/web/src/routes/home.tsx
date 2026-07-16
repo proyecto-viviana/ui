@@ -38,7 +38,7 @@ function HomePage() {
         <section class="pv-hero flex flex-col items-center gap-6 text-center">
           <PillTag>Component library · Theme studio</PillTag>
 
-          <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" />
+          <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" class="pv-wordmark" />
 
           <h1
             style={{

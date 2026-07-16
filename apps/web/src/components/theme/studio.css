@@ -138,6 +138,19 @@
   color: var(--docs-accent);
 }
 
+/* Site wordmark. The Logo's two-tone brand paints `--color-primary-100` /
+   `--color-accent-500` — the latter the retired pink. Until the from-scratch
+   brand lands, repaint the chrome wordmark in the site palette (neutral text +
+   the single blue accent) by coloring the two child words directly. One class
+   (`.pv-wordmark > span`) outweighs the macro's single-class color rule, so no
+   !important is needed; the preview canvas keeps its own re-skinned Logo. */
+.pv-wordmark > span {
+  color: var(--docs-text);
+}
+.pv-wordmark > span:last-child {
+  color: var(--docs-accent);
+}
+
 /* Centered page column */
 .pv-wrap {
   width: 100%;
@@ -302,11 +315,14 @@
 }
 
 /* Live-preview gallery inside the canvas: single column → two across.
-   `--wide` panels span the full row. */
+   `--wide` panels span the full row. `align-items: start` keeps a short panel
+   (e.g. Tabs) from stretching to match a tall neighbour (e.g. Calendar), which
+   would leave an empty void inside the short panel. */
 .pv-gallery {
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(0, 1fr);
+  align-items: start;
 }
 @media (min-width: 640px) {
   .pv-gallery {
@@ -320,4 +336,14 @@
    the canvas. */
 .pv-gallery > * {
   min-width: 0;
+}
+
+/* Calendar weekday header (CalendarGridHeader cells) is painted by a baked S2
+   style() macro color (gray-800) that ISN'T wired to the --color-* contract, so
+   it stays dark-on-dark in a dark preview. Re-point it to a themed token WITHIN
+   the preview canvas only — one attribute+type selector (0,1,3) outweighs the
+   single macro class (0,1,0), so no !important — so the Calendar honours the
+   theme like every other panel. Scoped to the canvas; site chrome is untouched. */
+[data-preview-canvas] thead th {
+  color: var(--color-text-secondary);
 }

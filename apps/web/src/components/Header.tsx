@@ -135,7 +135,7 @@ export function Header() {
             "text-decoration": "none",
           }}
         >
-          <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" />
+          <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" class="pv-wordmark" />
         </Link>
 
         {/* Right: Nav + GitHub + Theme Toggle */}
