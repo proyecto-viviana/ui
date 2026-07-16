@@ -1,12 +1,142 @@
-/* Layout for the bespoke landing (/home) and Theme Studio (/theme).
+/* Layout + chrome for the landing (/home) and Theme Studio (/theme).
 
    This app removed its Tailwind tooling (see `chore: remove tailwind tooling`);
    `local-utilities.css` is now a frozen, curated utility set with NO JIT, so any
    responsive or arbitrary-value class silently no-ops. Structural layout that
    needs breakpoints or grid templates is therefore expressed here as real CSS.
-   Decorative styling stays inline in the components — this file owns structure,
-   grid tracks, and media queries only. Class names are `pv-`-prefixed to stay
-   clear of the utility vocabulary. */
+   Class names are `pv-`-prefixed to stay clear of the utility vocabulary.
+
+   Aesthetic target: a clean, faithful Adobe Spectrum 2 look — rounded corners,
+   calm neutral surfaces (`--docs-*` tokens), subtle 1px borders + soft shadows,
+   a SINGLE blue accent, generous whitespace, no glow. This deliberately mirrors
+   the rounded, soft `@proyecto-viviana/ui` components the pages showcase, so the
+   chrome and the components read as one system. The `--pv-*` vars below are the
+   local chrome scale; the global `--radius-*` tokens are 0 (a brutalist choice
+   the components override themselves), so chrome radii are set explicitly here. */
+
+:where(:root) {
+  --pv-radius-sm: 8px;
+  --pv-radius-md: 12px;
+  --pv-radius-lg: 16px;
+  --pv-radius-pill: 999px;
+  /* Spectrum accent blue — solid fill for primary actions, safe with white text
+     in both schemes. Separate from `--docs-accent` (used for text/tint/borders),
+     which goes lighter in dark mode and wouldn't hold white text. */
+  --pv-accent-solid: #2680eb;
+  --pv-accent-solid-hover: #1473e6;
+  --pv-accent-tint: color-mix(in srgb, var(--docs-accent) 12%, transparent);
+  --pv-accent-tint-strong: color-mix(in srgb, var(--docs-accent) 20%, transparent);
+  /* Soft elevation. Barely-there in dark (borders carry structure there). */
+  --pv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --pv-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+[data-color-scheme="light"] {
+  --pv-accent-solid: #1473e6;
+  --pv-accent-solid-hover: #0d66d0;
+}
+
+/* ── Surfaces ──────────────────────────────────────────────────────────── */
+
+/* A soft, rounded, subtly-elevated card — the recurring panel primitive. */
+.pv-card {
+  background: var(--docs-bg-elevated);
+  border: 1px solid var(--docs-border);
+  border-radius: var(--pv-radius-lg);
+  box-shadow: var(--pv-shadow-sm);
+}
+
+/* ── Buttons (Spectrum-2 pill) ─────────────────────────────────────────── */
+
+.pv-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--pv-radius-pill);
+  font-family: "Sen", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    filter 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.pv-cta--primary {
+  background: var(--pv-accent-solid);
+  color: #ffffff;
+  box-shadow: var(--pv-shadow-sm);
+}
+.pv-cta--primary:hover {
+  background: var(--pv-accent-solid-hover);
+}
+.pv-cta--secondary {
+  background: transparent;
+  color: var(--docs-text);
+  border-color: var(--docs-border);
+}
+.pv-cta--secondary:hover {
+  background: var(--pv-accent-tint);
+  border-color: var(--docs-accent);
+}
+.pv-cta:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--docs-bg),
+    0 0 0 4px var(--docs-accent);
+}
+
+/* ── Header nav ────────────────────────────────────────────────────────── */
+
+.pv-navlink {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: var(--pv-radius-pill);
+  font-family: "Sen", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--docs-text-secondary);
+  text-decoration: none;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+.pv-navlink:hover {
+  background: var(--pv-accent-tint);
+  color: var(--docs-text);
+}
+.pv-navlink[data-active="true"] {
+  background: var(--pv-accent-solid);
+  color: #ffffff;
+}
+.pv-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--pv-radius-pill);
+  border: 1px solid var(--docs-border);
+  background: transparent;
+  color: var(--docs-text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+.pv-iconbtn:hover {
+  background: var(--pv-accent-tint);
+  border-color: var(--docs-accent);
+  color: var(--docs-accent);
+}
 
 /* Centered page column */
 .pv-wrap {

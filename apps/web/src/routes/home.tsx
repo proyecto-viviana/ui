@@ -4,14 +4,13 @@ import { Chip } from "@proyecto-viviana/ui/Chip";
 import { Logo } from "@proyecto-viviana/ui/Logo";
 import { Header } from "@/components";
 import {
-  AccentBar,
-  BLUE,
+  ACCENT,
   CtaButton,
   FeatureBlock,
   FONT_BODY,
   FONT_DISPLAY,
   PillTag,
-  PINK,
+  SectionLabel,
   SiteFooter,
 } from "@/components/theme/primitives";
 import "@/components/theme/studio.css";
@@ -37,38 +36,34 @@ function HomePage() {
       <main id="main-content" class="pv-wrap pv-wrap--narrow flex-1 px-6">
         {/* Hero */}
         <section class="pv-hero flex flex-col items-center gap-6 text-center">
-          <PillTag tone="pink">Component library · Theme studio</PillTag>
+          <PillTag>Component library · Theme studio</PillTag>
 
           <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" />
 
           <h1
             style={{
               "font-family": FONT_DISPLAY,
-              "font-size": "clamp(2.25rem, 7vw, 4.5rem)",
+              "font-size": "clamp(2.25rem, 7vw, 4.25rem)",
               "font-weight": "700",
-              "line-height": "1.02",
+              "line-height": "1.05",
               "letter-spacing": "-0.02em",
-              "max-width": "16ch",
+              "max-width": "18ch",
               "margin-top": "0.25rem",
             }}
           >
-            Theme the <span style={{ color: BLUE }}>whole library</span> from a{" "}
-            <span style={{ color: PINK }}>handful of knobs</span>.
+            Theme the <span style={{ color: ACCENT }}>whole library</span> from a handful of knobs.
           </h1>
 
           <p
             style={{
-              "text-align": "left",
-              "max-width": "440px",
-              "border-left": `3px solid ${PINK}`,
-              "padding-left": "14px",
-              "font-size": "14px",
-              "line-height": "1.6",
+              "max-width": "480px",
+              "font-size": "15px",
+              "line-height": "1.65",
               color: "var(--docs-text-secondary)",
             }}
           >
-            60+ certified-accessible components, faithfully ported from Adobe's React Spectrum. Every color is a
-            design token — tune a few, watch the whole library re-skin, then copy the CSS.
+            60+ certified-accessible components, faithfully ported from Adobe&rsquo;s React Spectrum. Every
+            color is a design token — tune a few, watch the whole library re-skin, then copy the CSS.
           </p>
 
           <div class="mt-2 flex flex-wrap items-center justify-center gap-4">
@@ -78,66 +73,48 @@ function HomePage() {
             <CtaButton href="/solid-spectrum/playground" tone="secondary">
               Explore components
             </CtaButton>
-            <a
-              href="https://www.npmjs.com/package/@proyecto-viviana/ui"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-xs transition-opacity hover:opacity-70"
-              style={{
-                "font-family": "'JetBrains Mono', ui-monospace, monospace",
-                color: "var(--docs-text-secondary)",
-              }}
-            >
-              npm i @proyecto-viviana/ui
-            </a>
           </div>
+
+          <a
+            href="https://www.npmjs.com/package/@proyecto-viviana/ui"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-xs transition-opacity hover:opacity-70"
+            style={{
+              "font-family": "'JetBrains Mono', ui-monospace, monospace",
+              color: "var(--docs-text-secondary)",
+            }}
+          >
+            npm i @proyecto-viviana/ui
+          </a>
         </section>
 
         {/* Feature blocks */}
         <section
-          class="pv-features py-6"
-          style={{ "border-top": "1px solid var(--docs-border)" }}
+          class="pv-features"
+          style={{ "border-top": "1px solid var(--docs-border)", "padding-block": "2.5rem" }}
         >
-          <FeatureBlock tone="blue" title="TOKEN-DRIVEN">
+          <FeatureBlock title="Token-driven">
             Components read every color from <code style={{ "font-family": "monospace" }}>--color-*</code>{" "}
             custom properties. Override the vars and the whole library adopts your palette — no forks, no
             per-component overrides.
           </FeatureBlock>
-          <FeatureBlock tone="pink" title="ACCESSIBLE">
+          <FeatureBlock title="Accessible">
             Keyboard navigation, focus management, and screen-reader semantics are built in and
             contrast-certified — the same behavior React Spectrum ships, ported faithfully to SolidJS.
           </FeatureBlock>
-          <FeatureBlock tone="blue" title="COPY-PASTE">
+          <FeatureBlock title="Copy-paste">
             The Theme Studio generates the exact <code style={{ "font-family": "monospace" }}>:root</code>{" "}
-            and light-scheme blocks. Paste them after the library's stylesheet and you're done.
+            and light-scheme blocks. Paste them after the library&rsquo;s stylesheet and you&rsquo;re done.
           </FeatureBlock>
         </section>
 
         {/* Live sample strip */}
         <section
-          class="flex flex-col gap-6"
-          style={{
-            "margin-block": "2.5rem",
-            padding: "24px",
-            background: "var(--docs-bg-elevated)",
-            border: "2px solid var(--docs-border)",
-          }}
+          class="pv-card flex flex-col gap-6"
+          style={{ "margin-bottom": "2.5rem", padding: "28px" }}
         >
-          <div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-            <AccentBar tone="pink" height="20px" />
-            <span
-              style={{
-                "font-family": FONT_DISPLAY,
-                "font-size": "12px",
-                "font-weight": "600",
-                "letter-spacing": "0.12em",
-                "text-transform": "uppercase",
-                color: "var(--docs-text-secondary)",
-              }}
-            >
-              Real components, live
-            </span>
-          </div>
+          <SectionLabel>Real components, live</SectionLabel>
           <div class="flex flex-wrap items-center gap-6">
             <div class="flex flex-wrap items-center gap-3">
               <Button variant="primary">Primary</Button>
@@ -167,7 +144,7 @@ function HomePage() {
               "letter-spacing": "-0.01em",
             }}
           >
-            Ready to make it <span style={{ color: PINK }}>yours</span>?
+            Ready to make it yours?
           </h2>
           <CtaButton href="/theme" tone="primary">
             Open the Theme Studio →

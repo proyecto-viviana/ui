@@ -3,6 +3,7 @@ import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { Logo } from "@proyecto-viviana/ui/Logo";
 import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { useTheme, useThemeColors } from "@/utils/theme";
+import "@/components/theme/studio.css";
 
 function useScrollDirection() {
   const [isVisible, setIsVisible] = createSignal(true);
@@ -32,21 +33,12 @@ function useScrollDirection() {
 
 function ThemeToggle() {
   const { isDark, toggleTheme } = useTheme();
-  const getColors = useThemeColors();
-  const colors = () => getColors();
 
   return (
     <button
       onClick={toggleTheme}
       title={isDark() ? "Switch to light mode" : "Switch to dark mode"}
-      class="flex items-center justify-center w-8 h-8 border-2 cursor-pointer bg-transparent transition-[border-color] duration-200"
-      style={{ "border-color": colors().muted }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = isDark() ? colors().blue : colors().pink;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = colors().muted;
-      }}
+      class="pv-iconbtn"
       aria-label={isDark() ? "Switch to light mode" : "Switch to dark mode"}
     >
       <Show when={isDark()}>
@@ -55,8 +47,8 @@ function ThemeToggle() {
           height="16"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={colors().blue}
-          stroke-width="2.5"
+          stroke="currentColor"
+          stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
         >
@@ -77,8 +69,8 @@ function ThemeToggle() {
           height="16"
           viewBox="0 0 24 24"
           fill="none"
-          stroke={colors().pink}
-          stroke-width="2.5"
+          stroke="currentColor"
+          stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
         >
@@ -147,36 +139,27 @@ export function Header() {
         </Link>
 
         {/* Right: Nav + GitHub + Theme Toggle */}
-        <nav class="flex items-center gap-3">
-          <NavLink href="/home" color="blue" isActive={isActive("/home")} colors={colors()}>
-            HOME
+        <nav class="flex items-center gap-2">
+          <NavLink href="/home" isActive={isActive("/home")}>
+            Home
           </NavLink>
-          <NavLink href="/theme" color="pink" isActive={isActive("/theme")} colors={colors()}>
-            THEME
+          <NavLink href="/theme" isActive={isActive("/theme")}>
+            Theme
           </NavLink>
-          <NavLink
-            href="/solid-spectrum/docs"
-            color="blue"
-            isActive={isActive("/solid-spectrum/docs")}
-            colors={colors()}
-          >
-            DOCS
+          <NavLink href="/solid-spectrum/docs" isActive={isActive("/solid-spectrum/docs")}>
+            Docs
           </NavLink>
           <NavLink
             href="/solid-spectrum/playground"
-            color="pink"
             isActive={isActive("/solid-spectrum/playground")}
-            colors={colors()}
           >
-            PLAYGROUND
+            Playground
           </NavLink>
           <NavLink
             href="/solid-spectrum/ecosystem"
-            color="blue"
             isActive={isActive("/solid-spectrum/ecosystem")}
-            colors={colors()}
           >
-            ECOSYSTEM
+            Ecosystem
           </NavLink>
 
           {/* GitHub */}
@@ -185,16 +168,8 @@ export function Header() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
-            class="flex items-center justify-center w-8 h-8 transition-[filter] duration-200"
-            style={{ color: colors().textSecondary }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.filter = `drop-shadow(0 0 4px ${colors().blueGlow})`;
-              e.currentTarget.style.color = colors().blue;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.filter = "none";
-              e.currentTarget.style.color = colors().textSecondary;
-            }}
+            class="pv-iconbtn"
+            style={{ "margin-left": "4px" }}
           >
             <GitHubIcon size={18} />
           </a>
@@ -213,41 +188,9 @@ export function Header() {
 // NAV LINK
 // ========================================
 
-function NavLink(props: {
-  href: string;
-  color: "blue" | "pink";
-  isActive: boolean;
-  colors: ReturnType<ReturnType<typeof useThemeColors>>;
-  children: string;
-}) {
-  const wireColor = () => (props.color === "blue" ? props.colors.blue : props.colors.pink);
-
+function NavLink(props: { href: string; isActive: boolean; children: string }) {
   return (
-    <Link
-      to={props.href}
-      class=""
-      style={{
-        "font-family": "'Jost', sans-serif",
-        "font-size": "12px",
-        "font-weight": "600",
-        color: props.isActive ? props.colors.surface : wireColor(),
-        "text-decoration": "none",
-        padding: "6px 14px",
-        border: `2px solid ${wireColor()}`,
-        background: props.isActive ? wireColor() : "transparent",
-        transition: "background 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!props.isActive) {
-          e.currentTarget.style.background = `${wireColor()}20`;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!props.isActive) {
-          e.currentTarget.style.background = "transparent";
-        }
-      }}
-    >
+    <Link to={props.href} class="pv-navlink" data-active={props.isActive ? "true" : "false"}>
       {props.children}
     </Link>
   );

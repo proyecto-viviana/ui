@@ -1,6 +1,6 @@
 import { createEffect, createMemo, createSignal, For } from "solid-js";
 import { ColorKnob } from "./ColorKnob";
-import { BLUE, FONT_DISPLAY, PINK } from "./primitives";
+import { FONT_DISPLAY } from "./primitives";
 import { type TokenMap } from "@/utils/themeBase";
 import {
   buildThemeTokens,
@@ -79,7 +79,15 @@ export function ThemeStudio(props: ThemeStudioProps) {
           >
             Preview scheme
           </span>
-          <div style={{ display: "inline-flex", border: `2px solid var(--docs-border)` }}>
+          <div
+            style={{
+              display: "inline-flex",
+              gap: "2px",
+              padding: "3px",
+              border: "1px solid var(--docs-border)",
+              "border-radius": "999px",
+            }}
+          >
             <For each={["dark", "light"] as Scheme[]}>
               {(s) => (
                 <button
@@ -92,10 +100,11 @@ export function ThemeStudio(props: ThemeStudioProps) {
                     "letter-spacing": "0.04em",
                     "text-transform": "capitalize",
                     padding: "5px 14px",
+                    "border-radius": "999px",
                     cursor: "pointer",
                     border: "none",
-                    color: scheme() === s ? "#141414" : "var(--docs-text-secondary)",
-                    background: scheme() === s ? BLUE : "transparent",
+                    color: scheme() === s ? "#ffffff" : "var(--docs-text-secondary)",
+                    background: scheme() === s ? "var(--pv-accent-solid)" : "transparent",
                     transition: "background 0.2s ease, color 0.2s ease",
                   }}
                 >
@@ -116,8 +125,9 @@ export function ThemeStudio(props: ThemeStudioProps) {
             "font-weight": "600",
             "letter-spacing": "0.06em",
             "text-transform": "uppercase",
-            padding: "5px 12px",
-            border: "2px solid var(--docs-border)",
+            padding: "6px 16px",
+            border: "1px solid var(--docs-border)",
+            "border-radius": "999px",
             background: "transparent",
             color: "var(--docs-text-secondary)",
             cursor: isDefault() ? "not-allowed" : "pointer",
@@ -126,7 +136,7 @@ export function ThemeStudio(props: ThemeStudioProps) {
           }}
           onMouseEnter={(e) => {
             if (!isDefault()) {
-              e.currentTarget.style.borderColor = PINK;
+              e.currentTarget.style.borderColor = "var(--docs-accent)";
               e.currentTarget.style.color = "var(--docs-text)";
             }
           }}

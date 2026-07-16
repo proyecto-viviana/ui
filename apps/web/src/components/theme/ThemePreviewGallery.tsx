@@ -41,8 +41,10 @@ export interface ThemePreviewGalleryProps {
   scheme: "dark" | "light";
 }
 
-// A titled sub-panel inside the canvas. Sharp corners + left accent bar, echoing
-// the site chrome; its colors ride the previewed --color-* map (not --docs-*).
+// A titled sub-panel inside the canvas: soft rounded corners + 1px border, a
+// small accent dot on the heading — echoing the clean Spectrum-2 site chrome.
+// Its colors ride the previewed --color-* map (not --docs-*), so the panel
+// re-skins with the theme rather than tracking the surrounding site chrome.
 function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) {
   return (
     <section
@@ -50,7 +52,8 @@ function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) 
       classList={{ "pv-gallery__wide": props.wide }}
       style={{
         background: "var(--color-surface)",
-        border: "2px solid var(--color-border)",
+        border: "1px solid var(--color-border)",
+        "border-radius": "12px",
       }}
     >
       <div class="mb-3 flex items-center gap-2">
@@ -58,8 +61,9 @@ function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) 
           aria-hidden="true"
           style={{
             display: "inline-block",
-            width: "3px",
-            height: "14px",
+            width: "8px",
+            height: "8px",
+            "border-radius": "3px",
             background: "var(--color-primary-500)",
             "flex-shrink": "0",
           }}
@@ -68,7 +72,7 @@ function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) 
           class="font-jost text-xs font-semibold"
           style={{
             color: "var(--color-text-secondary)",
-            "letter-spacing": "0.1em",
+            "letter-spacing": "0.08em",
             "text-transform": "uppercase",
           }}
         >
@@ -132,7 +136,7 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
   return (
     <div
       data-preview-canvas
-      style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text); border: 2px solid var(--color-border);`}
+      style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text); border: 1px solid var(--color-border); border-radius: 16px;`}
       class="p-5"
     >
       <div class="pv-gallery">

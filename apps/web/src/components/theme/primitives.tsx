@@ -3,62 +3,78 @@ import { type JSX } from "solid-js";
 
 /**
  * Shared design vocabulary for the docs-site chrome (landing + Theme Studio),
- * mirroring the solid-spectrum aesthetic: sharp corners (zero radius), 2px
- * borders, left accent bars, Jost display / Sen body, and a genuine two-tone
- * blue+pink accent. Chrome colors ride the auto-theming `--docs-*` tokens; the
- * two accents are the real brand vars (`--docs-accent` blue, `--color-accent`
- * pink) so the palette stays distinct instead of collapsing to one hue.
+ * faithful to Adobe Spectrum 2: rounded corners, calm neutral surfaces, subtle
+ * 1px borders + soft shadows, a SINGLE blue accent, generous whitespace, no glow.
+ * This mirrors the rounded, soft `@proyecto-viviana/ui` components the pages
+ * showcase, so chrome and components read as one system. Chrome colors ride the
+ * auto-theming `--docs-*` tokens; the accent is `--docs-accent` (blue).
+ *
+ * A few legacy export names (PINK, PINK_GLOW, AccentBar, tone props) are kept as
+ * thin aliases so existing imports keep compiling — the palette is now blue-only,
+ * so they resolve to the single accent.
  */
 
-export const BLUE = "var(--docs-accent)";
-export const PINK = "var(--color-accent)";
+export const ACCENT = "var(--docs-accent)";
+export const BLUE = ACCENT;
+/** @deprecated palette is blue-only now — kept as an alias so imports compile. */
+export const PINK = ACCENT;
+/** @deprecated no glow in the Spectrum-2 look. */
+export const PINK_GLOW = "transparent";
 
-export const PINK_GLOW = "color-mix(in srgb, var(--color-accent) 55%, transparent)";
-export const BLUE_GLOW = "color-mix(in srgb, var(--docs-accent) 45%, transparent)";
-export const PINK_TINT = "color-mix(in srgb, var(--color-accent) 14%, transparent)";
-export const BLUE_TINT = "color-mix(in srgb, var(--docs-accent) 14%, transparent)";
-export const PINK_EDGE = "color-mix(in srgb, var(--color-accent) 40%, transparent)";
-export const BLUE_EDGE = "color-mix(in srgb, var(--docs-accent) 40%, transparent)";
-
-export const FONT_DISPLAY = "'Jost', system-ui, sans-serif";
+export const FONT_DISPLAY = "'Sen', system-ui, sans-serif";
 export const FONT_BODY = "'Sen', system-ui, sans-serif";
 
-/** Dark ink used for text sitting on a solid accent fill — legible on both hues. */
-const INK = "#141414";
-
-type Tone = "blue" | "pink";
-const hue = (tone: Tone) => (tone === "blue" ? BLUE : PINK);
-const edge = (tone: Tone) => (tone === "blue" ? BLUE_EDGE : PINK_EDGE);
-
-/** A 3px vertical accent bar — the recurring left-rule motif. */
-export function AccentBar(props: { tone?: Tone; height?: string }) {
+/** A soft rounded blue marker — the subtle Spectrum accent tick. */
+export function AccentBar(props: { tone?: unknown; height?: string }) {
   return (
     <span
       aria-hidden="true"
       style={{
         display: "inline-block",
-        width: "3px",
-        height: props.height ?? "32px",
-        background: hue(props.tone ?? "pink"),
+        width: "4px",
+        height: props.height ?? "20px",
+        "border-radius": "999px",
+        background: ACCENT,
         "flex-shrink": "0",
       }}
     />
   );
 }
 
-/** Sharp uppercase eyebrow pill on a solid accent fill. */
-export function PillTag(props: { tone?: Tone; children: JSX.Element }) {
+/** A small uppercase section label — clean typographic eyebrow, accent-colored. */
+export function SectionLabel(props: { children: JSX.Element }) {
   return (
     <span
       style={{
-        "align-self": "flex-start",
-        background: hue(props.tone ?? "pink"),
-        color: INK,
-        padding: "4px 12px",
+        "font-family": FONT_DISPLAY,
+        "font-size": "12px",
+        "font-weight": "700",
+        "letter-spacing": "0.08em",
+        "text-transform": "uppercase",
+        color: "var(--docs-text-secondary)",
+      }}
+    >
+      {props.children}
+    </span>
+  );
+}
+
+/** Soft rounded eyebrow pill — faint accent tint, accent text (no neon fill). */
+export function PillTag(props: { tone?: unknown; children: JSX.Element }) {
+  return (
+    <span
+      style={{
+        "align-self": "center",
+        display: "inline-flex",
+        "align-items": "center",
+        background: "var(--pv-accent-tint)",
+        color: ACCENT,
+        padding: "6px 14px",
+        "border-radius": "999px",
         "font-family": FONT_DISPLAY,
         "font-size": "11px",
-        "font-weight": "600",
-        "letter-spacing": "0.12em",
+        "font-weight": "700",
+        "letter-spacing": "0.08em",
         "text-transform": "uppercase",
       }}
     >
@@ -67,27 +83,36 @@ export function PillTag(props: { tone?: Tone; children: JSX.Element }) {
   );
 }
 
-/** A bordered feature card with an inner accent bar + Jost title + muted body. */
-export function FeatureBlock(props: { tone: Tone; title: string; children: JSX.Element }) {
+/** A soft rounded feature card: small accent dot + title + muted body. */
+export function FeatureBlock(props: { tone?: unknown; title: string; children: JSX.Element }) {
   return (
     <div
+      class="pv-card"
       style={{
-        padding: "16px",
-        background: "var(--docs-bg-elevated)",
-        border: `2px solid ${edge(props.tone)}`,
+        padding: "22px",
         display: "flex",
         "flex-direction": "column",
-        gap: "10px",
+        gap: "12px",
       }}
     >
       <div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-        <AccentBar tone={props.tone} height="28px" />
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-block",
+            width: "10px",
+            height: "10px",
+            "border-radius": "3px",
+            background: ACCENT,
+            "flex-shrink": "0",
+          }}
+        />
         <h3
           style={{
             "font-family": FONT_DISPLAY,
-            "font-size": "13px",
-            "font-weight": "600",
-            "letter-spacing": "0.02em",
+            "font-size": "15px",
+            "font-weight": "700",
+            "letter-spacing": "-0.01em",
             color: "var(--docs-text)",
           }}
         >
@@ -97,7 +122,7 @@ export function FeatureBlock(props: { tone: Tone; title: string; children: JSX.E
       <p
         style={{
           "font-family": FONT_BODY,
-          "font-size": "12px",
+          "font-size": "13.5px",
           "line-height": "1.6",
           color: "var(--docs-text-secondary)",
         }}
@@ -108,109 +133,89 @@ export function FeatureBlock(props: { tone: Tone; title: string; children: JSX.E
   );
 }
 
-/** Sharp CTA — solid pink w/ glow (primary) or outlined blue (secondary). */
+/** A titled, soft, rounded chrome panel. Optional trailing control in the header. */
+export function Panel(props: {
+  title: string;
+  children: JSX.Element;
+  trailing?: JSX.Element;
+}) {
+  return (
+    <section class="pv-card" style={{ padding: "24px" }}>
+      <div class="flex items-center justify-between gap-3" style={{ "margin-bottom": "18px" }}>
+        <h2
+          style={{
+            "font-family": FONT_DISPLAY,
+            "font-size": "13px",
+            "font-weight": "700",
+            "letter-spacing": "0.06em",
+            "text-transform": "uppercase",
+            color: "var(--docs-text-secondary)",
+          }}
+        >
+          {props.title}
+        </h2>
+        {props.trailing}
+      </div>
+      {props.children}
+    </section>
+  );
+}
+
+/** Spectrum-2 pill CTA — solid blue (primary) or outlined neutral (secondary). */
 export function CtaButton(props: {
   href: string;
   external?: boolean;
   tone?: "primary" | "secondary";
   children: JSX.Element;
 }) {
-  const primary = () => (props.tone ?? "primary") === "primary";
-
-  const base: JSX.CSSProperties = {
-    display: "inline-flex",
-    "align-items": "center",
-    gap: "6px",
-    padding: "11px 22px",
-    "font-family": FONT_DISPLAY,
-    "font-size": "13px",
-    "font-weight": "600",
-    "letter-spacing": "0.02em",
-    "text-decoration": "none",
-    "white-space": "nowrap",
-    transition: "filter 0.2s ease, background 0.2s ease, box-shadow 0.2s ease",
-    cursor: "pointer",
-  };
-
-  const style: JSX.CSSProperties = primary()
-    ? {
-        ...base,
-        background: PINK,
-        color: INK,
-        border: `2px solid ${PINK}`,
-        filter: `drop-shadow(0 0 9px ${PINK_GLOW})`,
-      }
-    : {
-        ...base,
-        background: "transparent",
-        color: BLUE,
-        border: `2px solid ${BLUE}`,
-      };
-
-  const onEnter = (e: MouseEvent & { currentTarget: HTMLElement }) => {
-    if (primary()) e.currentTarget.style.filter = `drop-shadow(0 0 16px ${PINK_GLOW})`;
-    else e.currentTarget.style.background = BLUE_TINT;
-  };
-  const onLeave = (e: MouseEvent & { currentTarget: HTMLElement }) => {
-    if (primary()) e.currentTarget.style.filter = `drop-shadow(0 0 9px ${PINK_GLOW})`;
-    else e.currentTarget.style.background = "transparent";
-  };
+  const cls = () => `pv-cta pv-cta--${props.tone ?? "primary"}`;
 
   if (props.external) {
     return (
-      <a
-        href={props.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={style}
-        onMouseEnter={onEnter}
-        onMouseLeave={onLeave}
-      >
+      <a href={props.href} target="_blank" rel="noopener noreferrer" class={cls()}>
         {props.children}
       </a>
     );
   }
-
   return (
-    <Link to={props.href} style={style} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+    <Link to={props.href} class={cls()}>
       {props.children}
     </Link>
   );
 }
 
-/** 32px status-bar footer, matching the solid-spectrum site. */
+/** Quiet footer bar — 1px top rule, calm links. */
 export function SiteFooter() {
   return (
     <footer
       style={{
-        "min-height": "32px",
+        "min-height": "44px",
         display: "flex",
         "flex-wrap": "wrap",
         "align-items": "center",
         "justify-content": "space-between",
         gap: "8px",
-        padding: "0 24px",
-        "border-top": `1px solid var(--docs-border)`,
-        background: "var(--docs-bg-elevated)",
-        "font-family": FONT_DISPLAY,
-        "font-size": "11px",
+        padding: "12px 32px",
+        "border-top": "1px solid var(--docs-border)",
+        "font-family": FONT_BODY,
+        "font-size": "13px",
       }}
     >
-      <span style={{ "font-weight": "600", color: "var(--docs-text)", "letter-spacing": "0.02em" }}>
+      <span style={{ "font-weight": "600", color: "var(--docs-text-secondary)" }}>
         Proyecto Viviana
       </span>
-      <div style={{ display: "flex", gap: "16px", padding: "8px 0" }}>
-        <Link to="/home" style={{ color: BLUE, "text-decoration": "none" }}>
+      <div style={{ display: "flex", gap: "20px" }}>
+        <Link to="/home" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>
           Home
         </Link>
-        <Link to="/theme" style={{ color: PINK, "text-decoration": "none" }}>
+        <Link to="/theme" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>
           Theme
         </Link>
         <a
           href="https://www.npmjs.com/package/@proyecto-viviana/ui"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: BLUE, "text-decoration": "none" }}
+          style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
         >
           npm
         </a>

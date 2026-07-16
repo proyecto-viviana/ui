@@ -36,7 +36,7 @@ export function ColorKnob(props: ColorKnobProps) {
           value={props.value}
           onInput={(e) => props.onChange(e.currentTarget.value)}
           class="h-10 w-10 shrink-0 cursor-pointer bg-transparent p-0"
-          style={{ border: "2px solid var(--docs-border)" }}
+          style={{ border: "1px solid var(--docs-border)", "border-radius": "8px" }}
         />
         <div class="flex flex-col gap-0.5">
           <input
@@ -49,7 +49,8 @@ export function ColorKnob(props: ColorKnobProps) {
             }}
             class="w-24 px-2 py-1 text-xs"
             style={{
-              border: "2px solid var(--docs-border)",
+              border: "1px solid var(--docs-border)",
+              "border-radius": "8px",
               background: "var(--docs-bg)",
               color: "var(--docs-text)",
               "font-family": "'JetBrains Mono', ui-monospace, monospace",

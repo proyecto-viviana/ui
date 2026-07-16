@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, onMount, Show, type JSX } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import { Header } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
 import {
-  AccentBar,
-  BLUE,
+  ACCENT,
   FONT_BODY,
   FONT_DISPLAY,
+  Panel,
   PillTag,
-  PINK,
-  PINK_GLOW,
+  SectionLabel,
   SiteFooter,
 } from "@/components/theme/primitives";
 import { buildThemeCss, THEME_HOWTO } from "@/utils/themeExport";
@@ -20,44 +19,6 @@ import "@/components/theme/studio.css";
 export const Route = createFileRoute("/theme")({
   component: ThemePage,
 });
-
-// A titled chrome panel: sharp corners, 2px border, left accent bar on the heading.
-function Panel(props: {
-  tone: "blue" | "pink";
-  title: string;
-  children: JSX.Element;
-  trailing?: JSX.Element;
-}) {
-  return (
-    <section
-      style={{
-        background: "var(--docs-bg-elevated)",
-        border: "2px solid var(--docs-border)",
-        padding: "20px",
-      }}
-    >
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-          <AccentBar tone={props.tone} height="20px" />
-          <h2
-            style={{
-              "font-family": FONT_DISPLAY,
-              "font-size": "13px",
-              "font-weight": "600",
-              "letter-spacing": "0.12em",
-              "text-transform": "uppercase",
-              color: "var(--docs-text)",
-            }}
-          >
-            {props.title}
-          </h2>
-        </div>
-        {props.trailing}
-      </div>
-      {props.children}
-    </section>
-  );
-}
 
 function ThemePage() {
   const [result, setResult] = createSignal<ThemeResult>({
@@ -98,27 +59,24 @@ function ThemePage() {
 
       <main id="main-content" class="pv-wrap pv-wrap--wide flex-1 px-6 py-10">
         {/* Title */}
-        <div class="flex flex-col items-start gap-4" style={{ "margin-bottom": "2rem" }}>
-          <PillTag tone="blue">Theme studio</PillTag>
+        <div class="flex flex-col items-start gap-4" style={{ "margin-bottom": "2.5rem" }}>
+          <PillTag>Theme studio</PillTag>
           <h1
             style={{
               "font-family": FONT_DISPLAY,
               "font-size": "clamp(2rem, 5vw, 3rem)",
               "font-weight": "700",
-              "line-height": "1.05",
+              "line-height": "1.08",
               "letter-spacing": "-0.02em",
             }}
           >
-            Tune it. <span style={{ color: BLUE }}>Preview it.</span>{" "}
-            <span style={{ color: PINK }}>Ship it.</span>
+            Tune it. <span style={{ color: ACCENT }}>Preview it.</span> Ship it.
           </h1>
           <p
             style={{
-              "max-width": "560px",
-              "border-left": `3px solid ${PINK}`,
-              "padding-left": "14px",
-              "font-size": "14px",
-              "line-height": "1.6",
+              "max-width": "600px",
+              "font-size": "15px",
+              "line-height": "1.65",
               color: "var(--docs-text-secondary)",
             }}
           >
@@ -132,30 +90,24 @@ function ThemePage() {
         <div class="pv-studio">
           {/* Controls + export */}
           <div class="pv-studio__aside flex flex-col gap-6">
-            <Panel tone="blue" title="Create theme">
+            <Panel title="Create theme">
               <ThemeStudio onChange={setResult} />
             </Panel>
 
             {/* Copy panel */}
             <Panel
-              tone="pink"
               title="Copy your theme"
               trailing={
                 <button
                   type="button"
                   onClick={copy}
+                  class="pv-cta pv-cta--primary"
                   style={{
-                    "font-family": FONT_DISPLAY,
-                    "font-size": "12px",
-                    "font-weight": "600",
-                    "letter-spacing": "0.04em",
-                    padding: "7px 16px",
-                    cursor: "pointer",
-                    color: "#141414",
-                    background: copied() ? "var(--color-success)" : PINK,
-                    border: `2px solid ${copied() ? "var(--color-success)" : PINK}`,
-                    filter: copied() ? "none" : `drop-shadow(0 0 8px ${PINK_GLOW})`,
-                    transition: "background 0.2s ease",
+                    padding: "8px 18px",
+                    "font-size": "13px",
+                    ...(copied()
+                      ? { background: "var(--color-success)", "box-shadow": "none" }
+                      : {}),
                   }}
                 >
                   {copied() ? "Copied!" : "Copy CSS"}
@@ -178,6 +130,7 @@ function ThemePage() {
                   background: "var(--docs-bg)",
                   color: "var(--docs-text-secondary)",
                   border: "1px solid var(--docs-border)",
+                  "border-radius": "var(--pv-radius-md)",
                   "font-family": "'JetBrains Mono', ui-monospace, monospace",
                   "font-size": "11px",
                   "line-height": "1.65",
@@ -191,31 +144,18 @@ function ThemePage() {
           {/* Live preview */}
           <div class="pv-studio__main">
             <div class="mb-4 flex items-center justify-between gap-3">
-              <div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
-                <AccentBar tone="pink" height="20px" />
-                <h2
-                  style={{
-                    "font-family": FONT_DISPLAY,
-                    "font-size": "13px",
-                    "font-weight": "600",
-                    "letter-spacing": "0.12em",
-                    "text-transform": "uppercase",
-                    color: "var(--docs-text)",
-                  }}
-                >
-                  Live preview
-                </h2>
-              </div>
+              <SectionLabel>Live preview</SectionLabel>
               <span
                 style={{
                   "font-family": FONT_DISPLAY,
                   "font-size": "11px",
-                  "font-weight": "600",
-                  "letter-spacing": "0.08em",
+                  "font-weight": "700",
+                  "letter-spacing": "0.06em",
                   "text-transform": "uppercase",
-                  padding: "4px 10px",
-                  color: BLUE,
-                  border: `2px solid ${BLUE}`,
+                  padding: "5px 12px",
+                  "border-radius": "999px",
+                  color: ACCENT,
+                  background: "var(--pv-accent-tint)",
                 }}
               >
                 {result().scheme} scheme
@@ -229,6 +169,7 @@ function ThemePage() {
                   style={{
                     "min-height": "24rem",
                     border: "1px dashed var(--docs-border)",
+                    "border-radius": "var(--pv-radius-lg)",
                     color: "var(--docs-text-secondary)",
                   }}
                 >
