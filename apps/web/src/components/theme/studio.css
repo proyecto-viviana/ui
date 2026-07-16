@@ -1,0 +1,119 @@
+/* Layout for the bespoke landing (/home) and Theme Studio (/theme).
+
+   This app removed its Tailwind tooling (see `chore: remove tailwind tooling`);
+   `local-utilities.css` is now a frozen, curated utility set with NO JIT, so any
+   responsive or arbitrary-value class silently no-ops. Structural layout that
+   needs breakpoints or grid templates is therefore expressed here as real CSS.
+   Decorative styling stays inline in the components — this file owns structure,
+   grid tracks, and media queries only. Class names are `pv-`-prefixed to stay
+   clear of the utility vocabulary. */
+
+/* Centered page column */
+.pv-wrap {
+  width: 100%;
+  margin-inline: auto;
+}
+.pv-wrap--wide {
+  max-width: 1400px;
+}
+.pv-wrap--narrow {
+  max-width: 1080px;
+}
+
+/* ── /home ─────────────────────────────────────────────────────────────── */
+
+/* Hero vertical rhythm */
+.pv-hero {
+  padding-block: 5rem;
+}
+@media (min-width: 640px) {
+  .pv-hero {
+    padding-block: 7rem;
+  }
+}
+
+/* Feature blocks: single column → three across on wider viewports */
+.pv-features {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 720px) {
+  .pv-features {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ── /theme (Theme Studio) ─────────────────────────────────────────────── */
+
+/* Controls | live preview. Stacks below lg; side-by-side at lg with a
+   fixed-ish control rail and a flexible preview column. */
+.pv-studio {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .pv-studio {
+    grid-template-columns: minmax(320px, 400px) 1fr;
+  }
+  .pv-studio__aside {
+    position: sticky;
+    top: 88px;
+  }
+}
+/* Let both tracks shrink so long content (the copy block, wide previews)
+   never forces horizontal overflow. */
+.pv-studio__aside,
+.pv-studio__main {
+  min-width: 0;
+}
+
+/* Knob grid: single column → two across once there's room. `minmax(0, …)`
+   lets the tracks split the (narrow) control rail instead of inflating to each
+   knob's min-content and overflowing into the preview column. */
+.pv-knobs {
+  display: grid;
+  gap: 1rem 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 560px) {
+  .pv-knobs {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+/* Each knob may shrink to fit its cell rather than push the track wider. */
+.pv-knobs > * {
+  min-width: 0;
+}
+
+/* Copy-CSS block: wrap long lines (the how-to comment is one long line),
+   cap the height, and scroll vertically — never widen the layout. */
+.pv-copy-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow-y: auto;
+  max-height: 18rem;
+}
+
+/* Live-preview gallery inside the canvas: single column → two across.
+   `--wide` panels span the full row. */
+.pv-gallery {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 640px) {
+  .pv-gallery {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+.pv-gallery__wide {
+  grid-column: 1 / -1;
+}
+/* Preview panels shrink to their cell so a wide inner component never widens
+   the canvas. */
+.pv-gallery > * {
+  min-width: 0;
+}

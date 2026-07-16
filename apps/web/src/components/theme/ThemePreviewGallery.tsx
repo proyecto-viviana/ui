@@ -33,6 +33,7 @@ import { TimelineItem } from "@proyecto-viviana/ui/TimelineItem";
 import { Logo } from "@proyecto-viviana/ui/Logo";
 import { type TokenMap } from "@/utils/themeBase";
 import { tokensToInlineStyle } from "@/utils/themeGen";
+import "./studio.css";
 
 export interface ThemePreviewGalleryProps {
   /** Fully-resolved --color-* map for the scheme being previewed. */
@@ -40,23 +41,40 @@ export interface ThemePreviewGalleryProps {
   scheme: "dark" | "light";
 }
 
-// A titled sub-panel inside the canvas.
+// A titled sub-panel inside the canvas. Sharp corners + left accent bar, echoing
+// the site chrome; its colors ride the previewed --color-* map (not --docs-*).
 function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) {
   return (
     <section
-      class="rounded-xl p-4"
-      classList={{ "sm:col-span-2": props.wide }}
+      class="p-4"
+      classList={{ "pv-gallery__wide": props.wide }}
       style={{
         background: "var(--color-surface)",
-        border: "1px solid var(--color-border)",
+        border: "2px solid var(--color-border)",
       }}
     >
-      <h3
-        class="mb-3 font-jost text-xs font-semibold uppercase tracking-wide"
-        style={{ color: "var(--color-text-secondary)" }}
-      >
-        {props.title}
-      </h3>
+      <div class="mb-3 flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-block",
+            width: "3px",
+            height: "14px",
+            background: "var(--color-primary-500)",
+            "flex-shrink": "0",
+          }}
+        />
+        <h3
+          class="font-jost text-xs font-semibold"
+          style={{
+            color: "var(--color-text-secondary)",
+            "letter-spacing": "0.1em",
+            "text-transform": "uppercase",
+          }}
+        >
+          {props.title}
+        </h3>
+      </div>
       {props.children}
     </section>
   );
@@ -114,10 +132,10 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
   return (
     <div
       data-preview-canvas
-      style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text);`}
-      class="rounded-2xl p-5 sm:p-6"
+      style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text); border: 2px solid var(--color-border);`}
+      class="p-5"
     >
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="pv-gallery">
         <Panel title="Buttons">
           <div class="flex flex-wrap gap-2">
             <Button variant="primary">Primary</Button>
@@ -326,7 +344,7 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
             timestamp="2m ago"
             unreadCount={3}
           />
-          <div class="mt-3 space-y-2 rounded-lg p-3" style={{ background: "var(--color-surface-elevated)" }}>
+          <div class="mt-3 space-y-2 p-3" style={{ background: "var(--color-surface-elevated)" }}>
             <ConversationBubble content="Hi there!" sender="other" timestamp="10:30 AM" />
             <ConversationBubble content="Love the new palette" sender="user" timestamp="10:31 AM" />
           </div>

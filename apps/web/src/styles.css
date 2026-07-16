@@ -4,14 +4,25 @@
    custom components' extracted atomic CSS. */
 @import "@proyecto-viviana/ui/components.css";
 
-/* Docs site semantic tokens — bound to solid-spectrum's data-color-scheme attribute. */
+/* Docs-site semantic tokens — driven by the data-color-scheme attribute (which
+   useTheme() toggles), NOT by light-dark(): the CSS color-scheme property is
+   never set here, so light-dark() would freeze on its light branch. Dark is the
+   zero-specificity default so any [data-color-scheme="light"] rule overrides it. */
 :where(:root) {
-  --docs-bg: var(--s2-container-bg);
-  --docs-bg-elevated: light-dark(rgb(248, 248, 248), rgb(27, 27, 27));
-  --docs-text: light-dark(rgb(23, 23, 23), rgb(250, 250, 250));
-  --docs-text-secondary: light-dark(rgb(82, 82, 82), rgb(163, 163, 163));
-  --docs-border: light-dark(rgb(229, 229, 229), rgb(38, 38, 38));
-  --docs-accent: light-dark(rgb(38, 128, 235), rgb(75, 163, 255));
+  --docs-bg: rgb(10, 10, 10);
+  --docs-bg-elevated: rgb(27, 27, 27);
+  --docs-text: rgb(250, 250, 250);
+  --docs-text-secondary: rgb(163, 163, 163);
+  --docs-border: rgb(38, 38, 38);
+  --docs-accent: rgb(75, 163, 255);
+}
+[data-color-scheme="light"] {
+  --docs-bg: rgb(255, 255, 255);
+  --docs-bg-elevated: rgb(248, 248, 248);
+  --docs-text: rgb(23, 23, 23);
+  --docs-text-secondary: rgb(82, 82, 82);
+  --docs-border: rgb(229, 229, 229);
+  --docs-accent: rgb(38, 128, 235);
 }
 
 /* Viviana UI theme tokens */

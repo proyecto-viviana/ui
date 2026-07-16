@@ -1,14 +1,63 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, onMount, Show, type JSX } from "solid-js";
 import { Header } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
+import {
+  AccentBar,
+  BLUE,
+  FONT_BODY,
+  FONT_DISPLAY,
+  PillTag,
+  PINK,
+  PINK_GLOW,
+  SiteFooter,
+} from "@/components/theme/primitives";
 import { buildThemeCss, THEME_HOWTO } from "@/utils/themeExport";
 import { buildThemeTokens, DEFAULT_INPUTS } from "@/utils/themeGen";
+import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/theme")({
   component: ThemePage,
 });
+
+// A titled chrome panel: sharp corners, 2px border, left accent bar on the heading.
+function Panel(props: {
+  tone: "blue" | "pink";
+  title: string;
+  children: JSX.Element;
+  trailing?: JSX.Element;
+}) {
+  return (
+    <section
+      style={{
+        background: "var(--docs-bg-elevated)",
+        border: "2px solid var(--docs-border)",
+        padding: "20px",
+      }}
+    >
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
+          <AccentBar tone={props.tone} height="20px" />
+          <h2
+            style={{
+              "font-family": FONT_DISPLAY,
+              "font-size": "13px",
+              "font-weight": "600",
+              "letter-spacing": "0.12em",
+              "text-transform": "uppercase",
+              color: "var(--docs-text)",
+            }}
+          >
+            {props.title}
+          </h2>
+        </div>
+        {props.trailing}
+      </div>
+      {props.children}
+    </section>
+  );
+}
 
 function ThemePage() {
   const [result, setResult] = createSignal<ThemeResult>({
@@ -42,76 +91,132 @@ function ThemePage() {
         color: "var(--docs-text)",
         display: "flex",
         "flex-direction": "column",
-        "font-family": "'Sen', system-ui, sans-serif",
+        "font-family": FONT_BODY,
       }}
     >
       <Header />
 
-      <main id="main-content" class="mx-auto w-full max-w-[1400px] flex-1 px-4 py-8 sm:px-6">
-        <div class="mb-8">
-          <h1 class="font-jost text-3xl font-bold" style={{ color: "var(--docs-text)" }}>
-            Theme Studio
+      <main id="main-content" class="pv-wrap pv-wrap--wide flex-1 px-6 py-10">
+        {/* Title */}
+        <div class="flex flex-col items-start gap-4" style={{ "margin-bottom": "2rem" }}>
+          <PillTag tone="blue">Theme studio</PillTag>
+          <h1
+            style={{
+              "font-family": FONT_DISPLAY,
+              "font-size": "clamp(2rem, 5vw, 3rem)",
+              "font-weight": "700",
+              "line-height": "1.05",
+              "letter-spacing": "-0.02em",
+            }}
+          >
+            Tune it. <span style={{ color: BLUE }}>Preview it.</span>{" "}
+            <span style={{ color: PINK }}>Ship it.</span>
           </h1>
-          <p class="mt-2 max-w-2xl text-sm" style={{ color: "var(--docs-text-secondary)" }}>
-            Tune the color families below and watch a live slice of{" "}
-            <code class="font-mono text-[13px]">@proyecto-viviana/ui</code> react instantly. When it looks
-            right, copy the CSS and paste it into your app to reskin the whole library.
+          <p
+            style={{
+              "max-width": "560px",
+              "border-left": `3px solid ${PINK}`,
+              "padding-left": "14px",
+              "font-size": "14px",
+              "line-height": "1.6",
+              color: "var(--docs-text-secondary)",
+            }}
+          >
+            Adjust the color families and watch a live slice of{" "}
+            <code style={{ "font-family": "monospace", "font-size": "13px" }}>@proyecto-viviana/ui</code>{" "}
+            react instantly. When it looks right, copy the CSS and paste it into your app to re-skin the whole
+            library.
           </p>
         </div>
 
-        <div class="grid gap-8 lg:grid-cols-[minmax(300px,380px)_1fr]">
+        <div class="pv-studio">
           {/* Controls + export */}
-          <div class="flex flex-col gap-6 lg:sticky lg:top-6 lg:self-start">
-            <div
-              class="rounded-2xl p-5"
-              style={{ background: "var(--docs-bg-elevated)", border: "1px solid var(--docs-border)" }}
-            >
+          <div class="pv-studio__aside flex flex-col gap-6">
+            <Panel tone="blue" title="Create theme">
               <ThemeStudio onChange={setResult} />
-            </div>
+            </Panel>
 
             {/* Copy panel */}
-            <div
-              class="rounded-2xl p-5"
-              style={{ background: "var(--docs-bg-elevated)", border: "1px solid var(--docs-border)" }}
-            >
-              <div class="mb-3 flex items-center justify-between">
-                <h2 class="font-jost text-lg font-semibold" style={{ color: "var(--docs-text)" }}>
-                  Copy your theme
-                </h2>
+            <Panel
+              tone="pink"
+              title="Copy your theme"
+              trailing={
                 <button
                   type="button"
                   onClick={copy}
-                  class="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition"
-                  style={{ background: copied() ? "var(--color-success)" : "var(--color-primary-600)" }}
+                  style={{
+                    "font-family": FONT_DISPLAY,
+                    "font-size": "12px",
+                    "font-weight": "600",
+                    "letter-spacing": "0.04em",
+                    padding: "7px 16px",
+                    cursor: "pointer",
+                    color: "#141414",
+                    background: copied() ? "var(--color-success)" : PINK,
+                    border: `2px solid ${copied() ? "var(--color-success)" : PINK}`,
+                    filter: copied() ? "none" : `drop-shadow(0 0 8px ${PINK_GLOW})`,
+                    transition: "background 0.2s ease",
+                  }}
                 >
                   {copied() ? "Copied!" : "Copy CSS"}
                 </button>
-              </div>
-              <p class="mb-3 text-[12px] leading-relaxed" style={{ color: "var(--docs-text-secondary)" }}>
+              }
+            >
+              <p
+                style={{
+                  "margin-bottom": "12px",
+                  "font-size": "12px",
+                  "line-height": "1.6",
+                  color: "var(--docs-text-secondary)",
+                }}
+              >
                 {THEME_HOWTO}
               </p>
               <pre
-                class="custom-scrollbar max-h-72 overflow-auto rounded-lg p-3 font-mono text-[11px] leading-relaxed"
+                class="custom-scrollbar pv-copy-pre p-3"
                 style={{
-                  background: "var(--color-bg-400)",
-                  color: "var(--color-text-secondary)",
+                  background: "var(--docs-bg)",
+                  color: "var(--docs-text-secondary)",
                   border: "1px solid var(--docs-border)",
+                  "font-family": "'JetBrains Mono', ui-monospace, monospace",
+                  "font-size": "11px",
+                  "line-height": "1.65",
                 }}
               >
                 {css()}
               </pre>
-            </div>
+            </Panel>
           </div>
 
           {/* Live preview */}
-          <div>
-            <div class="mb-3 flex items-center justify-between">
-              <h2 class="font-jost text-lg font-semibold" style={{ color: "var(--docs-text)" }}>
-                Live preview
-              </h2>
+          <div class="pv-studio__main">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div style={{ display: "flex", "align-items": "center", gap: "10px" }}>
+                <AccentBar tone="pink" height="20px" />
+                <h2
+                  style={{
+                    "font-family": FONT_DISPLAY,
+                    "font-size": "13px",
+                    "font-weight": "600",
+                    "letter-spacing": "0.12em",
+                    "text-transform": "uppercase",
+                    color: "var(--docs-text)",
+                  }}
+                >
+                  Live preview
+                </h2>
+              </div>
               <span
-                class="rounded-full px-2.5 py-0.5 text-[11px] font-medium capitalize"
-                style={{ background: "var(--docs-bg-elevated)", color: "var(--docs-text-secondary)" }}
+                style={{
+                  "font-family": FONT_DISPLAY,
+                  "font-size": "11px",
+                  "font-weight": "600",
+                  "letter-spacing": "0.08em",
+                  "text-transform": "uppercase",
+                  padding: "4px 10px",
+                  color: BLUE,
+                  border: `2px solid ${BLUE}`,
+                }}
               >
                 {result().scheme} scheme
               </span>
@@ -120,8 +225,12 @@ function ThemePage() {
               when={mounted()}
               fallback={
                 <div
-                  class="flex h-96 items-center justify-center rounded-2xl text-sm"
-                  style={{ border: "1px dashed var(--docs-border)", color: "var(--docs-text-secondary)" }}
+                  class="flex items-center justify-center text-sm"
+                  style={{
+                    "min-height": "24rem",
+                    border: "1px dashed var(--docs-border)",
+                    color: "var(--docs-text-secondary)",
+                  }}
                 >
                   Loading preview…
                 </div>
@@ -132,6 +241,8 @@ function ThemePage() {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

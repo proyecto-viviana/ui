@@ -1,5 +1,6 @@
 import { createEffect, createMemo, createSignal, For } from "solid-js";
 import { ColorKnob } from "./ColorKnob";
+import { BLUE, FONT_DISPLAY, PINK } from "./primitives";
 import { type TokenMap } from "@/utils/themeBase";
 import {
   buildThemeTokens,
@@ -48,19 +49,7 @@ export function ThemeStudio(props: ThemeStudioProps) {
 
   return (
     <div class="flex flex-col gap-5">
-      <div class="flex items-center justify-between">
-        <h2 class="font-jost text-lg font-semibold text-primary-100">Create theme</h2>
-        <button
-          type="button"
-          onClick={reset}
-          disabled={isDefault()}
-          class="rounded-md border border-primary-700/50 px-2.5 py-1 text-xs text-primary-300 transition hover:bg-bg-300 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Reset
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
+      <div class="pv-knobs">
         <For each={FAMILIES}>
           {(fam) => (
             <ColorKnob
@@ -73,25 +62,81 @@ export function ThemeStudio(props: ThemeStudioProps) {
         </For>
       </div>
 
-      <div class="flex items-center gap-2 border-t border-primary-800/40 pt-4">
-        <span class="text-xs font-medium uppercase tracking-wide text-primary-400">Preview scheme</span>
-        <div class="inline-flex overflow-hidden rounded-md border border-primary-700/50">
-          <For each={["dark", "light"] as Scheme[]}>
-            {(s) => (
-              <button
-                type="button"
-                onClick={() => setScheme(s)}
-                class="px-3 py-1 text-xs capitalize transition"
-                classList={{
-                  "bg-primary-600 text-white": scheme() === s,
-                  "text-primary-300 hover:bg-bg-300": scheme() !== s,
-                }}
-              >
-                {s}
-              </button>
-            )}
-          </For>
+      <div
+        class="flex flex-wrap items-center justify-between gap-3 pt-4"
+        style={{ "border-top": "1px solid var(--docs-border)" }}
+      >
+        <div class="flex items-center gap-3">
+          <span
+            style={{
+              "font-family": FONT_DISPLAY,
+              "font-size": "11px",
+              "font-weight": "600",
+              "letter-spacing": "0.1em",
+              "text-transform": "uppercase",
+              color: "var(--docs-text-secondary)",
+            }}
+          >
+            Preview scheme
+          </span>
+          <div style={{ display: "inline-flex", border: `2px solid var(--docs-border)` }}>
+            <For each={["dark", "light"] as Scheme[]}>
+              {(s) => (
+                <button
+                  type="button"
+                  onClick={() => setScheme(s)}
+                  style={{
+                    "font-family": FONT_DISPLAY,
+                    "font-size": "11px",
+                    "font-weight": "600",
+                    "letter-spacing": "0.04em",
+                    "text-transform": "capitalize",
+                    padding: "5px 14px",
+                    cursor: "pointer",
+                    border: "none",
+                    color: scheme() === s ? "#141414" : "var(--docs-text-secondary)",
+                    background: scheme() === s ? BLUE : "transparent",
+                    transition: "background 0.2s ease, color 0.2s ease",
+                  }}
+                >
+                  {s}
+                </button>
+              )}
+            </For>
+          </div>
         </div>
+
+        <button
+          type="button"
+          onClick={reset}
+          disabled={isDefault()}
+          style={{
+            "font-family": FONT_DISPLAY,
+            "font-size": "11px",
+            "font-weight": "600",
+            "letter-spacing": "0.06em",
+            "text-transform": "uppercase",
+            padding: "5px 12px",
+            border: "2px solid var(--docs-border)",
+            background: "transparent",
+            color: "var(--docs-text-secondary)",
+            cursor: isDefault() ? "not-allowed" : "pointer",
+            opacity: isDefault() ? "0.4" : "1",
+            transition: "border-color 0.2s ease, color 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            if (!isDefault()) {
+              e.currentTarget.style.borderColor = PINK;
+              e.currentTarget.style.color = "var(--docs-text)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--docs-border)";
+            e.currentTarget.style.color = "var(--docs-text-secondary)";
+          }}
+        >
+          Reset
+        </button>
       </div>
     </div>
   );

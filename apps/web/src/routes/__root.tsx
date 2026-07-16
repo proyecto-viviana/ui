@@ -65,8 +65,9 @@ function RootDocument(props: { children: JSX.Element }) {
       <head>
         <HydrationScript />
         <HeadContent />
-        {/* Resolve theme before paint: localStorage → system preference → dark */}
-        <script>{`(function(){try{var t=localStorage.getItem('pv-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t)}else{var s=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';document.documentElement.setAttribute('data-theme',s)}}catch(e){}})()`}</script>
+        {/* Resolve theme before paint: localStorage → system preference → dark.
+            Sets both data-theme (legacy) and data-color-scheme (the styling switch). */}
+        <script>{`(function(){try{var t=localStorage.getItem('pv-theme');var s=(t==='dark'||t==='light')?t:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',s);document.documentElement.setAttribute('data-color-scheme',s)}catch(e){}})()`}</script>
       </head>
       <body class="font-jost antialiased">
         <ErrorBoundary fallback={(err, reset) => <ErrorFallback error={err} reset={reset} />}>
