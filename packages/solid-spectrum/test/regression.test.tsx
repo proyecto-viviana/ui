@@ -1064,7 +1064,11 @@ describe("Regression: Well", () => {
     ));
 
     expect(screen.getByText("Emphasized content")).toBeInTheDocument();
-    expect(container.firstElementChild!.className).toContain("rounded-lg");
+    // Well is styled through the S2 `style()` macro (its CSS ships in the
+    // package's `styles.css` bundle), so its class is opaque atomic output —
+    // assert the container shape, not specific class names.
+    expect(container.firstElementChild!.tagName).toBe("DIV");
+    expect(container.firstElementChild!.className.trim()).not.toBe("");
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });
