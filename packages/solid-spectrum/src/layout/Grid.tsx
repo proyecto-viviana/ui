@@ -1,11 +1,12 @@
 import { type JSX, splitProps } from "solid-js";
+import { resolveGap } from "./Flex";
 
 export interface GridProps {
   /** The number of columns, or a grid-template-columns value. */
   columns?: number | string;
   /** The number of rows, or a grid-template-rows value. */
   rows?: number | string;
-  /** The gap between items. Accepts Tailwind gap values. */
+  /** The gap between items. Accepts a t-shirt size, a number (spacing scale), or a raw CSS length. */
   gap?: string | number;
   /** The column gap. */
   columnGap?: string | number;
@@ -27,6 +28,10 @@ export interface GridProps {
   children?: JSX.Element;
 }
 
+// Layout primitives emit inline CSS so the styling ships with the package for
+// installed consumers, rather than relying on Tailwind utility strings the
+// package ships no CSS for.
+
 /**
  * A CSS Grid layout component.
  */
@@ -47,7 +52,10 @@ export function Grid(props: GridProps): JSX.Element {
   ]);
 
   const gridStyle = (): JSX.CSSProperties => {
-    const s: JSX.CSSProperties = { ...local.style };
+    const s: JSX.CSSProperties = {
+      display: local.inline ? "inline-grid" : "grid",
+      ...local.style,
+    };
 
     if (local.columns !== undefined) {
       s["grid-template-columns"] =
@@ -60,42 +68,17 @@ export function Grid(props: GridProps): JSX.Element {
     if (local.areas) {
       s["grid-template-areas"] = local.areas.map((a) => `"${a}"`).join(" ");
     }
+    if (local.gap !== undefined) s.gap = resolveGap(local.gap);
+    if (local.columnGap !== undefined) s["column-gap"] = resolveGap(local.columnGap);
+    if (local.rowGap !== undefined) s["row-gap"] = resolveGap(local.rowGap);
+    if (local.alignItems) s["align-items"] = local.alignItems;
+    if (local.justifyItems) s["justify-items"] = local.justifyItems;
 
     return s;
   };
 
-  const classes = (): string => {
-    const parts: string[] = [local.inline ? "inline-grid" : "grid"];
-
-    if (local.gap !== undefined) parts.push(`gap-${local.gap}`);
-    if (local.columnGap !== undefined) parts.push(`gap-x-${local.columnGap}`);
-    if (local.rowGap !== undefined) parts.push(`gap-y-${local.rowGap}`);
-
-    if (local.alignItems) {
-      const map: Record<string, string> = {
-        start: "items-start",
-        center: "items-center",
-        end: "items-end",
-        stretch: "items-stretch",
-      };
-      parts.push(map[local.alignItems] ?? "");
-    }
-    if (local.justifyItems) {
-      const map: Record<string, string> = {
-        start: "justify-items-start",
-        center: "justify-items-center",
-        end: "justify-items-end",
-        stretch: "justify-items-stretch",
-      };
-      parts.push(map[local.justifyItems] ?? "");
-    }
-    if (local.class) parts.push(local.class);
-
-    return parts.filter(Boolean).join(" ");
-  };
-
   return (
-    <div {...rest} class={classes()} style={gridStyle()}>
+    <div {...rest} class={local.class} style={gridStyle()}>
       {local.children}
     </div>
   );

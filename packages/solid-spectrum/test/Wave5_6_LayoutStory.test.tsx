@@ -10,11 +10,14 @@ import { generatePowerset } from "../src/story-utils/generatePowerset";
 // Wave 5: Layout Utilities
 // ============================================
 
+// Layout primitives emit inline CSS (not Tailwind utility strings) so styling
+// ships with the package for installed consumers; assert the computed style.
+
 describe("Flex", () => {
-  it("renders with default flex class", () => {
+  it("renders with default flex display", () => {
     const { container } = render(() => <Flex>content</Flex>);
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("flex");
+    expect(div.style.display).toBe("flex");
     expect(div.textContent).toBe("content");
   });
 
@@ -25,8 +28,14 @@ describe("Flex", () => {
       </Flex>
     ));
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("flex-col");
-    expect(div.className).toContain("gap-4");
+    expect(div.style.getPropertyValue("flex-direction")).toBe("column");
+    expect(div.style.gap).toBe("1rem");
+  });
+
+  it("resolves t-shirt gap tokens", () => {
+    const { container } = render(() => <Flex gap="md">items</Flex>);
+    const div = container.firstElementChild as HTMLElement;
+    expect(div.style.gap).toBe("16px");
   });
 
   it("applies wrap and alignment", () => {
@@ -36,15 +45,15 @@ describe("Flex", () => {
       </Flex>
     ));
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("flex-wrap");
-    expect(div.className).toContain("items-center");
-    expect(div.className).toContain("justify-between");
+    expect(div.style.getPropertyValue("flex-wrap")).toBe("wrap");
+    expect(div.style.getPropertyValue("align-items")).toBe("center");
+    expect(div.style.getPropertyValue("justify-content")).toBe("space-between");
   });
 
   it("renders inline-flex when inline", () => {
     const { container } = render(() => <Flex inline>inline</Flex>);
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("inline-flex");
+    expect(div.style.display).toBe("inline-flex");
   });
 
   it("applies custom class", () => {
@@ -55,10 +64,10 @@ describe("Flex", () => {
 });
 
 describe("Grid", () => {
-  it("renders with default grid class", () => {
+  it("renders with default grid display", () => {
     const { container } = render(() => <Grid>content</Grid>);
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("grid");
+    expect(div.style.display).toBe("grid");
     expect(div.textContent).toBe("content");
   });
 
@@ -74,16 +83,16 @@ describe("Grid", () => {
     expect(div.style.getPropertyValue("grid-template-columns")).toBe("1fr 2fr");
   });
 
-  it("applies gap and alignment classes", () => {
+  it("applies gap and alignment", () => {
     const { container } = render(() => (
       <Grid gap={4} alignItems="center" justifyItems="end">
         items
       </Grid>
     ));
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("gap-4");
-    expect(div.className).toContain("items-center");
-    expect(div.className).toContain("justify-items-end");
+    expect(div.style.gap).toBe("1rem");
+    expect(div.style.getPropertyValue("align-items")).toBe("center");
+    expect(div.style.getPropertyValue("justify-items")).toBe("end");
   });
 
   it("applies areas as grid-template-areas", () => {
@@ -99,7 +108,7 @@ describe("Grid", () => {
   it("renders inline-grid when inline", () => {
     const { container } = render(() => <Grid inline>inline</Grid>);
     const div = container.firstElementChild as HTMLElement;
-    expect(div.className).toContain("inline-grid");
+    expect(div.style.display).toBe("inline-grid");
   });
 });
 

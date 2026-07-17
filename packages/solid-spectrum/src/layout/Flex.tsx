@@ -3,7 +3,7 @@ import { type JSX, splitProps } from "solid-js";
 export interface FlexProps {
   /** The flex direction. @default 'row' */
   direction?: "row" | "column" | "row-reverse" | "column-reverse";
-  /** The gap between items. Accepts Tailwind gap values. @default '0' */
+  /** The gap between items. Accepts a t-shirt size, a number (spacing scale), or a raw CSS length. @default '0' */
   gap?: string | number;
   /** Whether items should wrap. @default false */
   wrap?: boolean | "wrap" | "nowrap" | "wrap-reverse";
@@ -19,29 +19,43 @@ export interface FlexProps {
   children?: JSX.Element;
 }
 
-const directionMap: Record<string, string> = {
-  row: "flex-row",
-  column: "flex-col",
-  "row-reverse": "flex-row-reverse",
-  "column-reverse": "flex-col-reverse",
-};
+// Layout primitives emit inline CSS so the styling ships with the package for
+// installed consumers, rather than relying on Tailwind utility strings the
+// package ships no CSS for.
 
 const alignMap: Record<string, string> = {
-  start: "items-start",
-  center: "items-center",
-  end: "items-end",
-  stretch: "items-stretch",
-  baseline: "items-baseline",
+  start: "flex-start",
+  center: "center",
+  end: "flex-end",
+  stretch: "stretch",
+  baseline: "baseline",
 };
 
 const justifyMap: Record<string, string> = {
-  start: "justify-start",
-  center: "justify-center",
-  end: "justify-end",
-  between: "justify-between",
-  around: "justify-around",
-  evenly: "justify-evenly",
+  start: "flex-start",
+  center: "center",
+  end: "flex-end",
+  between: "space-between",
+  around: "space-around",
+  evenly: "space-evenly",
 };
+
+// t-shirt gap tokens map to the Spectrum spacing scale; a bare number follows
+// Tailwind's spacing scale (1 unit = 0.25rem); anything else is a raw CSS length.
+const gapTokens: Record<string, string> = {
+  xs: "4px",
+  sm: "8px",
+  md: "16px",
+  lg: "24px",
+  xl: "32px",
+};
+
+export function resolveGap(value: string | number): string {
+  if (typeof value === "number") return `${value * 0.25}rem`;
+  if (value in gapTokens) return gapTokens[value];
+  if (/^\d+(?:\.\d+)?$/.test(value)) return `${parseFloat(value) * 0.25}rem`;
+  return value;
+}
 
 /**
  * A flex container layout component.
@@ -58,31 +72,29 @@ export function Flex(props: FlexProps): JSX.Element {
     "children",
   ]);
 
-  const classes = (): string => {
-    const parts: string[] = [local.inline ? "inline-flex" : "flex"];
+  const flexStyle = (): JSX.CSSProperties => {
+    const s: JSX.CSSProperties = {
+      display: local.inline ? "inline-flex" : "flex",
+    };
 
-    if (local.direction) parts.push(directionMap[local.direction] ?? "flex-row");
-    if (local.gap !== undefined) {
-      parts.push(typeof local.gap === "number" ? `gap-${local.gap}` : `gap-${local.gap}`);
-    }
+    if (local.direction) s["flex-direction"] = local.direction;
+    if (local.gap !== undefined) s.gap = resolveGap(local.gap);
     if (local.wrap) {
-      parts.push(
+      s["flex-wrap"] =
         local.wrap === true || local.wrap === "wrap"
-          ? "flex-wrap"
+          ? "wrap"
           : local.wrap === "wrap-reverse"
-            ? "flex-wrap-reverse"
-            : "flex-nowrap",
-      );
+            ? "wrap-reverse"
+            : "nowrap";
     }
-    if (local.alignItems) parts.push(alignMap[local.alignItems] ?? "");
-    if (local.justifyContent) parts.push(justifyMap[local.justifyContent] ?? "");
-    if (local.class) parts.push(local.class);
+    if (local.alignItems) s["align-items"] = alignMap[local.alignItems];
+    if (local.justifyContent) s["justify-content"] = justifyMap[local.justifyContent];
 
-    return parts.filter(Boolean).join(" ");
+    return s;
   };
 
   return (
-    <div {...rest} class={classes()}>
+    <div {...rest} class={local.class} style={flexStyle()}>
       {local.children}
     </div>
   );
