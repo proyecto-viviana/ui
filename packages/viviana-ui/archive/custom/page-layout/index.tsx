@@ -2,7 +2,7 @@ import { type JSX, splitProps } from "solid-js";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A full-height page shell painted in Silapse surface/text
 // colors; `withHeader` reserves top space so a fixed header doesn't overlap.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface PageLayoutProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children: JSX.Element;

@@ -42,10 +42,6 @@ export type { ActionBarContainerProps, ActionBarProps } from "./actionbar";
 export { ActionGroup } from "./actiongroup";
 export type { ActionGroupProps } from "./actiongroup";
 
-// Alert
-export { Alert } from "./alert";
-export type { AlertProps, AlertVariant } from "./alert";
-
 // ActionButton / Button family
 export { ActionButton } from "./button/ActionButton";
 export type { ActionButtonProps, ActionButtonSize } from "./button/ActionButton";

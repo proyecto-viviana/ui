@@ -4,7 +4,7 @@ import { Avatar } from "@proyecto-viviana/solid-spectrum";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). Mirrors S2's UserCard shape (avatar + title/description +
 // footer actions) on the S2 spacing/radius/elevation ramps, in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface ProfileCardProps {
   username: string;

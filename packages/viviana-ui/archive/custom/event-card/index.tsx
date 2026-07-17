@@ -5,7 +5,7 @@ import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). An event summary card (S2 Card shape: preview + content +
 // footer) plus a compact list-item variant, on the S2 ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface EventCardProps {
   title: string;

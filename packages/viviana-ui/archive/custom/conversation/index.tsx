@@ -4,7 +4,7 @@ import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A conversation preview row, message bubbles, and a thread
 // list, on the S2 spacing/radius ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface Message {
   id: string;

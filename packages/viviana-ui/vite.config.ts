@@ -2,10 +2,13 @@ import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
 import { vivianaMacros } from "./src/vite";
 
-// viviana-ui re-exports solid-spectrum and adds its own product components (the
-// relocated cards / feed / shell pieces, styled via the S2 `style()` macro
-// through our own `../../style` seam). This build mirrors solid-spectrum's
-// `vite.config.ts` exactly: a dual pack so the components are consumable.
+// viviana-ui re-exports the solid-spectrum S2 ports and ships the theme/token
+// CSS + the `style()` macro seam (`src/style.ts`). The legacy custom product
+// components (cards / feed / shell pieces) have been archived out of the built
+// surface (see `archive/custom/`), so this build now only packs the re-export
+// barrel, per-component entries, and the style seam. It still mirrors
+// solid-spectrum's `vite.config.ts`: a dual pack so consumers can use either the
+// precompiled DOM build or the JSX-preserved `solid` condition.
 //
 //  - Pack 1 (.js): vite-plugin-solid (generate: "dom") compiles JSX to the Solid
 //    runtime — the `import`/`default` conditions, for consumers without a Solid
@@ -56,16 +59,6 @@ const entry = [
   "src/TextArea.ts",
   "src/TextField.ts",
   "src/TreeView.ts",
-  // Relocated viviana product components (Solid .tsx).
-  "src/CalendarCard.ts",
-  "src/Chip.ts",
-  "src/Conversation.ts",
-  "src/EventCard.ts",
-  "src/Logo.ts",
-  "src/PageLayout.ts",
-  "src/ProfileCard.ts",
-  "src/ProjectCard.ts",
-  "src/TimelineItem.ts",
 ];
 
 // Externalize solid-js and the workspace packages we re-export (and their

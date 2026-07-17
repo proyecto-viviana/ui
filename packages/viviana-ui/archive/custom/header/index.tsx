@@ -3,7 +3,7 @@ import { Logo, type LogoProps } from "../logo";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A top app-bar: centered max-width row with a logo group and
 // a nav slot, on the S2 ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface HeaderProps {
   logoImage?: JSX.Element;

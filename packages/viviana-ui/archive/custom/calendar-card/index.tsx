@@ -3,7 +3,7 @@ import { Chip } from "../chip";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A horizontal "followed calendar" card: square thumbnail +
 // title + followers line + tag chips, on the S2 ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface CalendarCardProps {
   title: string;

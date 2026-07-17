@@ -138,12 +138,22 @@
   color: var(--docs-accent);
 }
 
-/* Site wordmark. The Logo's two-tone brand paints `--color-primary-100` /
-   `--color-accent-500` — the latter the retired pink. Until the from-scratch
-   brand lands, repaint the chrome wordmark in the site palette (neutral text +
-   the single blue accent) by coloring the two child words directly. One class
-   (`.pv-wordmark > span`) outweighs the macro's single-class color rule, so no
-   !important is needed; the preview canvas keeps its own re-skinned Logo. */
+/* Site wordmark. A plain two-word mark (the legacy Logo component was archived
+   with the rest of the custom set). Typography mirrors the old `black`-weight
+   `title-xl` ramp; the two child words carry the site palette (neutral text +
+   the single blue accent). Until the from-scratch brand lands, this keeps the
+   chrome wordmark on-palette without pulling in an archived component. */
+.pv-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  column-gap: 8px;
+  white-space: nowrap;
+  font-family: "Jost", system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 1.375rem;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
 .pv-wordmark > span {
   color: var(--docs-text);
 }
@@ -185,6 +195,16 @@
   .pv-features {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* ── /solid-spectrum/ecosystem ─────────────────────────────────────────── */
+
+/* Package/app tile grid: auto-fills from a min tile width, so it flows from one
+   column on narrow viewports up to as many as fit — no per-breakpoint counts. */
+.pv-tile-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 /* ── /theme (Theme Studio) ─────────────────────────────────────────────── */

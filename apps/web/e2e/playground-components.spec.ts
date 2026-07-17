@@ -407,16 +407,12 @@ test.describe("Playground Page", () => {
     await checkNoHydrationErrors(errors);
   });
 
-  test("alert section exposes alert role and supports dismissible alerts", async ({ page }) => {
+  test("inline alert section exposes an alert role per variant", async ({ page }) => {
     const errors = await setupErrorCapture(page);
-    const section = await ensureSectionVisible(page, "alert");
+    const section = await ensureSectionVisible(page, "inlinealert");
 
     await expect(section.getByRole("alert")).toHaveCount(4);
     await expect(section).toContainText("Something went wrong.");
-
-    await section.getByRole("button", { name: "Dismiss" }).first().click();
-    await expect(section.getByRole("alert")).toHaveCount(4);
-    await expect(page.getByText("Last action: Alert dismissed")).toBeVisible();
 
     await checkNoHydrationErrors(errors);
   });

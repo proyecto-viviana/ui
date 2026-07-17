@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Button, Badge, TextField, ToggleSwitch } from "@proyecto-viviana/ui";
-import { Chip } from "@proyecto-viviana/ui/Chip";
-import { Logo } from "@proyecto-viviana/ui/Logo";
 import { Header } from "@/components";
 import {
   ACCENT,
@@ -38,7 +36,10 @@ function HomePage() {
         <section class="pv-hero flex flex-col items-center gap-6 text-center">
           <PillTag>Component library · Theme studio</PillTag>
 
-          <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" class="pv-wordmark" />
+          <span class="pv-wordmark">
+            <span>PROYECTO</span>
+            <span>VIVIANA</span>
+          </span>
 
           <h1
             style={{
@@ -119,8 +120,6 @@ function HomePage() {
             <div class="flex flex-wrap items-center gap-3">
               <Button variant="primary">Primary</Button>
               <Button variant="accent">Accent</Button>
-              <Chip text="Themed" variant="primary" />
-              <Chip text="Chip" variant="accent" />
               <Badge count={3} variant="success" />
               <Badge count={7} variant="accent" />
             </div>

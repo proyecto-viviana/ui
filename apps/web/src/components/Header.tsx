@@ -1,6 +1,5 @@
 import { Link, useLocation } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
-import { Logo } from "@proyecto-viviana/ui/Logo";
 import { createSignal, onMount, onCleanup, Show } from "solid-js";
 import { useTheme, useThemeColors } from "@/utils/theme";
 import "@/components/theme/studio.css";
@@ -135,7 +134,10 @@ export function Header() {
             "text-decoration": "none",
           }}
         >
-          <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" class="pv-wordmark" />
+          <span class="pv-wordmark">
+            <span>PROYECTO</span>
+            <span>VIVIANA</span>
+          </span>
         </Link>
 
         {/* Right: Nav + GitHub + Theme Toggle */}

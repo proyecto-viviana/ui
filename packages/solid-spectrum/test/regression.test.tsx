@@ -54,7 +54,6 @@ import { DateField } from "../src/calendar/DateField";
 import { ProgressBar } from "../src/progress-bar";
 import { Meter } from "../src/meter";
 import { Badge } from "../src/badge";
-import { Alert } from "../src/alert";
 import { StatusLight } from "../src/statuslight";
 import { Separator } from "../src/separator";
 
@@ -910,21 +909,6 @@ describe("Regression: Badge", () => {
 
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(container.querySelector('[role="presentation"]')!.className).not.toBe("");
-    expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
-  });
-});
-
-describe("Regression: Alert", () => {
-  it("renders role=alert with title, children, variant, and snapshot", () => {
-    const { container } = render(() => (
-      <Alert title="Warning" variant="warning">
-        Check your settings.
-      </Alert>
-    ));
-
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText("Warning")).toBeInTheDocument();
-    expect(screen.getByText("Check your settings.")).toBeInTheDocument();
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

@@ -4,7 +4,7 @@ import { Avatar } from "@proyecto-viviana/solid-spectrum";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A social timeline event card (two avatars + icon + message)
 // on the S2 spacing/radius ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export type TimelineEventType = "follow" | "like" | "comment" | "event" | "custom";
 

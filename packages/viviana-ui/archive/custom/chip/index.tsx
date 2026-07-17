@@ -5,7 +5,7 @@ import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components
 // src/style.ts). S2 named tokens carry the shape (mirrors Badge's size-S
 // control: minHeight 24, 2px border, ui-sm font, pill radius); Silapse colors
 // ride in as arbitrary `[var(--color-*)]` values.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export type ChipVariant = "primary" | "secondary" | "accent" | "outline";
 

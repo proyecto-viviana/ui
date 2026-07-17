@@ -3,7 +3,7 @@ import { Show, For } from "solid-js";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A sidebar nav (sections with an accent rail + links) on the
 // S2 spacing/type ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface NavItemProps {
   title: string;

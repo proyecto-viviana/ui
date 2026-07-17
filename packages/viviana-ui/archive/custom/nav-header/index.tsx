@@ -4,7 +4,7 @@ import { Button as HeadlessButton } from "@proyecto-viviana/solidaria-components
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A nav bar with an accent bottom rule, a logo/wordmark slot,
 // and trailing actions, on the S2 ramps in Silapse colors.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export interface NavHeaderProps {
   logo?: string;

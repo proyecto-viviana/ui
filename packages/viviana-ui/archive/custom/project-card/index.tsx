@@ -3,7 +3,7 @@ import type { JSX } from "solid-js";
 // src/style.ts). A square logo/preview tile with a caption, sized by the S2
 // spacing + type ramps and painted in Silapse colors. `inactive` dims it;
 // `href` turns the whole card into a link.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export type ProjectCardSize = "sm" | "md" | "lg";
 

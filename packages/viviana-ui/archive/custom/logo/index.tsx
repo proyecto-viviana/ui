@@ -2,7 +2,7 @@ import type { JSX } from "solid-js";
 // Styled via the S2 style() macro through viviana's own seam (../../style →
 // src/style.ts). A clean two-word wordmark: the S2 title ramp sizes it; Silapse
 // colors paint it (primary + accent). `inverted` swaps which word takes accent.
-import { style } from "../../style" with { type: "macro" };
+import { style } from "../../../src/style" with { type: "macro" };
 
 export type LogoSize = "sm" | "md" | "lg" | "xl";
 
