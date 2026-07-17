@@ -1,4 +1,5 @@
 import { type JSX, splitProps } from "solid-js";
+import { style } from "../style" with { type: "macro" };
 
 export type UIIconSize = "xs" | "sm" | "md" | "lg";
 
@@ -15,12 +16,16 @@ export interface UIIconProps {
   "aria-hidden"?: boolean;
 }
 
-const sizeStyles: Record<UIIconSize, string> = {
-  xs: "w-3 h-3",
-  sm: "w-4 h-4",
-  md: "w-5 h-5",
-  lg: "w-6 h-6",
-};
+// A fixed-size inline box for internal UI glyphs. Sized through the S2 macro so
+// the CSS ships in the package bundle for installed consumers.
+const iconStyles = style<{ size: UIIconSize }>({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  width: { size: { xs: 12, sm: 16, md: 20, lg: 24 } },
+  height: { size: { xs: 12, sm: 16, md: 20, lg: 24 } },
+});
 
 /**
  * A utility icon wrapper for internal UI icons.
@@ -33,7 +38,7 @@ export function UIIcon(props: UIIconProps): JSX.Element {
       {...rest}
       role={rest["aria-label"] ? "img" : undefined}
       aria-hidden={rest["aria-hidden"] ?? !rest["aria-label"]}
-      class={`inline-flex items-center justify-center shrink-0 ${sizeStyles[local.size ?? "md"]} ${local.class ?? ""}`}
+      class={[iconStyles({ size: local.size ?? "md" }), local.class].filter(Boolean).join(" ")}
     >
       {local.children}
     </span>

@@ -235,9 +235,18 @@ describe("Wave 4 UI Components", () => {
       expect(container.querySelector('[aria-hidden="true"]')).toBeDefined();
     });
 
-    it("applies size class", () => {
-      const { container } = render(() => <UIIcon size="lg">icon</UIIcon>);
-      expect(container.querySelector("span")!.className).toContain("w-6");
+    it("applies a size-dependent class", () => {
+      // Styling flows through the build-time S2 style() macro, which emits
+      // opaque atomic class hashes (jsdom loads no CSS). Assert the class is
+      // present and that different sizes yield different class strings, rather
+      // than a literal Tailwind utility.
+      const { container: sm } = render(() => <UIIcon size="sm">icon</UIIcon>);
+      const { container: lg } = render(() => <UIIcon size="lg">icon</UIIcon>);
+      const smClass = sm.querySelector("span")!.className;
+      const lgClass = lg.querySelector("span")!.className;
+      expect(smClass).not.toBe("");
+      expect(lgClass).not.toBe("");
+      expect(smClass).not.toBe(lgClass);
     });
   });
 });

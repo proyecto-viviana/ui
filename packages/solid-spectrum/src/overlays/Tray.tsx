@@ -4,6 +4,7 @@ import {
   Modal as HeadlessModal,
   type ModalOverlayProps as HeadlessModalOverlayProps,
 } from "@proyecto-viviana/solidaria-components";
+import { style } from "../style" with { type: "macro" };
 
 export interface TrayProps extends Omit<HeadlessModalOverlayProps, "class"> {
   /** Additional CSS class name. */
@@ -12,6 +13,45 @@ export interface TrayProps extends Omit<HeadlessModalOverlayProps, "class"> {
   children?: JSX.Element;
 }
 
+// A dimmed scrim that pins its sheet to the bottom of the viewport. Styled
+// through the S2 macro so the CSS ships in the package bundle for installed
+// consumers rather than relying on utility classes.
+const overlayStyles = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 1999,
+  display: "flex",
+  alignItems: "end",
+  justifyContent: "center",
+  backgroundColor: "transparent-black-500",
+});
+
+// The sheet surface: a full-width layer-2 panel rounded on its top corners.
+const trayStyles = style({
+  width: "full",
+  maxHeight: "[90vh]",
+  overflow: "auto",
+  backgroundColor: "layer-2",
+  borderTopStartRadius: "xl",
+  borderTopEndRadius: "xl",
+  boxShadow: "elevated",
+  borderWidth: 0,
+  borderTopWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+});
+
+// The drag grabber affordance centered along the top edge.
+const grabberStyles = style({
+  width: 48,
+  height: 4,
+  borderRadius: "full",
+  backgroundColor: "gray-400",
+  marginX: "auto",
+  marginTop: 8,
+  marginBottom: 16,
+});
+
 /**
  * A bottom-sheet overlay for mobile contexts.
  */
@@ -19,14 +59,9 @@ export function Tray(props: TrayProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "children"]);
 
   return (
-    <HeadlessModalOverlay
-      {...headlessProps}
-      class="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-    >
-      <HeadlessModal
-        class={`w-full max-h-[90vh] bg-bg-300 rounded-t-2xl shadow-xl border-t border-primary-700 overflow-auto ${local.class ?? ""}`}
-      >
-        <div class="w-12 h-1 rounded-full bg-primary-500 mx-auto mt-2 mb-4" />
+    <HeadlessModalOverlay {...headlessProps} class={overlayStyles}>
+      <HeadlessModal class={[trayStyles, local.class].filter(Boolean).join(" ")}>
+        <div class={grabberStyles} />
         {local.children}
       </HeadlessModal>
     </HeadlessModalOverlay>
