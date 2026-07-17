@@ -21,7 +21,7 @@ export const PINK = ACCENT;
 /** @deprecated no glow in the Spectrum-2 look. */
 export const PINK_GLOW = "transparent";
 
-export const FONT_DISPLAY = "'Sen', system-ui, sans-serif";
+export const FONT_DISPLAY = "'Jost', system-ui, sans-serif";
 export const FONT_BODY = "'Sen', system-ui, sans-serif";
 
 /** A soft rounded blue marker — the subtle Spectrum accent tick. */
