@@ -1,4 +1,5 @@
 import { type JSX, splitProps } from "solid-js";
+import { style } from "../style" with { type: "macro" };
 
 export type IllustrationSize = "sm" | "md" | "lg";
 
@@ -13,11 +14,18 @@ export interface IllustrationProps {
   "aria-label"?: string;
 }
 
-const sizeStyles: Record<IllustrationSize, string> = {
-  sm: "w-16 h-16",
-  md: "w-24 h-24",
-  lg: "w-32 h-32",
-};
+// Centered container for a decorative illustration, tinted with the muted
+// `gray-500` neutral. Sizes map sm/md/lg → 64/96/128px (the old w-16/24/32).
+// Routed through the `style()` macro so the CSS ships in the package bundle for
+// installed consumers.
+const illustrationStyles = style<{ size: IllustrationSize }>({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "gray-500",
+  width: { default: "[96px]", size: { sm: "[64px]", lg: "[128px]" } },
+  height: { default: "[96px]", size: { sm: "[64px]", lg: "[128px]" } },
+});
 
 /**
  * A styled container for decorative illustrations.
@@ -29,7 +37,9 @@ export function Illustration(props: IllustrationProps): JSX.Element {
     <div
       {...rest}
       role={rest["aria-label"] ? "img" : "presentation"}
-      class={`inline-flex items-center justify-center text-primary-300 ${sizeStyles[local.size ?? "md"]} ${local.class ?? ""}`}
+      class={[illustrationStyles({ size: local.size ?? "md" }), local.class]
+        .filter(Boolean)
+        .join(" ")}
     >
       {local.children}
     </div>
