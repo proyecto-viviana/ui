@@ -5,6 +5,7 @@ import {
   type ToggleButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { useProviderProps } from "../provider";
+import { style, focusRing } from "../style" with { type: "macro" };
 
 export interface LogicButtonProps extends Omit<
   HeadlessToggleButtonProps,
@@ -14,6 +15,46 @@ export interface LogicButtonProps extends Omit<
   class?: string;
 }
 
+// A compact AND/OR toggle: an accent fill with white text when selected, a
+// bordered neutral chip when not, plus the S2 focus ring. Selection/disabled are
+// driven by the render-prop conditions fed to the style() macro so the CSS ships
+// in the package bundle for installed consumers.
+const logicButtonStyles = style<{
+  isSelected?: boolean;
+  isDisabled?: boolean;
+  isFocusVisible?: boolean;
+}>({
+  ...focusRing(),
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  paddingX: 8,
+  paddingY: 2,
+  minWidth: 48,
+  font: "ui-xs",
+  fontWeight: "bold",
+  borderRadius: "sm",
+  borderStyle: "solid",
+  borderWidth: 1,
+  cursor: "default",
+  transition: "default",
+  backgroundColor: {
+    default: "gray-100",
+    isSelected: "accent-900",
+    isDisabled: "gray-100",
+  },
+  borderColor: {
+    default: "gray-300",
+    isSelected: "transparent",
+    isDisabled: "transparent",
+  },
+  color: {
+    default: "neutral-subdued",
+    isSelected: "white",
+    isDisabled: "disabled",
+  },
+});
+
 /**
  * An AND/OR logic toggle button. Displays "AND" when selected (default), "OR" when not.
  */
@@ -21,25 +62,17 @@ export function LogicButton(props: LogicButtonProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, ["class"]);
 
-  const getClassName = (renderProps: ToggleButtonRenderProps): string => {
-    const base =
-      "inline-flex items-center justify-center px-2 py-0.5 text-xs font-mono font-bold rounded transition-colors outline-none min-w-[3rem]";
-
-    let stateClass: string;
-    if (renderProps.isDisabled) {
-      stateClass = "bg-bg-300 text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      stateClass = "bg-accent text-bg-400";
-    } else {
-      stateClass = "bg-bg-400 text-primary-300 border border-primary-600";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent ring-offset-1 ring-offset-bg-100"
-      : "";
-
-    return [base, stateClass, focusClass, local.class ?? ""].filter(Boolean).join(" ");
-  };
+  const getClassName = (renderProps: ToggleButtonRenderProps): string =>
+    [
+      logicButtonStyles({
+        isSelected: renderProps.isSelected,
+        isDisabled: renderProps.isDisabled,
+        isFocusVisible: renderProps.isFocusVisible,
+      }),
+      local.class,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   return (
     <HeadlessToggleButton {...headlessProps} class={getClassName}>
