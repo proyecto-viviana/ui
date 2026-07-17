@@ -1,11 +1,13 @@
-import { type JSX, splitProps, createMemo } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
 import {
   Separator as HeadlessSeparator,
   type SeparatorProps as HeadlessSeparatorProps,
 } from "@proyecto-viviana/solidaria-components";
+import { style } from "../style" with { type: "macro" };
 
 export type SeparatorVariant = "default" | "subtle" | "strong";
 export type SeparatorSize = "sm" | "md" | "lg";
+type SeparatorOrientation = "horizontal" | "vertical";
 
 export interface SeparatorProps extends Omit<HeadlessSeparatorProps, "class" | "style"> {
   /** The visual style variant. @default 'default' */
@@ -16,23 +18,40 @@ export interface SeparatorProps extends Omit<HeadlessSeparatorProps, "class" | "
   class?: string;
 }
 
-const variantStyles = {
-  default: "bg-bg-100",
-  subtle: "bg-bg-200",
-  strong: "bg-primary-600",
-};
-
-const horizontalSizeStyles = {
-  sm: "h-px",
-  md: "h-0.5",
-  lg: "h-1",
-};
-
-const verticalSizeStyles = {
-  sm: "w-px",
-  md: "w-0.5",
-  lg: "w-1",
-};
+// A rule drawn as a filled bar, mirroring Divider's S2 approach (a solid
+// `backgroundColor` plus an explicit px thickness rather than a CSS border).
+// Sizes sm/md/lg map to 1/2/4px — the same steps as Divider's S/M/L — and the
+// variants pick a neutral gray weight. Routed through the `style()` macro so the
+// CSS ships in the package bundle for installed consumers.
+const separatorStyles = style<{
+  variant: SeparatorVariant;
+  size: SeparatorSize;
+  orientation: SeparatorOrientation;
+}>({
+  backgroundColor: {
+    variant: {
+      default: "gray-200",
+      subtle: "gray-100",
+      strong: "gray-400",
+    },
+  },
+  borderStyle: "none",
+  margin: 0,
+  flexShrink: 0,
+  alignSelf: { orientation: { vertical: "stretch" } },
+  width: {
+    orientation: {
+      horizontal: "full",
+      vertical: { default: "[2px]", size: { sm: "[1px]", lg: "[4px]" } },
+    },
+  },
+  height: {
+    orientation: {
+      horizontal: { default: "[2px]", size: { sm: "[1px]", lg: "[4px]" } },
+      vertical: "full",
+    },
+  },
+});
 
 /**
  * A separator is a visual divider between two groups of content,
@@ -60,20 +79,16 @@ export function Separator(props: SeparatorProps): JSX.Element {
   const variant = () => local.variant ?? "default";
   const size = () => local.size ?? "md";
 
-  const className = createMemo(() => {
-    const isVertical = orientation() === "vertical";
-    const sizeStyles = isVertical ? verticalSizeStyles : horizontalSizeStyles;
-
-    const base = [
-      variantStyles[variant()],
-      sizeStyles[size()],
-      isVertical ? "h-full self-stretch" : "w-full",
-      "border-0", // Reset hr default border
-      local.class ?? "",
-    ];
-
-    return base.filter(Boolean).join(" ");
-  });
-
-  return <HeadlessSeparator {...headlessProps} orientation={orientation()} class={className()} />;
+  return (
+    <HeadlessSeparator
+      {...headlessProps}
+      orientation={orientation()}
+      class={[
+        separatorStyles({ variant: variant(), size: size(), orientation: orientation() }),
+        local.class,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    />
+  );
 }

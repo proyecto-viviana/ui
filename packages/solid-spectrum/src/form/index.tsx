@@ -223,10 +223,16 @@ export function Form(props: FormProps): JSX.Element {
   );
 }
 
+// Small UI font in the `negative` color, mirroring S2's help-text error state.
+const fieldErrorStyles = style({ font: "ui-sm", color: "negative" });
+
 export function FieldError(props: FieldErrorProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
   return (
-    <HeadlessFieldError {...headlessProps} class={`text-sm text-danger-400 ${local.class ?? ""}`} />
+    <HeadlessFieldError
+      {...headlessProps}
+      class={[fieldErrorStyles, local.class].filter(Boolean).join(" ")}
+    />
   );
 }
 

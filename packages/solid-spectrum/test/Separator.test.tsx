@@ -26,20 +26,28 @@ describe("Separator (solid-spectrum)", () => {
   });
 
   it("should support size prop", () => {
-    const { container } = render(() => <Separator size="lg" />);
-    // Large horizontal size should have h-1 class
-    expect(container.querySelector(".h-1")).toBeInTheDocument();
+    // Styling is emitted through the style() macro, so assert that distinct
+    // sizes produce distinct generated classes rather than a literal utility.
+    const { getByRole: getSm } = render(() => <Separator size="sm" />);
+    const { getByRole: getLg } = render(() => <Separator size="lg" />);
+    const sm = getSm("separator");
+    const lg = getLg("separator");
+    expect(sm.className).not.toBe("");
+    expect(sm.className).not.toBe(lg.className);
   });
 
   it("should support vertical size prop", () => {
-    const { container } = render(() => <Separator orientation="vertical" size="lg" />);
-    // Large vertical size should have w-1 class
-    expect(container.querySelector(".w-1")).toBeInTheDocument();
+    const { getByRole: getSm } = render(() => <Separator orientation="vertical" size="sm" />);
+    const { getByRole: getLg } = render(() => <Separator orientation="vertical" size="lg" />);
+    expect(getSm("separator").className).not.toBe(getLg("separator").className);
   });
 
   it("should support variant prop", () => {
-    const { container } = render(() => <Separator variant="strong" />);
-    expect(container.querySelector(".bg-primary-600")).toBeInTheDocument();
+    const { getByRole: getDefault } = render(() => <Separator variant="default" />);
+    const { getByRole: getStrong } = render(() => <Separator variant="strong" />);
+    const strong = getStrong("separator");
+    expect(strong.className).not.toBe("");
+    expect(getDefault("separator").className).not.toBe(strong.className);
   });
 
   it("should support custom class", () => {
@@ -54,21 +62,15 @@ describe("Separator (solid-spectrum)", () => {
     expect(separator).toHaveAttribute("aria-label", "Section divider");
   });
 
-  it("should have full width for horizontal", () => {
-    render(() => <Separator />);
-    const separator = screen.getByRole("separator");
-    expect(separator).toHaveClass("w-full");
-  });
-
-  it("should have self-stretch for vertical", () => {
-    render(() => <Separator orientation="vertical" />);
-    const separator = screen.getByRole("separator");
-    expect(separator).toHaveClass("self-stretch");
-  });
-
-  it("should reset hr border", () => {
-    render(() => <Separator />);
-    const separator = screen.getByRole("separator");
-    expect(separator).toHaveClass("border-0");
+  it("should apply generated styling for each orientation", () => {
+    // The macro folds width/height/border-reset into generated classes; assert
+    // the separator is styled and that the two orientations differ.
+    const { getByRole: getH } = render(() => <Separator />);
+    const { getByRole: getV } = render(() => <Separator orientation="vertical" />);
+    const horizontal = getH("separator");
+    const vertical = getV("separator");
+    expect(horizontal.className).not.toBe("");
+    expect(vertical.className).not.toBe("");
+    expect(horizontal.className).not.toBe(vertical.className);
   });
 });
