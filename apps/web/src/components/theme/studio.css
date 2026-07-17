@@ -177,11 +177,18 @@
 
 /* Hero vertical rhythm */
 .pv-hero {
-  padding-block: 5rem;
+  padding-block: 3.25rem 3.5rem;
+}
+/* Let the flex `gap-6` (24px) be the sole vertical rhythm: the browser's
+   default heading/paragraph block margins (a ~0.67em UA margin on the h1 alone
+   is ~46px) stack ON TOP of the flex gap and would inflate the H1→subhead gap
+   to ~85px. The h1 keeps its inline `margin-top` nudge (inline wins). */
+.pv-hero :is(h1, p) {
+  margin-block: 0;
 }
 @media (min-width: 640px) {
   .pv-hero {
-    padding-block: 7rem;
+    padding-block: 4.5rem 4.75rem;
   }
 }
 

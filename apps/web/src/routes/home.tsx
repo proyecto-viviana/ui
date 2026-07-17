@@ -36,11 +36,6 @@ function HomePage() {
         <section class="pv-hero flex flex-col items-center gap-6 text-center">
           <PillTag>Component library · Theme studio</PillTag>
 
-          <span class="pv-wordmark">
-            <span>PROYECTO</span>
-            <span>VIVIANA</span>
-          </span>
-
           <h1
             style={{
               "font-family": FONT_DISPLAY,
@@ -133,7 +128,7 @@ function HomePage() {
         {/* Bottom CTA */}
         <section
           class="flex flex-col items-center gap-5 text-center"
-          style={{ "padding-block": "4rem" }}
+          style={{ "padding-block": "3rem 3.5rem" }}
         >
           <h2
             style={{
@@ -141,6 +136,7 @@ function HomePage() {
               "font-size": "clamp(1.5rem, 4vw, 2.25rem)",
               "font-weight": "700",
               "letter-spacing": "-0.01em",
+              margin: "0",
             }}
           >
             Ready to make it yours?
