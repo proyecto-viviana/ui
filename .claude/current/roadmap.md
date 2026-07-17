@@ -3,10 +3,10 @@ kind: roadmap
 status: current
 items:
   - id: recertification
-    title: Pair-oracle recertification march (plan of record)
-    status: in-progress
-    window: { start: 2026-07-03, target: null }
-    docs: [recertification.md, tech-debt.md]
+    title: Pair-oracle recertification march (COMPLETE 2026-07-15)
+    status: complete
+    window: { start: 2026-07-03, target: 2026-07-15 }
+    docs: [recertification.md, archive/recertification-full.md, tech-debt.md]
   - id: component-certification
     title: Per-component acceptance
     status: in-progress
@@ -88,14 +88,14 @@ sequence** at the foot of this page.
 
 ## Initiatives
 
-- **recertification** — **the plan of record since 2026-07-03**
-  (`recertification.md`): the pair-oracle driver harness (D1–D8 landed, D9–D12
-  open) and the strict per-component red→green march against live upstream
-  React S2 1.5.1 / RAC 1.19.0. Tiers 1–2 complete (28 components), Tier 3 at
-  Toast; ~35/70 styled components certified. Also carries the 2026-07-06
-  stabilization tickets (`main-rot-burndown-2026-07`, driver backfills, the D4
-  policy decision) in `tech-debt.md`. Supersedes fleet-census auditing;
-  subsumes the depth half of `component-certification`.
+- **recertification** — **COMPLETE 2026-07-15** (was the plan of record from
+  2026-07-03; now shelved — summary in `recertification.md`, full log in
+  `archive/recertification-full.md`): the pair-oracle driver harness (12/12
+  drivers D1–D12) and the strict per-component red→green march against live
+  upstream React S2 1.5.1 / RAC 1.19.0 / react-aria 3.50.0 — all six Phase-2
+  tiers certified plus the Phase-3 closers (CP9.82–86). It also carried the
+  2026-07-06 stabilization tickets in `tech-debt.md`. Superseded fleet-census
+  auditing; subsumed the depth half of `component-certification`.
 - **component-certification** — the standing per-component acceptance loop; the
   depth work is executed by the recertification march, while this item keeps
   the strict-parity report green (`labeledvalue-strict-parity`). Tasks in
@@ -336,10 +336,11 @@ exclusion and folds the separate lint type-check back into the gated run).
 
 ### Continuous (always running, not a phase)
 
-- **`recertification`** — the march is the standing spine of all component work
-  now: finish Toast, then DropZone/FileTrigger, then Tier 4 starting with
-  Picker (gated on the D4-policy and D9/D10-sequencing decisions —
-  `recertification.md` "Director pass 2026-07-06").
+- **`recertification`** — **COMPLETE 2026-07-15.** The march ran the standing
+  spine of component work to the end: all six tiers certified, 12/12 drivers,
+  Phase-3 closers landed. Shelved — see `recertification.md` (summary) and
+  `archive/recertification-full.md` (full log). The standing acceptance loop it
+  fed continues below.
 - **`component-certification`** — `cert-button`/`cert-checkbox` completed via
   the march (2026-07-03/04); what remains here is keeping
   `comparison:report:parity:strict` green (`labeledvalue-strict-parity`) and
