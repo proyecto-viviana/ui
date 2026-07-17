@@ -161,17 +161,19 @@ test.describe("Playground Page", () => {
     const errors = await setupErrorCapture(page);
     const section = await ensureSectionVisible(page, "styled-breadcrumbs");
 
-    const nav = section.getByRole("navigation", { name: /default breadcrumbs demo/i }).first();
-    await expect(nav).toBeVisible();
+    // Faithful RAC Breadcrumbs put the accessible name on the <ol> (role="list")
+    // with NO wrapping <nav> landmark (react-aria-components parity).
+    const list = section.getByRole("list", { name: /default breadcrumbs demo/i }).first();
+    await expect(list).toBeVisible();
 
-    const currentItem = nav.locator('[aria-current="page"]').first();
+    const currentItem = list.locator('[aria-current="page"]').first();
     await expect(currentItem).toBeVisible();
 
     const beforeUrl = page.url();
-    const products = nav.getByRole("link", { name: "Products" }).first();
+    const products = list.getByRole("link", { name: "Products" }).first();
     await products.click();
 
-    await expect(nav.locator('[aria-current="page"]').first()).toBeVisible();
+    await expect(list.locator('[aria-current="page"]').first()).toBeVisible();
     expect(page.url()).toBe(beforeUrl);
 
     await checkNoHydrationErrors(errors);
@@ -254,16 +256,20 @@ test.describe("Playground Page", () => {
     const errors = await setupErrorCapture(page);
     const section = await ensureSectionVisible(page, "actionbar");
 
-    const toolbar = section.getByRole("toolbar", { name: "Bulk actions toolbar" }).first();
+    // Faithful S2 ActionBar: the consumer aria-label sits on the roleless root;
+    // the sole role="toolbar" is the inner ActionButtonGroup, labelled "Actions"
+    // from the intl string and holding ONLY the action buttons. The clear-selection
+    // button and count text are siblings OUTSIDE that toolbar.
+    const toolbar = section.getByRole("toolbar", { name: "Actions" }).first();
     await expect(toolbar).toBeVisible();
 
-    const clear = toolbar.getByRole("button", { name: "Clear selection" }).first();
     const archive = toolbar.getByRole("button", { name: "Archive" }).first();
     const del = toolbar.getByRole("button", { name: "Delete" }).first();
+    const clear = section.getByRole("button", { name: "Clear selection" }).first();
+    await expect(clear).toBeVisible();
 
-    // ActionBar renders a toolbar; upstream useToolbar binds arrows only (no
-    // Home/End — removed in CP9.3 as invented). Reach the first item with
-    // ArrowLeft, not Home. (parity rule #1)
+    // Roving focus across the two toolbar items (upstream useToolbar binds arrows
+    // only — no Home/End, removed in CP9.3 as invented). (parity rule #1)
     await archive.focus();
     await page.keyboard.press("ArrowRight");
     await expect(del).toBeFocused();
@@ -271,16 +277,12 @@ test.describe("Playground Page", () => {
     await page.keyboard.press("ArrowLeft");
     await expect(archive).toBeFocused();
 
-    await page.keyboard.press("ArrowLeft");
-    await expect(clear).toBeFocused();
-
+    // Escape while focus is inside the ActionBar clears the selection, unmounting it.
     await page.keyboard.press("Escape");
-    await expect(section.getByRole("toolbar", { name: "Bulk actions toolbar" })).toHaveCount(0);
+    await expect(section.getByRole("toolbar", { name: "Actions" })).toHaveCount(0);
 
     await section.getByRole("button", { name: "+1 selected" }).click();
-    await expect(
-      section.getByRole("toolbar", { name: "Bulk actions toolbar" }).first(),
-    ).toBeVisible();
+    await expect(section.getByRole("toolbar", { name: "Actions" }).first()).toBeVisible();
 
     await checkNoHydrationErrors(errors);
   });
@@ -293,9 +295,10 @@ test.describe("Playground Page", () => {
     await expect(trigger).toBeVisible();
     await trigger.click();
 
-    const menu = page.locator('ul[role="menu"]').first();
+    // Faithful RAC Menu renders a <div role="menu"> (not a <ul>).
+    const menu = page.getByRole("menu").first();
     await expect(menu).toBeVisible();
-    await expect(menu.locator('[role="menuitem"]').first()).toBeVisible();
+    await expect(menu.getByRole("menuitem").first()).toBeVisible();
 
     await checkNoHydrationErrors(errors);
   });
@@ -350,6 +353,10 @@ test.describe("Playground Page", () => {
     await expect(tree).toHaveAttribute("tabindex", "0");
 
     await tree.focus();
+    // Selection lives on the row (matching upstream useSelectableCollection, which
+    // has no Space/Enter case), so ArrowDown first carries real DOM focus onto a
+    // row before Space toggles it — same contract as GridList/Table.
+    await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Space");
 
     const selectedSummary = section.locator("p", { hasText: "Selected:" }).first();
@@ -391,12 +398,17 @@ test.describe("Playground Page", () => {
     await expect(heading).toBeVisible();
     const beforeHeading = await heading.textContent();
 
-    await section.getByRole("button", { name: "Next month" }).first().click();
+    // Certified S2 Calendar nav buttons use RAC's localized slot labels
+    // ("Next"/"Previous"), and day cells are native <button>s (not div[role=button]).
+    await section.getByRole("button", { name: "Next" }).first().click();
     const afterHeading = await heading.textContent();
     expect(afterHeading).toBeTruthy();
     expect(afterHeading).not.toBe(beforeHeading);
 
-    const dayButton = section.locator('div[role="button"]').filter({ hasText: /^15$/ }).first();
+    // Day cells expose the full localized date as their accessible name
+    // ("<weekday>, <month> 15, <year>"); match on that rather than the bare
+    // visible number, whose raw textContent carries layout whitespace.
+    const dayButton = section.getByRole("button", { name: /\b15,/ }).first();
     await expect(dayButton).toBeVisible();
     await dayButton.click();
 
