@@ -3,6 +3,55 @@ import {
   ContextualHelpTrigger as HeadlessContextualHelpTrigger,
   type ContextualHelpTriggerProps as HeadlessContextualHelpTriggerProps,
 } from "@proyecto-viviana/solidaria-components";
+import { css } from "../style" with { type: "macro" };
+
+// The headless trigger hardcodes the class names on its internal button and
+// popover (`-trigger`/`-content`) and exposes no per-part class hook, so styling
+// must target them as descendants — including data-attribute and :hover/
+// :focus-visible states the single-element style() macro can't express. Styling
+// therefore flows through the css() macro escape hatch, which ships real CSS in
+// the package bundle (same asset pipeline as style()) and supports this nesting.
+// Values mirror the S2 neutral palette (fixed light-dark pairs, scheme-aware via
+// the Provider's color-scheme).
+const triggerStyles = css(`
+  & .solidaria-ContextualHelpTrigger-trigger {
+    display: flex;
+    align-items: center;
+    padding-block: 8px;
+    padding-inline: 16px;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    color: light-dark(#222, #e6e6e6);
+    border-radius: 8px;
+    outline: none;
+  }
+  & .solidaria-ContextualHelpTrigger-trigger:hover {
+    background: light-dark(#0000000d, #ffffff12);
+  }
+  & .solidaria-ContextualHelpTrigger-trigger:focus-visible {
+    outline: 2px solid light-dark(#4b75ff, #4069fd);
+    outline-offset: -2px;
+  }
+  & .solidaria-ContextualHelpTrigger-trigger[data-unavailable] {
+    color: light-dark(#8f8f8f, #7c7c7c);
+  }
+  & .solidaria-ContextualHelpTrigger-trigger[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  & .solidaria-ContextualHelpTrigger-content {
+    margin-top: 4px;
+    padding: 16px;
+    min-width: 200px;
+    background: light-dark(#fff, #222);
+    border: 1px solid light-dark(#d5d5d5, #3d3d3d);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px light-dark(#00000014, #0000003d), 0 2px 6px light-dark(#0000000f, #00000030);
+    color: light-dark(#222, #e6e6e6);
+    outline: none;
+  }
+`);
 
 export interface ContextualHelpTriggerProps extends Omit<
   HeadlessContextualHelpTriggerProps,
@@ -86,28 +135,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
     <HeadlessContextualHelpTrigger
       {...headlessProps}
       aria-label={local["aria-label"] ?? local.title ?? "Contextual help"}
-      class={[
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:flex [&_.solidaria-ContextualHelpTrigger-trigger]:items-center",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:py-2 [&_.solidaria-ContextualHelpTrigger-trigger]:px-4",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:cursor-pointer",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:bg-transparent [&_.solidaria-ContextualHelpTrigger-trigger]:border-0",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:text-primary-200",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:outline-none",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:hover:bg-bg-300",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:focus-visible:ring-2",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:focus-visible:ring-inset",
-        "[&_.solidaria-ContextualHelpTrigger-trigger]:focus-visible:ring-accent-300",
-        "[&_.solidaria-ContextualHelpTrigger-trigger[data-unavailable]]:text-primary-500",
-        "[&_.solidaria-ContextualHelpTrigger-trigger[data-disabled]]:opacity-50",
-        "[&_.solidaria-ContextualHelpTrigger-trigger[data-disabled]]:cursor-not-allowed",
-        "[&_.solidaria-ContextualHelpTrigger-content]:bg-bg-400",
-        "[&_.solidaria-ContextualHelpTrigger-content]:border [&_.solidaria-ContextualHelpTrigger-content]:border-primary-600",
-        "[&_.solidaria-ContextualHelpTrigger-content]:rounded-lg [&_.solidaria-ContextualHelpTrigger-content]:shadow-lg",
-        "[&_.solidaria-ContextualHelpTrigger-content]:p-4 [&_.solidaria-ContextualHelpTrigger-content]:min-w-[200px]",
-        "[&_.solidaria-ContextualHelpTrigger-content]:outline-none",
-        "[&_.solidaria-ContextualHelpTrigger-content]:mt-1",
-        local.class ?? "",
-      ].join(" ")}
+      class={[triggerStyles, local.class].filter(Boolean).join(" ")}
     >
       {children()}
     </HeadlessContextualHelpTrigger>

@@ -3,11 +3,60 @@ import {
   ColorEditor as HeadlessColorEditor,
   type ColorEditorProps as HeadlessColorEditorProps,
 } from "@proyecto-viviana/solidaria-components";
+import { css } from "../style" with { type: "macro" };
 
 export interface ColorEditorProps extends Omit<HeadlessColorEditorProps, "class" | "style"> {
   /** Additional CSS class name. */
   class?: string;
 }
+
+// ColorEditor composes several headless primitives (ColorArea, ColorSlider,
+// ColorField) plus a native format <select>, and styles them through descendant
+// selectors — the internal parts hardcode their own class names and expose no
+// per-part class hook. The single-element style() macro can't express
+// descendant/native-element targeting, so styling flows through the css() macro
+// escape hatch instead: it ships real CSS in the package bundle (same asset
+// pipeline as style()) and supports the nesting these parts need. There is no S2
+// upstream for ColorEditor; values mirror the S2 neutral palette (fixed
+// light-dark pairs, scheme-aware via the Provider's color-scheme).
+const editorStyles = css(`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  --pv-field-bg: light-dark(#fff, #222);
+  --pv-field-border: light-dark(#d5d5d5, #3d3d3d);
+  --pv-text: light-dark(#222, #e6e6e6);
+  --pv-text-subtle: light-dark(#6b6b6b, #b9b9b9);
+  --pv-focus: light-dark(#4b75ff, #4069fd);
+
+  & label { color: var(--pv-text-subtle); }
+  & input { color: var(--pv-text); }
+
+  & .solidaria-ColorEditor-top { display: flex; gap: 12px; }
+  & .solidaria-ColorEditor-bottom { display: flex; gap: 8px; align-items: flex-end; }
+
+  & .solidaria-ColorEditor-format {
+    height: 32px;
+    padding-inline: 8px;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    border: 1px solid var(--pv-field-border);
+    background: var(--pv-field-bg);
+    color: var(--pv-text-subtle);
+    outline: none;
+  }
+  & .solidaria-ColorEditor-format:focus-visible {
+    outline: 2px solid var(--pv-focus);
+    outline-offset: 2px;
+  }
+
+  & .solidaria-ColorField-input {
+    background: var(--pv-field-bg);
+    border: 1px solid var(--pv-field-border);
+    color: var(--pv-text);
+    border-radius: 6px;
+  }
+`);
 
 /**
  * A complete color editor with area, hue slider, alpha slider,
@@ -19,23 +68,7 @@ export function ColorEditor(props: ColorEditorProps): JSX.Element {
   return (
     <HeadlessColorEditor
       {...headlessProps}
-      class={({ colorSpace }) => {
-        const base = [
-          "flex flex-col gap-3",
-          // Ensure readable defaults for nested native form controls
-          "[&_label]:text-primary-200 [&_input]:text-primary-100",
-          "[&_.solidaria-ColorEditor-top]:flex [&_.solidaria-ColorEditor-top]:gap-3",
-          "[&_.solidaria-ColorEditor-bottom]:flex [&_.solidaria-ColorEditor-bottom]:gap-2 [&_.solidaria-ColorEditor-bottom]:items-end",
-          "[&_.solidaria-ColorEditor-format]:h-8 [&_.solidaria-ColorEditor-format]:px-2 [&_.solidaria-ColorEditor-format]:text-sm",
-          "[&_.solidaria-ColorEditor-format]:rounded-md [&_.solidaria-ColorEditor-format]:border [&_.solidaria-ColorEditor-format]:border-bg-300",
-          "[&_.solidaria-ColorEditor-format]:bg-bg-400 [&_.solidaria-ColorEditor-format]:text-primary-200",
-          "[&_.solidaria-ColorEditor-format]:outline-none [&_.solidaria-ColorEditor-format]:focus:ring-2 [&_.solidaria-ColorEditor-format]:focus:ring-accent",
-          "[&_.solidaria-ColorField-input]:bg-bg-400 [&_.solidaria-ColorField-input]:border [&_.solidaria-ColorField-input]:border-bg-300",
-          "[&_.solidaria-ColorField-input]:text-primary-100 [&_.solidaria-ColorField-input]:rounded-md",
-        ].join(" ");
-
-        return `${base} ${local.class ?? ""}`;
-      }}
+      class={[editorStyles, local.class].filter(Boolean).join(" ")}
     />
   );
 }
