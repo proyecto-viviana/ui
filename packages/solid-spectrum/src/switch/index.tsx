@@ -6,6 +6,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { type SpectrumContextValue } from "../button/spectrum-context";
 import { type ToggleSwitchProps } from "./ToggleSwitch";
+import { style } from "../style" with { type: "macro" };
 
 export {
   ToggleSwitch,
@@ -29,6 +30,49 @@ export interface TabSwitchProps {
   class?: string;
 }
 
+// Static styling flows through the build-time S2 style() macro so the atomic CSS
+// ships in the package bundle. Only the sliding indicator's transform/width and
+// the button grid's column template are runtime-computed, so those stay inline.
+// TabSwitch has no S2 upstream — it's a segmented control styled with S2 tokens:
+// a subtle track, an accent pill that slides under the active label.
+
+const trackStyles = style({
+  position: "relative",
+  backgroundColor: "gray-100",
+  borderRadius: "full",
+  width: "[250px]",
+});
+
+const indicatorStyles = style({
+  position: "absolute",
+  top: 0,
+  height: 32,
+  zIndex: 0,
+  backgroundColor: "accent",
+  borderRadius: "full",
+  transition: "default",
+});
+
+const groupStyles = style({
+  position: "relative",
+  zIndex: 10,
+  display: "grid",
+  height: 32,
+});
+
+const buttonStyles = style<{ isSelected?: boolean }>({
+  position: "relative",
+  zIndex: 10,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  borderRadius: "full",
+  transition: "default",
+  font: "ui-lg",
+  fontWeight: { default: "medium", isSelected: "extra-bold" },
+  color: { default: "neutral", isSelected: "white" },
+});
+
 /**
  * A tab-style switch that allows users to select between two options.
  * Behavior is delegated to headless ToggleButtonGroup/ToggleButton primitives.
@@ -48,10 +92,9 @@ export function TabSwitch(props: TabSwitchProps): JSX.Element {
     return value ? new Set<Key>([value]) : new Set<Key>();
   });
 
-  const textSelected = "font-extrabold text-primary-100 tracking-wider";
-  const textUnselected = "font-medium text-primary-300 tracking-wider";
   const optionCount = createMemo(() => Math.max(options().length, 1));
   const indicatorStyle = createMemo(() => ({
+    left: "0",
     width: `calc(100% / ${optionCount()})`,
     transform: `translateX(${selectedIndex() * 100}%)`,
   }));
@@ -60,15 +103,12 @@ export function TabSwitch(props: TabSwitchProps): JSX.Element {
   }));
 
   return (
-    <div class={`relative bg-bg-400 rounded-full w-[250px] ${props.class ?? ""}`}>
-      <div
-        class="left-0 top-0 transition-all duration-300 ease-in-out z-0 absolute bg-primary-700 rounded-full h-8 border-l-2 border-r-2 border-accent-300"
-        style={indicatorStyle()}
-      />
+    <div class={[trackStyles, props.class].filter(Boolean).join(" ")}>
+      <div class={indicatorStyles} style={indicatorStyle()} />
       <HeadlessToggleButtonGroup
         selectionMode="single"
         selectedKeys={selectedKeys()}
-        class="relative z-10 grid h-8"
+        class={groupStyles}
         style={layoutStyle()}
         aria-label="View mode"
       >
@@ -76,11 +116,7 @@ export function TabSwitch(props: TabSwitchProps): JSX.Element {
           <HeadlessToggleButton
             toggleKey={option.value}
             onClick={() => props.onChange?.(option.value)}
-            class={() =>
-              `transition-all ease-in-out duration-300 z-10 text-lg flex justify-center items-center rounded-full ${
-                selectedValue() === option.value ? textSelected : textUnselected
-              }`
-            }
+            class={() => buttonStyles({ isSelected: selectedValue() === option.value })}
           >
             <span>{option.label}</span>
           </HeadlessToggleButton>
