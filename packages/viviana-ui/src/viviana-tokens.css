@@ -1,5 +1,5 @@
 /*
- * Viviana UI design tokens — blue + amber frosted glass.
+ * Viviana UI design tokens — v2 register (blue + amber frosted glass + pixel/terminal).
  *
  * The brand's color palette + typography, owned by the design system itself so
  * the product components are self-contained. The S2 style() macro carries the
@@ -7,24 +7,34 @@
  * supply the *color* + the *frosted-glass effect* families, referenced from
  * components as arbitrary `[var(--color-*)]` / `[var(--surface-*)]` values.
  *
- * This is the retuned Viviana UI token layer authored on the
- * `design/visual-system-claude-v1` lane (see `.claude/current/visual-system-lane.md`).
- * It supersedes the earlier blue + pink "Silapse" palette: the accent family is
- * now amber (the single warm, one-per-screen action color), blue carries
- * wayfinding/selection, and new **surface / blur / edge-glass / glow / shadow**
- * families express the frosted-glass surface ladder. Semantic
- * success/warning/danger are unchanged. The values are the canonical spec
- * transcribed from the paired design handoff; the Education reference route keeps
- * the same semantic names under its `.vui` scope.
+ * Two audiences share this file. (1) The Adobe-Spectrum (S2) components consume
+ * the `--color-*` / `--surface-*` / `--accent-*` / `--blur-*` / `--edge-glass`
+ * families as arbitrary `[var(--…)]` values — the style() macro carries the
+ * *shape*, these vars carry the *color* + the *frosted-glass effect*. (2) Product
+ * screens consume the app vocabulary: the short palette ramps (`--blue-*`,
+ * `--amber-*`, `--slate-*`), semantic `--text-*` / `--border-*` / `--status-*`,
+ * the matte terminal wells (`--surface-well`, `--well-*`), spacing / radii, and
+ * the closed set of eight `--type-*` roles.
  *
- * Dark is the default (`:root`); light overrides bind to the same
- * `data-color-scheme` attribute solid-spectrum's theme uses, so a single scheme
- * switch flips both layers together. `apps/web` still ships its own copy of the
- * legacy palette until the Tailwind-removal Phase 4 restyle consumes this file
- * directly (`.claude/current/tailwind-removal.md`).
+ * This is the v2 register of the Viviana UI token layer (see
+ * `.claude/current/visual-system-lane.md`). It keeps the amber accent (the single
+ * warm, one-per-screen action color) and blue wayfinding/selection of the earlier
+ * frosted-glass pass, and adds the pixel/terminal register onto it: matte wells,
+ * the cyan/amber/violet/red status channels, and eight type roles rendered in
+ * Geist Pixel (display), Geist (body/ui) and Geist Mono (terminal, loaded via
+ * `font-faces.css`). Semantic success/warning/danger are unchanged.
+ *
+ * Dark is the default (`:root`, re-asserted under `[data-color-scheme="dark"]` so
+ * a nested `<Provider colorScheme>` can flip a subtree back to night); light
+ * overrides bind to `[data-color-scheme="light"]`, the same attribute
+ * solid-spectrum's theme uses, so a single scheme switch flips both layers
+ * together. `apps/web` still ships its own copy of the legacy palette until the
+ * Tailwind-removal Phase 4 restyle consumes this file directly
+ * (`.claude/current/tailwind-removal.md`).
  */
 
-:root {
+:root,
+[data-color-scheme="dark"] {
   /* Grey scale — charcoal-slate neutral ramp */
   --color-grey-50: #f3f4f6;
   --color-grey-100: #d7dce2;
@@ -181,27 +191,28 @@
   --color-warning-bg: rgba(210, 153, 34, 0.1);
   --color-danger-bg: rgba(248, 81, 73, 0.1);
 
-  /* ── Frosted-glass surface family (translucent ladder over a lit scene) ── */
-  --surface-app: #1e2227;
-  --surface-panel: rgba(20, 26, 31, 0.94);
-  --surface-card: rgba(27, 36, 44, 0.9);
-  --surface-raised: rgba(35, 45, 55, 0.95);
-  --surface-inset: rgba(13, 17, 21, 0.72);
-  --surface-hover: rgba(42, 53, 64, 0.95);
+  /* ── Frosted-glass surface family — v2 neutral-charcoal night ──
+     (translucent ladder over a lit scene; wells below are matte, never glass) */
+  --surface-app: #0c0d10;
+  --surface-panel: rgba(23, 25, 30, 0.78);
+  --surface-card: rgba(30, 32, 38, 0.72);
+  --surface-raised: rgb(51, 58, 68);
+  --surface-inset: rgba(10, 11, 14, 0.38);
+  --surface-hover: rgba(58, 62, 70, 0.48);
   --surface-ghost: rgba(30, 36, 41, 0.28);
 
   /* Accent surface tints (soft fills for selected/warm states) */
-  --accent-primary: var(--color-primary);
-  --accent-primary-soft: rgba(46, 144, 250, 0.15);
-  --accent-warm: var(--color-accent);
+  --accent-primary: var(--blue-500);
+  --accent-primary-soft: #14283e;
+  --accent-warm: var(--amber-500);
   --accent-warm-soft: rgba(247, 144, 9, 0.15);
 
-  /* ── Blur family ── */
+  /* ── Blur family (panels/cards only) ── */
   --blur-panel: blur(18px);
-  --blur-card: blur(10px);
+  --blur-card: blur(14px);
 
   /* ── Edge-glass (inner highlight that catches the light) ── */
-  --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 
   /* ── Shadow + glow family (glow follows the accent, never the chrome) ── */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -210,15 +221,132 @@
   --shadow-glow-blue: 0 0 24px rgba(46, 144, 250, 0.35);
   --shadow-glow-warm: 0 0 24px rgba(247, 144, 9, 0.3);
 
-  /* Typography */
-  --font-sen: "Sen", sans-serif;
-  --font-jost: "Jost", sans-serif;
-  --font-sans: "Sen", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-title: "Jost", system-ui, sans-serif;
-  --font-body: "Sen", system-ui, sans-serif;
-  --font-display: var(--font-jost);
-  --font-ui: var(--font-sen);
+  /* ═══════════════════════════════════════════════════════════════════════
+     v2 app + terminal vocabulary — Night. Product screens consume these; the
+     S2 --color-* families above stay in lockstep for the Spectrum components.
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Short palette ramps — the app-facing colour vocabulary */
+  --blue-50: rgba(46, 144, 250, 0.15);
+  --blue-100: #d4e9fd;
+  --blue-200: #a8d2fb;
+  --blue-300: #7cbaf8;
+  --blue-400: #55a6f6;
+  --blue-500: #2e90fa;
+  --blue-600: #55a6f6;
+  --blue-700: #135fc0;
+  --amber-50: rgba(247, 144, 9, 0.15);
+  --amber-100: rgba(247, 144, 9, 0.22);
+  --amber-300: #f9c270;
+  --amber-500: #f79009;
+  --amber-600: #f9b45c;
+  --violet-500: #8b5cf6;
+  --red-500: #f04438;
+  --slate-900: #edf1f6;
+  --slate-700: #b9c4d6;
+  --slate-500: #97a1ab;
+  --slate-400: #7c8794;
+  --slate-300: #c4d0de;
+  --slate-200: rgba(255, 255, 255, 0.1);
+  --slate-100: rgba(255, 255, 255, 0.06);
+  --white: #ffffff;
+
+  /* Text */
+  --text-primary: #f2f3f5;
+  --text-secondary: #9aa0a8;
+  --text-tertiary: #6e747c;
+  --text-link: #55a6f6;
+  --text-on-accent: #ffffff;
+
+  /* Terminal wells — matte / opaque, NEVER glass */
+  --surface-well: #0a0f14;
+  --surface-well-tutor: #05070a;
+  --well-border: rgba(255, 255, 255, 0.1);
+  --well-scan: rgba(255, 255, 255, 0.055);
+  --well-cy: #6fc1ff;
+  --well-am: #ffb45e;
+  --well-vi: #b8a0ff;
+  --well-rd: #ff8a7a;
+  --well-hi: var(--well-cy);
+  --well-dim: rgba(170, 176, 184, 0.5);
+  --well-mid: #a6acb4;
+  --well-run-fg: var(--well-cy);
+  --well-tutor-ink: #eaf2fb;
+  --btn-secondary-bg: var(--surface-raised);
+
+  /* Accents (app) — live pulse · create CTA · interactive fill */
+  --accent-live: #ff6b35;
+  --interactive-fill: #407fc1;
+  --accent-create-bg: rgb(255 222 129);
+  --accent-create-border: rgb(255 222 129);
+  --accent-create-ink: #3a2e00;
+
+  /* Status channels: cyan=info · amber=signal · violet=metric · red=fault */
+  --status-info: #55a6f6;
+  --status-signal: #f9b45c;
+  --status-metric: #a78bfa;
+  --status-fault: #f97066;
+
+  /* Event tints */
+  --event-default-bg: rgba(30, 32, 38, 0.72);
+  --event-default-border: rgba(255, 255, 255, 0.09);
+  --event-highlight-bg: rgba(50, 34, 12, 0.6);
+  --event-highlight-border: rgba(247, 144, 9, 0.55);
+  --event-focus-bg: rgba(15, 26, 40, 0.65);
+  --event-focus-border: rgba(46, 144, 250, 0.5);
+
+  /* Borders (app) */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-focus: var(--blue-400);
+
+  /* Calendar category dots (hues follow the ramps, so no light override) */
+  --cal-work: var(--amber-500);
+  --cal-personal: var(--blue-500);
+  --cal-design: var(--violet-500);
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ── Typography — three faces, eight closed roles ──
+     display/title/headline/label = Geist Pixel · body/meta = Geist ·
+     micro/terminal/button = Geist Mono. Faces load via font-faces.css. */
+  --font-display: "Geist Pixel", ui-monospace, monospace;
+  --font-ui: "Geist", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  /* back-compat aliases, repointed to the v2 faces */
+  --font-sans: var(--font-ui);
+  --font-title: var(--font-display);
+  --font-body: var(--font-ui);
+  --type-pixel-vs: "ELSH" 1;
+  --type-display: 500 28px/1.15 var(--font-display);
+  --type-display-track: 0.01em;
+  --type-title: 600 20px/1.2 var(--font-display);
+  --type-title-track: 0.01em;
+  --type-headline: 700 15px/1.3 var(--font-display);
+  --type-headline-track: 0.01em;
+  --type-label: 600 13.5px/1.15 var(--font-display);
+  --type-label-track: 0.01em;
+  --type-body: 400 14px/1.55 var(--font-ui);
+  --type-meta: 400 12px/1.5 var(--font-ui);
+  --type-micro: 700 10px/1.2 var(--font-mono);
+  --type-micro-track: 0.1em;
+  --type-terminal: 400 11.5px/1.95 var(--font-mono);
+  --type-button: 400 15px/1 var(--font-mono);
+  --type-button-track: 0;
 }
 
 [data-color-scheme="light"] {
@@ -369,13 +497,13 @@
   --surface-app: #e9eff6;
   --surface-panel: rgba(255, 255, 255, 0.42);
   --surface-card: rgba(255, 255, 255, 0.55);
-  --surface-raised: rgba(255, 255, 255, 0.88);
+  --surface-raised: #ffffff;
   --surface-inset: rgba(238, 243, 249, 0.55);
   --surface-hover: rgba(255, 255, 255, 0.75);
   --surface-ghost: rgba(255, 255, 255, 0.18);
 
-  --accent-primary-soft: rgba(46, 144, 250, 0.1);
-  --accent-warm-soft: rgba(247, 144, 9, 0.1);
+  --accent-primary-soft: #e2effd;
+  --accent-warm-soft: var(--amber-50);
 
   /* Edge-glass + shadow/glow — daylight (soft, cool-tinted; glow carries accent) */
   --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
@@ -384,4 +512,85 @@
   --shadow-float: 0 16px 48px rgba(99, 115, 139, 0.22);
   --shadow-glow-blue: 0 4px 20px rgba(46, 144, 250, 0.28);
   --shadow-glow-warm: 0 4px 20px rgba(247, 144, 9, 0.24);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     v2 app + terminal vocabulary — Daylight overrides. Every themed token from
+     the Night block above is re-declared here so a light subtree never inherits
+     a night value; theme-agnostic tokens (spacing, radii, type roles, fonts,
+     calendar hues) stay defined once in the Night block.
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Short palette ramps */
+  --blue-50: #eaf4fe;
+  --blue-100: #d4e9fd;
+  --blue-200: #a8d2fb;
+  --blue-300: #7cbaf8;
+  --blue-400: #55a6f6;
+  --blue-500: #2e90fa;
+  --blue-600: #1877e8;
+  --blue-700: #135fc0;
+  --amber-50: #fef4e6;
+  --amber-100: #fde7c8;
+  --amber-300: #f9c270;
+  --amber-500: #f79009;
+  --amber-600: #e07b00;
+  --violet-500: #8b5cf6;
+  --red-500: #f04438;
+  --slate-900: #17212e;
+  --slate-700: #33455c;
+  --slate-500: #64748b;
+  --slate-400: #94a3b8;
+  --slate-300: #c4d0de;
+  --slate-200: #dce4ee;
+  --slate-100: #eaeff6;
+  --white: #ffffff;
+
+  /* Text */
+  --text-primary: var(--slate-900);
+  --text-secondary: var(--slate-500);
+  --text-tertiary: var(--slate-400);
+  --text-link: var(--blue-500);
+  --text-on-accent: var(--white);
+
+  /* Terminal wells — matte, darker channel ink for daylight legibility */
+  --surface-well: #e9eff6;
+  --surface-well-tutor: #e9eff6;
+  --well-border: rgba(120, 140, 165, 0.5);
+  --well-scan: rgba(23, 33, 46, 0.045);
+  --well-cy: #1877e8;
+  --well-am: #c96a00;
+  --well-vi: #7c3aed;
+  --well-rd: #d92d20;
+  --well-hi: var(--well-cy);
+  --well-dim: #5e6e80;
+  --well-mid: #374350;
+  --well-run-fg: var(--accent-primary);
+  --well-tutor-ink: var(--text-primary);
+  --btn-secondary-bg: #e9eff6;
+
+  /* Accents (app) */
+  --accent-live: #ff6b35;
+  --interactive-fill: var(--accent-primary);
+  --accent-create-bg: #ffedb0;
+  --accent-create-border: #f5d88a;
+  --accent-create-ink: #7a5600;
+
+  /* Status channels */
+  --status-info: #1877e8;
+  --status-signal: #c96a00;
+  --status-metric: #7c3aed;
+  --status-fault: #d92d20;
+
+  /* Event tints */
+  --event-default-bg: rgba(255, 255, 255, 0.58);
+  --event-default-border: rgba(255, 255, 255, 0.85);
+  --event-highlight-bg: rgba(254, 244, 230, 0.72);
+  --event-highlight-border: #f7b267;
+  --event-focus-bg: rgba(228, 242, 254, 0.5);
+  --event-focus-border: #9ccbf7;
+
+  /* Borders (app) */
+  --border-subtle: rgba(145, 158, 171, 0.18);
+  --border-default: rgba(145, 158, 171, 0.28);
+  --border-focus: var(--blue-300);
 }
