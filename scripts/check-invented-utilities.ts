@@ -69,12 +69,11 @@ function stripComments(src: string): string {
 }
 
 async function walk(dir: string): Promise<string[]> {
-  let entries: Awaited<ReturnType<typeof readdir>>;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch {
-    return []; // tree absent — skip
-  }
+  // Infer the element type from the withFileTypes call itself — annotating with
+  // `Awaited<ReturnType<typeof readdir>>` picks readdir's default overload, whose
+  // Dirent<Buffer> name would then be typed as a buffer, not a string. An absent
+  // tree resolves to an empty list and is skipped.
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
   const out: string[] = [];
   for (const entry of entries) {
     const full = path.join(dir, entry.name);
