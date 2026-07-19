@@ -1,6 +1,8 @@
-/* solid-spectrum's full atomic CSS (the umbrella base). viviana's own extracted
-   macro CSS for the migrated custom components is appended below at build time by
-   scripts/inline-macro-css.mjs — a relative @import to the macro-emitted file
-   isn't reliably followed when this package is consumed through its export map,
-   so we inline it (mirrors solid-spectrum, whose styles.css *is* its macro CSS). */
+/* solid-spectrum's full atomic CSS (the umbrella base). This bare @import is a
+   build-time marker: scripts/inline-macro-css.mjs replaces it with the resolved
+   file's literal contents so the exported dist/styles.css is self-contained. A
+   nested bare @import survives a plain CSS `import` but is dropped when the sheet
+   is loaded as a URL asset (Vite `?url`, `<link rel=stylesheet>`), which would
+   ship every component unstyled. viviana's own extracted macro CSS for migrated
+   custom components is appended after the base by the same script. */
 @import "@proyecto-viviana/solid-spectrum/styles.css";
