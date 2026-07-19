@@ -88,7 +88,15 @@ export function createTabListState<T = unknown>(
     const nodes: CollectionNode<T>[] = items.map((item, index) => {
       const o = item as CollectionItemLike;
       const key = p.getKey?.(item) ?? o.key ?? o.id ?? index;
-      const textValue = p.getTextValue?.(item) ?? o.textValue ?? o.label ?? String(item);
+      // See createListState: `String(item)` yields "[object Object]" for a plain
+      // object, so widen to name/title and fall back to the key for object items.
+      const textValue =
+        p.getTextValue?.(item) ??
+        o.textValue ??
+        o.label ??
+        o.name ??
+        o.title ??
+        (item != null && typeof item === "object" ? String(key) : String(item));
       const isDisabled = p.getDisabled?.(item) ?? o.isDisabled ?? false;
 
       return {

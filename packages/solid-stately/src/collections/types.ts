@@ -109,6 +109,9 @@ export interface CollectionItemLike {
   id?: Key;
   textValue?: string;
   label?: string;
+  /** Conventional display fields, read when no textValue/label/getTextValue is given. */
+  name?: string;
+  title?: string;
   isDisabled?: boolean;
 }
 

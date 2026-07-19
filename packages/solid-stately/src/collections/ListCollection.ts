@@ -160,7 +160,15 @@ export function createListCollection<T>(
     },
     getTextValue = (item: T) => {
       const o = item as CollectionItemLike;
-      return o.textValue ?? o.label ?? String(item);
+      // See createListState: `String(item)` yields "[object Object]" for a plain
+      // object, so widen to name/title and fall back to the item's key.
+      return (
+        o.textValue ??
+        o.label ??
+        o.name ??
+        o.title ??
+        (item != null && typeof item === "object" ? String(o.key ?? o.id ?? "") : String(item))
+      );
     },
     getDisabled = (item: T) => (item as CollectionItemLike).isDisabled ?? false,
   } = options;

@@ -83,7 +83,19 @@ export function createListState<T = unknown>(
     const nodes: CollectionNode<T>[] = items.map((item, index) => {
       const o = item as CollectionItemLike;
       const key = p.getKey?.(item) ?? o.key ?? o.id ?? index;
-      const textValue = p.getTextValue?.(item) ?? o.textValue ?? o.label ?? String(item);
+      // Derive the item's display text. Prefer an explicit getter/field, then the
+      // conventional display fields (label/name/title). `String(item)` is the last
+      // resort — right for a primitive item (a bare string/number) but useless for
+      // a plain object, where it yields "[object Object]". That default surfaced
+      // verbatim in a ComboBox/Picker input for `{ id, name }`-shaped items, so fall
+      // back to the item's key rather than "[object Object]".
+      const textValue =
+        p.getTextValue?.(item) ??
+        o.textValue ??
+        o.label ??
+        o.name ??
+        o.title ??
+        (item != null && typeof item === "object" ? String(key) : String(item));
       const isDisabled = p.getDisabled?.(item) ?? o.isDisabled ?? false;
 
       return {

@@ -103,6 +103,30 @@ describe("Select", () => {
       expect(screen.getByText("Select an option")).toBeInTheDocument();
     });
 
+    it("labels the hidden form <select> from name/title without getTextValue", () => {
+      // With {id,name} items and no getTextValue, the hidden form <select> must
+      // still label its <option>s from `name` — never falling back to
+      // String(item), which renders the useless "[object Object]".
+      render(() => (
+        <Select<TestItem>
+          aria-label="Animals"
+          items={testItems}
+          getKey={(item) => item.id}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <SelectListBox>{(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}</SelectListBox>
+        </Select>
+      ));
+
+      const optionLabels = Array.from(document.querySelectorAll("select option"))
+        .map((o) => (o.textContent ?? "").trim())
+        .filter(Boolean);
+      expect(optionLabels).toEqual(["Cat", "Dog", "Kangaroo"]);
+      expect(document.body.textContent).not.toContain("[object Object]");
+    });
+
     it("should expose the trigger as a button with a listbox popup", () => {
       render(() => <TestSelect />);
 

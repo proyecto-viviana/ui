@@ -624,12 +624,23 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
                 const fallbackKey =
                   itemRecord != null ? (toKey(itemRecord.key) ?? toKey(itemRecord.id)) : undefined;
                 const key = stateProps.getKey?.(item) ?? fallbackKey ?? String(item);
+                // This hidden <select> re-derives each option's label straight
+                // from the raw items array, bypassing the collection's textValue.
+                // Mirror createListState's derivation: read the conventional
+                // display fields (textValue/label/name/title) and, for an object
+                // item with none of them, fall back to the key rather than
+                // String(item) — which would render the useless "[object Object]".
                 const fallbackTextValue =
                   itemRecord != null
-                    ? (toTextValue(itemRecord.textValue) ?? toTextValue(itemRecord.label))
+                    ? (toTextValue(itemRecord.textValue) ??
+                      toTextValue(itemRecord.label) ??
+                      toTextValue(itemRecord.name) ??
+                      toTextValue(itemRecord.title))
                     : undefined;
                 const textValue =
-                  stateProps.getTextValue?.(item) ?? fallbackTextValue ?? String(item);
+                  stateProps.getTextValue?.(item) ??
+                  fallbackTextValue ??
+                  (itemRecord != null ? String(key) : String(item));
                 const selectedKeys = state.selectedKeys();
                 const isSelected =
                   state.selectionMode() === "multiple"
