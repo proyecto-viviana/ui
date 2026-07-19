@@ -64,6 +64,37 @@ describe("createComboBoxState", () => {
       });
     });
 
+    it("derives the input display from an item's name when no getTextValue is given", () => {
+      // Regression: with items shaped `{ id, name }` and no getTextValue, the
+      // collection's textValue fell through to `String(item)` → "[object Object]",
+      // which surfaced verbatim in the input for a defaultSelectedKey.
+      createRoot((dispose) => {
+        const state = createComboBoxState<TestItem>({
+          items,
+          defaultSelectedKey: "2",
+        });
+
+        expect(state.selectedItem()?.textValue).toBe("Banana");
+        expect(state.inputValue()).toBe("Banana");
+        expect(state.inputValue()).not.toContain("[object Object]");
+        dispose();
+      });
+    });
+
+    it("never falls back to [object Object] for an object item with no text field", () => {
+      createRoot((dispose) => {
+        const state = createComboBoxState<{ id: string }>({
+          items: [{ id: "alpha" }, { id: "beta" }],
+          defaultSelectedKey: "beta",
+        });
+
+        // No recognizable text field → fall back to the key, not "[object Object]".
+        expect(state.selectedItem()?.textValue).toBe("beta");
+        expect(state.inputValue()).toBe("beta");
+        dispose();
+      });
+    });
+
     it("should respect defaultOpen", () => {
       createRoot((dispose) => {
         const state = createComboBoxState({
@@ -178,6 +209,64 @@ describe("createComboBoxState", () => {
         expect(state.inputValue()).toBe("controlled"); // Still controlled value
         dispose();
       });
+    });
+
+    it("preserves typed input while a selection is active (does not clobber keystrokes)", () => {
+      // Regression: the selection→input sync effect used to compare
+      // `textValue !== inputValue()`, reading inputValue() reactively. In Solid
+      // that subscribed the effect to the input signal, so every keystroke
+      // re-ran it and reset the field back to the selected item's text — the
+      // input was impossible to type in or delete from while anything was
+      // selected. Editing must now stick; only a real selection change resyncs.
+      //
+      // The state is hoisted out of the createRoot callback on purpose: writes
+      // made *inside* that callback are batched and their effects don't flush
+      // until it returns, so the clobber would never run there. Mutating from
+      // top level flushes each effect synchronously — the way the live input does.
+      const [state, dispose] = createRoot((d) => {
+        const s = createComboBoxState<TestItem>({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultSelectedKey: "2", // "Banana" is selected; input starts as "Banana"
+        });
+        return [s, d] as const;
+      });
+
+      expect(state.inputValue()).toBe("Banana");
+      expect(state.selectedKey()).toBe("2");
+
+      // Delete a character — must NOT snap back to "Banana".
+      state.setInputValue("Banan");
+      expect(state.inputValue()).toBe("Banan");
+      expect(state.selectedKey()).toBe("2"); // selection is retained while editing
+
+      // Type a fresh query — still sticks.
+      state.setInputValue("Cher");
+      expect(state.inputValue()).toBe("Cher");
+
+      dispose();
+    });
+
+    it("still syncs the input when the selection genuinely changes", () => {
+      // The flip side of the fix: an actual selection change must still update
+      // the visible input text (untracking inputValue() must not disable this).
+      const [state, dispose] = createRoot((d) => {
+        const s = createComboBoxState<TestItem>({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+          defaultSelectedKey: "2",
+        });
+        return [s, d] as const;
+      });
+
+      expect(state.inputValue()).toBe("Banana");
+
+      state.setSelectedKey("3");
+      expect(state.selectedKey()).toBe("3");
+      expect(state.inputValue()).toBe("Cherry");
+      dispose();
     });
   });
 

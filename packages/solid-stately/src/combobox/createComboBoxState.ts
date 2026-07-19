@@ -6,7 +6,7 @@
  * either type to filter options or select from a list.
  */
 
-import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
+import { createSignal, createMemo, createEffect, untrack, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { createListState } from "../collections/createListState";
 import { createOverlayTriggerState } from "../overlays";
@@ -569,7 +569,22 @@ export function createComboBoxState<T = unknown>(
     }
   });
 
-  // Update input when selection changes (only in single mode)
+  // Keep the input text in sync with the selected item (single mode only).
+  //
+  // This effect must react to the SELECTION and the COLLECTION — when the
+  // selected key changes, or when its item (and thus textValue) resolves as
+  // items load — but it must NOT react to the input value itself. The previous
+  // port compared `textValue !== inputValue()`, reading `inputValue()` inside
+  // the effect; in Solid that subscribes the effect to the input signal, so it
+  // re-ran on every keystroke and — while any selection was active — immediately
+  // reset the input back to the selected item's text. The result: the user
+  // could neither type nor delete in the field.
+  //
+  // The comparison is unchanged, but `inputValue()` is now read via `untrack`,
+  // so it is used only to decide whether a reset is needed and never becomes a
+  // dependency. `originalCollection()` stays tracked (the unfiltered collection
+  // only changes when `items` change, never on filtering) so a preset selection
+  // still gets its text once async items arrive.
   createEffect(() => {
     if (isMultiple()) return;
     const key = selectedKey();
@@ -578,7 +593,7 @@ export function createComboBoxState<T = unknown>(
 
     // Only update if selection changed and not fully controlled
     if (!isInputControlled() || !isSelectionControlled()) {
-      if (key != null && textValue !== inputValue()) {
+      if (key != null && textValue !== untrack(inputValue)) {
         setInputValue(textValue);
         setLastValue(textValue);
       }
