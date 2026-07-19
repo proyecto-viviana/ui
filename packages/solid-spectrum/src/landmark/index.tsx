@@ -29,12 +29,12 @@ const roleLabels: Record<AriaLandmarkRole, string> = {
 };
 
 // Tailwind-removal: the dev-only landmark visualization (a dashed wrapper outline
-// plus a floating role label) previously leaned on an invented `bg-<semantic>/10
-// border-<semantic>` palette. Those map onto S2 design tokens directly — each role
-// gets a translucent `-subtle` fill for the label and a numeric border step for the
-// dashed wrapper — and the fixed `text-primary-200` label text becomes the neutral
-// text token. Emitting through the `style()` macro means the CSS ships in the
-// package bundle rather than depending on a Tailwind backfill.
+// plus a floating role label) previously leaned on an invented per-role
+// background/border utility palette. Those map onto S2 design tokens directly —
+// each role gets a translucent `-subtle` fill for the label and a numeric border
+// step for the dashed wrapper — and the label's hardcoded primary text color
+// becomes the neutral text token. Emitting through the `style()` macro means the
+// CSS ships in the package bundle rather than depending on a Tailwind backfill.
 const landmarkWrapper = style<{ showLabel: boolean; role: AriaLandmarkRole }>({
   position: "relative",
   borderStyle: "dashed",
