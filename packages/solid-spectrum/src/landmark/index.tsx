@@ -6,6 +6,7 @@ import {
   type AriaLandmarkRole,
   type LandmarkController,
 } from "@proyecto-viviana/solidaria-components";
+import { style } from "../style" with { type: "macro" };
 
 export interface LandmarkProps extends Omit<HeadlessLandmarkProps, "class" | "style"> {
   /** Additional CSS class name. */
@@ -27,16 +28,56 @@ const roleLabels: Record<AriaLandmarkRole, string> = {
   region: "Region",
 };
 
-const roleColors: Record<AriaLandmarkRole, string> = {
-  main: "bg-accent/10 border-accent-300",
-  navigation: "bg-primary-500/10 border-primary-400",
-  search: "bg-warning-400/10 border-warning-400",
-  banner: "bg-success-400/10 border-success-400",
-  contentinfo: "bg-danger-400/10 border-danger-400",
-  complementary: "bg-primary-300/10 border-primary-300",
-  form: "bg-accent-200/10 border-accent-200",
-  region: "bg-bg-200/50 border-bg-300",
-};
+// Tailwind-removal: the dev-only landmark visualization (a dashed wrapper outline
+// plus a floating role label) previously leaned on an invented per-role
+// background/border utility palette. Those map onto S2 design tokens directly —
+// each role gets a translucent `-subtle` fill for the label and a numeric border
+// step for the dashed wrapper — and the label's hardcoded primary text color
+// becomes the neutral text token. Emitting through the `style()` macro means the
+// CSS ships in the package bundle rather than depending on a Tailwind backfill.
+const landmarkWrapper = style<{ showLabel: boolean; role: AriaLandmarkRole }>({
+  position: "relative",
+  borderStyle: "dashed",
+  borderWidth: { default: 0, showLabel: 2 },
+  borderColor: {
+    role: {
+      main: "accent-300",
+      navigation: "blue-400",
+      search: "notice-400",
+      banner: "positive-400",
+      contentinfo: "negative-400",
+      complementary: "blue-300",
+      form: "accent-200",
+      region: "gray-300",
+    },
+  },
+});
+
+const landmarkLabel = style<{ role: AriaLandmarkRole }>({
+  position: "absolute",
+  top: "[-12px]",
+  insetStart: 8,
+  paddingX: 8,
+  paddingY: 2,
+  fontSize: "ui-xs",
+  fontWeight: "medium",
+  borderRadius: "default",
+  color: "neutral",
+  backgroundColor: {
+    role: {
+      main: "accent-subtle",
+      navigation: "blue-subtle",
+      search: "notice-subtle",
+      banner: "positive-subtle",
+      contentinfo: "negative-subtle",
+      complementary: "blue-subtle",
+      form: "accent-subtle",
+      region: "gray-subtle",
+    },
+  },
+});
+
+const landmarkLabelDetail = style({ color: "neutral-subdued" });
 
 /**
  * A landmark is a region of the page that helps screen reader users navigate.
@@ -63,25 +104,21 @@ const roleColors: Record<AriaLandmarkRole, string> = {
  */
 export function Landmark(props: LandmarkProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "showLabel"]);
-  const customClass = local.class ?? "";
 
-  const role = () => headlessProps.role;
+  const role = (): AriaLandmarkRole => headlessProps.role;
 
-  const getClassName = (): string => {
-    const base = "relative";
-    const debugClass = local.showLabel ? `border-2 border-dashed ${roleColors[role()]}` : "";
-    return [base, debugClass, customClass].filter(Boolean).join(" ");
-  };
+  const wrapperClass = (): string =>
+    [landmarkWrapper({ showLabel: !!local.showLabel, role: role() }), local.class]
+      .filter(Boolean)
+      .join(" ");
 
   return (
-    <HeadlessLandmark {...headlessProps} class={getClassName()}>
+    <HeadlessLandmark {...headlessProps} class={wrapperClass()}>
       <Show when={local.showLabel}>
-        <div
-          class={`absolute -top-3 left-2 px-2 py-0.5 text-xs font-medium rounded ${roleColors[role()]} text-primary-200`}
-        >
+        <div class={landmarkLabel({ role: role() })}>
           {roleLabels[role()]}
           <Show when={headlessProps["aria-label"]}>
-            <span class="text-primary-400"> - {headlessProps["aria-label"]}</span>
+            <span class={landmarkLabelDetail}> - {headlessProps["aria-label"]}</span>
           </Show>
         </div>
       </Show>
@@ -99,6 +136,30 @@ export interface SkipLinkProps {
   class?: string;
 }
 
+// The skip link is visually hidden above the viewport and slides into view on
+// focus. The reveal rides a raw `:focus` transform condition (the anchor is a
+// plain DOM node with no render-prop state to key on), while the focus ring uses
+// the standard `focus-ring` outline token on `:focus-visible` so it only shows for
+// keyboard users.
+const skipLink = style({
+  position: "absolute",
+  top: 0,
+  insetStart: 0,
+  zIndex: 50,
+  paddingX: 16,
+  paddingY: 8,
+  backgroundColor: "accent",
+  color: "white",
+  fontWeight: "medium",
+  borderRadius: "lg",
+  transition: "default",
+  transform: { default: "translateY(-100%)", ":focus": "translateY(0)" },
+  outlineStyle: { default: "none", ":focus-visible": "solid" },
+  outlineColor: "focus-ring",
+  outlineWidth: 2,
+  outlineOffset: 2,
+});
+
 /**
  * A skip link allows keyboard users to bypass repetitive navigation and jump directly to main content.
  * The link is visually hidden until focused.
@@ -115,21 +176,8 @@ export interface SkipLinkProps {
  * ```
  */
 export function SkipLink(props: SkipLinkProps): JSX.Element {
-  const customClass = props.class ?? "";
-
-  const className = [
-    "absolute left-0 top-0 -translate-y-full",
-    "focus:translate-y-0",
-    "z-50 px-4 py-2 bg-accent text-bg-400 font-medium rounded-br-lg",
-    "transition-transform duration-200",
-    "focus:outline-none focus:ring-2 focus:ring-accent-300 focus:ring-offset-2",
-    customClass,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   return (
-    <a href={props.href} class={className}>
+    <a href={props.href} class={[skipLink, props.class].filter(Boolean).join(" ")}>
       {props.children ?? "Skip to main content"}
     </a>
   );
@@ -141,6 +189,60 @@ export interface LandmarkNavigatorProps {
   /** Whether to show the navigator (for development/accessibility testing). */
   isVisible?: boolean;
 }
+
+// The floating landmark navigator is a dev/accessibility affordance. It reads as an
+// elevated `gray-50` panel (a real fill, not the container-only `layer-*` var) with a
+// hairline border and elevated shadow; neutral buttons darken on `:hover`, and the
+// "Main" button uses the accent fill with white text like the rest of the S2 set.
+const navPanel = style({
+  position: "fixed",
+  bottom: 16,
+  insetEnd: 16,
+  zIndex: 50,
+  display: "flex",
+  flexDirection: "column",
+  gap: 8,
+  padding: 12,
+  backgroundColor: "gray-50",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderRadius: "lg",
+  boxShadow: "elevated",
+});
+
+const navHeading = style({
+  fontSize: "ui-xs",
+  fontWeight: "medium",
+  color: "neutral-subdued",
+  textTransform: "uppercase",
+});
+
+const navRow = style({ display: "flex", gap: 4 });
+
+const navButton = style({
+  paddingX: 8,
+  paddingY: 4,
+  fontSize: "ui-sm",
+  color: "neutral",
+  backgroundColor: { default: "gray-100", ":hover": "gray-200" },
+  borderStyle: "none",
+  borderRadius: "default",
+  cursor: "pointer",
+  transition: "default",
+});
+
+const navButtonAccent = style({
+  paddingX: 12,
+  paddingY: 4,
+  fontSize: "ui-sm",
+  color: "white",
+  backgroundColor: { default: "accent", ":hover": "accent-1000" },
+  borderStyle: "none",
+  borderRadius: "default",
+  cursor: "pointer",
+  transition: "default",
+});
 
 /**
  * A floating navigator for landmarks, useful for development and accessibility testing.
@@ -157,17 +259,13 @@ export function LandmarkNavigator(props: LandmarkNavigatorProps): JSX.Element {
 
   return (
     <Show when={props.isVisible}>
-      <div
-        class={`fixed bottom-4 right-4 z-50 flex flex-col gap-2 p-3 bg-bg-400 border border-bg-300 rounded-lg shadow-lg ${props.class ?? ""}`}
-      >
-        <span class="text-xs font-medium text-primary-400 uppercase tracking-wider">
-          Landmarks (F6)
-        </span>
-        <div class="flex gap-1">
+      <div class={[navPanel, props.class].filter(Boolean).join(" ")}>
+        <span class={navHeading}>Landmarks (F6)</span>
+        <div class={navRow}>
           <button
             type="button"
             onClick={() => controller.focusPrevious()}
-            class="px-2 py-1 text-sm bg-bg-300 hover:bg-bg-200 text-primary-200 rounded transition-colors"
+            class={navButton}
             title="Previous landmark (Shift+F6)"
           >
             ←
@@ -175,7 +273,7 @@ export function LandmarkNavigator(props: LandmarkNavigatorProps): JSX.Element {
           <button
             type="button"
             onClick={() => controller.focusMain()}
-            class="px-3 py-1 text-sm bg-accent hover:bg-accent-200 text-on-color rounded transition-colors"
+            class={navButtonAccent}
             title="Go to main content"
           >
             Main
@@ -183,7 +281,7 @@ export function LandmarkNavigator(props: LandmarkNavigatorProps): JSX.Element {
           <button
             type="button"
             onClick={() => controller.focusNext()}
-            class="px-2 py-1 text-sm bg-bg-300 hover:bg-bg-200 text-primary-200 rounded transition-colors"
+            class={navButton}
             title="Next landmark (F6)"
           >
             →

@@ -345,15 +345,19 @@ export interface PopoverHeaderProps {
   class?: string;
 }
 
+const popoverHeaderStyles = style({ marginBottom: 12 });
+const popoverTitleStyles = style({ font: "heading-xs", color: "neutral" });
+const popoverDescriptionStyles = style({ font: "ui-sm", color: "neutral-subdued", marginTop: 4 });
+
 /**
  * Header section for popover with title and optional description.
  */
 export function PopoverHeader(props: PopoverHeaderProps): JSX.Element {
   return (
-    <div class={`mb-3 ${props.class ?? ""}`}>
-      <h3 class="text-lg font-semibold text-primary-100">{props.title}</h3>
+    <div class={[popoverHeaderStyles, props.class].filter(Boolean).join(" ")}>
+      <h3 class={popoverTitleStyles}>{props.title}</h3>
       <Show when={props.description}>
-        <p class="text-sm text-primary-400 mt-1">{props.description}</p>
+        <p class={popoverDescriptionStyles}>{props.description}</p>
       </Show>
     </div>
   );
@@ -366,16 +370,24 @@ export interface PopoverFooterProps {
   class?: string;
 }
 
+const popoverFooterStyles = style({
+  display: "flex",
+  gap: 8,
+  justifyContent: "end",
+  marginTop: 16,
+  paddingTop: 12,
+  borderWidth: 0,
+  borderTopWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+});
+
 /**
  * Footer section for popover actions.
  */
 export function PopoverFooter(props: PopoverFooterProps): JSX.Element {
   return (
-    <div
-      class={`flex gap-2 justify-end mt-4 pt-3 border-t border-primary-700 ${props.class ?? ""}`}
-    >
-      {props.children}
-    </div>
+    <div class={[popoverFooterStyles, props.class].filter(Boolean).join(" ")}>{props.children}</div>
   );
 }
 

@@ -11,6 +11,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
+import { style, focusRing } from "../style" with { type: "macro" };
 
 export type ListBoxSize = "sm" | "md" | "lg";
 
@@ -47,29 +48,115 @@ export interface ListBoxSectionProps extends Omit<HeadlessListBoxSectionProps, "
   class?: string;
 }
 
-const sizeStyles = {
-  sm: {
-    list: "py-1",
-    option: "text-sm py-1.5 px-3 gap-2",
-    icon: "h-4 w-4",
-    label: "text-sm",
-    description: "text-xs",
+// All styling is emitted through the build-time S2 style() macro so the atomic
+// CSS ships in the package bundle for installed consumers, rather than relying
+// on Tailwind utility strings the package ships no CSS for. Interactive state
+// (hover/focus/selected/disabled) is driven by the collection render props.
+
+const fieldStyles = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "[6px]",
+});
+
+const labelStyles = style<{ size: ListBoxSize }>({
+  font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+  fontWeight: "medium",
+  color: "neutral",
+});
+
+const fieldDescriptionStyles = style({
+  font: "ui-sm",
+  color: "neutral-subdued",
+});
+
+const listStyles = style<{ size: ListBoxSize; isDisabled?: boolean; isFocusVisible?: boolean }>({
+  ...focusRing(),
+  borderRadius: "lg",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  backgroundColor: "layer-2",
+  overflow: "auto",
+  paddingY: { size: { sm: 4, md: "[6px]", lg: 8 } },
+  opacity: { default: 1, isDisabled: 0.5 },
+});
+
+const emptyStateStyles = style({
+  paddingX: 16,
+  paddingY: 16,
+  textAlign: "center",
+  color: "neutral-subdued",
+});
+
+const optionStyles = style<ListBoxOptionRenderProps & { size: ListBoxSize }>({
+  ...focusRing(),
+  outlineOffset: -2,
+  display: "flex",
+  alignItems: "center",
+  cursor: "default",
+  transition: "default",
+  font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+  paddingX: { size: { sm: 12, md: 16, lg: 20 } },
+  paddingY: { size: { sm: "[6px]", md: 8, lg: "[10px]" } },
+  gap: { size: { sm: 8, md: 12, lg: 12 } },
+  // Later keys win when several conditions are active: selected beats hover,
+  // disabled beats everything.
+  backgroundColor: {
+    default: "transparent",
+    isHovered: "gray-100",
+    isFocused: "gray-100",
+    isSelected: "accent-subtle",
+    isDisabled: "transparent",
   },
-  md: {
-    list: "py-1.5",
-    option: "text-base py-2 px-4 gap-3",
-    icon: "h-5 w-5",
-    label: "text-base",
-    description: "text-sm",
+  color: {
+    default: "neutral-subdued",
+    isHovered: "neutral",
+    isFocused: "neutral",
+    isSelected: "accent",
+    isDisabled: "disabled",
   },
-  lg: {
-    list: "py-2",
-    option: "text-lg py-2.5 px-5 gap-3",
-    icon: "h-6 w-6",
-    label: "text-lg",
-    description: "text-base",
-  },
-};
+});
+
+const optionIconStyles = style<{ size: ListBoxSize }>({
+  flexShrink: 0,
+  display: "inline-flex",
+  width: { size: { sm: 16, md: 20, lg: 24 } },
+  height: { size: { sm: 16, md: 20, lg: 24 } },
+});
+
+const checkmarkStyles = style<{ size: ListBoxSize }>({
+  flexShrink: 0,
+  color: "accent",
+  width: { size: { sm: 16, md: 20, lg: 24 } },
+  height: { size: { sm: 16, md: 20, lg: 24 } },
+});
+
+const optionContentStyles = style({
+  display: "flex",
+  flexDirection: "column",
+  flexGrow: 1,
+  minWidth: 0,
+});
+
+const optionLabelStyles = style({
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const optionDescriptionStyles = style<{ size: ListBoxSize }>({
+  font: { size: { sm: "ui-xs", md: "ui-sm", lg: "ui" } },
+  color: "neutral-subdued",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const sectionStyles = style({
+  paddingX: 4,
+  paddingY: 4,
+});
 
 /**
  * A listbox displays a list of options and allows a user to select one or more of them.
@@ -88,29 +175,21 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   ]);
 
   const size = local.size ?? "md";
-  const styles = sizeStyles[size];
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: ListBoxRenderProps): string => {
-    const base =
-      "rounded-lg border-2 border-primary-600 bg-bg-400 overflow-auto focus:outline-none";
-    const sizeClass = styles.list;
+  const getClassName = (renderProps: ListBoxRenderProps): string =>
+    [
+      listStyles({
+        size,
+        isDisabled: renderProps.isDisabled,
+        isFocusVisible: renderProps.isFocusVisible,
+      }),
+      customClass,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
-    let stateClass: string;
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50";
-    } else {
-      stateClass = "";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    return [base, sizeClass, stateClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
-
-  const defaultEmptyState = () => <li class="py-4 px-4 text-center text-primary-500">No items</li>;
+  const defaultEmptyState = () => <li class={emptyStateStyles}>No items</li>;
 
   const mergedAriaLabel = (headlessProps as { "aria-label"?: string })["aria-label"];
 
@@ -132,9 +211,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
 
   return (
     <ListBoxSizeContext.Provider value={size}>
-      <div class="flex flex-col gap-1.5">
+      <div class={fieldStyles}>
         <Show when={local.label}>
-          <span id={labelId} class={`text-primary-200 font-medium ${styles.label}`}>
+          <span id={labelId} class={labelStyles({ size })}>
             {local.label}
           </span>
         </Show>
@@ -148,7 +227,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
           children={props.children}
         />
         <Show when={local.description}>
-          <span id={descriptionId} class="text-primary-400 text-sm">
+          <span id={descriptionId} class={fieldDescriptionStyles}>
             {local.description}
           </span>
         </Show>
@@ -158,51 +237,33 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
 }
 
 /**
- * An option in a listbox.
- * SSR-compatible - renders icon, check, content, and description directly without render props.
+ * An option in a listbox. Renders icon, checkmark, content, and description via
+ * the collection render props so the selected-state styling stays in sync.
  */
 export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "description", "icon"]);
   const size = useContext(ListBoxSizeContext);
-  const sizeStyle = sizeStyles[size];
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: ListBoxOptionRenderProps): string => {
-    const base = "flex items-center cursor-pointer transition-colors duration-150 outline-none";
-    const sizeClass = sizeStyle.option;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      if (renderProps.isFocused || renderProps.isHovered) {
-        colorClass = "bg-accent/30 text-accent";
-      } else {
-        colorClass = "bg-accent/20 text-accent";
-      }
-    } else if (renderProps.isFocused || renderProps.isHovered) {
-      colorClass = "bg-bg-300 text-primary-100";
-    } else {
-      colorClass = "text-primary-200";
-    }
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    return [base, sizeClass, colorClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
+  const getClassName = (renderProps: ListBoxOptionRenderProps): string =>
+    [optionStyles({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
 
   return (
     <HeadlessListBoxOption {...headlessProps} class={getClassName}>
-      {local.icon && <span class={`shrink-0 ${sizeStyle.icon}`}>{local.icon()}</span>}
-      <CheckIcon class={`shrink-0 ${sizeStyle.icon} text-accent hidden data-selected:block`} />
-      <div class="flex flex-col flex-1 min-w-0">
-        <span class="truncate">{props.children as JSX.Element}</span>
-        {local.description && (
-          <span class={`text-primary-400 truncate ${sizeStyle.description}`}>
-            {local.description}
-          </span>
-        )}
-      </div>
+      {(renderProps) => (
+        <>
+          {local.icon && <span class={optionIconStyles({ size })}>{local.icon()}</span>}
+          <Show when={renderProps.isSelected}>
+            <CheckIcon class={checkmarkStyles({ size })} />
+          </Show>
+          <div class={optionContentStyles}>
+            <span class={optionLabelStyles}>{props.children as JSX.Element}</span>
+            {local.description && (
+              <span class={optionDescriptionStyles({ size })}>{local.description}</span>
+            )}
+          </div>
+        </>
+      )}
     </HeadlessListBoxOption>
   );
 }
@@ -213,7 +274,7 @@ export function ListBoxSection(props: ListBoxSectionProps): JSX.Element {
   return (
     <HeadlessListBoxSection
       {...headlessProps}
-      class={["px-1 py-1", local.class ?? ""].filter(Boolean).join(" ")}
+      class={[sectionStyles, local.class].filter(Boolean).join(" ")}
     >
       {props.children}
     </HeadlessListBoxSection>

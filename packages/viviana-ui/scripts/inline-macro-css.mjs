@@ -22,13 +22,25 @@ const dist = join(dirname(fileURLToPath(import.meta.url)), "..", "dist");
 const stylesPath = join(dist, "styles.css");
 const macroPath = join(dist, "viviana-components.css");
 
-const [styles, macro] = await Promise.all([
-  readFile(stylesPath, "utf8"),
-  readFile(macroPath, "utf8"),
-]);
+// The macro file only exists when a built entry actually calls style(). The
+// current surface is solid-spectrum re-export barrels only — the custom product
+// components were archived out (see vite.config.ts) — so the macro extracts no
+// rules and vite emits no viviana-components.css. Treat an absent file as "no
+// custom rules to inline"; when Phase 2 re-adds macro-styled custom components
+// the file reappears and is inlined again.
+let macro = "";
+try {
+  macro = await readFile(macroPath, "utf8");
+} catch (err) {
+  if (err.code !== "ENOENT") throw err;
+}
 
-const banner = "\n/* viviana custom components — extracted S2 macro CSS (inlined) */\n";
-await writeFile(stylesPath, `${styles.trimEnd()}\n${banner}${macro}`, "utf8");
+const styles = await readFile(stylesPath, "utf8");
+
+if (macro.trim()) {
+  const banner = "\n/* viviana custom components — extracted S2 macro CSS (inlined) */\n";
+  await writeFile(stylesPath, `${styles.trimEnd()}\n${banner}${macro}`, "utf8");
+}
 
 // The macro CSS now lives inside styles.css; drop the redundant standalone file.
 await rm(macroPath, { force: true });
@@ -41,5 +53,7 @@ await rm(macroPath, { force: true });
 await rm(join(dist, "style.css"), { force: true });
 
 console.log(
-  "inline-macro-css: appended viviana-components.css into dist/styles.css; dropped style.css sidecar",
+  macro.trim()
+    ? "inline-macro-css: appended viviana-components.css into dist/styles.css; dropped style.css sidecar"
+    : "inline-macro-css: no custom-component macro CSS to inline; dropped style.css sidecar",
 );

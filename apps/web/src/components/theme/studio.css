@@ -138,6 +138,29 @@
   color: var(--docs-accent);
 }
 
+/* Site wordmark. A plain two-word mark (the legacy Logo component was archived
+   with the rest of the custom set). Typography mirrors the old `black`-weight
+   `title-xl` ramp; the two child words carry the site palette (neutral text +
+   the single blue accent). Until the from-scratch brand lands, this keeps the
+   chrome wordmark on-palette without pulling in an archived component. */
+.pv-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  column-gap: 8px;
+  white-space: nowrap;
+  font-family: "Jost", system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 1.375rem;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.pv-wordmark > span {
+  color: var(--docs-text);
+}
+.pv-wordmark > span:last-child {
+  color: var(--docs-accent);
+}
+
 /* Centered page column */
 .pv-wrap {
   width: 100%;
@@ -154,11 +177,18 @@
 
 /* Hero vertical rhythm */
 .pv-hero {
-  padding-block: 5rem;
+  padding-block: 3.25rem 3.5rem;
+}
+/* Let the flex `gap-6` (24px) be the sole vertical rhythm: the browser's
+   default heading/paragraph block margins (a ~0.67em UA margin on the h1 alone
+   is ~46px) stack ON TOP of the flex gap and would inflate the H1→subhead gap
+   to ~85px. The h1 keeps its inline `margin-top` nudge (inline wins). */
+.pv-hero :is(h1, p) {
+  margin-block: 0;
 }
 @media (min-width: 640px) {
   .pv-hero {
-    padding-block: 7rem;
+    padding-block: 4.5rem 4.75rem;
   }
 }
 
@@ -172,6 +202,16 @@
   .pv-features {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* ── /solid-spectrum/ecosystem ─────────────────────────────────────────── */
+
+/* Package/app tile grid: auto-fills from a min tile width, so it flows from one
+   column on narrow viewports up to as many as fit — no per-breakpoint counts. */
+.pv-tile-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 /* ── /theme (Theme Studio) ─────────────────────────────────────────────── */
@@ -302,11 +342,14 @@
 }
 
 /* Live-preview gallery inside the canvas: single column → two across.
-   `--wide` panels span the full row. */
+   `--wide` panels span the full row. `align-items: start` keeps a short panel
+   (e.g. Tabs) from stretching to match a tall neighbour (e.g. Calendar), which
+   would leave an empty void inside the short panel. */
 .pv-gallery {
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(0, 1fr);
+  align-items: start;
 }
 @media (min-width: 640px) {
   .pv-gallery {
@@ -320,4 +363,14 @@
    the canvas. */
 .pv-gallery > * {
   min-width: 0;
+}
+
+/* Calendar weekday header (CalendarGridHeader cells) is painted by a baked S2
+   style() macro color (gray-800) that ISN'T wired to the --color-* contract, so
+   it stays dark-on-dark in a dark preview. Re-point it to a themed token WITHIN
+   the preview canvas only — one attribute+type selector (0,1,3) outweighs the
+   single macro class (0,1,0), so no !important — so the Calendar honours the
+   theme like every other panel. Scoped to the canvas; site chrome is untouched. */
+[data-preview-canvas] thead th {
+  color: var(--color-text-secondary);
 }

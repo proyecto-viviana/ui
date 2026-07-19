@@ -64,11 +64,11 @@ next task and which workstreams are live.
    it caught 5 latent typecheck errors on the first main pushes),
    `main-rot-burndown-2026-07`, Toast CP9.35, and DropZone CP9.36 are all
    cleared. Main is now green and CI-covered on every push.
-1. The recertification program (`recertification.md`) is the plan of record:
-   the per-component red→green march, Tiers 1–3 complete (Tier 3 closed
-   2026-07-06 with DropZone/FileTrigger). Next is Tier 4, but note the two
-   owner decisions gating it (D4 policy, D9/D10 sequencing) and the
-   Menu/ActionMenu D5-D6 backfill — Picker is the intended Tier-4 opener.
+1. The recertification program is **COMPLETE (2026-07-15)** — the per-component
+   red→green march ran all six tiers to green with 12/12 drivers and the
+   Phase-3 closers. It is shelved: `recertification.md` (summary),
+   `archive/recertification-full.md` (full log). It no longer picks work; new
+   ports are held to `certification.md` and gated by `comparison:test:certified`.
 2. Consumer-delivery cluster when a march slot allows: Picker fixes
    (`picker-popover-anchor`, `picker-item-checkmark` — Picker is first in
    Tier 4) and `macro-route-styled`.
@@ -82,9 +82,9 @@ next task and which workstreams are live.
 
 ## Active workstreams
 
-- **Recertification march** — the plan of record (`recertification.md`): Tiers
-  1–3 complete (Tier 3 closed 2026-07-06 with DropZone/FileTrigger, CP9.36);
-  next Tier 4, starting with Picker.
+- **Recertification march** — **COMPLETE 2026-07-15**, shelved. All six tiers
+  certified + 12/12 drivers + Phase-3 closers. Summary in `recertification.md`,
+  full log in `archive/recertification-full.md`. No longer an active workstream.
 - **Pipeline stabilization** _(opened 2026-07-06)_ — CI-on-main, release-train
   unjam, live-rot burndown; tickets in `tech-debt.md`, direction in
   `steering.md` Now.

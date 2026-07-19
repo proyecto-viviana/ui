@@ -44,7 +44,10 @@ describe("Menu (solid-spectrum)", () => {
   });
 
   describe("MenuTrigger", () => {
-    it("renders wrapper div with relative inline-block", () => {
+    it("renders a positioned wrapper div", () => {
+      // Styling flows through the build-time S2 style() macro, which emits
+      // opaque atomic class hashes (jsdom loads no CSS), so assert the wrapper
+      // carries a class rather than matching literal Tailwind utilities.
       const { container } = render(() => (
         <MenuTrigger>
           <MenuButton>Actions</MenuButton>
@@ -54,8 +57,9 @@ describe("Menu (solid-spectrum)", () => {
         </MenuTrigger>
       ));
 
-      const wrapper = container.querySelector(".relative.inline-block");
+      const wrapper = container.querySelector("div");
       expect(wrapper).toBeInTheDocument();
+      expect(wrapper!.className).not.toBe("");
     });
 
     it("opens contextual help popovers for unavailable menu items", async () => {
@@ -231,98 +235,46 @@ describe("Menu (solid-spectrum)", () => {
       expect(button.textContent).toContain("Actions");
     });
 
-    it("applies secondary variant classes by default", () => {
-      render(() => (
-        <MenuTrigger>
-          <MenuButton>Actions</MenuButton>
+    // Styling flows through the build-time S2 style() macro (opaque atomic class
+    // hashes; jsdom loads no CSS), so these assert a non-empty class and that a
+    // distinct variant/size yields a distinct class string rather than matching
+    // literal Tailwind utilities.
+    const renderMenuButton = (props: { variant?: "primary" | "secondary" | "quiet" } = {}, size?: "sm" | "lg") => {
+      const { unmount } = render(() => (
+        <MenuTrigger size={size}>
+          <MenuButton variant={props.variant}>Actions</MenuButton>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
         </MenuTrigger>
       ));
+      const className = screen.getByRole("button").className;
+      unmount();
+      return className;
+    };
 
-      const button = screen.getByRole("button");
-      // secondary: 'bg-bg-400 text-primary-200 border-primary-600'
-      expect(button.className).toContain("bg-bg-400");
-      expect(button.className).toContain("border-primary-600");
+    it("applies a non-empty secondary variant class by default", () => {
+      expect(renderMenuButton()).not.toBe("");
     });
 
-    it("applies primary variant classes", () => {
-      render(() => (
-        <MenuTrigger>
-          <MenuButton variant="primary">Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-accent");
-      expect(button.className).toContain("border-accent");
+    it("applies a distinct primary variant class", () => {
+      expect(renderMenuButton({ variant: "primary" })).not.toBe(renderMenuButton({ variant: "secondary" }));
     });
 
-    it("applies quiet variant classes", () => {
-      render(() => (
-        <MenuTrigger>
-          <MenuButton variant="quiet">Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      expect(button.className).toContain("bg-transparent");
-      expect(button.className).toContain("border-transparent");
+    it("applies a distinct quiet variant class", () => {
+      expect(renderMenuButton({ variant: "quiet" })).not.toBe(renderMenuButton({ variant: "secondary" }));
     });
 
-    it("applies md size classes by default", () => {
-      render(() => (
-        <MenuTrigger>
-          <MenuButton>Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      // md button: 'h-10 text-base px-4 gap-2'
-      expect(button.className).toContain("h-10");
-      expect(button.className).toContain("px-4");
+    it("applies a non-empty md size class by default", () => {
+      expect(renderMenuButton()).not.toBe("");
     });
 
-    it("applies sm size classes", () => {
-      render(() => (
-        <MenuTrigger size="sm">
-          <MenuButton>Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      // sm button: 'h-8 text-sm px-3 gap-2'
-      expect(button.className).toContain("h-8");
-      expect(button.className).toContain("px-3");
+    it("applies a distinct sm size class", () => {
+      expect(renderMenuButton({}, "sm")).not.toBe(renderMenuButton());
     });
 
-    it("applies lg size classes", () => {
-      render(() => (
-        <MenuTrigger size="lg">
-          <MenuButton>Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      // lg button: 'h-12 text-lg px-5 gap-3'
-      expect(button.className).toContain("h-12");
-      expect(button.className).toContain("px-5");
+    it("applies a distinct lg size class", () => {
+      expect(renderMenuButton({}, "lg")).not.toBe(renderMenuButton());
     });
 
     it("renders chevron SVG", () => {
@@ -585,16 +537,22 @@ describe("Menu (solid-spectrum)", () => {
     });
 
     it("applies destructive styling", () => {
+      // The destructive color flows through the S2 style() macro (opaque atomic
+      // class; jsdom loads no CSS), so assert the destructive item's class
+      // differs from a plain item's rather than matching a literal utility.
       render(() => (
         <MenuTrigger defaultOpen>
           <MenuButton>Actions</MenuButton>
           <Menu
-            items={[{ id: "delete", label: "Delete" }]}
+            items={[
+              { id: "delete", label: "Delete" },
+              { id: "keep", label: "Keep" },
+            ]}
             getKey={(i) => i.id}
             aria-label="Actions"
           >
             {(item) => (
-              <MenuItem id={item.id} isDestructive>
+              <MenuItem id={item.id} isDestructive={item.id === "delete"}>
                 {item.label}
               </MenuItem>
             )}
@@ -604,7 +562,9 @@ describe("Menu (solid-spectrum)", () => {
 
       const menuItems = screen.getAllByRole("menuitem");
       const deleteItem = menuItems.find((el) => el.textContent?.includes("Delete"));
-      expect(deleteItem?.className).toContain("text-danger-400");
+      const keepItem = menuItems.find((el) => el.textContent?.includes("Keep"));
+      expect(deleteItem?.className).not.toBe("");
+      expect(deleteItem?.className).not.toBe(keepItem?.className);
     });
 
     it("applies disabled state attributes and generated styling", () => {
@@ -750,13 +710,15 @@ describe("Menu (solid-spectrum)", () => {
   });
 
   describe("MenuSeparator", () => {
-    it('renders with role="separator" and border class', () => {
+    it('renders with role="separator" and a border class', () => {
+      // The border flows through the S2 style() macro (opaque atomic class;
+      // jsdom loads no CSS), so assert a non-empty class rather than a literal
+      // Tailwind utility.
       render(() => <MenuSeparator />);
 
       const separator = screen.getByRole("separator");
       expect(separator).toBeInTheDocument();
-      expect(separator.className).toContain("border-t");
-      expect(separator.className).toContain("border-primary-600");
+      expect(separator.className).not.toBe("");
     });
   });
 

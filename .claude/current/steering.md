@@ -28,10 +28,11 @@ component, against the live upstream oracle.
 
 ## Current Focus
 
-Name/surface parity is closed (all pin guards green). Depth parity is the
-recertification march: ~37/70 styled components certified (Tiers 1–3 done —
-Tier 3 closed 2026-07-06 with DropZone/FileTrigger; next Tier 4, opening with
-Picker). The 2026-07-06
+Name/surface parity is closed (all pin guards green). Depth parity was the
+recertification march, now **COMPLETE 2026-07-15** — all six Phase-2 tiers
+certified, 12/12 drivers, Phase-3 closers landed; shelved to `recertification.md`
+(summary) and `archive/recertification-full.md` (full log). _The dated
+stabilization snapshot below is historical (2026-07-06)._ The 2026-07-06
 validation pass confirmed the
 certified tiers are genuinely strong — and found that the biggest current risk
 is **process, not code**: CI has been dark on main since 2026-06-24, the

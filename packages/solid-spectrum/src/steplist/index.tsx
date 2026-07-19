@@ -1,4 +1,4 @@
-import { type JSX, splitProps, createContext, useContext } from "solid-js";
+import { type JSX, splitProps, createContext, useContext, createSignal, Show } from "solid-js";
 import {
   StepList as HeadlessStepList,
   Step as HeadlessStep,
@@ -8,14 +8,17 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { createId, type Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
+import { style, focusRing } from "../style" with { type: "macro" };
 
 export type StepListSize = "sm" | "md" | "lg";
 
 interface StepListContextValue {
   size: StepListSize;
+  /** Total number of steps, used to hide the trailing connector. */
+  count: number;
 }
 
-const StepListSizeContext = createContext<StepListContextValue>({ size: "md" });
+const StepListSizeContext = createContext<StepListContextValue>({ size: "md", count: 0 });
 
 export interface StepListProps<T extends { key: Key; label: string }> extends Omit<
   HeadlessStepListProps<T>,
@@ -34,29 +37,95 @@ export interface StepProps extends Omit<HeadlessStepProps, "class" | "style"> {
   class?: string;
 }
 
-const sizeStyles = {
-  sm: {
-    indicator: "h-6 w-6 text-xs",
-    text: "text-xs",
-    connector: "h-0.5",
-    gap: "gap-1",
-    listGap: "gap-0",
-  },
-  md: {
-    indicator: "h-8 w-8 text-sm",
-    text: "text-sm",
-    connector: "h-0.5",
-    gap: "gap-1.5",
-    listGap: "gap-0",
-  },
-  lg: {
-    indicator: "h-10 w-10 text-base",
-    text: "text-base",
-    connector: "h-0.5",
-    gap: "gap-2",
-    listGap: "gap-0",
-  },
+// All styling flows through the build-time S2 style() macro so the atomic CSS
+// ships in the package bundle for installed consumers, rather than relying on
+// Tailwind utility strings the package ships no CSS for. Step state
+// (selected/completed/disabled) is driven by the collection render props; later
+// keys win, so selected beats completed beats disabled.
+
+type StepStyleState = {
+  size: StepListSize;
+  isSelected?: boolean;
+  isCompleted?: boolean;
+  isDisabled?: boolean;
+  isFocusVisible?: boolean;
 };
+
+const listStyles = style({
+  display: "flex",
+  alignItems: "start",
+});
+
+const stepItemStyles = style({
+  display: "flex",
+  alignItems: "center",
+  flexGrow: 1,
+  minWidth: 0,
+});
+
+const stepLinkStyles = style<StepStyleState>({
+  ...focusRing(),
+  borderRadius: "sm",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: { size: { sm: 4, md: "[6px]", lg: 8 } },
+});
+
+const indicatorStyles = style<StepStyleState>({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "full",
+  borderWidth: 2,
+  borderStyle: "solid",
+  fontWeight: "medium",
+  flexShrink: 0,
+  transition: "default",
+  width: { size: { sm: 24, md: 32, lg: 40 } },
+  height: { size: { sm: 24, md: 32, lg: 40 } },
+  font: { size: { sm: "ui-xs", md: "ui-sm", lg: "ui" } },
+  backgroundColor: {
+    default: "layer-2",
+    isDisabled: "gray-100",
+    isCompleted: "positive",
+    isSelected: "accent",
+  },
+  borderColor: {
+    default: "gray-400",
+    isDisabled: "transparent",
+    isCompleted: "transparent",
+    isSelected: "transparent",
+  },
+  color: {
+    default: "neutral-subdued",
+    isDisabled: "disabled",
+    isCompleted: "white",
+    isSelected: "white",
+  },
+});
+
+const labelStyles = style<StepStyleState>({
+  transition: "default",
+  font: { size: { sm: "ui-xs", md: "ui-sm", lg: "ui" } },
+  fontWeight: { default: "normal", isSelected: "medium" },
+  color: {
+    default: "neutral-subdued",
+    isDisabled: "disabled",
+    isCompleted: "neutral",
+    isSelected: "neutral",
+  },
+});
+
+const connectorStyles = style<StepStyleState>({
+  flexGrow: 1,
+  flexShrink: 0,
+  alignSelf: "center",
+  minWidth: 16,
+  height: 2,
+  transition: "default",
+  backgroundColor: { default: "gray-300", isCompleted: "positive" },
+});
 
 /**
  * StepList displays a sequence of steps with visual indicators and connector lines.
@@ -87,11 +156,14 @@ export function StepList<T extends { key: Key; label: string }>(
         get size() {
           return size();
         },
+        get count() {
+          return mergedProps.items?.length ?? 0;
+        },
       }}
     >
       <HeadlessStepList
         {...headlessProps}
-        class={`flex items-start ${sizeStyles[size()].listGap} ${customClass()}`}
+        class={[listStyles, customClass()].filter(Boolean).join(" ")}
         children={renderStep}
       />
     </StepListSizeContext.Provider>
@@ -116,7 +188,7 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
   renderProps: StepListItemRenderProps;
 }): JSX.Element {
   const ctx = useContext(StepListSizeContext);
-  const styles = () => sizeStyles[ctx.size];
+  const [isFocusVisible, setIsFocusVisible] = createSignal(false);
 
   // Accessible name composed from marker + visually-hidden state + label,
   // matching the vendored `@adobe/react-spectrum` StepListItem
@@ -126,52 +198,16 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
   const stateId = createId();
   const labelId = createId();
 
-  const indicatorClasses = (): string => {
-    const base = `${styles().indicator} flex items-center justify-center rounded-full font-medium shrink-0 transition-colors duration-150`;
-
-    if (props.renderProps.isSelected) {
-      return `${base} bg-accent-300 text-on-color`;
-    }
-    if (props.renderProps.isCompleted) {
-      return `${base} bg-success-300 text-on-color`;
-    }
-    if (!props.renderProps.isSelectable) {
-      return `${base} bg-bg-300 text-primary-600`;
-    }
-    return `${base} bg-bg-200 text-primary-300 border border-primary-500`;
-  };
-
-  const labelClasses = (): string => {
-    const base = `${styles().text} transition-colors duration-150`;
-
-    if (props.renderProps.isSelected) {
-      return `${base} text-primary-100 font-medium`;
-    }
-    if (props.renderProps.isCompleted) {
-      return `${base} text-primary-300`;
-    }
-    if (!props.renderProps.isSelectable) {
-      return `${base} text-primary-600`;
-    }
-    return `${base} text-primary-400`;
-  };
-
-  const connectorClasses = (): string => {
-    const base = `${styles().connector} flex-1 min-w-4 transition-colors duration-150`;
-    if (props.renderProps.isCompleted) {
-      return `${base} bg-success-300`;
-    }
-    return `${base} bg-bg-300`;
-  };
-
-  const cursorClass = (): string => {
-    if (props.renderProps.isSelectable) return "cursor-pointer";
-    return "cursor-default";
-  };
+  const state = (): StepStyleState => ({
+    size: ctx.size,
+    isSelected: props.renderProps.isSelected,
+    isCompleted: props.renderProps.isCompleted,
+    isDisabled: !props.renderProps.isSelectable,
+  });
 
   return (
     <li
-      class="flex items-center flex-1 min-w-0"
+      class={stepItemStyles}
       data-selected={props.renderProps.isSelected || undefined}
       data-completed={props.renderProps.isCompleted || undefined}
       data-disabled={!props.renderProps.isSelectable || undefined}
@@ -182,10 +218,13 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
         aria-disabled={!props.renderProps.isSelectable ? true : undefined}
         aria-labelledby={`${markerId} ${stateId} ${labelId}`}
         tabIndex={props.renderProps.isSelectable ? 0 : undefined}
-        class={`flex flex-col items-center ${styles().gap} ${cursorClass()} outline-none focus-visible:ring-2 focus-visible:ring-accent-300 focus-visible:ring-offset-2 focus-visible:ring-offset-bg-400 rounded`}
+        class={stepLinkStyles({ ...state(), isFocusVisible: isFocusVisible() })}
+        style={{ cursor: props.renderProps.isSelectable ? "pointer" : "default" }}
         onClick={(e) => {
           e.preventDefault();
         }}
+        onFocus={(e) => setIsFocusVisible(e.currentTarget.matches(":focus-visible"))}
+        onBlur={() => setIsFocusVisible(false)}
       >
         {/* Marker ALWAYS carries the step number as text — it is referenced by
             aria-labelledby, so the accessible name stays "N State: Label" in
@@ -195,7 +234,7 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
             marker and label are aria-hidden — the accessible name is composed
             solely through aria-labelledby (which pierces aria-hidden), exactly
             as the vendored StepListItem hides its marker wrapper + label div. */}
-        <span id={markerId} aria-hidden="true" class={indicatorClasses()}>
+        <span id={markerId} aria-hidden="true" class={indicatorStyles(state())}>
           {props.stepNumber}
         </span>
         {/* Visually-hidden state prefix, referenced by aria-labelledby only. */}
@@ -216,15 +255,14 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
         >
           {stepStateLabel(props.renderProps)}
         </span>
-        <span id={labelId} aria-hidden="true" class={labelClasses()}>
+        <span id={labelId} aria-hidden="true" class={labelStyles(state())}>
           {props.item.label}
         </span>
       </a>
-      {/* Connector line — hidden on the last step */}
-      <div
-        class={`${connectorClasses()} self-center mt-0 [li:last-child>&]:hidden`}
-        aria-hidden="true"
-      />
+      {/* Connector line — omitted on the last step. */}
+      <Show when={props.stepNumber < ctx.count}>
+        <div class={connectorStyles(state())} aria-hidden="true" />
+      </Show>
     </li>
   );
 }

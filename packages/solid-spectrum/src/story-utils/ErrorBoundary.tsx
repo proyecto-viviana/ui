@@ -1,4 +1,5 @@
 import { type JSX, ErrorBoundary as SolidErrorBoundary } from "solid-js";
+import { style } from "../style" with { type: "macro" };
 
 export interface StoryErrorBoundaryProps {
   /** The content to render. */
@@ -6,6 +7,44 @@ export interface StoryErrorBoundaryProps {
   /** Custom fallback component. */
   fallback?: (err: Error, reset: () => void) => JSX.Element;
 }
+
+// Story/dev error boundary. The invented `red-*` utility palette is replaced with
+// S2 negative tokens routed through the `style()` macro: a `-subtle` fill inside a
+// `negative-400` outline, negative-toned heading and message text, and a solid
+// negative retry button that darkens on `:hover`.
+const errorContainer = style({
+  borderRadius: "lg",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderColor: "negative-400",
+  backgroundColor: "negative-subtle",
+  padding: 16,
+});
+
+const errorHeading = style({
+  color: "negative",
+  fontWeight: "bold",
+  marginBottom: 8,
+});
+
+const errorMessage = style({
+  fontSize: "ui-sm",
+  color: "negative",
+  whiteSpace: "pre-wrap",
+  marginBottom: 12,
+});
+
+const errorRetry = style({
+  paddingX: 12,
+  paddingY: 4,
+  fontSize: "ui-sm",
+  borderRadius: "default",
+  borderStyle: "none",
+  color: "white",
+  backgroundColor: { default: "negative-400", ":hover": "negative-500" },
+  cursor: "pointer",
+  transition: "default",
+});
 
 /**
  * A styled error boundary that catches and displays errors in stories.
@@ -17,13 +56,10 @@ export function StoryErrorBoundary(props: StoryErrorBoundaryProps): JSX.Element 
         props.fallback ? (
           props.fallback(err, reset)
         ) : (
-          <div class="rounded-lg border-2 border-red-400 bg-red-400/10 p-4">
-            <h3 class="text-red-400 font-semibold mb-2">Error</h3>
-            <pre class="text-sm text-red-300 whitespace-pre-wrap mb-3">{err.message}</pre>
-            <button
-              class="px-3 py-1 text-sm rounded bg-red-400 text-on-color hover:bg-red-500 transition-colors"
-              onClick={reset}
-            >
+          <div class={errorContainer}>
+            <h3 class={errorHeading}>Error</h3>
+            <pre class={errorMessage}>{err.message}</pre>
+            <button class={errorRetry} onClick={reset}>
               Retry
             </button>
           </div>

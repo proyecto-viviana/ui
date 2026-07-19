@@ -89,72 +89,6 @@ interface ColorContextValue {
 
 const ColorSizeContext = createContext<ColorContextValue>({ size: "md" });
 
-const sizeStyles = {
-  sm: {
-    slider: {
-      track: "h-4 rounded",
-      thumb: "w-4 h-4",
-      label: "text-sm",
-    },
-    area: {
-      container: "w-48 h-48",
-      thumb: "w-4 h-4",
-    },
-    wheel: {
-      container: "w-48 h-48",
-      track: "stroke-[16px]",
-      thumb: "w-4 h-4",
-    },
-    field: {
-      input: "h-8 text-sm px-2",
-      label: "text-sm",
-    },
-    swatch: "w-8 h-8",
-  },
-  md: {
-    slider: {
-      track: "h-6 rounded-md",
-      thumb: "w-5 h-5",
-      label: "text-base",
-    },
-    area: {
-      container: "w-64 h-64",
-      thumb: "w-5 h-5",
-    },
-    wheel: {
-      container: "w-64 h-64",
-      track: "stroke-[20px]",
-      thumb: "w-5 h-5",
-    },
-    field: {
-      input: "h-10 text-base px-3",
-      label: "text-base",
-    },
-    swatch: "w-10 h-10",
-  },
-  lg: {
-    slider: {
-      track: "h-8 rounded-lg",
-      thumb: "w-6 h-6",
-      label: "text-lg",
-    },
-    area: {
-      container: "w-80 h-80",
-      thumb: "w-6 h-6",
-    },
-    wheel: {
-      container: "w-80 h-80",
-      track: "stroke-[24px]",
-      thumb: "w-6 h-6",
-    },
-    field: {
-      input: "h-12 text-lg px-4",
-      label: "text-lg",
-    },
-    swatch: "w-12 h-12",
-  },
-};
-
 interface ColorSliderStyleProps extends Partial<ColorSliderRenderProps> {}
 
 const colorSliderRoot = style<ColorSliderStyleProps>(
@@ -1739,14 +1673,25 @@ export interface ColorPickerProps {
  * />
  * ```
  */
+const colorPickerRoot = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+});
+
+const colorPickerLabel = style<{ size: ColorSize }>({
+  color: "neutral",
+  fontWeight: "medium",
+  font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+});
+
 export function ColorPicker(props: ColorPickerProps): JSX.Element {
   const size = () => props.size ?? "md";
-  const styles = () => sizeStyles[size()];
 
   return (
-    <div class={`flex flex-col gap-4 ${props.class ?? ""}`}>
+    <div class={[colorPickerRoot, props.class].filter(Boolean).join(" ")}>
       <Show when={props.label}>
-        <span class={`text-primary-200 font-medium ${styles().field.label}`}>{props.label}</span>
+        <span class={colorPickerLabel({ size: size() })}>{props.label}</span>
       </Show>
 
       <ColorArea

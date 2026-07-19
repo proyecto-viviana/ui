@@ -12,6 +12,32 @@ the recertification march (`recertification.md`) — most invented-styled librar
 components are march units, so their styling conversion happens as part of their
 red→green cert.
 
+## Status (2026-07-18) — finalized at the library boundary
+
+The **shipped library is done and guarded.** Every `packages/*/src` surface is off
+invented Tailwind: the Phase-0/1 march units converted as part of their certs, and
+the trailing thin wrappers (`landmark`, the story `ErrorBoundary`, the
+`SearchAutocomplete` wrapper) are now on the S2 macro. A precise scan of
+`solid-spectrum/src`, `viviana-ui/src`, and `solidaria-components/src` finds **zero**
+invented Viviana semantic tokens (`bg-primary`/`text-on-color`/`bg-bg-*`/
+`border-accent-*`/`bg-danger|success|warning-*`); the only remaining Tailwind-shaped
+strings are standard scales (`blue-`/`red-`/`gray-`) inside **headless JSDoc
+`@example` blocks**, which are legitimate consumer-styling examples. A blocking CI
+gate now enforces this: **`guard:invented-utilities`** (`scripts/check-invented-utilities.ts`)
+strips comments, then fails if the invented vocabulary reappears in library source.
+
+**Phase 4 (`apps/web`) is deliberately descoped from this PR** — see the Phasing
+note below. `apps/web` is the design system's **own internal docs + component
+playground site** (not the published `@proyecto-viviana/ui` package, not the Viviana
+Education landing #65, and not Akade — those are the customer products, in the
+separate `education` repo). Its `local-utilities.css` is a self-contained, frozen,
+app-local Tailwind-compat layer that the docs markup leans on **~9,863 times across
+73 files**; it ships nothing, touches no cert, and currently works. Rewriting all of
+it to delete one internal-tooling stylesheet is a large, high-regression job that is
+orthogonal to the visual system this PR delivers and would swamp the review. It is
+therefore split out as its own self-contained follow-up, not bundled here. The
+library guard is scoped to `packages/*/src` for the same reason.
+
 ## The finding (what "Tailwind" actually is here)
 
 There is **no Tailwind build** anywhere in the repo — no `tailwindcss` dependency,
@@ -106,13 +132,18 @@ invented contract).
 - **Phase 2 — viviana-ui custom (Tier 6).** chip, logo, timeline-item.
 - **Phase 3 — solidaria-components base.** Strip Breadcrumbs (and any other base)
   utility strings; base layers render unstyled.
-- **Phase 4 — apps/web.** Re-style the site off `local-utilities.css` onto the
-  S2-styled library + real CSS; delete `local-utilities.css`. Confirm sequencing
-  before starting (largest surface; changes the site's look).
-- **Phase 5 — sweep + guard.** `apps/comparison` chrome; delete any remaining
-  emitted utility strings; rebuild so `dist/` is clean; add a static gate
-  (grep-based) that fails CI if an invented utility token reappears in library
-  source.
+- **Phase 4 — apps/web. [DESCOPED from this PR → follow-up]** Re-styling the
+  internal docs/playground site off `local-utilities.css` (~9,863 utility usages
+  across 73 files) is orthogonal to the shipped visual system and would swamp this
+  PR. `apps/web` is unshipped internal tooling; its frozen utility layer works and
+  touches no cert. Split out as a self-contained follow-up PR — see the Status
+  block above.
+- **Phase 5 — sweep + guard.** Static gate **done**: `guard:invented-utilities`
+  (`scripts/check-invented-utilities.ts`) blocks CI if an invented utility token
+  reappears in library source (comments stripped; standard Tailwind scales in
+  headless JSDoc examples intentionally allowed). The `apps/comparison` chrome
+  sweep is descoped alongside Phase 4 — same internal-tooling category, not a
+  shipped surface. `dist/` rebuilt clean as part of the library conversion.
 
 ## Verification per phase
 

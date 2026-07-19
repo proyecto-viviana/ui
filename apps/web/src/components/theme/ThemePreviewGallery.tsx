@@ -1,39 +1,65 @@
-import { createSignal, For, type JSX } from "solid-js";
+import { For, createSignal, type JSX } from "solid-js";
 import {
   Button,
   Badge,
-  Alert,
+  InlineAlert,
+  Heading,
+  Content,
   Checkbox,
   ToggleSwitch,
   TextField,
   SearchField,
-  TextArea,
   ProgressBar,
   Meter,
-  Separator,
   Tabs,
   TabList,
   Tab,
   TabPanel,
-  Breadcrumbs,
-  BreadcrumbItem,
   Calendar,
-  ListView,
-  ListViewItem,
-  ColorSwatch,
+  Tag,
+  TagGroup,
+  UserCard,
+  Card,
+  CardPreview,
+  Image,
+  Text,
+  Footer,
+  StatusLight,
+  Avatar,
 } from "@proyecto-viviana/ui";
-import { parseColor } from "@proyecto-viviana/ui/ColorSwatch";
-import { Chip } from "@proyecto-viviana/ui/Chip";
-import { ProfileCard } from "@proyecto-viviana/ui/ProfileCard";
-import { EventCard } from "@proyecto-viviana/ui/EventCard";
-import { CalendarCard } from "@proyecto-viviana/ui/CalendarCard";
-import { ProjectCard } from "@proyecto-viviana/ui/ProjectCard";
-import { ConversationBubble, ConversationPreview } from "@proyecto-viviana/ui/Conversation";
-import { TimelineItem } from "@proyecto-viviana/ui/TimelineItem";
-import { Logo } from "@proyecto-viviana/ui/Logo";
+import { Provider } from "@proyecto-viviana/ui/Provider";
 import { type TokenMap } from "@/utils/themeBase";
 import { tokensToInlineStyle } from "@/utils/themeGen";
 import "./studio.css";
+
+// Inline, theme-neutral illustrative assets so the Card/Avatar previews render
+// without a network fetch (mirrors the certified comparison fixtures, which use
+// data-URI SVGs). Kept muted so the previewed --color-* palette stays the focus.
+const CARD_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 180'%3E%3Crect width='320' height='180' fill='%232c7be5'/%3E%3Cpath d='M0 132 82 74l68 42 62-58 108 96v26H0z' fill='%23d6e9ff' opacity='.9'/%3E%3Ccircle cx='248' cy='48' r='24' fill='%23fff3b0'/%3E%3C/svg%3E";
+const AVATAR_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%236b7fd7'/%3E%3Ccircle cx='32' cy='25' r='12' fill='%23fff'/%3E%3Cpath d='M12 60c0-11 9-18 20-18s20 7 20 18z' fill='%23fff'/%3E%3C/svg%3E";
+
+const TAGS = [
+  { id: "design", name: "Design" },
+  { id: "themeable", name: "Themeable" },
+  { id: "draft", name: "Draft" },
+  { id: "starred", name: "Starred" },
+];
+
+const CARDS = [
+  { title: "Palette", desc: "Indigo · Slate", status: "positive" as const, label: "Synced" },
+  { title: "Typography", desc: "Jost · Sen", status: "notice" as const, label: "Review" },
+  { title: "Spacing", desc: "8px scale", status: "neutral" as const, label: "Draft" },
+];
+
+const STATUSES = [
+  { variant: "informative" as const, label: "Informative" },
+  { variant: "positive" as const, label: "Online" },
+  { variant: "notice" as const, label: "Pending" },
+  { variant: "negative" as const, label: "Offline" },
+  { variant: "neutral" as const, label: "Idle" },
+];
 
 export interface ThemePreviewGalleryProps {
   /** Fully-resolved --color-* map for the scheme being previewed. */
@@ -92,32 +118,15 @@ const TABS = [
   { id: "settings", label: "Settings" },
 ];
 
-const CRUMBS = [
-  { id: "home", label: "Home", href: "#" },
-  { id: "library", label: "Library", href: "#" },
-  { id: "theme", label: "Theme" },
-];
-
-const LIST_ITEMS = [
-  { id: "a", title: "Accessible by default" },
-  { id: "b", title: "Certified contrast" },
-  { id: "c", title: "Themeable tokens" },
-];
-
-const SWATCH_TOKENS = [
-  "--color-primary",
-  "--color-primary-500",
-  "--color-accent",
-  "--color-success",
-  "--color-warning",
-  "--color-danger",
-] as const;
-
 /**
- * Everything here reads its colors from --color-* custom properties, so applying
- * the generated token map as inline properties on the wrapper re-skins the whole
- * subtree WITHOUT touching the surrounding site chrome. The scheme toggle simply
- * swaps which resolved map (dark/light) is handed in.
+ * A curated slice of the design system — enough surface to judge a theme at a
+ * glance (actions, selection, inputs, semantic feedback, data, a date picker,
+ * and the Spectrum-2 card/status ports) without turning into a swatch dump. Only
+ * solid-spectrum S2 ports are shown here — no custom Viviana surfaces. Every panel
+ * reads its colors from --color-* custom properties, so applying the generated
+ * token map as inline properties on the wrapper re-skins the whole subtree
+ * WITHOUT touching the surrounding site chrome. The scheme toggle simply swaps
+ * which resolved map (dark/light) is handed in.
  */
 export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
   const [switchOn, setSwitchOn] = createSignal(true);
@@ -125,15 +134,6 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
   const [text, setText] = createSignal("");
   const [search, setSearch] = createSignal("");
   const [tab, setTab] = createSignal("overview");
-
-  const swatch = (token: string) => {
-    const value = props.tokens[token];
-    try {
-      return parseColor(value);
-    } catch {
-      return parseColor("#000000");
-    }
-  };
 
   return (
     <div
@@ -143,18 +143,36 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
       }`}
       class="p-5"
     >
-      <div class="pv-gallery">
+      {/* The Provider does double duty here, and BOTH jobs need care:
+
+          1. Scheme machinery. Some S2 style() macro colors flip on the
+             color-scheme itself, not our token vars — e.g. the neutral (primary)
+             Button's FILL. Pinning the Provider to props.scheme re-anchors those
+             to the previewed scheme instead of the site root's.
+
+          2. Winning the token cascade. The Provider stamps `data-color-scheme` on
+             its wrapper div, which makes /ui's shipped `[data-color-scheme="light"]`
+             block RE-DECLARE the whole --color-* contract on that same div — the
+             legacy pink accent included. That block would override the recolored
+             vars we set (as inherited inline styles) on the parent canvas, so in
+             light mode the studio's indigo accent silently reverted to shipped pink.
+             Passing the recolored map as `style` puts it inline on the very div that
+             carries data-color-scheme, and an inline custom property outranks any
+             attribute-selector rule — so the previewed theme wins in both schemes.
+             (Dark needs no such block: its defaults live in :root, which the parent
+             canvas's inline vars already outrank via inheritance.)
+
+          The Provider IS the gallery grid: it merges `class` onto that same wrapper
+          div, so no extra nesting level — the Panels stay its direct grid children. */}
+      <Provider colorScheme={props.scheme} class="pv-gallery" style={props.tokens as JSX.CSSProperties}>
         <Panel title="Buttons">
           <div class="flex flex-wrap gap-2">
             <Button variant="primary">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
             <Button variant="accent">Accent</Button>
+            <Button variant="secondary">Secondary</Button>
             <Button variant="negative">Danger</Button>
           </div>
           <div class="mt-2 flex flex-wrap gap-2">
-            <Button variant="primary" fillStyle="outline">
-              Outline
-            </Button>
             <Button variant="accent" fillStyle="outline">
               Outline
             </Button>
@@ -164,13 +182,10 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           </div>
         </Panel>
 
-        <Panel title="Chips & Badges">
-          <div class="flex flex-wrap items-center gap-2">
-            <Chip text="Primary" variant="primary" />
-            <Chip text="Accent" variant="accent" />
-            <Chip text="Outline" variant="outline" />
-            <Chip text="Starred" variant="primary" icon="★" />
-          </div>
+        <Panel title="Tags & badges">
+          <TagGroup aria-label="Topics" items={TAGS}>
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagGroup>
           <div class="mt-3 flex flex-wrap items-center gap-3">
             <Badge count={5} variant="primary" />
             <Badge count={12} variant="accent" />
@@ -189,12 +204,16 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
               onChange={setText}
               description="We never share your email."
             />
-            <SearchField label="Search" placeholder="Search components…" value={search()} onChange={setSearch} />
-            <TextArea label="Notes" placeholder="A few words…" />
+            <SearchField
+              label="Search"
+              placeholder="Search components…"
+              value={search()}
+              onChange={setSearch}
+            />
           </div>
         </Panel>
 
-        <Panel title="Toggles">
+        <Panel title="Selection">
           <div class="space-y-3">
             <ToggleSwitch isSelected={switchOn()} onChange={setSwitchOn}>
               Email notifications
@@ -211,16 +230,23 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
 
         <Panel title="Feedback">
           <div class="space-y-2">
-            <Alert variant="success" title="Saved">
-              Your theme is ready to copy.
-            </Alert>
-            <Alert variant="warning" title="Heads up">
-              Check contrast before shipping.
-            </Alert>
-            <Alert variant="error" title="Error">
-              Something needs attention.
-            </Alert>
+            <InlineAlert variant="positive">
+              <Heading>Saved</Heading>
+              <Content>Your theme is ready to copy.</Content>
+            </InlineAlert>
+            <InlineAlert variant="notice">
+              <Heading>Heads up</Heading>
+              <Content>Check contrast before shipping.</Content>
+            </InlineAlert>
+            <InlineAlert variant="negative">
+              <Heading>Error</Heading>
+              <Content>Something needs attention.</Content>
+            </InlineAlert>
           </div>
+        </Panel>
+
+        <Panel title="Calendar">
+          <Calendar aria-label="Pick a date" />
         </Panel>
 
         <Panel title="Progress">
@@ -231,15 +257,7 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           </div>
         </Panel>
 
-        <Panel title="Navigation" wide>
-          <Breadcrumbs items={CRUMBS}>
-            {(crumb: (typeof CRUMBS)[number]) => (
-              <BreadcrumbItem id={crumb.id} href={crumb.href}>
-                {crumb.label}
-              </BreadcrumbItem>
-            )}
-          </Breadcrumbs>
-          <Separator />
+        <Panel title="Tabs">
           <Tabs
             items={TABS}
             getKey={(item) => item.id}
@@ -267,109 +285,57 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           </Tabs>
         </Panel>
 
-        <Panel title="List">
-          <ListView
-            aria-label="Highlights"
-            items={LIST_ITEMS}
-            getKey={(item) => item.id}
-            getTextValue={(item) => item.title}
-            selectionMode="single"
-          >
-            {(item: (typeof LIST_ITEMS)[number]) => (
-              <ListViewItem id={item.id} textValue={item.title}>
-                {item.title}
-              </ListViewItem>
-            )}
-          </ListView>
-        </Panel>
-
-        <Panel title="Palette">
-          <div class="flex flex-wrap gap-2">
-            <For each={SWATCH_TOKENS}>
-              {(token) => (
-                <div class="flex flex-col items-center gap-1">
-                  <ColorSwatch color={swatch(token)} size="L" />
-                  <span class="font-mono text-[9px]" style={{ color: "var(--color-text-muted)" }}>
-                    {token.replace("--color-", "")}
-                  </span>
-                </div>
-              )}
-            </For>
-          </div>
-        </Panel>
-
-        <Panel title="Calendar">
-          <Calendar aria-label="Pick a date" />
-        </Panel>
-
-        <Panel title="Profile" >
-          <ProfileCard
-            username="@viviana_dev"
-            bio="Building accessible SolidJS components."
-            followers={1234}
-            following={567}
-            actions={() => (
+        <Panel title="Profile">
+          <UserCard id="profile" size="M" textValue="Viviana UI" UNSAFE_style={{ width: "100%" }}>
+            <Avatar src={AVATAR_IMAGE} alt="" />
+            <Content>
+              <Text slot="title">@viviana_ui</Text>
+              <Text slot="description">Accessible SolidJS components, themeable to the core.</Text>
+            </Content>
+            <Footer>
               <div class="flex gap-2">
                 <Button variant="primary">Follow</Button>
                 <Button variant="secondary" fillStyle="outline">
                   Message
                 </Button>
               </div>
-            )}
-          />
+            </Footer>
+          </UserCard>
         </Panel>
 
-        <Panel title="Event">
-          <EventCard
-            title="Design system launch party"
-            date="2 days"
-            author="viviana"
-            attendees={[{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }]}
-            attendeeCount={42}
-            actions={() => <Button variant="primary">RSVP</Button>}
-          />
-        </Panel>
-
-        <Panel title="Calendar card">
-          <CalendarCard
-            title="Component Design Workshop"
-            tags={["Design", "UI/UX"]}
-            followers={[{ name: "Alice" }, { name: "Bob" }]}
-            followerCount={15}
-          />
-        </Panel>
-
-        <Panel title="Project">
-          <div class="mx-auto max-w-[200px]">
-            <ProjectCard name="@proyecto-viviana/ui" imageSrc="/logo.png" size="sm" />
+        <Panel title="Status">
+          <div class="flex flex-col gap-2">
+            <For each={STATUSES}>
+              {(s) => (
+                <StatusLight variant={s.variant} role="status">
+                  {s.label}
+                </StatusLight>
+              )}
+            </For>
           </div>
         </Panel>
 
-        <Panel title="Conversation" wide>
-          <ConversationPreview
-            user={{ name: "Alice", online: true }}
-            lastMessage="Have you seen the new theme?"
-            timestamp="2m ago"
-            unreadCount={3}
-          />
-          <div class="mt-3 space-y-2 p-3" style={{ background: "var(--color-surface-elevated)" }}>
-            <ConversationBubble content="Hi there!" sender="other" timestamp="10:30 AM" />
-            <ConversationBubble content="Love the new palette" sender="user" timestamp="10:31 AM" />
+        <Panel title="Cards" wide>
+          <div class="flex flex-wrap gap-4">
+            <For each={CARDS}>
+              {(c) => (
+                <Card id={c.title} size="M" variant="primary" textValue={c.title} UNSAFE_style={{ width: "220px" }}>
+                  <CardPreview>
+                    <Image src={CARD_IMAGE} alt="" />
+                  </CardPreview>
+                  <Content>
+                    <Text slot="title">{c.title}</Text>
+                    <Text slot="description">{c.desc}</Text>
+                  </Content>
+                  <Footer>
+                    <StatusLight variant={c.status}>{c.label}</StatusLight>
+                  </Footer>
+                </Card>
+              )}
+            </For>
           </div>
         </Panel>
-
-        <Panel title="Timeline & brand" wide>
-          <div class="flex flex-wrap items-center gap-6">
-            <TimelineItem
-              type="follow"
-              leftUser={{ name: "Alice" }}
-              rightUser={{ name: "Bob" }}
-              icon={() => <span class="text-2xl">👋</span>}
-            />
-            <Logo firstWord="PROYECTO" secondWord="VIVIANA" size="lg" />
-          </div>
-        </Panel>
-      </div>
+      </Provider>
     </div>
   );
 }

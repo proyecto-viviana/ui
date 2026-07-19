@@ -81,6 +81,7 @@
     "guard:style-macro-parity": "vp exec tsx scripts/check-style-macro-parity.ts",
     "guard:jsx-deopt-size": "vp exec tsx scripts/check-jsx-deopt-size.ts",
     "guard:idiomatic-solid": "vp exec tsx scripts/check-idiomatic-solid.ts",
+    "guard:invented-utilities": "vp exec tsx scripts/check-invented-utilities.ts",
     "docs:check": "vp exec tsx scripts/check-docs-current.ts",
     "bench:bundle": "vp exec tsx benchmarks/bundle-size/analyze.ts",
     "bench:runtime": "vp test run benchmarks/runtime",

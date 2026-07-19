@@ -769,27 +769,27 @@ import {
 // macro compiles in-app. Their brand color tokens ride in via `viviana-tokens.css`,
 // imported `?inline` (as a string, not injected) and rewritten to a per-component
 // scoped selector so importing them can never repaint the rest of the comparison app.
-import { CalendarCard as VivianaCalendarCard } from "../../../../../../packages/viviana-ui/src/custom/calendar-card";
-import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/src/custom/chip";
-import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/src/custom/nav-header";
-import { ProfileCard as VivianaProfileCard } from "../../../../../../packages/viviana-ui/src/custom/profile-card";
-import { ProjectCard as VivianaProjectCard } from "../../../../../../packages/viviana-ui/src/custom/project-card";
+import { CalendarCard as VivianaCalendarCard } from "../../../../../../packages/viviana-ui/archive/custom/calendar-card";
+import { Chip as VivianaChip } from "../../../../../../packages/viviana-ui/archive/custom/chip";
+import { NavHeader as VivianaNavHeader } from "../../../../../../packages/viviana-ui/archive/custom/nav-header";
+import { ProfileCard as VivianaProfileCard } from "../../../../../../packages/viviana-ui/archive/custom/profile-card";
+import { ProjectCard as VivianaProjectCard } from "../../../../../../packages/viviana-ui/archive/custom/project-card";
 import {
   LateralNav as VivianaLateralNav,
   NavSection as VivianaNavSection,
-} from "../../../../../../packages/viviana-ui/src/custom/lateral-nav";
-import { TimelineItem as VivianaTimelineItem } from "../../../../../../packages/viviana-ui/src/custom/timeline-item";
+} from "../../../../../../packages/viviana-ui/archive/custom/lateral-nav";
+import { TimelineItem as VivianaTimelineItem } from "../../../../../../packages/viviana-ui/archive/custom/timeline-item";
 import {
   Conversation as VivianaConversation,
   ConversationPreview as VivianaConversationPreview,
-} from "../../../../../../packages/viviana-ui/src/custom/conversation";
-import { Logo as VivianaLogo } from "../../../../../../packages/viviana-ui/src/custom/logo";
-import { Header as VivianaHeader } from "../../../../../../packages/viviana-ui/src/custom/header";
-import { PageLayout as VivianaPageLayout } from "../../../../../../packages/viviana-ui/src/custom/page-layout";
+} from "../../../../../../packages/viviana-ui/archive/custom/conversation";
+import { Logo as VivianaLogo } from "../../../../../../packages/viviana-ui/archive/custom/logo";
+import { Header as VivianaHeader } from "../../../../../../packages/viviana-ui/archive/custom/header";
+import { PageLayout as VivianaPageLayout } from "../../../../../../packages/viviana-ui/archive/custom/page-layout";
 import {
   EventCard as VivianaEventCard,
   EventListItem as VivianaEventListItem,
-} from "../../../../../../packages/viviana-ui/src/custom/event-card";
+} from "../../../../../../packages/viviana-ui/archive/custom/event-card";
 import vivianaTokensCss from "../../../../../../packages/viviana-ui/src/viviana-tokens.css?inline";
 
 type ActionItem = (typeof actionItems)[number];

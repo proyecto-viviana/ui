@@ -4,6 +4,7 @@ import {
   ModalOverlay as HeadlessModalOverlay,
   type ModalOverlayProps as HeadlessModalOverlayProps,
 } from "@proyecto-viviana/solidaria-components";
+import { style } from "../style" with { type: "macro" };
 
 export type ModalSize = "sm" | "md" | "lg" | "fullscreen";
 
@@ -16,12 +17,34 @@ export interface StyledModalProps extends Omit<HeadlessModalOverlayProps, "class
   children?: JSX.Element;
 }
 
-const sizeStyles: Record<ModalSize, string> = {
-  sm: "max-w-sm",
-  md: "max-w-lg",
-  lg: "max-w-3xl",
-  fullscreen: "max-w-full h-full",
-};
+// A dimmed, full-viewport scrim that centers its modal. Mirrors the S2 dialog
+// overlay (transparent-black scrim, fixed inset) so the CSS ships in the package
+// bundle for installed consumers instead of leaning on utility classes.
+const overlayStyles = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 1999,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "transparent-black-500",
+});
+
+// The modal surface: an elevated layer-2 card whose max width steps with size.
+const modalStyles = style<{ size: ModalSize }>({
+  width: "full",
+  height: { size: { fullscreen: "full" } },
+  maxWidth: {
+    default: "[90vw]",
+    size: { sm: 384, md: 512, lg: 768, fullscreen: "none" },
+  },
+  backgroundColor: "layer-2",
+  borderRadius: { default: "lg", size: { fullscreen: "none" } },
+  boxShadow: "elevated",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+});
 
 /**
  * A styled modal overlay with sizing options.
@@ -30,12 +53,9 @@ export function StyledModal(props: StyledModalProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["size", "class", "children"]);
 
   return (
-    <HeadlessModalOverlay
-      {...headlessProps}
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-    >
+    <HeadlessModalOverlay {...headlessProps} class={overlayStyles}>
       <HeadlessModal
-        class={`w-full ${sizeStyles[local.size ?? "md"]} bg-bg-300 rounded-lg shadow-xl border border-primary-700 ${local.class ?? ""}`}
+        class={[modalStyles({ size: local.size ?? "md" }), local.class].filter(Boolean).join(" ")}
       >
         {local.children}
       </HeadlessModal>

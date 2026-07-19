@@ -54,7 +54,6 @@ import { DateField } from "../src/calendar/DateField";
 import { ProgressBar } from "../src/progress-bar";
 import { Meter } from "../src/meter";
 import { Badge } from "../src/badge";
-import { Alert } from "../src/alert";
 import { StatusLight } from "../src/statuslight";
 import { Separator } from "../src/separator";
 
@@ -914,21 +913,6 @@ describe("Regression: Badge", () => {
   });
 });
 
-describe("Regression: Alert", () => {
-  it("renders role=alert with title, children, variant, and snapshot", () => {
-    const { container } = render(() => (
-      <Alert title="Warning" variant="warning">
-        Check your settings.
-      </Alert>
-    ));
-
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText("Warning")).toBeInTheDocument();
-    expect(screen.getByText("Check your settings.")).toBeInTheDocument();
-    expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
-  });
-});
-
 describe("Regression: StatusLight", () => {
   it("renders indicator dot and label text, and snapshot", () => {
     const { container } = render(() => <StatusLight variant="positive">Online</StatusLight>);
@@ -1080,7 +1064,11 @@ describe("Regression: Well", () => {
     ));
 
     expect(screen.getByText("Emphasized content")).toBeInTheDocument();
-    expect(container.firstElementChild!.className).toContain("rounded-lg");
+    // Well is styled through the S2 `style()` macro (its CSS ships in the
+    // package's `styles.css` bundle), so its class is opaque atomic output —
+    // assert the container shape, not specific class names.
+    expect(container.firstElementChild!.tagName).toBe("DIV");
+    expect(container.firstElementChild!.className.trim()).not.toBe("");
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

@@ -36,6 +36,7 @@ public reach.
 14. `release-policy.md`
 15. `tech-debt.md`
 16. `tailwind-removal.md` when removing invented utility styling or converting a component's styled layer to the S2 macro
+17. `visual-system-lane.md` when working the paired `design/visual-system-claude-v1` visual-system branch, or reviewing/merging it
 17. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
 17. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
 18. `../../AGENTS.md` when handing work to coding agents
@@ -46,7 +47,7 @@ public reach.
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `steering.md`               | Direction, current focus, now/next/later, open decisions, non-goals, checks.                                                                                                                                                             |
 | `certification.md`          | Evidence required before a component can be accepted as ported: dimensions, floors, checks, acceptance gates.                                                                                                                            |
-| `recertification.md`        | Plan of record: the pair-oracle driver harness (computed styles, filmstrip motion diff, events, focus, AX, contrast, RTL, timing) and the strict per-component red→green march that mechanically enforces the certification bar.         |
+| `recertification.md`        | **Completed march (2026-07-15)** — outcome summary of the pair-oracle red→green program that enforced the certification bar (all six tiers + 12/12 drivers + Phase-3 closers). The full component-by-component log is archived at `archive/recertification-full.md`.  |
 | `architecture.md`           | The five-layer chain, what each package owns, the behavior-vs-styling boundary, and the comparison harness as verifier.                                                                                                                  |
 | `glossary.md`               | Owner-steered vocabulary: layer names, _accepted_, _evidence_, _local addition_, styled-component statuses, _pair diff_.                                                                                                                 |
 | `status.md`                 | Current parity/coverage snapshot, refreshed from scripts.                                                                                                                                                                                |
@@ -60,8 +61,11 @@ public reach.
 | `release-policy.md`         | Releasable packages, Changesets, CI gates, npm publishing.                                                                                                                                                                               |
 | `tech-debt.md`              | Known debt and temporary bridges, each with an exit.                                                                                                                                                                                     |
 | `tailwind-removal.md`       | Plan of record for retiring invented Tailwind-vocabulary utility styling repo-wide and converting library styled layers to the S2 style macro. Runs alongside the recertification march; phased, march-priority ordered.                 |
+| `visual-system-lane.md`     | Owner-authorized, time-boxed Claude visual-system lane on `design/visual-system-claude-v1` (Viviana token retune + macro-routing unstyled surfaces + Tailwind-utility removal). Paired with the Education repo's `work-provenance.md`; maintainer reviews, merges, and owns after.                 |
 
-Git history is the archive. Retired plans, audits, gap inventories, and session
-logs are deleted from `main` and recovered through the commit that removed them,
-not kept as live trees. Do not correct historical docs; bring current facts into
-this directory.
+Git history is the archive. Retired audits, gap inventories, and session logs are
+deleted from `main` and recovered through the commit that removed them, not kept
+as live trees. The one exception is a completed plan-of-record: it is distilled to
+a short summary on this surface, with its verbatim log parked under `archive/`
+(e.g. `archive/recertification-full.md`). Do not correct historical docs; bring
+current facts into this directory.

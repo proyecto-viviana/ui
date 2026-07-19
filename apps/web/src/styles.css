@@ -1,3 +1,16 @@
+/* Cascade-layer order, declared first so it's deterministic. `base` (our frozen
+   Tailwind Preflight reset, wrapped in @layer base in local-utilities.css) must
+   rank BELOW `_` — the root layer @proyecto-viviana/ui's S2 style() macro emits
+   its atomic rules into — so the library's per-variant component colors win over
+   the reset's `button,input{color:inherit}`. Without this, load order is a race:
+   in dev the package's `@layer _` CSS is injected by JS module eval before this
+   file's @import chain resolves, so `_` would otherwise be declared first and the
+   reset (declared later, higher priority) would clobber every filled Button label
+   (accent/danger unreadable on their fills, primary invisible in light). A @layer
+   STATEMENT may precede @import per spec; this <link> parses in <head> before any
+   JS injection, so it fixes the order for dev and prod alike. */
+@layer base, _;
+
 @import "./local-utilities.css";
 /* viviana-ui is the umbrella package: its components.css re-exports
    solid-spectrum's full CSS (font-faces + atomic rules) and adds the migrated

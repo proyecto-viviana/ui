@@ -19,7 +19,9 @@ describe("FieldError (solid-spectrum)", () => {
 
     const error = screen.getByText("This field is required");
     expect(error).toBeInTheDocument();
-    expect(error.className).toContain("text-danger-400");
+    // Error styling is emitted through the style() macro (the `negative` color),
+    // so assert the element carries generated classes rather than a utility name.
+    expect(error.className).not.toBe("");
   });
 
   it("does not render when validation is not invalid", () => {

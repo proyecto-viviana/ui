@@ -1,16 +1,11 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, JSX, onMount, Show, For, Suspense, lazy } from "solid-js";
-import { CalendarCard } from "@proyecto-viviana/ui/CalendarCard";
-import { Chip } from "@proyecto-viviana/ui/Chip";
-import { ConversationBubble, ConversationPreview } from "@proyecto-viviana/ui/Conversation";
-import { EventCard } from "@proyecto-viviana/ui/EventCard";
-import { PageLayout } from "@proyecto-viviana/ui/PageLayout";
-import { ProfileCard } from "@proyecto-viviana/ui/ProfileCard";
-import { TimelineItem } from "@proyecto-viviana/ui/TimelineItem";
 import {
   Button,
   Badge,
-  Alert,
+  InlineAlert,
+  Heading,
+  Content,
   Avatar,
   AvatarGroup,
   TabSwitch,
@@ -162,8 +157,6 @@ import {
   SECTION_IDS,
   type SectionId,
 } from "@/components/playground/sections";
-// Fire gif for event card decoration
-const fireGif = "/fire.gif";
 const ADVANCED_SECTION_IDS: SectionId[] = [
   "createcheckboxgroup-hook",
   "listbox",
@@ -248,7 +241,17 @@ function Playground() {
 
   return (
     <ToastProvider useGlobalQueue>
-      <PageLayout withHeader>
+      <div
+        style={{
+          display: "flex",
+          "flex-direction": "column",
+          "min-height": "100vh",
+          width: "100%",
+          "background-color": "var(--color-background)",
+          color: "var(--color-text)",
+          "padding-top": "64px",
+        }}
+      >
         <Header />
 
         <main id="main-content" class="mx-auto max-w-6xl px-6 py-12">
@@ -320,7 +323,6 @@ function Playground() {
               <Button>Primary</Button>
               <Button variant="secondary">Secondary</Button>
               <Button variant="accent">Accent</Button>
-              <Chip text="Chip" variant="primary" />
             </div>
           </div>
 
@@ -398,69 +400,29 @@ function Playground() {
               </div>
             </Section>
 
-            {/* Chip with both string and function icons (SSR-safe) */}
             <Section
-              id="chip"
+              id="inlinealert"
               visibleSections={visibleSections}
-              title="Chip"
-              description="Small labels and tag buttons"
-            >
-              <div class="flex flex-wrap gap-3">
-                <Chip
-                  text="Primary"
-                  variant="primary"
-                  onClick={() => setLastAction("Primary chip")}
-                />
-                <Chip
-                  text="Secondary"
-                  variant="secondary"
-                  onClick={() => setLastAction("Secondary chip")}
-                />
-                <Chip text="Accent" variant="accent" onClick={() => setLastAction("Accent chip")} />
-                <Chip
-                  text="Outline"
-                  variant="outline"
-                  onClick={() => setLastAction("Outline chip")}
-                />
-                <Chip
-                  text="String Icon"
-                  variant="primary"
-                  icon="★"
-                  onClick={() => setLastAction("String icon chip")}
-                />
-                <Chip
-                  text="Function Icon"
-                  variant="accent"
-                  icon={() => <span>🎉</span>}
-                  onClick={() => setLastAction("Function icon chip")}
-                />
-              </div>
-            </Section>
-
-            <Section
-              id="alert"
-              visibleSections={visibleSections}
-              title="Alert"
-              description="Contextual feedback messages"
+              title="Inline Alert"
+              description="Contextual in-context feedback (S2 InlineAlert)"
             >
               <div class="space-y-3">
-                <Alert variant="info" title="Information">
-                  This is an informational message.
-                </Alert>
-                <Alert variant="success" title="Success">
-                  Operation completed successfully!
-                </Alert>
-                <Alert variant="warning" title="Warning">
-                  Please review before continuing.
-                </Alert>
-                <Alert
-                  variant="error"
-                  title="Error"
-                  dismissible
-                  onDismiss={() => setLastAction("Alert dismissed")}
-                >
-                  Something went wrong.
-                </Alert>
+                <InlineAlert variant="informative">
+                  <Heading>Information</Heading>
+                  <Content>This is an informational message.</Content>
+                </InlineAlert>
+                <InlineAlert variant="positive">
+                  <Heading>Success</Heading>
+                  <Content>Operation completed successfully!</Content>
+                </InlineAlert>
+                <InlineAlert variant="notice">
+                  <Heading>Warning</Heading>
+                  <Content>Please review before continuing.</Content>
+                </InlineAlert>
+                <InlineAlert variant="negative" fillStyle="subtleFill">
+                  <Heading>Error</Heading>
+                  <Content>Something went wrong.</Content>
+                </InlineAlert>
               </div>
             </Section>
 
@@ -965,121 +927,6 @@ function Playground() {
           */}
 
             <Section
-              id="profilecard"
-              visibleSections={visibleSections}
-              title="ProfileCard"
-              description="User profile display cards"
-            >
-              <ProfileCard
-                username="@viviana_dev"
-                bio="Building accessible SolidJS components. React Aria patterns for Solid."
-                followers={1234}
-                following={567}
-                actions={() => (
-                  <div class="flex gap-2">
-                    <Button variant="primary" onPress={() => setLastAction("Followed!")}>
-                      Follow
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      fillStyle="outline"
-                      onPress={() => setLastAction("Message!")}
-                    >
-                      Message
-                    </Button>
-                  </div>
-                )}
-              />
-            </Section>
-
-            <Section
-              id="eventcard"
-              visibleSections={visibleSections}
-              title="EventCard"
-              description="Event display with attendees"
-            >
-              <EventCard
-                title="Fiesta de Taylor 2021 todos invitados"
-                date="2 días"
-                author="taylorswift"
-                decorationImage={fireGif}
-                attendees={[{ name: "Alice" }, { name: "Bob" }, { name: "Carol" }]}
-                attendeeCount={42}
-                actions={() => (
-                  <Button variant="primary" onPress={() => setLastAction("RSVP!")}>
-                    RSVP
-                  </Button>
-                )}
-              />
-            </Section>
-
-            <Section
-              id="calendarcard"
-              visibleSections={visibleSections}
-              title="CalendarCard"
-              description="Calendar event with followers"
-            >
-              <CalendarCard
-                title="Component Design Workshop"
-                tags={["Design", "UI/UX"]}
-                followers={[{ name: "Alice" }, { name: "Bob" }]}
-                followerCount={15}
-              />
-            </Section>
-
-            <Section
-              id="conversation"
-              visibleSections={visibleSections}
-              title="Conversation"
-              description="Chat and messaging UI"
-            >
-              <div class="space-y-4">
-                <ConversationPreview
-                  user={{ name: "Alice", online: true }}
-                  lastMessage="Hey! Have you seen the new components?"
-                  timestamp="2m ago"
-                  unreadCount={3}
-                  onClick={() => setLastAction("Opened conversation with Alice")}
-                />
-                <div class="rounded-lg bg-bg-300 p-4 space-y-2">
-                  <ConversationBubble content="Hi there!" sender="other" timestamp="10:30 AM" />
-                  <ConversationBubble
-                    content="Hello! How are you?"
-                    sender="user"
-                    timestamp="10:31 AM"
-                  />
-                  <ConversationBubble
-                    content="Great! Love the new UI"
-                    sender="other"
-                    timestamp="10:32 AM"
-                  />
-                </div>
-              </div>
-            </Section>
-
-            <Section
-              id="timelineitem"
-              visibleSections={visibleSections}
-              title="TimelineItem"
-              description="Social activity timeline"
-            >
-              <div class="flex flex-wrap gap-4">
-                <TimelineItem
-                  type="follow"
-                  leftUser={{ name: "Alice" }}
-                  rightUser={{ name: "Bob" }}
-                  icon={() => <span class="text-2xl">👋</span>}
-                />
-                <TimelineItem
-                  type="like"
-                  leftUser={{ name: "Carol" }}
-                  rightUser={{ name: "Dave" }}
-                  icon={() => <span class="text-2xl">❤️</span>}
-                />
-              </div>
-            </Section>
-
-            <Section
               id="dialog"
               visibleSections={visibleSections}
               title="Dialog"
@@ -1199,7 +1046,7 @@ function Playground() {
           </div>
         </main>
         <ToastContainer placement="bottom end" />
-      </PageLayout>
+      </div>
     </ToastProvider>
   );
 }

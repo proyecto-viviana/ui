@@ -1,47 +1,61 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Preflight (base reset) — wrapped in `@layer base` so it stays the LOWEST-
+   priority author layer, exactly as Tailwind v4 ships it. This file is a frozen
+   snapshot of the old Tailwind output (see studio.css header); the freeze
+   flattened Preflight to UNLAYERED, which made `button,input,textarea,select
+   { color: inherit }` beat @proyecto-viviana/ui's LAYERED per-variant button
+   colors — so every filled Button label inherited the page's --color-text
+   (accent/danger unreadable on their fills, primary invisible in light mode)
+   app-wide. Restoring the base layer lets the library's component colors win
+   while the reset still beats UA defaults, so plain buttons/links are unchanged.
+   `local-utilities.css` is imported before the component CSS, so `base` is
+   declared first and sits below the library's layers. Utilities below stay
+   unlayered (they should win over component defaults — that's their job). */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  -webkit-text-size-adjust: 100%;
-}
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  margin: 0;
-}
+  body {
+    margin: 0;
+  }
 
-img,
-svg,
-video,
-canvas {
-  display: block;
-  max-width: 100%;
-}
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
 
-button,
-input,
-textarea,
-select {
-  color: inherit;
-  font: inherit;
-}
+  button,
+  input,
+  textarea,
+  select {
+    color: inherit;
+    font: inherit;
+  }
 
-button {
-  cursor: pointer;
-}
+  button {
+    cursor: pointer;
+  }
 
-button:disabled,
-input:disabled,
-textarea:disabled,
-select:disabled {
-  cursor: not-allowed;
-}
+  button:disabled,
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
 
-a {
-  color: inherit;
-  text-decoration: inherit;
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
 }
 
 .absolute {
@@ -1124,6 +1138,25 @@ a {
 
 .bg-warning-400 {
   background-color: var(--color-warning-400);
+}
+
+/* Semantic solid fills + on-color text used by the re-exported solid-spectrum
+   Alert (`bg-{sem}-600 text-{sem}-100 | text-on-color`). This curated utility
+   set was extracted post-Tailwind-removal and these four were missing, so the
+   Alert lost its fill and its light text landed on the bare canvas (invisible
+   warning). The `-600` shades are the dark end of each ramp — safe under the
+   `-100` cream / white on-color the Alert pairs with, in both schemes. */
+.bg-success-600 {
+  background-color: var(--color-success-600);
+}
+.bg-warning-600 {
+  background-color: var(--color-warning-600);
+}
+.bg-danger-600 {
+  background-color: var(--color-danger-600);
+}
+.text-on-color {
+  color: #fff;
 }
 
 .bg-white {

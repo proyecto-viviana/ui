@@ -33,6 +33,7 @@ import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
 import { useProviderProps, useTheme } from "../provider";
 import type { StyleString } from "../style";
+import { style, focusRing } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { pressScale } from "../pressScale";
 import { centerBaseline } from "../icon/center-baseline";
@@ -180,37 +181,75 @@ export interface UnavailableMenuItemTriggerProps {
   isUnavailable?: boolean;
 }
 
-const buttonSizeStyles: Record<
-  S2MenuSize,
-  {
-    button: string;
-    icon: string;
-  }
-> = {
-  S: {
-    button: "h-8 text-sm px-3 gap-2",
-    icon: "h-4 w-4",
-  },
-  M: {
-    button: "h-10 text-base px-4 gap-2",
-    icon: "h-5 w-5",
-  },
-  L: {
-    button: "h-12 text-lg px-5 gap-3",
-    icon: "h-6 w-6",
-  },
-  XL: {
-    button: "h-14 text-xl px-6 gap-3",
-    icon: "h-7 w-7",
-  },
-};
+// The MenuButton (a Viviana convenience trigger; upstream S2 composes a plain
+// Button) is styled through the build-time S2 style() macro so the atomic CSS
+// ships in the package bundle for installed consumers. Interactive state
+// (hover/press/open/focus/disabled) is driven by the trigger render props.
+type MenuButtonVariant = "primary" | "secondary" | "quiet";
 
-const buttonVariants = {
-  primary: "bg-accent text-bg-400 border-accent hover:bg-accent-300 hover:border-accent-300",
-  secondary:
-    "bg-bg-400 text-primary-200 border-primary-600 hover:bg-bg-300 hover:border-accent-300",
-  quiet: "bg-transparent text-primary-200 border-transparent hover:bg-bg-300",
-};
+const menuButtonStyles = style<
+  MenuTriggerRenderProps & { size: S2MenuSize; variant: MenuButtonVariant }
+>({
+  ...focusRing(),
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "lg",
+  borderStyle: "solid",
+  borderWidth: 2,
+  fontWeight: "medium",
+  cursor: "default",
+  transition: "default",
+  height: { size: { S: 32, M: 40, L: 48, XL: 56 } },
+  font: { size: { S: "ui-sm", M: "ui", L: "ui-lg", XL: "ui-xl" } },
+  paddingX: { size: { S: 12, M: 16, L: 20, XL: 24 } },
+  gap: { size: { S: 8, M: 8, L: 12, XL: 12 } },
+  backgroundColor: {
+    variant: {
+      primary: { default: "accent", isHovered: "accent-800", isPressed: "accent-800" },
+      secondary: { default: "layer-2", isHovered: "gray-100", isPressed: "gray-100" },
+      quiet: { default: "transparent", isHovered: "gray-100", isPressed: "gray-100" },
+    },
+    isDisabled: "disabled",
+  },
+  borderColor: {
+    variant: {
+      primary: "transparent",
+      secondary: { default: "gray-300", isHovered: "gray-400" },
+      quiet: "transparent",
+    },
+    isDisabled: "transparent",
+  },
+  color: {
+    default: "neutral",
+    variant: { primary: "white" },
+    isDisabled: "disabled",
+  },
+});
+
+const menuButtonChevronStyles = style<{ size: S2MenuSize; isOpen?: boolean }>({
+  flexShrink: 0,
+  transition: "default",
+  width: { size: { S: 16, M: 20, L: 24, XL: 28 } },
+  height: { size: { S: 16, M: 20, L: 24, XL: 28 } },
+  rotate: { default: 0, isOpen: 180 },
+});
+
+const triggerWrapperStyles = style({
+  position: "relative",
+  display: "inline-block",
+});
+
+const separatorStyles = style({
+  marginY: 4,
+  borderTopWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+});
+
+const destructiveTextStyles = style({
+  color: "negative",
+});
 
 function normalizeMenuSize(size?: MenuSize): S2MenuSize {
   switch (size) {
@@ -278,7 +317,7 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
 
   return (
     <MenuSizeContext.Provider value={size()}>
-      <div class={`relative inline-block ${local.class ?? ""}`}>
+      <div class={[triggerWrapperStyles, local.class].filter(Boolean).join(" ")}>
         <HeadlessMenuTrigger {...headlessProps}>
           <MenuTriggerOverlayContext
             align={() => local.align}
@@ -351,33 +390,11 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
   const [local, headlessProps] = splitProps(mergedProps, ["class", "variant", "ref"]);
   const size = useContext(MenuSizeContext);
   const popoverTrigger = usePopoverTrigger();
-  const sizeStyle = buttonSizeStyles[size];
   const variant = local.variant ?? "secondary";
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: MenuTriggerRenderProps): string => {
-    const base =
-      "inline-flex items-center justify-center rounded-lg border-2 font-medium transition-all duration-200";
-    const sizeClass = sizeStyle.button;
-    const variantClass = buttonVariants[variant];
-
-    let stateClass: string;
-    if (renderProps.isDisabled) {
-      stateClass = "opacity-50 cursor-not-allowed";
-    } else if (renderProps.isPressed) {
-      stateClass = "scale-95";
-    } else {
-      stateClass = "cursor-pointer";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    return [base, sizeClass, variantClass, stateClass, focusClass, customClass]
-      .filter(Boolean)
-      .join(" ");
-  };
+  const getClassName = (renderProps: MenuTriggerRenderProps): string =>
+    [menuButtonStyles({ ...renderProps, size, variant }), customClass].filter(Boolean).join(" ");
 
   return (
     <HeadlessMenuButton
@@ -388,11 +405,12 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       }}
       class={getClassName}
     >
-      {props.children as JSX.Element}
-      {/* Chevron rotates via CSS based on data-open attribute */}
-      <ChevronIcon
-        class={`${sizeStyle.icon} transition-transform duration-200 data-open:rotate-180`}
-      />
+      {(renderProps) => (
+        <>
+          {props.children as JSX.Element}
+          <ChevronIcon class={menuButtonChevronStyles({ size, isOpen: renderProps.isOpen })} />
+        </>
+      )}
     </HeadlessMenuButton>
   );
 }
@@ -596,7 +614,7 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
         }),
         mergedStyles(),
       ),
-      local.isDestructive ? "text-danger-400" : "",
+      local.isDestructive ? destructiveTextStyles : "",
       customClass,
     ]
       .filter(Boolean)
@@ -793,7 +811,9 @@ export interface MenuSeparatorProps {
  * A visual separator between menu items.
  */
 export function MenuSeparator(props: MenuSeparatorProps): JSX.Element {
-  return <div role="separator" class={`my-1 border-t border-primary-600 ${props.class ?? ""}`} />;
+  return (
+    <div role="separator" class={[separatorStyles, props.class].filter(Boolean).join(" ")} />
+  );
 }
 
 function ChevronIcon(props: { class?: string }): JSX.Element {

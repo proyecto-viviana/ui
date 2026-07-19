@@ -1,5 +1,6 @@
 import { type JSX, splitProps } from "solid-js";
 import { ComboBox, ComboBoxOption, type FilterFn, type Key } from "../combobox";
+import { style } from "../style" with { type: "macro" };
 
 export type SearchAutocompleteSize = "sm" | "md" | "lg";
 
@@ -44,17 +45,14 @@ export interface SearchAutocompleteProps<
   textKey?: keyof T;
 }
 
-const sizeStyles = {
-  sm: {
-    container: "text-sm",
-  },
-  md: {
-    container: "text-base",
-  },
-  lg: {
-    container: "text-lg",
-  },
-};
+// The wrapper establishes a positioning context for the ComboBox popover and sets
+// the base text size. Routed through the `style()` macro instead of invented
+// `relative` / `text-*` utilities; the stable `vui-search-autocomplete` marker class
+// (which tests and consumers target) is kept as a plain hook alongside it.
+const autocompleteWrapper = style<{ size: SearchAutocompleteSize }>({
+  position: "relative",
+  fontSize: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+});
 
 /**
  * A styled autocomplete component for searching and selecting from a list.
@@ -78,7 +76,6 @@ export function SearchAutocomplete<T extends SearchAutocompleteItem = SearchAuto
 
   const size = () => local.size ?? "md";
   const textKey = () => (local.textKey ?? "name") as keyof T;
-  const styles = () => sizeStyles[size()];
 
   const getTextValue = (item: T): string => {
     const text = item[textKey()] ?? item.name;
@@ -95,7 +92,7 @@ export function SearchAutocomplete<T extends SearchAutocompleteItem = SearchAuto
 
   return (
     <div
-      class={["vui-search-autocomplete relative", styles().container, local.class]
+      class={["vui-search-autocomplete", autocompleteWrapper({ size: size() }), local.class]
         .filter(Boolean)
         .join(" ")}
     >

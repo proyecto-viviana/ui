@@ -18,6 +18,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
+import { style, focusRing } from "../style" with { type: "macro" };
 
 export type SelectSize = "sm" | "md" | "lg";
 
@@ -64,26 +65,142 @@ export interface SelectOptionProps<T> extends Omit<
   class?: string;
 }
 
-const sizeStyles = {
-  sm: {
-    trigger: "h-8 text-sm px-3 gap-2",
-    label: "text-sm",
-    option: "text-sm py-1.5 px-3",
-    icon: "h-4 w-4",
+// All styling flows through the build-time S2 style() macro so the atomic CSS
+// ships in the package bundle for installed consumers, rather than relying on
+// Tailwind utility strings the package ships no CSS for. Interactive state
+// (hover/open/focus/selected/disabled) is driven by the collection render props.
+
+const rootStyles = style<{ isDisabled?: boolean }>({
+  position: "relative",
+  display: "inline-flex",
+  flexDirection: "column",
+  gap: "[6px]",
+  opacity: { default: 1, isDisabled: 0.5 },
+});
+
+const labelStyles = style<{ size: SelectSize }>({
+  font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+  fontWeight: "medium",
+  color: "neutral",
+});
+
+const descriptionStyles = style({
+  font: "ui-sm",
+  color: "neutral-subdued",
+});
+
+const errorStyles = style({
+  font: "ui-sm",
+  color: "negative",
+});
+
+const triggerStyles = style<SelectTriggerRenderProps & { size: SelectSize }>({
+  ...focusRing(),
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  width: "full",
+  borderRadius: "lg",
+  borderWidth: 2,
+  borderStyle: "solid",
+  cursor: "default",
+  transition: "default",
+  height: { size: { sm: 32, md: 40, lg: 48 } },
+  font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+  paddingX: { size: { sm: 12, md: 16, lg: 20 } },
+  gap: { size: { sm: 8, md: 8, lg: 12 } },
+  borderColor: {
+    default: "gray-300",
+    isHovered: "gray-400",
+    isOpen: "accent-900",
+    isDisabled: "gray-200",
   },
-  md: {
-    trigger: "h-10 text-base px-4 gap-2",
-    label: "text-base",
-    option: "text-base py-2 px-4",
-    icon: "h-5 w-5",
+  backgroundColor: {
+    default: "gray-25",
+    isDisabled: "gray-100",
   },
-  lg: {
-    trigger: "h-12 text-lg px-5 gap-3",
-    label: "text-lg",
-    option: "text-lg py-2.5 px-5",
-    icon: "h-6 w-6",
+  color: {
+    default: "neutral",
+    isDisabled: "disabled",
   },
-};
+});
+
+const chevronStyles = style<{ size: SelectSize; isOpen?: boolean }>({
+  flexShrink: 0,
+  transition: "default",
+  width: { size: { sm: 16, md: 20, lg: 24 } },
+  height: { size: { sm: 16, md: 20, lg: 24 } },
+  rotate: { default: 0, isOpen: 180 },
+});
+
+const valueStyles = style<{ isSelected?: boolean }>({
+  flexGrow: 1,
+  textAlign: "start",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  color: { default: "gray-500", isSelected: "neutral" },
+});
+
+const listBoxStyles = style({
+  position: "absolute",
+  zIndex: 50,
+  marginTop: 4,
+  width: "full",
+  borderRadius: "lg",
+  borderWidth: 2,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  backgroundColor: "layer-2",
+  paddingY: 4,
+  boxShadow: "elevated",
+  maxHeight: 240,
+  overflow: "auto",
+});
+
+const optionStyles = style<SelectOptionRenderProps & { size: SelectSize }>({
+  ...focusRing(),
+  outlineOffset: -2,
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  cursor: "default",
+  transition: "default",
+  font: { size: { sm: "ui-sm", md: "ui", lg: "ui-lg" } },
+  paddingX: { size: { sm: 12, md: 16, lg: 20 } },
+  paddingY: { size: { sm: "[6px]", md: 8, lg: "[10px]" } },
+  backgroundColor: {
+    default: "transparent",
+    isHovered: "gray-100",
+    isFocused: "gray-100",
+    isSelected: "accent-subtle",
+    isDisabled: "transparent",
+  },
+  color: {
+    default: "neutral-subdued",
+    isHovered: "neutral",
+    isFocused: "neutral",
+    isSelected: "accent",
+    isDisabled: "disabled",
+  },
+});
+
+const checkmarkStyles = style<{ size: SelectSize }>({
+  flexShrink: 0,
+  color: "accent",
+  width: { size: { sm: 16, md: 20, lg: 24 } },
+  height: { size: { sm: 16, md: 20, lg: 24 } },
+});
+
+// The label indents past the checkmark column when unselected; selected rows
+// show the checkmark and drop the indent.
+const optionLabelStyles = style<{ size: SelectSize; isSelected?: boolean }>({
+  flexGrow: 1,
+  paddingStart: {
+    default: { size: { sm: 24, md: 28, lg: 36 } },
+    isSelected: 0,
+  },
+});
 
 /**
  * A select displays a collapsible list of options and allows a user to select one of them.
@@ -105,18 +222,13 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   const size = local.size ?? "md";
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: SelectRenderProps): string => {
-    const base = "relative inline-flex flex-col gap-1.5";
-    const disabledClass = renderProps.isDisabled ? "opacity-50" : "";
-    return [base, disabledClass, customClass].filter(Boolean).join(" ");
-  };
+  const getClassName = (renderProps: SelectRenderProps): string =>
+    [rootStyles({ isDisabled: renderProps.isDisabled }), customClass].filter(Boolean).join(" ");
 
   const mergedAriaLabel = (headlessProps as { "aria-label"?: string })["aria-label"];
 
   const styledLabel = () =>
-    local.label ? (
-      <span class={`text-primary-200 font-medium ${sizeStyles[size].label}`}>{local.label}</span>
-    ) : undefined;
+    local.label ? <span class={labelStyles({ size })}>{local.label}</span> : undefined;
 
   const describedByIds =
     [
@@ -138,12 +250,12 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       >
         {props.children as JSX.Element}
         <Show when={local.description && !local.isInvalid}>
-          <span id={descriptionId} class="text-primary-400 text-sm">
+          <span id={descriptionId} class={descriptionStyles}>
             {local.description}
           </span>
         </Show>
         <Show when={local.errorMessage && local.isInvalid}>
-          <span id={errorId} class="text-danger-400 text-sm">
+          <span id={errorId} class={errorStyles}>
             {local.errorMessage}
           </span>
         </Show>
@@ -159,38 +271,19 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   const mergedProps = useProviderProps(props);
   const [local, headlessProps] = splitProps(mergedProps, ["class"]);
   const size = useContext(SelectSizeContext);
-  const sizeStyle = sizeStyles[size];
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: SelectTriggerRenderProps): string => {
-    const base =
-      "inline-flex items-center justify-between rounded-lg border-2 transition-all duration-200 w-full";
-    const sizeClass = sizeStyle.trigger;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "border-bg-300 bg-bg-200 text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isOpen) {
-      colorClass = "border-accent bg-bg-300 text-primary-100";
-    } else if (renderProps.isHovered) {
-      colorClass = "border-accent-300 bg-bg-300 text-primary-100 cursor-pointer";
-    } else {
-      colorClass = "border-primary-600 bg-bg-400 text-primary-200 cursor-pointer";
-    }
-
-    const focusClass = renderProps.isFocusVisible
-      ? "ring-2 ring-accent-300 ring-offset-2 ring-offset-bg-400"
-      : "";
-
-    return [base, sizeClass, colorClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
+  const getClassName = (renderProps: SelectTriggerRenderProps): string =>
+    [triggerStyles({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
 
   return (
     <HeadlessSelectTrigger {...headlessProps} class={getClassName}>
-      {props.children as JSX.Element}
-      <ChevronIcon
-        class={`${sizeStyle.icon} transition-transform duration-200 data-open:rotate-180`}
-      />
+      {(renderProps) => (
+        <>
+          {props.children as JSX.Element}
+          <ChevronIcon class={chevronStyles({ size, isOpen: renderProps.isOpen })} />
+        </>
+      )}
     </HeadlessSelectTrigger>
   );
 }
@@ -202,11 +295,8 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: SelectValueRenderProps<T>): string => {
-    const base = "truncate flex-1 text-left";
-    const placeholderClass = !renderProps.isSelected ? "text-primary-500" : "";
-    return [base, placeholderClass, customClass].filter(Boolean).join(" ");
-  };
+  const getClassName = (renderProps: SelectValueRenderProps<T>): string =>
+    [valueStyles({ isSelected: renderProps.isSelected }), customClass].filter(Boolean).join(" ");
 
   return <HeadlessSelectValue {...headlessProps} class={getClassName} children={props.children} />;
 }
@@ -218,22 +308,13 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
   const customClass = local.class ?? "";
 
-  const getClassName = (_renderProps: SelectListBoxRenderProps): string => {
-    const base =
-      "absolute z-50 mt-1 w-full rounded-lg border-2 border-primary-600 bg-bg-400 py-1 shadow-lg max-h-60 overflow-auto";
-    return [base, customClass].filter(Boolean).join(" ");
-  };
+  const getClassName = (_renderProps: SelectListBoxRenderProps): string =>
+    [listBoxStyles, customClass].filter(Boolean).join(" ");
 
   return (
     <HeadlessSelectListBox {...headlessProps} class={getClassName} children={props.children} />
   );
 }
-
-const paddingStyles = {
-  sm: "pl-6",
-  md: "pl-7",
-  lg: "pl-9",
-};
 
 /**
  * An option in a select listbox.
@@ -241,38 +322,23 @@ const paddingStyles = {
 export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
   const size = useContext(SelectSizeContext);
-  const sizeStyle = sizeStyles[size];
   const customClass = local.class ?? "";
 
-  const getClassName = (renderProps: SelectOptionRenderProps): string => {
-    const base = "flex items-center gap-2 cursor-pointer transition-colors duration-150";
-    const sizeClass = sizeStyle.option;
-
-    let colorClass: string;
-    if (renderProps.isDisabled) {
-      colorClass = "text-primary-500 cursor-not-allowed";
-    } else if (renderProps.isSelected) {
-      colorClass = "bg-accent/20 text-accent";
-    } else if (renderProps.isFocused || renderProps.isHovered) {
-      colorClass = "bg-bg-300 text-primary-100";
-    } else {
-      colorClass = "text-primary-200";
-    }
-
-    const focusClass = renderProps.isFocusVisible ? "ring-2 ring-inset ring-accent-300" : "";
-
-    return [base, sizeClass, colorClass, focusClass, customClass].filter(Boolean).join(" ");
-  };
-
-  const iconClass = `${sizeStyle.icon} text-accent shrink-0 hidden data-selected:block`;
-  const paddingClass = paddingStyles[size];
+  const getClassName = (renderProps: SelectOptionRenderProps): string =>
+    [optionStyles({ ...renderProps, size }), customClass].filter(Boolean).join(" ");
 
   return (
     <HeadlessSelectOption {...headlessProps} class={getClassName}>
-      <CheckIcon class={iconClass} />
-      <span class={`flex-1 data-selected:pl-0 ${paddingClass}`}>
-        {props.children as JSX.Element}
-      </span>
+      {(renderProps) => (
+        <>
+          <Show when={renderProps.isSelected}>
+            <CheckIcon class={checkmarkStyles({ size })} />
+          </Show>
+          <span class={optionLabelStyles({ size, isSelected: renderProps.isSelected })}>
+            {props.children as JSX.Element}
+          </span>
+        </>
+      )}
     </HeadlessSelectOption>
   );
 }

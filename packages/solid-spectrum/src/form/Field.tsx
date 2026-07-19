@@ -1,4 +1,5 @@
 import { type JSX, splitProps, Show } from "solid-js";
+import { style } from "../style" with { type: "macro" };
 
 export type FieldSize = "sm" | "md" | "lg";
 
@@ -25,11 +26,27 @@ export interface FieldProps {
   htmlFor?: string;
 }
 
-const sizeStyles: Record<FieldSize, { label: string; text: string; gap: string }> = {
-  sm: { label: "text-xs", text: "text-xs", gap: "gap-1" },
-  md: { label: "text-sm", text: "text-sm", gap: "gap-1.5" },
-  lg: { label: "text-base", text: "text-sm", gap: "gap-2" },
-};
+// Vertical field stack. The label/help-text colors mirror S2's `fieldLabel()`
+// and `helpTextStyles` (`neutral-subdued`, flipping to `negative`/`disabled`);
+// sizes map sm/md/lg → the UI font's xs/sm/base steps. Routed through the
+// `style()` macro so the CSS ships in the package bundle for installed consumers.
+const fieldStyles = style<{ size: FieldSize }>({
+  display: "flex",
+  flexDirection: "column",
+  gap: { default: 8, size: { sm: 4, lg: 12 } },
+});
+
+const fieldLabelStyles = style<{ size: FieldSize; isDisabled?: boolean }>({
+  font: { default: "ui-sm", size: { sm: "ui-xs", lg: "ui" } },
+  color: { default: "neutral-subdued", isDisabled: "disabled" },
+});
+
+const fieldTextStyles = style<{ size: FieldSize; isInvalid?: boolean; isDisabled?: boolean }>({
+  font: { default: "ui-sm", size: { sm: "ui-xs" } },
+  color: { default: "neutral-subdued", isInvalid: "negative", isDisabled: "disabled" },
+});
+
+const requiredStyles = style({ color: "negative", marginStart: 2 });
 
 /**
  * A field layout component that provides label, help text, and error message
@@ -49,18 +66,19 @@ export function Field(props: FieldProps): JSX.Element {
     "htmlFor",
   ]);
 
-  const size = () => sizeStyles[local.size ?? "md"];
+  const size = () => local.size ?? "md";
   const showError = () => local.isInvalid && local.errorMessage;
 
   return (
-    <div
-      class={`flex flex-col ${size().gap} ${local.isDisabled ? "opacity-60" : ""} ${local.class ?? ""}`}
-    >
+    <div class={[fieldStyles({ size: size() }), local.class].filter(Boolean).join(" ")}>
       <Show when={local.label}>
-        <label for={local.htmlFor} class={`font-medium text-primary-200 ${size().label}`}>
+        <label
+          for={local.htmlFor}
+          class={fieldLabelStyles({ size: size(), isDisabled: local.isDisabled })}
+        >
           {local.label}
           <Show when={local.isRequired}>
-            <span class="text-red-400 ml-0.5">*</span>
+            <span class={requiredStyles}>*</span>
           </Show>
         </label>
       </Show>
@@ -68,13 +86,15 @@ export function Field(props: FieldProps): JSX.Element {
       {local.children}
 
       <Show when={showError()}>
-        <p class={`text-red-400 ${size().text}`} role="alert">
+        <p class={fieldTextStyles({ size: size(), isInvalid: true })} role="alert">
           {local.errorMessage}
         </p>
       </Show>
 
       <Show when={!showError() && local.description}>
-        <p class={`text-primary-400 ${size().text}`}>{local.description}</p>
+        <p class={fieldTextStyles({ size: size(), isDisabled: local.isDisabled })}>
+          {local.description}
+        </p>
       </Show>
     </div>
   );
