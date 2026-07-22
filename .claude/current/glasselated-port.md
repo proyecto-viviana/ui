@@ -72,9 +72,26 @@ solidaria-components + DisclosureTitle). The branch's three solid-spectrum
 commits are macro-hygiene only (landmark via `style()`, invented-utility
 guard) — parity-safe. All further work happens on `main`.
 
-Known open SSR/hydration bugs to close next: ListViewItem never hydrates;
-TagGroup `isRenderedTag()` does an `instanceof HTMLElement` check that breaks
-on the server; Breadcrumbs self-measures on the client.
+Closed 2026-07-22 (`1d7604f6`), all three follow-up SSR/hydration bugs:
+ListViewItem hydrates (regression pair `Collections.ssr/hydrate.test.tsx`,
+including static `<ListViewItem>` children + post-hydration interaction);
+TagGroup `isRenderedTag()` grew an `isServer` branch that duck-types Solid's
+serialized SSR nodes instead of `instanceof HTMLElement`
+(`TagGroup.ssr/hydrate.test.tsx`); Breadcrumbs SSR emits already-collapsed
+markup so the client never self-measures over foreign DOM
+(`Breadcrumbs.ssr/hydrate.test.tsx`).
+
+Closed 2026-07-22 (`094bf484`, `b9817f3a`), the UA-button-chrome class of
+paint bug: any styled component whose interactive element is a native
+`<button>` the style macro can't reach ships raw UA chrome — opaque
+`ButtonFace` fill, `2px outset` border, own font — which occludes z-lower
+siblings or paints around the styled inner span. TabSwitch (restyled to the
+island's `.glx-pop-kind` raised-pill idiom; the UA fill had been hiding the
+sliding indicator entirely) and ActionGroup (headless
+`ActionGroupItemWrapper` renders a bare classless `<button>`; fixed with a
+`css()` `& > button` reset on the container, keeping the UA `:focus-visible`
+outline because the inner span never receives `isFocusVisible`). A
+15-route Playwright sweep found no further real instances.
 
 Closed 2026-07-22: viviana-ui Tree hydration abort ("Unable to find DOM nodes
 for hydration key") — root cause was the repeated `local.children` read in
