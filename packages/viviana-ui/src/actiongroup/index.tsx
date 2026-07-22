@@ -8,7 +8,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, SelectionMode } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style" with { type: "macro" };
+import { baseColor, css, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 
@@ -101,6 +101,29 @@ const actionGroupItem = style<ActionGroupItemRenderProps>({
   },
 });
 
+/* The headless layer renders each item as a bare <button> with no class hook
+ * (solidaria-components ActionGroup.tsx, ActionGroupItemWrapper) — every atom
+ * above lands on the span INSIDE it. Without this reset the UA button chrome
+ * (opaque ButtonFace fill, 2px outset border, its own font) paints AROUND the
+ * styled span, burying the transparent resting state under grey lozenges. The
+ * single-element style() macro can't reach a child element, so the reset ships
+ * through the css() escape hatch on the container. The UA :focus-visible
+ * outline is deliberately NOT reset: real focus lands on the button, and the
+ * span's focusRing() atoms key on an isFocusVisible render prop the item
+ * render props never carry. */
+const actionGroupButtonReset = css(`
+  & > button {
+    appearance: none;
+    display: inline-flex;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+`);
+
 export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
   props: ActionGroupProps<T>,
 ): JSX.Element {
@@ -115,6 +138,7 @@ export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
   const containerClass = (rp: ActionGroupRenderProps): string =>
     [
       local.class,
+      actionGroupButtonReset,
       mergeStyles(
         actionGroupContainer({ orientation: rp.orientation }) as StyleString,
         local.styles,
