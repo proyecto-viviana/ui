@@ -61,6 +61,10 @@ ported from the external, now-frozen design repository
   design lane; owner-owned, MIT with the rest of our work.
 - `apps/web/src/lib/glasselated.ts` — the mesh/dither/theme-wipe runtime,
   ported from the lane's framework-neutral `glasselated.js`.
+- `packages/viviana-ui/src/icon/pixel-icons/` — the `Pixel*Icon` components,
+  generated from the lane's pixel-art SVG set
+  (`apps/akade/public/glasselated/icons`); owner-owned, MIT with the rest of
+  our work.
 - **[Geist, Geist Mono & Geist Pixel](https://vercel.com/font)** (SIL OFL 1.1) —
   the register's three type faces, loaded from Google Fonts; not vendored.
 

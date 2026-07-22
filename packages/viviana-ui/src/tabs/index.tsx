@@ -56,10 +56,18 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { TextContext } from "../text";
+import { NotificationBadgeContext } from "../notificationbadge";
 import { TabsPicker, type TabsPickerItem } from "./TabsPicker";
 
 export type TabsDensity = "compact" | "regular";
 export type TabsLabelBehavior = "show" | "hide";
+/* Glasselated: the register draws two tab forms (TerminalGlassLab.tsx:568-609) —
+ * the default line strip, and the mobile tab bar: a 999px glass pill
+ * (`--surface-panel` under `--blur-panel`, `--edge-glass` rim) whose slots stack
+ * a pixel icon over a micro label, spread space-around. `pill` is that form; it
+ * is horizontal-only and never collapses into the overflow picker (it IS the
+ * small-screen form). */
+export type TabsVariant = "line" | "pill";
 
 export interface TabsProps<T> extends Omit<
   HeadlessTabsProps<T>,
@@ -71,6 +79,13 @@ export interface TabsProps<T> extends Omit<
   density?: TabsDensity;
   /** Whether text labels are visually shown. */
   labelBehavior?: TabsLabelBehavior;
+  /**
+   * Visual form of the tab strip. `line` is the default underlined strip;
+   * `pill` is the register's glass tab bar — stacked icon-over-label slots in a
+   * full-radius glass capsule. `pill` is horizontal-only and never collapses
+   * into the overflow picker.
+   */
+  variant?: TabsVariant;
   /** Accessible label for the tab list. Required when aria-labelledby is not provided. */
   "aria-label"?: string;
   /** Id of the element labeling the tab list. Required when aria-label is not provided. */
@@ -159,6 +174,7 @@ interface InternalTabsContextValue {
   readonly density: TabsDensity;
   readonly labelBehavior: TabsLabelBehavior;
   readonly orientation: TabOrientation;
+  readonly variant: TabsVariant;
   readonly ariaLabel: string | undefined;
   readonly ariaLabelledBy: string | undefined;
   readonly showTabs: () => boolean;
@@ -172,6 +188,7 @@ const InternalTabsContext = createContext<InternalTabsContextValue>({
   density: "regular",
   labelBehavior: "show",
   orientation: "horizontal",
+  variant: "line",
   ariaLabel: undefined,
   ariaLabelledBy: undefined,
   showTabs: () => true,
@@ -184,6 +201,7 @@ const InternalTabsContext = createContext<InternalTabsContextValue>({
 interface TabsStyleState {
   orientation: TabOrientation;
   density: TabsDensity;
+  variant?: TabsVariant;
   isDisabled?: boolean;
   isLabelHidden?: boolean;
   isSelected?: boolean;
@@ -226,19 +244,29 @@ const tabList = style<TabsStyleState>({
   },
   flexShrink: 0,
   gap: {
-    orientation: {
-      horizontal: {
-        isLabelHidden: {
-          density: {
-            compact: 16,
-            regular: 24,
+    variant: {
+      line: {
+        orientation: {
+          horizontal: {
+            isLabelHidden: {
+              density: {
+                compact: 16,
+                regular: 24,
+              },
+            },
+            density: {
+              compact: 24,
+              regular: 32,
+            },
           },
-        },
-        density: {
-          compact: 24,
-          regular: 32,
+          /* Glasselated: the rail spaces its rows a fixed 6px apart
+           * (TerminalGlassLab.tsx:521). */
+          vertical: "[6px]",
         },
       },
+      /* Pill slots are spread by space-around alone; any gap minimum would
+       * overflow a width-capped bar. */
+      pill: 0,
     },
   },
   marginEnd: {
@@ -246,12 +274,61 @@ const tabList = style<TabsStyleState>({
       vertical: 20,
     },
   },
-  marginStart: {
-    orientation: {
-      vertical: 12,
+  minWidth: "min",
+  /* Glasselated pill form: the register's mobile tab bar — slots spread
+   * space-around inside a full-radius glass capsule (`--surface-panel` under
+   * `--blur-panel`, hairline border, `--edge-glass` rim;
+   * TerminalGlassLab.tsx:568-577). */
+  justifyContent: {
+    variant: {
+      pill: "space-around",
     },
   },
-  minWidth: "min",
+  backgroundColor: {
+    variant: {
+      pill: "layer-1",
+    },
+  },
+  backdropFilter: {
+    variant: {
+      pill: "var(--blur-panel)",
+    },
+  },
+  borderWidth: {
+    variant: {
+      pill: 1,
+    },
+  },
+  borderStyle: {
+    variant: {
+      pill: "solid",
+    },
+  },
+  borderColor: {
+    variant: {
+      pill: "border-subtle",
+    },
+  },
+  borderRadius: {
+    variant: {
+      pill: "full",
+    },
+  },
+  boxShadow: {
+    variant: {
+      pill: "edge-glass",
+    },
+  },
+  paddingY: {
+    variant: {
+      pill: "[8px]",
+    },
+  },
+  paddingX: {
+    variant: {
+      pill: "[10px]",
+    },
+  },
 });
 
 const tabListWrapper = style({
@@ -310,31 +387,62 @@ const tab = style<TabsStyleState>({
   position: "relative",
   display: "flex",
   alignItems: "center",
+  /* Glasselated pill slots stack a pixel icon over a micro label
+   * (TerminalGlassLab.tsx:597-607): column flow, 3px stack gap, 52px slot
+   * floor, natural height inside the capsule's own padding. */
+  flexDirection: {
+    variant: {
+      pill: "column",
+    },
+  },
+  justifyContent: {
+    variant: {
+      pill: "center",
+    },
+  },
+  minWidth: {
+    variant: {
+      pill: 52,
+    },
+  },
   height: {
     orientation: {
       horizontal: {
-        density: {
-          compact: 32,
-          regular: 48,
+        variant: {
+          line: {
+            density: {
+              compact: 32,
+              regular: 48,
+            },
+          },
         },
       },
     },
   },
+  /* Glasselated: rail rows sit tight — the handoff draws ~31px rows (7px
+   * vertical padding around a 12px mono label, TerminalGlassLab.tsx:594);
+   * 32px is that look on the interactive-target floor. Density carries no
+   * vertical meaning — the rail is the rail. */
   minHeight: {
     orientation: {
-      vertical: {
-        density: {
-          compact: 32,
-          regular: 48,
-        },
-      },
+      vertical: 32,
     },
   },
   paddingX: {
     isLabelHidden: "[6px]",
+    orientation: {
+      /* Glasselated rail rows inset 10px (`.tgl-nav` padding,
+       * TerminalGlassLab.tsx:594). */
+      vertical: "[10px]",
+    },
   },
   borderRadius: "row",
-  gap: "text-to-visual",
+  gap: {
+    default: "text-to-visual",
+    variant: {
+      pill: "[3px]",
+    },
+  },
   color: {
     default: baseColor("neutral-subdued"),
     isSelected: baseColor("accent"),
@@ -355,6 +463,37 @@ const tabText = style<TabsStyleState>({
   order: 1,
   display: {
     isLabelHidden: "none",
+  },
+  /* Glasselated: pill slots caption their icon in the register's micro role
+   * (mono 10px/700, +0.1em tracking — TerminalGlassLab.tsx:600-607, the same
+   * metrics as typeRoles.micro); rail rows label in mono 12px/600
+   * (`.tgl-label`, glasselated.css:541). The family is already mono via the
+   * root's fontFamily repoint. */
+  fontSize: {
+    variant: {
+      pill: "[10px]",
+    },
+    orientation: {
+      vertical: "[12px]",
+    },
+  },
+  fontWeight: {
+    variant: {
+      pill: "bold",
+    },
+    orientation: {
+      vertical: "semi-bold",
+    },
+  },
+  letterSpacing: {
+    variant: {
+      pill: "0.1em",
+    },
+  },
+  lineHeight: {
+    variant: {
+      pill: "[1.2]",
+    },
   },
 });
 
@@ -413,6 +552,43 @@ const tabIndicator = style<TabsStyleState>({
       vertical: "full",
     },
   },
+});
+
+/* Glasselated: vertical tabs render the register's rail rows — each leads with
+ * a mono ">" caret that rests invisible, ghosts in on row hover (0.55) and pins
+ * solid on the active row (glasselated.css:441-462). The caret is the rail's
+ * selection affordance; the sliding SelectionIndicator is suppressed for
+ * vertical strips (and for the pill bar, where color alone marks the slot). */
+const tabCaret = style<TabsStyleState>({
+  order: 0,
+  flexShrink: 0,
+  width: 14,
+  fontFamily: "code",
+  fontSize: "[12px]",
+  fontWeight: "semi-bold",
+  lineHeight: "[1.2]",
+  color: {
+    default: "accent",
+    isDisabled: "disabled",
+    forcedColors: {
+      default: "Highlight",
+      isDisabled: "GrayText",
+    },
+  },
+  opacity: {
+    default: 0,
+    isHovered: 0.55,
+    isSelected: 1,
+  },
+  transition: "default",
+});
+
+/* Glasselated rail rows park their count pill flush right (`margin-left: auto`
+ * on the badge, TerminalGlassLab.tsx:527); order 2 keeps it after icon (0) and
+ * label (1) regardless of authoring order. */
+const tabBadgeStyles = style({
+  order: 2,
+  marginStart: "auto",
 });
 
 const tabPanels = style({
@@ -476,6 +652,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
       "children",
       "density",
       "labelBehavior",
+      "variant",
       "styles",
       "UNSAFE_className",
       "UNSAFE_style",
@@ -487,6 +664,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
   );
   const density = () => local.density ?? "regular";
   const labelBehavior = () => local.labelBehavior ?? "show";
+  const variant = () => local.variant ?? "line";
   const orientation = () => headlessProps.orientation ?? "horizontal";
   const [showTabs, setShowTabsSignal] = createSignal(true);
   const menuId = createUniqueId();
@@ -509,6 +687,9 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     get orientation() {
       return orientation();
     },
+    get variant() {
+      return variant();
+    },
     get ariaLabel() {
       return labelProps["aria-label"];
     },
@@ -517,7 +698,8 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     },
     showTabs,
     setShowTabs(value) {
-      setShowTabsSignal(orientation() === "vertical" ? true : value);
+      // The pill bar IS the small-screen form — it never collapses into the menu.
+      setShowTabsSignal(orientation() === "vertical" || variant() === "pill" ? true : value);
     },
     menuId,
     menuButtonId,
@@ -543,7 +725,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
 
   requireTabsLabel(labelProps);
   createEffect(() => {
-    if (orientation() === "vertical") {
+    if (orientation() === "vertical" || variant() === "pill") {
       setShowTabsSignal(true);
     }
   });
@@ -558,6 +740,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
         style={mergedUnsafeStyle()}
         data-density={density()}
         data-label-behavior={labelBehavior()}
+        data-variant={variant()}
         data-tabs-overflow-scope={menuId}
         data-tabs-overflow-state={showTabs() ? "tabs" : "menu"}
       >
@@ -596,6 +779,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
           tabList({
             orientation: renderProps.orientation,
             density: context.density,
+            variant: context.variant,
             isDisabled: renderProps.isDisabled,
             isLabelHidden: context.labelBehavior === "hide",
           }),
@@ -651,6 +835,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
         tabList({
           orientation: context.orientation,
           density: context.density,
+          variant: context.variant,
           isDisabled: state?.isDisabled() ?? false,
           isLabelHidden: context.labelBehavior === "hide",
         }),
@@ -675,6 +860,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
       tab({
         orientation: context.orientation,
         density: context.density,
+        variant: context.variant,
         isLabelHidden: context.labelBehavior === "hide",
       }),
     ]
@@ -693,7 +879,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
   const measurementListElement = () =>
     wrapperElement?.querySelector<HTMLElement>("[data-tabs-measure-list]") ?? null;
   const updateOverflow = () => {
-    if (context.orientation === "vertical") {
+    if (context.orientation === "vertical" || context.variant === "pill") {
       context.setShowTabs(true);
       return;
     }
@@ -800,6 +986,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
                   class={tabText({
                     orientation: context.orientation,
                     density: context.density,
+                    variant: context.variant,
                     isLabelHidden: context.labelBehavior === "hide",
                   })}
                   data-rsp-slot="text"
@@ -884,6 +1071,7 @@ export function Tab(props: TabProps): JSX.Element {
   const textStyleState = () => ({
     orientation: context.orientation,
     density: context.density,
+    variant: context.variant,
     isLabelHidden: labelHidden(),
   });
   const className = (renderProps: TabRenderProps) =>
@@ -896,6 +1084,7 @@ export function Tab(props: TabProps): JSX.Element {
           ...renderProps,
           orientation: context.orientation,
           density: context.density,
+          variant: context.variant,
           isLabelHidden: labelHidden(),
         }),
         local.styles,
@@ -914,6 +1103,11 @@ export function Tab(props: TabProps): JSX.Element {
     slot: "icon",
     render: centerBaseline({ slot: "icon", styles: iconRenderStyles }),
     styles: iconStyles,
+  };
+  // Glasselated rail rows carry a count pill (<NotificationBadge value={n} />):
+  // slot it after icon and label and park it flush right.
+  const badgeContextValue = {
+    styles: tabBadgeStyles as StyleString,
   };
 
   function TabContent(renderProps: TabRenderProps): JSX.Element {
@@ -943,17 +1137,37 @@ export function Tab(props: TabProps): JSX.Element {
 
     return (
       <>
-        <SelectionIndicator
-          class={tabIndicator({
-            orientation: context.orientation,
-            density: context.density,
-            isDisabled: renderProps.isDisabled,
-          })}
-          data-rsp-slot="selection-indicator"
-        />
+        <Show when={context.orientation !== "vertical" && context.variant !== "pill"}>
+          <SelectionIndicator
+            class={tabIndicator({
+              orientation: context.orientation,
+              density: context.density,
+              isDisabled: renderProps.isDisabled,
+            })}
+            data-rsp-slot="selection-indicator"
+          />
+        </Show>
+        <Show when={context.orientation === "vertical" && context.variant === "line"}>
+          <span
+            aria-hidden="true"
+            data-rsp-slot="tab-caret"
+            class={tabCaret({
+              orientation: context.orientation,
+              density: context.density,
+              variant: context.variant,
+              isDisabled: renderProps.isDisabled,
+              isHovered: renderProps.isHovered,
+              isSelected: renderProps.isSelected,
+            })}
+          >
+            {">"}
+          </span>
+        </Show>
         <IconContext.Provider value={iconContextValue}>
           <TextContext.Provider value={textContextValue}>
-            <ResolvedTabContent />
+            <NotificationBadgeContext.Provider value={badgeContextValue}>
+              <ResolvedTabContent />
+            </NotificationBadgeContext.Provider>
           </TextContext.Provider>
         </IconContext.Provider>
       </>

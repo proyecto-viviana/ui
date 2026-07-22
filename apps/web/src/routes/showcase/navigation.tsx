@@ -19,6 +19,12 @@ import {
   DisclosureTitle,
   DisclosureTrigger,
   Link,
+  NotificationBadge,
+  PixelHomeIcon,
+  PixelMapIcon,
+  PixelPlayIcon,
+  PixelUserIcon,
+  PixelZapIcon,
   Step,
   StepList,
   StepListItem,
@@ -27,6 +33,8 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
+  Text,
+  Well,
 } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug } from "@/components/showcase/registry";
@@ -57,6 +65,69 @@ function Page() {
 
   return (
     <Panel def={def}>
+      <Demo label="Tabs · vertical — the register rail: Well-mounted rows, caret ghosts in on hover and pins on the active row, count pill parks flush right">
+        <Tabs aria-label="Rail sections" orientation="vertical" defaultSelectedKey="home">
+          <Well style={{ width: "250px", flex: "0 0 auto", "margin-inline-end": "20px" }}>
+            {/* Inside a Well the rail needs no strip-to-panel margin of its own —
+                the well edge is the separation. */}
+            <TabList UNSAFE_style={{ "margin-inline-end": "0" }}>
+              <Tab id="home">Home</Tab>
+              <Tab id="explore">Explore</Tab>
+              <Tab id="review">
+                <Text>Review</Text>
+                <NotificationBadge value={4} />
+              </Tab>
+              <Tab id="live">Live</Tab>
+            </TabList>
+          </Well>
+          <TabPanels>
+            <TabPanel id="home">Continue where you left off.</TabPanel>
+            <TabPanel id="explore">Wander the catalog.</TabPanel>
+            <TabPanel id="review">Four items are waiting on you.</TabPanel>
+            <TabPanel id="live">Sessions running right now.</TabPanel>
+          </TabPanels>
+        </Tabs>
+      </Demo>
+
+      <Demo label="Tabs · pill — the glass tab bar: stacked pixel icon over micro label, spread space-around, never collapses">
+        <Tabs
+          aria-label="App tab bar"
+          variant="pill"
+          defaultSelectedKey="home"
+          UNSAFE_style={{ "max-width": "340px" }}
+        >
+          <TabList>
+            <Tab id="home">
+              <PixelHomeIcon />
+              <Text>Home</Text>
+            </Tab>
+            <Tab id="map">
+              <PixelMapIcon />
+              <Text>Map</Text>
+            </Tab>
+            <Tab id="play">
+              <PixelPlayIcon />
+              <Text>Play</Text>
+            </Tab>
+            <Tab id="boost">
+              <PixelZapIcon />
+              <Text>Boost</Text>
+            </Tab>
+            <Tab id="you">
+              <PixelUserIcon />
+              <Text>You</Text>
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel id="home">Home feed.</TabPanel>
+            <TabPanel id="map">World map.</TabPanel>
+            <TabPanel id="play">Playground.</TabPanel>
+            <TabPanel id="boost">Boosts and streaks.</TabPanel>
+            <TabPanel id="you">Your profile.</TabPanel>
+          </TabPanels>
+        </Tabs>
+      </Demo>
+
       <Demo label="Tabs · 3 tabs — accent underline on select, mono labels">
         <Tabs aria-label="Project sections" defaultSelectedKey="overview">
           <TabList>

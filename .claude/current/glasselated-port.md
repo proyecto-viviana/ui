@@ -197,6 +197,38 @@ cards with StatusLight prompt strips). Probe-verified both schemes — the
 substituted URI carries the scheme's stroke hex both ways; SSR 13/13,
 hydrate 15/15.
 
+Closed 2026-07-22: the pixel icon set + the register's two Tabs navigation
+forms (Panel04). 34 `Pixel*Icon` components generated from the frozen lane's
+pixel-art SVGs into `src/icon/pixel-icons/` (createIcon-wrapped, barrel →
+auto-promoted to own build entries; "Auto-generated" header keeps them out of
+the idiomatic-solid guard; `nav-home.svg` skipped as byte-identical to
+`home.svg`). Tabs gained `variant?: "line" | "pill"`: pill is the mobile tab
+bar — full-radius glass capsule (`layer-1` + `--blur-panel` + hairline +
+`edge-glass`, space-around), column-flex slots (gap `[3px]`, minWidth 52) with
+micro labels (10px/bold/+0.1em), no SelectionIndicator, and it NEVER collapses
+into the overflow picker (`setShowTabs` + effect force true, `updateOverflow`
+early-returns). Vertical became the register rail: indicator suppressed, a
+mono `">"` caret leads each row (order 0, accent ink, opacity 0 rest / 0.55
+hover / 1 selected), rows flat `minHeight: 32` (density-independent), 12px
+semi-bold labels, `[6px]` list gap, and the strip-to-panel `marginStart`
+gutter removed. Tab now provides `NotificationBadgeContext` with
+`style({ order: 2, marginStart: "auto" })` so a badge child parks flush right
+(`marginStart`/`order` are in `allowedOverrides`). Style-macro structure:
+mutually-exclusive `variant: { line: …, pill: … }` nesting dodges
+sibling-condition cascade-order ambiguity; branches typed at only one variant
+emit nothing when unmatched, so internal callers must always pass `variant`.
+Landmines: `getComputedStyle` margin-* returns the USED value — `auto`
+reports `0px` when the flex row has no free space (the demo Well had shrunk
+to content because `max-width` alone doesn't size a flex item; fix `width`);
+diagnose via CDP `CSS.getMatchedStylesForNode`, not `cssRules` walks (CSS
+nesting gives every CSSStyleRule a `.cssRules`, breaking else-branches).
+Well-in-Tabs composition works (headless context flows through the wrapper),
+but the Well becomes a flex item of the horizontal Tabs root — give it
+`width` and kill the TabList's own `marginEnd`. Demoed as the two
+`/showcase/navigation` openers (Well-mounted rail with badge row; five-slot
+pill bar with stacked pixel icons), probe-verified both schemes; SSR 13/13,
+hydrate 15/15.
+
 ## Showcase plan
 
 Home is **`apps/web`** (TanStack Solid Start SSR on Cloudflare Workers) — it
