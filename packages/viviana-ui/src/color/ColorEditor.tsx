@@ -32,8 +32,43 @@ const editorStyles = css(`
   & label { color: var(--pv-text-subtle); }
   & input { color: var(--pv-text); }
 
-  & .solidaria-ColorEditor-top { display: flex; gap: 12px; }
+  & .solidaria-ColorEditor-top { display: flex; flex-direction: column; gap: 8px; }
   & .solidaria-ColorEditor-bottom { display: flex; gap: 8px; align-items: flex-end; }
+
+  /* The headless parts ship gradients and thumb positions as inline styles but
+   * carry NO dimensions — unsized they collapse to 0x0 and the editor renders
+   * as just its bottom row. Sizes mirror the standalone styled ColorArea /
+   * ColorSlider (192px surface, 24px track, 16px white-ring thumb). */
+  & .solidaria-ColorArea {
+    position: relative;
+    width: 192px;
+    height: 192px;
+    border-radius: 6px;
+    outline: 1px solid light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+    outline-offset: -1px;
+  }
+  & .solidaria-ColorArea-gradient {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+  & .solidaria-ColorSlider { width: 192px; }
+  & .solidaria-ColorSlider-track {
+    position: relative;
+    height: 24px;
+    border-radius: 6px;
+    outline: 1px solid light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.1));
+    outline-offset: -1px;
+  }
+  & .solidaria-ColorArea-thumb,
+  & .solidaria-ColorSlider-thumb {
+    width: 16px;
+    height: 16px;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    outline: 1px solid rgb(0 0 0 / 0.42);
+  }
 
   & .solidaria-ColorEditor-format {
     height: 32px;

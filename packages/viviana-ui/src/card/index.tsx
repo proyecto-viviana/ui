@@ -22,7 +22,7 @@ import { AvatarContext } from "../avatar";
 import { ButtonContext, LinkButtonContext } from "../button/context";
 import { ContentContext, FooterContext, TextContext } from "../text";
 import { DividerContext } from "../divider";
-import { IllustrationContext } from "../icon";
+import { IconContext, IllustrationContext } from "../icon";
 import { Image, ImageContext, ImageCoordinator } from "../image";
 import { SkeletonContext, SkeletonWrapper, useInertAttribute, useIsSkeleton } from "../skeleton";
 import { pressScale } from "../pressScale";
@@ -219,7 +219,15 @@ const card = style<CardStyleState>(
       },
       isCardView: "full",
     },
-    height: "full",
+    /* `height: full` only makes sense inside a CardView, where the grid cell is
+     * definitely sized and the card should fill it. A standalone card in a flex
+     * row must hug its content — a percentage there resolves against the row's
+     * final height (all wrapped lines included), ballooning every card to the
+     * full band. */
+    height: {
+      default: "auto",
+      isCardView: "full",
+    },
     "--card-spacing": {
       type: "paddingTop",
       value: {
@@ -611,6 +619,13 @@ const InternalCardContext = createContext<InternalCardContextValue>({
   isCheckboxSelection: true,
 });
 
+/* AssetCard previews accept an icon standing in for an illustration (viviana-ui
+ * ships no illustration set yet). The square-wrapper treatment must apply ONLY
+ * inside the preview slot — providing IconContext at the card level would leak
+ * the wrapper into the Content ActionMenu's own icon — so AssetCard raises this
+ * flag and CardPreview scopes the provider to its children. */
+const InternalAssetPreviewContext = createContext(false);
+
 const actionButtonSize = {
   XS: "XS",
   S: "XS",
@@ -933,6 +948,7 @@ export function Card(props: CardProps): JSX.Element {
 
 export function CardPreview(props: CardPreviewProps): JSX.Element {
   const context = useContext(InternalCardContext);
+  const isAssetPreview = useContext(InternalAssetPreviewContext);
   const [local, domProps] = splitProps(props, [
     "children",
     "styles",
@@ -977,7 +993,24 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
     >
       {context.isQuiet && <SelectionIndicator />}
       {context.isQuiet && context.isCheckboxSelection && <CardCheckbox />}
-      <div class={previewClip}>{local.children}</div>
+      <div class={previewClip}>
+        {isAssetPreview ? (
+          <IconContext.Provider
+            value={{
+              render: (icon) => (
+                <SkeletonWrapper>
+                  <div class={assetIllustrationWrapper}>{icon}</div>
+                </SkeletonWrapper>
+              ),
+              styles: assetIllustration,
+            }}
+          >
+            {local.children}
+          </IconContext.Provider>
+        ) : (
+          local.children
+        )}
+      </div>
     </div>
   );
 }
@@ -1014,7 +1047,9 @@ export function AssetCard(props: AssetCardProps): JSX.Element {
               styles: assetIllustration,
             }}
           >
-            {renderCardChildren(props.children, renderProps)}
+            <InternalAssetPreviewContext.Provider value={true}>
+              {renderCardChildren(props.children, renderProps)}
+            </InternalAssetPreviewContext.Provider>
           </IllustrationContext.Provider>
         </ImageContext.Provider>
       )}

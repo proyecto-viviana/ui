@@ -63,6 +63,17 @@ const stepItemStyles = style({
   minWidth: 0,
 });
 
+// Escape-hatch (bespoke `Step` children) li layout: same flex row as the
+// default rendering, plus inline padding so adjacent bespoke steps — which
+// have no indicator bubbles or connectors — don't run together.
+const bespokeStepItemStyles = style({
+  display: "flex",
+  alignItems: "center",
+  flexGrow: 1,
+  minWidth: 0,
+  paddingX: 8,
+});
+
 const stepLinkStyles = style<StepStyleState>({
   ...focusRing(),
   borderRadius: "row",
@@ -273,7 +284,15 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
  */
 export function Step(props: StepProps): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class"]);
-  return <HeadlessStep {...headlessProps} class={local.class} />;
+  // The li must keep the flex row layout of the default rendering: the styled
+  // StepList root is a flex <ol>, and a plain list-item li would regenerate
+  // ordered-list ::markers outside its box, colliding with neighboring steps.
+  return (
+    <HeadlessStep
+      {...headlessProps}
+      class={[bespokeStepItemStyles, local.class].filter(Boolean).join(" ")}
+    />
+  );
 }
 
 StepList.Step = Step;

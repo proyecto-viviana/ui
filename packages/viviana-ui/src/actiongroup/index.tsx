@@ -53,6 +53,11 @@ export interface ActionGroupProps<T extends ActionGroupItem = ActionGroupItem> {
 // same `style` macro tokens rather than the invented Tailwind vocabulary.
 const actionGroupContainer = style<{ orientation: "horizontal" | "vertical" }>({
   display: "inline-flex",
+  // The bordered pill must hug its items. Stacked parents stretch children to
+  // full width by default: column-flex via align-self, grid via justify-self
+  // (grid also blockifies inline-flex, so the display value alone can't help).
+  alignSelf: "start",
+  justifySelf: "start",
   alignItems: "center",
   gap: 4,
   flexDirection: {
