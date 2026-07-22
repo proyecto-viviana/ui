@@ -6,7 +6,7 @@
  */
 
 import { type JSX, createContext, createMemo, createSignal, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { ElementTag } from "./ElementTag";
 import {
   createLandmark,
   getLandmarkController,
@@ -147,8 +147,8 @@ export function Landmark(props: LandmarkProps): JSX.Element {
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
 
   return (
-    <Dynamic
-      component={elementType()}
+    <ElementTag
+      tag={elementType()}
       ref={setRef}
       {...domProps()}
       {...landmarkAria.landmarkProps}
@@ -157,7 +157,7 @@ export function Landmark(props: LandmarkProps): JSX.Element {
       slot={local.slot}
     >
       {props.children}
-    </Dynamic>
+    </ElementTag>
   );
 }
 

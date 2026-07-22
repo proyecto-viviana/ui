@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/Button";
+export * from "./button";

@@ -1,88 +1,109 @@
 /*
- * Viviana ("Silapse") design tokens.
+ * Viviana UI design tokens — v2 register (blue + amber frosted glass + pixel/terminal).
  *
  * The brand's color palette + typography, owned by the design system itself so
  * the product components are self-contained. The S2 style() macro carries the
  * *shape* (spacing, radius, sizing, type ramp) via its named tokens; these vars
- * supply the *colors*, referenced from components as arbitrary `[var(--color-*)]`
- * values. Dark is the default (`:root`); light overrides bind to the same
- * `data-color-scheme` attribute solid-spectrum's theme uses, so a single scheme
- * switch flips both layers together.
+ * supply the *color* + the *frosted-glass effect* families, referenced from
+ * components as arbitrary `[var(--color-*)]` / `[var(--surface-*)]` values.
  *
- * Values mirror apps/web's palette verbatim — keep them in sync until apps/web
- * consumes this file directly.
+ * Two audiences share this file. (1) The Adobe-Spectrum (S2) components consume
+ * the `--color-*` / `--surface-*` / `--accent-*` / `--blur-*` / `--edge-glass`
+ * families as arbitrary `[var(--…)]` values — the style() macro carries the
+ * *shape*, these vars carry the *color* + the *frosted-glass effect*. (2) Product
+ * screens consume the app vocabulary: the short palette ramps (`--blue-*`,
+ * `--amber-*`, `--slate-*`), semantic `--text-*` / `--border-*` / `--status-*`,
+ * the matte terminal wells (`--surface-well`, `--well-*`), spacing / radii, and
+ * the closed set of eight `--type-*` roles.
+ *
+ * This is the v2 register of the Viviana UI token layer (see
+ * `.claude/current/visual-system-lane.md`). It keeps the amber accent (the single
+ * warm, one-per-screen action color) and blue wayfinding/selection of the earlier
+ * frosted-glass pass, and adds the pixel/terminal register onto it: matte wells,
+ * the cyan/amber/violet/red status channels, and eight type roles rendered in
+ * Geist Pixel (display), Geist (body/ui) and Geist Mono (terminal, loaded via
+ * `font-faces.css`). Semantic success/warning/danger are unchanged.
+ *
+ * Dark is the default (`:root`, re-asserted under `[data-color-scheme="dark"]` so
+ * a nested `<Provider colorScheme>` can flip a subtree back to night); light
+ * overrides bind to `[data-color-scheme="light"]`, the same attribute
+ * solid-spectrum's theme uses, so a single scheme switch flips both layers
+ * together. `apps/web` still ships its own copy of the legacy palette until the
+ * Tailwind-removal Phase 4 restyle consumes this file directly
+ * (`.claude/current/tailwind-removal.md`).
  */
 
-:root {
-  /* Grey scale */
-  --color-grey-50: #ffffff;
-  --color-grey-100: #e0e0e0;
-  --color-grey-200: #c0c0c0;
-  --color-grey-300: #a0a0a0;
-  --color-grey-400: #606060;
-  --color-grey-500: #404040;
-  --color-grey-600: #1a1a1a;
-  --color-grey-700: #111111;
-  --color-grey-800: #0a0a0a;
-  --color-grey-900: #000000;
+:root,
+[data-color-scheme="dark"] {
+  /* Grey scale — charcoal-slate neutral ramp */
+  --color-grey-50: #f3f4f6;
+  --color-grey-100: #d7dce2;
+  --color-grey-200: #b9c0c9;
+  --color-grey-300: #97a1ab;
+  --color-grey-400: #626d78;
+  --color-grey-500: #4a545e;
+  --color-grey-600: #333c45;
+  --color-grey-700: #232d37;
+  --color-grey-800: #1a222a;
+  --color-grey-900: #10161c;
 
-  /* Blue scale */
-  --color-blue-50: #f0f7ff;
-  --color-blue-100: #ddf4ff;
-  --color-blue-200: #b6e3ff;
-  --color-blue-300: #80ccff;
-  --color-blue-400: #54aeff;
-  --color-blue-500: #388bfd;
-  --color-blue-600: #1f6feb;
-  --color-blue-700: #1158c7;
-  --color-blue-800: #0d419d;
-  --color-blue-900: #050a12;
+  /* Blue scale — wayfinding / selection */
+  --color-blue-50: #eaf4fe;
+  --color-blue-100: #d4e9fd;
+  --color-blue-200: #a8d2fb;
+  --color-blue-300: #7cbaf8;
+  --color-blue-400: #55a6f6;
+  --color-blue-500: #2e90fa;
+  --color-blue-600: #1877e8;
+  --color-blue-700: #135fc0;
+  --color-blue-800: #0e4a99;
+  --color-blue-900: #0a2f63;
 
-  /* Pink scale */
-  --color-pink-50: #fff5f9;
-  --color-pink-100: #ffe4f3;
-  --color-pink-200: #ffc9e9;
-  --color-pink-300: #ffa0d5;
-  --color-pink-400: #f778ba;
-  --color-pink-500: #d84a8f;
-  --color-pink-600: #b13570;
-  --color-pink-700: #912b5a;
-  --color-pink-800: #702244;
-  --color-pink-900: #0f0508;
+  /* Amber scale — the single warm action accent */
+  --color-amber-50: #fef4e6;
+  --color-amber-100: #fde7c8;
+  --color-amber-200: #fcd9a0;
+  --color-amber-300: #f9c270;
+  --color-amber-400: #f9a838;
+  --color-amber-500: #f79009;
+  --color-amber-600: #e07b00;
+  --color-amber-700: #b86200;
+  --color-amber-800: #8f4c00;
+  --color-amber-900: #3b2200;
 
-  /* Background — pure void */
-  --color-bg-100: #404040;
-  --color-bg-200: #252525;
-  --color-bg-300: #1a1a1a;
-  --color-bg-400: #111111;
-  --color-bg-light: #515151;
+  /* Background — frosted charcoal ladder (near-opaque worst-case surfaces) */
+  --color-bg-100: #2a333c;
+  --color-bg-200: #232d37;
+  --color-bg-300: #1b242c;
+  --color-bg-400: #141a1f;
+  --color-bg-light: #33424e;
 
-  /* Primary — blue scale */
-  --color-primary: #75abc7;
-  --color-primary-50: #081018;
-  --color-primary-100: #ddf4ff;
-  --color-primary-200: #b6e3ff;
-  --color-primary-300: #80ccff;
-  --color-primary-400: #54aeff;
-  --color-primary-500: #4da0ff;
-  --color-primary-600: #3080f4;
-  --color-primary-700: #1158c7;
-  --color-primary-800: #0d419d;
-  --color-primary-900: #050a12;
+  /* Primary — blue */
+  --color-primary: #55a6f6;
+  --color-primary-50: #0a1826;
+  --color-primary-100: #d4e9fd;
+  --color-primary-200: #a8d2fb;
+  --color-primary-300: #7cbaf8;
+  --color-primary-400: #55a6f6;
+  --color-primary-500: #2e90fa;
+  --color-primary-600: #1877e8;
+  --color-primary-700: #135fc0;
+  --color-primary-800: #0e4a99;
+  --color-primary-900: #0a2f63;
 
-  /* Accent — pink */
-  --color-accent: #df5c9a;
-  --color-accent-50: #100810;
-  --color-accent-100: #0f0508;
-  --color-accent-200: #150a12;
-  --color-accent-300: #ffa0d5;
-  --color-accent-400: #f778ba;
-  --color-accent-500: #d84a8f;
-  --color-accent-600: #f778ba;
-  --color-accent-700: #ffa0d5;
-  --color-accent-800: #ffc9e9;
-  --color-accent-900: #0f0508;
-  --color-accent-highlight: #e2a2be;
+  /* Accent — amber (high indices lighten for text/marks on dark) */
+  --color-accent: #f79009;
+  --color-accent-50: #1f1405;
+  --color-accent-100: #fde7c8;
+  --color-accent-200: #fcd9a0;
+  --color-accent-300: #f9c270;
+  --color-accent-400: #f9a838;
+  --color-accent-500: #f79009;
+  --color-accent-600: #f9a838;
+  --color-accent-700: #f9c270;
+  --color-accent-800: #fde7c8;
+  --color-accent-900: #3b2200;
+  --color-accent-highlight: #f9c270;
 
   /* Semantic colors */
   --color-success-100: #e5fff3;
@@ -114,36 +135,36 @@
   --color-danger-900: #ffe5e5;
 
   /* Cards */
-  --color-cards-bg: #373737;
-  --color-cards-bg-load: #484848;
+  --color-cards-bg: #232d37;
+  --color-cards-bg-load: #2f3a44;
   --color-correct: #83f1a7;
   --color-incorrect: #e74c3c;
 
   /* Canvas */
-  --color-canvas-bg: #000000;
+  --color-canvas-bg: #10161c;
 
-  /* Surfaces */
-  --color-background: #000000;
-  --color-surface: #0a0a0a;
-  --color-surface-elevated: #111111;
+  /* Surfaces (opaque) */
+  --color-background: #141a1f;
+  --color-surface: #1b242c;
+  --color-surface-elevated: #232d37;
 
   /* Blue depth backgrounds */
-  --color-bg-blue-deep: #050a12;
-  --color-bg-blue-dark: #081020;
-  --color-bg-blue-mid: #0a1830;
-  --color-bg-blue-light: #102040;
+  --color-bg-blue-deep: #071726;
+  --color-bg-blue-dark: #0a1f33;
+  --color-bg-blue-mid: #0e2a44;
+  --color-bg-blue-light: #123a5e;
 
   /* Text */
-  --color-text: #ffffff;
-  --color-text-secondary: #a0a0a0;
-  --color-text-muted: #606060;
-  --color-text-dim: #4f6d85;
-  --color-text-disabled: #404040;
+  --color-text: #f3f4f6;
+  --color-text-secondary: #97a1ab;
+  --color-text-muted: #626d78;
+  --color-text-dim: #55708a;
+  --color-text-disabled: #3a444e;
 
   /* Borders */
-  --color-border: #1a1a1a;
-  --color-border-muted: #141414;
-  --color-divider: #141414;
+  --color-border: #232d37;
+  --color-border-muted: #1a222a;
+  --color-divider: #1a222a;
 
   /* Semantic base + dim */
   --color-success: #3fb950;
@@ -154,29 +175,178 @@
   --color-danger-dim: #da3633;
 
   /* Dim versions (wire base / inactive elements) */
-  --color-primary-dim: #1a3040;
-  --color-accent-dim: #301520;
+  --color-primary-dim: #123a5e;
+  --color-accent-dim: #3b2a12;
 
   /* Header background */
-  --color-header-bg: #181818;
+  --color-header-bg: #1b242c;
 
-  /* Glow effects (for drop-shadow filters) */
-  --color-primary-glow: rgba(128, 204, 255, 0.6);
-  --color-accent-glow: rgba(255, 160, 213, 0.6);
-  --color-fusion-glow: rgba(180, 140, 230, 0.7);
+  /* Glow effects (for drop-shadow filters) — blue + amber */
+  --color-primary-glow: rgba(46, 144, 250, 0.55);
+  --color-accent-glow: rgba(247, 144, 9, 0.5);
+  --color-fusion-glow: rgba(139, 92, 246, 0.5);
 
   /* Semantic background tints */
   --color-success-bg: rgba(63, 185, 80, 0.1);
   --color-warning-bg: rgba(210, 153, 34, 0.1);
   --color-danger-bg: rgba(248, 81, 73, 0.1);
 
-  /* Typography */
-  --font-sen: "Sen", sans-serif;
-  --font-jost: "Jost", sans-serif;
-  --font-sans: "Sen", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-title: "Jost", system-ui, sans-serif;
-  --font-body: "Sen", system-ui, sans-serif;
+  /* ── Frosted-glass surface family — v2 neutral-charcoal night ──
+     (translucent ladder over a lit scene; wells below are matte, never glass) */
+  --surface-app: #0c0d10;
+  --surface-panel: rgba(23, 25, 30, 0.78);
+  --surface-card: rgba(30, 32, 38, 0.72);
+  --surface-raised: rgb(51, 58, 68);
+  --surface-inset: rgba(10, 11, 14, 0.38);
+  --surface-hover: rgba(58, 62, 70, 0.48);
+  --surface-ghost: rgba(30, 36, 41, 0.28);
+
+  /* Accent surface tints (soft fills for selected/warm states) */
+  --accent-primary: var(--blue-500);
+  --accent-primary-soft: #14283e;
+  --accent-warm: var(--amber-500);
+  --accent-warm-soft: rgba(247, 144, 9, 0.15);
+
+  /* ── Blur family (panels/cards only) ── */
+  --blur-panel: blur(18px);
+  --blur-card: blur(14px);
+
+  /* ── Edge-glass (inner highlight that catches the light) ── */
+  --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+  /* ── Shadow + glow family (glow follows the accent, never the chrome) ── */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.6);
+  --shadow-glow-blue: 0 0 24px rgba(46, 144, 250, 0.35);
+  --shadow-glow-warm: 0 0 24px rgba(247, 144, 9, 0.3);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     v2 app + terminal vocabulary — Night. Product screens consume these; the
+     S2 --color-* families above stay in lockstep for the Spectrum components.
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Short palette ramps — the app-facing colour vocabulary */
+  --blue-50: rgba(46, 144, 250, 0.15);
+  --blue-100: #d4e9fd;
+  --blue-200: #a8d2fb;
+  --blue-300: #7cbaf8;
+  --blue-400: #55a6f6;
+  --blue-500: #2e90fa;
+  --blue-600: #55a6f6;
+  --blue-700: #135fc0;
+  --amber-50: rgba(247, 144, 9, 0.15);
+  --amber-100: rgba(247, 144, 9, 0.22);
+  --amber-300: #f9c270;
+  --amber-500: #f79009;
+  --amber-600: #f9b45c;
+  --violet-500: #8b5cf6;
+  --red-500: #f04438;
+  --slate-900: #edf1f6;
+  --slate-700: #b9c4d6;
+  --slate-500: #97a1ab;
+  --slate-400: #7c8794;
+  --slate-300: #c4d0de;
+  --slate-200: rgba(255, 255, 255, 0.1);
+  --slate-100: rgba(255, 255, 255, 0.06);
+  --white: #ffffff;
+
+  /* Text */
+  --text-primary: #f2f3f5;
+  --text-secondary: #9aa0a8;
+  --text-tertiary: #6e747c;
+  --text-link: #55a6f6;
+  --text-on-accent: #ffffff;
+
+  /* Terminal wells — matte / opaque, NEVER glass */
+  --surface-well: #0a0f14;
+  --surface-well-tutor: #05070a;
+  --well-border: rgba(255, 255, 255, 0.1);
+  --well-scan: rgba(255, 255, 255, 0.055);
+  --well-cy: #6fc1ff;
+  --well-am: #ffb45e;
+  --well-vi: #b8a0ff;
+  --well-rd: #ff8a7a;
+  --well-hi: var(--well-cy);
+  --well-dim: rgba(170, 176, 184, 0.5);
+  --well-mid: #a6acb4;
+  --well-run-fg: var(--well-cy);
+  --well-tutor-ink: #eaf2fb;
+  --btn-secondary-bg: var(--surface-raised);
+
+  /* Accents (app) — live pulse · create CTA · interactive fill */
+  --accent-live: #ff6b35;
+  --interactive-fill: #407fc1;
+  --accent-create-bg: rgb(255 222 129);
+  --accent-create-border: rgb(255 222 129);
+  --accent-create-ink: #3a2e00;
+
+  /* Status channels: cyan=info · amber=signal · violet=metric · red=fault */
+  --status-info: #55a6f6;
+  --status-signal: #f9b45c;
+  --status-metric: #a78bfa;
+  --status-fault: #f97066;
+
+  /* Event tints */
+  --event-default-bg: rgba(30, 32, 38, 0.72);
+  --event-default-border: rgba(255, 255, 255, 0.09);
+  --event-highlight-bg: rgba(50, 34, 12, 0.6);
+  --event-highlight-border: rgba(247, 144, 9, 0.55);
+  --event-focus-bg: rgba(15, 26, 40, 0.65);
+  --event-focus-border: rgba(46, 144, 250, 0.5);
+
+  /* Borders (app) */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-focus: var(--blue-400);
+
+  /* Calendar category dots (hues follow the ramps, so no light override) */
+  --cal-work: var(--amber-500);
+  --cal-personal: var(--blue-500);
+  --cal-design: var(--violet-500);
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* ── Typography — three faces, eight closed roles ──
+     display/title/headline/label = Geist Pixel · body/meta = Geist ·
+     micro/terminal/button = Geist Mono. Faces load via font-faces.css. */
+  --font-display: "Geist Pixel", ui-monospace, monospace;
+  --font-ui: "Geist", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  /* back-compat aliases, repointed to the v2 faces */
+  --font-sans: var(--font-ui);
+  --font-title: var(--font-display);
+  --font-body: var(--font-ui);
+  --type-pixel-vs: "ELSH" 1;
+  --type-display: 500 28px/1.15 var(--font-display);
+  --type-display-track: 0.01em;
+  --type-title: 600 20px/1.2 var(--font-display);
+  --type-title-track: 0.01em;
+  --type-headline: 700 15px/1.3 var(--font-display);
+  --type-headline-track: 0.01em;
+  --type-label: 600 13.5px/1.15 var(--font-display);
+  --type-label-track: 0.01em;
+  --type-body: 400 14px/1.55 var(--font-ui);
+  --type-meta: 400 12px/1.5 var(--font-ui);
+  --type-micro: 700 10px/1.2 var(--font-mono);
+  --type-micro-track: 0.1em;
+  --type-terminal: 400 11.5px/1.95 var(--font-mono);
+  --type-button: 400 15px/1 var(--font-mono);
+  --type-button-track: 0;
 }
 
 [data-color-scheme="light"] {
@@ -191,54 +361,55 @@
   --color-grey-800: #262626;
   --color-grey-900: #171717;
 
-  --color-blue-100: #e0f0f7;
-  --color-blue-200: #b6d9eb;
-  --color-blue-300: #8bc4db;
-  --color-blue-400: #75abc7;
-  --color-blue-500: #5a94b3;
-  --color-blue-600: #3d7a9c;
-  --color-blue-700: #2b6080;
-  --color-blue-800: #1a4560;
-  --color-blue-900: #0d2a3d;
+  /* Blue + primary FLIP for daylight: the :root (dark) ramp runs light→dark as
+     the index climbs, so the low indices (100/200/300 — used as *text*: wordmarks,
+     card titles, nav section titles, active links) must invert to dark navy here,
+     or they render near-invisible on the light surfaces. Mid index 500 stays a
+     readable medium blue (its only text use sits on the light bg-400 bar); 700
+     lightens because it is a *fill* (the primary Chip) that carries dark text.
+     Same hue as dark — only lightness/saturation shift for AA (WCAG verified
+     against the bg-* ladder below). Blue mirrors primary (no direct consumers,
+     kept in lockstep for future use). */
+  --color-blue-50: #eef5ff;
+  --color-blue-100: #08203c;
+  --color-blue-200: #0b2a4a;
+  --color-blue-300: #103c67;
+  --color-blue-400: #15508a;
+  --color-blue-500: #1a5fa3;
+  --color-blue-600: #2270b0;
+  --color-blue-700: #6fa8d6;
+  --color-blue-800: #a8cfec;
+  --color-blue-900: #0b2545;
+  --color-primary: #1a5fa3;
+  --color-primary-50: #eef5ff;
+  --color-primary-100: #08203c;
+  --color-primary-200: #0b2a4a;
+  --color-primary-300: #103c67;
+  --color-primary-400: #15508a;
+  --color-primary-500: #1a5fa3;
+  --color-primary-600: #2270b0;
+  --color-primary-700: #6fa8d6;
+  --color-primary-800: #a8cfec;
+  --color-primary-900: #0b2545;
 
-  --color-pink-100: #fef2f7;
-  --color-pink-200: #fcc7e0;
-  --color-pink-300: #f78fb9;
-  --color-pink-400: #df5c9a;
-  --color-pink-500: #cf2c74;
-  --color-pink-600: #a31f58;
-  --color-pink-700: #8a1a4a;
-  --color-pink-800: #6b143a;
-  --color-pink-900: #4d0f2a;
+  /* Amber accent — high indices darken for text/marks on light */
+  --color-accent: #f79009;
+  --color-accent-100: #fef4e6;
+  --color-accent-200: #7a4a00;
+  --color-accent-300: #f9c270;
+  --color-accent-400: #f79009;
+  --color-accent-500: #8a5200;
+  --color-accent-highlight: #e07b00;
 
-  /* Backgrounds — AA-verified against primary text */
-  --color-bg-100: #7096a8;
-  --color-bg-200: #a8c5d4;
-  --color-bg-300: #c8dce6;
-  --color-bg-400: #dbe8ef;
+  /* Backgrounds — daylight slate ladder, AA-verified against primary text.
+     bg-100 (the darkest rung, e.g. the secondary Chip fill) is lightened enough
+     that dark primary-200 text clears 4.5:1 on it — a mid-slate cannot host any
+     AA text. */
+  --color-bg-100: #7ba0b3;
+  --color-bg-200: #aebccb;
+  --color-bg-300: #cdd8e4;
+  --color-bg-400: #e2e9f1;
   --color-bg-light: #ffffff;
-
-  /* Primary — blue */
-  --color-primary: #75abc7;
-  --color-primary-50: #f0f7ff;
-  --color-primary-100: #06131d;
-  --color-primary-200: #0c2436;
-  --color-primary-300: #133a54;
-  --color-primary-400: #195073;
-  --color-primary-500: #1e6090;
-  --color-primary-600: #2470a5;
-  --color-primary-700: #5ea8d0;
-  --color-primary-800: #9dcce4;
-  --color-primary-900: #0d2a3d;
-
-  /* Accent — pink */
-  --color-accent: #df5c9a;
-  --color-accent-100: #fef2f7;
-  --color-accent-200: #7d1c48;
-  --color-accent-300: #f78fb9;
-  --color-accent-400: #df5c9a;
-  --color-accent-500: #8a1e4a;
-  --color-accent-highlight: #d4508a;
 
   /* Semantic — darker for readability on light bgs */
   --color-success-100: #e5fff3;
@@ -269,33 +440,39 @@
   --color-danger-800: #572f2f;
   --color-danger-900: #351c1c;
 
-  --color-cards-bg: #ecf2f5;
-  --color-cards-bg-load: #dfeaef;
+  --color-cards-bg: #ffffff;
+  --color-cards-bg-load: #eef3f9;
   --color-correct: #1a7f37;
   --color-incorrect: #cf222e;
 
-  --color-canvas-bg: #404040;
+  --color-canvas-bg: #dbe8ef;
 
-  /* Surfaces */
-  --color-background: #f2f7fa;
+  /* Surfaces (opaque) */
+  --color-background: #eef3f9;
   --color-surface: #ffffff;
-  --color-surface-elevated: #e6f0f5;
+  --color-surface-elevated: #e7edf5;
 
-  --color-bg-blue-deep: #e0f0f7;
-  --color-bg-blue-dark: #b6d9eb;
-  --color-bg-blue-mid: #8bc4db;
-  --color-bg-blue-light: #75abc7;
+  --color-bg-blue-deep: #eaf4fe;
+  --color-bg-blue-dark: #d4e9fd;
+  --color-bg-blue-mid: #a8d2fb;
+  --color-bg-blue-light: #7cbaf8;
 
   /* Text */
-  --color-text: #1a3040;
+  --color-text: #17212e;
+  /* WCAG AA: secondary text lands as normal-size runs on the light
+     --color-bg-300 card (EventListItem subtitle, CalendarCard "seguida por"
+     connector). A mid-slate (#64748b) read only 3.29:1 there; this darker
+     slate-blue clears 4.82:1 on bg-300 while staying the same hue and reading
+     as muted secondary against the near-black --color-text. */
   --color-text-secondary: #405d70;
-  --color-text-muted: #7096a8;
-  --color-text-disabled: #a8c5d4;
+  --color-text-muted: #94a3b8;
+  --color-text-dim: #64748b;
+  --color-text-disabled: #c4d0de;
 
   /* Borders */
-  --color-border: #c8dce6;
-  --color-border-muted: #dbe8ef;
-  --color-divider: #dbe8ef;
+  --color-border: #dce4ee;
+  --color-border-muted: #eaeff6;
+  --color-divider: #eaeff6;
 
   /* Semantic base + dim */
   --color-success: #5bc96e;
@@ -306,13 +483,114 @@
   --color-danger-dim: #9d5555;
 
   /* Dim, glow, bg tints */
-  --color-primary-dim: #b6d9eb;
-  --color-accent-dim: #fcc7e0;
-  --color-header-bg: #d0e4ed;
-  --color-primary-glow: rgba(117, 171, 199, 0.4);
-  --color-accent-glow: rgba(223, 92, 154, 0.4);
-  --color-fusion-glow: rgba(170, 130, 180, 0.5);
+  --color-primary-dim: #d4e9fd;
+  --color-accent-dim: #fde7c8;
+  --color-header-bg: #e7edf5;
+  --color-primary-glow: rgba(46, 144, 250, 0.4);
+  --color-accent-glow: rgba(247, 144, 9, 0.35);
+  --color-fusion-glow: rgba(139, 92, 246, 0.4);
   --color-success-bg: rgba(63, 185, 80, 0.1);
   --color-warning-bg: rgba(210, 153, 34, 0.15);
   --color-danger-bg: rgba(248, 81, 73, 0.1);
+
+  /* ── Frosted-glass surface family (daylight) ── */
+  --surface-app: #e9eff6;
+  --surface-panel: rgba(255, 255, 255, 0.42);
+  --surface-card: rgba(255, 255, 255, 0.55);
+  --surface-raised: #ffffff;
+  --surface-inset: rgba(238, 243, 249, 0.55);
+  --surface-hover: rgba(255, 255, 255, 0.75);
+  --surface-ghost: rgba(255, 255, 255, 0.18);
+
+  --accent-primary-soft: #e2effd;
+  --accent-warm-soft: var(--amber-50);
+
+  /* Edge-glass + shadow/glow — daylight (soft, cool-tinted; glow carries accent) */
+  --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  --shadow-card: 0 2px 8px rgba(99, 115, 139, 0.08), 0 8px 24px rgba(99, 115, 139, 0.1);
+  --shadow-panel: 0 12px 40px rgba(99, 115, 139, 0.14);
+  --shadow-float: 0 16px 48px rgba(99, 115, 139, 0.22);
+  --shadow-glow-blue: 0 4px 20px rgba(46, 144, 250, 0.28);
+  --shadow-glow-warm: 0 4px 20px rgba(247, 144, 9, 0.24);
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     v2 app + terminal vocabulary — Daylight overrides. Every themed token from
+     the Night block above is re-declared here so a light subtree never inherits
+     a night value; theme-agnostic tokens (spacing, radii, type roles, fonts,
+     calendar hues) stay defined once in the Night block.
+     ═══════════════════════════════════════════════════════════════════════ */
+
+  /* Short palette ramps */
+  --blue-50: #eaf4fe;
+  --blue-100: #d4e9fd;
+  --blue-200: #a8d2fb;
+  --blue-300: #7cbaf8;
+  --blue-400: #55a6f6;
+  --blue-500: #2e90fa;
+  --blue-600: #1877e8;
+  --blue-700: #135fc0;
+  --amber-50: #fef4e6;
+  --amber-100: #fde7c8;
+  --amber-300: #f9c270;
+  --amber-500: #f79009;
+  --amber-600: #e07b00;
+  --violet-500: #8b5cf6;
+  --red-500: #f04438;
+  --slate-900: #17212e;
+  --slate-700: #33455c;
+  --slate-500: #64748b;
+  --slate-400: #94a3b8;
+  --slate-300: #c4d0de;
+  --slate-200: #dce4ee;
+  --slate-100: #eaeff6;
+  --white: #ffffff;
+
+  /* Text */
+  --text-primary: var(--slate-900);
+  --text-secondary: var(--slate-500);
+  --text-tertiary: var(--slate-400);
+  --text-link: var(--blue-500);
+  --text-on-accent: var(--white);
+
+  /* Terminal wells — matte, darker channel ink for daylight legibility */
+  --surface-well: #e9eff6;
+  --surface-well-tutor: #e9eff6;
+  --well-border: rgba(120, 140, 165, 0.5);
+  --well-scan: rgba(23, 33, 46, 0.045);
+  --well-cy: #1877e8;
+  --well-am: #c96a00;
+  --well-vi: #7c3aed;
+  --well-rd: #d92d20;
+  --well-hi: var(--well-cy);
+  --well-dim: #5e6e80;
+  --well-mid: #374350;
+  --well-run-fg: var(--accent-primary);
+  --well-tutor-ink: var(--text-primary);
+  --btn-secondary-bg: #e9eff6;
+
+  /* Accents (app) */
+  --accent-live: #ff6b35;
+  --interactive-fill: var(--accent-primary);
+  --accent-create-bg: #ffedb0;
+  --accent-create-border: #f5d88a;
+  --accent-create-ink: #7a5600;
+
+  /* Status channels */
+  --status-info: #1877e8;
+  --status-signal: #c96a00;
+  --status-metric: #7c3aed;
+  --status-fault: #d92d20;
+
+  /* Event tints */
+  --event-default-bg: rgba(255, 255, 255, 0.58);
+  --event-default-border: rgba(255, 255, 255, 0.85);
+  --event-highlight-bg: rgba(254, 244, 230, 0.72);
+  --event-highlight-border: #f7b267;
+  --event-focus-bg: rgba(228, 242, 254, 0.5);
+  --event-focus-border: #9ccbf7;
+
+  /* Borders (app) */
+  --border-subtle: rgba(145, 158, 171, 0.18);
+  --border-default: rgba(145, 158, 171, 0.28);
+  --border-focus: var(--blue-300);
 }

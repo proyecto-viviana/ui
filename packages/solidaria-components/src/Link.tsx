@@ -6,7 +6,7 @@
  */
 
 import { type JSX, type ParentProps, createContext, createMemo, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { ElementTag } from "./ElementTag";
 import {
   createLink,
   createFocusRing,
@@ -241,8 +241,8 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
   };
 
   return (
-    <Dynamic
-      component={elementType()}
+    <ElementTag
+      tag={elementType()}
       {...domProps()}
       {...cleanLinkProps()}
       {...cleanHoverProps()}
@@ -261,6 +261,6 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
       data-disabled={ariaProps.isDisabled || undefined}
     >
       {renderProps.renderChildren()}
-    </Dynamic>
+    </ElementTag>
   );
 }

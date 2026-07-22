@@ -1,0 +1,34 @@
+/*
+ * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Do not edit by hand.
+ */
+
+import { type JSX } from "solid-js";
+import { createIcon } from "../spectrum-icon";
+
+function ArchiveIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
+  const { class: className, ...rest } = props;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      {...rest}
+      class={className}
+    >
+      <path
+        d="M16.75,3H3.25c-1.24072,0-2.25,1.00977-2.25,2.25v1c0,.77808.39764,1.46484,1,1.86902v6.63098c0,1.24023,1.00928,2.25,2.25,2.25h11.5c1.24072,0,2.25-1.00977,2.25-2.25v-6.63098c.60236-.40417,1-1.09094,1-1.86902v-1c0-1.24023-1.00928-2.25-2.25-2.25ZM2.5,5.25c0-.41309.33643-.75.75-.75h13.5c.41357,0,.75.33691.75.75v1c0,.41309-.33643.75-.75.75H3.25c-.41357,0-.75-.33691-.75-.75v-1ZM15.75,15.5H4.25c-.41357,0-.75-.33691-.75-.75v-6.25h13v6.25c0,.41309-.33643.75-.75.75Z"
+        fill="var(--iconPrimary, #222)"
+      />
+      <path
+        d="M12.25,10.5h-4.5c-.41406,0-.75.33594-.75.75s.33594.75.75.75h4.5c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75Z"
+        fill="var(--iconPrimary, #222)"
+      />
+    </svg>
+  );
+}
+
+export type ArchiveIconProps = JSX.SvgSVGAttributes<SVGSVGElement>;
+export const ArchiveIcon = createIcon(ArchiveIconSvg);
+export default ArchiveIcon;

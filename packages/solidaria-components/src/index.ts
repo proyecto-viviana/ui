@@ -35,6 +35,8 @@ export {
   dataAttr,
 } from "./utils";
 
+export { ElementTag, type ElementTagProps } from "./ElementTag";
+
 export { VisuallyHidden, type VisuallyHiddenProps } from "./VisuallyHidden";
 
 export { Button, ButtonContext, type ButtonProps, type ButtonRenderProps } from "./Button";

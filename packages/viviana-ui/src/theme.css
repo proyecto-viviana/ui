@@ -1,2 +1,5 @@
-@import "@proyecto-viviana/solid-spectrum/theme.css";
+/* Viviana UI v2 (Glasselated) design tokens: --surface-*, --blur-*, and the
+   light/dark blocks the reskinned atomic base (dist/styles.css) reads. The S2
+   style() macro bakes every other token as a literal value, so this is the only
+   variable layer the components depend on. */
 @import "./viviana-tokens.css";

@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/Switch";
+export * from "./switch";

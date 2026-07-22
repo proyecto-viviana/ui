@@ -37,6 +37,7 @@ public reach.
 15. `tech-debt.md`
 16. `tailwind-removal.md` when removing invented utility styling or converting a component's styled layer to the S2 macro
 17. `glasselated-port.md` when working the Glasselated register port onto viviana-ui or the Viviana showcase
+18. `visual-system-lane.md` for the provenance record of the landed `design/visual-system-claude-v2` visual-system lane
 17. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
 17. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
 18. `../../AGENTS.md` when handing work to coding agents
@@ -61,7 +62,8 @@ public reach.
 | `release-policy.md`         | Releasable packages, Changesets, CI gates, npm publishing.                                                                                                                                                                               |
 | `tech-debt.md`              | Known debt and temporary bridges, each with an exit.                                                                                                                                                                                     |
 | `tailwind-removal.md`       | Plan of record for retiring invented Tailwind-vocabulary utility styling repo-wide and converting library styled layers to the S2 style macro. Runs alongside the recertification march; phased, march-priority ordered.                 |
-| `glasselated-port.md`       | Plan of record for the 2026-07-22 pivot: port the external Glasselated register onto viviana-ui (solid-spectrum stays parity-locked) and build the Viviana showcase in `apps/web`. Points at the external spec repo and the `design/visual-system-claude-v2` worktree branch.                 |
+| `glasselated-port.md`       | Plan of record for the 2026-07-22 pivot: port the external Glasselated register onto viviana-ui (solid-spectrum stays parity-locked) and build the Viviana showcase in `apps/web`. Points at the frozen external spec repo.                 |
+| `visual-system-lane.md`     | Provenance record of the owner-authorized Claude visual-system lane (Viviana token retune + macro-routing unstyled surfaces + Tailwind-utility removal), landed on `main` 2026-07-22 by squash-merge of `design/visual-system-claude-v2`. Paired with the Education repo's `work-provenance.md`.                 |
 
 Git history is the archive. Retired audits, gap inventories, and session logs are
 deleted from `main` and recovered through the commit that removed them, not kept

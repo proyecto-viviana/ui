@@ -588,6 +588,134 @@ export function StyledComponent(props) {
 
 ---
 
+## Hydration-Key Parity: Read `props.children` Once, Build Conditional JSX Lazily (CRITICAL)
+
+Solid assigns every SSR node a **hydration key** from a single per-render counter
+(`sharedConfig.getNextContextId()`), advanced once for every DOM element
+(`getNextElement`), every `createComponent`, and every `createUniqueId`. Client
+hydration replays the **exact same walk** and expects the keys in the exact same
+order. If the server advances the counter a different number of times than the
+client — even by one — the client eventually asks for a key the server never
+emitted and Solid throws a **Hydration Mismatch**
+(`Unable to find DOM nodes for hydration key: <k>`). Critically, that single
+mismatch **aborts hydration for the entire route**, not just the offending
+subtree: the whole page renders but silently loses all interactivity.
+
+Two authoring patterns desync the counter. Both are easy to write and neither
+fails SSR *or* client render in isolation — only the paired hydrate run catches
+them.
+
+### Bug class 1 — reading a props-children getter more than once
+
+`props.children` is a getter. **On the server, every access re-instantiates any
+component the JSX holds** (each read re-runs `createComponent` for a nested
+`<Text>`, icon, etc.), so N reads emit N instances and advance the counter N
+times. **On the client the same getter is memoized after the first read**, so N
+reads yield 1 instance. Read children twice on the server (a common shape: one
+read to *probe* whether it's a render-prop function, a second to use the value)
+and the server emits one extra element than the client — mismatch.
+
+```tsx
+// ❌ BAD - two reads of local.children; server double-instantiates a <Text> child
+function hasRenderChildren() {
+  return typeof local.children === "function" && local.children.length > 0; // read #1
+}
+function ResolvedTabContent() {
+  const value = hasRenderChildren()
+    ? (local.children as Fn)(renderProps)   // read #2 (server re-instantiates <Text>)
+    : local.children;                        // ...or here
+  return typeof value === "string" ? <span>{value}</span> : value;
+}
+```
+
+```tsx
+// ✅ GOOD - read local.children EXACTLY ONCE, then branch on the captured value
+function ResolvedTabContent() {
+  const rawChildren = local.children; // single read → server & client emit the same count
+  const isRenderProp =
+    typeof rawChildren === "function" &&
+    (rawChildren as (...a: unknown[]) => JSX.Element).length > 0;
+  const contentValue = isRenderProp
+    ? (rawChildren as (rp: TabRenderProps) => JSX.Element)(renderProps)
+    : rawChildren;
+  const value = resolveChildAccessor(contentValue);
+  return typeof value === "string" ? <span ...>{value}</span> : value;
+}
+```
+
+This is why the solid-refresh section above insists on
+`const children = local.children;` — it is not only about context scope; a single
+read is what keeps the hydration-key count equal on both sides.
+
+### Bug class 2 — eagerly-built conditional JSX that only one branch returns
+
+A `const framed = (<div>…</div>)` is evaluated **eagerly**, the moment the line
+runs — even if the function goes on to `return collection` instead. Under
+hydration that eager evaluation still calls `getNextElement` for a wrapper the
+server (which took the other branch) never rendered → the client walks one DOM
+node ahead of the server → mismatch.
+
+```tsx
+// ❌ BAD - `framed` is built even when we return `collection`; its <div> steals a key
+const framed = (
+  <div class={wrapper()}>{label}{collection}{description}</div>
+);
+return (local.label || local.description) ? framed : collection;
+```
+
+```tsx
+// ✅ GOOD - construct the wrapper only inside the branch that returns it
+if (local.label || local.description || local.renderActionBar) {
+  return (
+    <div class={wrapper()}>
+      {local.label ? <div>{local.label}</div> : null}
+      {collection}
+      {local.description ? <div>{local.description}</div> : null}
+    </div>
+  );
+}
+return collection;
+```
+
+### Diagnosing a mismatch
+
+Instrument the allocator and diff the SSR vs client allocation order — the first
+index where the two sequences diverge names the exact call site:
+
+```ts
+import { sharedConfig } from "solid-js"; // NOTE: core, NOT "solid-js/web" (undefined there)
+
+const seq: string[] = [];
+const orig = sharedConfig.getNextContextId;
+sharedConfig.getNextContextId = function () {
+  const id = orig.call(this);
+  seq.push(id + " <- " + new Error().stack?.split("\n")[2]?.trim());
+  return id;
+};
+// run renderToString for the SSR trace, hydrate for the client trace, then diff seq.
+```
+
+The runner swallows `console.log`; `writeFileSync` the sequence to a scratch file
+and compare. A matching prefix that diverges at index K, where the server has one
+extra `_$ssrElement <- <ChildComponent>` allocation, is the double-read fingerprint.
+
+### Where This Applies
+
+Any styled component that wraps a headless collection and forwards `props.children`
+that may be a render-prop **or** hold a nested component (`<Text>`, an icon):
+
+- `viviana-ui` `Tab` / `TabPanel` (`src/tabs/index.tsx`) — `ResolvedTabContent`,
+  `TabPanel.renderedChildren`
+- `viviana-ui` `GridListItem`/`ListViewItem` and `GridList` (`src/gridlist/index.tsx`)
+  — `ResolvedItemContent` (read-once) **and** the framed `label`/`description`/
+  `renderActionBar` wrapper (lazy branch)
+- Guard with paired SSR + hydrate regressions
+  (`test/Collections.ssr.test.tsx`, `test/Collections.hydrate.test.tsx`): a
+  fixture whose child is a real `<Text>` (not a raw string) is what exposes the
+  double-instantiation; a plain-string fixture will not.
+
+---
+
 ## Overlay Positioning Pattern (IMPORTANT)
 
 Overlay components (Popover, Tooltip, Dialog) need careful positioning to work correctly.

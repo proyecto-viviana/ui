@@ -6,7 +6,7 @@
  */
 
 import { type JSX, type ParentProps, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { ElementTag } from "./ElementTag";
 import { createVisuallyHidden, mergeProps } from "@proyecto-viviana/solidaria";
 
 export interface VisuallyHiddenProps extends ParentProps, JSX.HTMLAttributes<HTMLElement> {
@@ -36,19 +36,15 @@ export function VisuallyHidden(props: VisuallyHiddenProps): JSX.Element {
       visuallyHiddenProps() as unknown as Record<string, unknown>,
     );
 
-  // elementType is read once (structural, not reactive). The default `span` is
-  // rendered as a static element rather than via `<Dynamic>`: a reactive
-  // `<Dynamic>` desyncs Solid's hydration markers, leaving the registry dirty so
-  // a later sibling re-render throws "template is not a function" in prod (and a
-  // hard hydration crash under solid-refresh in dev). `<Dynamic>` is reserved for
-  // an explicit custom elementType.
+  // elementType is read once (structural, not reactive). `ElementTag` renders it
+  // as a statically compiled element; `<Dynamic component={string}>` desyncs
+  // Solid's hydration markers, leaving the registry dirty so a later sibling
+  // re-render throws "template is not a function" in prod (and a hard hydration
+  // crash under solid-refresh in dev). See ElementTag.tsx for the mechanism.
   const tag = local.elementType ?? "span";
-  if (tag === "span") {
-    return <span {...mergedProps()}>{local.children}</span>;
-  }
   return (
-    <Dynamic component={tag} {...mergedProps()}>
+    <ElementTag tag={tag} {...mergedProps()}>
       {local.children}
-    </Dynamic>
+    </ElementTag>
   );
 }

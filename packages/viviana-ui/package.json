@@ -1,7 +1,7 @@
 {
   "name": "@proyecto-viviana/ui",
-  "version": "0.4.1",
-  "description": "Viviana design system. Starts by re-exporting @proyecto-viviana/solid-spectrum (same components + tokens + style macro); diverges (viviana tokens, then components) over time.",
+  "version": "0.6.2",
+  "description": "Viviana design system. A reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is duplicated and remapped to the Viviana v2 (Glasselated) register, over the shared solidaria headless stack.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -32,6 +32,84 @@
       "import": "./dist/ActionButton.js",
       "default": "./dist/ActionButton.js"
     },
+    "./Button": {
+      "types": "./dist/Button.d.ts",
+      "solid": "./dist/Button.jsx",
+      "import": "./dist/Button.js",
+      "default": "./dist/Button.js"
+    },
+    "./CenterBaseline": {
+      "types": "./dist/CenterBaseline.d.ts",
+      "solid": "./dist/CenterBaseline.jsx",
+      "import": "./dist/CenterBaseline.js",
+      "default": "./dist/CenterBaseline.js"
+    },
+    "./ContrastIcon": {
+      "types": "./dist/ContrastIcon.d.ts",
+      "solid": "./dist/ContrastIcon.jsx",
+      "import": "./dist/ContrastIcon.js",
+      "default": "./dist/ContrastIcon.js"
+    },
+    "./FileTrigger": {
+      "types": "./dist/FileTrigger.d.ts",
+      "solid": "./dist/FileTrigger.jsx",
+      "import": "./dist/FileTrigger.js",
+      "default": "./dist/FileTrigger.js"
+    },
+    "./LightenIcon": {
+      "types": "./dist/LightenIcon.d.ts",
+      "solid": "./dist/LightenIcon.jsx",
+      "import": "./dist/LightenIcon.js",
+      "default": "./dist/LightenIcon.js"
+    },
+    "./LinkButton": {
+      "types": "./dist/LinkButton.d.ts",
+      "solid": "./dist/LinkButton.jsx",
+      "import": "./dist/LinkButton.js",
+      "default": "./dist/LinkButton.js"
+    },
+    "./Picker": {
+      "types": "./dist/Picker.d.ts",
+      "solid": "./dist/Picker.jsx",
+      "import": "./dist/Picker.js",
+      "default": "./dist/Picker.js"
+    },
+    "./Provider": {
+      "types": "./dist/Provider.d.ts",
+      "solid": "./dist/Provider.jsx",
+      "import": "./dist/Provider.js",
+      "default": "./dist/Provider.js"
+    },
+    "./SearchField": {
+      "types": "./dist/SearchField.d.ts",
+      "solid": "./dist/SearchField.jsx",
+      "import": "./dist/SearchField.js",
+      "default": "./dist/SearchField.js"
+    },
+    "./SegmentedControl": {
+      "types": "./dist/SegmentedControl.d.ts",
+      "solid": "./dist/SegmentedControl.jsx",
+      "import": "./dist/SegmentedControl.js",
+      "default": "./dist/SegmentedControl.js"
+    },
+    "./Switch": {
+      "types": "./dist/Switch.d.ts",
+      "solid": "./dist/Switch.jsx",
+      "import": "./dist/Switch.js",
+      "default": "./dist/Switch.js"
+    },
+    "./TextArea": {
+      "types": "./dist/TextArea.d.ts",
+      "solid": "./dist/TextArea.jsx",
+      "import": "./dist/TextArea.js",
+      "default": "./dist/TextArea.js"
+    },
+    "./TextField": {
+      "types": "./dist/TextField.d.ts",
+      "solid": "./dist/TextField.jsx",
+      "import": "./dist/TextField.js",
+      "default": "./dist/TextField.js"
+    },
     "./ActionMenu": {
       "types": "./dist/ActionMenu.d.ts",
       "solid": "./dist/ActionMenu.jsx",
@@ -44,35 +122,11 @@
       "import": "./dist/Breadcrumbs.js",
       "default": "./dist/Breadcrumbs.js"
     },
-    "./Button": {
-      "types": "./dist/Button.d.ts",
-      "solid": "./dist/Button.jsx",
-      "import": "./dist/Button.js",
-      "default": "./dist/Button.js"
-    },
     "./Calendar": {
       "types": "./dist/Calendar.d.ts",
       "solid": "./dist/Calendar.jsx",
       "import": "./dist/Calendar.js",
       "default": "./dist/Calendar.js"
-    },
-    "./Card": {
-      "types": "./dist/Card.d.ts",
-      "solid": "./dist/Card.jsx",
-      "import": "./dist/Card.js",
-      "default": "./dist/Card.js"
-    },
-    "./CardView": {
-      "types": "./dist/CardView.d.ts",
-      "solid": "./dist/CardView.jsx",
-      "import": "./dist/CardView.js",
-      "default": "./dist/CardView.js"
-    },
-    "./CenterBaseline": {
-      "types": "./dist/CenterBaseline.d.ts",
-      "solid": "./dist/CenterBaseline.jsx",
-      "import": "./dist/CenterBaseline.js",
-      "default": "./dist/CenterBaseline.js"
     },
     "./ColorArea": {
       "types": "./dist/ColorArea.d.ts",
@@ -110,41 +164,23 @@
       "import": "./dist/ColorWheel.js",
       "default": "./dist/ColorWheel.js"
     },
-    "./ContrastIcon": {
-      "types": "./dist/ContrastIcon.d.ts",
-      "solid": "./dist/ContrastIcon.jsx",
-      "import": "./dist/ContrastIcon.js",
-      "default": "./dist/ContrastIcon.js"
-    },
     "./Disclosure": {
-      "types": "./dist/Disclosure.d.ts",
-      "solid": "./dist/Disclosure.jsx",
-      "import": "./dist/Disclosure.js",
-      "default": "./dist/Disclosure.js"
+      "types": "./dist/disclosure-export.d.ts",
+      "solid": "./dist/disclosure-export.jsx",
+      "import": "./dist/disclosure-export.js",
+      "default": "./dist/disclosure-export.js"
     },
-    "./FileTrigger": {
-      "types": "./dist/FileTrigger.d.ts",
-      "solid": "./dist/FileTrigger.jsx",
-      "import": "./dist/FileTrigger.js",
-      "default": "./dist/FileTrigger.js"
+    "./Card": {
+      "types": "./dist/Card.d.ts",
+      "solid": "./dist/Card.jsx",
+      "import": "./dist/Card.js",
+      "default": "./dist/Card.js"
     },
-    "./GitHubIcon": {
-      "types": "./dist/GitHubIcon.d.ts",
-      "solid": "./dist/GitHubIcon.jsx",
-      "import": "./dist/GitHubIcon.js",
-      "default": "./dist/GitHubIcon.js"
-    },
-    "./LightenIcon": {
-      "types": "./dist/LightenIcon.d.ts",
-      "solid": "./dist/LightenIcon.jsx",
-      "import": "./dist/LightenIcon.js",
-      "default": "./dist/LightenIcon.js"
-    },
-    "./LinkButton": {
-      "types": "./dist/LinkButton.d.ts",
-      "solid": "./dist/LinkButton.jsx",
-      "import": "./dist/LinkButton.js",
-      "default": "./dist/LinkButton.js"
+    "./CardView": {
+      "types": "./dist/CardView.d.ts",
+      "solid": "./dist/CardView.jsx",
+      "import": "./dist/CardView.js",
+      "default": "./dist/CardView.js"
     },
     "./ListView": {
       "types": "./dist/ListView.d.ts",
@@ -152,23 +188,11 @@
       "import": "./dist/ListView.js",
       "default": "./dist/ListView.js"
     },
-    "./Menu": {
-      "types": "./dist/Menu.d.ts",
-      "solid": "./dist/Menu.jsx",
-      "import": "./dist/Menu.js",
-      "default": "./dist/Menu.js"
-    },
-    "./Picker": {
-      "types": "./dist/Picker.d.ts",
-      "solid": "./dist/Picker.jsx",
-      "import": "./dist/Picker.js",
-      "default": "./dist/Picker.js"
-    },
-    "./Provider": {
-      "types": "./dist/Provider.d.ts",
-      "solid": "./dist/Provider.jsx",
-      "import": "./dist/Provider.js",
-      "default": "./dist/Provider.js"
+    "./TreeView": {
+      "types": "./dist/TreeView.d.ts",
+      "solid": "./dist/TreeView.jsx",
+      "import": "./dist/TreeView.js",
+      "default": "./dist/TreeView.js"
     },
     "./RangeCalendar": {
       "types": "./dist/RangeCalendar.d.ts",
@@ -176,23 +200,11 @@
       "import": "./dist/RangeCalendar.js",
       "default": "./dist/RangeCalendar.js"
     },
-    "./SearchField": {
-      "types": "./dist/SearchField.d.ts",
-      "solid": "./dist/SearchField.jsx",
-      "import": "./dist/SearchField.js",
-      "default": "./dist/SearchField.js"
-    },
-    "./SegmentedControl": {
-      "types": "./dist/SegmentedControl.d.ts",
-      "solid": "./dist/SegmentedControl.jsx",
-      "import": "./dist/SegmentedControl.js",
-      "default": "./dist/SegmentedControl.js"
-    },
-    "./Switch": {
-      "types": "./dist/Switch.d.ts",
-      "solid": "./dist/Switch.jsx",
-      "import": "./dist/Switch.js",
-      "default": "./dist/Switch.js"
+    "./Menu": {
+      "types": "./dist/Menu.d.ts",
+      "solid": "./dist/Menu.jsx",
+      "import": "./dist/Menu.js",
+      "default": "./dist/Menu.js"
     },
     "./Tabs": {
       "types": "./dist/Tabs.d.ts",
@@ -200,37 +212,41 @@
       "import": "./dist/Tabs.js",
       "default": "./dist/Tabs.js"
     },
-    "./TextArea": {
-      "types": "./dist/TextArea.d.ts",
-      "solid": "./dist/TextArea.jsx",
-      "import": "./dist/TextArea.js",
-      "default": "./dist/TextArea.js"
+    "./GitHubIcon": {
+      "types": "./dist/GitHubIcon.d.ts",
+      "solid": "./dist/GitHubIcon.jsx",
+      "import": "./dist/GitHubIcon.js",
+      "default": "./dist/GitHubIcon.js"
     },
-    "./TextField": {
-      "types": "./dist/TextField.d.ts",
-      "solid": "./dist/TextField.jsx",
-      "import": "./dist/TextField.js",
-      "default": "./dist/TextField.js"
+    "./theme.css": {
+      "import": "./dist/theme.css",
+      "default": "./src/theme.css"
     },
-    "./TreeView": {
-      "types": "./dist/TreeView.d.ts",
-      "solid": "./dist/TreeView.jsx",
-      "import": "./dist/TreeView.js",
-      "default": "./dist/TreeView.js"
+    "./font-faces.css": {
+      "import": "./dist/font-faces.css",
+      "default": "./src/font-faces.css"
     },
-    "./theme.css": "./dist/theme.css",
-    "./font-faces.css": "./dist/font-faces.css",
-    "./styles.css": "./dist/styles.css",
-    "./components.css": "./dist/components.css",
+    "./styles.css": {
+      "import": "./dist/styles.css",
+      "default": "./src/styles.css"
+    },
+    "./components.css": {
+      "import": "./dist/components.css",
+      "default": "./src/components.css"
+    },
+    "./viviana-tokens.css": {
+      "import": "./dist/viviana-tokens.css",
+      "default": "./src/viviana-tokens.css"
+    },
     "./style": {
-      "types": "./dist/style.d.ts",
-      "solid": "./dist/style.jsx",
-      "import": "./dist/style.js",
-      "default": "./dist/style.js"
+      "types": "./dist/style/index.d.ts",
+      "solid": "./dist/style/index.js",
+      "import": "./dist/style/index.js",
+      "default": "./dist/style/index.js"
     },
     "./style/runtime": {
       "types": "./dist/style/runtime.d.ts",
-      "solid": "./dist/style/runtime.jsx",
+      "solid": "./dist/style/runtime.js",
       "import": "./dist/style/runtime.js",
       "default": "./dist/style/runtime.js"
     },
@@ -245,15 +261,20 @@
     "access": "public"
   },
   "scripts": {
-    "build": "NODE_ENV=production vp pack && node scripts/inline-macro-css.mjs && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json"
+    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "dev": "vp pack --watch"
   },
   "dependencies": {
-    "@proyecto-viviana/solid-spectrum": "workspace:*",
-    "@proyecto-viviana/solidaria-components": "workspace:*"
+    "@adobe/spectrum-tokens": "14.0.0",
+    "@parcel/macros": "^2.16.4",
+    "@proyecto-viviana/solid-stately": "workspace:*",
+    "@proyecto-viviana/solidaria": "workspace:*",
+    "@proyecto-viviana/solidaria-components": "workspace:*",
+    "csstype": "^3.2.3"
   },
   "devDependencies": {
     "@proyecto-viviana/solid-spectrum-test-utils": "workspace:*",
-    "solid-js": "^1.9.0",
+    "solid-js": "^1.9.11",
     "unplugin-parcel-macros": "0.2.0"
   },
   "peerDependencies": {

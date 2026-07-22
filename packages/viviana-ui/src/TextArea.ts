@@ -1,1 +1,2 @@
-export * from "@proyecto-viviana/solid-spectrum/TextArea";
+export { TextArea } from "./textfield";
+export type { TextAreaProps, TextAreaSize, TextAreaVariant } from "./textfield";

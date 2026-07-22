@@ -1,0 +1,42 @@
+/*
+ * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Do not edit by hand.
+ */
+
+import { type JSX } from "solid-js";
+import { createIcon } from "../spectrum-icon";
+
+function SortUpIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
+  const { class: className, ...rest } = props;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      {...rest}
+      class={className}
+    >
+      <path
+        d="m18.28027,5.71973l-2.5-2.5c-.06909-.06909-.15198-.12378-.24365-.16187-.18335-.07593-.38989-.07593-.57324,0-.09155.03809-.17456.09277-.24365.16187l-2.5,2.5c-.29297.29297-.29297.76758,0,1.06055s.76758.29297,1.06055,0l1.21973-1.21973v10.68945c0,.41406.33594.75.75.75s.75-.33594.75-.75V5.56055l1.21973,1.21973c.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973c.29297-.29297.29297-.76758,0-1.06055Z"
+        fill="var(--iconPrimary, #222)"
+      />
+      <path
+        d="m7.25,6.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h4.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
+        fill="var(--iconPrimary, #222)"
+      />
+      <path
+        d="m9.25,10.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h6.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
+        fill="var(--iconPrimary, #222)"
+      />
+      <path
+        d="m11.25,14.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h8.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
+        fill="var(--iconPrimary, #222)"
+      />
+    </svg>
+  );
+}
+
+export type SortUpIconProps = JSX.SvgSVGAttributes<SVGSVGElement>;
+export const SortUpIcon = createIcon(SortUpIconSvg);
+export default SortUpIcon;

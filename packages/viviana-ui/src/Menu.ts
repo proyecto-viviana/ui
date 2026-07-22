@@ -1,1 +1,31 @@
-export * from "@proyecto-viviana/solid-spectrum/Menu";
+export {
+  Collection,
+  Content,
+  ContextualHelpPopover,
+  Header,
+  Heading,
+  Keyboard,
+  Menu,
+  MenuContext,
+  MenuItem,
+  MenuSection,
+  MenuTrigger,
+  SubmenuTrigger,
+  Text,
+  UnavailableMenuItemTrigger,
+} from "./menu/index";
+export type {
+  ContextualHelpPopoverProps,
+  Key,
+  MenuAlign,
+  MenuDirection,
+  MenuItemProps,
+  MenuProps,
+  MenuSectionProps,
+  MenuSize,
+  MenuTriggerProps,
+  Selection,
+  SelectionMode,
+  SubmenuTriggerProps,
+  UnavailableMenuItemTriggerProps,
+} from "./menu/index";

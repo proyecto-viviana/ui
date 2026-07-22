@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/Picker";
+export * from "./picker";

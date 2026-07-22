@@ -578,6 +578,30 @@ describe("ComboBox", () => {
         expect(onInputChange).toHaveBeenCalled();
       });
     });
+
+    it("can be edited character-by-character while an item is already selected", async () => {
+      // Regression: with a defaultSelectedKey set, the selection→input sync
+      // effect used to re-run on every keystroke and snap the field back to the
+      // selected item's text, so the input was impossible to edit or delete.
+      //
+      // A *partial* edit is the true reproduction: fully clearing the field also
+      // clears the selection (which disarms the effect), but deleting a single
+      // character leaves the selection active — exactly when the clobber struck.
+      render(() => <TestComboBox comboBoxProps={{ defaultSelectedKey: "2" }} />);
+
+      const input = screen.getByRole("combobox") as HTMLInputElement;
+      expect(input).toHaveValue("Banana");
+
+      // Backspace one char with the selection still active — must not spring back.
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      await user.keyboard("{Backspace}{Backspace}{Backspace}");
+      await waitFor(() => expect(input).toHaveValue("Ban"));
+
+      // …and further typing keeps landing.
+      await user.type(input, "jo");
+      await waitFor(() => expect(input).toHaveValue("Banjo"));
+    });
   });
 
   // ============================================

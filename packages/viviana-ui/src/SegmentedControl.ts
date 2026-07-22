@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/SegmentedControl";
+export * from "./segmentedcontrol";

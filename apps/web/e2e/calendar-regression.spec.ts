@@ -236,13 +236,19 @@ test.describe("Playground Calendar Regression", () => {
     const datePickerSection = page.locator(DATE_PICKER_SECTION);
     await expect(datePickerSection).toBeVisible();
 
-    const group = datePickerSection.getByRole("group", { name: "Event Date" }).first();
-    await expect(group).toBeVisible();
-    await expect(group.locator('[role="spinbutton"]')).toHaveCount(3);
+    // S2's FieldGroup renders role="presentation" (matching Adobe Spectrum 2), so the
+    // "Event Date" grouping rides on each segment's composed accessible name (e.g.
+    // "month, Event Date") rather than on a wrapping group role.
+    const segments = datePickerSection.getByRole("spinbutton", { name: /Event Date/ });
+    await expect(segments).toHaveCount(3);
+    await expect(segments.first()).toBeVisible();
 
-    const trigger = datePickerSection.getByRole("button", { name: /open calendar/i }).first();
+    const trigger = datePickerSection.getByRole("button", { name: "Calendar Event Date" }).first();
     await trigger.click();
-    await expect(page.getByRole("dialog", { name: "Calendar" }).first()).toBeVisible();
+
+    const dialog = page.getByRole("dialog").first();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("grid").first()).toBeVisible();
 
     await checkNoRuntimeErrors(errors);
   });
@@ -259,17 +265,31 @@ test.describe("Playground Calendar Regression", () => {
     const dateRangePickerSection = page.locator(DATE_RANGE_PICKER_SECTION);
     await expect(dateRangePickerSection).toBeVisible();
 
-    const group = dateRangePickerSection.getByRole("group", { name: "Trip Dates" }).first();
-    await expect(group).toBeVisible();
+    // S2's FieldGroup renders role="presentation" (matching Adobe Spectrum 2), so the
+    // "Trip Dates" grouping and Start/End labeling ride on each segment's composed
+    // accessible name (e.g. "month, Start Date, Trip Dates") rather than a group role.
+    const startSegments = dateRangePickerSection.getByRole("spinbutton", {
+      name: /Start Date, Trip Dates/,
+    });
+    const endSegments = dateRangePickerSection.getByRole("spinbutton", {
+      name: /End Date, Trip Dates/,
+    });
+    await expect(startSegments).toHaveCount(3);
+    await expect(endSegments).toHaveCount(3);
+    await expect(startSegments.first()).toBeVisible();
+    await expect(endSegments.first()).toBeVisible();
 
-    const startField = group.locator('[aria-label="Start date"]').first();
-    const endField = group.locator('[aria-label="End date"]').first();
-    await expect(startField).toBeVisible();
-    await expect(endField).toBeVisible();
-
-    await startField.focus();
+    // Keyboard-open: focus the trigger and press Enter (the calendar opens from the
+    // trigger button, not from a segment).
+    const trigger = dateRangePickerSection
+      .getByRole("button", { name: "Calendar Trip Dates" })
+      .first();
+    await trigger.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("dialog", { name: "Range calendar" }).first()).toBeVisible();
+
+    const dialog = page.getByRole("dialog").first();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("grid").first()).toBeVisible();
 
     await checkNoRuntimeErrors(errors);
   });

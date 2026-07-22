@@ -1,2 +1,6 @@
+/* The full Viviana UI bundle: font faces, the Glasselated token layer, then the
+   macro-emitted atomic component rules. Consumers can import this single file
+   instead of wiring the three separately. */
 @import "./font-faces.css";
+@import "./theme.css";
 @import "./styles.css";

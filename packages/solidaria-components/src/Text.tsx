@@ -1,5 +1,5 @@
 import { type JSX, createContext, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { ElementTag } from "./ElementTag";
 import { type ContextValue, type SlotProps, useContextProps, filterDOMProps } from "./utils";
 
 export interface TextProps extends JSX.HTMLAttributes<HTMLElement>, SlotProps {
@@ -28,12 +28,13 @@ export function Text(props: TextProps): JSX.Element {
   // are rendered explicitly; everything else (notably the slotted `id`) is spread.
   const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "slot", "ref"]);
   return (
-    <Dynamic
-      component={local.elementType ?? "span"}
+    <ElementTag
       class={local.class ?? "solidaria-Text"}
       {...filterDOMProps(domProps, { global: true })}
+      // last, so a stray `tag` in the spread can never redirect the element
+      tag={local.elementType ?? "span"}
     >
       {local.children}
-    </Dynamic>
+    </ElementTag>
   );
 }

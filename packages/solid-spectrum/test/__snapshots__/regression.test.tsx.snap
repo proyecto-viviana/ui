@@ -32,7 +32,7 @@ exports[`Regression: GridList > renders grid with rows/gridcells and snapshot 1`
 
 exports[`Regression: Label > renders label element with text, and snapshot 1`] = `"<label class="  uk151 ucJ9TBTb151 ud3Euai151 uea151 ugb151 uhd151 uje151 u2NhKxcl151 uic151 -_6BNtrc-c151 vx151 xb151 _xa151 _Fd151 _FnuYUweb151 pv151 ri151 -macro-dynamic-k2qk1w">Field label</label>"`;
 
-exports[`Regression: Landmark > renders correct landmark role, and snapshot 1`] = `"<nav role="navigation" aria-label="Main nav" class="relative"><a href="/">Home</a></nav>"`;
+exports[`Regression: Landmark > renders correct landmark role, and snapshot 1`] = `"<nav role="navigation" aria-label="Main nav" class="  _Pc151 _ja151 _ka151 ha151 ma151 la151 iaNwEBc151 -macro-dynamic-1nc0b6c"><a href="/">Home</a></nav>"`;
 
 exports[`Regression: Link > renders with role=link, href, text, and snapshot 1`] = `"<a href="https://example.com" tabindex="0" data-solidaria-pressable="" class="  _Le151 Oh151 Olc151 _Mc151 _Kd151 oa151 na151 ka151 ja151 pu151 plf151 Yd151 Xb151 _2b151 _Xb151 __Va151 __ca151 -macro-dynamic-14vxw9b">Visit Example</a>"`;
 

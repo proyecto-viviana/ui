@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/GitHubIcon";
+export * from "./icon/icons/GitHubIcon";

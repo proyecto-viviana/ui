@@ -1,0 +1,34 @@
+/*
+ * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Do not edit by hand.
+ */
+
+import { type JSX } from "solid-js";
+import { createIcon } from "../spectrum-icon";
+
+function CloseCircleIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
+  const { class: className, ...rest } = props;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      {...rest}
+      class={className}
+    >
+      <path
+        d="M11.06055,10l2.21973-2.21973c.29297-.29297.29297-.76758,0-1.06055s-.76758-.29297-1.06055,0l-2.21973,2.21973-2.21973-2.21973c-.29297-.29297-.76758-.29297-1.06055,0s-.29297.76758,0,1.06055l2.21973,2.21973-2.21973,2.21973c-.29297.29297-.29297.76758,0,1.06055.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973l2.21973-2.21973,2.21973,2.21973c.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973c.29297-.29297.29297-.76758,0-1.06055l-2.21973-2.21973Z"
+        fill="var(--iconPrimary, #222)"
+      />
+      <path
+        d="M10,18.75c-4.8252,0-8.75-3.9248-8.75-8.75S5.1748,1.25,10,1.25s8.75,3.9248,8.75,8.75-3.9248,8.75-8.75,8.75ZM10,2.75c-3.99805,0-7.25,3.25195-7.25,7.25s3.25195,7.25,7.25,7.25,7.25-3.25195,7.25-7.25-3.25195-7.25-7.25-7.25Z"
+        fill="var(--iconPrimary, #222)"
+      />
+    </svg>
+  );
+}
+
+export type CloseCircleIconProps = JSX.SvgSVGAttributes<SVGSVGElement>;
+export const CloseCircleIcon = createIcon(CloseCircleIconSvg);
+export default CloseCircleIcon;

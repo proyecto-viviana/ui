@@ -17,7 +17,7 @@ import {
   For,
   Show,
 } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { ElementTag } from "./ElementTag";
 import {
   createBreadcrumbs,
   createBreadcrumbItem,
@@ -219,9 +219,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
       >
         <Show
           when={hasCollectionItems()}
-          fallback={
-            <StaticBreadcrumbItems>{local.children as JSX.Element}</StaticBreadcrumbItems>
-          }
+          fallback={<StaticBreadcrumbItems>{local.children as JSX.Element}</StaticBreadcrumbItems>}
         >
           <For each={items()}>
             {(item, index) => {
@@ -415,8 +413,8 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
   };
 
   return (
-    <Dynamic
-      component={elementType()}
+    <ElementTag
+      tag={elementType()}
       {...mergedItemProps()}
       ref={(element: HTMLElement) => assignRef(local.ref, element)}
       aria-current={isCurrent() ? (ariaProps["aria-current"] ?? "page") : undefined}
@@ -431,7 +429,7 @@ export function BreadcrumbItem(props: BreadcrumbItemProps): JSX.Element {
       data-hovered={isHovered() || undefined}
     >
       {renderProps.renderChildren()}
-    </Dynamic>
+    </ElementTag>
   );
 }
 

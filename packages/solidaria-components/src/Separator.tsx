@@ -6,7 +6,7 @@
  */
 
 import { type JSX, createContext, createMemo, splitProps } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { ElementTag } from "./ElementTag";
 import {
   createSeparator,
   type AriaSeparatorProps,
@@ -115,8 +115,8 @@ export function Separator(props: SeparatorProps): JSX.Element {
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
 
   return (
-    <Dynamic
-      component={elementType()}
+    <ElementTag
+      tag={elementType()}
       {...domProps()}
       {...separatorAria.separatorProps}
       ref={(el: HTMLElement) => assignRef(local.ref, el)}

@@ -1,1 +1,2 @@
-export * from "@proyecto-viviana/solid-spectrum/ActionButton";
+export { ActionButton } from "./button/ActionButton";
+export type { ActionButtonProps, ActionButtonSize } from "./button/ActionButton";

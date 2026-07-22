@@ -1,2 +1,2 @@
-export * from "@proyecto-viviana/solid-spectrum/LightenIcon";
-export { default } from "@proyecto-viviana/solid-spectrum/LightenIcon";
+export { LightenIcon, default } from "./icon/s2wf-icons/LightenIcon";
+export type { LightenIconProps } from "./icon/s2wf-icons/LightenIcon";

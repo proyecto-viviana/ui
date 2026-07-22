@@ -1,0 +1,2118 @@
+import {
+  Show,
+  createContext,
+  createEffect,
+  createMemo,
+  createSignal,
+  getOwner,
+  mergeProps,
+  runWithOwner,
+  splitProps,
+  useContext,
+  type JSX,
+} from "solid-js";
+import {
+  Button as HeadlessButton,
+  ColumnResizer as HeadlessColumnResizer,
+  ResizableTableContainer as HeadlessResizableTableContainer,
+  Table as HeadlessTable,
+  TableBody as HeadlessTableBody,
+  TableCell as HeadlessTableCell,
+  TableColumn as HeadlessTableColumn,
+  TableFooter as HeadlessTableFooter,
+  TableHeader as HeadlessTableHeader,
+  TableRow as HeadlessTableRow,
+  TableSelectAllCheckbox as HeadlessTableSelectAllCheckbox,
+  TableColumnResizeStateContext as HeadlessTableColumnResizeStateContext,
+  TableSelectionCheckbox as HeadlessTableSelectionCheckbox,
+  TableStateContext as HeadlessTableStateContext,
+  VisuallyHidden as HeadlessVisuallyHidden,
+  Form as HeadlessForm,
+  Popover as HeadlessPopover,
+  OverlayTriggerStateContext,
+  type ColumnResizerProps as HeadlessColumnResizerProps,
+  type ColumnResizerRenderProps,
+  type ResizableTableContainerProps as HeadlessResizableTableContainerProps,
+  type TableBodyProps as HeadlessTableBodyProps,
+  type TableCellProps as HeadlessTableCellProps,
+  type TableCellRenderProps,
+  type TableColumnProps as HeadlessTableColumnProps,
+  type TableColumnRenderProps,
+  type TableFooterProps as HeadlessTableFooterProps,
+  type TableFooterRenderProps,
+  type TableHeaderProps as HeadlessTableHeaderProps,
+  type TableProps as HeadlessTableProps,
+  type TableRenderProps,
+  type TableRowProps as HeadlessTableRowProps,
+  type TableRowRenderProps,
+} from "@proyecto-viviana/solidaria-components";
+import type {
+  ColumnDefinition,
+  Key,
+  LoadingState,
+  SortDescriptor,
+} from "@proyecto-viviana/solid-stately";
+import Arrow from "../icon/ui-icons/Arrow";
+import Checkmark from "../icon/ui-icons/Checkmark";
+import Chevron from "../icon/ui-icons/Chevron";
+import Dash from "../icon/ui-icons/Dash";
+import { useProviderProps } from "../provider";
+import type { StyleString } from "../style";
+import {
+  baseColor,
+  colorMix,
+  focusRing,
+  setColorScheme,
+  style,
+} from "../style" with { type: "macro" };
+import { mergeStyles } from "../style/runtime";
+import type { UnsafeClassName } from "../s2-internal/style-utils";
+import {
+  controlFont,
+  getAllowedOverrides,
+} from "../s2-internal/style-utils" with { type: "macro" };
+import { createMediaQuery } from "../utils/createMediaQuery";
+import { createStringFormatter, getOwnerDocument } from "@proyecto-viviana/solidaria";
+import {
+  ActionButton,
+  ActionButtonContext,
+  Button,
+  ButtonContext,
+  type ActionButtonProps,
+  type ActionButtonSize,
+} from "../button";
+import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { ButtonGroup } from "../buttongroup";
+import { CustomDialog, DialogContainer } from "../dialog";
+import Cross from "../icon/ui-icons/Cross";
+import { s2IntlStrings } from "../intl";
+
+export type TableSize = "sm" | "md" | "lg";
+export type TableVariant = "default" | "striped" | "bordered";
+export type TableDensity = "compact" | "regular" | "spacious";
+export type TableOverflowMode = "truncate" | "wrap";
+export type TableSelectionStyle = "checkbox" | "highlight";
+export type TableAlign = "start" | "center" | "end" | "left" | "right";
+
+interface TableContextValue {
+  density: TableDensity;
+  isQuiet: boolean;
+  overflowMode: TableOverflowMode;
+  showSelectionCheckboxes: boolean;
+  selectionStyle: TableSelectionStyle;
+  loadingState?: LoadingState;
+  onLoadMore?: () => void | Promise<void>;
+}
+
+const InternalTableContext = createContext<TableContextValue>({
+  density: "regular",
+  isQuiet: false,
+  overflowMode: "truncate",
+  showSelectionCheckboxes: false,
+  selectionStyle: "checkbox",
+});
+
+// Mirrors React S2's public `TableContext`: slotted props injected by an ancestor
+// provider. Distinct from `InternalTableContext` above (which shares row/density
+// state between the Table sub-components). No-op by default.
+export const TableContext = createContext<SpectrumContextValue<TableProps<any>>>(null);
+
+export interface TableProps<T extends object> extends Omit<
+  HeadlessTableProps<T>,
+  | "class"
+  | "style"
+  | "children"
+  | "selectionBehavior"
+  | "onSelectionChange"
+  | "showSelectionCheckboxes"
+> {
+  /** Children components (TableHeader, TableBody). */
+  children?: JSX.Element | (() => JSX.Element);
+  /** Density of rows and headers. */
+  density?: TableDensity;
+  /** Whether the TableView should draw without the default container chrome. */
+  isQuiet?: boolean;
+  /** Whether labels and cell content truncate or wrap. */
+  overflowMode?: TableOverflowMode;
+  /** Provides an action bar when rows are selected. */
+  renderActionBar?: (selectedKeys: "all" | Set<Key>) => JSX.Element;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+  /** Backward-compatible class alias. Prefer UNSAFE_className for S2 parity. */
+  class?: string;
+  /** Backward-compatible inline style alias. Prefer styles or UNSAFE_style. */
+  style?: JSX.CSSProperties;
+  /** Title for the table. Prefer aria-label/aria-labelledby for new code. */
+  title?: JSX.Element;
+  /** Description for the table. */
+  description?: JSX.Element;
+  /** Legacy size alias retained for compatibility. */
+  size?: TableSize;
+  /** Legacy variant alias retained for compatibility. */
+  variant?: TableVariant;
+  /** Overrides the default S2 selection checkbox behavior. */
+  showSelectionCheckboxes?: boolean;
+  /**
+   * How selection is displayed: `checkbox` shows selection checkboxes (toggle
+   * behavior), `highlight` selects whole rows with no checkboxes (replace
+   * behavior).
+   * @default 'checkbox'
+   */
+  selectionStyle?: TableSelectionStyle;
+  /** S2 row action alias. */
+  onAction?: (key: Key) => void;
+  /** S2 asynchronous loading state. */
+  loadingState?: LoadingState;
+  /** S2 asynchronous load-more callback. */
+  onLoadMore?: () => void | Promise<void>;
+  /** Called when a column resize starts. */
+  onResizeStart?: (widths: Map<Key, number>) => void;
+  /** Called during column resize. */
+  onResize?: (widths: Map<Key, number>) => void;
+  /** Called when a column resize ends. */
+  onResizeEnd?: (widths: Map<Key, number>) => void;
+  /** Selection behavior forwarded to the headless table. S2 defaults to toggle. */
+  selectionBehavior?: HeadlessTableProps<T>["selectionBehavior"];
+  /** Selection callback mirrored for the optional action bar. */
+  onSelectionChange?: HeadlessTableProps<T>["onSelectionChange"];
+}
+
+export interface TableHeaderProps extends Omit<HeadlessTableHeaderProps, "class" | "style"> {
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+}
+
+export interface TableColumnProps extends Omit<HeadlessTableColumnProps, "class" | "style"> {
+  /** Text alignment for the column. */
+  align?: TableAlign;
+  /** Whether to draw an end divider. */
+  showDivider?: boolean;
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+}
+
+export interface TableBodyProps<T> extends Omit<HeadlessTableBodyProps<T>, "class" | "style"> {
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+}
+
+export interface TableFooterProps<T> extends Omit<HeadlessTableFooterProps<T>, "class" | "style"> {
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+}
+
+export interface TableRowProps<T> extends Omit<HeadlessTableRowProps<T>, "class" | "style"> {
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+}
+
+export interface TableCellProps extends Omit<HeadlessTableCellProps, "class" | "style"> {
+  /** Text alignment for the cell. */
+  align?: TableAlign;
+  /** Whether to draw an end divider. */
+  showDivider?: boolean;
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+}
+
+const tableWrapper = style(
+  {
+    minHeight: 0,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    isolation: "isolate",
+    position: "relative",
+    overflow: "clip",
+  },
+  getAllowedOverrides({ height: true }),
+);
+
+const tableShell = style<{ isQuiet?: boolean }>({
+  minHeight: 0,
+  minWidth: 0,
+  width: "full",
+  flexGrow: 1,
+  boxSizing: "border-box",
+  overflow: "auto",
+  backgroundColor: {
+    default: "gray-25",
+    isQuiet: "transparent",
+  },
+  borderColor: "gray-300",
+  borderWidth: {
+    default: 1,
+    isQuiet: 0,
+  },
+  borderStyle: "solid",
+  borderRadius: {
+    default: "[6px]",
+    isQuiet: "none",
+  },
+  scrollPaddingTop: 32,
+});
+
+const table = style<TableRenderProps & { isQuiet?: boolean; hasActionBar?: boolean }>({
+  ...focusRing(),
+  outlineOffset: -1,
+  outlineStyle: "none",
+  userSelect: "none",
+  minWidth: "full",
+  width: "full",
+  fontSize: controlFont(),
+  fontFamily: "code",
+  fontWeight: "normal",
+  borderWidth: 0,
+  borderCollapse: "separate",
+  borderSpacing: 0,
+  tableLayout: "fixed",
+  disableTapHighlight: true,
+  // Per-level indentation unit for tree-grid columns; read by the cell's
+  // paddingStart calc. Mirrors @react-spectrum/s2 TableView's `--indent`.
+  "--indent": {
+    type: "width",
+    value: 16,
+  },
+});
+
+const legacyLabel = style({
+  font: controlFont(),
+  fontWeight: "medium",
+  color: baseColor("neutral"),
+  marginBottom: 4,
+});
+
+const legacyDescription = style({
+  font: "body-sm",
+  color: baseColor("neutral-subdued"),
+  marginTop: 4,
+});
+
+const tableHeader = style({
+  backgroundColor: "gray-75",
+});
+
+const headerHeight = {
+  compact: 32,
+  regular: 32,
+  spacious: 40,
+} as const;
+
+const rowHeight = {
+  compact: 32,
+  regular: 40,
+  spacious: 48,
+} as const;
+
+const tableColumn = style<
+  TableColumnRenderProps & {
+    align?: "start" | "center" | "end";
+    density?: TableDensity;
+    showDivider?: boolean;
+  }
+>({
+  outlineStyle: "none",
+  position: "relative",
+  height: {
+    density: headerHeight,
+  },
+  minHeight: {
+    density: headerHeight,
+  },
+  paddingX: 16,
+  paddingY: 0,
+  color: baseColor("neutral"),
+  fontSize: controlFont(),
+  fontFamily: "code",
+  fontWeight: "bold",
+  textAlign: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  verticalAlign: "middle",
+  backgroundColor: "gray-75",
+  borderWidth: 0,
+  borderBottomWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderEndWidth: {
+    showDivider: 1,
+  },
+  cursor: {
+    isSortable: "pointer",
+  },
+  whiteSpace: "nowrap",
+});
+
+const tableColumnContent = style<{
+  align?: "start" | "center" | "end";
+  overflowMode?: TableOverflowMode;
+}>({
+  display: "flex",
+  alignItems: "center",
+  gap: "text-to-visual",
+  justifyContent: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  minWidth: 0,
+  width: "full",
+  overflow: "hidden",
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+const tableSortIcon = style({
+  flexShrink: 0,
+  size: 10,
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+const rowHoverBackground = colorMix("gray-25", "gray-900", 5);
+const rowPressedBackground = colorMix("gray-25", "gray-900", 8);
+const rowSelectedBackground = colorMix("gray-25", "gray-900", 7);
+
+const rowHighlightBackground = colorMix("gray-25", "blue-900", 10);
+const rowHighlightActiveBackground = colorMix("gray-25", "blue-900", 15);
+
+// The S2 highlight-selection "block" border — the blue outline around a run of
+// selected rows, rounded only on the group's outer corners — is a row-spanning
+// overlay. The S2 style() macro can't express a pseudo-element, so (exactly like
+// upstream's `highlightSelectionBorder` raw css) we inject a `::before` overlay
+// that reads the per-row custom properties the macro sets on the row. Upstream
+// also pins it to `z-index: 3` to paint above the virtualizer's sticky cells; our
+// real-DOM <table> has no sticky cells, so that part is dropped.
+const HIGHLIGHT_SELECTION_BORDER_CLASS = "solid-spectrum-table-highlight-selection";
+let highlightSelectionBorderInjected = false;
+function injectHighlightSelectionBorderCSS(): void {
+  if (highlightSelectionBorderInjected || typeof document === "undefined") return;
+  const style = document.createElement("style");
+  style.id = "solid-spectrum-table-highlight-selection-style";
+  style.textContent = `.${HIGHLIGHT_SELECTION_BORDER_CLASS}::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  border-style: solid;
+  border-color: var(--borderColor);
+  border-top-width: var(--borderTopWidth);
+  border-bottom-width: var(--borderBottomWidth);
+  border-inline-start-width: var(--borderStartEndWidth);
+  border-inline-end-width: var(--borderStartEndWidth);
+  border-start-start-radius: var(--borderTopRadius);
+  border-start-end-radius: var(--borderTopRadius);
+  border-end-start-radius: var(--borderBottomRadius);
+  border-end-end-radius: var(--borderBottomRadius);
+}`;
+  document.head.appendChild(style);
+  highlightSelectionBorderInjected = true;
+}
+
+// Upstream S2 draws the row-level focus/drop indicator as raw `&::after`
+// (`focusIndicator`) so it can overlap row boundaries asymmetrically via
+// --topFocusRing/--bottomPosition. Keep the same overlay model rather than a
+// direct outline, which can't express the non-first-row -1px top extension.
+const ROW_FOCUS_INDICATOR_CLASS = "solid-spectrum-table-row-focus-indicator";
+let rowFocusIndicatorInjected = false;
+function injectRowFocusIndicatorCSS(): void {
+  if (rowFocusIndicatorInjected || typeof document === "undefined") return;
+  const style = document.createElement("style");
+  style.id = "solid-spectrum-table-row-focus-indicator-style";
+  style.textContent = `.${ROW_FOCUS_INDICATOR_CLASS}::after {
+  content: "";
+  top: var(--topFocusRing);
+  bottom: var(--bottomPosition);
+  z-index: 3;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  border-radius: 5px;
+  position: absolute;
+  outline-style: solid;
+  outline-color: var(--focusRingColor);
+  outline-width: 2px;
+  outline-offset: -2px;
+  pointer-events: none;
+}`;
+  document.head.appendChild(style);
+  rowFocusIndicatorInjected = true;
+}
+
+const tableRow = style<
+  TableRowRenderProps & {
+    density?: TableDensity;
+    selectionStyle?: TableSelectionStyle;
+    isFirstItem?: boolean;
+    isNextSelected?: boolean;
+    isPrevSelected?: boolean;
+  }
+>({
+  outlineStyle: "none",
+  position: "relative",
+  isolation: "isolate",
+  forcedColorAdjust: "none",
+  minHeight: {
+    density: rowHeight,
+  },
+  backgroundColor: {
+    default: "transparent",
+    isHovered: rowHoverBackground,
+    isPressed: rowPressedBackground,
+    isSelected: {
+      default: rowSelectedBackground,
+      selectionStyle: {
+        highlight: {
+          default: rowHighlightBackground,
+          isHovered: rowHighlightActiveBackground,
+          isPressed: rowHighlightActiveBackground,
+        },
+      },
+    },
+    forcedColors: {
+      selectionStyle: {
+        highlight: {
+          isSelected: "Highlight",
+        },
+      },
+    },
+  },
+  cursor: {
+    isDisabled: "default",
+  },
+  color: {
+    default: baseColor("neutral-subdued"),
+    isSelected: baseColor("neutral"),
+    isDisabled: "disabled",
+    forcedColors: {
+      selectionStyle: {
+        highlight: {
+          isSelected: "HighlightText",
+        },
+      },
+    },
+  },
+  // Highlight-selection block border + grouped rounded corners. These custom
+  // properties feed the `::before` overlay (see injectHighlightSelectionBorderCSS)
+  // and only take visible effect in highlight selection — the overlay class is
+  // appended to the row only then. Mirrors @react-spectrum/s2 TableView's `row`.
+  "--borderColorGray": {
+    type: "borderColor",
+    value: {
+      default: "gray-300",
+      forcedColors: {
+        default: "ButtonBorder",
+        isSelected: "Highlight",
+      },
+    },
+  },
+  "--borderColorBlue": {
+    type: "borderColor",
+    value: {
+      default: "blue-900",
+      forcedColors: "Highlight",
+    },
+  },
+  "--borderColor": {
+    type: "borderColor",
+    value: {
+      default: "transparent",
+      isSelected: "--borderColorBlue",
+    },
+  },
+  "--focusRingColor": {
+    type: "outlineColor",
+    value: {
+      default: "focus-ring",
+      forcedColors: "Highlight",
+    },
+  },
+  "--topFocusRing": {
+    type: "top",
+    value: {
+      default: "[-1px]",
+      isFirstItem: 0,
+    },
+  },
+  "--bottomPosition": {
+    type: "bottom",
+    value: {
+      selectionStyle: {
+        checkbox: {
+          default: "[-1px]",
+          isNextSelected: 0,
+        },
+        highlight: "[-1px]",
+      },
+    },
+  },
+  "--borderTopRadius": {
+    type: "borderTopStartRadius",
+    value: {
+      default: "none",
+      selectionStyle: {
+        highlight: {
+          default: "none",
+          isSelected: "[5px]",
+          isPrevSelected: "none",
+        },
+      },
+    },
+  },
+  "--borderBottomRadius": {
+    type: "borderBottomStartRadius",
+    value: {
+      default: "none",
+      selectionStyle: {
+        highlight: {
+          default: "none",
+          isSelected: "[5px]",
+          isNextSelected: "none",
+        },
+      },
+    },
+  },
+  // Round the row's own background to the selection block's outer corners; the
+  // visible blue border is drawn by the ::before overlay reading the same props.
+  borderBottomRadius: "[var(--borderBottomRadius)]",
+  borderTopRadius: "[var(--borderTopRadius)]",
+  "--borderTopWidth": {
+    type: "width",
+    value: {
+      default: {
+        selectionStyle: {
+          checkbox: 0,
+          highlight: 1,
+        },
+      },
+      isPrevSelected: 0,
+    },
+  },
+  "--borderBottomWidth": {
+    type: "width",
+    value: {
+      default: {
+        selectionStyle: {
+          checkbox: 0,
+          highlight: 1,
+        },
+      },
+      isNextSelected: 0,
+    },
+  },
+  "--borderStartEndWidth": {
+    type: "width",
+    value: {
+      default: {
+        selectionStyle: {
+          checkbox: 0,
+          highlight: 1,
+        },
+      },
+    },
+  },
+  // Highlight mode draws the gray row divider as the row's box-shadow. A real
+  // `<tr>` border can't be used here: under `border-collapse: separate` CSS
+  // ignores borders set on `<tr>`, so upstream's row `borderBottom` has no
+  // real-DOM equivalent — the box-shadow is its faithful realization (checkbox
+  // mode keeps the divider on the cell's bottom border instead). The divider is
+  // suppressed under selection: when the row itself is selected, or the row
+  // below it is, the rounded blue highlight-block border paints that edge, so
+  // the gray line would otherwise double up. Mirrors upstream's divider
+  // `borderColor` going `transparent` on both `isSelected` and `isNextSelected`.
+  boxShadow: {
+    selectionStyle: {
+      highlight: {
+        default: "[inset 0 -1px 0px var(--borderColorGray)]",
+        isSelected: "[inset 0 0 0 var(--borderColorGray)]",
+        isNextSelected: "[inset 0 0 0 var(--borderColorGray)]",
+      },
+    },
+  },
+});
+
+const tableCell = style<
+  TableCellRenderProps & {
+    align?: "start" | "center" | "end";
+    density?: TableDensity;
+    overflowMode?: TableOverflowMode;
+    showDivider?: boolean;
+    isTreeColumnWithNoChildren?: boolean;
+    selectionStyle?: TableSelectionStyle;
+  }
+>({
+  outlineStyle: "none",
+  position: "relative",
+  color: "inherit",
+  paddingX: 16,
+  paddingY: 0,
+  // Tree-grid indentation. A leaf cell in the tree column reserves the chevron's
+  // footprint (36) so its content lines up with sibling rows that do show a
+  // chevron (16); each nesting level then adds `--indent`. Mirrors
+  // @react-spectrum/s2 TableView's `treeColumnStyles`.
+  "--treeColumnPadding": {
+    type: "width",
+    value: {
+      default: 16,
+      isTreeColumnWithNoChildren: 36,
+    },
+  },
+  paddingStart: {
+    default: 16,
+    isTreeColumn:
+      "calc(var(--treeColumnPadding) + (var(--table-row-level, 1) - 1) * var(--indent))",
+  },
+  minHeight: {
+    density: rowHeight,
+  },
+  height: {
+    density: rowHeight,
+  },
+  textAlign: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  verticalAlign: "middle",
+  borderWidth: 0,
+  // Checkbox mode draws the gray row divider here; highlight mode draws it as the
+  // row's box-shadow instead, so the cell border is suppressed to avoid doubling.
+  borderBottomWidth: {
+    default: 1,
+    selectionStyle: {
+      highlight: 0,
+    },
+  },
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderEndWidth: {
+    showDivider: 1,
+  },
+});
+
+const tableCellFocusRing = style({
+  outlineStyle: "solid",
+  outlineOffset: -2,
+  outlineWidth: 2,
+  outlineColor: {
+    default: "focus-ring",
+    forcedColors: "Highlight",
+  },
+  borderRadius: "[5px]",
+  zIndex: 2,
+  position: "absolute",
+  top: "var(--topFocusRing, 0)",
+  bottom: 0,
+  insetStart: 0,
+  insetEnd: 0,
+  pointerEvents: "none",
+});
+
+function CellFocusRing(): JSX.Element {
+  return <div role="presentation" class={tableCellFocusRing} />;
+}
+
+const tableCellContent = style<{
+  align?: "start" | "center" | "end";
+  overflowMode?: TableOverflowMode;
+}>({
+  minWidth: 0,
+  overflow: {
+    overflowMode: {
+      truncate: "hidden",
+      wrap: "visible",
+    },
+  },
+  textOverflow: {
+    overflowMode: {
+      truncate: "ellipsis",
+    },
+  },
+  whiteSpace: {
+    overflowMode: {
+      truncate: "nowrap",
+      wrap: "normal",
+    },
+  },
+});
+
+// Flex wrapper placed *inside* the real `<td>` (rather than making the td a flex
+// container, which would break our fixed table-layout column widths) so the
+// expand chevron and the cell content sit side by side and fill the row height.
+const treeCellInner = style({
+  display: "flex",
+  alignItems: "center",
+  height: "full",
+  minWidth: 0,
+});
+
+// Ports @react-spectrum/s2 TableView's `expandButton`. Upstream rotates the
+// button via `transform`; we rotate with the `rotate` shorthand (matching our
+// TreeView's chevron idiom) and drop the RTL branch our codebase already omits.
+const expandButton = style<{ isDisabled?: boolean; isExpanded?: boolean }>({
+  color: {
+    default: "inherit",
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  height: "full",
+  width: 40,
+  marginStart: -12,
+  display: "flex",
+  flexWrap: "wrap",
+  alignContent: "center",
+  justifyContent: "center",
+  outlineStyle: "none",
+  cursor: "default",
+  rotate: {
+    isExpanded: 90,
+  },
+  padding: 0,
+  transition: "default",
+  backgroundColor: "transparent",
+  borderWidth: 0,
+  borderStyle: "none",
+  disableTapHighlight: true,
+});
+
+const expandChevronIcon = style({
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+});
+
+// An editable cell renders like a regular cell but dims its content while a
+// submitted edit is saving. The inline edit trigger, the editing popover/dialog,
+// and the save/cancel affordances are styled below, mirroring the S2 source.
+const editableCell = style<
+  TableCellRenderProps & {
+    align?: "start" | "center" | "end";
+    density?: TableDensity;
+    overflowMode?: TableOverflowMode;
+    showDivider?: boolean;
+    isSaving?: boolean;
+    selectionStyle?: TableSelectionStyle;
+  }
+>({
+  outlineStyle: "none",
+  position: "relative",
+  color: {
+    default: "inherit",
+    isSaving: baseColor("neutral-subdued"),
+  },
+  paddingX: 16,
+  paddingY: 0,
+  minHeight: {
+    density: rowHeight,
+  },
+  height: {
+    density: rowHeight,
+  },
+  textAlign: {
+    align: {
+      start: "start",
+      center: "center",
+      end: "end",
+    },
+  },
+  verticalAlign: "middle",
+  borderWidth: 0,
+  // Checkbox mode draws the gray row divider here; highlight mode draws it as the
+  // row's box-shadow instead, so the cell border is suppressed to avoid doubling.
+  borderBottomWidth: {
+    default: 1,
+    selectionStyle: {
+      highlight: 0,
+    },
+  },
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  borderEndWidth: {
+    showDivider: 1,
+  },
+});
+
+const editPopover = style(
+  {
+    ...setColorScheme(),
+    "--s2-container-bg": {
+      type: "backgroundColor",
+      value: "layer-2",
+    },
+    backgroundColor: "--s2-container-bg",
+    borderBottomRadius: "default",
+    boxShadow: "elevated",
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: {
+      default: "gray-200",
+      forcedColors: "ButtonBorder",
+    },
+    boxSizing: "content-box",
+    isolation: "isolate",
+    pointerEvents: {
+      isExiting: "none",
+    },
+    outlineStyle: "none",
+    minWidth: "--trigger-width",
+    padding: 8,
+    display: "flex",
+    alignItems: "center",
+  },
+  getAllowedOverrides(),
+);
+
+const editForm = style({
+  width: "full",
+  display: "flex",
+  alignItems: "start",
+  gap: 16,
+});
+
+const editActions = style({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "baseline",
+  flexShrink: 0,
+  flexGrow: 0,
+});
+
+const editFormMobile = style({
+  width: "full",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "start",
+  gap: 16,
+});
+
+const editButtonGroupStyles = style({
+  alignSelf: "end",
+});
+
+// The inline edit trigger is hidden until the row is hovered or focused, the
+// editor is open, or the device lacks a fine pointer (touch). Mirrors S2.
+const editButtonStyles = style<{ isForcedVisible?: boolean }>({
+  visibility: {
+    default: "hidden",
+    isForcedVisible: "visible",
+    ':is([role="row"]:hover *)': "visible",
+    ':is([role="row"][data-focus-visible-within] *)': "visible",
+    "@media not ((hover: hover) and (pointer: fine))": "visible",
+  },
+});
+
+// Input types whose text cannot be range-selected on open. Mirrors S2.
+const nonTextInputTypes = new Set([
+  "checkbox",
+  "radio",
+  "range",
+  "color",
+  "file",
+  "image",
+  "button",
+  "submit",
+  "reset",
+]);
+
+const emptyState = style({
+  minHeight: 112,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  color: "neutral",
+  font: "body-sm",
+});
+
+const selectionColumn = style({
+  width: 40,
+  minWidth: 40,
+  paddingX: 0,
+  textAlign: "center",
+});
+
+const selectionCell = style<TableCellRenderProps & { density?: TableDensity }>({
+  width: 40,
+  minWidth: 40,
+  paddingX: 0,
+  paddingY: 0,
+  height: {
+    density: rowHeight,
+  },
+  borderWidth: 0,
+  borderBottomWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+  textAlign: "center",
+  verticalAlign: "middle",
+});
+
+const selectionCheckbox = style<{ isDisabled?: boolean }>({
+  position: "relative",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 16,
+  height: 16,
+  // Mirrors S2 TableView's `selectionCheckbox` style
+  // (`[slot="selection"][data-disabled="true"]` → `visibility: hidden`): a
+  // disabled row's selection checkbox is visually hidden, which also removes it
+  // from the accessibility tree (matching the S2 oracle, whose disabled
+  // selection checkbox is pruned from the AX snapshot). The select-all checkbox
+  // uses S2's separate `selectAllCheckbox` style and is never hidden this way.
+  visibility: {
+    default: "visible",
+    isDisabled: "hidden",
+  },
+});
+
+const selectionCheckboxInput = style({
+  position: "absolute",
+  inset: 0,
+  margin: 0,
+  opacity: 0,
+  cursor: "inherit",
+});
+
+const selectionCheckboxBox = style<{ isSelected?: boolean; isDisabled?: boolean }>({
+  ...focusRing(),
+  size: 16,
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderWidth: 1,
+  borderStyle: "solid",
+  borderRadius: "row",
+  boxSizing: "border-box",
+  backgroundColor: {
+    default: "gray-25",
+    isSelected: baseColor("neutral"),
+    isDisabled: "disabled",
+  },
+  borderColor: {
+    default: baseColor("gray-800"),
+    isSelected: "transparent",
+    isDisabled: "disabled",
+  },
+});
+
+const selectionCheckboxIcon = style({
+  pointerEvents: "none",
+  "--iconPrimary": {
+    type: "fill",
+    value: {
+      default: "gray-25",
+      forcedColors: "HighlightText",
+    },
+  },
+});
+
+const tableFooter = style({
+  backgroundColor: "gray-75",
+  borderWidth: 0,
+  borderTopWidth: 1,
+  borderStyle: "solid",
+  borderColor: "gray-300",
+});
+
+const actionBarContainer = style({
+  position: "absolute",
+  insetInline: 0,
+  bottom: 12,
+  display: "flex",
+  justifyContent: "center",
+  pointerEvents: "none",
+  zIndex: 2,
+});
+
+const actionBarContent = style({
+  pointerEvents: "auto",
+});
+
+const resizer = style<ColumnResizerRenderProps>({
+  position: "absolute",
+  top: 0,
+  bottom: 0,
+  insetEnd: 0,
+  width: 6,
+  cursor: "col-resize",
+  touchAction: "none",
+  userSelect: "none",
+  backgroundColor: {
+    default: "transparent",
+    isHovered: "accent-400",
+    isResizing: "accent-900",
+  },
+});
+
+const resizableTableContainer = style({
+  position: "relative",
+  width: "full",
+});
+
+function selectedKeySet(keys: "all" | Iterable<Key> | undefined): "all" | Set<Key> {
+  if (keys === "all") {
+    return "all";
+  }
+
+  return new Set(keys ?? []);
+}
+
+function hasSelection(keys: "all" | Set<Key>): boolean {
+  return keys === "all" || keys.size > 0;
+}
+
+function densityFromProps(size: TableSize | undefined, density: TableDensity | undefined) {
+  if (density) {
+    return density;
+  }
+
+  switch (size) {
+    case "sm":
+      return "compact";
+    case "lg":
+      return "spacious";
+    default:
+      return "regular";
+  }
+}
+
+function normalizeAlign(align: TableAlign | undefined): "start" | "center" | "end" {
+  if (align === "right") {
+    return "end";
+  }
+
+  if (align === "left") {
+    return "start";
+  }
+
+  return align ?? "start";
+}
+
+function keyFromRowProps<T extends object>(props: HeadlessTableRowProps<T>): Key | undefined {
+  return props.id ?? (props.item as { id?: Key; key?: Key } | undefined)?.id;
+}
+
+function inlineStyle(
+  styleProp: JSX.CSSProperties | undefined,
+  unsafeStyle: JSX.CSSProperties | undefined,
+): JSX.CSSProperties | undefined {
+  if (!styleProp && !unsafeStyle) {
+    return undefined;
+  }
+
+  return {
+    ...styleProp,
+    ...unsafeStyle,
+  };
+}
+
+export function Table<T extends object>(props: TableProps<T>): JSX.Element {
+  const providerProps = useProviderProps(props);
+  const contextProps = getSlottedContextProps(
+    useContext(TableContext),
+    (props as { slot?: string }).slot,
+  );
+  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const [local, headlessProps] = splitProps(mergedProps, [
+    "children",
+    "density",
+    "isQuiet",
+    "overflowMode",
+    "renderActionBar",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "class",
+    "style",
+    "title",
+    "description",
+    "size",
+    "variant",
+    "showSelectionCheckboxes",
+    "selectionStyle",
+    "selectionBehavior",
+    "onSelectionChange",
+    "onAction",
+    "onRowAction",
+    "loadingState",
+    "onLoadMore",
+    "onResizeStart",
+    "onResize",
+    "onResizeEnd",
+  ]);
+  const externalResizeContext = useContext(HeadlessTableColumnResizeStateContext);
+  const density = () => densityFromProps(local.size, local.density);
+  const isQuiet = () => !!local.isQuiet;
+  const overflowMode = () => local.overflowMode ?? "truncate";
+  const selectionStyle = (): TableSelectionStyle => local.selectionStyle ?? "checkbox";
+  const selectionBehavior = (): "toggle" | "replace" =>
+    local.selectionBehavior ?? (selectionStyle() === "highlight" ? "replace" : "toggle");
+  // Mirror upstream S2's gate: checkboxes only appear with toggle behavior in
+  // checkbox style. Highlight selection (replace behavior) hides them entirely.
+  const showSelectionCheckboxes = () =>
+    (local.showSelectionCheckboxes ?? headlessProps.selectionMode !== "none") &&
+    selectionStyle() === "checkbox" &&
+    selectionBehavior() === "toggle";
+  const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
+    selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+  );
+
+  createEffect(() => {
+    setActionSelectedKeys(
+      selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
+    );
+  });
+
+  const onSelectionChange = (keys: "all" | Set<Key>) => {
+    setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
+    local.onSelectionChange?.(keys);
+  };
+  const className = (renderProps: TableRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        table({
+          ...renderProps,
+          isQuiet: isQuiet(),
+        }),
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const context = createMemo<TableContextValue>(() => ({
+    density: density(),
+    isQuiet: isQuiet(),
+    overflowMode: overflowMode(),
+    showSelectionCheckboxes: showSelectionCheckboxes(),
+    selectionStyle: selectionStyle(),
+    loadingState: local.loadingState,
+    onLoadMore: local.onLoadMore,
+  }));
+  const renderTable = () => (
+    <HeadlessTable
+      {...headlessProps}
+      selectionBehavior={selectionBehavior()}
+      showSelectionCheckboxes={showSelectionCheckboxes()}
+      onRowAction={local.onAction ?? local.onRowAction}
+      onSelectionChange={onSelectionChange}
+      class={className}
+      data-table-view=""
+      data-density={density()}
+      data-quiet={isQuiet() || undefined}
+      data-overflow-mode={overflowMode()}
+      data-selection-style={selectionStyle()}
+    >
+      {local.children}
+    </HeadlessTable>
+  );
+  const renderResizableTable = () =>
+    externalResizeContext ? (
+      renderTable()
+    ) : (
+      <HeadlessResizableTableContainer
+        class={resizableTableContainer}
+        onResizeStart={local.onResizeStart}
+        onResize={local.onResize}
+        onResizeEnd={local.onResizeEnd}
+      >
+        {renderTable()}
+      </HeadlessResizableTableContainer>
+    );
+
+  const renderFramed = () => (
+    <div
+      class={tableWrapper(null, local.styles)}
+      style={inlineStyle(local.style, local.UNSAFE_style)}
+    >
+      {local.title ? <div class={legacyLabel({})}>{local.title}</div> : null}
+      <div class={tableShell({ isQuiet: isQuiet() })} data-table-view-shell="">
+        {renderResizableTable()}
+      </div>
+      {local.description ? <div class={legacyDescription({})}>{local.description}</div> : null}
+      {local.renderActionBar && hasSelection(actionSelectedKeys()) ? (
+        <div class={actionBarContainer}>
+          <div class={actionBarContent}>{local.renderActionBar(actionSelectedKeys())}</div>
+        </div>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <InternalTableContext.Provider value={context()}>
+      {renderFramed()}
+    </InternalTableContext.Provider>
+  );
+}
+
+export function TableHeader(props: TableHeaderProps): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
+  const className = () =>
+    [local.UNSAFE_className, local.class, mergeStyles(tableHeader, local.styles)]
+      .filter(Boolean)
+      .join(" ");
+
+  return (
+    <HeadlessTableHeader {...headlessProps} class={className()}>
+      {context.showSelectionCheckboxes ? <TableSelectAllCheckbox /> : null}
+      {props.children}
+    </HeadlessTableHeader>
+  );
+}
+
+export function TableColumn(props: TableColumnProps): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "align",
+    "showDivider",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const align = () => normalizeAlign(local.align);
+  const className = (renderProps: TableColumnRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        tableColumn({
+          ...renderProps,
+          align: align(),
+          density: context.density,
+          showDivider: !!local.showDivider,
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  return (
+    <HeadlessTableColumn {...headlessProps} class={className} style={local.UNSAFE_style}>
+      {(renderProps: TableColumnRenderProps) => (
+        <>
+          <span class={tableColumnContent({ align: align(), overflowMode: context.overflowMode })}>
+            {renderProps.isSortable && renderProps.sortDirection ? (
+              <SortIcon direction={renderProps.sortDirection} />
+            ) : null}
+            <span>
+              {typeof local.children === "function" ? local.children(renderProps) : local.children}
+            </span>
+            {renderProps.allowsResizing && props.id != null ? (
+              <ColumnResizer column={{ key: props.id }} />
+            ) : null}
+          </span>
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
+      )}
+    </HeadlessTableColumn>
+  );
+}
+
+export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "renderEmptyState",
+    "hasMore",
+    "isLoading",
+    "onLoadMore",
+  ]);
+  const className = () =>
+    [local.UNSAFE_className, local.class, mergeStyles(local.styles)].filter(Boolean).join(" ");
+  const renderEmptyState = () => (
+    <div class={emptyState}>{local.renderEmptyState?.() ?? "No data available"}</div>
+  );
+  const rootIsLoading = () => {
+    const loadingState = context.loadingState;
+    return (
+      loadingState === "loading" ||
+      loadingState === "loadingMore" ||
+      loadingState === "sorting" ||
+      loadingState === "filtering"
+    );
+  };
+
+  return (
+    <HeadlessTableBody
+      {...headlessProps}
+      hasMore={local.hasMore ?? !!context.onLoadMore}
+      isLoading={local.isLoading ?? rootIsLoading()}
+      onLoadMore={local.onLoadMore ?? context.onLoadMore}
+      class={className()}
+      renderEmptyState={renderEmptyState}
+    >
+      {props.children}
+    </HeadlessTableBody>
+  );
+}
+
+export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.Element {
+  const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
+  const className = (_renderProps: TableFooterRenderProps): string =>
+    [local.UNSAFE_className, local.class, mergeStyles(tableFooter, local.styles)]
+      .filter(Boolean)
+      .join(" ");
+
+  return (
+    <HeadlessTableFooter {...headlessProps} class={className}>
+      {props.children}
+    </HeadlessTableFooter>
+  );
+}
+
+export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const state = useContext(HeadlessTableStateContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const rowKey = () => keyFromRowProps(headlessProps);
+  // In highlight selection mode a contiguous run of selected rows draws a single
+  // rounded border "block" (see injectHighlightSelectionBorderCSS). Mirror
+  // upstream's isNextSelected/isPrevSelected helpers so the macro can suppress the
+  // inner edges and corner radii wherever the adjacent row is also selected. The
+  // reads below run inside useRenderProps' class memo, so toggling a neighbor's
+  // selection re-runs this row's class even though its own renderProps are stable.
+  const isKeySelected = (key: Key | null | undefined): boolean => {
+    if (key == null || !state) return false;
+    const selected = state.selectedKeys;
+    return selected === "all" || selected.has(key);
+  };
+  const isNextSelected = (): boolean => {
+    const k = rowKey();
+    if (k == null || !state) return false;
+    return isKeySelected(state.collection.getKeyAfter?.(k) ?? null);
+  };
+  const isPrevSelected = (): boolean => {
+    const k = rowKey();
+    if (k == null || !state) return false;
+    return isKeySelected(state.collection.getKeyBefore?.(k) ?? null);
+  };
+  const isFirstItem = (): boolean => {
+    const k = rowKey();
+    if (k == null || !state) return false;
+    return state.collection.getFirstKey?.() === k;
+  };
+  const className = (renderProps: TableRowRenderProps): string => {
+    const highlight = context.selectionStyle === "highlight";
+    if (highlight) injectHighlightSelectionBorderCSS();
+    if (renderProps.isFocusVisible) injectRowFocusIndicatorCSS();
+    return [
+      renderProps.isFocusVisible ? ROW_FOCUS_INDICATOR_CLASS : undefined,
+      highlight ? HIGHLIGHT_SELECTION_BORDER_CLASS : undefined,
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        tableRow({
+          ...renderProps,
+          density: context.density,
+          selectionStyle: context.selectionStyle,
+          isFirstItem: isFirstItem(),
+          isNextSelected: isNextSelected(),
+          isPrevSelected: isPrevSelected(),
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  };
+
+  return (
+    <HeadlessTableRow {...headlessProps} class={className} style={local.UNSAFE_style}>
+      {(renderProps: TableRowRenderProps) => (
+        <>
+          {context.showSelectionCheckboxes && rowKey() != null ? (
+            <TableSelectionCheckbox
+              rowKey={rowKey()!}
+              isSelected={renderProps.isSelected}
+              isDisabled={renderProps.isDisabled}
+            />
+          ) : null}
+          {typeof local.children === "function"
+            ? (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderProps)
+            : local.children}
+        </>
+      )}
+    </HeadlessTableRow>
+  );
+}
+
+// The bare expand/collapse affordance for a tree-grid row. This is the
+// *headless* Button so it picks up the row's `chevron` slot (the press handlers
+// that toggle expansion) from the surrounding TableRow's ButtonContext; the
+// styled solid-spectrum Button reads a different, styled ButtonContext and would
+// not. Mirrors @react-spectrum/s2 TableView's `ExpandableRowChevron`.
+function ExpandableRowChevron(props: { isExpanded?: boolean }): JSX.Element {
+  return (
+    <HeadlessButton
+      slot="chevron"
+      class={(renderProps) =>
+        expandButton({ isExpanded: !!props.isExpanded, isDisabled: renderProps.isDisabled })
+      }
+    >
+      <Chevron size="S" class={expandChevronIcon} aria-hidden="true" />
+    </HeadlessButton>
+  );
+}
+
+export function TableCell(props: TableCellProps): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "align",
+    "showDivider",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const align = () => normalizeAlign(local.align);
+  const className = (renderProps: TableCellRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        tableCell({
+          ...renderProps,
+          align: align(),
+          density: context.density,
+          overflowMode: context.overflowMode,
+          showDivider: !!local.showDivider,
+          isTreeColumnWithNoChildren: renderProps.isTreeColumn && !renderProps.hasChildItems,
+          selectionStyle: context.selectionStyle,
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const renderChildren = (renderProps: TableCellRenderProps) =>
+    typeof local.children === "function" ? local.children(renderProps) : local.children;
+  const content = (renderProps: TableCellRenderProps) => (
+    <div class={tableCellContent({ align: align(), overflowMode: context.overflowMode })}>
+      {renderChildren(renderProps)}
+    </div>
+  );
+
+  return (
+    <HeadlessTableCell {...headlessProps} class={className} style={local.UNSAFE_style}>
+      {(renderProps: TableCellRenderProps) => (
+        <>
+          <Show
+            when={renderProps.isTreeColumn && renderProps.hasChildItems}
+            fallback={content(renderProps)}
+          >
+            <div class={treeCellInner}>
+              <ExpandableRowChevron isExpanded={renderProps.isExpanded} />
+              {content(renderProps)}
+            </div>
+          </Show>
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
+      )}
+    </HeadlessTableCell>
+  );
+}
+
+export interface EditableCellProps extends EditableCellOwnProps, TableCellProps {}
+
+interface EditableCellOwnProps {
+  /** Renders the editing form fields shown in the popover (desktop) or dialog (mobile). */
+  renderEditing: () => JSX.Element;
+  /** Whether a submitted edit is currently saving. Dims the cell and shows a pending trigger. */
+  isSaving?: boolean;
+  /** Handler called when the editing form is submitted. The native submit is already prevented. */
+  onSubmit?: (event: SubmitEvent) => void;
+  /** Handler called when editing is cancelled (Cancel button, Escape, or interact-outside without save). */
+  onCancel?: () => void;
+  /** A native form `action` for the editing form. */
+  action?: string;
+}
+
+/**
+ * An EditableCell is a table cell whose contents can be edited inline. Pressing
+ * the cell's `<ActionButton slot="edit">` opens an editing surface — a popover on
+ * desktop, a full dialog on touch devices — containing the fields returned by
+ * `renderEditing`. Mirrors the React Spectrum S2 `EditableCell`.
+ */
+export function EditableCell(props: EditableCellProps): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const [local, headlessProps] = splitProps(props, [
+    "children",
+    "align",
+    "showDivider",
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+    "renderEditing",
+    "isSaving",
+    "onSubmit",
+    "onCancel",
+    "action",
+    "ref",
+  ]);
+  let cellEl: HTMLTableCellElement | null = null;
+  const align = (): "start" | "center" | "end" => normalizeAlign(local.align);
+  const className = (renderProps: TableCellRenderProps): string =>
+    [
+      local.UNSAFE_className,
+      local.class,
+      mergeStyles(
+        editableCell({
+          ...renderProps,
+          align: align(),
+          density: context.density,
+          overflowMode: context.overflowMode,
+          showDivider: !!local.showDivider,
+          isSaving: !!local.isSaving,
+          selectionStyle: context.selectionStyle,
+        }),
+        local.styles,
+      ),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const setCell = (el: HTMLTableCellElement): void => {
+    cellEl = el;
+    const ref = local.ref;
+    if (typeof ref === "function") {
+      ref(el);
+    } else if (ref) {
+      ref.current = el;
+    }
+  };
+
+  // The headless cell re-invokes its children callback whenever its own render props change
+  // (hover/press/focus). Recreating the stateful inner there would tear the edit button down
+  // mid-press and reset the open state, so anchor a single inner instance to EditableCell's
+  // owner and return it across every rerun. Cell render props are captured once and handed to
+  // the (static, per upstream) children — they are not re-read reactively.
+  const owner = getOwner();
+  let inner: JSX.Element | undefined;
+  let latestRenderProps: TableCellRenderProps | undefined;
+
+  const renderInner = (renderProps: TableCellRenderProps): JSX.Element => {
+    latestRenderProps = renderProps;
+    inner ??= runWithOwner(owner, () => (
+      <EditableCellInner
+        align={align}
+        overflowMode={() => context.overflowMode}
+        density={() => context.density}
+        getCell={() => cellEl}
+        renderEditing={local.renderEditing}
+        isSaving={() => local.isSaving}
+        onSubmit={local.onSubmit}
+        onCancel={local.onCancel}
+        action={local.action}
+        ariaLabel={(props as { "aria-label"?: string })["aria-label"]}
+        renderChildren={() => {
+          if (typeof local.children !== "function") {
+            return local.children;
+          }
+          // `latestRenderProps` is a plain capture, not a signal, so reading it does not make
+          // the children reactive to the cell's hover/press churn.
+          return latestRenderProps ? local.children(latestRenderProps) : null;
+        }}
+      />
+    )) as JSX.Element;
+    return inner;
+  };
+
+  return (
+    <HeadlessTableCell
+      {...headlessProps}
+      ref={setCell}
+      class={className}
+      style={local.UNSAFE_style}
+    >
+      {(renderProps: TableCellRenderProps) => (
+        <>
+          {renderInner(renderProps)}
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
+      )}
+    </HeadlessTableCell>
+  );
+}
+
+interface EditableCellInnerProps {
+  align: () => "start" | "center" | "end";
+  overflowMode: () => TableOverflowMode;
+  density: () => TableDensity;
+  getCell: () => HTMLTableCellElement | null;
+  renderEditing: () => JSX.Element;
+  isSaving: () => boolean | undefined;
+  onSubmit?: (event: SubmitEvent) => void;
+  onCancel?: () => void;
+  action?: string;
+  ariaLabel?: string;
+  /**
+   * Invoked inside the edit-slot provider so the `slot="edit"` ActionButton
+   * resolves its `onPress` from `editSlots`. In Solid, `useContext` binds to the
+   * owner active when the component executes, so the children must be created
+   * here rather than pre-evaluated in `EditableCell`'s scope.
+   */
+  renderChildren: () => JSX.Element;
+}
+
+function EditableCellInner(props: EditableCellInnerProps): JSX.Element {
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const [isOpen, setIsOpen] = createSignal(false);
+  const [formEl, setFormEl] = createSignal<HTMLFormElement | null>(null);
+  const [triggerWidth, setTriggerWidth] = createSignal(0);
+  const [tableWidth, setTableWidth] = createSignal(0);
+  const [verticalOffset, setVerticalOffset] = createSignal(0);
+
+  // Touch devices (no fine pointer / hover) get a full dialog instead of a popover.
+  const hasFinePointer = createMediaQuery("(hover: hover) and (pointer: fine)");
+  const isMobile = (): boolean => !hasFinePointer();
+
+  const size = (): ActionButtonSize => {
+    const density = props.density();
+    if (density === "compact") {
+      return "S";
+    }
+    if (density === "spacious") {
+      return "L";
+    }
+    return "M";
+  };
+
+  // Position the popover relative to the cell: measure the trigger and table
+  // widths, and offset upward by the row height so it overlays the cell. Mirrors
+  // the S2 useLayoutEffect.
+  createEffect(() => {
+    if (!isOpen()) {
+      return;
+    }
+    const cell = props.getCell();
+    const boundingRect = cell?.parentElement?.getBoundingClientRect();
+    setTriggerWidth(cell?.clientWidth ?? 0);
+    setVerticalOffset((boundingRect?.top ?? 0) - (boundingRect?.bottom ?? 0));
+    const grid = cell?.closest('[role="grid"],[role="treegrid"]');
+    setTableWidth((grid as HTMLElement | null)?.clientWidth ?? 0);
+  });
+
+  // Auto-select the entire text range of the autofocused input when the editor
+  // opens. Re-runs once the form element mounts. Mirrors the S2 useEffect.
+  createEffect(() => {
+    const form = formEl();
+    if (!isOpen() || !form) {
+      return;
+    }
+    queueMicrotask(() => {
+      if (!isOpen()) {
+        return;
+      }
+      const active = getOwnerDocument(form)?.activeElement;
+      if (
+        active &&
+        form.contains(active) &&
+        ((active instanceof HTMLInputElement && !nonTextInputTypes.has(active.type)) ||
+          active instanceof HTMLTextAreaElement) &&
+        typeof active.select === "function"
+      ) {
+        active.select();
+      }
+    });
+  });
+
+  const cancel = (): void => {
+    setIsOpen(false);
+    props.onCancel?.();
+  };
+
+  // Our headless Form doesn't prevent the native submit (unlike RAC's Form), so
+  // stop the page reload here, then notify the consumer and close. Mirrors S2.
+  const handleSubmit = (event: SubmitEvent): void => {
+    event.preventDefault();
+    props.onSubmit?.(event);
+    setIsOpen(false);
+  };
+
+  // The mobile dialog disables keyboard dismissal, so translate Escape into a
+  // cancel ourselves. Mirrors the S2 dialog-level Escape handler.
+  const onFormKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") {
+      cancel();
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  };
+
+  const attachForm = (el: HTMLFormElement): void => {
+    setFormEl(el);
+    el.addEventListener("submit", handleSubmit);
+    if (isMobile()) {
+      el.addEventListener("keydown", onFormKeyDown);
+    }
+  };
+
+  // Interact-outside never closes the popover directly; instead, if focus is
+  // still within the form, submit (saving), which then closes. Mirrors S2.
+  const shouldCloseOnInteractOutside = (): boolean => {
+    const form = formEl();
+    if (!form) {
+      return false;
+    }
+    const active = getOwnerDocument(form)?.activeElement;
+    if (!active || !form.contains(active)) {
+      return false;
+    }
+    form.requestSubmit();
+    return false;
+  };
+
+  const editSlots: SpectrumContextValue<ActionButtonProps> = {
+    slots: {
+      default: {},
+      edit: {
+        onPress: () => setIsOpen(true),
+        excludeFromTabOrder: true,
+        get isPending() {
+          return props.isSaving();
+        },
+        get isQuiet() {
+          return !props.isSaving();
+        },
+        get size() {
+          return size();
+        },
+        get styles() {
+          return editButtonStyles({ isForcedVisible: isOpen() || !!props.isSaving() });
+        },
+      },
+    },
+  };
+
+  return (
+    <ButtonContext.Provider value={null}>
+      <ActionButtonContext.Provider value={editSlots}>
+        <div class={tableCellContent({ align: props.align(), overflowMode: props.overflowMode() })}>
+          {props.renderChildren()}
+        </div>
+
+        <ActionButtonContext.Provider value={null}>
+          <Show when={!isMobile()}>
+            <HeadlessPopover
+              isOpen={isOpen()}
+              onOpenChange={setIsOpen}
+              aria-label={props.ariaLabel ?? stringFormatter().format("table.editCell")}
+              triggerRef={() => props.getCell()}
+              placement="bottom start"
+              offset={verticalOffset()}
+              shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
+              class={(renderProps) => editPopover({ isExiting: renderProps.isExiting })}
+              style={() => ({
+                minWidth: `min(${triggerWidth()}px, ${tableWidth()}px)`,
+                maxWidth: `${tableWidth()}px`,
+              })}
+            >
+              <OverlayTriggerStateContext.Provider value={null}>
+                <HeadlessForm
+                  ref={attachForm}
+                  action={props.action}
+                  class={editForm}
+                  style={() => ({ "--input-width": `calc(${triggerWidth()}px - 32px)` })}
+                >
+                  {props.renderEditing()}
+                  <div class={editActions}>
+                    <ActionButton
+                      isQuiet
+                      onPress={cancel}
+                      aria-label={stringFormatter().format("table.cancel")}
+                    >
+                      <Cross />
+                    </ActionButton>
+                    <ActionButton
+                      isQuiet
+                      type="submit"
+                      aria-label={stringFormatter().format("table.save")}
+                    >
+                      <Checkmark />
+                    </ActionButton>
+                  </div>
+                </HeadlessForm>
+              </OverlayTriggerStateContext.Provider>
+            </HeadlessPopover>
+          </Show>
+
+          <Show when={isMobile()}>
+            <DialogContainer onDismiss={() => formEl()?.requestSubmit()}>
+              <Show when={isOpen()}>
+                <CustomDialog
+                  isDismissible
+                  isKeyboardDismissDisabled
+                  aria-label={props.ariaLabel ?? stringFormatter().format("table.editCell")}
+                >
+                  <HeadlessForm ref={attachForm} action={props.action} class={editFormMobile}>
+                    {props.renderEditing()}
+                    <ButtonGroup align="end" styles={editButtonGroupStyles}>
+                      <Button onPress={cancel} variant="secondary" fillStyle="outline">
+                        Cancel
+                      </Button>
+                      <Button type="submit" variant="accent">
+                        Save
+                      </Button>
+                    </ButtonGroup>
+                  </HeadlessForm>
+                </CustomDialog>
+              </Show>
+            </DialogContainer>
+          </Show>
+        </ActionButtonContext.Provider>
+      </ActionButtonContext.Provider>
+    </ButtonContext.Provider>
+  );
+}
+
+export function TableSelectionCheckbox(props: {
+  rowKey: Key;
+  isSelected?: boolean;
+  isDisabled?: boolean;
+}): JSX.Element {
+  const context = useContext(InternalTableContext);
+
+  return (
+    <HeadlessTableCell
+      id="__selection__"
+      class={(renderProps: TableCellRenderProps) =>
+        selectionCell({ ...renderProps, density: context.density })
+      }
+    >
+      {(renderProps: TableCellRenderProps) => (
+        <>
+          <span
+            class={selectionCheckbox({ isDisabled: !!props.isDisabled })}
+            data-rsp-slot="selection-indicator"
+          >
+            <HeadlessTableSelectionCheckbox rowKey={props.rowKey} class={selectionCheckboxInput} />
+            <span
+              class={selectionCheckboxBox({
+                isSelected: !!props.isSelected,
+                isDisabled: !!props.isDisabled,
+              })}
+            >
+              {props.isSelected ? (
+                <Checkmark size="XS" class={selectionCheckboxIcon} />
+              ) : null}
+            </span>
+          </span>
+          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+        </>
+      )}
+    </HeadlessTableCell>
+  );
+}
+
+export function TableSelectAllCheckbox(): JSX.Element {
+  const context = useContext(InternalTableContext);
+  const state = useContext(HeadlessTableStateContext);
+  const isSelected = () => state?.selectedKeys === "all";
+  const isIndeterminate = () => {
+    const keys = state?.selectedKeys;
+    if (!state || keys === "all" || keys == null || keys.size === 0) {
+      return false;
+    }
+
+    return keys.size < state.collection.size;
+  };
+  const isDisabled = () =>
+    !state || state.selectionMode !== "multiple" || state.collection.size === 0;
+  const className = (renderProps: TableColumnRenderProps): string =>
+    mergeStyles(
+      tableColumn({
+        ...renderProps,
+        align: "center",
+        density: context.density,
+      }),
+      selectionColumn,
+    );
+
+  // Mirrors S2's `TableColumnHeader`: in single-selection mode there is no
+  // select-all checkbox — the header column instead exposes a `VisuallyHidden`
+  // "Select" label (S2 `VisuallyHiddenSelectAllLabel`). Only `multiple` mode
+  // renders the real select-all checkbox.
+  const isSingle = () => state?.selectionMode === "single";
+
+  return (
+    <HeadlessTableColumn id="__selection__" class={className}>
+      {isSingle() ? (
+        <HeadlessVisuallyHidden>Select</HeadlessVisuallyHidden>
+      ) : (
+        <span class={selectionCheckbox({})} data-rsp-slot="select-all-indicator">
+          <HeadlessTableSelectAllCheckbox class={selectionCheckboxInput} />
+          <span
+            class={selectionCheckboxBox({
+              isSelected: isSelected() || isIndeterminate(),
+              isDisabled: isDisabled(),
+            })}
+          >
+            {isSelected() ? (
+              <Checkmark size="XS" class={selectionCheckboxIcon} />
+            ) : isIndeterminate() ? (
+              <Dash size="XS" class={selectionCheckboxIcon} />
+            ) : null}
+          </span>
+        </span>
+      )}
+    </HeadlessTableColumn>
+  );
+}
+
+export interface ColumnResizerProps extends Omit<HeadlessColumnResizerProps, "class" | "style"> {
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+}
+
+export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
+  const [local, headlessProps] = splitProps(props, ["class", "styles", "UNSAFE_className"]);
+  const className = (renderProps: ColumnResizerRenderProps): string =>
+    [local.UNSAFE_className, local.class, mergeStyles(resizer(renderProps), local.styles)]
+      .filter(Boolean)
+      .join(" ");
+
+  return <HeadlessColumnResizer {...headlessProps} class={className} />;
+}
+
+export interface ResizableTableContainerProps extends Omit<
+  HeadlessResizableTableContainerProps,
+  "class" | "style"
+> {
+  /** Additional CSS class name. Use only as a last resort. */
+  class?: string;
+  /** Spectrum-defined generated classes. */
+  styles?: StyleString;
+  /** Additional CSS class name. Use only as a last resort. */
+  UNSAFE_className?: UnsafeClassName | string;
+  /** Additional inline styles. Use only as a last resort. */
+  UNSAFE_style?: JSX.CSSProperties;
+}
+
+export function ResizableTableContainer(props: ResizableTableContainerProps): JSX.Element {
+  const [local, headlessProps] = splitProps(props, [
+    "class",
+    "styles",
+    "UNSAFE_className",
+    "UNSAFE_style",
+  ]);
+  const className = () =>
+    [local.UNSAFE_className, local.class, mergeStyles(resizableTableContainer, local.styles)]
+      .filter(Boolean)
+      .join(" ");
+
+  return (
+    <HeadlessResizableTableContainer
+      {...headlessProps}
+      class={className()}
+      style={local.UNSAFE_style}
+    />
+  );
+}
+
+function SortIcon(props: { direction: "ascending" | "descending" }): JSX.Element {
+  return (
+    <Arrow
+      size="M"
+      class={tableSortIcon}
+      aria-hidden="true"
+      style={{
+        transform: props.direction === "ascending" ? "rotate(-90deg)" : "rotate(90deg)",
+      }}
+    />
+  );
+}
+
+Table.Header = TableHeader;
+Table.Column = TableColumn;
+Table.Body = TableBody;
+Table.Footer = TableFooter;
+Table.Row = TableRow;
+Table.Cell = TableCell;
+Table.EditableCell = EditableCell;
+Table.SelectionCheckbox = TableSelectionCheckbox;
+Table.SelectAllCheckbox = TableSelectAllCheckbox;
+Table.ColumnResizer = ColumnResizer;
+
+export const TableView = Table;
+export const Column = TableColumn;
+export const Footer = TableFooter;
+export const Row = TableRow;
+export const Cell = TableCell;
+
+export type { ColumnDefinition, Key, SortDescriptor };

@@ -1,1 +1,2 @@
-export * from "@proyecto-viviana/solid-spectrum/LinkButton";
+export { LinkButton } from "./button/LinkButton";
+export type { LinkButtonProps } from "./button/LinkButton";

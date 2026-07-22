@@ -1,0 +1,448 @@
+// @ts-nocheck
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
+import { linearGradient } from "../style/spectrum-theme" with { type: "macro" };
+import {
+  control,
+  getAllowedOverrides,
+  staticColor,
+} from "../s2-internal/style-utils" with { type: "macro" };
+import type { ButtonFillStyle, ButtonSize, ButtonVariant, StaticColor } from "./types";
+
+export interface S2ButtonRenderState {
+  isHovered?: boolean;
+  isPressed?: boolean;
+  isFocused?: boolean;
+  isFocusVisible?: boolean;
+  isDisabled?: boolean;
+  isPending?: boolean;
+}
+
+export interface S2ButtonStyleProps extends S2ButtonRenderState {
+  variant: ButtonVariant;
+  fillStyle: ButtonFillStyle;
+  size: ButtonSize;
+  staticColor?: StaticColor;
+  isStaticColor: boolean;
+}
+
+export const s2Button = style<S2ButtonStyleProps>(
+  {
+    ...focusRing(),
+    ...staticColor(),
+    ...control({ shape: "default", wrap: true, icon: true }),
+    position: "relative",
+    justifyContent: "center",
+    textAlign: "start",
+    /* The Glasselated register — 5px corner, `--edge-glass` rim, mono 400 — now
+     * arrives with `control()` above, which reads it off the handoff's own button
+     * (TerminalGlassLab.tsx:230 `btnBase` over design-handoff-v2.css:283
+     * `--type-button`). It used to be spelled out here, which is exactly why Button
+     * was the only control that converted. Size and padding still come from
+     * `control()`'s S/M/L/XL ramp rather than the mock's single fixed 7px/14px.
+     *
+     * No blur: the handoff's buttons are opaque. Glass is a surface treatment. */
+    userSelect: "none",
+    width: "fit",
+    textDecoration: "none",
+    transition: "default",
+    borderStyle: "solid",
+    borderWidth: {
+      fillStyle: {
+        /* Filled buttons carry the edge too. Every button the handoff draws has one,
+         * with no exception: accent `1px solid var(--interactive-fill)` over the same
+         * fill (TerminalGlassLab.tsx:303-304), secondary `1px solid var(--border-subtle)`
+         * (:315), create (:326), ghost over a transparent fill (:352), the well-filled
+         * RUN (:365). `btnBase` (:230-235) declares only radius/padding/cursor/shadow,
+         * so each variant spells its own edge — and every one of them does.
+         *
+         * This was 0, which is why `variant.create: 1` below was the only edge in the
+         * component that ever drew. `control()` sets `boxSizing: "border-box"`, so the
+         * S/M/L/XL height ramp is unchanged; only the content box narrows by 2px. */
+        fill: 1,
+        /* 1px, not Spectrum's 2px: the handoff's secondary and ghost buttons are
+         * hairline-edged like everything else it draws (TerminalGlassLab.tsx:231),
+         * and a 2px edge beside a 1px field reads as a different weight class. */
+        outline: 1,
+      },
+      variant: {
+        premium: 0,
+        genai: 0,
+        /* The handoff draws create with an explicit 1px rim in its own border token,
+         * not the fill colour — the pale wash needs the edge to hold its shape against
+         * a light surface. `variant` is applied after `fillStyle`, so this is 1px in
+         * both fill and outline, which is what the handoff shows. */
+        create: 1,
+      },
+    },
+    borderColor: {
+      variant: {
+        /* `primary` deliberately stays on the neutral ramp. The handoff's filled CTA
+         * draws its border in its own FILL colour — `1px solid var(--interactive-fill)`
+         * over `background-color: var(--interactive-fill)` (TerminalGlassLab.tsx:303-304)
+         * — so gray-800 tracking the `baseColor("neutral")` fill below is already the
+         * right idiom. A hairline here would break that fill/edge pairing. */
+        primary: baseColor("gray-800"),
+        /* `var(--border-subtle)` — the handoff's secondary (TerminalGlassLab.tsx:315)
+         * and ghost (:352) buttons are both hairlines in it. gray-300 is a solid mid-gray
+         * (#c5d0de light, #67717d dark), a full rule weight rather than an edge.
+         *
+         * Plain string, not `baseColor()`: --border-subtle has no ramp to step along, so
+         * this intentionally drops the hover/press border steps `baseColor()` was emitting
+         * — the handoff declares no hover border change on any button. The sibling
+         * `isStaticColor` branch below stays on `baseColor("transparent-overlay-300")`
+         * on purpose; that is the over-imagery case and keeps its overlay ramp. */
+        secondary: "border-subtle",
+        create: "create-border",
+      },
+      /* Accent and negative previously had no border colour because they had no border.
+       * Now that `borderWidth.fillStyle.fill` is 1px they need one, or they fall back to
+       * `currentColor` — which is `"white"` for both (see the `color` map below) — and
+       * ring a blue button in its own label text.
+       *
+       * The handoff borders its accent button in the same token as its fill (:303-304),
+       * so these mirror the `backgroundColor` map below stop for stop, hover states
+       * included. Scoped under `fillStyle` rather than added to `variant` above so the
+       * outline variants keep the `currentColor` edge they already draw, and placed
+       * before `isDisabled`/`isStaticColor`/`forcedColors` so those still win. Variants
+       * with no entry here fall through to `variant` above — the same pattern
+       * `borderWidth.variant` already relies on. */
+      fillStyle: {
+        fill: {
+          variant: {
+            accent: {
+              default: lightDark("accent-900", "accent-700"),
+              isHovered: lightDark("accent-1000", "accent-800"),
+              isPressed: lightDark("accent-1000", "accent-800"),
+              isFocusVisible: lightDark("accent-1000", "accent-800"),
+            },
+            negative: {
+              default: lightDark("negative-900", "negative-700"),
+              isHovered: lightDark("negative-1000", "negative-600"),
+              isPressed: lightDark("negative-1000", "negative-600"),
+              isFocusVisible: lightDark("negative-1000", "negative-600"),
+            },
+          },
+        },
+      },
+      isDisabled: "disabled",
+      isStaticColor: {
+        variant: {
+          primary: baseColor("transparent-overlay-800"),
+          secondary: baseColor("transparent-overlay-300"),
+        },
+        isDisabled: "transparent-overlay-300",
+      },
+      forcedColors: {
+        default: "ButtonBorder",
+        isHovered: "Highlight",
+        isDisabled: "GrayText",
+      },
+    },
+    backgroundColor: {
+      fillStyle: {
+        fill: {
+          variant: {
+            primary: baseColor("neutral"),
+            secondary: {
+              /* `var(--btn-secondary-bg)` (TerminalGlassLab.tsx:314) — #e9eff6 in light,
+               * `var(--surface-raised)` = rgb(51,58,68) in dark (design-handoff-v2.css:73,
+               * :196, :179). No pre-existing token covered both schemes: `raised` is
+               * #ffffff in light and `well` is #0a0f14 in dark, so each matches only one.
+               * The backgroundColor map therefore gained a `btn-secondary` entry pointing
+               * at the variable the island already ships. gray-100 (#e5eaf1 / #43474d) was
+               * a step off in both schemes and lost the slate cast in dark.
+               *
+               * The hover/press/focus stops stay on gray-200 (#dbe3ed / #555c64). Against
+               * the new resting fill that darkens in light and lightens in dark, which is
+               * the correct direction in each scheme — hover moves toward contrast with
+               * the page, so it necessarily reverses between schemes. --surface-hover is
+               * NOT usable here: it is an alpha wash (rgba(255,255,255,.75) light,
+               * rgba(58,62,70,.48) dark) meant to composite over a surface, and the macro
+               * bakes fills with no knowledge of the backdrop — see the gray-100/200 note
+               * in style/glasselated-ramps.ts. As a replacement fill it would turn an
+               * opaque button translucent on hover and, composited over the panel, invert
+               * the step in both schemes. */
+              default: "btn-secondary",
+              isHovered: "gray-200",
+              isPressed: "gray-200",
+              isFocusVisible: "gray-200",
+            },
+            accent: {
+              default: lightDark("accent-900", "accent-700"),
+              isHovered: lightDark("accent-1000", "accent-800"),
+              isPressed: lightDark("accent-1000", "accent-800"),
+              isFocusVisible: lightDark("accent-1000", "accent-800"),
+            },
+            negative: {
+              default: lightDark("negative-900", "negative-700"),
+              isHovered: lightDark("negative-1000", "negative-600"),
+              isPressed: lightDark("negative-1000", "negative-600"),
+              isFocusVisible: lightDark("negative-1000", "negative-600"),
+            },
+            /* The create CTA does not follow the semantic-fill pattern above. Those step
+             * along a ramp for hover; create-bg has no ramp, so the deeper wash is a named
+             * token. Both schemes are declared in the token itself, hence no lightDark(). */
+            create: {
+              default: "create-bg",
+              isHovered: "create-bg-deep",
+              isPressed: "create-bg-deep",
+              isFocusVisible: "create-bg-deep",
+            },
+            premium: "gray-100",
+            genai: "gray-100",
+          },
+          isDisabled: "disabled",
+        },
+        outline: {
+          variant: {
+            premium: "gray-100",
+            genai: "gray-100",
+          },
+          default: "transparent",
+          isHovered: "gray-100",
+          isPressed: "gray-100",
+          isFocusVisible: "gray-100",
+          isDisabled: {
+            default: "transparent",
+            variant: {
+              premium: "gray-100",
+              genai: "gray-100",
+            },
+          },
+        },
+      },
+      isStaticColor: {
+        fillStyle: {
+          fill: {
+            variant: {
+              primary: baseColor("transparent-overlay-800"),
+              secondary: baseColor("transparent-overlay-100"),
+              premium: "transparent-overlay-100",
+              genai: "transparent-overlay-100",
+            },
+            isDisabled: "transparent-overlay-100",
+          },
+          outline: {
+            variant: {
+              premium: "transparent-overlay-100",
+              genai: "transparent-overlay-100",
+            },
+            default: "transparent",
+            isHovered: "transparent-overlay-100",
+            isPressed: "transparent-overlay-100",
+            isFocusVisible: "transparent-overlay-100",
+            isDisabled: {
+              default: "transparent",
+              variant: {
+                premium: "transparent-overlay-100",
+                genai: "transparent-overlay-100",
+              },
+            },
+          },
+        },
+      },
+      forcedColors: {
+        fillStyle: {
+          fill: {
+            default: "ButtonText",
+            isHovered: "Highlight",
+            isDisabled: "GrayText",
+          },
+          outline: "ButtonFace",
+        },
+      },
+    },
+    color: {
+      fillStyle: {
+        fill: {
+          variant: {
+            primary: "gray-25",
+            secondary: baseColor("neutral"),
+            accent: "white",
+            negative: "white",
+            /* Dark ink on a pale fill — the inverse of every Spectrum variant. #7a5600 on
+             * #ffedb0 is 6.4:1, so this clears AA comfortably in both schemes. */
+            create: "create-ink",
+            premium: "white",
+            genai: "white",
+          },
+          isDisabled: "disabled",
+        },
+        outline: {
+          default: baseColor("neutral"),
+          variant: {
+            /* create-ink is near-black in the dark scheme — legible ON the pale fill, not
+             * against a dark page. Outline drops the fill, so the dark scheme takes the
+             * fill colour as its ink instead. */
+            create: lightDark("create-ink", "create-bg"),
+            premium: "white",
+            genai: "white",
+          },
+          isDisabled: "disabled",
+        },
+      },
+      isStaticColor: {
+        fillStyle: {
+          fill: {
+            variant: {
+              primary: "auto",
+              secondary: {
+                default: "transparent-overlay-1000",
+                isHovered: "transparent-overlay-1000",
+                isFocusVisible: "transparent-overlay-1000",
+                isPressed: "transparent-overlay-1000",
+              },
+              premium: "white",
+              genai: "white",
+            },
+          },
+          outline: {
+            variant: {
+              premium: "white",
+              genai: "white",
+            },
+            default: {
+              default: "transparent-overlay-1000",
+              isHovered: "transparent-overlay-1000",
+              isFocusVisible: "transparent-overlay-1000",
+              isPressed: "transparent-overlay-1000",
+            },
+          },
+        },
+        isDisabled: "transparent-overlay-400",
+      },
+      forcedColors: {
+        fillStyle: {
+          fill: {
+            default: "ButtonFace",
+            isDisabled: "HighlightText",
+          },
+          outline: {
+            default: "ButtonText",
+            isDisabled: "GrayText",
+          },
+        },
+      },
+    },
+    "--iconPrimary": {
+      type: "fill",
+      value: "currentColor",
+    },
+    outlineColor: {
+      default: "focus-ring",
+      isStaticColor: "transparent-overlay-1000",
+      forcedColors: "Highlight",
+    },
+    forcedColorAdjust: "none",
+    disableTapHighlight: true,
+  },
+  getAllowedOverrides(),
+);
+
+export const s2ButtonGradient = style<
+  S2ButtonRenderState & { variant: Extract<ButtonVariant, "premium" | "genai"> }
+>({
+  position: "absolute",
+  inset: 0,
+  zIndex: -1,
+  transition: "default",
+  borderRadius: "inherit",
+  backgroundImage: {
+    variant: {
+      premium: {
+        default: linearGradient(
+          "to bottom right",
+          ["fuchsia-900", 0],
+          ["indigo-900", 66],
+          ["blue-900", 100],
+        ),
+        isHovered: linearGradient(
+          "to bottom right",
+          ["fuchsia-1000", 0],
+          ["indigo-1000", 66],
+          ["blue-1000", 100],
+        ),
+        isPressed: linearGradient(
+          "to bottom right",
+          ["fuchsia-1000", 0],
+          ["indigo-1000", 66],
+          ["blue-1000", 100],
+        ),
+        isFocusVisible: linearGradient(
+          "to bottom right",
+          ["fuchsia-1000", 0],
+          ["indigo-1000", 66],
+          ["blue-1000", 100],
+        ),
+      },
+      genai: {
+        default: linearGradient(
+          "to bottom right",
+          ["red-900", 0],
+          ["magenta-900", 33],
+          ["indigo-900", 100],
+        ),
+        isHovered: linearGradient(
+          "to bottom right",
+          ["red-1000", 0],
+          ["magenta-1000", 33],
+          ["indigo-1000", 100],
+        ),
+        isPressed: linearGradient(
+          "to bottom right",
+          ["red-1000", 0],
+          ["magenta-1000", 33],
+          ["indigo-1000", 100],
+        ),
+        isFocusVisible: linearGradient(
+          "to bottom right",
+          ["red-1000", 0],
+          ["magenta-1000", 33],
+          ["indigo-1000", 100],
+        ),
+      },
+    },
+    isDisabled: "none",
+    forcedColors: "none",
+  },
+  colorScheme: {
+    variant: {
+      premium: "light",
+      genai: "light",
+    },
+  },
+});
+
+export const s2ButtonText = style<{ isProgressVisible?: boolean }>({
+  paddingY: "--labelPadding",
+  order: 1,
+  visibility: {
+    isProgressVisible: "hidden",
+  },
+});
+
+export const s2ButtonPendingIndicator = style<{
+  isPending?: boolean;
+  isProgressVisible?: boolean;
+}>({
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  visibility: {
+    default: "hidden",
+    isProgressVisible: "visible",
+  },
+});

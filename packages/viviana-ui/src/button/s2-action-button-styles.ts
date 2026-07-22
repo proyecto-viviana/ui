@@ -1,0 +1,491 @@
+// @ts-nocheck
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+import {
+  baseColor,
+  focusRing,
+  fontRelative,
+  lightDark,
+  style,
+} from "../style" with { type: "macro" };
+import {
+  control,
+  getAllowedOverrides,
+  staticColor,
+} from "../s2-internal/style-utils" with { type: "macro" };
+import type {
+  ActionButtonDensity,
+  ActionButtonOrientation,
+  ActionButtonSize,
+} from "./group-context";
+import type { StaticColor } from "./types";
+
+export interface S2ActionButtonRenderState {
+  isHovered?: boolean;
+  isPressed?: boolean;
+  isFocused?: boolean;
+  isFocusVisible?: boolean;
+  isDisabled?: boolean;
+  isPending?: boolean;
+  isSelected?: boolean;
+}
+
+export interface S2ActionButtonStyleProps extends S2ActionButtonRenderState {
+  size: ActionButtonSize;
+  staticColor?: StaticColor;
+  isStaticColor: boolean;
+  isQuiet?: boolean;
+  isEmphasized?: boolean;
+  density?: ActionButtonDensity;
+  orientation?: ActionButtonOrientation;
+  isJustified?: boolean;
+  isInGroup: boolean;
+}
+
+const iconOnly =
+  ":has([slot=icon], [data-slot=icon], [slot=avatar]):not(:has([data-rsp-slot=text]))";
+const avatarOnly =
+  ":has([slot=avatar]):not(:has([slot=icon], [data-slot=icon], [data-rsp-slot=text]))";
+const textOnly =
+  ":has([data-rsp-slot=text]):not(:has([slot=icon], [data-slot=icon], [slot=avatar]))";
+const controlStyle = control({ shape: "default", icon: true });
+/* An ActionButton at rest is the register's SECONDARY button, and the register has a
+ * token for exactly that: the handoff draws its neutral button as `--btn-secondary-bg`
+ * inside `--border-subtle` (TerminalGlassLab.tsx:236-238), and s2-button-styles.ts:177
+ * already spends `btn-secondary` on Button's secondary variant. ActionButton was the
+ * one control still filling itself from the ramp instead, at `gray-100` — opaque on
+ * both columns (#e5eaf1 / #43474d), where the token resolves to an opaque light value
+ * but the raised glass surface in dark. Three elements, and the two buttons sat side by
+ * side in the gallery wearing different fills for the same role. */
+const defaultActionButtonBackground = {
+  default: {
+    default: "btn-secondary",
+    isQuiet: "transparent",
+  },
+  isHovered: "surface-hover",
+  isPressed: "surface-hover",
+  isFocusVisible: "surface-hover",
+};
+const staticActionButtonBackground = {
+  default: {
+    default: "transparent-overlay-100",
+    isQuiet: "transparent",
+  },
+  isHovered: "transparent-overlay-200",
+  isPressed: "transparent-overlay-200",
+  isFocusVisible: "transparent-overlay-200",
+};
+
+export const s2ActionButton = style<S2ActionButtonStyleProps>(
+  {
+    ...focusRing(),
+    ...staticColor(),
+    ...controlStyle,
+    display: "grid",
+    justifyContent: "center",
+    flexShrink: {
+      default: 1,
+      isInGroup: 0,
+    },
+    flexGrow: {
+      isJustified: 1,
+    },
+    flexBasis: {
+      isJustified: 0,
+    },
+    /* Spectrum set action buttons a step heavier than regular buttons so they read
+     * as chrome. The Glasselated register doesn't use weight for that — it has one
+     * control weight (`--type-button` is 400) and separates chrome from action with
+     * fill and rim instead. Left at `control()`'s normal, so an ActionButton beside
+     * a Button no longer looks like a different typeface. */
+    width: "fit",
+    userSelect: "none",
+    transition: "default",
+    forcedColorAdjust: "none",
+    position: "relative",
+    gridTemplateAreas: {
+      default: ["icon text"],
+      [iconOnly]: ["icon"],
+      [textOnly]: ["text"],
+    },
+    gridTemplateColumns: {
+      default: ["auto", "auto"],
+      [iconOnly]: ["auto"],
+      [textOnly]: ["auto"],
+    },
+    backgroundColor: {
+      default: defaultActionButtonBackground,
+      isSelected: {
+        default: baseColor("neutral"),
+        isEmphasized: {
+          default: lightDark("accent-900", "accent-700"),
+          isHovered: lightDark("accent-1000", "accent-800"),
+          isPressed: lightDark("accent-1000", "accent-800"),
+          isFocusVisible: lightDark("accent-1000", "accent-800"),
+        },
+        isDisabled: {
+          default: "gray-100",
+          isQuiet: "transparent",
+        },
+      },
+      forcedColors: {
+        default: "ButtonFace",
+        isSelected: {
+          default: "Highlight",
+          isDisabled: "ButtonFace",
+        },
+      },
+    },
+    color: {
+      default: baseColor("neutral"),
+      isSelected: {
+        default: "gray-25",
+        isEmphasized: "white",
+      },
+      isDisabled: "disabled",
+      forcedColors: {
+        default: "ButtonText",
+        isSelected: "HighlightText",
+        isDisabled: {
+          default: "GrayText",
+        },
+      },
+    },
+    "--iconPrimary": {
+      type: "fill",
+      value: "currentColor",
+    },
+    outlineColor: {
+      default: "focus-ring",
+      forcedColors: "Highlight",
+    },
+    /* Chrome buttons wear the register's 1px edge like every other button the handoff
+     * draws — including the ones with no fill at all. This said `borderStyle: "none"`,
+     * and since `control()` at the `glass` register emits no border keys either, Action,
+     * Quiet, Toggle and ActionMenu all rendered at `border-width: 0px`.
+     *
+     * Quiet keeps a 1px *transparent* edge rather than no edge at all, so toggling
+     * `isQuiet` does not shift the control's content box by a pixel. A selected quiet
+     * button is filled — `isSelected` in the `backgroundColor` map above declares no
+     * `isQuiet` branch, so it overrides the transparent resting fill — and its edge
+     * tracks that fill here for the same reason.
+     *
+     * `control()` sets `boxSizing: "border-box"`, so the size ramp is unchanged; only
+     * the content box narrows by 2px. The per-corner `borderTop*Radius` keys below set
+     * different CSS properties than the `borderRadius` arriving from `controlStyle`,
+     * so nothing here collides with them. */
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: {
+      default: {
+        default: "border-subtle",
+        isQuiet: "transparent",
+      },
+      /* Mirrors the `backgroundColor` map's `isSelected` branch stop for stop, which is
+       * the handoff's idiom for a filled control: the edge is drawn in the fill colour.
+       *
+       * `gray-800`, not `baseColor("neutral")`, for the non-emphasized stop: the
+       * `borderColor` map in style/spectrum-theme.ts is `{...baseColors, negative,
+       * disabled, border-subtle, border-default, well-border}` and carries no `neutral`
+       * entry, so the macro would throw `Invalid color neutral` at build time — a crash
+       * this file's `@ts-nocheck` would not have caught. The Spectrum token `neutral`
+       * resolves to `{gray-800}`, so this is the same colour by a name the property
+       * accepts, and it is the same substitution `s2Button` already makes for its
+       * `primary` variant, whose fill is likewise `baseColor("neutral")`. */
+      isSelected: {
+        default: baseColor("gray-800"),
+        isEmphasized: {
+          default: lightDark("accent-900", "accent-700"),
+          isHovered: lightDark("accent-1000", "accent-800"),
+          isPressed: lightDark("accent-1000", "accent-800"),
+          isFocusVisible: lightDark("accent-1000", "accent-800"),
+        },
+      },
+      isDisabled: {
+        default: "disabled",
+        isQuiet: "transparent",
+      },
+      forcedColors: {
+        default: "ButtonBorder",
+        isSelected: "Highlight",
+        isDisabled: "GrayText",
+      },
+    },
+    borderTopStartRadius: {
+      default: controlStyle.borderRadius,
+      density: {
+        compact: {
+          default: "none",
+          ":first-child": controlStyle.borderRadius,
+        },
+      },
+    },
+    borderTopEndRadius: {
+      default: controlStyle.borderRadius,
+      density: {
+        compact: {
+          default: "none",
+          orientation: {
+            horizontal: {
+              ":last-child": controlStyle.borderRadius,
+            },
+            vertical: {
+              ":first-child": controlStyle.borderRadius,
+            },
+          },
+        },
+      },
+    },
+    borderBottomStartRadius: {
+      default: controlStyle.borderRadius,
+      density: {
+        compact: {
+          default: "none",
+          orientation: {
+            horizontal: {
+              ":first-child": controlStyle.borderRadius,
+            },
+            vertical: {
+              ":last-child": controlStyle.borderRadius,
+            },
+          },
+        },
+      },
+    },
+    borderBottomEndRadius: {
+      default: controlStyle.borderRadius,
+      density: {
+        compact: {
+          default: "none",
+          ":last-child": controlStyle.borderRadius,
+        },
+      },
+    },
+    zIndex: {
+      isFocusVisible: 2,
+    },
+    disableTapHighlight: true,
+    "--badgeTop": {
+      type: "top",
+      value: {
+        default: "calc(self(height)/2 - var(--iconWidth)/2)",
+        [textOnly]: 0,
+      },
+    },
+    "--iconWidth": {
+      type: "width",
+      value: fontRelative(20),
+    },
+    "--badgePosition": {
+      type: "width",
+      value: {
+        default: "--iconWidth",
+        [textOnly]: "full",
+      },
+    },
+    paddingX: {
+      default: controlStyle.paddingX,
+      [avatarOnly]: 0,
+    },
+    "--iconMargin": {
+      type: "marginStart",
+      value: {
+        default: fontRelative(-2),
+        [iconOnly]: 0,
+        [avatarOnly]: 0,
+      },
+    },
+  },
+  getAllowedOverrides(),
+);
+
+export const s2ActionButtonStaticColor = style<S2ActionButtonStyleProps>(
+  {
+    /* `s2ActionButton` now draws its edge in `--border-subtle`, a token meant for glass
+     * surfaces — over an arbitrary static-colour backdrop that reads as a stray hairline.
+     * Static colour re-points the edge at the transparent-overlay ramp, exactly as it
+     * already does for fill, ink and focus ring below, and as `s2Button` does for its
+     * own `isStaticColor` border. This class is merged ON TOP of `s2ActionButton` (both
+     * ActionButton and ToggleButton merge this class after the base one via mergeStyles),
+     * so it overrides per property rather than replacing the whole rule — which is also
+     * why `forcedColors` is restated here, as the sibling `backgroundColor`, `color` and
+     * `outlineColor` maps below all do. Omitting it would drop the base's HCM edge.
+     *
+     * `borderWidth`/`borderStyle` are deliberately NOT restated: they are unconditional
+     * on the base class, so the geometry is already right and only the colour differs. */
+    borderColor: {
+      default: {
+        default: baseColor("transparent-overlay-300"),
+        isQuiet: "transparent",
+      },
+      isSelected: baseColor("transparent-overlay-800"),
+      isDisabled: {
+        default: "transparent-overlay-300",
+        isQuiet: "transparent",
+      },
+      forcedColors: {
+        default: "ButtonBorder",
+        isSelected: "Highlight",
+        isDisabled: "GrayText",
+      },
+    },
+    backgroundColor: {
+      default: staticActionButtonBackground,
+      isSelected: {
+        default: baseColor("transparent-overlay-800"),
+        isDisabled: {
+          default: "transparent-overlay-100",
+          isQuiet: "transparent",
+        },
+      },
+      forcedColors: {
+        default: "ButtonFace",
+        isSelected: {
+          default: "Highlight",
+          isDisabled: "ButtonFace",
+        },
+      },
+    },
+    color: {
+      default: "transparent-overlay-1000",
+      isSelected: "auto",
+      isDisabled: "transparent-overlay-400",
+      forcedColors: {
+        default: "ButtonText",
+        isSelected: "HighlightText",
+        isDisabled: {
+          default: "GrayText",
+        },
+      },
+    },
+    outlineColor: {
+      default: "transparent-overlay-1000",
+      forcedColors: "Highlight",
+    },
+  },
+  getAllowedOverrides(),
+);
+
+export const s2ActionButtonText = style<{ isProgressVisible?: boolean }>({
+  gridArea: "text",
+  truncate: true,
+  visibility: {
+    isProgressVisible: "hidden",
+  },
+});
+
+export const s2ToggleButtonText = style({
+  paddingY: "--labelPadding",
+  order: 1,
+  truncate: true,
+});
+
+export const s2ActionButtonPendingIndicator = style<{ isProgressVisible?: boolean }>({
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  visibility: {
+    default: "hidden",
+    isProgressVisible: "visible",
+  },
+});
+
+export const s2ActionButtonProgressCircle = style<{ size: ActionButtonSize }>({
+  size: {
+    size: {
+      XS: 12,
+      S: 14,
+      M: 18,
+      L: 20,
+      XL: 24,
+    },
+  },
+});
+
+export const s2ActionButtonGroup = style(
+  {
+    display: "flex",
+    flexDirection: {
+      orientation: {
+        horizontal: "row",
+        vertical: "column",
+      },
+    },
+    gap: {
+      density: {
+        compact: 2,
+        regular: {
+          size: {
+            XS: 4,
+            S: 4,
+            M: 8,
+            L: 8,
+            XL: 8,
+          },
+        },
+      },
+    },
+  },
+  getAllowedOverrides({ height: true }),
+);
+
+export const s2ButtonGroup = style(
+  {
+    display: "inline-flex",
+    position: "relative",
+    // Cap the group at its container's width so an inline-flex row can actually
+    // overflow: without this the group grows to fit its buttons and the
+    // overflow→vertical switch in ButtonGroup never fires. Mirrors upstream's
+    // `maxWidth: 'full'`.
+    maxWidth: "full",
+    gap: {
+      size: {
+        S: 8,
+        M: 12,
+        L: 12,
+        XL: 12,
+      },
+    },
+    flexDirection: {
+      default: "row",
+      orientation: {
+        vertical: "column",
+      },
+    },
+    alignItems: {
+      default: "center",
+      orientation: {
+        vertical: {
+          default: "start",
+          align: {
+            end: "end",
+            center: "center",
+          },
+        },
+      },
+    },
+    justifyContent: {
+      orientation: {
+        vertical: {
+          default: "start",
+          align: {
+            end: "end",
+            center: "center",
+          },
+        },
+      },
+    },
+  },
+  getAllowedOverrides(),
+);

@@ -1,0 +1,30 @@
+/*
+ * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Do not edit by hand.
+ */
+
+import { type JSX } from "solid-js";
+import { createIcon } from "../spectrum-icon";
+
+function ChevronLeftIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
+  const { class: className, ...rest } = props;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 20 20"
+      {...rest}
+      class={className}
+    >
+      <path
+        d="M12.237 16.455c-.196 0-.393-.077-.54-.23L6.21 10.52c-.28-.29-.28-.749 0-1.039l5.5-5.716c.287-.3.763-.308 1.06-.02.298.286.308.76.02 1.059l-4.999 5.197 4.986 5.184c.288.297.279.772-.02 1.06-.145.14-.332.21-.52.21"
+        fill="var(--iconPrimary, #222)"
+      />
+    </svg>
+  );
+}
+
+export type ChevronLeftIconProps = JSX.SvgSVGAttributes<SVGSVGElement>;
+export const ChevronLeftIcon = createIcon(ChevronLeftIconSvg);
+export default ChevronLeftIcon;

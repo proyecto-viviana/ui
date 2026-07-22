@@ -1,2 +1,2 @@
-export * from "@proyecto-viviana/solid-spectrum/ContrastIcon";
-export { default } from "@proyecto-viviana/solid-spectrum/ContrastIcon";
+export { ContrastIcon, default } from "./icon/s2wf-icons/ContrastIcon";
+export type { ContrastIconProps } from "./icon/s2wf-icons/ContrastIcon";

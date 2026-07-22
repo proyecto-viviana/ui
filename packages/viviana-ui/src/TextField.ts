@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/TextField";
+export * from "./textfield";

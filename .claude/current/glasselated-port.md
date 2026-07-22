@@ -37,10 +37,13 @@ glass = translucent surface + backdrop blur + an inset `--edge-glass` rim; a
 closed set of nine type roles (display/title/headline/label on Geist Pixel,
 body/meta on Geist, micro/terminal/button on Geist Mono).
 
-## Where the spec lives (external, not committed here)
+## Where the spec lives (external, frozen, not committed here)
 
 Repo `~/projects/proyecto-viviana/visual-system-claude`, branch
-`design/glasselated-v2`:
+`design/glasselated-v2`. **Frozen as of 2026-07-22** (owner decision): it is a
+read-only reference — no further work lands there. Any asset the port still
+needs from it (font files, the mesh/dither engine, scene imagery) is copied
+into this repository when its slice lands, credited per `CREDITS.md` policy.
 
 - `apps/akade/src/styles/glasselated.css` — the full token + treatment layer
   (~4.3k lines, scoped under `[data-glasselated]`), including the `--s2-*`
@@ -56,24 +59,22 @@ Repo `~/projects/proyecto-viviana/visual-system-claude`, branch
 
 ## Where the port stands
 
-Worktree `../ui-visual-system-claude`, branch `design/visual-system-claude-v2`
-(HEAD 456ad4f7) — 22 commits, a strict fast-forward superset of `main`
-(merge-base = c704ef80). Done there: solid-spectrum vendored into viviana-ui
-with color ramps anchored to the handoff (`src/style/glasselated-ramps.ts`),
-create-yellow button variant, Button on the Glasselated form, warning routed to
-amber, per-level Heading sizes, self-contained `styles.css`, and the
-Tabs/GridList hydration fix (children-prop getter must not be read twice during
-hydration). Its three solid-spectrum commits are macro-hygiene only (landmark
-via `style()`, invented-utility guard) — parity-safe.
+**Landed on `main` 2026-07-22** — the design lane's branch
+`design/visual-system-claude-v2` (23 commits; see `visual-system-lane.md` for
+provenance) was squash-merged. On `main` now: solid-spectrum vendored into
+viviana-ui with color ramps anchored to the handoff
+(`src/style/glasselated-ramps.ts`), create-yellow button variant, Button on the
+Glasselated form, warning routed to amber, per-level Heading sizes,
+self-contained `styles.css`, the Tabs/GridList hydration fix (children-prop
+getter must not be read twice during hydration), and `ElementTag` (compiled
+string-tag rendering replacing `<Dynamic>`'s unsafe string branch across
+solidaria-components + DisclosureTitle). The branch's three solid-spectrum
+commits are macro-hygiene only (landmark via `style()`, invented-utility
+guard) — parity-safe. All further work happens on `main`.
 
-Uncommitted WIP in that worktree: an `ElementTag` replacement for
-`solid-js/web`'s `<Dynamic>` across seven solidaria-components files plus
-`viviana-ui/src/disclosure` — the continuation of the hydration root-cause
-work. Finish or explicitly park before new work in that tree.
-
-Known open SSR/hydration bugs to close in the lane: ListViewItem never
-hydrates; TagGroup `isRenderedTag()` does an `instanceof HTMLElement` check
-that breaks on the server; Breadcrumbs self-measures on the client.
+Known open SSR/hydration bugs to close next: ListViewItem never hydrates;
+TagGroup `isRenderedTag()` does an `instanceof HTMLElement` check that breaks
+on the server; Breadcrumbs self-measures on the client.
 
 ## Gaps between the register and the library
 
@@ -93,9 +94,10 @@ route rendering **real `@proyecto-viviana/ui` components** under a
 `[data-glasselated]` scope, organized on the TerminalGlassLab nine-panel
 taxonomy so the showcase doubles as the register's acceptance surface.
 
-## Merge disposition
+## Release posture
 
-Per `visual-system-lane.md`: the maintainer reviews and squash-merges the
-design branch and owns it after; the squash commit carries a plain-prose
-provenance line. Until then, port + showcase work continues on the branch in
-its worktree.
+Nothing publishes until the owner says so. Pushes to `main` only make the
+changesets bot maintain the "Version Packages" PR; npm publish happens solely
+when the owner merges that PR. Changesets keep accumulating with the work per
+`release-policy.md`; publishing is revisited once viviana-ui looks right across
+all components.

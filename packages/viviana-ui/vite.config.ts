@@ -1,108 +1,223 @@
+import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
-import { vivianaMacros } from "./src/vite";
+import macros from "unplugin-parcel-macros";
 
-// viviana-ui re-exports the solid-spectrum S2 ports and ships the theme/token
-// CSS + the `style()` macro seam (`src/style.ts`). The legacy custom product
-// components (cards / feed / shell pieces) have been archived out of the built
-// surface (see `archive/custom/`), so this build now only packs the re-export
-// barrel, per-component entries, and the style seam. It still mirrors
-// solid-spectrum's `vite.config.ts`: a dual pack so consumers can use either the
-// precompiled DOM build or the JSX-preserved `solid` condition.
-//
-//  - Pack 1 (.js): vite-plugin-solid (generate: "dom") compiles JSX to the Solid
-//    runtime — the `import`/`default` conditions, for consumers without a Solid
-//    compiler. `s2Macros()` runs the style() macro and extracts its rules into a
-//    single `viviana-components.css`.
-//  - Pack 2 (.jsx): JSX preserved (macro-expanded) — the `solid` export
-//    condition. The consumer's compiler turns it into DOM or SSR per-environment,
-//    so no separate SSR bundle is needed. The style() macro still runs here
-//    (style() -> class strings), so consumers don't need the macro plugin; the
-//    CSS comes from the DOM build above.
-//
-// Types come from a separate `tsc -p tsconfig.build.json` (see package.json).
+// Viviana UI is a reskinned FORK of @proyecto-viviana/solid-spectrum: the styled
+// top layer is duplicated (src/) and its S2 theme remapped to the Glasselated
+// register (translucent --surface-* surfaces + backdrop blur), while the shared
+// headless stack (solid-stately -> solidaria -> solidaria-components) is reused
+// untouched. This build mirrors solid-spectrum's own vite.config so the style()
+// macro bakes viviana's forked theme values into the atomic base (dist/styles.css)
+// at build time — a re-export could never reskin, since the macro bakes at build.
 
-const entry = [
+const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
+const macroCssImportPattern = /import\s+["']macro-[a-f0-9]+\.css["'];\n?/g;
+
+function getMacroCssFileName(id: string) {
+  const fileName = id.split("/").pop();
+  return fileName && macroCssIdPattern.test(fileName) ? fileName : null;
+}
+
+function removeMacroCssImports(code: string) {
+  return code.replace(macroCssImportPattern, "");
+}
+
+function getMacroCssContent(content: unknown) {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  if (content && typeof content === "object" && "code" in content) {
+    const code = (content as { code: unknown }).code;
+    return typeof code === "string" ? code : null;
+  }
+
+  return null;
+}
+
+function s2Macros() {
+  const plugin = macros.rolldown();
+  const macroCssCache = new Map<string, string>();
+
+  const cacheMacroCss = (id: string, content: unknown) => {
+    const fileName = getMacroCssFileName(id);
+    const css = getMacroCssContent(content);
+    if (fileName && css != null) {
+      macroCssCache.set(fileName, css);
+    }
+    return css;
+  };
+
+  return {
+    ...plugin,
+    async transform(this: unknown, code: string, id: string) {
+      const result = await plugin.transform?.call(this, code, id);
+      const transformedCode =
+        typeof result === "string"
+          ? result
+          : result && typeof result === "object" && "code" in result
+            ? String(result.code)
+            : "";
+
+      for (const match of transformedCode.matchAll(/import\s+["'](macro-[a-f0-9]+\.css)["'];/g)) {
+        const content = await plugin.load?.call(this, match[1]);
+        cacheMacroCss(match[1], content);
+      }
+
+      return result;
+    },
+    async resolveId(this: unknown, id: string, importer?: string, options?: object) {
+      const resolved = await plugin.resolveId?.call(this, id, importer, options);
+      if (resolved) {
+        return resolved;
+      }
+      const fileName = getMacroCssFileName(id);
+      if (fileName && macroCssCache.has(fileName)) {
+        return fileName;
+      }
+      return resolved;
+    },
+    loadInclude(id: string) {
+      const fileName = getMacroCssFileName(id);
+      return (
+        (fileName != null && macroCssCache.has(fileName)) || (plugin.loadInclude?.(id) ?? false)
+      );
+    },
+    async load(this: unknown, id: string) {
+      if (plugin.loadInclude?.(id)) {
+        const content = await plugin.load?.call(this, id);
+        const css = cacheMacroCss(id, content);
+        if (css != null) {
+          return css;
+        }
+        return content;
+      }
+      const fileName = getMacroCssFileName(id);
+      if (fileName) {
+        return macroCssCache.get(fileName);
+      }
+      return null;
+    },
+    renderChunk(code: string) {
+      return removeMacroCssImports(code);
+    },
+  };
+}
+
+// Curated public surface: the `.` barrel, the hand-picked PascalCase component
+// aliases (each backed by a package.json subpath export), the JSX-free style
+// macro modules, and the viviana-only `src/vite.ts` macro preset. Keep in sync
+// with package.json `exports`.
+const subpathEntries = [
   "src/index.ts",
-  "src/style.ts",
-  "src/style/runtime.ts",
-  "src/vite.ts",
   "src/ActionButton.ts",
+  "src/Button.ts",
+  "src/CenterBaseline.ts",
+  "src/ContrastIcon.ts",
+  "src/FileTrigger.ts",
+  "src/LightenIcon.ts",
+  "src/LinkButton.ts",
+  "src/Picker.ts",
+  "src/Provider.ts",
+  "src/SearchField.ts",
+  "src/SegmentedControl.ts",
+  "src/Switch.ts",
+  "src/TextArea.ts",
+  "src/TextField.ts",
   "src/ActionMenu.ts",
   "src/Breadcrumbs.ts",
-  "src/Button.ts",
   "src/Calendar.ts",
-  "src/Card.ts",
-  "src/CardView.ts",
-  "src/CenterBaseline.ts",
   "src/ColorArea.ts",
   "src/ColorField.ts",
   "src/ColorSlider.ts",
   "src/ColorSwatch.ts",
   "src/ColorSwatchPicker.ts",
   "src/ColorWheel.ts",
-  "src/ContrastIcon.ts",
-  "src/Disclosure.ts",
-  "src/FileTrigger.ts",
-  "src/GitHubIcon.ts",
-  "src/LightenIcon.ts",
-  "src/LinkButton.ts",
+  "src/disclosure-export.ts",
+  "src/Card.ts",
+  "src/CardView.ts",
   "src/ListView.ts",
-  "src/Menu.ts",
-  "src/Picker.ts",
-  "src/Provider.ts",
-  "src/RangeCalendar.ts",
-  "src/SearchField.ts",
-  "src/SegmentedControl.ts",
-  "src/Switch.ts",
-  "src/Tabs.ts",
-  "src/TextArea.ts",
-  "src/TextField.ts",
   "src/TreeView.ts",
+  "src/RangeCalendar.ts",
+  "src/Menu.ts",
+  "src/Tabs.ts",
+  "src/GitHubIcon.ts",
+  "src/style/index.ts",
+  "src/style/runtime.ts",
+  "src/vite.ts",
 ];
 
-// Externalize solid-js and the workspace packages we re-export (and their
-// subpaths) so solid-spectrum's `solid` condition propagates to its
-// JSX-preserved entries; we only bundle our own product components.
+// Every module the `.` barrel re-exports from, promoted to its own build entry so
+// `dist/index.jsx` stays a thin re-export barrel instead of inlining the whole
+// library — a bundled barrel runs past Solid's 500 KB compiler deopt threshold for
+// any consumer that touches it. Derived from the barrel's own `from "./…"`
+// specifiers so the entry set can't drift out of sync.
+//
+// vite preserves each entry's path relative to `src`, so `src/provider/index.tsx`
+// emits `dist/provider/index.jsx` right next to the `dist/provider/index.d.ts` that
+// `tsc -p tsconfig.build.json` emits — never a flat `dist/provider.jsx` sibling,
+// which would shadow the type directory when TypeScript resolves the barrel's
+// `export … from "./provider"` and collapse every re-exported type to `{}`.
+// Barrel targets deliberately left inlined rather than promoted to their own
+// entry. `src/icon/index.tsx` re-exports `* as s2wfIcons` — the full 410-icon set
+// — which the public barrel never re-exports. Promoting it to an entry would root
+// that namespace and defeat tree-shaking (a 631 KB chunk over the deopt limit);
+// inlining its used surface into the barrel lets the unused namespace drop. The
+// individual `./icon/s2wf-icons/<Name>` icons stay their own (tiny) entries.
+const inlineIntoBarrel = new Set(["src/icon/index.tsx"]);
+
+function barrelTargets(barrelPath: string): string[] {
+  const source = readFileSync(barrelPath, "utf8");
+  const targets = new Set<string>();
+  for (const match of source.matchAll(/from\s+"(\.\/[^"]+)"/g)) {
+    const base = `src/${match[1].slice(2)}`;
+    const file = [`${base}.tsx`, `${base}.ts`, `${base}/index.tsx`, `${base}/index.ts`].find(
+      existsSync,
+    );
+    if (file && !inlineIntoBarrel.has(file)) targets.add(file);
+  }
+  return [...targets];
+}
+
+// The JSX-free modules — the style macro modules and the `src/vite.ts` macro
+// preset — are built only in the DOM (`.js`) pass and served via the
+// `import`/`solid` `.js` conditions. A `.jsx` copy would only be re-compiled by
+// every consumer's Solid plugin for nothing.
+const styleEntries = ["src/style/index.ts", "src/style/runtime.ts", "src/vite.ts"];
+
+const entry = [...new Set([...subpathEntries, ...barrelTargets("src/index.ts")])];
+const jsxEntry = entry.filter((e) => !styleEntries.includes(e));
+
 const deps = {
+  alwaysBundle: [/^@adobe\/spectrum-tokens(\/.*)?$/],
   neverBundle: [
-    /^solid-js(\/.*)?$/,
-    /^@proyecto-viviana\/solid-spectrum(\/.*)?$/,
-    /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
-    // The macro preset (src/vite.ts) imports unplugin-parcel-macros; it's a
-    // peerDependency that must stay external so dist/vite.js uses the app's
-    // installed instance (the macro runs at the app's build, not ours).
-    /^unplugin-parcel-macros$/,
+    "solid-js",
+    "solid-js/web",
+    "solid-js/store",
+    "@proyecto-viviana/solidaria-components",
+    // src/vite.ts imports unplugin-parcel-macros; it's an (optional) peer that
+    // must stay external so dist/vite.js uses the app's installed instance (the
+    // macro runs at the app's build, not ours).
+    "unplugin-parcel-macros",
   ],
+  onlyBundle: [/^@adobe\/spectrum-tokens$/],
 };
 
-// The S2 style() macro rules, bundled into one stylesheet. Emitted under a
-// distinct name so the copied `src/styles.css` (which @imports solid-spectrum's)
-// isn't clobbered; `scripts/inline-macro-css.mjs` then appends this into
-// dist/styles.css and removes it (a relative @import to a macro-emitted file
-// isn't reliably followed through the export map — see that script).
 const css = {
-  fileName: "viviana-components.css",
+  fileName: "styles.css",
   splitting: false,
   inject: false,
   minify: true,
 };
 
-// Hand-written CSS files copied verbatim (the macro only emits
-// viviana-components.css above, later inlined into styles.css).
-// theme.css/styles.css/components.css chain the solid-spectrum imports with
-// viviana's tokens + atomic rules.
-const copiedCssFiles = [
-  "components.css",
-  "font-faces.css",
-  "theme.css",
-  "styles.css",
-  "viviana-tokens.css",
-].map((fileName) => ({
-  from: `src/${fileName}`,
-  to: "dist",
-  flatten: true,
-}));
+const copiedCssFiles = ["components.css", "font-faces.css", "theme.css", "viviana-tokens.css"].map(
+  (fileName) => ({
+    from: `src/${fileName}`,
+    to: "dist",
+    flatten: true,
+  }),
+);
 
 export default defineConfig({
   pack: [
@@ -118,18 +233,23 @@ export default defineConfig({
       fixedExtension: false,
       hash: false,
       css,
-      plugins: [vivianaMacros(), solid({ solid: { generate: "dom", hydratable: true } })],
+      // Shared chunks routed to a reserved subdir so a `dist/<name>.js` chunk can
+      // never collide with a per-module output directory.
+      outputOptions(options) {
+        return { ...options, chunkFileNames: "_chunk/[name].js" };
+      },
+      plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
       deps,
       copy: copiedCssFiles,
     },
     {
       // JSX preserved (macro-expanded) -> dist/*.jsx — the `solid` export
-      // condition. The consumer's compiler turns this into DOM or SSR
-      // per-environment, so no separate pre-built SSR bundle is needed. The
-      // style() macro still runs here (style() -> class strings), so consumers
-      // don't need the macro plugin; viviana-components.css comes from the DOM
-      // build above.
-      entry,
+      // condition. The consumer's compiler turns this into DOM
+      // or SSR per-environment, so no separate pre-built SSR bundle is needed.
+      // The style() macro still runs here (style() -> class strings), so
+      // consumers don't need the macro plugin; styles.css comes from the DOM
+      // build above. The JSX-free modules are excluded (served as `.js`).
+      entry: jsxEntry,
       format: ["esm"],
       target: "esnext",
       platform: "browser",
@@ -147,10 +267,10 @@ export default defineConfig({
         return {
           ...options,
           entryFileNames: "[name].jsx",
-          chunkFileNames: "[name].jsx",
+          chunkFileNames: "_chunk/[name].jsx",
         };
       },
-      plugins: [vivianaMacros()],
+      plugins: [s2Macros()],
       deps,
     },
   ],

@@ -1,1 +1,1 @@
-export * from "@proyecto-viviana/solid-spectrum/FileTrigger";
+export * from "./filetrigger";
