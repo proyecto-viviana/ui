@@ -167,6 +167,7 @@ export {
 export type {
   AssetCardProps,
   CardDensity,
+  CardMeshVariant,
   CardPreviewProps,
   CardProps,
   CardRenderProps,
@@ -722,6 +723,8 @@ export type { WellProps } from "./well";
 // list-data primitives keep their Solid `create*` names internally and are
 // re-exported under S2's `use*` names for parity with the upstream surface.
 export { mergeStyles } from "./style/runtime";
+export { meshStrip } from "./style/meshStrip";
+export type { MeshStripOptions } from "./style/meshStrip";
 export { Autocomplete } from "@proyecto-viviana/solidaria-components";
 export { useLocale } from "@proyecto-viviana/solidaria";
 export {

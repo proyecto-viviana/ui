@@ -176,6 +176,27 @@ well (terminal-role mono rows, `--well-cy/am/vi/rd` channel inks) and the
 same well composed from library primitives (segmented side-label Meters +
 a terminal prompt line). Probe-verified both schemes.
 
+Closed 2026-07-22: the Card mesh axis + console strip (Panel06, both mirror
+GAPs). `meshStrip()` moved into the library (`src/style/meshStrip.ts`, public
+export; `apps/web/src/lib/glasselated.ts` now re-exports it) and Card grew
+`mesh?: "ambient" | "signal"` + `meshSeed?` — the hex-weave data URI as
+`background-image`, suppressed for tertiary/quiet (no fill to sit behind),
+`data-mesh` stamped on all three render paths for the app-level mesh-field
+cursor treatment. Scheme flipping is the interesting bit: the weave is a
+runtime data URI with per-scheme hues, so neither the build-time style macro
+nor `light-dark()` (colors only) can carry it — it rides the lightningcss
+space-toggle atoms (`--lightningcss-light`/`--lightningcss-dark`, maintained
+by `setColorScheme()` on every Provider root; `initial` fires a slot's
+`var()` fallback, `" "` suppresses it):
+`var(--lightningcss-light, url(L)) var(--lightningcss-dark, url(D))`.
+CardPreview gained `background="inset"` — the register console-strip
+treatment via the theme's existing `pasteboard` → `--surface-inset` mapping,
+no theme addition needed. Demoed as the `/showcase/cards` opener (register
+trio: media card with SHADERS badge + segmented meter footer; DUE/NEW console
+cards with StatusLight prompt strips). Probe-verified both schemes — the
+substituted URI carries the scheme's stroke hex both ways; SSR 13/13,
+hydrate 15/15.
+
 ## Showcase plan
 
 Home is **`apps/web`** (TanStack Solid Start SSR on Cloudflare Workers) — it

@@ -3,6 +3,7 @@ import {
   type Accessor,
   type JSX,
   createContext,
+  createMemo,
   mergeProps,
   splitProps,
   useContext,
@@ -29,6 +30,7 @@ import { pressScale } from "../pressScale";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
 import { color, focusRing, lightDark, space, style } from "../style" with { type: "macro" };
+import { meshStrip } from "../style/meshStrip";
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
@@ -42,6 +44,7 @@ import {
 export type CardSize = "XS" | "S" | "M" | "L" | "XL";
 export type CardDensity = "compact" | "regular" | "spacious";
 export type CardVariant = "primary" | "secondary" | "tertiary" | "quiet";
+export type CardMeshVariant = "ambient" | "signal";
 
 export interface CardRenderProps {
   /** The size of the Card. */
@@ -60,6 +63,15 @@ export interface CardProps extends Omit<
   density?: CardDensity;
   /** The visual style of the Card. @default 'primary' */
   variant?: CardVariant;
+  /**
+   * The register's woven hex-mesh weave, painted behind the glass fill —
+   * `ambient` is the quiet mixed gray/blue/orange weave, `signal` the warm
+   * single-hue amber one. Only the filled variants take it; `tertiary` and
+   * `quiet` have no fill for a weave to sit under.
+   */
+  mesh?: CardMeshVariant;
+  /** Seed for the mesh weave, so neighboring cards don't repeat the same pattern. @default 42 */
+  meshSeed?: number;
   /** Link target for standalone navigable cards. */
   href?: string;
   download?: boolean | string;
@@ -81,6 +93,12 @@ export interface CardProps extends Omit<
 
 export interface CardPreviewProps extends JSX.HTMLAttributes<HTMLDivElement> {
   children?: JSX.Element;
+  /**
+   * Recessed fill behind the preview. `inset` sits the region on
+   * `--surface-inset` — the register's console-strip treatment, where the
+   * full-bleed header bar reads sunk into the card rather than flush with it.
+   */
+  background?: "inset";
   /** Spectrum-defined generated classes. */
   styles?: StyleString;
   /** Additional CSS class name. Use only as a last resort. */
@@ -322,6 +340,11 @@ const preview = style({
   position: "relative",
   transition: "default",
   overflow: "clip",
+  backgroundColor: {
+    background: {
+      inset: "pasteboard",
+    },
+  },
   marginX: "calc(var(--card-padding-x) * -1)",
   marginTop: "calc(var(--card-padding-y) * -1)",
   marginBottom: {
@@ -788,6 +811,8 @@ export function Card(props: CardProps): JSX.Element {
     "size",
     "density",
     "variant",
+    "mesh",
+    "meshSeed",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -819,12 +844,33 @@ export function Card(props: CardProps): JSX.Element {
   const variant = () => local.variant ?? "primary";
   const isQuiet = () => variant() === "quiet";
   const itemKey = () => local.id as Key | undefined;
+  /* The weave is a seeded runtime data URI with per-scheme hues, so neither the
+   * style macro (build-time classes) nor light-dark() (colors only) can carry
+   * it. It rides the same space-toggle atoms every compiled color already
+   * flips on — `initial` fires a slot's var() fallback, `" "` suppresses it —
+   * which setColorScheme() maintains on every Provider root. */
+  const meshBackground = createMemo(() => {
+    const mesh = local.mesh;
+    if (mesh == null || variant() === "tertiary" || variant() === "quiet") {
+      return undefined;
+    }
+    const light = meshStrip({ dark: false, variant: mesh, seed: local.meshSeed });
+    const dark = meshStrip({ dark: true, variant: mesh, seed: local.meshSeed });
+    return `var(--lightningcss-light, ${light}) var(--lightningcss-dark, ${dark})`;
+  });
+  const meshVariant = () => (meshBackground() != null ? local.mesh : undefined);
+  const rootStyle = () => {
+    const backgroundImage = meshBackground();
+    return backgroundImage == null
+      ? local.UNSAFE_style
+      : { "background-image": backgroundImage, ...local.UNSAFE_style };
+  };
   const children = () => (
     <CardProviders size={size()} layout={layout} isSkeleton={isSkeleton}>
       {renderCardChildren(local.children, { size: size() })}
     </CardProviders>
   );
-  const press = () => pressScale(() => rootElement, local.UNSAFE_style);
+  const press = () => pressScale(() => rootElement, rootStyle());
 
   if (ElementType === "div" && !isSkeleton() && local.href) {
     return (
@@ -850,6 +896,7 @@ export function Card(props: CardProps): JSX.Element {
         data-size={size()}
         data-density={density()}
         data-variant={variant()}
+        data-mesh={meshVariant()}
       >
         {(renderProps: LinkRenderProps) => (
           <InternalCardContext.Provider
@@ -881,10 +928,11 @@ export function Card(props: CardProps): JSX.Element {
           variant: variant(),
           isCardView: ElementType !== "div",
         })}
-        style={local.UNSAFE_style}
+        style={rootStyle()}
         data-size={size()}
         data-density={density()}
         data-variant={variant()}
+        data-mesh={meshVariant()}
       >
         <InternalCardContext.Provider
           value={toInternalCardContext({
@@ -919,6 +967,7 @@ export function Card(props: CardProps): JSX.Element {
       data-size={size()}
       data-density={density()}
       data-variant={variant()}
+      data-mesh={meshVariant()}
     >
       {(renderProps: GridListItemRenderProps) => {
         const isCheckboxSelection =
@@ -951,6 +1000,7 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
   const isAssetPreview = useContext(InternalAssetPreviewContext);
   const [local, domProps] = splitProps(props, [
     "children",
+    "background",
     "styles",
     "UNSAFE_className",
     "UNSAFE_style",
@@ -972,6 +1022,7 @@ export function CardPreview(props: CardPreviewProps): JSX.Element {
           isHovered: context.isHovered,
           isFocusVisible: context.isFocusVisible,
           isSelected: context.isSelected,
+          background: local.background,
         },
         local.styles,
       ),

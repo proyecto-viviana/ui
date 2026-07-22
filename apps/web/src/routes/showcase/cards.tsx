@@ -3,24 +3,28 @@
    Product), the collection preview, Avatar/AvatarGroup, and the empty-state
    IllustratedMessage. Composed from the shared Panel/Demo/Row chrome. */
 import { createFileRoute } from "@tanstack/solid-router";
-import { For } from "solid-js";
+import { For, type JSX } from "solid-js";
 import {
   ActionButton,
   ActionMenu,
   AssetCard,
   Avatar,
   AvatarGroup,
+  Badge,
   Button,
   Card,
   CardPreview,
   CollectionCardPreview,
   Content,
+  Divider,
   Footer,
   Image,
   ImageCoordinator,
   IllustratedMessage,
   MenuItem,
+  Meter,
   ProductCard,
+  StatusLight,
   Text,
   UserCard,
   BellIcon,
@@ -36,11 +40,98 @@ export const Route = createFileRoute("/showcase/cards")({
 const CARD_VARIANTS = ["primary", "secondary", "tertiary", "quiet"] as const;
 const CARD_SIZES = ["XS", "S", "M", "L", "XL"] as const;
 
+/* The register's console header (TerminalGlassLab Panel06): the strip itself is
+   layout — the recessed fill and the bleed come from CardPreview. */
+const consoleBar: JSX.CSSProperties = {
+  display: "flex",
+  "align-items": "center",
+  "justify-content": "space-between",
+  gap: "8px",
+  padding: "9px 14px",
+};
+
 function Page() {
   const def = panelBySlug("cards")!;
 
   return (
     <Panel def={def}>
+      <Demo label="Card · mesh — the register trio: ambient/signal weaves behind the glass, console strips recessed on the inset surface">
+        <Row>
+          <Card id="mesh-sdf-raymarching" mesh="ambient" meshSeed={7}>
+            <CardPreview>
+              <Image src="/glasselated/thumb-1.png" alt="" />
+              <div style={{ position: "absolute", top: "10px", left: "10px" }}>
+                <Badge variant="neutral" size="S">
+                  SHADERS
+                </Badge>
+              </div>
+            </CardPreview>
+            <Content>
+              <Text slot="title">SDF Raymarching</Text>
+              <Text slot="description">March a ray through signed distance fields.</Text>
+            </Content>
+            <Footer>
+              <Meter
+                label="12 lessons"
+                labelPosition="side"
+                segments={10}
+                value={40}
+                size="S"
+                UNSAFE_style={{ width: "100%" }}
+              />
+            </Footer>
+          </Card>
+          <Card id="mesh-review-queue" mesh="signal" meshSeed={21}>
+            <CardPreview background="inset">
+              <div style={consoleBar}>
+                <StatusLight size="S" variant="notice">
+                  ~/review/queue
+                </StatusLight>
+                <Badge variant="notice" fillStyle="subtle" size="S">
+                  DUE
+                </Badge>
+              </div>
+              <Divider />
+            </CardPreview>
+            <Content>
+              <Text slot="title">Spaced Review</Text>
+              <Text slot="description">
+                4 cards due, oldest from Radiometry Basics. About 6 minutes.
+              </Text>
+            </Content>
+            <Footer>
+              <Button variant="create" size="S">
+                Review
+              </Button>
+            </Footer>
+          </Card>
+          <Card id="mesh-journeys-colorspaces" mesh="ambient" meshSeed={63}>
+            <CardPreview background="inset">
+              <div style={consoleBar}>
+                <StatusLight size="S" variant="informative">
+                  ~/journeys/colorspaces
+                </StatusLight>
+                <Badge variant="informative" fillStyle="subtle" size="S">
+                  NEW
+                </Badge>
+              </div>
+              <Divider />
+            </CardPreview>
+            <Content>
+              <Text slot="title">Color Spaces</Text>
+              <Text slot="description">
+                New design journey — 8 lessons on gamuts, gamma and OKLCH.
+              </Text>
+            </Content>
+            <Footer>
+              <Button variant="secondary" size="S">
+                Start
+              </Button>
+            </Footer>
+          </Card>
+        </Row>
+      </Demo>
+
       <Demo label="Card · fill variants — quiet drops the fill and blur">
         <Row>
           <For each={CARD_VARIANTS}>
