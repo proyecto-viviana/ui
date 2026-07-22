@@ -229,6 +229,34 @@ but the Well becomes a flex item of the horizontal Tabs root — give it
 pill bar with stacked pixel icons), probe-verified both schemes; SSR 13/13,
 hydrate 15/15.
 
+Closed 2026-07-22: the register's prompt wells (Panel02) — all three mirror
+GAPs. (1) `FieldSuffix` (`src/field/suffix.tsx`): trailing counterpart of the
+certified prefix slot, same styling contract mirrored (`gray-600`,
+`flexShrink: 0`, `marginStart: text-to-visual`, icons `fontRelative(20)`).
+Both adornment ids ride the SAME `PrefixInputProvider` space-separated
+(`adornmentIds()`), so a suffix joins the accessible name exactly like a
+unit prefix — one provider, not two nested Proxies. `withPrefixLabelledBy`
+now accepts `string | (() => string)` resolved per `inputProps` access, so
+the labelledby chain stays live when adornments mount/unmount (all four
+prior callers pass static strings — untouched). (2) SearchField gained
+`prefix`/`suffix`; its prefix renders IN PLACE of the built-in magnifier
+(the register draws `/` where the icon would sit), and the suffix lands
+between input and clear button so the hint hugs the well edge. (3) TextField
+gained `surface?: "well" | "tutor"` — the AI-lane fill: theme key
+`well-tutor` → `--surface-well-tutor` (#05070a dark, = `--surface-well` in
+light; ink `--well-tutor-ink` #eaf2fb dark) — the two prompt lanes split
+only in dark, by design. Macro placement: the `surface` branch sits BEFORE
+`forcedColors`/`isDisabled` so those still win (later-key-wins). TextArea
+keeps its own untouched fieldGroupStyles; SearchField stays on the default
+well. Per-well glyph inks (`/` cyan `--well-cy`, `$` `--status-info`) are
+prefix-JSX choices, not API — a child span's color beats the slot's
+gray-600 with zero surface area. The register's decorative `.glx-caret`
+blink is NOT ported: real inputs draw real carets. Demoed as the
+`/showcase/inputs` opener (search well + bare segment strip + tutor
+prompt), probe-verified both schemes (labelledby resolves to the glyph +
+hint text, magnifier absent, surfaces split dark-only); SSR 13/13,
+hydrate 15/15.
+
 ## Showcase plan
 
 Home is **`apps/web`** (TanStack Solid Start SSR on Cloudflare Workers) — it

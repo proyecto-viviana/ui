@@ -954,6 +954,11 @@ export const style = createTheme({
        * Fields live in this family, not the glass one: an input that frosts the page
        * behind it makes its own text hard to read. */
       well: "var(--surface-well)",
+      /* The register's second field surface — the AI/tutor lane
+       * (`--surface-well-tutor`, TerminalGlassLab panel 02). Same matte family
+       * as `well`, one step deeper in dark so a tutor prompt reads apart from
+       * the search well beside it; identical to `well` in light. */
+      "well-tutor": "var(--surface-well-tutor)",
       raised: "var(--surface-raised)",
       "surface-hover": "var(--surface-hover)",
       /* The two neutral RULE weights, reachable as a fill because the register paints

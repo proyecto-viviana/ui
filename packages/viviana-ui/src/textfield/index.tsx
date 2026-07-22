@@ -18,6 +18,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
+import { FieldSuffix } from "../field/suffix";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import {
@@ -40,6 +41,12 @@ export type TextFieldVariant = "outline" | "filled";
 export type TextFieldLabelPosition = "top" | "side";
 export type TextFieldLabelAlign = "start" | "end";
 export type TextFieldNecessityIndicator = "icon" | "label";
+/**
+ * The matte surface the field sits on. `well` is the register's default field
+ * surface; `tutor` is the AI-lane surface (`--surface-well-tutor`) — one step
+ * deeper in dark, marking a tutor prompt apart from ordinary inputs.
+ */
+export type TextFieldSurface = "well" | "tutor";
 
 export interface TextFieldProps extends Omit<
   HeadlessTextFieldProps,
@@ -71,6 +78,10 @@ export interface TextFieldProps extends Omit<
   necessityIndicator?: TextFieldNecessityIndicator;
   /** An icon or text rendered before the input, e.g. a unit or protocol. */
   prefix?: JSX.Element;
+  /** An icon or text rendered after the input, e.g. a unit or key hint. */
+  suffix?: JSX.Element;
+  /** The matte surface family the field sits on. @default "well" */
+  surface?: TextFieldSurface;
 }
 
 export const TextFieldContext = createContext<SpectrumContextValue<TextFieldProps>>(null);
@@ -83,6 +94,7 @@ interface TextFieldStyleProps extends TextFieldRenderProps {
   isStaticColor?: boolean;
   isInForm?: boolean;
   isQuiet?: boolean;
+  surface?: TextFieldSurface;
 }
 
 const textFieldRoot = style<TextFieldStyleProps>(
@@ -142,10 +154,20 @@ const fieldGroupStyles = style<TextFieldStyleProps>({
   },
   backgroundColor: {
     default: "well",
+    /* The AI-lane surface (register panel 02). `surface` sits before
+     * `forcedColors` so forced colors keep the last word. */
+    surface: {
+      tutor: "well-tutor",
+    },
     forcedColors: "Field",
   },
   color: {
     default: baseColor("neutral"),
+    /* The tutor well carries its own ink token (brighter in dark, where the
+     * deeper fill would otherwise mute the neutral ramp). */
+    surface: {
+      tutor: "[var(--well-tutor-ink)]",
+    },
     forcedColors: "ButtonText",
     isDisabled: {
       default: "disabled",
@@ -333,9 +355,16 @@ export function TextField(props: TextFieldProps): JSX.Element {
     "necessityIndicator",
     "validationState",
     "prefix",
+    "suffix",
+    "surface",
   ]);
 
   const prefixId = createUniqueId();
+  const suffixId = createUniqueId();
+  // Space-separated adornment ids appended to the input's `aria-labelledby`,
+  // visual order (prefix before suffix). Read live by PrefixInputProvider.
+  const adornmentIds = () =>
+    [local.prefix ? prefixId : null, local.suffix ? suffixId : null].filter(Boolean).join(" ");
   const size = () => normalizeTextFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
@@ -386,6 +415,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
       ...renderProps,
       size: size(),
       isFocusWithin: renderProps.isFocused,
+      surface: local.surface ?? "well",
     });
 
   const helpClass = (renderProps: TextFieldRenderProps, isInvalid: boolean) =>
@@ -455,11 +485,19 @@ export function TextField(props: TextFieldProps): JSX.Element {
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
-            <Show when={local.prefix} fallback={<HeadlessInput class={textFieldInput} />}>
-              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
-              <PrefixInputProvider context={HeadlessTextFieldContext} prefixId={prefixId}>
+            <Show
+              when={local.prefix || local.suffix}
+              fallback={<HeadlessInput class={textFieldInput} />}
+            >
+              <Show when={local.prefix}>
+                <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+              </Show>
+              <PrefixInputProvider context={HeadlessTextFieldContext} prefixId={adornmentIds()}>
                 <HeadlessInput class={textFieldInput} />
               </PrefixInputProvider>
+              <Show when={local.suffix}>
+                <FieldSuffix id={suffixId}>{local.suffix}</FieldSuffix>
+              </Show>
             </Show>
             <Show when={renderProps.isInvalid && !renderProps.isDisabled}>
               <CenterBaseline>

@@ -3,6 +3,7 @@ import {
   type JSX,
   createContext,
   createSignal,
+  createUniqueId,
   mergeProps,
   splitProps,
   Show,
@@ -32,6 +33,8 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
+import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
+import { FieldSuffix } from "../field/suffix";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";
@@ -84,6 +87,13 @@ export interface SearchFieldProps extends Omit<
   necessityIndicator?: SearchFieldNecessityIndicator;
   /** A contextual help element to place next to the label. */
   contextualHelp?: JSX.Element;
+  /**
+   * An icon or text rendered before the input in place of the built-in search
+   * magnifier, e.g. the register's `/` slash-command glyph.
+   */
+  prefix?: JSX.Element;
+  /** An icon or text rendered after the input, e.g. a key hint. */
+  suffix?: JSX.Element;
   /** Slot name when used in a Spectrum context. */
   slot?: string | null;
   /** Ref for the search field root element. */
@@ -435,10 +445,19 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     "labelAlign",
     "necessityIndicator",
     "contextualHelp",
+    "prefix",
+    "suffix",
     "slot",
     "ref",
   ]);
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
+
+  const prefixId = createUniqueId();
+  const suffixId = createUniqueId();
+  // Space-separated adornment ids appended to the input's `aria-labelledby`,
+  // visual order (prefix before suffix). Read live by PrefixInputProvider.
+  const adornmentIds = () =>
+    [local.prefix ? prefixId : null, local.suffix ? suffixId : null].filter(Boolean).join(" ");
 
   const size = () => normalizeSearchFieldSize(local.size);
   const labelPosition = () => local.labelPosition ?? "top";
@@ -590,10 +609,27 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             data-disabled={renderProps.isDisabled ? "true" : undefined}
             data-invalid={renderProps.isInvalid ? "true" : undefined}
           >
-            <CenterBaseline slot="icon" styles={searchIconWrapper}>
-              <SearchIcon styles={searchIcon} />
-            </CenterBaseline>
-            <HeadlessSearchFieldInput class={inputClass()} />
+            <Show
+              when={local.prefix}
+              fallback={
+                <CenterBaseline slot="icon" styles={searchIconWrapper}>
+                  <SearchIcon styles={searchIcon} />
+                </CenterBaseline>
+              }
+            >
+              <FieldPrefix id={prefixId}>{local.prefix}</FieldPrefix>
+            </Show>
+            <Show
+              when={local.prefix || local.suffix}
+              fallback={<HeadlessSearchFieldInput class={inputClass()} />}
+            >
+              <PrefixInputProvider context={HeadlessSearchFieldContext} prefixId={adornmentIds()}>
+                <HeadlessSearchFieldInput class={inputClass()} />
+              </PrefixInputProvider>
+            </Show>
+            <Show when={local.suffix}>
+              <FieldSuffix id={suffixId}>{local.suffix}</FieldSuffix>
+            </Show>
             <Show when={!renderProps.isReadOnly}>
               <HeadlessSearchFieldClearButton class={clearButtonClass}>
                 <CrossIcon size={size()} style={clearIconStyle(size())} />

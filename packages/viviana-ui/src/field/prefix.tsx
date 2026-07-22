@@ -62,15 +62,20 @@ function appendLabelledBy(
  * `aria-labelledby`. The delegation keeps the underlying getters live, so the
  * input stays reactive. `inputPropsIsFunction` handles ComboBox's function-form
  * `inputProps` (Text/Color/NumberField expose it as an object).
+ *
+ * `prefixId` may carry several space-separated slot ids (prefix + suffix) and
+ * may be a thunk — resolved on each `inputProps` access — so a field whose
+ * adornments appear or disappear after mount keeps its `aria-labelledby` live.
  */
 export function withPrefixLabelledBy<T extends object>(
   context: T | null,
-  prefixId: string,
+  prefixId: string | (() => string),
   inputPropsIsFunction = false,
 ): T | null {
   if (!context) {
     return context;
   }
+  const resolveId = () => (typeof prefixId === "function" ? prefixId() : prefixId);
   return new Proxy(context, {
     get(target, property, receiver) {
       if (property === "inputProps") {
@@ -79,13 +84,13 @@ export function withPrefixLabelledBy<T extends object>(
             const inputProps = (
               Reflect.get(target, property, target) as () => Record<string, unknown>
             )();
-            return appendLabelledBy(inputProps, prefixId);
+            return appendLabelledBy(inputProps, resolveId());
           };
         }
         const inputProps = Reflect.get(target, property, target) as
           | Record<string, unknown>
           | undefined;
-        return appendLabelledBy(inputProps, prefixId);
+        return appendLabelledBy(inputProps, resolveId());
       }
       return Reflect.get(target, property, receiver);
     },
@@ -104,6 +109,8 @@ export function PrefixInputProvider<T extends object>(props: {
   children: JSX.Element;
 }): JSX.Element {
   const context = useContext(props.context);
-  const value = withPrefixLabelledBy(context, props.prefixId, props.inputPropsIsFunction);
+  // `props.prefixId` is read through a thunk so a caller passing a computed id
+  // set (prefix + suffix) stays live across adornment changes.
+  const value = withPrefixLabelledBy(context, () => props.prefixId, props.inputPropsIsFunction);
   return <props.context.Provider value={value}>{props.children}</props.context.Provider>;
 }

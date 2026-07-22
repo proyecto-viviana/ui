@@ -3,7 +3,17 @@
    matte well the register reserves for editable surfaces. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { For } from "solid-js";
-import { Form, LabeledValue, NumberField, SearchField, TextArea, TextField } from "@proyecto-viviana/ui";
+import {
+  Form,
+  Keyboard,
+  LabeledValue,
+  NumberField,
+  SearchField,
+  SegmentedControl,
+  SegmentedControlItem,
+  TextArea,
+  TextField,
+} from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug } from "@/components/showcase/registry";
 
@@ -18,6 +28,36 @@ function InputsPanel() {
 
   return (
     <Panel def={def}>
+      <Demo label="Register prompts — SearchField with a slash prefix and ⌘K hint inside the well, bare segments, tutor prompt on the AI-lane surface">
+        {/* The register's panel-02 row: two prompt wells flanking a segment
+            strip. The glyph inks are per-well choices (`/` cyan, `$` info),
+            so they ride on the prefix JSX, not the surface. */}
+        <div style={{ display: "flex", "align-items": "center", gap: "12px", "flex-wrap": "wrap" }}>
+          <div style={{ "min-width": "240px" }}>
+            <SearchField
+              aria-label="Search lessons"
+              placeholder="search lessons"
+              prefix={<span style={{ color: "var(--well-cy)" }}>/</span>}
+              suffix={<Keyboard>⌘K</Keyboard>}
+            />
+          </div>
+          <SegmentedControl aria-label="Range" defaultSelectedKey="week">
+            <SegmentedControlItem id="day">day</SegmentedControlItem>
+            <SegmentedControlItem id="week">week</SegmentedControlItem>
+            <SegmentedControlItem id="month">month</SegmentedControlItem>
+          </SegmentedControl>
+          <div style={{ flex: "1", "min-width": "260px" }}>
+            <TextField
+              aria-label="Ask tutor"
+              surface="tutor"
+              prefix={<span style={{ color: "var(--status-info)" }}>$</span>}
+              suffix={<Keyboard>↵</Keyboard>}
+              defaultValue={'ask tutor "why does variance drop?"'}
+            />
+          </div>
+        </div>
+      </Demo>
+
       <Demo label="TextField · sizes">
         <Row>
           <For each={SIZES}>{(size) => <TextField size={size} label={size} defaultValue="Value" />}</For>
