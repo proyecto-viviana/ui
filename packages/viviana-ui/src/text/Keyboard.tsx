@@ -7,6 +7,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
+import { typeRoles } from "./type-roles";
 
 export interface KeyboardProps extends BaseContentProps<HTMLElement> {}
 
@@ -27,7 +28,15 @@ export function Keyboard(props: KeyboardProps): JSX.Element {
   const className = () =>
     [
       mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
-      mergeContextStyles(contextProps?.styles, props.styles),
+      /* Standalone default: the register's terminal role (mono, wells & prompts).
+       * Skipped whenever a slotted context claims this <kbd> — MenuItem and other
+       * hosts style their key hints through KeyboardContext, usually relying on
+       * inheritance the baked role would break. See text/index.tsx for the full
+       * rationale. */
+      mergeContextStyles(
+        contextProps == null ? typeRoles.terminal : undefined,
+        mergeContextStyles(contextProps?.styles, props.styles),
+      ),
     ]
       .filter(Boolean)
       .join(" ");

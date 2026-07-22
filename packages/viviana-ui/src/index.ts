@@ -526,6 +526,7 @@ export {
   KeyboardContext,
   Text,
   TextContext,
+  typeRoles,
 } from "./text";
 export type {
   ContentProps,
@@ -534,6 +535,7 @@ export type {
   HeadingProps,
   KeyboardProps,
   TextProps,
+  TypeRole,
 } from "./text";
 
 // Slider

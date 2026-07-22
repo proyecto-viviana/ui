@@ -1,7 +1,9 @@
-/* Panel 14 — Type & Layout. The nine type roles ride on Heading/Text/Keyboard
-   and the Content/Header/Footer slot pieces; Flex/Grid/Divider/Separator carry
-   the layout; Provider shows the scheme-override seam. Nothing here paints —
-   these primitives ship unstyled and take their face from the register. */
+/* Panel 14 — Type & Layout. The register's nine-role ladder ships in the
+   library now: typeRoles exports every role as a precompiled class, Heading's
+   levels are the three pixel tiers, and Text/Content/Keyboard bake meta/body/
+   terminal when standalone (composed inside a parent they still defer to its
+   context). Flex/Grid/Divider/Separator carry the layout; Provider shows the
+   scheme-override seam. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { For, type JSX } from "solid-js";
 import {
@@ -19,6 +21,8 @@ import {
   Provider,
   BellIcon,
   SearchIcon,
+  typeRoles,
+  type TypeRole,
 } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug } from "@/components/showcase/registry";
@@ -39,12 +43,44 @@ const captionStyle: JSX.CSSProperties = {
   color: "var(--text-secondary)",
 };
 
+const TYPE_ROLE_LADDER: ReadonlyArray<{ role: TypeRole; sample: string; note: string }> = [
+  { role: "display", sample: "Think in circles", note: "Pixel · hero & page titles" },
+  { role: "title", sample: "Monte Carlo Path Tracing", note: "Pixel · section/panel titles" },
+  { role: "headline", sample: "Spaced Review", note: "Pixel · card & list titles" },
+  { role: "label", sample: "Resume · Home · #shaders", note: "Pixel · buttons/nav/chips" },
+  { role: "body", sample: "March a ray through signed distance fields.", note: "Geist · prose" },
+  { role: "meta", sample: "Today 18:00 · 214 waiting", note: "Geist · secondary" },
+  { role: "micro", sample: "LIVE · DUE · 0x3F", note: "Mono · below the pixel floor" },
+  { role: "terminal", sample: "> submit checkpoint --answer", note: "Mono · wells & prompts" },
+  { role: "button", sample: "RESUME SESSION", note: "Mono · control labels" },
+];
+
 function Page() {
   const def = panelBySlug("type")!;
 
   return (
     <Panel def={def}>
-      <Demo label="Heading · levels — h4+ share h3's rung">
+      <Demo label="typeRoles — the register's closed nine-role ladder, one class per role">
+        <Flex direction="column" gap="sm">
+          <For each={TYPE_ROLE_LADDER}>
+            {(entry) => (
+              <Flex direction="row" gap="md" alignItems="baseline">
+                <span style={{ ...captionStyle, width: "72px", "flex-shrink": 0 }}>
+                  {entry.role}
+                </span>
+                <span class={typeRoles[entry.role]} style={{ "min-width": 0 }}>
+                  {entry.sample}
+                </span>
+                <span style={{ ...captionStyle, "margin-left": "auto", "text-align": "right" }}>
+                  {entry.note}
+                </span>
+              </Flex>
+            )}
+          </For>
+        </Flex>
+      </Demo>
+
+      <Demo label="Heading · levels — h1/h2/h3 are the display/title/headline tiers; h4+ share h3's rung">
         <Flex direction="column" gap="xs">
           <For each={HEADING_LEVELS}>
             {(level) => <Heading level={level}>Heading level {level}</Heading>}
@@ -52,14 +88,14 @@ function Page() {
         </Flex>
       </Demo>
 
-      <Demo label="Text — unstyled slot; the type role comes from the parent">
+      <Demo label="Text — standalone it takes the meta role; composed, the parent's context styles it">
         <Text>
-          Text carries no font styling of its own — it is the raw content slot every other type
-          component composes around.
+          Text carries the register's meta role when it stands alone — inside a Button or MenuItem
+          the parent still owns its type.
         </Text>
       </Demo>
 
-      <Demo label="Keyboard · shortcut markup">
+      <Demo label="Keyboard · shortcut markup — standalone it takes the terminal role">
         <Flex direction="column" gap="xs">
           <Text>
             Save <Keyboard>Ctrl+S</Keyboard>

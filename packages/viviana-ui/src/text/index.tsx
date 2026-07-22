@@ -8,6 +8,21 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { type BaseContentProps, getContentDomProps, mergeUnsafeClassName } from "./shared";
+import { typeRoles } from "./type-roles";
+
+/* Standalone type-role defaults (Glasselated register, mirror panel 09):
+ * Text, Content and Keyboard were pure slot markers — bare elements with an
+ * empty class that inherit whatever encloses them — so the register's body,
+ * meta and terminal roles had no reachable carrier: an app could not ask for
+ * "prose" or "mono" and get it. Each now bakes its role, but ONLY when no
+ * slotted context has claimed the element (contextProps == null): inside a
+ * Button, MenuItem, Card or any other composing parent, the parent's context
+ * IS the styling contract — often deliberately partial so the child inherits
+ * the parent's font — and a baked size there would override the host instead
+ * of the page. Standalone mapping, per the register's ladder: Content → body
+ * (block prose), Text → meta (inline secondary), Keyboard → terminal (mono).
+ * When a context exists the default is skipped entirely, so composed
+ * behavior is byte-identical to before. */
 
 export interface TextProps extends BaseContentProps<HTMLSpanElement> {}
 
@@ -45,7 +60,10 @@ export function Text(props: TextProps): JSX.Element {
   const className = () =>
     [
       mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
-      mergeContextStyles(contextProps?.styles, props.styles),
+      mergeContextStyles(
+        contextProps == null ? typeRoles.meta : undefined,
+        mergeContextStyles(contextProps?.styles, props.styles),
+      ),
     ]
       .filter(Boolean)
       .join(" ");
@@ -122,7 +140,10 @@ export function Content(props: ContentProps): JSX.Element {
   const className = () =>
     [
       mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
-      mergeContextStyles(contextProps?.styles, props.styles),
+      mergeContextStyles(
+        contextProps == null ? typeRoles.body : undefined,
+        mergeContextStyles(contextProps?.styles, props.styles),
+      ),
     ]
       .filter(Boolean)
       .join(" ");
@@ -187,3 +208,5 @@ export { Heading, HeadingContext } from "./Heading";
 export type { HeadingProps } from "./Heading";
 export { Keyboard, KeyboardContext } from "./Keyboard";
 export type { KeyboardProps } from "./Keyboard";
+export { typeRoles } from "./type-roles";
+export type { TypeRole } from "./type-roles";

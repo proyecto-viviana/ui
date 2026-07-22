@@ -703,6 +703,12 @@ const fontWeightBase = {
   medium: {
     default: "500",
   },
+  /* Viviana UI v2 (Glasselated): the register's type ladder is built on 600 —
+   * `--type-title` and `--type-label` both declare it — and Spectrum's scale
+   * jumps straight from 500 to 700, so the two roles were unrepresentable. */
+  "semi-bold": {
+    default: "600",
+  },
   bold: {
     default: "700",
     ":lang(ja, ko, zh)": "500", // Adobe Clean Han uses 500 as the bold weight
@@ -1255,6 +1261,12 @@ export const style = createTheme({
     listStyleType: ["none", "disc", "decimal"] as const,
     listStylePosition: ["inside", "outside"] as const,
     textTransform: ["uppercase", "lowercase", "capitalize", "none"] as const,
+    /* Viviana UI v2 (Glasselated): Spectrum's theme has no tracking vocabulary at
+     * all, but the register declares it as part of its type roles — +0.01em on
+     * every pixel-face role (`--type-display/title/headline/label-track`) and
+     * +0.1em on the mono micro role (`--type-micro-track`). Additive: no existing
+     * style() call names the property, so nothing can regress. */
+    letterSpacing: ["0em", "0.01em", "0.1em"] as const,
     textAlign: ["start", "center", "end", "justify"] as const,
     verticalAlign: [
       "baseline",
