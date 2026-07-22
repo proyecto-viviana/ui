@@ -1,7 +1,9 @@
-/* Panel — chips. Scaffold: lists the components this panel owes until the
-   real demos land. Replaced panel-by-panel as the showcase fills in. */
+/* Panel 06 — Chips & Badges. Compact identity: badges, tags, chip rows.
+   Chips are wells, not gray steps — see badge/tag-group source comments for
+   the register's rationale. No green anywhere in these demos. */
 import { createFileRoute } from "@tanstack/solid-router";
-import { For } from "solid-js";
+import { createSignal, For } from "solid-js";
+import { Badge, Tag, TagGroup } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug } from "@/components/showcase/registry";
 
@@ -9,14 +11,124 @@ export const Route = createFileRoute("/showcase/chips")({
   component: Page,
 });
 
+// Deliberately excludes every green-adjacent BadgeVariant (positive, green,
+// chartreuse, celery, seafoam, turquoise) per the register's no-green rule.
+const BADGE_VARIANTS = [
+  "accent",
+  "informative",
+  "neutral",
+  "notice",
+  "negative",
+  "gray",
+  "red",
+  "orange",
+  "yellow",
+  "blue",
+  "purple",
+  "magenta",
+] as const;
+
+const BADGE_SIZES = ["S", "M", "L", "XL"] as const;
+
+interface ChipItem {
+  id: string;
+  name: string;
+}
+
+const CATEGORY_ITEMS: ChipItem[] = [
+  { id: "landscape", name: "Landscape" },
+  { id: "portrait", name: "Portrait" },
+  { id: "travel", name: "Travel" },
+  { id: "night", name: "Night" },
+];
+
 function Page() {
   const def = panelBySlug("chips")!;
+  const [removableItems, setRemovableItems] = createSignal<ChipItem[]>([
+    { id: "beta", name: "Beta" },
+    { id: "draft", name: "Draft" },
+    { id: "archived", name: "Archived" },
+  ]);
+
   return (
     <Panel def={def}>
-      <Demo label="scaffold — demos land here next">
+      <Demo label="Badge · variants — bold fill, green-adjacent tones skipped">
         <Row>
-          <For each={def.components}>{(name) => <span class="gls-demo-label">{name}</span>}</For>
+          <For each={BADGE_VARIANTS}>
+            {(variant) => (
+              <Badge variant={variant}>{variant.charAt(0).toUpperCase() + variant.slice(1)}</Badge>
+            )}
+          </For>
         </Row>
+      </Demo>
+
+      <Demo label="Badge · fill styles">
+        <Row>
+          <Badge variant="accent" fillStyle="bold">
+            Bold
+          </Badge>
+          <Badge variant="accent" fillStyle="subtle">
+            Subtle
+          </Badge>
+          <Badge variant="accent" fillStyle="outline">
+            Outline
+          </Badge>
+        </Row>
+      </Demo>
+
+      <Demo label="Badge · sizes">
+        <Row>
+          <For each={BADGE_SIZES}>{(size) => <Badge size={size}>{size}</Badge>}</For>
+        </Row>
+      </Demo>
+
+      <Demo label="Badge · count">
+        <Row>
+          <Badge variant="informative" count={3} />
+          <Badge variant="negative" count={42} />
+        </Row>
+      </Demo>
+
+      <Demo label="TagGroup · basic — arrow-key grid navigation">
+        <TagGroup<ChipItem> items={CATEGORY_ITEMS} label="Categories" defaultSelectedKeys={["landscape"]}>
+          {(item) => item.name}
+        </TagGroup>
+      </Demo>
+
+      <Demo label="TagGroup · removable — onRemove drops the tag from state">
+        <TagGroup<ChipItem>
+          items={removableItems()}
+          label="Labels"
+          onRemove={(keys) => setRemovableItems((prev) => prev.filter((item) => !keys.has(item.id)))}
+        >
+          {(item) => item.name}
+        </TagGroup>
+      </Demo>
+
+      <Demo label="TagGroup · disabled tags">
+        <TagGroup<ChipItem> items={CATEGORY_ITEMS} label="Some disabled" disabledKeys={["travel", "night"]}>
+          {(item) => item.name}
+        </TagGroup>
+      </Demo>
+
+      <Demo label="TagGroup · sizes">
+        <Row>
+          <TagGroup<ChipItem> items={CATEGORY_ITEMS.slice(0, 2)} label="Small" size="S">
+            {(item) => item.name}
+          </TagGroup>
+          <TagGroup<ChipItem> items={CATEGORY_ITEMS.slice(0, 2)} label="Medium" size="M">
+            {(item) => item.name}
+          </TagGroup>
+          <TagGroup<ChipItem> items={CATEGORY_ITEMS.slice(0, 2)} label="Large" size="L">
+            {(item) => item.name}
+          </TagGroup>
+        </Row>
+      </Demo>
+
+      <Demo label="Tag · explicit composition">
+        <TagGroup<ChipItem> items={CATEGORY_ITEMS.slice(0, 3)} label="Explicit tags" selectionMode="none">
+          {(item) => <Tag id={item.id}>{item.name}</Tag>}
+        </TagGroup>
       </Demo>
     </Panel>
   );
