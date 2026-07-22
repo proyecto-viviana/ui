@@ -76,6 +76,23 @@ Known open SSR/hydration bugs to close next: ListViewItem never hydrates;
 TagGroup `isRenderedTag()` does an `instanceof HTMLElement` check that breaks
 on the server; Breadcrumbs self-measures on the client.
 
+Closed 2026-07-22: viviana-ui Tree hydration abort ("Unable to find DOM nodes
+for hydration key") — root cause was the repeated `local.children` read in
+`ResolvedItemContent`/`TreeItemContent`/`TreeExpandButton` (each read of a
+static-JSX children getter re-instantiates the subtree; the server's discarded
+first instantiation consumed a hydration tick, shifting all emitted keys by
+one). Fixed with the gridlist read-once pattern; regression pair
+`Tree.ssr.test.tsx` + `Tree.hydrate.test.tsx` (hydrate half resets solid's
+`sharedConfig` per test — a mid-hydration throw otherwise makes the next
+`hydrate()` silently client-render and false-pass).
+
+**solid-spectrum carries both hydration bugs untouched (parity-locked — user
+decision needed before editing):** the eager-framed double-construction
+(`tree/index.tsx:884`, `gridlist/index.tsx:1068`) and the repeated
+`local.children` read (`tree/index.tsx:997,1104,1144`,
+`gridlist/index.tsx:1186`). Both only bite hydrating consumers; the S2
+comparison harness client-renders, so parity certs are unaffected.
+
 ## Gaps between the register and the library
 
 Beyond paint, the register needs vocabulary viviana-ui doesn't have yet (per

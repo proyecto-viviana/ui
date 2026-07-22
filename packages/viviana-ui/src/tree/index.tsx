@@ -850,7 +850,18 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     </div>
   );
 
-  const collection = (
+  // One return shape, always framed — load-bearing for hydration (caught by
+  // Tree.hydrate.test.tsx): never build two eager JSX branches and return one.
+  // Client JSX consts are real DOM nodes, so an unused detached wrapper
+  // embedding `collection` MOVES the just-claimed server nodes into itself and
+  // the returned branch hydrates empty. SSR output is unaffected (strings
+  // don't move), which is why only the live page lost the tree. A single
+  // always-framed shape leaves exactly one construction path; without chrome
+  // the wrapper is `display: contents`, so layout is untouched.
+  // (A Tree hydration abort that once looked like a return-shape problem was
+  // actually a repeated `local.children` read in ResolvedItemContent /
+  // TreeItemContent — see the read-once comments there.)
+  const collection = () => (
     <InternalTreeViewContext.Provider value={treeContext()}>
       <div hidden inert aria-hidden="true" style={{ display: "none" }}>
         <StaticTreeCollectionContext.Provider value={registrationContext}>
@@ -881,16 +892,19 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     </InternalTreeViewContext.Provider>
   );
 
-  const framed = (
-    <div class={treeViewWrapper(null, mergedStyles())} style={mergedUnsafeStyle()}>
+  const hasChrome = () => Boolean(local.label || local.description || local.renderActionBar);
+
+  return (
+    <div
+      class={hasChrome() ? treeViewWrapper(null, mergedStyles()) : undefined}
+      style={hasChrome() ? mergedUnsafeStyle() : { display: "contents" }}
+    >
       {local.label ? <div class={legacyLabel({})}>{local.label}</div> : null}
-      {collection}
+      {collection()}
       {local.description ? <div class={legacyDescription({})}>{local.description}</div> : null}
       {local.renderActionBar ? local.renderActionBar(actionSelectedKeys()) : null}
     </div>
   );
-
-  return local.label || local.description || local.renderActionBar ? framed : collection;
 }
 
 export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element {
@@ -993,9 +1007,13 @@ export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element
     createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
 
     function ResolvedItemContent() {
-      const resolvedChildren = resolveChildren(() =>
-        typeof local.children === "function" ? local.children(renderProps) : local.children,
-      );
+      const resolvedChildren = resolveChildren(() => {
+        // Read `local.children` once — a repeated props-children read re-instantiates child
+        // components on the server only, desynchronizing Solid's hydration keys and aborting
+        // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+        const rawChildren = local.children;
+        return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
+      });
       const childrenValue = () => resolvedChildren();
       const isTextOnly = () => isTextOnlyChildren(childrenValue());
 
@@ -1099,11 +1117,23 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
 
   return (
     <HeadlessTreeItemContent {...headlessProps}>
-      {(renderProps: HeadlessTreeItemContentRenderProps) => (
-        <span class={[treeViewItemCell, local.class].filter(Boolean).join(" ")} style={local.style}>
-          {typeof local.children === "function" ? local.children(renderProps) : local.children}
-        </span>
-      )}
+      {(renderProps: HeadlessTreeItemContentRenderProps) => {
+        const content = () => {
+          // Read `local.children` once — a repeated props-children read re-instantiates child
+          // components on the server only, desynchronizing Solid's hydration keys and aborting
+          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          const rawChildren = local.children;
+          return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
+        };
+        return (
+          <span
+            class={[treeViewItemCell, local.class].filter(Boolean).join(" ")}
+            style={local.style}
+          >
+            {content()}
+          </span>
+        );
+      }}
     </HeadlessTreeItemContent>
   );
 }
@@ -1141,14 +1171,20 @@ export function TreeExpandButton(
         onMouseUp={stopPlaceholderExpansion}
         data-rsp-slot="expand-button"
       >
-        {typeof local.children === "function"
-          ? local.children(renderState())
-          : (local.children ?? (
-              <Chevron
-                size="S"
-                class={treeExpandIcon({ ...renderState(), isExpanded: false })}
-              />
-            ))}
+        {(() => {
+          // Read `local.children` once — a repeated props-children read re-instantiates child
+          // components on the server only, desynchronizing Solid's hydration keys and aborting
+          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          const rawChildren = local.children;
+          return typeof rawChildren === "function"
+            ? rawChildren(renderState())
+            : (rawChildren ?? (
+                <Chevron
+                  size="S"
+                  class={treeExpandIcon({ ...renderState(), isExpanded: false })}
+                />
+              ));
+        })()}
       </button>
     );
   }
