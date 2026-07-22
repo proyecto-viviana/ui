@@ -19,6 +19,8 @@ import {
   Separator,
   CenterBaseline,
   Provider,
+  Well,
+  Meter,
   BellIcon,
   SearchIcon,
   typeRoles,
@@ -121,6 +123,40 @@ function Page() {
             <Text>Updated just now.</Text>
           </Footer>
         </Flex>
+      </Demo>
+
+      <Demo label="Well — the matte terminal container: opaque surface, scan dither, never glass">
+        {/* The register's stat well (TerminalGlassLab Panel07): terminal-role
+            mono rows, channel ink on the label, mid ink on the value. */}
+        <Well style={{ "line-height": 2.1, "max-width": "28rem" }}>
+          <div class={typeRoles.terminal}>
+            <span style={{ color: "var(--well-cy)" }}>focus</span>
+            <span style={{ color: "var(--well-mid)" }}> [▮▮▮▯▯] 3/5</span>
+          </div>
+          <div class={typeRoles.terminal}>
+            <span style={{ color: "var(--well-am)" }}>streak</span>
+            <span style={{ color: "var(--well-mid)" }}> 12 days · hold</span>
+          </div>
+          <div class={typeRoles.terminal}>
+            <span style={{ color: "var(--well-vi)" }}>xp</span>
+            <span style={{ color: "var(--well-mid)" }}> 2,840 · lvl 12</span>
+          </div>
+          <div class={typeRoles.terminal}>
+            <span style={{ color: "var(--well-rd)" }}>memory</span>
+            <span style={{ color: "var(--well-mid)" }}> cell 0x3F degraded</span>
+          </div>
+        </Well>
+      </Demo>
+
+      <Demo label="Well · composed — the same well built from library primitives">
+        <Well style={{ "max-width": "28rem" }}>
+          <Flex direction="column" gap="sm">
+            <Meter label="Focus" variant="informative" labelPosition="side" segments={5} value={3} maxValue={5} valueLabel="3/5" />
+            <Meter label="Streak" variant="notice" labelPosition="side" segments={5} value={4} maxValue={5} valueLabel="4/5" />
+            <Meter label="Memory" variant="negative" labelPosition="side" segments={5} value={1} maxValue={5} valueLabel="1/5" />
+            <div class={typeRoles.terminal} style={{ color: "var(--well-hi)" }}>{"> "}resume session</div>
+          </Flex>
+        </Well>
       </Demo>
 
       <Demo label="Flex · gap sweep">

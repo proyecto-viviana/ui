@@ -713,6 +713,9 @@ export type {
   TreeSelectionStyle,
 } from "./tree";
 
+export { Well } from "./well";
+export type { WellProps } from "./well";
+
 // Support exports — hooks, helpers, and collection data.
 // Mirrors React S2's re-exports of the underlying React Aria / React Stately
 // utilities; here they come from our equivalent workspace packages. The

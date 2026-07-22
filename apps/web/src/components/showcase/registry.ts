@@ -283,7 +283,7 @@ export const PANELS: readonly PanelDef[] = [
     slug: "type",
     num: "14",
     title: "Type & Layout",
-    blurb: "The nine type roles, dividers, and layout primitives.",
+    blurb: "The nine type roles, dividers, layout primitives, and the matte well.",
     components: [
       "Heading",
       "Text",
@@ -297,6 +297,7 @@ export const PANELS: readonly PanelDef[] = [
       "Separator",
       "CenterBaseline",
       "Provider",
+      "Well",
     ],
   },
 ];

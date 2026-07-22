@@ -166,6 +166,16 @@ number. Demoed on `/showcase/status` (+ AvatarGroup on `/showcase/cards`),
 probe-verified both schemes + reduced-motion (determinate ring freezes,
 indeterminate keeps chasing); SSR 13/13, hydrate 15/15.
 
+Closed 2026-07-22: the Well went public. The matte terminal container already
+existed in-package (`src/well/index.tsx`: `--surface-well` fill, `wellScan()`
+4px dither, 1px `--well-border` hairline, 10px radius, no shadow — "matte /
+opaque, NEVER glass") but was unreachable — no barrel export, no registry
+home. Now exported (`Well`/`WellProps`), registered under Panel 14
+(Type & Layout), and demoed twice on `/showcase/type`: the reference stat
+well (terminal-role mono rows, `--well-cy/am/vi/rd` channel inks) and the
+same well composed from library primitives (segmented side-label Meters +
+a terminal prompt line). Probe-verified both schemes.
+
 ## Showcase plan
 
 Home is **`apps/web`** (TanStack Solid Start SSR on Cloudflare Workers) — it
