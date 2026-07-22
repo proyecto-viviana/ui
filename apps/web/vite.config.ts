@@ -76,8 +76,13 @@ function s2Macros() {
             : "";
 
       for (const match of transformedCode.matchAll(/import\s+["'](macro-[a-f0-9]+\.css)["'];/g)) {
-        const content = await plugin.load?.call(this, match[1]);
-        cacheMacroCss(match[1], content);
+        try {
+          const content = await plugin.load?.call(this, match[1]);
+          cacheMacroCss(match[1], content);
+        } catch {
+          // Asset already evicted by a competing build pass; the pass that
+          // minted it has already populated macroCssCache.
+        }
       }
 
       return result;
@@ -100,19 +105,26 @@ function s2Macros() {
       );
     },
     async load(this: unknown, id: string) {
-      if (plugin.loadInclude?.(id)) {
-        const content = await plugin.load?.call(this, id);
-        const css = cacheMacroCss(id, content);
-        if (css != null) {
-          return css;
-        }
-        return content;
-      }
+      // Serve macro CSS from our own cache FIRST. The raw plugin's module-global
+      // asset map is shared by every build pass in this process and evicts a
+      // file's old assets on re-transform, so by the time a pass loads a CSS id
+      // the entry may be gone — returning the raw plugin's null here silently
+      // drops the rules from the bundle. macroCssCache is populated in
+      // `transform` (while the asset still exists) and is never evicted.
       const fileName = getMacroCssFileName(id);
-      if (fileName) {
+      if (fileName && macroCssCache.has(fileName)) {
         return macroCssCache.get(fileName);
       }
-      return null;
+      if (plugin.loadInclude?.(id)) {
+        try {
+          const content = await plugin.load?.call(this, id);
+          const css = cacheMacroCss(id, content);
+          return css ?? content;
+        } catch {
+          // Evicted — fall through to the cache below.
+        }
+      }
+      return fileName ? (macroCssCache.get(fileName) ?? null) : null;
     },
     renderChunk(code: string) {
       return removeMacroCssImports(code);
