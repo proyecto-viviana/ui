@@ -20,9 +20,15 @@
  * ACCESSIBILITY. Components fill semantic backgrounds via lightDark("<ramp>-900",
  * "<ramp>-700") with white ink (calendar/RangeCalendar.tsx:373, radio/index.tsx:284,
  * menu/s2-menu-styles.ts:257). Those two stops per ramp are pinned to >= 4.5:1 against
- * white. Where that conflicted with the brand value, LIGHTNESS moved and hue did not:
- * `--accent-primary` #2e90fa is only 2.9:1 with white ink, so the light fill stop sits
- * darker at #1474e4 — same hue to within 2.6deg, but actually readable.
+ * white — EXCEPT blue, where 900 is re-pinned to the brand `--accent-primary` #2e90fa
+ * in BOTH columns (see the blue ramp note: the darkened #1474e4/#338cfe stops of an
+ * earlier revision put the entire accent-coloured population one rung off register).
+ * White ink on the light accent fill is therefore ~3.2:1, the 3:1 large-text/graphical
+ * floor only — which is exactly how the island spends it (primary button, white 13px/600,
+ * glasselated.css:1361-1370; white icon masks, :808-810). It never sets body-size white
+ * text on the light accent fill; a component needing readable text on a selected surface
+ * takes the raised-pill idiom instead (TabSwitch, switch/index.tsx) or the soft accent
+ * pill (`--accent-primary-soft` + blue ink, `.glx-btn-soft` glasselated.css:1382-1392).
  *
  * Two invariants to hold when editing:
  *   - Emit EVERY stop of a ramp. A missing stop silently keeps the Adobe value.

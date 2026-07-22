@@ -33,12 +33,20 @@ export interface TabSwitchProps {
 // Static styling flows through the build-time S2 style() macro so the atomic CSS
 // ships in the package bundle. Only the sliding indicator's transform/width and
 // the button grid's column template are runtime-computed, so those stay inline.
-// TabSwitch has no S2 upstream — it's a segmented control styled with S2 tokens:
-// a subtle track, an accent pill that slides under the active label.
+// TabSwitch has no S2 upstream. Its register twin is the island's segmented pill
+// (`.glx-pop-kind`, glasselated.css:2503-2528): an inset glass track with a subtle
+// border, and a RAISED pill under the active label — surface + primary ink + the
+// edge-glass rim. Not an accent fill: the island never paints white text over
+// `--accent-primary`, and in light that pairing lands well under 4.5:1 (the ramp
+// pins blue-900 to the brand #2e90fa in both columns, see glasselated-ramps.ts).
 
 const trackStyles = style({
   position: "relative",
-  backgroundColor: "gray-100",
+  backgroundColor: "pasteboard",
+  borderStyle: "solid",
+  borderWidth: 1,
+  borderColor: "border-subtle",
+  boxSizing: "border-box",
   borderRadius: "full",
   width: "[250px]",
 });
@@ -48,7 +56,8 @@ const indicatorStyles = style({
   top: 0,
   height: 32,
   zIndex: 0,
-  backgroundColor: "accent",
+  backgroundColor: "raised",
+  boxShadow: "edge-glass",
   borderRadius: "full",
   transition: "default",
 });
@@ -66,11 +75,21 @@ const buttonStyles = style<{ isSelected?: boolean }>({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
+  /* Native <button> chrome must be reset here: the UA's opaque ButtonFace fill and
+     2px outset border otherwise paint OVER the z-0 indicator, hiding the sliding
+     pill entirely — the label appears to sit on a bare grey lozenge instead. */
+  backgroundColor: "transparent",
+  borderStyle: "none",
+  padding: 0,
+  cursor: "pointer",
   borderRadius: "full",
   transition: "default",
   font: "ui-lg",
   fontWeight: { default: "medium", isSelected: "extra-bold" },
-  color: { default: "neutral", isSelected: "white" },
+  /* Island ink pair: resting labels are `--text-secondary`, the active one steps up
+     to `--text-primary` on the raised pill (glasselated.css:2512-2528). The old
+     `white` ink only read on the accent fill this pill no longer has. */
+  color: { default: "neutral-subdued", isSelected: "neutral" },
 });
 
 /**
