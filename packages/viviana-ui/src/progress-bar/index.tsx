@@ -37,6 +37,13 @@ export type ProgressBarLabelPosition = "top" | "side";
 export interface ProgressBarProps {
   /** The current value. @default 0 */
   value?: number;
+  /**
+   * A second value beyond `value` rendered as a dithered extension of the fill —
+   * the register's "in flight" segment (the XP bar's 6% checker after the 84%
+   * solid, TerminalGlassLab.tsx:773-780). Purely visual; the accessible value
+   * stays `value`. Ignored while indeterminate.
+   */
+  pendingValue?: number;
   /** The smallest value allowed. @default 0 */
   minValue?: number;
   /** The largest value allowed. @default 100 */
@@ -203,6 +210,11 @@ const trackStyles = style<ProgressBarStyleState>({
    * already established a stacking context. */
   position: "relative",
   overflow: "hidden",
+  /* Row layout so the pending segment sits flush after the fill — the handoff's
+   * track is itself `display: flex` (TerminalGlassLab.tsx:763-770) for exactly
+   * this: solid fill then dithered lead, left to right. The rim overlay is
+   * absolutely positioned and thus not a flex item. */
+  display: "flex",
   /* Square, not a pill. The register's one drawn progress bar is the XP bar at
    * TerminalGlassLab.tsx:763-770 — an 8px-tall div in --surface-inset with
    * `overflow: hidden` and no border-radius declaration on the track, on the 84%
@@ -282,6 +294,28 @@ const fillStyles = style<ProgressBarStyleState>({
   },
 });
 
+/* The "in flight" segment: the register's ordered-dither checker
+ * (repeating-conic at a 4px tile, TerminalGlassLab.tsx:773-780) continuing the
+ * fill at half visual density. The accent has to reach the gradient through a
+ * custom property because the macro's color vocabulary stops at backgroundColor —
+ * same trick as Badge's `--iconPrimary` and ProgressCircle's `--pv-ring-fill`. */
+const pendingStyles = style<ProgressBarStyleState>({
+  height: "full",
+  flexShrink: 0,
+  borderStyle: "none",
+  borderRadius: "none",
+  backgroundImage: "[repeating-conic-gradient(var(--pv-pending-fill) 0% 25%, transparent 0% 50%)]",
+  backgroundSize: "[4px 4px]",
+  "--pv-pending-fill": {
+    type: "backgroundColor",
+    value: {
+      default: "accent",
+      isStaticColor: "transparent-overlay-900",
+      forcedColors: "ButtonText",
+    },
+  },
+});
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -322,6 +356,7 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
   const merged = mergeProps(contextProps ?? {}, props) as ProgressBarProps;
   const [local] = splitProps(merged, [
     "value",
+    "pendingValue",
     "minValue",
     "maxValue",
     "valueLabel",
@@ -401,6 +436,16 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
     const value = clamp(local.value ?? 0, minValue, maxValue);
     return ((value - minValue) / safeRange(minValue, maxValue)) * 100;
   });
+  const pendingWidth = createMemo(() => {
+    if (local.pendingValue == null) {
+      return null;
+    }
+    const minValue = local.minValue ?? 0;
+    const maxValue = local.maxValue ?? 100;
+    const pending = clamp(local.pendingValue, minValue, maxValue);
+    const pendingPercentage = ((pending - minValue) / safeRange(minValue, maxValue)) * 100;
+    return Math.max(0, pendingPercentage - percentage());
+  });
   const valueText = () =>
     local.valueLabel ?? (progressAria.progressBarProps["aria-valuetext"] as string | undefined);
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
@@ -440,6 +485,13 @@ export function ProgressBar(props: ProgressBarProps): JSX.Element {
             animation: isIndeterminate() ? indeterminateAnimation(locale().direction) : undefined,
           }}
         />
+        {!isIndeterminate() && pendingWidth() != null && (
+          <div
+            aria-hidden="true"
+            class={pendingStyles(state())}
+            style={{ width: `${pendingWidth()}%` }}
+          />
+        )}
         <div aria-hidden="true" class={trackRimStyles} />
       </div>
     </div>

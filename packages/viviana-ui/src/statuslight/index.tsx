@@ -2,7 +2,7 @@ import { type JSX, createContext, mergeProps, splitProps, useContext } from "sol
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
 import type { StyleString } from "../style";
-import { style } from "../style" with { type: "macro" };
+import { lightDark, style } from "../style" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
   controlFont,
@@ -25,6 +25,11 @@ type StatusLightVariant =
   | "positive"
   | "notice"
   | "negative"
+  /* The register's metric channel — the sky-blue that replaced the retired
+   * violet (`--status-metric`). Without it the fourth status channel simply
+   * has no StatusLight mapping (Panel07's mirror substituted `neutral` and
+   * noted "the metrics channel simply goes missing"). */
+  | "metric"
   | "yellow"
   | "chartreuse"
   | "celery"
@@ -84,10 +89,21 @@ const wrapperStyles = style<{
     alignItems: "baseline",
     width: "fit",
     font: controlFont(),
+    /* Register ink-toning: the wells paint the MESSAGE in the channel ink, not
+     * just the dot (Panel07's status rows have no dot at all — the text IS the
+     * light). A library StatusLight keeps the dot, but the semantic channels
+     * tone the label to match; the same 800/900 pairs Meter's fill uses, so
+     * text stays AA on both surfaces. Decorative palette variants keep the
+     * neutral label — they are categories, not statuses. */
     color: {
       default: "neutral",
       variant: {
         neutral: "gray-600",
+        informative: lightDark("informative-800", "informative-900"),
+        positive: lightDark("positive-800", "positive-900"),
+        notice: lightDark("notice-800", "notice-900"),
+        negative: lightDark("negative-800", "negative-900"),
+        metric: "[var(--status-metric)]",
       },
     },
     disableTapHighlight: true,
@@ -115,6 +131,7 @@ const lightStyles = style<{
       positive: "positive",
       notice: "notice",
       negative: "negative",
+      metric: "[var(--status-metric)]",
       celery: "celery",
       chartreuse: "chartreuse",
       cyan: "cyan",

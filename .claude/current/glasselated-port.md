@@ -141,6 +141,31 @@ violet retired → sky-blue metric (`--status-metric`, `--well-vi`,
 `--violet-500` kept as legacy alias; both schemes). Demoed as the first
 `/showcase/chips` row, probe-verified both schemes + reduced-motion.
 
+Closed 2026-07-22: discrete/dithered progress (Panel05/07). ProgressCircle's
+SVG arc became the register ring — 16 absolutely-positioned pixel blocks on a
+module-computed circle (S 16/7/2, M 32/13/3, L 64/26/6 container/radius/block),
+lit blocks in accent with staggered `ringBlink` step-end blinks (2.6s, 0.16s/i
+delays), the two lead blocks dithered via `repeating-conic-gradient` of a
+conditional `--pv-ring-fill` custom property (accent / static-overlay /
+ButtonText — conditional custom-prop values compile fine), plus a centered
+children readout slot (`3/5 FOCUS`). ProgressBar gained `pendingValue` — the
+XP bar's dithered in-flight segment rendered flex-after the solid fill.
+Meter gained `segments` — the wells' `[▮▮▮▯▯]` capacity form as 7×12 bordered
+blocks (glyph-box sized; ink follows variant, no rim); the well row itself is
+`labelPosition="side"` (`focus [▮▮▮▯▯] 3/5` inline), and segmented top-label
+meters drop the label wrapper's `contain: inline-size` (it relied on the
+continuous track's 208px `containIntrinsicWidth`; without it the value
+overprints the label). StatusLight gained the `metric` variant
+(`--status-metric`) and register ink-toning (label ink follows the channel,
+800/900 per scheme). AvatarGroup gained the register's `30` stack size and
+deepened overlap to 30% of the diameter (`calc(var(--size) * -0.3)`).
+Landmines: a zero-condition `style()` call compiles to a static class string —
+calling it as a function is an SSR crash; spacing props are scale-locked
+(`columnGap: 3` rejects — bracket `"[3px]"`) while sizing props accept any
+number. Demoed on `/showcase/status` (+ AvatarGroup on `/showcase/cards`),
+probe-verified both schemes + reduced-motion (determinate ring freezes,
+indeterminate keeps chasing); SSR 13/13, hydrate 15/15.
+
 ## Showcase plan
 
 Home is **`apps/web`** (TanStack Solid Start SSR on Cloudflare Workers) — it

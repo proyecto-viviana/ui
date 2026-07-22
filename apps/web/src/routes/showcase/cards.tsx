@@ -178,7 +178,7 @@ function Page() {
 
       <Demo label="AvatarGroup">
         <Row>
-          <AvatarGroup label="3 collaborators">
+          <AvatarGroup label="3 collaborators" size={30}>
             <Avatar src="/glasselated/avatar-1.png" />
             <Avatar src="/glasselated/avatar-2.png" />
             <Avatar src="/glasselated/avatar-3.png" />

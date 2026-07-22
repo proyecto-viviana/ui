@@ -1,5 +1,6 @@
 import {
   type JSX,
+  For,
   createContext,
   createMemo,
   createUniqueId,
@@ -49,6 +50,14 @@ export interface MeterProps {
   formatOptions?: Intl.NumberFormatOptions;
   /** The size of the meter. @default 'M' */
   size?: MeterSize;
+  /**
+   * Render the meter as this many discrete blocks instead of a continuous bar —
+   * the register's `[▮▮▮▯▯]` capacity form (Panel07's focus/streak/xp/memory
+   * rows, TerminalGlassLab.tsx:914-931). The value quantizes to
+   * `round(fraction × segments)` filled blocks; the accessible value stays
+   * continuous.
+   */
+  segments?: number;
   /** The visual style variant. @default 'informative' */
   variant?: MeterVariant;
   /** The label to display above the meter. */
@@ -82,6 +91,7 @@ type MeterStyleState = {
   labelPosition: MeterLabelPosition;
   labelAlign?: "start" | "end";
   isStaticColor: boolean;
+  isSegmented: boolean;
 };
 
 const wrapperStyles = style<MeterStyleState>(
@@ -138,7 +148,15 @@ const labelWrapperStyles = style<MeterStyleState>({
   },
   contain: {
     labelPosition: {
-      top: "inline-size",
+      /* Size containment here relies on the bar row to size the grid — the
+       * continuous track advertises a 208px intrinsic width (fieldInput's
+       * containIntrinsicWidth). The segment row is content-sized (a handful of
+       * 7px blocks), so with segments the label must contribute its own width
+       * or the value overprints it. */
+      top: {
+        default: "inline-size",
+        isSegmented: "none",
+      },
     },
   },
 });
@@ -231,6 +249,56 @@ const fillStyles = style<MeterStyleState>({
   },
 });
 
+/* The discrete form. The register draws it as literal ▮/▯ glyphs in mono text
+ * (TerminalGlassLab.tsx:918: `[▮▮▮▯▯] 3/5`); as a library primitive the blocks
+ * are drawn divs at the glyph's box (7×12 — U+25AE's ink at the wells' 11.5px
+ * mono), because a glyph's rendered size shifts with the consumer's font stack.
+ * Filled and empty share one ink — the glyph pair differs only in fill, and the
+ * register keeps channel color OFF the blocks (it lives on the row label). Here
+ * the ink follows the variant so the meter still reads outside a well. No rim:
+ * the blocks are marks, not a recessed surface. */
+/* Static (no conditions), so the macro yields a string used directly as a
+ * class — same pattern as trackRimStyles above. */
+const segmentRowStyles = style({
+  gridArea: "bar",
+  display: "flex",
+  alignItems: "center",
+  columnGap: "[3px]",
+});
+
+type MeterSegmentStyleState = MeterStyleState & { isFilled: boolean };
+
+const segmentStyles = style<MeterSegmentStyleState>({
+  width: 7,
+  height: 12,
+  boxSizing: "border-box",
+  borderStyle: "solid",
+  borderWidth: 1,
+  borderColor: {
+    default: lightDark("informative-800", "informative-900"),
+    variant: {
+      positive: lightDark("positive-800", "positive-900"),
+      notice: lightDark("notice-800", "notice-900"),
+      negative: lightDark("negative-800", "negative-900"),
+    },
+    isStaticColor: "transparent-overlay-900",
+    forcedColors: "ButtonText",
+  },
+  backgroundColor: {
+    default: "transparent",
+    isFilled: {
+      default: lightDark("informative-800", "informative-900"),
+      variant: {
+        positive: lightDark("positive-800", "positive-900"),
+        notice: lightDark("notice-800", "notice-900"),
+        negative: lightDark("negative-800", "negative-900"),
+      },
+      isStaticColor: "transparent-overlay-900",
+      forcedColors: "ButtonText",
+    },
+  },
+});
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
@@ -272,6 +340,7 @@ export function Meter(props: MeterProps): JSX.Element {
     "valueLabel",
     "formatOptions",
     "size",
+    "segments",
     "variant",
     "label",
     "staticColor",
@@ -304,6 +373,7 @@ export function Meter(props: MeterProps): JSX.Element {
     labelPosition: labelPosition(),
     labelAlign,
     isStaticColor: isStaticColor(),
+    isSegmented: segmentCount() != null,
   });
   const accessibleLabelledBy = () =>
     local["aria-labelledby"] ?? (!local["aria-label"] && local.label ? labelId : undefined);
@@ -349,6 +419,18 @@ export function Meter(props: MeterProps): JSX.Element {
   });
   const valueText = () =>
     local.valueLabel ?? (meterAria.meterProps["aria-valuetext"] as string | undefined);
+  const segmentCount = () => {
+    const segments = local.segments;
+    return segments != null && Number.isFinite(segments) && segments >= 1
+      ? Math.floor(segments)
+      : null;
+  };
+  const filledCount = createMemo(() => {
+    const segments = segmentCount();
+    return segments == null
+      ? 0
+      : clamp(Math.round((percentage() / 100) * segments), 0, segments);
+  });
   const showValue = () => !!local.label;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -378,10 +460,20 @@ export function Meter(props: MeterProps): JSX.Element {
       )}
       {showValue() && <Text styles={valueStyles(state("end"))}>{valueText()}</Text>}
       <SkeletonWrapper>
-        <div class={trackStyles(state())}>
-          <div class={fillStyles(state())} style={{ width: `${percentage()}%` }} />
-          <div aria-hidden="true" class={trackRimStyles} />
-        </div>
+        {segmentCount() != null ? (
+          <div class={segmentRowStyles} aria-hidden="true">
+            <For each={Array.from({ length: segmentCount() ?? 0 })}>
+              {(_, index) => (
+                <div class={segmentStyles({ ...state(), isFilled: index() < filledCount() })} />
+              )}
+            </For>
+          </div>
+        ) : (
+          <div class={trackStyles(state())}>
+            <div class={fillStyles(state())} style={{ width: `${percentage()}%` }} />
+            <div aria-hidden="true" class={trackRimStyles} />
+          </div>
+        )}
       </SkeletonWrapper>
     </div>
   );

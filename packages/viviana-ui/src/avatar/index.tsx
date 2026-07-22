@@ -36,7 +36,9 @@ export type AvatarSize =
   | "lg"
   | "xl";
 
-export type AvatarGroupSize = 16 | 20 | 24 | 28 | 32 | 36 | 40;
+/* 30 is the register's stack size — Panel05's roster is 30×30 avatars
+ * (TerminalGlassLab.tsx:688-704); the S2 enum would round it to 32. */
+export type AvatarGroupSize = 16 | 20 | 24 | 28 | 30 | 32 | 36 | 40;
 
 export interface AvatarProps extends Omit<
   JSX.HTMLAttributes<HTMLDivElement>,
@@ -112,8 +114,11 @@ const avatarRoot = style(
 );
 
 const avatarGroupAvatar = style({
+  /* The register overlaps stacked avatars by 30% of their diameter — Panel05's
+   * roster is 30px avatars at margin-left -9px (TerminalGlassLab.tsx:697) —
+   * where S2 tucked them a shallower 25%. One ratio for every size. */
   marginStart: {
-    default: "calc(var(--size) / -4)",
+    default: "calc(var(--size) * -0.3)",
     ":first-child": 0,
   },
 });
@@ -127,6 +132,7 @@ const avatarGroupText = style({
       20: "ui-sm",
       24: "ui",
       28: "ui-lg",
+      30: "ui-xl",
       32: "ui-xl",
       36: "ui-2xl",
       40: "ui-3xl",

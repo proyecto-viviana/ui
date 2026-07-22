@@ -8,6 +8,7 @@ import {
   Heading,
   Content,
   Text,
+  typeRoles,
   ToastQueue,
   ToastContainer,
   ProgressBar,
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/showcase/status")({
   component: Page,
 });
 
-const STATUS_LIGHT_VARIANTS = ["informative", "notice", "negative", "neutral"] as const;
+const STATUS_LIGHT_VARIANTS = ["informative", "notice", "negative", "metric", "neutral"] as const;
 const INLINE_ALERT_VARIANTS = ["informative", "notice", "negative", "neutral"] as const;
 
 function Page() {
@@ -122,6 +123,17 @@ function Page() {
         </Row>
       </Demo>
 
+      <Demo label="ProgressBar · pending — the XP bar's dithered in-flight segment">
+        <Row>
+          <ProgressBar
+            label="Level 12"
+            valueLabel="2,840 / 3,200 XP"
+            value={84}
+            pendingValue={90}
+          />
+        </Row>
+      </Demo>
+
       <Demo label="ProgressCircle · determinate">
         <Row>
           <ProgressCircle aria-label="Loading" value={25} size="S" />
@@ -133,6 +145,27 @@ function Page() {
       <Demo label="ProgressCircle · indeterminate">
         <Row>
           <ProgressCircle aria-label="Loading" isIndeterminate />
+        </Row>
+      </Demo>
+
+      <Demo label="ProgressCircle · register ring — quantized blocks, centered readout">
+        <Row>
+          <ProgressCircle aria-label="Focus blocks: 3 of 5" value={60} size="L">
+            <span class={typeRoles.headline}>3/5</span>
+            <span class={typeRoles.micro} style={{ color: "var(--text-tertiary)" }}>
+              FOCUS
+            </span>
+          </ProgressCircle>
+        </Row>
+      </Demo>
+
+      <Demo label="Meter · segments — the wells' ▮▮▮▯▯ capacity form">
+        {/* The register draws these inline — `focus [▮▮▮▯▯] 3/5` — so the well
+            form is the side label position. */}
+        <Row>
+          <Meter label="Focus" variant="informative" labelPosition="side" segments={5} value={3} maxValue={5} valueLabel="3/5" />
+          <Meter label="Streak" variant="notice" labelPosition="side" segments={5} value={4} maxValue={5} valueLabel="4/5" />
+          <Meter label="Memory" variant="negative" labelPosition="side" segments={5} value={1} maxValue={5} valueLabel="1/5" />
         </Row>
       </Demo>
 
