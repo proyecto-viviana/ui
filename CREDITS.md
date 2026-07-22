@@ -48,6 +48,22 @@ credited here because it shaped a decision.
   state after a change event is a pattern common to SolidJS component libraries,
   Kobalte among them. See `packages/solidaria/src/radio/createRadio.ts`.
 
+## Sourced — Glasselated design lane (our own work, ported)
+
+The Glasselated visual system (the register on `packages/viviana-ui` and the
+`apps/web/src/routes/showcase` surface) was designed in the owner-directed
+Claude design lane recorded in `.claude/current/visual-system-lane.md`. Assets
+ported from the external, now-frozen design repository
+(`proyecto-viviana/visual-system-claude`, branch `design/glasselated-v2`):
+
+- `apps/web/public/glasselated/` — scene photographs (`bg-scene.png`,
+  `bg-scene-night.png`) and demo avatars/thumbnails generated during that
+  design lane; owner-owned, MIT with the rest of our work.
+- `apps/web/src/lib/glasselated.ts` — the mesh/dither/theme-wipe runtime,
+  ported from the lane's framework-neutral `glasselated.js`.
+- **[Geist, Geist Mono & Geist Pixel](https://vercel.com/font)** (SIL OFL 1.1) —
+  the register's three type faces, loaded from Google Fonts; not vendored.
+
 ## Built with
 
 The wider toolchain and ecosystem this project is built on (each under its own

@@ -1,0 +1,220 @@
+/* ── Glasselated host layer for the Viviana showcase ──
+   The design-system tokens (--surface-*, --text-*, --type-*, --edge-glass, the
+   Geist font-role vars) live in @proyecto-viviana/ui's viviana-tokens.css and
+   are loaded app-wide through components.css. This file adds only what a HOST
+   PAGE owes the register:
+
+     1. the Geist bridge into the library's `--s2-font-family-*` seams,
+     2. the pixel display axis + page-level faces for the showcase's own chrome,
+     3. the showcase's section chrome (`gls-*`), built from register tokens.
+
+   Everything is scoped under `[data-glasselated]` so it is inert on the rest
+   of the site. Light/dark follows the site-wide `data-color-scheme` switch on
+   <html>, which the library token layer already binds to. */
+
+[data-glasselated] {
+  /* 1 — library font seams (spectrum-theme.ts reads these) */
+  --s2-font-family-sans: "Geist";
+  --s2-font-family-code: "Geist Mono";
+  --s2-font-family-display: "Geist Pixel";
+
+  /* 2 — page-level faces for hand-built showcase chrome */
+  font-family: var(--font-ui);
+  font-variation-settings: var(--type-pixel-vs);
+  color: var(--text-primary);
+}
+
+[data-glasselated] h1,
+[data-glasselated] h2,
+[data-glasselated] h3,
+[data-glasselated] h4 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+/* ── 3 — showcase chrome ────────────────────────────────────────────────── */
+
+/* Sticky top bar: one glass strip over the scene. */
+[data-glasselated] .gls-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 22px;
+  background: var(--surface-panel);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  border-bottom: 1px solid var(--border-default);
+  box-shadow: var(--edge-glass);
+}
+
+[data-glasselated] .gls-brand {
+  font: var(--type-title);
+  letter-spacing: var(--type-title-track);
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+[data-glasselated] .gls-topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+[data-glasselated] .gls-topbar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+[data-glasselated] .gls-navlink {
+  font: var(--type-micro);
+  letter-spacing: var(--type-micro-track);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 6px 9px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+[data-glasselated] .gls-navlink:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+[data-glasselated] .gls-navlink[data-status="active"],
+[data-glasselated] .gls-navlink[aria-current="page"] {
+  color: var(--text-primary);
+  background: var(--surface-raised);
+  border-color: var(--border-default);
+  box-shadow: var(--edge-glass);
+}
+
+/* Content column. */
+[data-glasselated] .gls-main {
+  position: relative;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 34px 22px 90px;
+  display: grid;
+  gap: 26px;
+}
+
+/* One numbered showcase panel: a glass surface holding component demos. */
+[data-glasselated] .gls-panel {
+  background: var(--surface-panel);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--edge-glass);
+  padding: 22px;
+  display: grid;
+  gap: 18px;
+}
+
+[data-glasselated] .gls-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+[data-glasselated] .gls-panel-num {
+  font: var(--type-micro);
+  letter-spacing: var(--type-micro-track);
+  font-family: var(--font-mono);
+  color: var(--accent-primary);
+}
+
+[data-glasselated] .gls-panel-title {
+  font: var(--type-headline);
+  letter-spacing: var(--type-headline-track);
+  font-family: var(--font-display);
+}
+
+[data-glasselated] .gls-panel-blurb {
+  font: var(--type-meta);
+  color: var(--text-secondary);
+  margin-left: auto;
+  text-align: right;
+  max-width: 44ch;
+}
+
+/* A labeled demo cluster inside a panel. */
+[data-glasselated] .gls-demo {
+  display: grid;
+  gap: 10px;
+}
+
+[data-glasselated] .gls-demo-label {
+  font: var(--type-micro);
+  letter-spacing: var(--type-micro-track);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+[data-glasselated] .gls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+[data-glasselated] .gls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+/* Overview page: panel directory cards. */
+[data-glasselated] .gls-navcard {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  background: var(--surface-card);
+  backdrop-filter: var(--blur-card);
+  -webkit-backdrop-filter: var(--blur-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--edge-glass);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+[data-glasselated] .gls-navcard:hover {
+  background: var(--surface-raised);
+  border-color: var(--border-focus);
+}
+[data-glasselated] .gls-navcard .gls-navcard-title {
+  font: var(--type-label);
+  letter-spacing: var(--type-label-track);
+  font-family: var(--font-display);
+}
+[data-glasselated] .gls-navcard .gls-navcard-meta {
+  font: var(--type-micro);
+  letter-spacing: var(--type-micro-track);
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+/* Type-role specimen rows on the overview page. */
+[data-glasselated] .gls-typerole {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+[data-glasselated] .gls-typerole:last-child {
+  border-bottom: none;
+}

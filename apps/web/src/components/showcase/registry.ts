@@ -1,0 +1,237 @@
+/* The showcase's panel taxonomy — the TerminalGlassLab nine-panel structure
+   extended so EVERY public @proyecto-viviana/ui component has a home. Each
+   panel is one child route under /showcase; `components` lists the exported
+   names the panel is responsible for demonstrating, so coverage against the
+   package's public surface stays checkable. */
+
+export interface PanelDef {
+  /** Route slug under /showcase/. */
+  readonly slug: string;
+  /** Two-digit panel number, in register voice ("01"). */
+  readonly num: string;
+  readonly title: string;
+  readonly blurb: string;
+  /** Public export names this panel demonstrates. */
+  readonly components: readonly string[];
+}
+
+export const PANELS: readonly PanelDef[] = [
+  {
+    slug: "buttons",
+    num: "01",
+    title: "Buttons",
+    blurb: "Opaque controls on the mono face — glass is for surfaces, not buttons.",
+    components: [
+      "Button",
+      "LinkButton",
+      "ActionButton",
+      "ActionButtonGroup",
+      "ToggleButton",
+      "ToggleButtonGroup",
+      "ButtonGroup",
+      "FileTrigger",
+    ],
+  },
+  {
+    slug: "inputs",
+    num: "02",
+    title: "Inputs",
+    blurb: "Text entry: 8px corners, hairline borders, mono field labels.",
+    components: ["TextField", "TextArea", "NumberField", "SearchField", "Form", "LabeledValue"],
+  },
+  {
+    slug: "selection",
+    num: "03",
+    title: "Selection",
+    blurb: "Binary and grouped choice controls.",
+    components: [
+      "Checkbox",
+      "CheckboxGroup",
+      "Radio",
+      "RadioGroup",
+      "Switch",
+      "ToggleSwitch",
+      "SelectBoxGroup",
+      "SelectBox",
+      "SegmentedControl",
+      "TabSwitch",
+    ],
+  },
+  {
+    slug: "pickers",
+    num: "04",
+    title: "Pickers",
+    blurb: "Choose-one-from-many: pickers, comboboxes, autocomplete.",
+    components: [
+      "Picker",
+      "PickerItem",
+      "PickerSection",
+      "Select",
+      "SelectTrigger",
+      "SelectValue",
+      "SelectOption",
+      "SelectListBox",
+      "ComboBox",
+      "Autocomplete",
+    ],
+  },
+  {
+    slug: "status",
+    num: "05",
+    title: "Status & Progress",
+    blurb: "Live signals: pulse dots, alerts, toasts, dithered progress.",
+    components: [
+      "StatusLight",
+      "InlineAlert",
+      "Toast",
+      "ProgressBar",
+      "ProgressCircle",
+      "Meter",
+      "Skeleton",
+      "SkeletonCollection",
+      "NotificationBadge",
+    ],
+  },
+  {
+    slug: "chips",
+    num: "06",
+    title: "Chips & Badges",
+    blurb: "Compact identity: badges, tags, chip rows.",
+    components: ["Badge", "Tag", "TagGroup"],
+  },
+  {
+    slug: "navigation",
+    num: "07",
+    title: "Navigation",
+    blurb: "Ways through: tabs, breadcrumbs, links, disclosure, steps.",
+    components: [
+      "Tabs",
+      "Tab",
+      "TabList",
+      "TabPanel",
+      "TabPanels",
+      "Breadcrumbs",
+      "Breadcrumb",
+      "BreadcrumbItem",
+      "Link",
+      "Accordion",
+      "Disclosure",
+      "StepList",
+      "Step",
+      "StepListItem",
+    ],
+  },
+  {
+    slug: "collections",
+    num: "08",
+    title: "Collections",
+    blurb: "List rows, menus, tables, trees — data at rest and under command.",
+    components: [
+      "ListBox",
+      "ListBoxOption",
+      "ListBoxSection",
+      "ListView",
+      "ListViewItem",
+      "Menu",
+      "ActionMenu",
+      "ActionBar",
+      "ActionBarContainer",
+      "ActionGroup",
+      "Toolbar",
+      "TableView",
+      "TreeView",
+      "CardView",
+      "CardViewCollection",
+    ],
+  },
+  {
+    slug: "overlays",
+    num: "09",
+    title: "Overlays",
+    blurb: "Glass over glass: popovers, tooltips, dialogs, drop zones.",
+    components: [
+      "Popover",
+      "PopoverTrigger",
+      "PopoverHeader",
+      "PopoverFooter",
+      "Tooltip",
+      "TooltipTrigger",
+      "ContextualHelp",
+      "ContextualHelpPopover",
+      "DialogTrigger",
+      "Dialog",
+      "AlertDialog",
+      "DropZone",
+    ],
+  },
+  {
+    slug: "datetime",
+    num: "10",
+    title: "Date & Time",
+    blurb: "Calendars and segmented date entry on the mono face.",
+    components: [
+      "Calendar",
+      "RangeCalendar",
+      "DateField",
+      "TimeField",
+      "DatePicker",
+      "DateRangePicker",
+    ],
+  },
+  {
+    slug: "color",
+    num: "11",
+    title: "Color",
+    blurb: "The color tools: areas, wheels, sliders, swatches.",
+    components: [
+      "ColorArea",
+      "ColorWheel",
+      "ColorSlider",
+      "ColorField",
+      "ColorSwatch",
+      "ColorSwatchPicker",
+    ],
+  },
+  {
+    slug: "cards",
+    num: "12",
+    title: "Cards & Media",
+    blurb: "Glass cards, avatars, imagery, empty states.",
+    components: [
+      "Card",
+      "Avatar",
+      "AvatarGroup",
+      "Image",
+      "ImageCoordinator",
+      "IllustratedMessage",
+    ],
+  },
+  {
+    slug: "sliders",
+    num: "13",
+    title: "Sliders",
+    blurb: "Continuous input: single and range.",
+    components: ["Slider", "RangeSlider"],
+  },
+  {
+    slug: "type",
+    num: "14",
+    title: "Type & Layout",
+    blurb: "The nine type roles, dividers, and layout primitives.",
+    components: [
+      "Heading",
+      "Text",
+      "Keyboard",
+      "Flex",
+      "Grid",
+      "Divider",
+      "Separator",
+      "Well",
+      "Provider",
+    ],
+  },
+];
+
+export function panelBySlug(slug: string): PanelDef | undefined {
+  return PANELS.find((p) => p.slug === slug);
+}

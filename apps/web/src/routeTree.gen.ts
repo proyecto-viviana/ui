@@ -12,10 +12,26 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThemeRouteImport } from './routes/theme'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
+import { Route as ShowcaseIndexRouteImport } from './routes/showcase/index'
 import { Route as SolidSpectrumPlaygroundRouteImport } from './routes/solid-spectrum/playground'
 import { Route as SolidSpectrumEcosystemRouteImport } from './routes/solid-spectrum/ecosystem'
+import { Route as ShowcaseTypeRouteImport } from './routes/showcase/type'
+import { Route as ShowcaseStatusRouteImport } from './routes/showcase/status'
+import { Route as ShowcaseSlidersRouteImport } from './routes/showcase/sliders'
+import { Route as ShowcaseSelectionRouteImport } from './routes/showcase/selection'
+import { Route as ShowcasePickersRouteImport } from './routes/showcase/pickers'
+import { Route as ShowcaseOverlaysRouteImport } from './routes/showcase/overlays'
+import { Route as ShowcaseNavigationRouteImport } from './routes/showcase/navigation'
+import { Route as ShowcaseInputsRouteImport } from './routes/showcase/inputs'
+import { Route as ShowcaseDatetimeRouteImport } from './routes/showcase/datetime'
+import { Route as ShowcaseColorRouteImport } from './routes/showcase/color'
+import { Route as ShowcaseCollectionsRouteImport } from './routes/showcase/collections'
+import { Route as ShowcaseChipsRouteImport } from './routes/showcase/chips'
+import { Route as ShowcaseCardsRouteImport } from './routes/showcase/cards'
+import { Route as ShowcaseButtonsRouteImport } from './routes/showcase/buttons'
 import { Route as SolidSpectrumDocsRouteRouteImport } from './routes/solid-spectrum/docs/route'
 import { Route as SolidSpectrumDocsIndexRouteImport } from './routes/solid-spectrum/docs/index'
 import { Route as SolidSpectrumDocsInstallationRouteImport } from './routes/solid-spectrum/docs/installation'
@@ -82,6 +98,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShowcaseRouteRoute = ShowcaseRouteRouteImport.update({
+  id: '/showcase',
+  path: '/showcase',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -92,6 +113,11 @@ const SolidSpectrumIndexRoute = SolidSpectrumIndexRouteImport.update({
   path: '/solid-spectrum/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
 const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
   id: '/solid-spectrum/playground',
   path: '/solid-spectrum/playground',
@@ -101,6 +127,76 @@ const SolidSpectrumEcosystemRoute = SolidSpectrumEcosystemRouteImport.update({
   id: '/solid-spectrum/ecosystem',
   path: '/solid-spectrum/ecosystem',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ShowcaseTypeRoute = ShowcaseTypeRouteImport.update({
+  id: '/type',
+  path: '/type',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseStatusRoute = ShowcaseStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseSlidersRoute = ShowcaseSlidersRouteImport.update({
+  id: '/sliders',
+  path: '/sliders',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseSelectionRoute = ShowcaseSelectionRouteImport.update({
+  id: '/selection',
+  path: '/selection',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcasePickersRoute = ShowcasePickersRouteImport.update({
+  id: '/pickers',
+  path: '/pickers',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseOverlaysRoute = ShowcaseOverlaysRouteImport.update({
+  id: '/overlays',
+  path: '/overlays',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseNavigationRoute = ShowcaseNavigationRouteImport.update({
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseInputsRoute = ShowcaseInputsRouteImport.update({
+  id: '/inputs',
+  path: '/inputs',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseDatetimeRoute = ShowcaseDatetimeRouteImport.update({
+  id: '/datetime',
+  path: '/datetime',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseColorRoute = ShowcaseColorRouteImport.update({
+  id: '/color',
+  path: '/color',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseCollectionsRoute = ShowcaseCollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseChipsRoute = ShowcaseChipsRouteImport.update({
+  id: '/chips',
+  path: '/chips',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseCardsRoute = ShowcaseCardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseButtonsRoute = ShowcaseButtonsRouteImport.update({
+  id: '/buttons',
+  path: '/buttons',
+  getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const SolidSpectrumDocsRouteRoute = SolidSpectrumDocsRouteRouteImport.update({
   id: '/solid-spectrum/docs',
@@ -403,12 +499,28 @@ const SolidSpectrumDocsComponentsAccordionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/home': typeof HomeRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
+  '/showcase/buttons': typeof ShowcaseButtonsRoute
+  '/showcase/cards': typeof ShowcaseCardsRoute
+  '/showcase/chips': typeof ShowcaseChipsRoute
+  '/showcase/collections': typeof ShowcaseCollectionsRoute
+  '/showcase/color': typeof ShowcaseColorRoute
+  '/showcase/datetime': typeof ShowcaseDatetimeRoute
+  '/showcase/inputs': typeof ShowcaseInputsRoute
+  '/showcase/navigation': typeof ShowcaseNavigationRoute
+  '/showcase/overlays': typeof ShowcaseOverlaysRoute
+  '/showcase/pickers': typeof ShowcasePickersRoute
+  '/showcase/selection': typeof ShowcaseSelectionRoute
+  '/showcase/sliders': typeof ShowcaseSlidersRoute
+  '/showcase/status': typeof ShowcaseStatusRoute
+  '/showcase/type': typeof ShowcaseTypeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
@@ -465,8 +577,23 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/home': typeof HomeRoute
   '/theme': typeof ThemeRoute
+  '/showcase/buttons': typeof ShowcaseButtonsRoute
+  '/showcase/cards': typeof ShowcaseCardsRoute
+  '/showcase/chips': typeof ShowcaseChipsRoute
+  '/showcase/collections': typeof ShowcaseCollectionsRoute
+  '/showcase/color': typeof ShowcaseColorRoute
+  '/showcase/datetime': typeof ShowcaseDatetimeRoute
+  '/showcase/inputs': typeof ShowcaseInputsRoute
+  '/showcase/navigation': typeof ShowcaseNavigationRoute
+  '/showcase/overlays': typeof ShowcaseOverlaysRoute
+  '/showcase/pickers': typeof ShowcasePickersRoute
+  '/showcase/selection': typeof ShowcaseSelectionRoute
+  '/showcase/sliders': typeof ShowcaseSlidersRoute
+  '/showcase/status': typeof ShowcaseStatusRoute
+  '/showcase/type': typeof ShowcaseTypeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/showcase': typeof ShowcaseIndexRoute
   '/solid-spectrum': typeof SolidSpectrumIndexRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsIndexRoute
@@ -521,12 +648,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/home': typeof HomeRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
+  '/showcase/buttons': typeof ShowcaseButtonsRoute
+  '/showcase/cards': typeof ShowcaseCardsRoute
+  '/showcase/chips': typeof ShowcaseChipsRoute
+  '/showcase/collections': typeof ShowcaseCollectionsRoute
+  '/showcase/color': typeof ShowcaseColorRoute
+  '/showcase/datetime': typeof ShowcaseDatetimeRoute
+  '/showcase/inputs': typeof ShowcaseInputsRoute
+  '/showcase/navigation': typeof ShowcaseNavigationRoute
+  '/showcase/overlays': typeof ShowcaseOverlaysRoute
+  '/showcase/pickers': typeof ShowcasePickersRoute
+  '/showcase/selection': typeof ShowcaseSelectionRoute
+  '/showcase/sliders': typeof ShowcaseSlidersRoute
+  '/showcase/status': typeof ShowcaseStatusRoute
+  '/showcase/type': typeof ShowcaseTypeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
@@ -582,12 +725,28 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/showcase'
     | '/admin'
     | '/home'
     | '/theme'
     | '/solid-spectrum/docs'
+    | '/showcase/buttons'
+    | '/showcase/cards'
+    | '/showcase/chips'
+    | '/showcase/collections'
+    | '/showcase/color'
+    | '/showcase/datetime'
+    | '/showcase/inputs'
+    | '/showcase/navigation'
+    | '/showcase/overlays'
+    | '/showcase/pickers'
+    | '/showcase/selection'
+    | '/showcase/sliders'
+    | '/showcase/status'
+    | '/showcase/type'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
+    | '/showcase/'
     | '/solid-spectrum/'
     | '/solid-spectrum/docs/installation'
     | '/solid-spectrum/docs/'
@@ -644,8 +803,23 @@ export interface FileRouteTypes {
     | '/admin'
     | '/home'
     | '/theme'
+    | '/showcase/buttons'
+    | '/showcase/cards'
+    | '/showcase/chips'
+    | '/showcase/collections'
+    | '/showcase/color'
+    | '/showcase/datetime'
+    | '/showcase/inputs'
+    | '/showcase/navigation'
+    | '/showcase/overlays'
+    | '/showcase/pickers'
+    | '/showcase/selection'
+    | '/showcase/sliders'
+    | '/showcase/status'
+    | '/showcase/type'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
+    | '/showcase'
     | '/solid-spectrum'
     | '/solid-spectrum/docs/installation'
     | '/solid-spectrum/docs'
@@ -699,12 +873,28 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/showcase'
     | '/admin'
     | '/home'
     | '/theme'
     | '/solid-spectrum/docs'
+    | '/showcase/buttons'
+    | '/showcase/cards'
+    | '/showcase/chips'
+    | '/showcase/collections'
+    | '/showcase/color'
+    | '/showcase/datetime'
+    | '/showcase/inputs'
+    | '/showcase/navigation'
+    | '/showcase/overlays'
+    | '/showcase/pickers'
+    | '/showcase/selection'
+    | '/showcase/sliders'
+    | '/showcase/status'
+    | '/showcase/type'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
+    | '/showcase/'
     | '/solid-spectrum/'
     | '/solid-spectrum/docs/installation'
     | '/solid-spectrum/docs/'
@@ -759,6 +949,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShowcaseRouteRoute: typeof ShowcaseRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
   HomeRoute: typeof HomeRoute
   ThemeRoute: typeof ThemeRoute
@@ -791,6 +982,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/showcase': {
+      id: '/showcase'
+      path: '/showcase'
+      fullPath: '/showcase'
+      preLoaderRoute: typeof ShowcaseRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -805,6 +1003,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SolidSpectrumIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/showcase/': {
+      id: '/showcase/'
+      path: '/'
+      fullPath: '/showcase/'
+      preLoaderRoute: typeof ShowcaseIndexRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
     '/solid-spectrum/playground': {
       id: '/solid-spectrum/playground'
       path: '/solid-spectrum/playground'
@@ -818,6 +1023,104 @@ declare module '@tanstack/solid-router' {
       fullPath: '/solid-spectrum/ecosystem'
       preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/showcase/type': {
+      id: '/showcase/type'
+      path: '/type'
+      fullPath: '/showcase/type'
+      preLoaderRoute: typeof ShowcaseTypeRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/status': {
+      id: '/showcase/status'
+      path: '/status'
+      fullPath: '/showcase/status'
+      preLoaderRoute: typeof ShowcaseStatusRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/sliders': {
+      id: '/showcase/sliders'
+      path: '/sliders'
+      fullPath: '/showcase/sliders'
+      preLoaderRoute: typeof ShowcaseSlidersRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/selection': {
+      id: '/showcase/selection'
+      path: '/selection'
+      fullPath: '/showcase/selection'
+      preLoaderRoute: typeof ShowcaseSelectionRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/pickers': {
+      id: '/showcase/pickers'
+      path: '/pickers'
+      fullPath: '/showcase/pickers'
+      preLoaderRoute: typeof ShowcasePickersRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/overlays': {
+      id: '/showcase/overlays'
+      path: '/overlays'
+      fullPath: '/showcase/overlays'
+      preLoaderRoute: typeof ShowcaseOverlaysRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/navigation': {
+      id: '/showcase/navigation'
+      path: '/navigation'
+      fullPath: '/showcase/navigation'
+      preLoaderRoute: typeof ShowcaseNavigationRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/inputs': {
+      id: '/showcase/inputs'
+      path: '/inputs'
+      fullPath: '/showcase/inputs'
+      preLoaderRoute: typeof ShowcaseInputsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/datetime': {
+      id: '/showcase/datetime'
+      path: '/datetime'
+      fullPath: '/showcase/datetime'
+      preLoaderRoute: typeof ShowcaseDatetimeRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/color': {
+      id: '/showcase/color'
+      path: '/color'
+      fullPath: '/showcase/color'
+      preLoaderRoute: typeof ShowcaseColorRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/collections': {
+      id: '/showcase/collections'
+      path: '/collections'
+      fullPath: '/showcase/collections'
+      preLoaderRoute: typeof ShowcaseCollectionsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/chips': {
+      id: '/showcase/chips'
+      path: '/chips'
+      fullPath: '/showcase/chips'
+      preLoaderRoute: typeof ShowcaseChipsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/cards': {
+      id: '/showcase/cards'
+      path: '/cards'
+      fullPath: '/showcase/cards'
+      preLoaderRoute: typeof ShowcaseCardsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/buttons': {
+      id: '/showcase/buttons'
+      path: '/buttons'
+      fullPath: '/showcase/buttons'
+      preLoaderRoute: typeof ShowcaseButtonsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
     }
     '/solid-spectrum/docs': {
       id: '/solid-spectrum/docs'
@@ -1172,6 +1475,46 @@ declare module '@tanstack/solid-router' {
   }
 }
 
+interface ShowcaseRouteRouteChildren {
+  ShowcaseButtonsRoute: typeof ShowcaseButtonsRoute
+  ShowcaseCardsRoute: typeof ShowcaseCardsRoute
+  ShowcaseChipsRoute: typeof ShowcaseChipsRoute
+  ShowcaseCollectionsRoute: typeof ShowcaseCollectionsRoute
+  ShowcaseColorRoute: typeof ShowcaseColorRoute
+  ShowcaseDatetimeRoute: typeof ShowcaseDatetimeRoute
+  ShowcaseInputsRoute: typeof ShowcaseInputsRoute
+  ShowcaseNavigationRoute: typeof ShowcaseNavigationRoute
+  ShowcaseOverlaysRoute: typeof ShowcaseOverlaysRoute
+  ShowcasePickersRoute: typeof ShowcasePickersRoute
+  ShowcaseSelectionRoute: typeof ShowcaseSelectionRoute
+  ShowcaseSlidersRoute: typeof ShowcaseSlidersRoute
+  ShowcaseStatusRoute: typeof ShowcaseStatusRoute
+  ShowcaseTypeRoute: typeof ShowcaseTypeRoute
+  ShowcaseIndexRoute: typeof ShowcaseIndexRoute
+}
+
+const ShowcaseRouteRouteChildren: ShowcaseRouteRouteChildren = {
+  ShowcaseButtonsRoute: ShowcaseButtonsRoute,
+  ShowcaseCardsRoute: ShowcaseCardsRoute,
+  ShowcaseChipsRoute: ShowcaseChipsRoute,
+  ShowcaseCollectionsRoute: ShowcaseCollectionsRoute,
+  ShowcaseColorRoute: ShowcaseColorRoute,
+  ShowcaseDatetimeRoute: ShowcaseDatetimeRoute,
+  ShowcaseInputsRoute: ShowcaseInputsRoute,
+  ShowcaseNavigationRoute: ShowcaseNavigationRoute,
+  ShowcaseOverlaysRoute: ShowcaseOverlaysRoute,
+  ShowcasePickersRoute: ShowcasePickersRoute,
+  ShowcaseSelectionRoute: ShowcaseSelectionRoute,
+  ShowcaseSlidersRoute: ShowcaseSlidersRoute,
+  ShowcaseStatusRoute: ShowcaseStatusRoute,
+  ShowcaseTypeRoute: ShowcaseTypeRoute,
+  ShowcaseIndexRoute: ShowcaseIndexRoute,
+}
+
+const ShowcaseRouteRouteWithChildren = ShowcaseRouteRoute._addFileChildren(
+  ShowcaseRouteRouteChildren,
+)
+
 interface SolidSpectrumDocsRouteRouteChildren {
   SolidSpectrumDocsInstallationRoute: typeof SolidSpectrumDocsInstallationRoute
   SolidSpectrumDocsIndexRoute: typeof SolidSpectrumDocsIndexRoute
@@ -1327,6 +1670,7 @@ const SolidSpectrumDocsRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
   AdminRoute: AdminRoute,
   HomeRoute: HomeRoute,
   ThemeRoute: ThemeRoute,
