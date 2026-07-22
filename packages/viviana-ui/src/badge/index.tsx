@@ -9,6 +9,7 @@ import {
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { fontRelative, lightDark, style } from "../style" with { type: "macro" };
+import { keyframes } from "../style/style-macro" with { type: "macro" };
 import { centerBaseline } from "../icon/center-baseline";
 import { IconContext } from "../icon/spectrum-icon";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -32,6 +33,8 @@ export type BadgeVariant =
   | "positive"
   | "notice"
   | "negative"
+  | "live"
+  | "metric"
   | "gray"
   | "red"
   | "orange"
@@ -96,6 +99,33 @@ export interface BadgeProps extends Omit<
 
 export const BadgeContext = createContext<SpectrumContextValue<BadgeProps>>(null);
 
+/* The register's LIVE breathing (island glxPulse, glasselated.css:316-323): the
+ * whole pill dips to 55% opacity and back over 2s. Slow enough (0.25Hz) to sit
+ * far under any flash threshold; still gated on prefers-reduced-motion because
+ * it is decoration, not information — the label already says LIVE. The gate is
+ * the media query itself, NOT a runtime matchMedia check: Solid hydration
+ * trusts the server DOM, so an SSR'd inline `animation` never gets removed
+ * when the client's check disagrees — CSS is the only layer where the
+ * preference applies identically on both sides. (Not css() either: its class
+ * wrapper is lost around a nested @media, leaving a selectorless dead block —
+ * hence the style()-native media condition key down in badgeStyles.) */
+const livePulse = keyframes(`
+  0%, 100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+`);
+
+/* `live` and `metric` are the two register channels the ramps don't carry
+ * (glasselated-ramps.ts covers gray/blue/red/orange/yellow/green): the LIVE
+ * pulse is a one-off orange-red (`--accent-live`, its own channel by design)
+ * and metric is the sky-blue that replaced the retired violet. Both live in
+ * viviana-tokens.css per scheme, so they enter here as arbitrary `[var(--…)]`
+ * values — the same pattern the token file's header prescribes — rather than
+ * as new build-time ramps nothing else would use. */
 const badgeStyles = style<{
   size: S2BadgeSize;
   variant: S2BadgeVariant;
@@ -134,9 +164,34 @@ const badgeStyles = style<{
             yellow: "black",
             chartreuse: "black",
             celery: "black",
+            /* Metric's sky-blue is mid-luminance in light (#1c8fc9) and pale in
+               dark (#5ac2ee); black clears 4.5:1 on both, white on neither — same
+               reasoning that puts notice/orange/yellow in the black-ink family.
+               `live` stays on the white default: the spec's LIVE pill is
+               white-on-#ff6b35 verbatim (TerminalGlassLab.tsx:447-448), the
+               saturated-fill/white-ink relationship being the point. */
+            metric: "black",
           },
         },
-        subtle: "gray-1000",
+        /* A subtle badge is the register's tinted-plate chip — same-channel ink
+           on a same-channel wash (the spec's streak chip is amber-600 ink on an
+           amber-100 plate, TerminalGlassLab.tsx:466-467). The ink mirrors the
+           outline map below value-for-value, exactly as outline's ink mirrors
+           its border: one channel, two strengths, nothing can drift. Neutral and
+           the decorative variants keep the plain ink for the same reasons they
+           are absent from the outline map. */
+        subtle: {
+          default: "gray-1000",
+          variant: {
+            accent: "accent-900",
+            informative: lightDark("informative-800", "informative-900"),
+            positive: lightDark("positive-800", "positive-900"),
+            notice: lightDark("notice-800", "notice-900"),
+            negative: lightDark("negative-800", "negative-900"),
+            live: "[var(--accent-live)]",
+            metric: "[var(--status-metric)]",
+          },
+        },
         /* An outline badge is a rule plus ink in ONE channel, so the ink mirrors the
            `borderColor` outline map below value-for-value. No new colour enters the
            system and the two channels cannot drift apart.
@@ -154,6 +209,8 @@ const badgeStyles = style<{
             positive: lightDark("positive-800", "positive-900"),
             notice: lightDark("notice-800", "notice-900"),
             negative: lightDark("negative-800", "negative-900"),
+            live: "[var(--accent-live)]",
+            metric: "[var(--status-metric)]",
           },
         },
       },
@@ -168,6 +225,8 @@ const badgeStyles = style<{
             positive: "positive",
             notice: "notice",
             negative: "negative",
+            live: "[var(--accent-live)]",
+            metric: "[var(--status-metric)]",
             gray: "gray",
             red: "red",
             orange: "orange",
@@ -197,6 +256,10 @@ const badgeStyles = style<{
             positive: "positive-subtle",
             notice: "notice-subtle",
             negative: "negative-subtle",
+            /* No ramp → no *-subtle token; the island's own tinted-plate recipe
+               instead (color-mix over transparent, e.g. glasselated.css:2968). */
+            live: "[color-mix(in srgb, var(--accent-live) 15%, transparent)]",
+            metric: "[color-mix(in srgb, var(--status-metric) 15%, transparent)]",
             gray: "gray-subtle",
             red: "red-subtle",
             orange: "orange-subtle",
@@ -236,6 +299,8 @@ const badgeStyles = style<{
             positive: "transparent",
             notice: "transparent",
             negative: "transparent",
+            live: "transparent",
+            metric: "transparent",
           },
         },
       },
@@ -253,8 +318,33 @@ const badgeStyles = style<{
             positive: lightDark("positive-800", "positive-900"),
             notice: lightDark("notice-800", "notice-900"),
             negative: lightDark("negative-800", "negative-900"),
+            live: "[var(--accent-live)]",
+            metric: "[var(--status-metric)]",
           },
         },
+      },
+    },
+    animation: {
+      variant: {
+        live: {
+          default: livePulse,
+          "@media (prefers-reduced-motion: reduce)": "none",
+        },
+      },
+    },
+    animationDuration: {
+      variant: {
+        live: 2000,
+      },
+    },
+    animationTimingFunction: {
+      variant: {
+        live: "[ease-in-out]",
+      },
+    },
+    animationIterationCount: {
+      variant: {
+        live: "infinite",
       },
     },
     "--iconPrimary": {

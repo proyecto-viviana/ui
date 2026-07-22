@@ -19,6 +19,8 @@ const BADGE_VARIANTS = [
   "neutral",
   "notice",
   "negative",
+  "live",
+  "metric",
   "gray",
   "red",
   "orange",
@@ -52,6 +54,24 @@ function Page() {
 
   return (
     <Panel def={def}>
+      <Demo label="Badge · the register's status run — LIVE pulses; NEW/DUE/DEGRADED are one-channel outlines; the streak chip is same-channel subtle">
+        <Row>
+          <Badge variant="live">● LIVE</Badge>
+          <Badge variant="metric" fillStyle="outline">
+            NEW
+          </Badge>
+          <Badge variant="notice" fillStyle="outline">
+            DUE
+          </Badge>
+          <Badge variant="negative" fillStyle="outline">
+            0x3F DEGRADED
+          </Badge>
+          <Badge variant="notice" fillStyle="subtle">
+            12-day streak
+          </Badge>
+        </Row>
+      </Demo>
+
       <Demo label="Badge · variants — bold fill, green-adjacent tones skipped">
         <Row>
           <For each={BADGE_VARIANTS}>

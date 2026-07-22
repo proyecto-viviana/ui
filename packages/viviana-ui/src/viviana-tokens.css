@@ -20,7 +20,7 @@
  * `.claude/current/visual-system-lane.md`). It keeps the amber accent (the single
  * warm, one-per-screen action color) and blue wayfinding/selection of the earlier
  * frosted-glass pass, and adds the pixel/terminal register onto it: matte wells,
- * the cyan/amber/violet/red status channels, and eight type roles rendered in
+ * the cyan/amber/sky-blue/red status channels, and eight type roles rendered in
  * Geist Pixel (display), Geist (body/ui) and Geist Mono (terminal, loaded via
  * `font-faces.css`). Semantic success/warning/danger are unchanged.
  *
@@ -240,7 +240,10 @@
   --amber-300: #f9c270;
   --amber-500: #f79009;
   --amber-600: #f9b45c;
-  --violet-500: #8b5cf6;
+  /* 'violet' retired from the register → sky-blue metric hue (island
+     glasselated.css:32-33). Name kept as a legacy alias so var(--violet-500)
+     consumers (--cal-design) migrate without a rename. */
+  --violet-500: #5ac2ee;
   --red-500: #f04438;
   --slate-900: #edf1f6;
   --slate-700: #b9c4d6;
@@ -265,7 +268,7 @@
   --well-scan: rgba(255, 255, 255, 0.055);
   --well-cy: #6fc1ff;
   --well-am: #ffb45e;
-  --well-vi: #b8a0ff;
+  --well-vi: #5ac2ee; /* 'metric' well ink — sky-blue (was violet) */
   --well-rd: #ff8a7a;
   --well-hi: var(--well-cy);
   --well-dim: rgba(170, 176, 184, 0.5);
@@ -281,10 +284,10 @@
   --accent-create-border: rgb(255 222 129);
   --accent-create-ink: #3a2e00;
 
-  /* Status channels: cyan=info · amber=signal · violet=metric · red=fault */
+  /* Status channels: cyan=info · amber=signal · sky-blue=metric · red=fault */
   --status-info: #55a6f6;
   --status-signal: #f9b45c;
-  --status-metric: #a78bfa;
+  --status-metric: #5ac2ee;
   --status-fault: #f97066;
 
   /* Event tints */
@@ -534,7 +537,8 @@
   --amber-300: #f9c270;
   --amber-500: #f79009;
   --amber-600: #e07b00;
-  --violet-500: #8b5cf6;
+  /* Sky-blue metric hue — see the dark block's retirement note. */
+  --violet-500: #1c8fc9;
   --red-500: #f04438;
   --slate-900: #17212e;
   --slate-700: #33455c;
@@ -559,7 +563,7 @@
   --well-scan: rgba(23, 33, 46, 0.045);
   --well-cy: #1877e8;
   --well-am: #c96a00;
-  --well-vi: #7c3aed;
+  --well-vi: #1c8fc9; /* 'metric' well ink — sky-blue (was violet) */
   --well-rd: #d92d20;
   --well-hi: var(--well-cy);
   --well-dim: #5e6e80;
@@ -578,7 +582,7 @@
   /* Status channels */
   --status-info: #1877e8;
   --status-signal: #c96a00;
-  --status-metric: #7c3aed;
+  --status-metric: #1c8fc9;
   --status-fault: #d92d20;
 
   /* Event tints */

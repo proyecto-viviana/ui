@@ -115,9 +115,31 @@ comparison harness client-renders, so parity certs are unaffected.
 Beyond paint, the register needs vocabulary viviana-ui doesn't have yet (per
 the mirror `GAP` comments): glass surface primitives (MeshCard-equivalent),
 discrete/dithered progress, a pixel icon set (CSS-mask), circular badge
-button, live-pulse status, Tag tones, scan/mesh overlay treatments, and the
-full nine-role type scale (today's roles are collapsed and there is no mono
-role). These land as viviana-ui additions — never in solid-spectrum.
+button, Tag tones, and scan/mesh overlay treatments.
+These land as viviana-ui additions — never in solid-spectrum.
+
+Closed 2026-07-22 (`6a45374e`): the nine-role type scale. `typeRoles`/
+`TypeRole` export one precompiled class per register role at exact metrics;
+Heading 1–3 are the pixel tiers verbatim (inverted 500/600/700 weight
+ladder, +0.01em tracking); standalone Text/Content/Keyboard bake
+meta/body/terminal gated on `contextProps == null` (composed hosts
+byte-identical); theme gained `semi-bold` and `letterSpacing`. Demoed on
+`/showcase/type`, probe-verified both schemes.
+
+Closed 2026-07-22: the register's status run on Badge (Panel03 spec badges).
+New `live`/`metric` BadgeVariants entering as arbitrary
+`[var(--accent-live)]`/`[var(--status-metric)]` values (single per-scheme
+hues — no ramps, per the token-file header pattern); subtle fill gained a
+same-channel ink map mirroring the outline colors (the streak-chip recipe:
+amber-600 ink on amber-100 plate); LIVE breathes via `keyframes()` +
+`style()` animation longhands, reduced-motion gated with a
+`"@media (prefers-reduced-motion: reduce)"` condition key — a runtime
+matchMedia check can't undo an SSR'd inline animation (Solid hydration
+trusts server DOM), and `css()` drops its class wrapper around a nested
+@media, so the style()-native media key is the only working gate. Tokens:
+violet retired → sky-blue metric (`--status-metric`, `--well-vi`,
+`--violet-500` kept as legacy alias; both schemes). Demoed as the first
+`/showcase/chips` row, probe-verified both schemes + reduced-motion.
 
 ## Showcase plan
 
