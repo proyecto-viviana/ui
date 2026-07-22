@@ -19,7 +19,14 @@ import { renderToString } from "solid-js/web";
 import { describe, expect, it } from "vitest";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { TabsFixture, TabsPlainFixture, TabsCompFixture, ListViewFixture } from "./fixtures/collections";
+import {
+  TabsFixture,
+  TabsPlainFixture,
+  TabsCompFixture,
+  ListViewFixture,
+  ListViewInteractiveFixture,
+  ListViewStaticInteractiveFixture,
+} from "./fixtures/collections";
 
 describe("collection components SSR", () => {
   it("renders hydratable markup for Tabs and ListView", () => {
@@ -28,11 +35,19 @@ describe("collection components SSR", () => {
 
     const tabs = renderToString(() => <TabsFixture />);
     const listview = renderToString(() => <ListViewFixture />);
+    const listviewInteractive = renderToString(() => <ListViewInteractiveFixture />);
+    const listviewStaticInteractive = renderToString(() => <ListViewStaticInteractiveFixture />);
 
     // The selected Tab's indicator is exactly the node whose presence diverged.
     expect(tabs).toContain('data-rsp-slot="selection-indicator"');
     expect(tabs).toContain('aria-selected="true"');
     expect(listview).toContain('role="row"');
+    expect(listviewInteractive).toContain('role="row"');
+    // Static `<ListViewItem>` children must appear in the SSR markup as real rows,
+    // not fall back to the empty state — see ListViewStaticInteractiveFixture.
+    expect(listviewStaticInteractive).toContain('data-key="row-a"');
+    expect(listviewStaticInteractive).toContain('data-key="row-b"');
+    expect(listviewStaticInteractive).not.toContain('data-empty="true"');
 
     writeFileSync(
       resolve(outDir, "tabs-plain-ssr.html"),
@@ -46,5 +61,11 @@ describe("collection components SSR", () => {
     );
     writeFileSync(resolve(outDir, "tabs-ssr.html"), tabs, "utf8");
     writeFileSync(resolve(outDir, "listview-ssr.html"), listview, "utf8");
+    writeFileSync(resolve(outDir, "listview-interactive-ssr.html"), listviewInteractive, "utf8");
+    writeFileSync(
+      resolve(outDir, "listview-static-interactive-ssr.html"),
+      listviewStaticInteractive,
+      "utf8",
+    );
   });
 });

@@ -4,6 +4,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createSignal,
   mergeProps,
   onCleanup,
@@ -941,9 +942,22 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-  const collectionItems = createMemo(() =>
-    usesStaticChildren() ? (staticItems() as unknown as T[]) : (local.items ?? []),
-  );
+  // Deliberately NOT a `createMemo`: static children register themselves into
+  // `staticItems` (via a `createRenderEffect` in `GridListItem`) synchronously
+  // DURING this same render pass, before this accessor is read for the
+  // `HeadlessGridList` `items` prop below — but AFTER `collectionItems` itself
+  // would have been constructed. A `createMemo` here caches its FIRST
+  // evaluation and, under solid-js's SSR reactive system, never re-runs on a
+  // later read even though the `staticItems` signal was written meanwhile
+  // (memo invalidation is a client-only concern; `renderToString` computes
+  // memos once and freezes them) — so every static-children ListView would
+  // render `renderEmptyState()` ("No items") on the server no matter how many
+  // real `<ListViewItem>` children it had. A plain accessor re-reads the
+  // signal fresh on every call in both SSR and CSR, and still participates
+  // correctly in client-side reactivity because reading `staticItems()`
+  // inside it registers the dependency on whichever computation calls it.
+  const collectionItems = () =>
+    usesStaticChildren() ? (staticItems() as unknown as T[]) : (local.items ?? []);
   const getKey = createMemo(() =>
     usesStaticChildren()
       ? (item: T) => (item as unknown as StaticGridListItem).id
@@ -1110,7 +1124,17 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     "ref",
   ]);
 
-  createEffect(() => {
+  // A render effect (not `createEffect`): registration must be visible to the
+  // parent's `collectionItems()` accessor within the SAME synchronous render
+  // pass that constructs this item, both on the server and the client.
+  // `createEffect` defers to a microtask that solid-js's SSR `renderToString`
+  // never flushes before returning, so the collection would render its
+  // `renderEmptyState()` ("No items") on the server for every static-children
+  // ListView — the items only ever show up client-side, after hydration has
+  // already committed an empty collection. See GridList's `registrationChildren`
+  // for the read order this depends on, and `collectionItems` for why it must
+  // NOT be a `createMemo` either.
+  createRenderEffect(() => {
     if (!staticCollection) {
       return;
     }

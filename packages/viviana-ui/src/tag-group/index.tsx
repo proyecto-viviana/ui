@@ -9,6 +9,7 @@ import {
   useContext,
   Show,
 } from "solid-js";
+import { isServer } from "solid-js/web";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
   TagList as HeadlessTagList,
@@ -485,10 +486,32 @@ function hasKey(keys: Iterable<Key> | "all" | undefined, key: Key): boolean {
   return false;
 }
 
+// Matches a `role="row"` attribute in a serialized SSR node's markup, mirroring the client-side
+// `getAttribute("role") === "row"` check below.
+const SSR_TAG_ROW_PATTERN = /\srole="row"[\s>]/;
+// Matches the `solidaria-Tag` token inside a `class="..."` attribute, mirroring the client-side
+// `classList.contains("solidaria-Tag")` check below.
+const SSR_TAG_CLASS_PATTERN = /\sclass="[^"]*\bsolidaria-Tag\b[^"]*"/;
+
 function isRenderedTag(value: JSX.Element): boolean {
   if (Array.isArray(value)) {
     return value.length === 1 && isRenderedTag(value[0]);
   }
+
+  if (isServer) {
+    // During renderToString, resolved children are Solid's server-side SSR node objects
+    // (`{ t: string }` holding the serialized HTML), not HTMLElement instances — `HTMLElement`
+    // isn't even a global in Node. Duck-type the same "already a rendered Tag row" signal the
+    // client checks for (a `role="row"` gridcell wrapper carrying the Tag class) by inspecting
+    // the markup string directly, so the wrap/no-wrap decision matches what the client will
+    // compute once `HTMLElement` is real and hydration can walk a matching tree.
+    const markup = (value as { t?: unknown } | null | undefined)?.t;
+    if (typeof markup !== "string") {
+      return false;
+    }
+    return SSR_TAG_ROW_PATTERN.test(markup) || SSR_TAG_CLASS_PATTERN.test(markup);
+  }
+
   if (typeof HTMLElement === "undefined" || !(value instanceof HTMLElement)) {
     return false;
   }

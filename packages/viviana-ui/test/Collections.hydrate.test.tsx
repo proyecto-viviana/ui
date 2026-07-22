@@ -11,7 +11,15 @@ import type { JSX } from "solid-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { TabsFixture, TabsPlainFixture, TabsCompFixture, ListViewFixture } from "./fixtures/collections";
+import {
+  TabsFixture,
+  TabsPlainFixture,
+  TabsCompFixture,
+  ListViewFixture,
+  ListViewInteractiveFixture,
+  ListViewStaticInteractiveFixture,
+} from "./fixtures/collections";
+import { setupUser } from "../src/test-utils";
 
 function installHydrationGlobals(): void {
   (globalThis as unknown as { _$HY: unknown })._$HY = {
@@ -90,5 +98,50 @@ describe("collection components hydrate over SSR markup", () => {
     expect(r.mismatches).toEqual([]);
     expect(r.thrown).toBeUndefined();
     expect(r.container.querySelectorAll('[role="row"]').length).toBe(2);
+  });
+
+  it("ListView rows respond to interaction after hydration (focus + selection)", async () => {
+    const r = hydrateOverSsr("listview-interactive-ssr.html", ListViewInteractiveFixture);
+    expect(r.mismatches).toEqual([]);
+    expect(r.thrown).toBeUndefined();
+
+    const rowA = r.container.querySelector<HTMLElement>('[role="row"][data-key="row-a"]');
+    expect(rowA).not.toBeNull();
+    expect(rowA).toHaveAttribute("aria-selected", "false");
+
+    const user = setupUser();
+    await user.click(rowA!);
+
+    // A real click on a hydrated row must both move DOM focus onto it and
+    // toggle selection — proof the row's press/selection handlers are wired
+    // up post-hydration, not merely that the server markup looks right.
+    expect(r.container.ownerDocument.activeElement).toBe(rowA);
+    expect(rowA).toHaveAttribute("aria-selected", "true");
+
+    await user.click(rowA!);
+    expect(rowA).toHaveAttribute("aria-selected", "false");
+  });
+
+  it("ListView with static <ListViewItem> children hydrates and rows respond to interaction", async () => {
+    const r = hydrateOverSsr(
+      "listview-static-interactive-ssr.html",
+      ListViewStaticInteractiveFixture,
+    );
+    expect(r.mismatches).toEqual([]);
+    expect(r.thrown).toBeUndefined();
+
+    // The rows must be present at all — not the "No items" empty-state row — and
+    // must survive hydration without being replaced by a later client-only render.
+    expect(r.container.querySelectorAll('[role="row"]').length).toBe(2);
+
+    const rowA = r.container.querySelector<HTMLElement>('[role="row"][data-key="row-a"]');
+    expect(rowA).not.toBeNull();
+    expect(rowA).toHaveAttribute("aria-selected", "false");
+
+    const user = setupUser();
+    await user.click(rowA!);
+
+    expect(r.container.ownerDocument.activeElement).toBe(rowA);
+    expect(rowA).toHaveAttribute("aria-selected", "true");
   });
 });
