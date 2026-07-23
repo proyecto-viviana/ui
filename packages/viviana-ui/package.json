@@ -218,26 +218,11 @@
       "import": "./dist/GitHubIcon.js",
       "default": "./dist/GitHubIcon.js"
     },
-    "./theme.css": {
-      "import": "./dist/theme.css",
-      "default": "./src/theme.css"
-    },
-    "./font-faces.css": {
-      "import": "./dist/font-faces.css",
-      "default": "./src/font-faces.css"
-    },
-    "./styles.css": {
-      "import": "./dist/styles.css",
-      "default": "./src/styles.css"
-    },
-    "./components.css": {
-      "import": "./dist/components.css",
-      "default": "./src/components.css"
-    },
-    "./viviana-tokens.css": {
-      "import": "./dist/viviana-tokens.css",
-      "default": "./src/viviana-tokens.css"
-    },
+    "./theme.css": "./dist/theme.css",
+    "./font-faces.css": "./dist/font-faces.css",
+    "./styles.css": "./dist/styles.css",
+    "./components.css": "./dist/components.css",
+    "./viviana-tokens.css": "./dist/viviana-tokens.css",
     "./style": {
       "types": "./dist/style/index.d.ts",
       "solid": "./dist/style/index.js",

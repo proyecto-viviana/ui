@@ -314,10 +314,9 @@ if (probeResult.ok !== jsSubpaths.length) {
 // --- UC-03: CSS contract — no export resolves to an incomplete src sheet -------
 // The footgun was `{ import: ./dist/X.css, default: ./src/X.css }`: a consumer
 // resolving via `default` got the build *source* (e.g. src/styles.css is only the
-// unresolved `@import`, missing the inlined macro CSS). Assert no export target
-// anywhere points into src/, that every CSS subpath resolves to a single dist
-// target, and that the shipped styles.css is the *complete* sheet (the inlined
-// macro CSS + the solid-spectrum @import), not the partial source.
+// unresolved `@import`, missing the macro CSS). Assert no export target anywhere
+// points into src/, that every CSS subpath resolves to a single dist target, and
+// that the shipped styles.css is the *complete*, self-contained sheet.
 process.stdout.write(`\n=== CSS + export-source contract ===\n`);
 const cssProblems = [];
 
@@ -343,13 +342,43 @@ if (existsSync(join(installedDir, "dist", "style.css"))) {
   );
 }
 
-// styles.css must be the complete dist sheet, not the partial src.
+// styles.css must be the complete, self-contained sheet.
+//
+// This used to fingerprint the old inline-macro-css.mjs mechanism (a "viviana
+// custom components" marker comment plus a nested @import of solid-spectrum's
+// sheet). That script is gone: the macro now emits one flat atomic sheet
+// directly, so those markers are absent by design and checking for them tested
+// the implementation, not the contract. Assert the contract instead.
 const stylesCss = readFileSync(join(installedDir, "dist", "styles.css"), "utf8");
-if (!/viviana custom components/.test(stylesCss)) {
-  cssProblems.push("dist/styles.css is missing the inlined viviana macro CSS (partial sheet)");
+
+// (a) Self-contained: no bare @import survives. A nested bare specifier is
+//     followed when the sheet is pulled into a CSS graph but silently dropped
+//     when it is loaded as a URL asset (Vite `?url`, <link rel=stylesheet>) —
+//     which would ship every component unstyled.
+const bareImports = [...stylesCss.matchAll(/@import\s+(?:url\()?["']([^"']+)["']/g)]
+  .map((m) => m[1])
+  .filter((spec) => !spec.startsWith(".") && !spec.startsWith("/") && !spec.startsWith("http"));
+if (bareImports.length > 0) {
+  cssProblems.push(`dist/styles.css keeps unresolvable bare @import(s): ${bareImports.join(", ")}`);
 }
-if (!/@import\s+["']@proyecto-viviana\/solid-spectrum\/styles\.css["']/.test(stylesCss)) {
-  cssProblems.push("dist/styles.css is missing the solid-spectrum styles.css @import");
+
+// (b) Complete: every class the SSR render actually emitted has a rule in the
+//     shipped sheet. This is the real contract — it fails on a partial sheet
+//     regardless of which build mechanism produced it.
+const renderedClasses = [...html.matchAll(/class="([^"]*)"/g)]
+  .flatMap((m) => m[1].split(/\s+/))
+  .filter(Boolean);
+const uniqueClasses = [...new Set(renderedClasses)];
+const unstyled = uniqueClasses.filter(
+  (cls) => !new RegExp(`\\.${cls.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&")}[\\s,{:.>~+]`).test(stylesCss),
+);
+process.stdout.write(
+  `rendered classes backed by a rule: ${uniqueClasses.length - unstyled.length}/${uniqueClasses.length}\n`,
+);
+if (unstyled.length > 0) {
+  cssProblems.push(
+    `dist/styles.css has no rule for ${unstyled.length} rendered class(es): ${unstyled.slice(0, 8).join(", ")}`,
+  );
 }
 
 if (cssProblems.length > 0) {
@@ -357,7 +386,7 @@ if (cssProblems.length > 0) {
   process.exit(1);
 }
 process.stdout.write(
-  `no src/ targets; style.css sidecar dropped; styles.css is the complete inlined sheet\n`,
+  `no src/ targets; style.css sidecar dropped; styles.css is self-contained and complete\n`,
 );
 
 process.stdout.write(
