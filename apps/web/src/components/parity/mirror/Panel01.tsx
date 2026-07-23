@@ -87,14 +87,27 @@ export function MirrorPanel01(): JSX.Element {
             context and absolute placement), the badge count is exact, and the bell is
             now the register's own PixelNotificationIcon — the masked pixel-art glyph,
             drawn from the same notification.svg asset the spec uses, sized/inked through
-            ActionButton's IconContext. Two REAL residuals remain: no button in the
-            library has a circular shape, so this renders as the register's rounded rect
-            rather than the spec's 40px circle; and the spec's counter is create-yellow
-            (--accent-create-bg/ink) whereas NotificationBadge has no variant prop and
-            always paints accent. */}
+            ActionButton's IconContext.
+
+            The counter is recoloured to the register's create-yellow through
+            NotificationBadge's own UNSAFE_style prop — the component's documented
+            escape hatch, i.e. a real consumer API, not styling reached around the
+            component. NotificationBadge defaults to `accent` (blue); the register paints
+            this instance in `--accent-create-bg`/`--accent-create-ink` (both theme-aware
+            in viviana-tokens.css), so a consumer opts in per instance exactly as here.
+
+            ONE real residual remains: no button in the library has a circular shape, so
+            this renders as the register's rounded rect rather than the spec's 40px
+            circle. */}
         <ActionButton aria-label="Notifications">
           <PixelNotificationIcon />
-          <NotificationBadge value={3} />
+          <NotificationBadge
+            value={3}
+            UNSAFE_style={{
+              "background-color": "var(--accent-create-bg)",
+              color: "var(--accent-create-ink)",
+            }}
+          />
         </ActionButton>
       </Provider>
     </Panel>
