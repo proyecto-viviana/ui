@@ -338,7 +338,11 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
           })({ isProgressVisible: isProgressVisible() }),
       }),
       styles: style({
-        size: fontRelative(20),
+        /* fontRelative(16) — matches Button. S2's fontRelative(20) sizes to its 20px
+         * workflow-icon grid; on this register's 15px control font that renders ~21px,
+         * bigger than the register's 17px PixelIcon default (primitives.tsx:55).
+         * fontRelative(16) lands ~17px at the control font. */
+        size: fontRelative(16),
         marginStart: "--iconMargin",
         flexShrink: 0,
       }),

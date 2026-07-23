@@ -156,7 +156,13 @@ export function Button(props: ButtonProps): JSX.Element {
       }),
       styles: () =>
         style({
-          size: fontRelative(20),
+          /* fontRelative(16), not Spectrum's fontRelative(20): S2's default sizes a
+           * button icon to its 20px workflow-icon grid, which on this register's 15px
+           * control font renders ~21px — larger than the label and larger than anything
+           * the handoff draws. The register's own PixelIcon default is 17px
+           * (primitives.tsx:55); fontRelative(16) lands ~17px at the 15px control font,
+           * matching that default. Scales with the size prop the same way 20 did. */
+          size: fontRelative(16),
           marginStart: "--iconMargin",
           flexShrink: 0,
           visibility: {
