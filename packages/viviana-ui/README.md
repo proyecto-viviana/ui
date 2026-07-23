@@ -68,6 +68,33 @@ import "@proyecto-viviana/ui/styles.css";
 | `styles.css`     | Generated component rules, without font faces or tokens.   |
 | `font-faces.css` | Font-face declarations only.                               |
 
+### Using Tailwind alongside these styles
+
+The library ships no Tailwind and requires none. If your app uses Tailwind, the
+two coexist — but only if you declare the cascade layer order yourself, **before
+any import**:
+
+```css
+@layer theme, base, _, L, components, utilities;
+
+@import "tailwindcss";
+@import "@proyecto-viviana/ui/theme.css";
+@import "@proyecto-viviana/ui/components.css";
+```
+
+`_` and `L` are the layers our generated component rules live in. Layer order is
+otherwise decided by first appearance, and both possible accidents are silent:
+
+- **No declaration.** Tailwind's sheet is seen first, so our layers sort last and
+  win. A `bg-red-500` on one of our components does nothing at all — the class is
+  in the DOM, the color never applies.
+- **Our layers first.** Tailwind's Preflight (`@layer base`) then outranks us, and
+  its `button { background-color: transparent }` strips our components back to
+  bare.
+
+The order above is the only one that gets both halves right: Preflight cannot
+reach our components, and Tailwind utilities still override them.
+
 ## Authoring `style()`
 
 Using the published components does not require a macro plugin. Their styles are
