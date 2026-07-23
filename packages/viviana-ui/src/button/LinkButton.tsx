@@ -1,6 +1,5 @@
 import {
   children as resolveChildren,
-  createSignal,
   mergeProps,
   splitProps,
   useContext,
@@ -22,7 +21,7 @@ import { TextContext } from "../text";
 import { useProviderProps } from "../provider";
 import { pressScale } from "../pressScale";
 import { useLinkButtonContext } from "./context";
-import { s2Button, s2ButtonGradient, s2ButtonText } from "./s2-button-styles";
+import { s2Button, s2ButtonText } from "./s2-button-styles";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -87,8 +86,6 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
-  const [isHovered, setIsHovered] = createSignal(false);
-  const [isPressed, setIsPressed] = createSignal(false);
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   let linkElement: HTMLAnchorElement | undefined;
@@ -101,15 +98,6 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
     ((dialogTriggerContext?.triggerRef() === linkElement && dialogTriggerContext.state.isOpen()) ||
       (popoverTriggerContext?.triggerRef() === linkElement &&
         popoverTriggerContext.state.isOpen()));
-
-  const gradientClass = () =>
-    s2ButtonGradient({
-      isHovered: isHovered() || isOverlayTriggerOpen(),
-      isPressed: isPressed(),
-      isDisabled: !!headlessProps.isDisabled,
-      isPending: false,
-      variant: variant() as Extract<ButtonVariant, "premium" | "genai">,
-    });
 
   const getClassName = (renderProps: LinkRenderProps): string =>
     [
@@ -168,7 +156,6 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
 
     return (
       <>
-        {variant() === "genai" || variant() === "premium" ? <span class={gradientClass()} /> : null}
         <SkeletonContext.Provider value={null}>
           <TextContext.Provider value={textContextValue}>
             <IconContext.Provider value={iconContextValue}>
@@ -188,18 +175,6 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       ref={(element: HTMLElement) => {
         linkElement = element as HTMLAnchorElement;
         assignLinkRefs(element);
-      }}
-      onHoverChange={(hovered) => {
-        setIsHovered(hovered);
-        headlessProps.onHoverChange?.(hovered);
-      }}
-      onPressStart={(event) => {
-        setIsPressed(true);
-        headlessProps.onPressStart?.(event);
-      }}
-      onPressEnd={(event) => {
-        setIsPressed(false);
-        headlessProps.onPressEnd?.(event);
       }}
     >
       <LinkButtonContent />

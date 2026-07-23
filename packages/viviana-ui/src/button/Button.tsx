@@ -1,7 +1,6 @@
 import {
   children as resolveChildren,
   type JSX,
-  createSignal,
   mergeProps,
   splitProps,
   useContext,
@@ -20,7 +19,6 @@ import { useProviderProps } from "../provider";
 import { pressScale } from "../pressScale";
 import {
   s2Button,
-  s2ButtonGradient,
   s2ButtonPendingIndicator,
   s2ButtonText,
   type S2ButtonRenderState,
@@ -77,8 +75,6 @@ export function Button(props: ButtonProps): JSX.Element {
   ]);
 
   const { isProgressVisible } = createPendingState(() => local.isPending);
-  const [isHovered, setIsHovered] = createSignal(false);
-  const [isPressed, setIsPressed] = createSignal(false);
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
@@ -102,10 +98,6 @@ export function Button(props: ButtonProps): JSX.Element {
       (popoverTriggerContext?.triggerRef() === buttonElement &&
         popoverTriggerContext.state.isOpen()));
   const pendingLabel = () => stringFormatter().format("button.pending");
-  const isDisabled = () => {
-    const disabled = headlessProps.isDisabled;
-    return typeof disabled === "function" ? disabled() : !!disabled;
-  };
 
   const getS2State = (renderProps: ButtonRenderProps): S2ButtonRenderState => ({
     isHovered: renderProps.isHovered || isOverlayTriggerOpen(),
@@ -133,13 +125,6 @@ export function Button(props: ButtonProps): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-
-  const getGradientState = (): S2ButtonRenderState => ({
-    isHovered: isHovered() || isOverlayTriggerOpen(),
-    isPressed: isPressed(),
-    isDisabled: isDisabled() || isProgressVisible(),
-    isPending: local.isPending,
-  });
 
   const getPressScaleStyle = (renderProps: ButtonRenderProps): JSX.CSSProperties => {
     return pressScale(() => buttonElement, mergedUnsafeStyle())(renderProps);
@@ -194,14 +179,6 @@ export function Button(props: ButtonProps): JSX.Element {
 
     return (
       <>
-        {variant() === "genai" || variant() === "premium" ? (
-          <span
-            class={s2ButtonGradient({
-              ...getGradientState(),
-              variant: variant() as Extract<ButtonVariant, "premium" | "genai">,
-            })}
-          />
-        ) : null}
         <SkeletonContext.Provider value={null}>
           <TextContext.Provider value={textContextValue}>
             <IconContext.Provider value={iconContextValue}>
@@ -237,11 +214,9 @@ export function Button(props: ButtonProps): JSX.Element {
         assignButtonRefs(element);
       }}
       onHoverChange={(hovered) => {
-        setIsHovered(hovered);
         local.onHoverChange?.(hovered);
       }}
       onPressChange={(pressed) => {
-        setIsPressed(pressed);
         local.onPressChange?.(pressed);
       }}
       onPress={(event) => {

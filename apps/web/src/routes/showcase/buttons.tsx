@@ -22,7 +22,15 @@ export const Route = createFileRoute("/showcase/buttons")({
   component: ButtonsPanel,
 });
 
-const VARIANTS = ["primary", "secondary", "accent", "negative", "create"] as const;
+const VARIANTS = [
+  "primary",
+  "secondary",
+  "accent",
+  "negative",
+  "warning",
+  "success",
+  "create",
+] as const;
 
 function ButtonsPanel() {
   const def = panelBySlug("buttons")!;
@@ -30,7 +38,7 @@ function ButtonsPanel() {
 
   return (
     <Panel def={def}>
-      <Demo label="Button · fill variants — create is yellow, never orange">
+      <Demo label="Button · fill variants — negative / warning / success are the status trio; create is yellow, never orange">
         <Row>
           <For each={VARIANTS}>
             {(variant) => (
@@ -39,8 +47,6 @@ function ButtonsPanel() {
               </Button>
             )}
           </For>
-          <Button variant="premium">Premium</Button>
-          <Button variant="genai">Gen AI</Button>
         </Row>
       </Demo>
 

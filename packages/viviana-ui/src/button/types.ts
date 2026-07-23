@@ -6,16 +6,27 @@ export type ButtonVariant =
   | "primary"
   | "secondary"
   | "accent"
+  /**
+   * The destructive/negative action — saturated red fill, white ink. Its two semantic
+   * counterparts below (`warning`, `success`) complete the status trio: the same
+   * saturated-fill-with-white-ink treatment on the warm (amber) and success (green)
+   * channels, so a consumer can express the full negative/warning/success spectrum on a
+   * button the same way Badge/StatusLight/Meter/InlineAlert do.
+   */
   | "negative"
+  /** Warm caution — the amber/`notice` channel (deep burnt-orange fill, white ink). Kept
+   * visually apart from `create`: warning is a saturated fill with white ink, `create` is a
+   * pale-yellow wash with dark ink, so they never read as the same warm affordance. */
+  | "warning"
+  /** Success — the green/`positive` channel (green fill, white ink). */
+  | "success"
   /**
    * Viviana's create CTA — the pale-yellow, dark-ink button the handoff uses for the one
    * action that makes something new. Not a Spectrum variant: Spectrum's fills are all
    * saturated-with-white-ink, and this deliberately inverts that so "create" reads as
    * warmer and lighter than "accent" rather than louder than it.
    */
-  | "create"
-  | "premium"
-  | "genai";
+  | "create";
 export type ButtonFillStyle = "fill" | "outline";
 export type ButtonSize = "S" | "M" | "L" | "XL";
 export type StaticColor = "white" | "black" | "auto";

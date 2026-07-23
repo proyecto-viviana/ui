@@ -12,7 +12,6 @@
  */
 
 import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
-import { linearGradient } from "../style/spectrum-theme" with { type: "macro" };
 import {
   control,
   getAllowedOverrides,
@@ -77,8 +76,6 @@ export const s2Button = style<S2ButtonStyleProps>(
         outline: 1,
       },
       variant: {
-        premium: 0,
-        genai: 0,
         /* The handoff draws create with an explicit 1px rim in its own border token,
          * not the fill colour — the pale wash needs the edge to hold its shape against
          * a light surface. `variant` is applied after `fillStyle`, so this is 1px in
@@ -149,6 +146,21 @@ export const s2Button = style<S2ButtonStyleProps>(
               isPressed: lightDark("negative-1000", "negative-600"),
               isFocusVisible: lightDark("negative-1000", "negative-600"),
             },
+            /* warning/success are negative's status counterparts: the same saturated-fill
+             * idiom on the warm (notice -> amber) and success (positive -> green) channels.
+             * Border mirrors the fill stop for stop, exactly as accent/negative do. */
+            warning: {
+              default: lightDark("notice-900", "notice-700"),
+              isHovered: lightDark("notice-1000", "notice-600"),
+              isPressed: lightDark("notice-1000", "notice-600"),
+              isFocusVisible: lightDark("notice-1000", "notice-600"),
+            },
+            success: {
+              default: lightDark("positive-900", "positive-700"),
+              isHovered: lightDark("positive-1000", "positive-600"),
+              isPressed: lightDark("positive-1000", "positive-600"),
+              isFocusVisible: lightDark("positive-1000", "positive-600"),
+            },
           },
         },
       },
@@ -207,6 +219,22 @@ export const s2Button = style<S2ButtonStyleProps>(
               isPressed: lightDark("negative-1000", "negative-600"),
               isFocusVisible: lightDark("negative-1000", "negative-600"),
             },
+            /* warning/success fills mirror negative on the warm (notice -> amber) and success
+             * (positive -> green) channels. The green ramp is L-solved to carry the same
+             * white-ink contrast as amber, so all three status fills clear AA identically
+             * (see style/glasselated-ramps.ts). */
+            warning: {
+              default: lightDark("notice-900", "notice-700"),
+              isHovered: lightDark("notice-1000", "notice-600"),
+              isPressed: lightDark("notice-1000", "notice-600"),
+              isFocusVisible: lightDark("notice-1000", "notice-600"),
+            },
+            success: {
+              default: lightDark("positive-900", "positive-700"),
+              isHovered: lightDark("positive-1000", "positive-600"),
+              isPressed: lightDark("positive-1000", "positive-600"),
+              isFocusVisible: lightDark("positive-1000", "positive-600"),
+            },
             /* The create CTA does not follow the semantic-fill pattern above. Those step
              * along a ramp for hover; create-bg has no ramp, so the deeper wash is a named
              * token. Both schemes are declared in the token itself, hence no lightDark(). */
@@ -216,27 +244,15 @@ export const s2Button = style<S2ButtonStyleProps>(
               isPressed: "create-bg-deep",
               isFocusVisible: "create-bg-deep",
             },
-            premium: "gray-100",
-            genai: "gray-100",
           },
           isDisabled: "disabled",
         },
         outline: {
-          variant: {
-            premium: "gray-100",
-            genai: "gray-100",
-          },
           default: "transparent",
           isHovered: "gray-100",
           isPressed: "gray-100",
           isFocusVisible: "gray-100",
-          isDisabled: {
-            default: "transparent",
-            variant: {
-              premium: "gray-100",
-              genai: "gray-100",
-            },
-          },
+          isDisabled: "transparent",
         },
       },
       isStaticColor: {
@@ -245,27 +261,15 @@ export const s2Button = style<S2ButtonStyleProps>(
             variant: {
               primary: baseColor("transparent-overlay-800"),
               secondary: baseColor("transparent-overlay-100"),
-              premium: "transparent-overlay-100",
-              genai: "transparent-overlay-100",
             },
             isDisabled: "transparent-overlay-100",
           },
           outline: {
-            variant: {
-              premium: "transparent-overlay-100",
-              genai: "transparent-overlay-100",
-            },
             default: "transparent",
             isHovered: "transparent-overlay-100",
             isPressed: "transparent-overlay-100",
             isFocusVisible: "transparent-overlay-100",
-            isDisabled: {
-              default: "transparent",
-              variant: {
-                premium: "transparent-overlay-100",
-                genai: "transparent-overlay-100",
-              },
-            },
+            isDisabled: "transparent",
           },
         },
       },
@@ -288,11 +292,13 @@ export const s2Button = style<S2ButtonStyleProps>(
             secondary: baseColor("neutral"),
             accent: "white",
             negative: "white",
+            /* warning/success carry white ink on their saturated fills, like accent/negative.
+             * The fill stops (notice/positive -900/-700) are pinned >= 4.5:1 on white. */
+            warning: "white",
+            success: "white",
             /* Dark ink on a pale fill — the inverse of every Spectrum variant. #7a5600 on
              * #ffedb0 is 6.4:1, so this clears AA comfortably in both schemes. */
             create: "create-ink",
-            premium: "white",
-            genai: "white",
           },
           isDisabled: "disabled",
         },
@@ -313,8 +319,6 @@ export const s2Button = style<S2ButtonStyleProps>(
              * against a dark page. Outline drops the fill, so the dark scheme takes the
              * fill colour as its ink instead. */
             create: lightDark("create-ink", "create-bg"),
-            premium: "white",
-            genai: "white",
           },
           isDisabled: "disabled",
         },
@@ -330,15 +334,9 @@ export const s2Button = style<S2ButtonStyleProps>(
                 isFocusVisible: "transparent-overlay-1000",
                 isPressed: "transparent-overlay-1000",
               },
-              premium: "white",
-              genai: "white",
             },
           },
           outline: {
-            variant: {
-              premium: "white",
-              genai: "white",
-            },
             default: {
               default: "transparent-overlay-1000",
               isHovered: "transparent-overlay-1000",
@@ -376,80 +374,6 @@ export const s2Button = style<S2ButtonStyleProps>(
   },
   getAllowedOverrides(),
 );
-
-export const s2ButtonGradient = style<
-  S2ButtonRenderState & { variant: Extract<ButtonVariant, "premium" | "genai"> }
->({
-  position: "absolute",
-  inset: 0,
-  zIndex: -1,
-  transition: "default",
-  borderRadius: "inherit",
-  backgroundImage: {
-    variant: {
-      premium: {
-        default: linearGradient(
-          "to bottom right",
-          ["fuchsia-900", 0],
-          ["indigo-900", 66],
-          ["blue-900", 100],
-        ),
-        isHovered: linearGradient(
-          "to bottom right",
-          ["fuchsia-1000", 0],
-          ["indigo-1000", 66],
-          ["blue-1000", 100],
-        ),
-        isPressed: linearGradient(
-          "to bottom right",
-          ["fuchsia-1000", 0],
-          ["indigo-1000", 66],
-          ["blue-1000", 100],
-        ),
-        isFocusVisible: linearGradient(
-          "to bottom right",
-          ["fuchsia-1000", 0],
-          ["indigo-1000", 66],
-          ["blue-1000", 100],
-        ),
-      },
-      genai: {
-        default: linearGradient(
-          "to bottom right",
-          ["red-900", 0],
-          ["magenta-900", 33],
-          ["indigo-900", 100],
-        ),
-        isHovered: linearGradient(
-          "to bottom right",
-          ["red-1000", 0],
-          ["magenta-1000", 33],
-          ["indigo-1000", 100],
-        ),
-        isPressed: linearGradient(
-          "to bottom right",
-          ["red-1000", 0],
-          ["magenta-1000", 33],
-          ["indigo-1000", 100],
-        ),
-        isFocusVisible: linearGradient(
-          "to bottom right",
-          ["red-1000", 0],
-          ["magenta-1000", 33],
-          ["indigo-1000", 100],
-        ),
-      },
-    },
-    isDisabled: "none",
-    forcedColors: "none",
-  },
-  colorScheme: {
-    variant: {
-      premium: "light",
-      genai: "light",
-    },
-  },
-});
 
 export const s2ButtonText = style<{ isProgressVisible?: boolean }>({
   paddingY: "--labelPadding",
