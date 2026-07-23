@@ -8,10 +8,13 @@
 
    Two container decisions, both to keep the delta on the ROWS, which is what the
    panel is named after:
-     • The <Well> is reused from lab-shell for the same reason mirror panel 07
-       reuses it — the matte ink + scan-grid is the panel's container and the
-       library has no surface to ask for that isn't `Provider background=…`,
-       the one prop this comparison forbids.
+     • The container is the library's own <Well> — the matte, never-glass inset
+       (`well` ink, a 1px `well-border` hairline, the 4px `--well-scan` pixel
+       dither) that is exactly the surface this panel's container calls for, drawn
+       by a real component rather than `Provider background=…`, the one prop this
+       comparison forbids. NEAR-MISS: the spec well is specifically the *tutor*
+       ink (--surface-well-tutor); Well exposes no ink variant, so it lands on the
+       base `well` ink — the right surface, one shade off.
      • ListView is therefore `isQuiet`, its documented "draw without the default
        container chrome" variant, so it sits ON that well instead of stacking its
        own gray-25 plate and 1px border inside one. This is a real library prop,
@@ -27,11 +30,13 @@ import {
   Badge,
   ListView,
   ListViewItem,
+  PixelChevronRightIcon,
   Provider,
   Text,
+  Well,
   type BadgeProps,
 } from "@proyecto-viviana/ui";
-import { Panel, Well } from "../lab-shell";
+import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
 
 interface ListRow {
@@ -112,9 +117,10 @@ export function MirrorPanel08(): JSX.Element {
           spec markup does. background="base" would paint an opaque plate over the
           well and there would be nothing left to compare. */}
       <Provider colorScheme={theme()} class="viviana-mirror-zone" data-mirror="08">
-        {/* padding 8px matches the spec well; `tutor` selects the same
-            --surface-well-tutor ink. */}
-        <Well tutor style={{ padding: "8px" }}>
+        {/* padding 8px matches the spec well. The ink is the library Well's base
+            `well` surface — see the NEAR-MISS in the header: no `tutor` variant to
+            select --surface-well-tutor. */}
+        <Well style={{ padding: "8px" }}>
           {/* items + render function — the shape the spec's data maps onto most
               directly. (Static <ListViewItem> children also server-render now: their
               registration was moved to a render effect so renderToString sees the rows,
@@ -125,16 +131,28 @@ export function MirrorPanel08(): JSX.Element {
               that no prop turns off — isQuiet only drops it from the LAST row. The
               twin therefore reads as a ruled table where the spec reads as a stack.
 
-              GAP (leading marker): the spec opens each row with a `>` prompt glyph in
-              --accent-primary. There is no library component for a row marker and no
-              caret/chevron among the seven icons the package actually exports, so it
-              is omitted rather than faked. `hasChildItems` was the one real option —
-              it renders the library's own Chevron — but it lands TRAILING, past the
-              badge, and asserts a drill-into-children semantic the spec's decorative
-              marker does not have. The rows lose their accent entry point. */}
+              The spec opens each row with a `>` prompt glyph in --accent-primary, and
+              the library now draws it with real components: PixelChevronRightIcon in
+              the item's LEADING `slot="icon"` grid-area (gridlist/index.tsx:336 lays
+              `icon` left of `label`, applyItemSlotClasses wires the slot). This is the
+              decorative entry-point marker the spec has — not `hasChildItems`, whose
+              Chevron lands TRAILING past the badge and asserts a drill-into-children
+              semantic the spec's marker does not carry. NEAR-MISS: the glyph takes
+              --accent-primary explicitly here; the slot's default ink is --iconPrimary. */}
           <ListView aria-label="Lessons" items={LIST_ROWS} isQuiet>
             {(row: ListRow) => (
               <ListViewItem id={row.id} textValue={row.title} description={row.meta}>
+                {/* Leading `>` marker in the item's own icon slot, accent-inked to
+                    match the spec's entry-point glyph. createIcon() carries `slot`
+                    through as `data-slot="icon"`, so applyItemSlotClasses parks it in
+                    the `icon` grid-area, left of the label. The pixel SVG fills from
+                    `var(--iconPrimary, currentColor)`, and the slot sets --iconPrimary,
+                    so the accent is set on that variable (a bare `color` would be
+                    shadowed by the slot's own --iconPrimary). */}
+                <PixelChevronRightIcon
+                  slot="icon"
+                  style={{ "--iconPrimary": "var(--accent-primary)" }}
+                />
                 {/* GAP (meta placement): `description` is the right home for the spec's
                     meta line semantically, but the item's grid parks it in row 2 under
                     the label (gridlist/index.tsx:334) where the spec has it inline and
