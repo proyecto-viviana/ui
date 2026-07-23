@@ -45,6 +45,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Blocking, and deliberately placed here rather than in the report-only
+      # certification gates: a package whose source moved without a changeset
+      # keeps its published version, so npm serves a stale tarball under a
+      # version consumers already resolve. That is invisible in-repo and only
+      # breaks off-workspace, which is how ui@0.6.0 shipped importing a symbol
+      # its pinned solidaria-components tarball did not have. Failing here stops
+      # the release instead of shipping the skew.
+      - name: guard publish-drift
+        run: pnpm run guard:publish-drift
+
       - name: Create release PR or publish packages
         id: changesets
         uses: changesets/action@v1

@@ -1,15 +1,39 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 
 const baseRef = process.env.CHANGESET_BASE_REF || "origin/main";
-const releasablePaths = [
-  "packages/solid-stately/",
-  "packages/solidaria/",
-  "packages/solidaria-components/",
-  "packages/solid-spectrum/",
-  "packages/viviana-ui/",
+
+// Path prefix -> published package name. The name matters: a changeset only
+// releases the packages it names, so "some changeset exists" is not enough —
+// a commit touching two packages while carrying a changeset for one of them
+// leaves the other stranded at its published version with newer source. See
+// check-publish-drift.mjs, which catches that once it has already landed.
+const releasablePackages = [
+  { path: "packages/solid-stately/", name: "@proyecto-viviana/solid-stately" },
+  { path: "packages/solidaria/", name: "@proyecto-viviana/solidaria" },
+  { path: "packages/solidaria-components/", name: "@proyecto-viviana/solidaria-components" },
+  { path: "packages/solid-spectrum/", name: "@proyecto-viviana/solid-spectrum" },
+  { path: "packages/viviana-ui/", name: "@proyecto-viviana/ui" },
 ];
+
+/** Package names named in the frontmatter of every changeset in the working tree. */
+function changesetPackages() {
+  if (!existsSync(".changeset")) return new Set();
+
+  const named = new Set();
+  for (const file of readdirSync(".changeset")) {
+    if (!file.endsWith(".md") || file === "README.md") continue;
+    const frontmatter = readFileSync(`.changeset/${file}`, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    if (!frontmatter) continue;
+    for (const line of frontmatter[1].split("\n")) {
+      const match = line.match(/^\s*["']?(@[^"':]+\/[^"':]+|[^"':\s]+)["']?\s*:\s*(major|minor|patch)\s*$/);
+      if (match) named.add(match[1]);
+    }
+  }
+  return named;
+}
 
 function getHeadRef() {
   if (process.env.CHANGESET_HEAD_REF) return process.env.CHANGESET_HEAD_REF;
@@ -62,24 +86,25 @@ if (headRef.startsWith("changeset-release/")) {
   process.exit(0);
 }
 
-const touchesReleasablePackage = changedFiles.some((file) =>
-  releasablePaths.some((prefix) => file.startsWith(prefix)),
+const touched = releasablePackages.filter((pkg) =>
+  changedFiles.some((file) => file.startsWith(pkg.path)),
 );
 
-if (!touchesReleasablePackage) {
+if (touched.length === 0) {
   console.log("No releasable package changes detected. Changeset not required.");
   process.exit(0);
 }
 
-const hasChangesetFile = changedFiles.some(
-  (file) => /^\.changeset\/[^/]+\.md$/.test(file) && file !== ".changeset/README.md",
-);
+const named = changesetPackages();
+const uncovered = touched.filter((pkg) => !named.has(pkg.name));
 
-if (hasChangesetFile) {
-  console.log("Changeset file detected for releasable package changes.");
+if (uncovered.length === 0) {
+  console.log(`Changeset covers every changed package: ${touched.map((p) => p.name).join(", ")}.`);
   process.exit(0);
 }
 
-console.error("Releasable package changes detected without a changeset file.");
-console.error("Add one via `vp run changeset`.");
+console.error("Releasable package changes with no changeset naming them:\n");
+for (const pkg of uncovered) console.error(`  ${pkg.name} (${pkg.path})`);
+console.error("\nA changeset only releases the packages it names, so these changes would land");
+console.error("in the repo without ever reaching npm. Add one via `vp run changeset`.");
 process.exit(1);
