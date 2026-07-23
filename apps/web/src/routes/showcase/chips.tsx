@@ -1,6 +1,7 @@
 /* Panel 06 — Chips & Badges. Compact identity: badges, tags, chip rows.
    Chips are wells, not gray steps — see badge/tag-group source comments for
-   the register's rationale. No green anywhere in these demos. */
+   the register's rationale. Green now lives here for one reason only: the
+   semantic success channel, shown as the negative/warning/success trio. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, For } from "solid-js";
 import { Badge, Tag, TagGroup } from "@proyecto-viviana/ui";
@@ -11,8 +12,10 @@ export const Route = createFileRoute("/showcase/chips")({
   component: Page,
 });
 
-// Deliberately excludes every green-adjacent BadgeVariant (positive, green,
-// chartreuse, celery, seafoam, turquoise) per the register's no-green rule.
+// The by-name colour swatches only. The semantic success/positive green rides
+// its own trio demo above; the by-name green-adjacent tones (green, chartreuse,
+// celery, seafoam, turquoise) stay out of this swatch row so green reads as the
+// success channel, not one more decorative hue.
 const BADGE_VARIANTS = [
   "accent",
   "informative",
@@ -72,7 +75,15 @@ function Page() {
         </Row>
       </Demo>
 
-      <Demo label="Badge · variants — bold fill, green-adjacent tones skipped">
+      <Demo label="Badge · semantic trio — negative / warning / success, success is the cohesive green">
+        <Row>
+          <Badge variant="negative">Negative</Badge>
+          <Badge variant="warning">Warning</Badge>
+          <Badge variant="success">Success</Badge>
+        </Row>
+      </Demo>
+
+      <Demo label="Badge · variants — bold fill, by-name colours (green-adjacent tones skipped)">
         <Row>
           <For each={BADGE_VARIANTS}>
             {(variant) => (
