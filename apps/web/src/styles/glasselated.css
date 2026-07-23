@@ -68,7 +68,7 @@
   backdrop-filter: var(--blur-panel);
   -webkit-backdrop-filter: var(--blur-panel);
   border-bottom: 1px solid var(--border-default);
-  box-shadow: var(--edge-glass);
+  box-shadow: var(--edge-glass-surface);
 }
 
 [data-glasselated] .gls-brand {
@@ -133,7 +133,7 @@
   -webkit-backdrop-filter: var(--blur-panel);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  box-shadow: var(--edge-glass);
+  box-shadow: var(--edge-glass-surface);
   padding: 22px;
   display: grid;
   gap: 18px;
@@ -206,7 +206,7 @@
   -webkit-backdrop-filter: var(--blur-card);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  box-shadow: var(--edge-glass);
+  box-shadow: var(--edge-glass-surface);
   color: var(--text-primary);
   text-decoration: none;
 }

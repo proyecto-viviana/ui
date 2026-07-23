@@ -36,7 +36,7 @@ export function MeshCard(props: {
         "-webkit-backdrop-filter": isCard() ? "var(--blur-card)" : "var(--blur-panel)",
         border: "1px solid var(--border-subtle)",
         "border-radius": isCard() ? "12px" : "14px",
-        "box-shadow": "var(--edge-glass)",
+        "box-shadow": "var(--edge-glass-surface)",
         ...props.style,
       }}
     >

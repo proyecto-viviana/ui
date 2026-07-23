@@ -193,10 +193,10 @@ const card = style<CardStyleState>(
        * `--shadow-*` tokens it then never references. Interactive states keep a real
        * lift, composed *with* the rim rather than replacing it, so the glass edge
        * doesn't blink out from under the pointer. */
-      default: "edge-glass",
-      isHovered: "[var(--edge-glass), 0 4px 14px rgb(0 0 0 / 0.22)]",
-      isFocusVisible: "[var(--edge-glass), 0 4px 14px rgb(0 0 0 / 0.22)]",
-      isSelected: "[var(--edge-glass), 0 4px 14px rgb(0 0 0 / 0.22)]",
+      default: "edge-glass-surface",
+      isHovered: "[var(--edge-glass-surface), 0 4px 14px rgb(0 0 0 / 0.22)]",
+      isFocusVisible: "[var(--edge-glass-surface), 0 4px 14px rgb(0 0 0 / 0.22)]",
+      isSelected: "[var(--edge-glass-surface), 0 4px 14px rgb(0 0 0 / 0.22)]",
       forcedColors: "[0 0 0 1px var(--hcm-buttonborder, ButtonBorder)]",
       variant: {
         tertiary: {

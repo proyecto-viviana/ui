@@ -212,7 +212,23 @@
   --blur-card: blur(14px);
 
   /* ── Edge-glass (inner highlight that catches the light) ── */
-  --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  /* Two rims, because the ground decides how much white a surface can carry.
+   *
+   * `--edge-glass` is the CONTROL rim — buttons, chips, badges, nav pills. Those
+   * are opaque, so their own fill contains the rim and it can match daylight
+   * exactly (0.9 / 0.35); it reads as the same lit edge in either scheme (was
+   * 0.14/0.06 at night — all but invisible).
+   *
+   * `--edge-glass-surface` is the SURFACE rim — the topbar, panels, cards, and
+   * every elevated overlay. Those are translucent over a dark blurred backdrop,
+   * where the control rim's white pops hard and draws a bright outline around
+   * the whole container instead of lifting its edge. Softening both stops (top
+   * 0.45, ring 0.09) keeps a refined lit-glass edge without the outline.
+   *
+   * Keep both in step with the `edgeGlassShadow` / `edgeGlassSurfaceShadow`
+   * fallbacks in style/spectrum-theme.ts. */
+  --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  --edge-glass-surface: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.09);
 
   /* ── Shadow + glow family (glow follows the accent, never the chrome) ── */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -509,7 +525,12 @@
   --accent-warm-soft: var(--amber-50);
 
   /* Edge-glass + shadow/glow — daylight (soft, cool-tinted; glow carries accent) */
+  /* Daylight needs no control/surface split: white-on-light barely separates from
+   * the ground, so the same rim lifts a button and a panel alike. Both aliases are
+   * declared anyway so a surface never inherits the night value across a scheme
+   * boundary. */
   --edge-glass: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  --edge-glass-surface: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.35);
   --shadow-card: 0 2px 8px rgba(99, 115, 139, 0.08), 0 8px 24px rgba(99, 115, 139, 0.1);
   --shadow-panel: 0 12px 40px rgba(99, 115, 139, 0.14);
   --shadow-float: 0 16px 48px rgba(99, 115, 139, 0.22);

@@ -89,18 +89,19 @@ const popoverStyles = style<
    * what reads as glass, and blur cannot ride on a background-color. */
   backdropFilter: "var(--blur-panel)",
   borderRadius: "panel",
-  /* The register's elevation cue is the inset rim, not a cast shadow. The theme
-   * points `edge-glass`, `elevated` and `emphasized` at one shared inset value
-   * (style/spectrum-theme.ts), so this is the register's rim under any of the three
-   * spellings. Unconditional, including when the arrow is shown: the previous
+  /* The register's elevation cue is the inset rim, not a cast shadow. A popover is a
+   * translucent container over the page, so it takes the SURFACE rim — `elevated` and
+   * `emphasized` resolve to the same value (style/spectrum-theme.ts); the brighter
+   * `edge-glass` is for opaque controls, whose own fill contains the white.
+   * Unconditional, including when the arrow is shown: the previous
    * `isArrowShown` branch dropped the rim to `none` and reached for the `filter` map
    * instead, on the theory that a box-shadow cannot follow the arrow's silhouette.
-   * It does not need to. `edge-glass` is an INSET shadow, so it is clipped to the
+   * It does not need to. The rim is an INSET shadow, so it is clipped to the
    * padding box and cannot spill onto the arrow at all; and the `filter` map is the
    * one shadow map still resolving to a Spectrum cast drop-shadow, which is the
    * elevation vocabulary this register does not use. The arrow carries its own edge
    * via `stroke` in `arrowStyles` below. */
-  boxShadow: "edge-glass",
+  boxShadow: "edge-glass-surface",
   outlineStyle: "solid",
   outlineWidth: 1,
   outlineColor: {

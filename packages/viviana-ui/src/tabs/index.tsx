@@ -316,7 +316,9 @@ const tabList = style<TabsStyleState>({
   },
   boxShadow: {
     variant: {
-      pill: "edge-glass",
+      /* The capsule is glass over the page, so it takes the softened surface rim —
+       * the control rim would ring the whole bar in white on a dark backdrop. */
+      pill: "edge-glass-surface",
     },
   },
   paddingY: {

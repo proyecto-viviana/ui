@@ -635,6 +635,10 @@ export function control(options: ControlOptions): ControlResult {
  * containers just look washed out — translucency plus blur is what reads as
  * glass, and blur cannot ride on a background-color, only on the element.
  *
+ * The rim is `edge-glass-surface`, the softened sibling of the control rim: these
+ * containers are translucent over the page, and the control's full-strength white
+ * ring outlines them on a dark backdrop instead of catching their edge.
+ *
  * Deliberately NOT applied to: terminal wells and fields, which the handoff calls
  * matte and "never glass" (design-handoff-v2.css:56); and controls, whose rim
  * comes from `control()` without any blur.
@@ -644,7 +648,7 @@ export const glassSurface = (surface: "panel" | "card" = "panel") =>
     borderRadius: surface,
     backgroundColor: surface === "panel" ? "layer-1" : "layer-2",
     backdropFilter: surface === "panel" ? "var(--blur-panel)" : "var(--blur-card)",
-    boxShadow: "edge-glass",
+    boxShadow: "edge-glass-surface",
     borderWidth: 1,
     borderStyle: "solid",
     borderColor: "border-subtle",

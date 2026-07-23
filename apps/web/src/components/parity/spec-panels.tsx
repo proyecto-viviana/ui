@@ -569,7 +569,7 @@ export function SpecPanel04(): JSX.Element {
           "border-radius": "999px",
           padding: "8px 10px",
           "max-width": "340px",
-          "box-shadow": "var(--edge-glass)",
+          "box-shadow": "var(--edge-glass-surface)",
         }}
       >
         <For each={TAB_ITEMS}>

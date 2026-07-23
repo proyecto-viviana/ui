@@ -835,11 +835,18 @@ const minFontSize = 10;
 const maxFontSize = 32;
 const lineHeightCalc = `round(1em * (${minFontScale} + (1 - ((min(${maxFontSize}, ${fontSizeCalc}) - ${minFontSize})) / ${maxFontSize - minFontSize}) * ${(maxFontScale - minFontScale).toFixed(2)}), 2px)`;
 
-/* Viviana UI v2 (Glasselated): the register's ONE box-shadow value — a bright inset top
- * edge plus a hairline inner ring. Hoisted to a const because three keys in the
- * boxShadow map below resolve to it and must not drift apart. */
+/* Viviana UI v2 (Glasselated): the register's box-shadow — a bright inset top edge plus
+ * a hairline inner ring. Two values, split by ground: opaque CONTROLS contain the rim
+ * and wear it at full strength, while translucent SURFACES over a dark backdrop turn
+ * that same white into an outline around the whole container, so their rim is softer.
+ * Hoisted to consts because several keys in the boxShadow map below resolve to them and
+ * must not drift apart. The fallbacks track the NIGHT values in viviana-tokens.css (dark
+ * is the default scheme), so a consumer that never loads the token file still gets the
+ * catch-light rim rather than a dim one. */
 const edgeGlassShadow =
-  "var(--edge-glass, inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.06))";
+  "var(--edge-glass, inset 0 1px 0 rgb(255 255 255 / 0.9), inset 0 0 0 1px rgb(255 255 255 / 0.35))";
+const edgeGlassSurfaceShadow =
+  "var(--edge-glass-surface, inset 0 1px 0 rgb(255 255 255 / 0.45), inset 0 0 0 1px rgb(255 255 255 / 0.09))";
 
 export const style = createTheme({
   properties: {
@@ -1320,7 +1327,10 @@ export const style = createTheme({
        * shadow at every `elevated`/`emphasized` box-shadow site in the library at once
        * (12 components spell `boxShadow: "elevated"` directly), instead of as many
        * per-component patches that would each have to be kept in step. See the note on
-       * `edge-glass` below for what the value is.
+       * `edge-glass` below for what the value is. Both take the SURFACE rim, not the
+       * control one: everything that spells `elevated`/`emphasized` is a translucent
+       * container (cards, popovers, modals, trays, menus) sitting over a blurred
+       * backdrop, which is exactly where the control rim's white reads as an outline.
        *
        * `dragged` is deliberately LEFT as a cast shadow: it has no consumer in the
        * library today, and the register says nothing about drag feedback — a lift
@@ -1332,8 +1342,8 @@ export const style = createTheme({
        * express an `inset` shadow — repointing it would emit invalid CSS and drop the
        * declaration entirely. Its consumers (popover's arrow branch, color/index.tsx)
        * still cast a real shadow and have to be dealt with at the component level. */
-      emphasized: edgeGlassShadow,
-      elevated: edgeGlassShadow,
+      emphasized: edgeGlassSurfaceShadow,
+      elevated: edgeGlassSurfaceShadow,
       dragged: shadowToken("drop-shadow-dragged").join(", "),
       none: "none",
       // The inset rim the handoff puts on every solid control — a bright top edge plus
@@ -1342,6 +1352,12 @@ export const style = createTheme({
       // buttons wear it while staying solid. Routed through the app's own token so
       // light and dark stay in one place, same as the surface family above.
       "edge-glass": edgeGlassShadow,
+      // The same rim softened for translucent containers — cards, panels, the app
+      // chrome. On an opaque control the fill contains the white; over a blurred dark
+      // backdrop it doesn't, and the full-strength ring draws an outline around the
+      // container instead of catching its edge. Anything with a `--blur-*` behind it
+      // wants this one; anything with its own solid fill wants `edge-glass`.
+      "edge-glass-surface": edgeGlassSurfaceShadow,
     },
     filter: {
       // layer order is reversed for filter property. filters are applied in the order they are specified.
