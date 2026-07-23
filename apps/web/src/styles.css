@@ -16,6 +16,10 @@
    solid-spectrum's full CSS (font-faces + atomic rules) and adds the migrated
    custom components' extracted atomic CSS. */
 @import "@proyecto-viviana/ui/components.css";
+/* Demo-scoped rules for the playground's headless-primitive sections, which show the
+   unstyled primitives and so cannot use the styled components. Imported after the design
+   system because every value resolves to one of its tokens. */
+@import "./styles/headless-demos.css";
 
 /* Docs-site semantic tokens — driven by the data-color-scheme attribute (which
    useTheme() toggles), NOT by light-dark(): the CSS color-scheme property is

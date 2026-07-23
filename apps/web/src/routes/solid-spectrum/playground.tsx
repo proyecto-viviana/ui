@@ -87,6 +87,17 @@ import {
   DateField,
   TimeField,
 } from "@proyecto-viviana/solid-spectrum";
+// Page chrome — layout, type, and surfaces — comes from the app-facing design system;
+// the components being demonstrated below still come from their own packages.
+// `Heading` is aliased because the bare `Heading` above is solid-spectrum's, which is what
+// the InlineAlert demos slot into; only the page's own headings use this one.
+import {
+  Flex,
+  Grid,
+  Heading as PageHeading,
+  Text,
+  typeRoles,
+} from "@proyecto-viviana/ui";
 import {
   createButton,
   createCheckboxGroup,
@@ -216,6 +227,40 @@ export const Route = createFileRoute("/solid-spectrum/playground")({
   component: Playground,
 });
 
+// Page chrome, described with the design system's tokens instead of a local utility
+// vocabulary, so it tracks the register rather than a frozen copy of it.
+const mainStyle: JSX.CSSProperties = {
+  width: "100%",
+  "max-width": "72rem",
+  margin: "0 auto",
+  padding: "48px 24px",
+};
+
+const glow: JSX.CSSProperties = {
+  position: "absolute",
+  "border-radius": "999px",
+  opacity: 0.1,
+  "pointer-events": "none",
+};
+
+const cardSurface: JSX.CSSProperties = {
+  background: "var(--color-bg-300)",
+  border: "1px solid var(--border-subtle)",
+  "border-radius": "var(--radius-xl)",
+};
+
+const panelSurface: JSX.CSSProperties = {
+  ...cardSurface,
+  "margin-bottom": "32px",
+  overflow: "hidden",
+};
+
+const panelHeaderSurface: JSX.CSSProperties = {
+  padding: "16px",
+  "border-bottom": "1px solid var(--border-subtle)",
+  background: "var(--color-bg-400)",
+};
+
 function Playground() {
   const [count, setCount] = createSignal(0);
   const [lastAction, setLastAction] = createSignal("None");
@@ -228,13 +273,9 @@ function Playground() {
   // Section visibility - starts with all sections HIDDEN for faster hydration
   const [visibleSections, setVisibleSections] = createSignal<Set<SectionId>>(new Set());
 
-  // Apply theme CSS variables to the playground container
-  const themeStyle = () => {
-    const vars = themeVars();
-    return Object.entries(vars)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join("; ");
-  };
+  // Apply theme CSS variables to the playground container. Returned as an object rather
+  // than a `k: v;` string so it can be merged with the preview surface's own declarations.
+  const themeStyle = (): JSX.CSSProperties => themeVars() as JSX.CSSProperties;
 
   const hasVisibleAdvancedSections = () =>
     ADVANCED_SECTION_IDS.some((id) => visibleSections().has(id));
@@ -254,49 +295,69 @@ function Playground() {
       >
         <Header />
 
-        <main id="main-content" class="mx-auto max-w-6xl px-6 py-12">
+        <main id="main-content" style={mainStyle}>
           {/* Enhanced header */}
-          <section class="mb-10 relative" aria-labelledby="playground-heading">
+          <section
+            style={{ position: "relative", "margin-bottom": "40px" }}
+            aria-labelledby="playground-heading"
+          >
             {/* Background decoration */}
-            <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-accent/10 blur-2xl" />
-            <div class="absolute top-8 right-0 w-32 h-32 rounded-full bg-primary-500/10 blur-3xl" />
+            <div style={{ ...glow, top: "-16px", left: "-16px", width: "96px", height: "96px", background: "var(--color-accent)", filter: "blur(40px)" }} />
+            <div style={{ ...glow, top: "32px", right: "0", width: "128px", height: "128px", background: "var(--color-primary-500)", filter: "blur(64px)" }} />
 
-            <div class="relative">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/30 mb-4">
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-accent" />
+            <div style={{ position: "relative" }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  "align-items": "center",
+                  gap: "8px",
+                  padding: "4px 12px",
+                  "margin-bottom": "16px",
+                  "border-radius": "999px",
+                  background: "var(--color-accent-dim)",
+                  border: "1px solid var(--color-accent)",
+                }}
+              >
+                <span style={{ display: "inline-flex", width: "8px", height: "8px", "border-radius": "999px", background: "var(--color-accent)" }} />
+                <span class={typeRoles.micro} style={{ color: "var(--color-accent)" }}>
+                  Interactive Demo
                 </span>
-                <span class="text-xs font-medium text-accent-200">Interactive Demo</span>
               </div>
 
-              <h1
-                id="playground-heading"
-                class="font-jost text-4xl sm:text-5xl font-bold text-primary-100 mb-4"
-              >
+              <PageHeading level={1} id="playground-heading" UNSAFE_style={{ "margin-bottom": "16px" }}>
                 Component <span class="gradient-text-animated">Playground</span>
-              </h1>
-              <p class="text-lg text-primary-300 max-w-2xl">
+              </PageHeading>
+              <Text styles={typeRoles.body} UNSAFE_style={{ display: "block", "max-width": "42rem" }}>
                 Explore and interact with all 60+ components from the Proyecto Viviana UI library.
                 Toggle sections, customize themes, and see everything in action.
-              </p>
+              </Text>
 
-              <div class="flex items-center gap-4 mt-6 text-sm text-primary-300">
-                <span class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-success-400" />
-                  Last action: {lastAction()}
-                </span>
+              <div style={{ display: "flex", "align-items": "center", gap: "8px", "margin-top": "24px" }}>
+                <span style={{ width: "8px", height: "8px", "border-radius": "999px", background: "var(--color-success)" }} />
+                <Text styles={typeRoles.meta}>Last action: {lastAction()}</Text>
               </div>
             </div>
           </section>
 
           {/* Theme Creator */}
-          <div class="mb-8 rounded-2xl border border-primary-700/30 bg-bg-300/50 backdrop-blur-sm overflow-hidden">
-            <div class="p-4 border-b border-primary-700/30 bg-bg-400/50">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-linear-to-br from-accent to-primary-500 flex items-center justify-center">
+          <div style={panelSurface}>
+            <div style={panelHeaderSurface}>
+              <Flex alignItems="center" gap={3}>
+                <div
+                  style={{
+                    display: "flex",
+                    "align-items": "center",
+                    "justify-content": "center",
+                    width: "32px",
+                    height: "32px",
+                    "border-radius": "var(--radius-lg)",
+                    background: "var(--color-accent)",
+                    color: "var(--color-bg-100)",
+                  }}
+                >
                   <svg
-                    class="w-4 h-4 text-white"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -306,23 +367,38 @@ function Playground() {
                   </svg>
                 </div>
                 <div>
-                  <h2 class="font-jost text-lg font-semibold text-primary-200">Theme Creator</h2>
-                  <p class="text-xs text-primary-500">Customize colors in real-time</p>
+                  <PageHeading level={3}>Theme Creator</PageHeading>
+                  <Text styles={typeRoles.meta}>Customize colors in real-time</Text>
                 </div>
-              </div>
+              </Flex>
             </div>
-            <div class="p-4">
+            <div style={{ padding: "16px" }}>
               <ThemeCreator onThemeChange={setThemeVars} />
             </div>
           </div>
 
           {/* Theme Preview Area */}
-          <div class="p-6 rounded-xl bg-bg-200 border border-bg-300 mb-8" style={themeStyle()}>
-            <h2 class="text-lg font-semibold text-primary-200 mb-4">Theme Preview</h2>
-            <div class="flex flex-wrap gap-3">
-              <Button>Primary</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="accent">Accent</Button>
+          {/* The creator's variables go on the INNER surface only. Applied to the whole
+              panel they would also repaint its own background and heading, which is how the
+              label ended up dark-on-dark; the frame stays on the page's palette so it
+              remains readable whatever theme is being previewed. */}
+          <div style={{ ...cardSurface, padding: "24px", "margin-bottom": "32px" }}>
+            <PageHeading level={3} UNSAFE_style={{ "margin-bottom": "16px" }}>
+              Theme Preview
+            </PageHeading>
+            <div
+              style={{
+                ...themeStyle(),
+                padding: "16px",
+                "border-radius": "var(--radius-lg)",
+                background: "var(--color-background)",
+              }}
+            >
+              <Flex wrap gap={3}>
+                <Button>Primary</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="accent">Accent</Button>
+              </Flex>
             </div>
           </div>
 
@@ -332,15 +408,19 @@ function Playground() {
             setVisibleSections={setVisibleSections}
           />
 
-          <div class="grid gap-8 lg:grid-cols-2">
+          {/* The section grid was `grid gap-8 lg:grid-cols-2`, but neither `.gap-8` nor
+              `.lg\:grid-cols-2` was ever copied into the frozen utility snapshot, so this
+              rendered as one full-bleed column with no gutters. Grid's intrinsic column
+              rule needs no breakpoint vocabulary and no stylesheet at all. */}
+          <Grid columns="repeat(auto-fit, minmax(420px, 1fr))" gap={8} alignItems="start">
             <Section
               id="button"
               visibleSections={visibleSections}
               title="Button"
               description="Primary interactive element with variants and styles"
             >
-              <div class="space-y-4">
-                <div class="flex flex-wrap gap-3">
+              <Flex direction="column" gap={4}>
+                <Flex wrap gap={3}>
                   <Button onPress={() => setCount((c) => c + 1)}>Count: {count()}</Button>
                   <Button variant="secondary" onPress={() => setLastAction("Secondary clicked!")}>
                     Secondary
@@ -352,8 +432,8 @@ function Playground() {
                     Accent
                   </Button>
                   <Button isDisabled>Disabled</Button>
-                </div>
-                <div class="flex flex-wrap gap-3">
+                </Flex>
+                <Flex wrap gap={3}>
                   <Button fillStyle="outline" variant="primary">
                     Outline Primary
                   </Button>
@@ -366,8 +446,8 @@ function Playground() {
                   <Button fillStyle="outline" variant="accent">
                     Outline Accent
                   </Button>
-                </div>
-              </div>
+                </Flex>
+              </Flex>
             </Section>
 
             <Section
@@ -376,28 +456,28 @@ function Playground() {
               title="Badge"
               description="Notification indicators and counts"
             >
-              <div class="flex flex-wrap items-center gap-4">
-                <div class="flex items-center gap-2">
+              <Flex wrap alignItems="center" gap={4}>
+                <Flex alignItems="center" gap={2}>
                   <Badge count={5} variant="primary" />
-                  <span class="text-sm text-primary-300">Primary</span>
-                </div>
-                <div class="flex items-center gap-2">
+                  <Text styles={typeRoles.meta}>Primary</Text>
+                </Flex>
+                <Flex alignItems="center" gap={2}>
                   <Badge count={12} variant="accent" />
-                  <span class="text-sm text-primary-300">Accent</span>
-                </div>
-                <div class="flex items-center gap-2">
+                  <Text styles={typeRoles.meta}>Accent</Text>
+                </Flex>
+                <Flex alignItems="center" gap={2}>
                   <Badge count={3} variant="success" />
-                  <span class="text-sm text-primary-300">Success</span>
-                </div>
-                <div class="flex items-center gap-2">
+                  <Text styles={typeRoles.meta}>Success</Text>
+                </Flex>
+                <Flex alignItems="center" gap={2}>
                   <Badge count={99} variant="warning" />
-                  <span class="text-sm text-primary-300">Warning</span>
-                </div>
-                <div class="flex items-center gap-2">
+                  <Text styles={typeRoles.meta}>Warning</Text>
+                </Flex>
+                <Flex alignItems="center" gap={2}>
                   <Badge count={1} variant="danger" />
-                  <span class="text-sm text-primary-300">Danger</span>
-                </div>
-              </div>
+                  <Text styles={typeRoles.meta}>Danger</Text>
+                </Flex>
+              </Flex>
             </Section>
 
             <Section
@@ -406,7 +486,7 @@ function Playground() {
               title="Inline Alert"
               description="Contextual in-context feedback (S2 InlineAlert)"
             >
-              <div class="space-y-3">
+              <Flex direction="column" gap={3}>
                 <InlineAlert variant="informative">
                   <Heading>Information</Heading>
                   <Content>This is an informational message.</Content>
@@ -423,7 +503,7 @@ function Playground() {
                   <Heading>Error</Heading>
                   <Content>Something went wrong.</Content>
                 </InlineAlert>
-              </div>
+              </Flex>
             </Section>
 
             {/* Tooltip */}
@@ -433,11 +513,11 @@ function Playground() {
               title="Tooltip"
               description="Contextual information on hover/focus"
             >
-              <div class="space-y-6">
+              <Flex direction="column" gap={6}>
                 {/* Placement variants */}
                 <div>
-                  <p class="text-sm text-primary-300 mb-3">Placements</p>
-                  <div class="flex flex-wrap gap-4">
+                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Placements</Text>
+                  <Flex wrap gap={4}>
                     <TooltipTrigger>
                       <Button variant="secondary">Top</Button>
                       <Tooltip placement="top">Tooltip on top</Tooltip>
@@ -454,12 +534,12 @@ function Playground() {
                       <Button variant="secondary">Right</Button>
                       <Tooltip placement="right">Tooltip on right</Tooltip>
                     </TooltipTrigger>
-                  </div>
+                  </Flex>
                 </div>
                 {/* With arrow */}
                 <div>
-                  <p class="text-sm text-primary-300 mb-3">With Arrow</p>
-                  <div class="flex flex-wrap gap-4">
+                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>With Arrow</Text>
+                  <Flex wrap gap={4}>
                     <TooltipTrigger>
                       <Button variant="primary">Hover me</Button>
                       <Tooltip placement="top" showArrow>
@@ -472,11 +552,11 @@ function Playground() {
                         Info variant with arrow
                       </Tooltip>
                     </TooltipTrigger>
-                  </div>
+                  </Flex>
                 </div>
                 {/* Delay */}
                 <div>
-                  <p class="text-sm text-primary-300 mb-3">Custom Delay (500ms)</p>
+                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Custom Delay (500ms)</Text>
                   <TooltipTrigger delay={500}>
                     <Button variant="secondary" fillStyle="outline">
                       Delayed tooltip
@@ -484,7 +564,7 @@ function Playground() {
                     <Tooltip>This tooltip has a 500ms delay</Tooltip>
                   </TooltipTrigger>
                 </div>
-              </div>
+              </Flex>
             </Section>
 
             {/* Popover */}
@@ -494,11 +574,11 @@ function Playground() {
               title="Popover"
               description="Positioned overlay content triggered by user action"
             >
-              <div class="space-y-6">
+              <Flex direction="column" gap={6}>
                 {/* Basic placements */}
                 <div>
-                  <p class="text-sm text-primary-300 mb-3">Placement Options</p>
-                  <div class="flex flex-wrap gap-3">
+                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Placement Options</Text>
+                  <Flex wrap gap={3}>
                     <PopoverTrigger>
                       <Button
                         variant="secondary"
@@ -512,7 +592,7 @@ function Playground() {
                           title="Bottom Popover"
                           description="This popover opens below the trigger"
                         />
-                        <p class="text-sm">Content positioned at the bottom.</p>
+                        <Text styles={typeRoles.body}>Content positioned at the bottom.</Text>
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
@@ -521,7 +601,7 @@ function Playground() {
                       </Button>
                       <Popover placement="top">
                         <PopoverHeader title="Top Popover" />
-                        <p class="text-sm">Content positioned at the top.</p>
+                        <Text styles={typeRoles.body}>Content positioned at the top.</Text>
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
@@ -530,7 +610,7 @@ function Playground() {
                       </Button>
                       <Popover placement="left">
                         <PopoverHeader title="Left Popover" />
-                        <p class="text-sm">Content on the left side.</p>
+                        <Text styles={typeRoles.body}>Content on the left side.</Text>
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
@@ -539,14 +619,14 @@ function Playground() {
                       </Button>
                       <Popover placement="right">
                         <PopoverHeader title="Right Popover" />
-                        <p class="text-sm">Content on the right side.</p>
+                        <Text styles={typeRoles.body}>Content on the right side.</Text>
                       </Popover>
                     </PopoverTrigger>
-                  </div>
+                  </Flex>
                 </div>
                 {/* With footer actions */}
                 <div>
-                  <p class="text-sm text-primary-300 mb-3">With Footer Actions</p>
+                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>With Footer Actions</Text>
                   <PopoverTrigger>
                     <Button variant="primary" data-testid="popover-actions-trigger">
                       Open with Actions
@@ -569,14 +649,14 @@ function Playground() {
                 </div>
                 {/* Size variants */}
                 <div>
-                  <p class="text-sm text-primary-300 mb-3">Size Variants</p>
-                  <div class="flex flex-wrap gap-3">
+                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Size Variants</Text>
+                  <Flex wrap gap={3}>
                     <PopoverTrigger>
                       <Button variant="secondary" fillStyle="outline">
                         Small
                       </Button>
                       <Popover placement="bottom" size="S">
-                        <p class="text-sm">Small popover content.</p>
+                        <Text styles={typeRoles.body}>Small popover content.</Text>
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
@@ -584,7 +664,7 @@ function Playground() {
                         Medium
                       </Button>
                       <Popover placement="bottom" size="M">
-                        <p class="text-sm">Medium popover content with more room for details.</p>
+                        <Text styles={typeRoles.body}>Medium popover content with more room for details.</Text>
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
@@ -592,14 +672,14 @@ function Playground() {
                         Large
                       </Button>
                       <Popover placement="bottom" size="L">
-                        <p class="text-sm">
+                        <Text styles={typeRoles.body}>
                           Large popover content with maximum width for longer content sections.
-                        </p>
+                        </Text>
                       </Popover>
                     </PopoverTrigger>
-                  </div>
+                  </Flex>
                 </div>
-              </div>
+              </Flex>
             </Section>
 
             <Section
@@ -608,23 +688,23 @@ function Playground() {
               title="Avatar"
               description="User profile images with status"
             >
-              <div class="space-y-4">
-                <div class="flex items-center gap-4">
+              <Flex direction="column" gap={4}>
+                <Flex alignItems="center" gap={4}>
                   <Avatar size="xs" alt="XS" />
                   <Avatar size="sm" alt="SM" />
                   <Avatar size="md" alt="MD" online />
                   <Avatar size="lg" alt="LG" online={false} />
                   <Avatar size="xl" alt="XL" fallback="VV" />
-                </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-sm text-primary-300">Avatar Group:</span>
+                </Flex>
+                <Flex alignItems="center" gap={2}>
+                  <Text styles={typeRoles.meta}>Avatar Group:</Text>
                   <AvatarGroup>
                     <Avatar size="sm" alt="User 1" />
                     <Avatar size="sm" alt="User 2" />
                     <Avatar size="sm" alt="User 3" />
                   </AvatarGroup>
-                </div>
-              </div>
+                </Flex>
+              </Flex>
             </Section>
 
             <Section
@@ -633,18 +713,18 @@ function Playground() {
               title="Switch"
               description="Toggle and tab switch controls"
             >
-              <div class="space-y-4">
-                <div class="flex items-center gap-4">
-                  <span class="text-sm text-primary-200">Toggle:</span>
+              <Flex direction="column" gap={4}>
+                <Flex alignItems="center" gap={4}>
+                  <Text styles={typeRoles.body}>Toggle:</Text>
                   <ToggleSwitch
                     aria-label="Toggle demo switch"
                     isSelected={toggleOn()}
                     onChange={setToggleOn}
                   />
-                  <span class="text-sm text-primary-300">{toggleOn() ? "On" : "Off"}</span>
-                </div>
+                  <Text styles={typeRoles.meta}>{toggleOn() ? "On" : "Off"}</Text>
+                </Flex>
                 <div>
-                  <span class="text-sm text-primary-200 block mb-2">Tab Switch:</span>
+                  <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Tab Switch:</span>
                   <TabSwitch
                     options={[
                       { label: "TRENDING", value: "trending" },
@@ -653,9 +733,9 @@ function Playground() {
                     value={switchValue()}
                     onChange={setSwitchValue}
                   />
-                  <p class="text-sm text-primary-300 mt-2">Selected: {switchValue()}</p>
+                  <Text styles={typeRoles.meta} UNSAFE_style={{ display: "block", "margin-top": "8px" }}>Selected: {switchValue()}</Text>
                 </div>
-              </div>
+              </Flex>
             </Section>
 
             <Section
@@ -664,8 +744,8 @@ function Playground() {
               title="Checkbox"
               description="Toggle selection with accessible checkbox"
             >
-              <div class="space-y-4">
-                <div class="space-y-3">
+              <Flex direction="column" gap={4}>
+                <Flex direction="column" gap={3}>
                   <Checkbox
                     isSelected={checkboxChecked()}
                     onChange={(checked) => {
@@ -678,14 +758,14 @@ function Playground() {
                   <Checkbox defaultSelected>Newsletter subscription</Checkbox>
                   <Checkbox isDisabled>Disabled option</Checkbox>
                   <Checkbox isIndeterminate>Indeterminate state</Checkbox>
-                </div>
-                <div class="flex items-center gap-4 pt-2">
-                  <span class="text-sm text-primary-300">Sizes:</span>
+                </Flex>
+                <div style={{ display: "flex", "align-items": "center", gap: "16px", "padding-top": "8px" }}>
+                  <Text styles={typeRoles.meta}>Sizes:</Text>
                   <Checkbox size="sm" aria-label="Small checkbox" />
                   <Checkbox size="md" aria-label="Medium checkbox" />
                   <Checkbox size="lg" aria-label="Large checkbox" />
                 </div>
-              </div>
+              </Flex>
             </Section>
 
             <Section
@@ -694,7 +774,7 @@ function Playground() {
               title="TextField"
               description="Text input with label, description, and validation"
             >
-              <div class="space-y-4">
+              <Flex direction="column" gap={4}>
                 <TextField
                   label="Email"
                   placeholder="Enter your email"
@@ -712,17 +792,17 @@ function Playground() {
                   isInvalid
                   errorMessage="Username is already taken"
                 />
-                <div class="flex gap-4">
+                <Flex gap={4}>
                   <TextField label="Small" size="sm" placeholder="Small input" />
                   <TextField label="Large" size="lg" placeholder="Large input" />
-                </div>
+                </Flex>
                 <TextField label="Disabled" value="Can't edit this" isDisabled />
                 <TextField
                   label="Filled variant"
                   variant="filled"
                   placeholder="With filled style"
                 />
-              </div>
+              </Flex>
             </Section>
 
             <Section
@@ -731,8 +811,8 @@ function Playground() {
               title="Link"
               description="Accessible link with hover and press states"
             >
-              <div class="space-y-4">
-                <div class="flex flex-wrap gap-4">
+              <Flex direction="column" gap={4}>
+                <Flex wrap gap={4}>
                   <Link href="https://example.com" target="_blank">
                     External Link
                   </Link>
@@ -746,16 +826,16 @@ function Playground() {
                   >
                     Quiet Standalone Link
                   </Link>
-                </div>
-                <div class="flex flex-wrap gap-4">
+                </Flex>
+                <Flex wrap gap={4}>
                   <Link href="https://example.com" aria-current="page">
                     Current Page Link
                   </Link>
-                </div>
-                <p class="text-sm text-primary-400">
+                </Flex>
+                <Text styles={typeRoles.meta}>
                   Links support keyboard navigation (Enter key), hover states, and press feedback.
-                </p>
-              </div>
+                </Text>
+              </Flex>
             </Section>
 
             <Section
@@ -764,31 +844,31 @@ function Playground() {
               title="ProgressBar"
               description="Shows progress of an operation over time"
             >
-              <div class="space-y-6">
-                <div class="space-y-4">
+              <Flex direction="column" gap={6}>
+                <Flex direction="column" gap={4}>
                   <ProgressBar value={25} label="Uploading..." />
                   <ProgressBar value={50} label="Processing" />
                   <ProgressBar value={75} label="Almost done" />
                   <ProgressBar value={100} label="Complete" />
-                </div>
-                <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Indeterminate:</span>
+                </Flex>
+                <Flex direction="column" gap={4}>
+                  <span class={typeRoles.label} style={{ display: "block" }}>Indeterminate:</span>
                   <ProgressBar isIndeterminate label="Loading..." />
-                </div>
-                <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Sizes:</span>
+                </Flex>
+                <Flex direction="column" gap={4}>
+                  <span class={typeRoles.label} style={{ display: "block" }}>Sizes:</span>
                   <ProgressBar value={60} size="S" label="Small" />
                   <ProgressBar value={60} size="M" label="Medium" />
                   <ProgressBar value={60} size="L" label="Large" />
                   <ProgressBar value={60} size="XL" label="Extra large" />
-                </div>
-                <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Label position:</span>
+                </Flex>
+                <Flex direction="column" gap={4}>
+                  <span class={typeRoles.label} style={{ display: "block" }}>Label position:</span>
                   <ProgressBar value={40} label="Top label" labelPosition="top" />
                   <ProgressBar value={40} label="Side label" labelPosition="side" />
-                </div>
+                </Flex>
                 <div>
-                  <span class="text-sm text-primary-300 block mb-2">Custom value label:</span>
+                  <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Custom value label:</span>
                   <ProgressBar
                     value={2}
                     minValue={0}
@@ -797,15 +877,15 @@ function Playground() {
                     label="Setup Progress"
                   />
                 </div>
-                <div class="grid gap-3 md:grid-cols-2">
-                  <div class="rounded-md bg-slate-900 p-4">
+                <Grid columns="repeat(auto-fit, minmax(220px, 1fr))" gap={3}>
+                  <div style={{ background: "#0f172a", padding: "16px", "border-radius": "var(--radius-md)" }}>
                     <ProgressBar value={56} label="Static white" staticColor="white" />
                   </div>
-                  <div class="rounded-md bg-slate-100 p-4">
+                  <div style={{ background: "#f1f5f9", padding: "16px", "border-radius": "var(--radius-md)" }}>
                     <ProgressBar value={56} label="Static black" staticColor="black" />
                   </div>
-                </div>
-              </div>
+                </Grid>
+              </Flex>
             </Section>
 
             <Section
@@ -814,63 +894,75 @@ function Playground() {
               title="Separator"
               description="Visual divider between groups of content"
             >
-              <div class="space-y-6">
-                <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Horizontal (default):</span>
+              <Flex direction="column" gap={6}>
+                <Flex direction="column" gap={4}>
+                  <span class={typeRoles.label} style={{ display: "block" }}>Horizontal (default):</span>
                   <Separator />
-                  <p class="text-sm text-primary-400">Content above and below the separator.</p>
-                </div>
+                  <Text styles={typeRoles.meta}>Content above and below the separator.</Text>
+                </Flex>
                 <div>
-                  <span class="text-sm text-primary-300 block mb-2">Vertical:</span>
-                  <div class="flex items-center gap-4 h-8">
-                    <span class="text-primary-200">Item 1</span>
+                  <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Vertical:</span>
+                  <div style={{ display: "flex", "align-items": "center", gap: "16px", height: "32px" }}>
+                    <Text styles={typeRoles.body}>Item 1</Text>
                     <Separator orientation="vertical" />
-                    <span class="text-primary-200">Item 2</span>
+                    <Text styles={typeRoles.body}>Item 2</Text>
                     <Separator orientation="vertical" />
-                    <span class="text-primary-200">Item 3</span>
+                    <Text styles={typeRoles.body}>Item 3</Text>
                   </div>
                 </div>
-                <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Sizes:</span>
-                  <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-primary-400 w-8">sm:</span>
-                      <Separator size="sm" class="flex-1" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-primary-400 w-8">md:</span>
-                      <Separator size="md" class="flex-1" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-primary-400 w-8">lg:</span>
-                      <Separator size="lg" class="flex-1" />
-                    </div>
-                  </div>
-                </div>
-                <div class="space-y-4">
-                  <span class="text-sm text-primary-300 block">Variants:</span>
-                  <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-primary-400 w-16">default:</span>
-                      <Separator variant="default" class="flex-1" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-primary-400 w-16">subtle:</span>
-                      <Separator variant="subtle" class="flex-1" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs text-primary-400 w-16">strong:</span>
-                      <Separator variant="strong" class="flex-1" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <Flex direction="column" gap={4}>
+                  <span class={typeRoles.label} style={{ display: "block" }}>Sizes:</span>
+                  <Flex direction="column" gap={2}>
+                    <Flex alignItems="center" gap={2}>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>sm:</Text>
+                      <div style={{ flex: 1 }}>
+                        <Separator size="sm" />
+                      </div>
+                    </Flex>
+                    <Flex alignItems="center" gap={2}>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>md:</Text>
+                      <div style={{ flex: 1 }}>
+                        <Separator size="md" />
+                      </div>
+                    </Flex>
+                    <Flex alignItems="center" gap={2}>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>lg:</Text>
+                      <div style={{ flex: 1 }}>
+                        <Separator size="lg" />
+                      </div>
+                    </Flex>
+                  </Flex>
+                </Flex>
+                <Flex direction="column" gap={4}>
+                  <span class={typeRoles.label} style={{ display: "block" }}>Variants:</span>
+                  <Flex direction="column" gap={2}>
+                    <Flex alignItems="center" gap={2}>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>default:</Text>
+                      <div style={{ flex: 1 }}>
+                        <Separator variant="default" />
+                      </div>
+                    </Flex>
+                    <Flex alignItems="center" gap={2}>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>subtle:</Text>
+                      <div style={{ flex: 1 }}>
+                        <Separator variant="subtle" />
+                      </div>
+                    </Flex>
+                    <Flex alignItems="center" gap={2}>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>strong:</Text>
+                      <div style={{ flex: 1 }}>
+                        <Separator variant="strong" />
+                      </div>
+                    </Flex>
+                  </Flex>
+                </Flex>
+              </Flex>
             </Section>
 
             {/* RadioGroup temporarily disabled - styled Radio component needs SSR-compatible redesign */}
             {/*
           <Section id="radiogroup" visibleSections={visibleSections} title="RadioGroup" description="Single selection from multiple options">
-            <div class="space-y-6">
+            <Flex direction="column" gap={6}>
               <RadioGroup
                 label="Choose your plan"
                 value={radioValue()}
@@ -884,7 +976,7 @@ function Playground() {
                 <Radio value="enterprise">Enterprise Plan</Radio>
               </RadioGroup>
 
-              <div class="border-t border-bg-100 pt-4">
+              <div style={{ "border-top": "1px solid var(--border-subtle)", "padding-top": "16px" }}>
                 <RadioGroup
                   label="Horizontal layout"
                   orientation="horizontal"
@@ -896,9 +988,9 @@ function Playground() {
                 </RadioGroup>
               </div>
 
-              <div class="border-t border-bg-100 pt-4">
-                <span class="text-sm text-primary-300 block mb-2">Sizes:</span>
-                <div class="flex gap-8">
+              <div style={{ "border-top": "1px solid var(--border-subtle)", "padding-top": "16px" }}>
+                <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Sizes:</span>
+                <Flex gap={8}>
                   <RadioGroup aria-label="Small size" size="sm" defaultValue="a">
                     <Radio value="a">Small</Radio>
                   </RadioGroup>
@@ -908,10 +1000,10 @@ function Playground() {
                   <RadioGroup aria-label="Large size" size="lg" defaultValue="a">
                     <Radio value="a">Large</Radio>
                   </RadioGroup>
-                </div>
+                </Flex>
               </div>
 
-              <div class="border-t border-bg-100 pt-4">
+              <div style={{ "border-top": "1px solid var(--border-subtle)", "padding-top": "16px" }}>
                 <RadioGroup
                   label="With validation"
                   isInvalid
@@ -922,7 +1014,7 @@ function Playground() {
                   <Radio value="b">Option B</Radio>
                 </RadioGroup>
               </div>
-            </div>
+            </Flex>
           </Section>
           */}
 
@@ -931,14 +1023,14 @@ function Playground() {
               visibleSections={visibleSections}
               title="Dialog"
               description="Modal dialog with overlay and backdrop"
-              class="lg:col-span-2"
+              wide
             >
-              <div class="flex gap-4">
+              <Flex gap={4}>
                 <DialogTrigger
                   trigger={<Button variant="primary">Open Dialog</Button>}
                   content={(close) => (
                     <Dialog title="Welcome!" size="md" isDismissable={true} onClose={close}>
-                      <p class="mb-4">
+                      <p style={{ "margin-bottom": "16px" }}>
                         Welcome to Proyecto Viviana! A collection of accessible, beautifully styled
                         SolidJS components inspired by React Spectrum.
                       </p>
@@ -964,7 +1056,7 @@ function Playground() {
                   trigger={<Button variant="accent">Small Dialog</Button>}
                   content={(close) => (
                     <Dialog title="Confirmation" size="sm" isDismissable={true} onClose={close}>
-                      <p class="mb-4">Are you sure you want to continue?</p>
+                      <p style={{ "margin-bottom": "16px" }}>Are you sure you want to continue?</p>
                       <DialogFooter>
                         <Button variant="primary" fillStyle="outline" onPress={close}>
                           No
@@ -987,11 +1079,11 @@ function Playground() {
                   trigger={<Button variant="secondary">Large Dialog</Button>}
                   content={(close) => (
                     <Dialog title="Settings" size="lg" isDismissable={true} onClose={close}>
-                      <div class="space-y-4">
+                      <Flex direction="column" gap={4}>
                         <p>Configure your application settings below.</p>
                         <TextField label="Username" placeholder="Enter username" />
                         <TextField label="Email" placeholder="Enter email" type="email" />
-                      </div>
+                      </Flex>
                       <DialogFooter>
                         <Button variant="primary" fillStyle="outline" onPress={close}>
                           Cancel
@@ -1009,7 +1101,7 @@ function Playground() {
                     </Dialog>
                   )}
                 />
-              </div>
+              </Flex>
             </Section>
 
             <Section
@@ -1017,22 +1109,25 @@ function Playground() {
               visibleSections={visibleSections}
               title="createButton Hook"
               description="Low-level hook for custom implementations"
-              class="lg:col-span-2"
+              wide
             >
-              <div class="flex flex-wrap gap-4">
+              <Flex wrap gap={4}>
                 <CustomGradientButton onPress={() => setLastAction("Gradient button pressed!")}>
                   Custom Gradient Button
                 </CustomGradientButton>
                 <CustomOutlineButton onPress={() => setLastAction("Outline button pressed!")}>
                   Custom Outline Button
                 </CustomOutlineButton>
-              </div>
+              </Flex>
             </Section>
 
             <Show when={hasVisibleAdvancedSections()}>
               <Suspense
                 fallback={
-                  <div class="lg:col-span-2 rounded-xl border border-primary-700/30 bg-bg-300/40 p-4 text-sm text-primary-400">
+                  <div
+                    class={typeRoles.meta}
+                    style={{ "grid-column": "1 / -1", padding: "16px", background: "var(--color-bg-300)", border: "1px solid var(--border-subtle)", "border-radius": "var(--radius-xl)" }}
+                  >
                     Loading advanced playground sections...
                   </div>
                 }
@@ -1043,7 +1138,7 @@ function Playground() {
                 />
               </Suspense>
             </Show>
-          </div>
+          </Grid>
         </main>
         <ToastContainer placement="bottom end" />
       </div>

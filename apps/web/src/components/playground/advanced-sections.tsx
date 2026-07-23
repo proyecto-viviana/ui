@@ -51,12 +51,14 @@ import {
   ContextualHelpTrigger,
   DropZone,
   FileTrigger,
-  Flex,
-  Grid,
   Provider,
   useTheme,
   TextField,
 } from "@proyecto-viviana/solid-spectrum";
+// Page chrome — layout, type, and surfaces — comes from the app-facing design system.
+// Flex/Grid are byte-identical to the solid-spectrum copies, so the sections below that
+// demo them still demo the same component.
+import { ActionButton, Flex, Grid, Heading, Text, Well, typeRoles } from "@proyecto-viviana/ui";
 import {
   createCheckboxGroup,
   createCheckboxGroupItem,
@@ -153,7 +155,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="createCheckboxGroup Hook"
         description="Accessible checkbox group with ARIA support"
-        class="lg:col-span-2"
+        wide
       >
         <CheckboxGroupDemo
           onSelectionChange={(values) =>
@@ -186,7 +188,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Select"
         description="Accessible dropdown select with keyboard support"
-        class="lg:col-span-2"
+        wide
       >
         <SelectDemo onSelectionChange={(key) => props.onLastAction(`Select changed: ${key}`)} />
       </Section>
@@ -217,7 +219,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled ListBox (ui)"
         description="Pre-styled list with selection"
-        class="lg:col-span-2"
+        wide
       >
         <StyledListBoxDemo
           onSelectionChange={(key) => props.onLastAction(`Styled ListBox: ${key}`)}
@@ -229,7 +231,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled Tabs (ui)"
         description="Pre-styled tabs with variants"
-        class="lg:col-span-2"
+        wide
       >
         <StyledTabsDemo onSelectionChange={(key) => props.onLastAction(`Styled Tab: ${key}`)} />
       </Section>
@@ -239,7 +241,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled Breadcrumbs (ui)"
         description="Pre-styled navigation breadcrumbs"
-        class="lg:col-span-2"
+        wide
       >
         <StyledBreadcrumbsDemo onNavigate={(path) => props.onLastAction(`Navigate: ${path}`)} />
       </Section>
@@ -249,7 +251,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled NumberField (ui)"
         description="Number input with increment/decrement buttons"
-        class="lg:col-span-2"
+        wide
       >
         <StyledNumberFieldDemo onChange={(value) => props.onLastAction(`NumberField: ${value}`)} />
       </Section>
@@ -259,7 +261,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled SearchField (ui)"
         description="Search input with clear button"
-        class="lg:col-span-2"
+        wide
       >
         <StyledSearchFieldDemo onSearch={(value) => props.onLastAction(`Search: ${value}`)} />
       </Section>
@@ -269,7 +271,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled Slider (ui)"
         description="Range input with draggable thumb"
-        class="lg:col-span-2"
+        wide
       >
         <StyledSliderDemo onChange={(value) => props.onLastAction(`Slider: ${value}`)} />
       </Section>
@@ -279,7 +281,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Styled ComboBox (ui)"
         description="Filterable dropdown with text input"
-        class="lg:col-span-2"
+        wide
       >
         <StyledComboBoxDemo onSelectionChange={(key) => props.onLastAction(`ComboBox: ${key}`)} />
       </Section>
@@ -289,7 +291,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="ActionGroup (ui)"
         description="Toolbar-like action cluster with optional selection modes"
-        class="lg:col-span-2"
+        wide
       >
         <ActionGroupDemo onLastAction={props.onLastAction} />
       </Section>
@@ -299,7 +301,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Toolbar (ui)"
         description="Keyboard-navigable toolbar with orientation variants"
-        class="lg:col-span-2"
+        wide
       >
         <ToolbarDemo onLastAction={props.onLastAction} />
       </Section>
@@ -309,7 +311,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="ActionBar (ui)"
         description="Selection-aware bulk actions with escape-to-clear support"
-        class="lg:col-span-2"
+        wide
       >
         <ActionBarDemo onLastAction={props.onLastAction} />
       </Section>
@@ -320,17 +322,17 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Disclosure"
         description="Expandable/collapsible content panels"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-6">
+        <Flex direction="column" gap={6}>
           {/* Headless Disclosure */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Headless Disclosure</h4>
+            <Heading level={4} styles={typeRoles.label}>Headless Disclosure</Heading>
             <HeadlessDisclosure>
-              <HeadlessDisclosureTrigger class="w-full text-left p-3 bg-bg-400 rounded hover:bg-bg-300 transition-colors">
+              <HeadlessDisclosureTrigger style={{ width: "100%", "text-align": "left", padding: "12px", background: "var(--color-bg-400)", "border-radius": "var(--radius-md)" }}>
                 Headless Toggle
               </HeadlessDisclosureTrigger>
-              <HeadlessDisclosurePanel class="p-3 mt-1 bg-bg-300 rounded">
+              <HeadlessDisclosurePanel style={{ padding: "12px", "margin-top": "4px", background: "var(--color-bg-300)", "border-radius": "var(--radius-md)" }}>
                 This is a headless disclosure panel built from primitives.
               </HeadlessDisclosurePanel>
             </HeadlessDisclosure>
@@ -338,7 +340,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Single Disclosure */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Single Disclosure (Styled)</h4>
+            <Heading level={4} styles={typeRoles.label}>Single Disclosure (Styled)</Heading>
             <Disclosure variant="bordered">
               <DisclosureTrigger>What is a Disclosure?</DisclosureTrigger>
               <DisclosurePanel>
@@ -350,7 +352,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Accordion (DisclosureGroup) */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Accordion (Single Expand)</h4>
+            <Heading level={4} styles={typeRoles.label}>Accordion (Single Expand)</Heading>
             <DisclosureGroup variant="bordered">
               <Disclosure id="section-1">
                 <DisclosureTrigger>Section 1: Introduction</DisclosureTrigger>
@@ -378,7 +380,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Multiple Expand Accordion */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Accordion (Multiple Expand)</h4>
+            <Heading level={4} styles={typeRoles.label}>Accordion (Multiple Expand)</Heading>
             <DisclosureGroup allowsMultipleExpanded variant="filled">
               <Disclosure id="multi-1">
                 <DisclosureTrigger>Panel A</DisclosureTrigger>
@@ -393,8 +395,8 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Variants */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Variants</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Heading level={4} styles={typeRoles.label}>Variants</Heading>
+            <Grid columns="repeat(auto-fit, minmax(260px, 1fr))" gap={4}>
               <Disclosure variant="default">
                 <DisclosureTrigger>Default Variant</DisclosureTrigger>
                 <DisclosurePanel>Simple border-bottom style.</DisclosurePanel>
@@ -411,9 +413,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
                 <DisclosureTrigger>Ghost Variant</DisclosureTrigger>
                 <DisclosurePanel>Minimal style with hover effects.</DisclosurePanel>
               </Disclosure>
-            </div>
+            </Grid>
           </div>
-        </div>
+        </Flex>
       </Section>
 
       {/* Meter Section */}
@@ -423,34 +425,34 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         title="Meter"
         description="Display a quantity within a known range"
       >
-        <div class="space-y-6">
+        <Flex direction="column" gap={6}>
           {/* Sizes */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Sizes</h4>
-            <div class="space-y-3">
+            <Heading level={4} styles={typeRoles.label}>Sizes</Heading>
+            <Flex direction="column" gap={3}>
               <Meter label="Storage Used" value={75} />
               <Meter label="Memory" value={45} size="S" />
               <Meter label="CPU" value={90} size="L" />
-            </div>
+            </Flex>
           </div>
 
           {/* Color variants */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Color Variants</h4>
-            <div class="space-y-3">
+            <Heading level={4} styles={typeRoles.label}>Color Variants</Heading>
+            <Flex direction="column" gap={3}>
               <Meter label="Positive" value={30} variant="positive" />
               <Meter label="Notice" value={65} variant="notice" />
               <Meter label="Negative" value={85} variant="negative" />
               <Meter label="Informative" value={50} variant="informative" />
-            </div>
+            </Flex>
           </div>
 
           {/* Without label */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Without Label</h4>
+            <Heading level={4} styles={typeRoles.label}>Without Label</Heading>
             <Meter value={60} aria-label="Progress" />
           </div>
-        </div>
+        </Flex>
       </Section>
 
       {/* TagGroup Section */}
@@ -460,23 +462,23 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         title="TagGroup"
         description="Selectable and removable tag collections"
       >
-        <div class="space-y-6">
+        <Flex direction="column" gap={6}>
           {/* Basic removable tags */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Removable Tags</h4>
+            <Heading level={4} styles={typeRoles.label}>Removable Tags</Heading>
             <TagGroupDemo />
           </div>
 
           {/* Selection */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Selectable Tags</h4>
+            <Heading level={4} styles={typeRoles.label}>Selectable Tags</Heading>
             <TagGroupSelectionDemo />
           </div>
 
           {/* Variants */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Tag Variants</h4>
-            <div class="space-y-4">
+            <Heading level={4} styles={typeRoles.label}>Tag Variants</Heading>
+            <Flex direction="column" gap={4}>
               <TagGroup
                 items={[
                   { id: "1", name: "Default" },
@@ -507,13 +509,13 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
               >
                 {(item) => item.name}
               </TagGroup>
-            </div>
+            </Flex>
           </div>
 
           {/* Sizes */}
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Tag Sizes</h4>
-            <div class="space-y-4">
+            <Heading level={4} styles={typeRoles.label}>Tag Sizes</Heading>
+            <Flex direction="column" gap={4}>
               <TagGroup
                 items={[
                   { id: "1", name: "Small" },
@@ -541,9 +543,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
               >
                 {(item) => item.name}
               </TagGroup>
-            </div>
+            </Flex>
           </div>
-        </div>
+        </Flex>
       </Section>
 
       {/* Calendar Section */}
@@ -572,11 +574,11 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Toast"
         description="Toast notifications with auto-dismiss and variants"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-4">
-          <p class="text-sm text-primary-300 mb-3">Click buttons to show toast notifications</p>
-          <div class="flex flex-wrap gap-3">
+        <Flex direction="column" gap={4}>
+          <Text styles={typeRoles.body}>Click buttons to show toast notifications</Text>
+          <Flex wrap gap={3}>
             <Button variant="primary" onPress={() => toastSuccess("Changes saved successfully!")}>
               Success Toast
             </Button>
@@ -599,8 +601,8 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             >
               Info Toast
             </Button>
-          </div>
-          <div class="flex flex-wrap gap-3">
+          </Flex>
+          <Flex wrap gap={3}>
             <Button
               variant="secondary"
               fillStyle="outline"
@@ -637,8 +639,8 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             >
               With Action
             </Button>
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Section>
 
       {/* DropZone Section */}
@@ -647,18 +649,18 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="DropZone"
         description="Drag and drop target for files"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-4">
+        <Flex direction="column" gap={4}>
           <DropZone
             data-testid="dropzone-active"
             aria-label="Upload files drop zone"
             onDrop={() => props.onLastAction("DropZone: drop event")}
             UNSAFE_className="min-h-[120px] flex items-center justify-center"
           >
-            <div class="text-center">
-              <p class="text-primary-200 font-medium">Drop files here</p>
-              <p class="text-primary-400 text-sm mt-1">or drag items over this area</p>
+            <div style={{ "text-align": "center" }}>
+              <Text styles={typeRoles.label}>Drop files here</Text>
+              <Text styles={typeRoles.meta}>or drag items over this area</Text>
             </div>
           </DropZone>
           {/* S2 DropZone has no isDisabled (upstream drops it); demo the disabled
@@ -667,11 +669,11 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             data-testid="dropzone-disabled"
             aria-label="Disabled drop zone"
             isDisabled
-            class="min-h-[80px] flex items-center justify-center"
+            style={{ "min-height": "80px", display: "flex", "align-items": "center", "justify-content": "center" }}
           >
-            <p class="text-primary-300 text-sm">Disabled drop zone</p>
+            <Text styles={typeRoles.meta}>Disabled drop zone</Text>
           </HeadlessDropZone>
-        </div>
+        </Flex>
       </Section>
 
       {/* FileTrigger Section */}
@@ -680,9 +682,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="FileTrigger"
         description="Open native file picker from custom trigger"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-4">
+        <Flex direction="column" gap={4}>
           <FileTrigger
             acceptedFileTypes={["image/png", "image/jpeg"]}
             onSelect={(files) => {
@@ -699,7 +701,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
               Disabled picker
             </Button>
           </FileTrigger>
-        </div>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -710,10 +712,10 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="TextArea"
         description="Multi-line text input with auto-resize"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-6">
-          <div class="grid gap-6 sm:grid-cols-2">
+        <Flex direction="column" gap={6}>
+          <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
             <TextArea
               label="Description"
               placeholder="Enter a description..."
@@ -726,14 +728,14 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
               isInvalid
               errorMessage="This field is required"
             />
-          </div>
-          <div class="grid gap-6 sm:grid-cols-3">
+          </Grid>
+          <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
             <TextArea label="Small" size="sm" placeholder="Small..." />
             <TextArea label="Medium" size="md" placeholder="Medium..." />
             <TextArea label="Large" size="lg" placeholder="Large..." />
-          </div>
+          </Grid>
           <TextArea label="Disabled" value="Cannot edit this" isDisabled />
-        </div>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -745,7 +747,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         title="Alert Dialog"
         description="Confirmation dialog requiring user action"
       >
-        <div class="space-y-4">
+        <Flex direction="column" gap={4}>
           <AlertDialog
             title="Delete Item"
             variant="destructive"
@@ -768,7 +770,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
           >
             You have unsaved changes. Would you like to save them before leaving?
           </AlertDialog>
-        </div>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -780,7 +782,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         title="Action Menu"
         description="Simplified menu trigger with action items"
       >
-        <div class="flex flex-wrap gap-4">
+        <Flex wrap gap={4}>
           <ActionMenu
             label="Actions"
             onAction={(key) => props.onLastAction(`ActionMenu: ${key}`)}
@@ -800,7 +802,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
               { id: "about", label: "About" },
             ]}
           />
-        </div>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -811,7 +813,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Range Slider"
         description="Dual-thumb slider for selecting a range"
-        class="lg:col-span-2"
+        wide
       >
         <RangeSliderDemo onChange={(start, end) => props.onLastAction(`Range: ${start}–${end}`)} />
       </Section>
@@ -825,23 +827,23 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         title="Contextual Help"
         description="Help button with popover content"
       >
-        <div class="flex flex-wrap gap-4 items-center">
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-primary-200">Setting Name</span>
+        <Flex wrap gap={4} alignItems="center">
+          <Flex alignItems="center" gap={2}>
+            <Text styles={typeRoles.body}>Setting Name</Text>
             <ContextualHelpTrigger
               title="What is this?"
               content="This setting controls the behavior of the feature. Enabling it will allow the system to process requests in real-time."
             />
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="text-sm text-primary-200">Advanced Option</span>
+          </Flex>
+          <Flex alignItems="center" gap={2}>
+            <Text styles={typeRoles.body}>Advanced Option</Text>
             <ContextualHelpTrigger
               title="Advanced Configuration"
               content="This option is for advanced users. Changing it may affect system performance."
               variant="info"
             />
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -852,11 +854,11 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Flex Layout"
         description="Flexible box layout component"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-6">
+        <Flex direction="column" gap={6}>
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Row (default)</h4>
+            <Heading level={4} styles={typeRoles.label}>Row (default)</Heading>
             <Flex gap="md" wrap>
               <Button variant="primary">Item 1</Button>
               <Button variant="secondary">Item 2</Button>
@@ -864,7 +866,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             </Flex>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Column with alignment</h4>
+            <Heading level={4} styles={typeRoles.label}>Column with alignment</Heading>
             <Flex direction="column" gap="sm" alignItems="start">
               <Button variant="primary">First</Button>
               <Button variant="secondary">Second</Button>
@@ -872,14 +874,14 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             </Flex>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Space between</h4>
-            <Flex justifyContent="between" alignItems="center" class="bg-bg-300 p-4 rounded-lg">
-              <span class="text-primary-200">Left</span>
-              <span class="text-primary-200">Center</span>
-              <span class="text-primary-200">Right</span>
+            <Heading level={4} styles={typeRoles.label}>Space between</Heading>
+            <Flex justifyContent="between" alignItems="center" class="demo-row">
+              <Text styles={typeRoles.body}>Left</Text>
+              <Text styles={typeRoles.body}>Center</Text>
+              <Text styles={typeRoles.body}>Right</Text>
             </Flex>
           </div>
-        </div>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -890,41 +892,41 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Grid Layout"
         description="CSS Grid layout component"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-6">
+        <Flex direction="column" gap={6}>
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">3-column grid</h4>
+            <Heading level={4} styles={typeRoles.label}>3-column grid</Heading>
             <Grid columns={3} gap="md">
-              <div class="bg-accent/20 p-4 rounded-lg text-center text-primary-200">1</div>
-              <div class="bg-accent/20 p-4 rounded-lg text-center text-primary-200">2</div>
-              <div class="bg-accent/20 p-4 rounded-lg text-center text-primary-200">3</div>
-              <div class="bg-accent/20 p-4 rounded-lg text-center text-primary-200">4</div>
-              <div class="bg-accent/20 p-4 rounded-lg text-center text-primary-200">5</div>
-              <div class="bg-accent/20 p-4 rounded-lg text-center text-primary-200">6</div>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>1</Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>2</Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>3</Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>4</Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>5</Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>6</Well>
             </Grid>
           </div>
           <div>
-            <h4 class="text-sm font-medium text-primary-300 mb-2">Auto-fill responsive</h4>
+            <Heading level={4} styles={typeRoles.label}>Auto-fill responsive</Heading>
             <Grid columns="repeat(auto-fill, minmax(120px, 1fr))" gap="sm">
-              <div class="bg-primary-700/30 p-3 rounded text-center text-primary-300 text-sm">
+              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
                 A
-              </div>
-              <div class="bg-primary-700/30 p-3 rounded text-center text-primary-300 text-sm">
+              </Text></Well>
+              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
                 B
-              </div>
-              <div class="bg-primary-700/30 p-3 rounded text-center text-primary-300 text-sm">
+              </Text></Well>
+              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
                 C
-              </div>
-              <div class="bg-primary-700/30 p-3 rounded text-center text-primary-300 text-sm">
+              </Text></Well>
+              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
                 D
-              </div>
-              <div class="bg-primary-700/30 p-3 rounded text-center text-primary-300 text-sm">
+              </Text></Well>
+              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
                 E
-              </div>
+              </Text></Well>
             </Grid>
           </div>
-        </div>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -935,26 +937,26 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         visibleSections={props.visibleSections}
         title="Theme / Provider"
         description="Theme context and color scheme switching"
-        class="lg:col-span-2"
+        wide
       >
-        <div class="space-y-6">
-          <p class="text-sm text-primary-300">
+        <Flex direction="column" gap={6}>
+          <Text styles={typeRoles.body}>
             The Provider component wraps your application and provides theme context including color
             scheme (light/dark) and scale.
-          </p>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="p-4 rounded-lg bg-bg-200 border border-primary-700/30">
-              <h4 class="text-sm font-medium text-primary-200 mb-2">Current Theme</h4>
+          </Text>
+          <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={4}>
+            <Well>
+              <Heading level={4} styles={typeRoles.label}>Current Theme</Heading>
               <ThemeInfoDisplay />
-            </div>
-            <div class="p-4 rounded-lg bg-bg-200 border border-primary-700/30">
-              <h4 class="text-sm font-medium text-primary-200 mb-2">Usage</h4>
-              <pre class="text-xs text-primary-400 font-mono whitespace-pre-wrap">{`<Provider colorScheme="dark">
+            </Well>
+            <Well>
+              <Heading level={4} styles={typeRoles.label}>Usage</Heading>
+              <pre class={typeRoles.terminal} style={{ "white-space": "pre-wrap" }}>{`<Provider colorScheme="dark">
   <App />
 </Provider>`}</pre>
-            </div>
-          </div>
-        </div>
+            </Well>
+          </Grid>
+        </Flex>
       </Section>
 
       {/* ============================================ */}
@@ -963,9 +965,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
       <Show when={hasVisibleDataColorSections()}>
         <Suspense
           fallback={
-            <div class="lg:col-span-2 rounded-xl border border-primary-700/30 bg-bg-300/40 p-4 text-sm text-primary-400">
-              Loading data/color sections...
-            </div>
+            <Well style={{ "grid-column": "1 / -1" }}>
+              <Text styles={typeRoles.meta}>Loading data/color sections...</Text>
+            </Well>
           }
         >
           <PlaygroundDataColorSections visibleSections={props.visibleSections} />
@@ -984,12 +986,12 @@ function CheckboxGroupDemo(props: { onSelectionChange?: (values: string[]) => vo
   const { groupProps, labelProps } = createCheckboxGroup(() => ({ label: "Preferences" }), state);
 
   return (
-    <div class="space-y-6">
+    <Flex direction="column" gap={6}>
       {/* Basic Checkbox Group */}
       <div>
-        <h3 class="text-sm font-medium text-primary-200 mb-3">Basic Group</h3>
-        <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} class="space-y-2">
-          <span {...labelProps} class="text-sm font-medium text-primary-100 block mb-2">
+        <Heading level={4} styles={typeRoles.label}>Basic Group</Heading>
+        <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
+          <span {...labelProps} class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>
             Notification Settings
           </span>
           <CustomCheckbox value="notifications" state={state}>
@@ -1002,21 +1004,21 @@ function CheckboxGroupDemo(props: { onSelectionChange?: (values: string[]) => vo
             Marketing communications
           </CustomCheckbox>
         </div>
-        <p class="mt-2 text-xs text-primary-400">Selected: {state.value().join(", ") || "none"}</p>
+        <Text styles={typeRoles.meta}>Selected: {state.value().join(", ") || "none"}</Text>
       </div>
 
       {/* Disabled & Read-only Examples */}
-      <div class="grid gap-4 sm:grid-cols-2">
+      <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={4}>
         <div>
-          <h3 class="text-sm font-medium text-primary-200 mb-3">Disabled Checkbox</h3>
+          <Heading level={4} styles={typeRoles.label}>Disabled Checkbox</Heading>
           <DisabledCheckboxDemo />
         </div>
         <div>
-          <h3 class="text-sm font-medium text-primary-200 mb-3">Read-only Checkbox</h3>
+          <Heading level={4} styles={typeRoles.label}>Read-only Checkbox</Heading>
           <ReadonlyCheckboxDemo />
         </div>
-      </div>
-    </div>
+      </Grid>
+    </Flex>
   );
 }
 
@@ -1044,31 +1046,18 @@ function CustomCheckbox(props: {
   const getInputProps = () => result.inputProps;
 
   return (
-    <label
-      class={`flex items-center gap-3 cursor-pointer group ${
-        props.isDisabled ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-    >
-      <div class="relative">
+    <label class="hd-check" data-disabled={props.isDisabled || undefined}>
+      <span style={{ position: "relative", display: "inline-flex" }}>
         <input
           ref={(el) => (inputRef = el)}
           type="checkbox"
           value={props.value}
           {...(getInputProps() as JSX.InputHTMLAttributes<HTMLInputElement>)}
-          class="peer sr-only"
+          class="hd-check__input"
         />
-        <div
-          class={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center
-            ${
-              isChecked()
-                ? "bg-accent border-accent"
-                : "border-primary-400 group-hover:border-primary-200"
-            }
-            ${props.isDisabled ? "" : "peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-bg-200"}
-          `}
-        >
+        <span class="hd-check__box" data-checked={isChecked() || undefined}>
           {isChecked() && (
-            <svg class="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path
                 d="M2 6L5 9L10 3"
                 stroke="currentColor"
@@ -1078,9 +1067,9 @@ function CustomCheckbox(props: {
               />
             </svg>
           )}
-        </div>
-      </div>
-      <span class="text-sm text-primary-200">{props.children}</span>
+        </span>
+      </span>
+      <Text styles={typeRoles.body}>{props.children}</Text>
     </label>
   );
 }
@@ -1094,7 +1083,7 @@ function DisabledCheckboxDemo() {
   const { groupProps } = createCheckboxGroup(() => ({}), state);
 
   return (
-    <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} class="space-y-2">
+    <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
       <CustomCheckbox value="option1" state={state} isDisabled>
         Disabled (checked)
       </CustomCheckbox>
@@ -1114,7 +1103,7 @@ function ReadonlyCheckboxDemo() {
   const { groupProps } = createCheckboxGroup(() => ({}), state);
 
   return (
-    <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} class="space-y-2">
+    <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
       <CustomCheckbox value="readonly1" state={state} isReadOnly>
         Read-only (checked)
       </CustomCheckbox>
@@ -1147,7 +1136,7 @@ const listBoxItems = [
 
 function ListBoxDemo(props: { onSelectionChange?: (key: string | number) => void }) {
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <ListBox
         items={listBoxItems}
         getKey={(item) => item.id}
@@ -1157,25 +1146,25 @@ function ListBoxDemo(props: { onSelectionChange?: (key: string | number) => void
           if (key) props.onSelectionChange?.(key);
         }}
         aria-label="Choose a framework"
-        class="border border-primary-600 rounded-lg overflow-hidden bg-bg-300 max-h-64 overflow-y-auto"
+        class="hd-listbox"
       >
         {(item) => (
           <ListBoxOption
             id={item.id}
             item={item}
-            class="px-4 py-3 cursor-pointer outline-none transition-colors data-selected:bg-accent/20 data-focused:bg-primary-700"
+            class="hd-option"
           >
-            <div class="flex items-center justify-between">
+            <Flex alignItems="center" justifyContent="between">
               <div>
-                <div class="font-medium text-primary-100">{item.name}</div>
-                <div class="text-sm text-primary-400">{item.description}</div>
+                <Text styles={typeRoles.label}>{item.name}</Text>
+                <Text styles={typeRoles.meta}>{item.description}</Text>
               </div>
-            </div>
+            </Flex>
           </ListBoxOption>
         )}
       </ListBox>
-      <p class="text-xs text-primary-400">Use arrow keys to navigate, Enter/Space to select</p>
-    </div>
+      <Text styles={typeRoles.meta}>Use arrow keys to navigate, Enter/Space to select</Text>
+    </Flex>
   );
 }
 
@@ -1201,30 +1190,26 @@ const menuItemsWithDisabled = [
 
 function MenuDemo(props: { onAction?: (action: string) => void }) {
   return (
-    <div class="space-y-6">
+    <Flex direction="column" gap={6}>
       {/* Basic Menu */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-2">Basic Menu</h4>
+        <Heading level={4} styles={typeRoles.label}>Basic Menu</Heading>
         <MenuTrigger>
-          <MenuButton class="px-4 py-2 bg-primary-700 hover:bg-primary-600 text-primary-100 rounded-lg border border-primary-500 transition-colors flex items-center gap-2">
+          <MenuButton style={{ display: "inline-flex", "align-items": "center", gap: "8px", padding: "8px 16px", background: "var(--color-primary-700)", color: "var(--color-primary-100)", border: "1px solid var(--color-primary-500)", "border-radius": "var(--radius-lg)" }}>
             Actions
-            <span class="text-xs">▼</span>
+            <Text styles={typeRoles.micro}>▼</Text>
           </MenuButton>
           <Menu
             items={menuItems}
             getKey={(item) => item.id}
             onAction={(key) => props.onAction?.(String(key))}
             aria-label="Actions menu"
-            class="absolute mt-1 min-w-48 bg-bg-200 border border-primary-600 rounded-lg shadow-xl overflow-hidden z-50"
+            style={{ position: "absolute", "margin-top": "4px", "min-width": "12rem", "z-index": 50, background: "var(--color-bg-200)", border: "1px solid var(--color-primary-600)", "border-radius": "var(--radius-lg)", overflow: "hidden" }}
           >
             {(item) => (
               <MenuItem
                 id={item.id}
-                class={`px-4 py-2 cursor-pointer outline-none transition-colors ${
-                  item.variant === "danger"
-                    ? "data-focused:bg-danger/20 text-danger"
-                    : "data-focused:bg-primary-700 text-primary-100"
-                }`}
+                class={`hd-menu-item${item.variant === "danger" ? " hd-menu-item--danger" : ""}`}
               >
                 {item.label}
               </MenuItem>
@@ -1235,11 +1220,11 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
 
       {/* Menu with Disabled Items */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-2">Menu with Disabled Items</h4>
+        <Heading level={4} styles={typeRoles.label}>Menu with Disabled Items</Heading>
         <MenuTrigger>
-          <MenuButton class="px-4 py-2 bg-primary-700 hover:bg-primary-600 text-primary-100 rounded-lg border border-primary-500 transition-colors flex items-center gap-2">
+          <MenuButton style={{ display: "inline-flex", "align-items": "center", gap: "8px", padding: "8px 16px", background: "var(--color-primary-700)", color: "var(--color-primary-100)", border: "1px solid var(--color-primary-500)", "border-radius": "var(--radius-lg)" }}>
             Menu with Disabled
-            <span class="text-xs">▼</span>
+            <Text styles={typeRoles.micro}>▼</Text>
           </MenuButton>
           <Menu
             items={menuItemsWithDisabled}
@@ -1247,27 +1232,27 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
             disabledKeys={["item2", "item3"]}
             onAction={(key) => props.onAction?.(String(key))}
             aria-label="Menu with disabled items"
-            class="absolute mt-1 min-w-48 bg-bg-200 border border-primary-600 rounded-lg shadow-xl overflow-hidden z-50"
+            style={{ position: "absolute", "margin-top": "4px", "min-width": "12rem", "z-index": 50, background: "var(--color-bg-200)", border: "1px solid var(--color-primary-600)", "border-radius": "var(--radius-lg)", overflow: "hidden" }}
           >
             {(item) => (
               <MenuItem
                 id={item.id}
-                class="px-4 py-2 cursor-pointer outline-none transition-colors data-focused:bg-primary-700 text-primary-100 data-disabled:opacity-50 data-disabled:cursor-not-allowed"
+                class="hd-menu-item"
               >
                 {item.label}
               </MenuItem>
             )}
           </Menu>
         </MenuTrigger>
-        <p class="text-xs text-primary-400 mt-2">
+        <Text styles={typeRoles.meta}>
           Items 2 and 3 are disabled. Arrow keys should skip them.
-        </p>
+        </Text>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Click button to open, use arrow keys to navigate, Enter to select, Escape to close
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -1293,11 +1278,11 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
   };
 
   return (
-    <div class="space-y-6">
-      <div class="grid gap-6 sm:grid-cols-2">
+    <Flex direction="column" gap={6}>
+      <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
         {/* Basic Select */}
         <div>
-          <h4 class="text-sm font-medium text-primary-200 mb-2">Basic Select</h4>
+          <Heading level={4} styles={typeRoles.label}>Basic Select</Heading>
           <Select
             items={selectItems}
             getKey={(item) => item.id}
@@ -1305,23 +1290,23 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
             onSelectionChange={handleChange}
             aria-label="Choose a breakpoint"
           >
-            <SelectTrigger class="w-full px-4 py-2 bg-bg-300 border border-primary-600 rounded-lg text-primary-100 flex items-center justify-between hover:border-primary-400 transition-colors">
+            <SelectTrigger class="hd-select-trigger">
               <SelectValue placeholder="Select a size..." />
-              <span class="text-primary-400">▼</span>
+              <Text styles={typeRoles.meta}>▼</Text>
             </SelectTrigger>
-            <SelectListBox class="absolute mt-1 w-full bg-bg-200 border border-primary-600 rounded-lg shadow-xl overflow-hidden z-50">
+            <SelectListBox style={{ position: "absolute", "margin-top": "4px", width: "100%", "z-index": 50, background: "var(--color-bg-200)", border: "1px solid var(--color-primary-600)", "border-radius": "var(--radius-lg)", overflow: "hidden" }}>
               {(item: SelectDemoItem) => (
                 <SelectOption
                   id={item.id}
                   item={item}
-                  class="px-4 py-2 cursor-pointer outline-none transition-colors data-selected:bg-accent/20 data-selected:text-accent data-focused:bg-primary-700 text-primary-100"
+                  class="hd-option"
                 >
-                  <div class="flex items-center justify-between">
+                  <Flex alignItems="center" justifyContent="between">
                     <div>
-                      <span class="font-medium">{item.label}</span>
-                      <span class="text-sm text-primary-400 ml-2">({item.size})</span>
+                      <Text styles={typeRoles.label}>{item.label}</Text>
+                      <Text styles={typeRoles.meta}>&nbsp;({item.size})</Text>
                     </div>
-                  </div>
+                  </Flex>
                 </SelectOption>
               )}
             </SelectListBox>
@@ -1330,7 +1315,7 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
 
         {/* Disabled Select */}
         <div>
-          <h4 class="text-sm font-medium text-primary-200 mb-2">Disabled Select</h4>
+          <Heading level={4} styles={typeRoles.label}>Disabled Select</Heading>
           <Select
             items={selectItems}
             getKey={(item) => item.id}
@@ -1338,11 +1323,11 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
             isDisabled
             aria-label="Disabled select"
           >
-            <SelectTrigger class="w-full px-4 py-2 bg-bg-300 border border-primary-600 rounded-lg text-primary-400 flex items-center justify-between opacity-50 cursor-not-allowed">
+            <SelectTrigger class="hd-select-trigger" data-disabled>
               <SelectValue placeholder="Select..." />
-              <span class="text-primary-400">▼</span>
+              <Text styles={typeRoles.meta}>▼</Text>
             </SelectTrigger>
-            <SelectListBox class="hidden">
+            <SelectListBox style={{ display: "none" }}>
               {(item: SelectDemoItem) => (
                 <SelectOption id={item.id} item={item}>
                   {item.label}
@@ -1351,16 +1336,16 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
             </SelectListBox>
           </Select>
         </div>
-      </div>
+      </Grid>
 
       <div>
-        <p class="text-xs text-primary-400">
+        <Text styles={typeRoles.meta}>
           Click to open dropdown, use arrow keys to navigate options, Enter/Space to select, Escape
           to close. The selected value is:{" "}
-          <strong class="text-primary-200">{selectedKey() || "none"}</strong>
-        </p>
+          <strong>{selectedKey() || "none"}</strong>
+        </Text>
       </div>
-    </div>
+    </Flex>
   );
 }
 
@@ -1390,8 +1375,8 @@ function StyledSelectDemo(props: { onSelectionChange?: (key: string | number | n
   };
 
   return (
-    <div class="space-y-6">
-      <div class="grid gap-6 sm:grid-cols-3">
+    <Flex direction="column" gap={6}>
+      <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
         {/* Small size */}
         <StyledSelect<FruitItem>
           items={styledSelectItems}
@@ -1454,12 +1439,12 @@ function StyledSelectDemo(props: { onSelectionChange?: (key: string | number | n
             )}
           </StyledSelectListBox>
         </StyledSelect>
-      </div>
-      <p class="text-xs text-primary-400">
+      </Grid>
+      <Text styles={typeRoles.meta}>
         Pre-styled Select with size variants. Selected:{" "}
-        <strong class="text-primary-200">{selectedKey() || "none"}</strong>
-      </p>
-    </div>
+        <strong>{selectedKey() || "none"}</strong>
+      </Text>
+    </Flex>
   );
 }
 
@@ -1490,8 +1475,8 @@ interface SimpleMenuItem {
 
 function StyledMenuDemo(props: { onAction?: (action: string) => void }) {
   return (
-    <div class="space-y-4">
-      <div class="flex gap-4 flex-wrap">
+    <Flex direction="column" gap={4}>
+      <Flex wrap gap={4}>
         {/* Primary variant */}
         <StyledMenuTrigger size="md">
           <StyledMenuButton variant="primary">File Menu</StyledMenuButton>
@@ -1545,11 +1530,11 @@ function StyledMenuDemo(props: { onAction?: (action: string) => void }) {
             {(item: SimpleMenuItem) => <StyledMenuItem id={item.id}>{item.label}</StyledMenuItem>}
           </StyledMenu>
         </StyledMenuTrigger>
-      </div>
-      <p class="text-xs text-primary-400">
+      </Flex>
+      <Text styles={typeRoles.meta}>
         Pre-styled Menu with button variants (primary, secondary, quiet) and size options.
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -1575,7 +1560,7 @@ type SelectionKeys = "all" | Set<string | number>;
 
 function StyledListBoxDemo(props: { onSelectionChange?: (key: string | number) => void }) {
   return (
-    <div class="grid gap-6 sm:grid-cols-3">
+    <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
       {/* Small size */}
       <StyledListBox<MailboxItem>
         items={styledListBoxItems}
@@ -1641,7 +1626,7 @@ function StyledListBoxDemo(props: { onSelectionChange?: (key: string | number) =
           </StyledListBoxOption>
         )}
       </StyledListBox>
-    </div>
+    </Grid>
   );
 }
 
@@ -1688,10 +1673,10 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
   };
 
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       {/* Controlled selection (regular density, the default) */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Controlled Selection</h4>
+        <Heading level={4} styles={typeRoles.label}>Controlled Selection</Heading>
         <StyledTabs<TabItem>
           items={tabItems}
           getKey={(item: TabItem) => item.id}
@@ -1706,7 +1691,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
           <StyledTabPanel>
             {() => {
               const selected = tabItems.find((item: TabItem) => item.id === selectedKey());
-              return <p class="text-primary-300">{selected?.content}</p>;
+              return <Text styles={typeRoles.body}>{selected?.content}</Text>;
             }}
           </StyledTabPanel>
         </StyledTabs>
@@ -1714,7 +1699,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
 
       {/* Compact density */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Compact Density</h4>
+        <Heading level={4} styles={typeRoles.label}>Compact Density</Heading>
         <StyledTabs<TabItem>
           items={tabItems}
           getKey={(item: TabItem) => item.id}
@@ -1727,15 +1712,15 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
             {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
           </StyledTabList>
           <StyledTabPanel>
-            <p class="text-primary-300">{tabItems[1].content}</p>
+            <Text styles={typeRoles.body}>{tabItems[1].content}</Text>
           </StyledTabPanel>
         </StyledTabs>
       </div>
 
       {/* Densities and orientation */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Densities and Orientation</h4>
-        <div class="grid gap-6 sm:grid-cols-3">
+        <Heading level={4} styles={typeRoles.label}>Densities and Orientation</Heading>
+        <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
           {/* Regular density */}
           <StyledTabs<TabItem>
             items={tabItems.slice(0, 3)}
@@ -1749,7 +1734,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
             </StyledTabList>
             <StyledTabPanel>
-              <p class="text-primary-400 text-sm">Regular density content</p>
+              <Text styles={typeRoles.meta}>Regular density content</Text>
             </StyledTabPanel>
           </StyledTabs>
 
@@ -1766,7 +1751,7 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
             </StyledTabList>
             <StyledTabPanel>
-              <p class="text-primary-300">Compact density content</p>
+              <Text styles={typeRoles.body}>Compact density content</Text>
             </StyledTabPanel>
           </StyledTabs>
 
@@ -1783,17 +1768,17 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
               {(item: TabItem) => <StyledTab id={item.id}>{item.label}</StyledTab>}
             </StyledTabList>
             <StyledTabPanel>
-              <p class="text-primary-200">Vertical orientation content</p>
+              <Text styles={typeRoles.body}>Vertical orientation content</Text>
             </StyledTabPanel>
           </StyledTabs>
-        </div>
+        </Grid>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Pre-styled Tabs with regular/compact densities and horizontal/vertical orientation. Use
         arrow keys to navigate between tabs.
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -1817,10 +1802,10 @@ const breadcrumbItems: BreadcrumbData[] = [
 
 function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       {/* Default variant */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Default Variant</h4>
+        <Heading level={4} styles={typeRoles.label}>Default Variant</Heading>
         <StyledBreadcrumbs<BreadcrumbData>
           items={breadcrumbItems}
           getKey={(item: BreadcrumbData) => item.id}
@@ -1840,7 +1825,7 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
 
       {/* Subtle variant */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Subtle Variant</h4>
+        <Heading level={4} styles={typeRoles.label}>Subtle Variant</Heading>
         <StyledBreadcrumbs<BreadcrumbData>
           items={breadcrumbItems}
           getKey={(item: BreadcrumbData) => item.id}
@@ -1861,11 +1846,11 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
 
       {/* Size variants */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Size Variants</h4>
-        <div class="space-y-4">
+        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Flex direction="column" gap={4}>
           {/* Small */}
           <div>
-            <span class="text-xs text-primary-400 block mb-1">Small:</span>
+            <Text styles={typeRoles.meta}>Small:</Text>
             <StyledBreadcrumbs<BreadcrumbData>
               items={breadcrumbItems.slice(0, 3)}
               getKey={(item: BreadcrumbData) => item.id}
@@ -1882,7 +1867,7 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
 
           {/* Medium */}
           <div>
-            <span class="text-xs text-primary-400 block mb-1">Medium:</span>
+            <Text styles={typeRoles.meta}>Medium:</Text>
             <StyledBreadcrumbs<BreadcrumbData>
               items={breadcrumbItems.slice(0, 3)}
               getKey={(item: BreadcrumbData) => item.id}
@@ -1899,7 +1884,7 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
 
           {/* Large */}
           <div>
-            <span class="text-xs text-primary-400 block mb-1">Large:</span>
+            <Text styles={typeRoles.meta}>Large:</Text>
             <StyledBreadcrumbs<BreadcrumbData>
               items={breadcrumbItems.slice(0, 3)}
               getKey={(item: BreadcrumbData) => item.id}
@@ -1913,14 +1898,14 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
               )}
             </StyledBreadcrumbs>
           </div>
-        </div>
+        </Flex>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Pre-styled Breadcrumbs with variants (default, subtle) and sizes (sm, md, lg). Click items
         to navigate.
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -1938,11 +1923,11 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
   };
 
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       {/* Basic NumberField */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Basic NumberField</h4>
-        <div class="max-w-xs">
+        <Heading level={4} styles={typeRoles.label}>Basic NumberField</Heading>
+        <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Quantity"
             value={value()}
@@ -1956,8 +1941,8 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Size variants */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Size Variants</h4>
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Grid columns="repeat(auto-fit, minmax(160px, 1fr))" gap={6}>
           <StyledNumberField label="Small" defaultValue={10} size="S" minValue={0} maxValue={50} />
           <StyledNumberField
             label="Medium (default)"
@@ -1974,13 +1959,13 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
             minValue={0}
             maxValue={50}
           />
-        </div>
+        </Grid>
       </div>
 
       {/* With min/max constraints */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">With Min/Max Constraints (0-10)</h4>
-        <div class="max-w-xs">
+        <Heading level={4} styles={typeRoles.label}>With Min/Max Constraints (0-10)</Heading>
+        <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Rating"
             defaultValue={5}
@@ -1994,8 +1979,8 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Currency formatting */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Currency Formatting</h4>
-        <div class="max-w-xs">
+        <Heading level={4} styles={typeRoles.label}>Currency Formatting</Heading>
+        <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Price"
             value={currencyValue()}
@@ -2012,8 +1997,8 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Percent formatting */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Percent Formatting</h4>
-        <div class="max-w-xs">
+        <Heading level={4} styles={typeRoles.label}>Percent Formatting</Heading>
+        <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Discount"
             defaultValue={0.15}
@@ -2029,8 +2014,8 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Disabled state */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">States</h4>
-        <div class="grid gap-6 sm:grid-cols-2">
+        <Heading level={4} styles={typeRoles.label}>States</Heading>
+        <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledNumberField label="Disabled" defaultValue={42} isDisabled />
           <StyledNumberField
             label="Invalid"
@@ -2038,13 +2023,13 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
             isInvalid
             errorMessage="Value must be positive"
           />
-        </div>
+        </Grid>
       </div>
 
       {/* Hidden stepper */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Hidden Stepper (keyboard only)</h4>
-        <div class="max-w-xs">
+        <Heading level={4} styles={typeRoles.label}>Hidden Stepper (keyboard only)</Heading>
+        <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Amount"
             defaultValue={100}
@@ -2054,12 +2039,12 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
         </div>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         NumberField with increment/decrement buttons. Supports keyboard navigation (arrows, Page
         Up/Down, Home/End), number formatting (currency, percent), min/max constraints, and step
         values.
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -2075,11 +2060,11 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
   };
 
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       {/* Basic SearchField */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Basic SearchField</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Basic SearchField</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledSearchField
             label="Search"
             placeholder="Search for items..."
@@ -2093,8 +2078,8 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
 
       {/* Size variants */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Size Variants</h4>
-        <div class="grid gap-6 sm:grid-cols-3">
+        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
           <StyledSearchField
             label="Small"
             placeholder="Search..."
@@ -2113,13 +2098,13 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
             size="lg"
             onSubmit={handleSubmit}
           />
-        </div>
+        </Grid>
       </div>
 
       {/* Variant styles */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Variants</h4>
-        <div class="grid gap-6 sm:grid-cols-2">
+        <Heading level={4} styles={typeRoles.label}>Variants</Heading>
+        <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledSearchField
             label="Outline (default)"
             placeholder="Search..."
@@ -2132,13 +2117,13 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
             variant="filled"
             onSubmit={handleSubmit}
           />
-        </div>
+        </Grid>
       </div>
 
       {/* With description */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">With Description</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>With Description</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledSearchField
             label="Product Search"
             placeholder="Enter product name or SKU..."
@@ -2150,8 +2135,8 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
 
       {/* States */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">States</h4>
-        <div class="grid gap-6 sm:grid-cols-2">
+        <Heading level={4} styles={typeRoles.label}>States</Heading>
+        <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledSearchField
             label="Disabled"
             placeholder="Can't search..."
@@ -2165,14 +2150,14 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
             isInvalid
             errorMessage="Invalid search query"
           />
-        </div>
+        </Grid>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         SearchField with clear button. Press Enter to submit, Escape to clear. The clear button
         appears when there's text in the field.
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -2222,11 +2207,11 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
   const isRequiredInvalid = () => requiredTouched() && !requiredKey();
 
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       {/* Basic ComboBox */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Basic ComboBox with Filtering</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Basic ComboBox with Filtering</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
             getKey={(item: ComboBoxItem) => item.id}
@@ -2239,9 +2224,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
           >
             {(item: ComboBoxItem) => (
               <StyledComboBoxOption id={item.id}>
-                <div class="flex justify-between items-center w-full">
+                <div style={{ display: "flex", "justify-content": "space-between", "align-items": "center", width: "100%" }}>
                   <span>{item.name}</span>
-                  <span class="text-xs text-primary-400">{item.category}</span>
+                  <Text styles={typeRoles.meta}>{item.category}</Text>
                 </div>
               </StyledComboBoxOption>
             )}
@@ -2251,8 +2236,8 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
 
       {/* Size variants */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Size Variants</h4>
-        <div class="grid gap-6 sm:grid-cols-3">
+        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
             getKey={(item: ComboBoxItem) => item.id}
@@ -2294,13 +2279,13 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
               <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
             )}
           </StyledComboBox>
-        </div>
+        </Grid>
       </div>
 
       {/* With description and validation */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">With Description & Validation</h4>
-        <div class="grid gap-6 sm:grid-cols-2">
+        <Heading level={4} styles={typeRoles.label}>With Description & Validation</Heading>
+        <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
             getKey={(item: ComboBoxItem) => item.id}
@@ -2332,13 +2317,13 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
               <StyledComboBoxOption id={item.id}>{item.name}</StyledComboBoxOption>
             )}
           </StyledComboBox>
-        </div>
+        </Grid>
       </div>
 
       {/* Disabled state */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Disabled</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Disabled</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
             getKey={(item: ComboBoxItem) => item.id}
@@ -2354,12 +2339,12 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
         </div>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         ComboBox combines a text input with a filterable listbox. Type to filter options, use arrow
         keys to navigate, Enter to select, Escape to close. Selected:{" "}
-        <strong class="text-primary-200">{selectedKey() || "none"}</strong>
-      </p>
-    </div>
+        <strong>{selectedKey() || "none"}</strong>
+      </Text>
+    </Flex>
   );
 }
 
@@ -2372,19 +2357,19 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
   };
 
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       {/* Basic Slider */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Basic Slider</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Basic Slider</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledSlider label="Volume" value={value()} onChange={handleChange} />
         </div>
       </div>
 
       {/* Size variants */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Size Variants</h4>
-        <div class="grid gap-6">
+        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Grid gap={6}>
           <StyledSlider label="Small" defaultValue={30} size="sm" onChange={props.onChange} />
           <StyledSlider
             label="Medium (default)"
@@ -2393,13 +2378,13 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
             onChange={props.onChange}
           />
           <StyledSlider label="Large" defaultValue={70} size="lg" onChange={props.onChange} />
-        </div>
+        </Grid>
       </div>
 
       {/* Variant styles */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Variants</h4>
-        <div class="grid gap-6">
+        <Heading level={4} styles={typeRoles.label}>Variants</Heading>
+        <Grid gap={6}>
           <StyledSlider
             label="Default"
             defaultValue={40}
@@ -2412,13 +2397,13 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
             variant="accent"
             onChange={props.onChange}
           />
-        </div>
+        </Grid>
       </div>
 
       {/* Custom range and step */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Custom Range and Step</h4>
-        <div class="grid gap-6">
+        <Heading level={4} styles={typeRoles.label}>Custom Range and Step</Heading>
+        <Grid gap={6}>
           <StyledSlider
             label="Temperature (°C)"
             defaultValue={22}
@@ -2437,13 +2422,13 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
             showMinMax
             onChange={props.onChange}
           />
-        </div>
+        </Grid>
       </div>
 
       {/* With formatting */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">With Formatting</h4>
-        <div class="grid gap-6">
+        <Heading level={4} styles={typeRoles.label}>With Formatting</Heading>
+        <Grid gap={6}>
           <StyledSlider
             label="Price"
             defaultValue={500}
@@ -2461,21 +2446,21 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
             formatOptions={{ style: "percent", maximumFractionDigits: 0 }}
             onChange={(v) => props.onChange?.(v / 100)}
           />
-        </div>
+        </Grid>
       </div>
 
       {/* Disabled */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Disabled</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Disabled</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledSlider label="Disabled Slider" defaultValue={50} isDisabled />
         </div>
       </div>
 
       {/* Without output */}
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Without Output</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Without Output</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <StyledSlider
             label="Brightness"
             defaultValue={75}
@@ -2485,11 +2470,11 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
         </div>
       </div>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Slider with keyboard support (arrows, Page Up/Down, Home/End) and drag functionality.
         Supports custom ranges, steps, and number formatting.
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -2518,8 +2503,8 @@ function ActionGroupDemo(props: { onLastAction: (value: string) => void }) {
   };
 
   return (
-    <div class="space-y-4">
-      <div class="flex flex-wrap gap-2">
+    <Flex direction="column" gap={4}>
+      <Flex wrap gap={2}>
         <Button
           variant={selectionMode() === "none" ? "primary" : "secondary"}
           size="S"
@@ -2541,7 +2526,7 @@ function ActionGroupDemo(props: { onLastAction: (value: string) => void }) {
         >
           Multiple
         </Button>
-      </div>
+      </Flex>
 
       <StyledActionGroup<DemoActionItem>
         aria-label="Editor actions"
@@ -2554,67 +2539,37 @@ function ActionGroupDemo(props: { onLastAction: (value: string) => void }) {
         {(item) => item.label}
       </StyledActionGroup>
 
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Mode: {selectionMode()} | Selected: {Array.from(selectedKeys()).join(", ") || "none"}
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
 function ToolbarDemo(props: { onLastAction: (value: string) => void }) {
   return (
-    <div class="space-y-6">
+    <Flex direction="column" gap={6}>
       <div>
-        <h4 class="text-sm font-medium text-primary-300 mb-2">Horizontal Toolbar</h4>
+        <Heading level={4} styles={typeRoles.label}>Horizontal Toolbar</Heading>
         <StyledToolbar aria-label="Text formatting toolbar">
-          <button
-            type="button"
-            class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"
-            onClick={() => props.onLastAction("Toolbar: bold")}
-          >
-            Bold
-          </button>
-          <button
-            type="button"
-            class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"
-            onClick={() => props.onLastAction("Toolbar: italic")}
-          >
-            Italic
-          </button>
-          <button
-            type="button"
-            class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"
-            onClick={() => props.onLastAction("Toolbar: underline")}
-          >
-            Underline
-          </button>
+          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: bold")}
+          >Bold</ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: italic")}
+          >Italic</ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: underline")}
+          >Underline</ActionButton>
         </StyledToolbar>
       </div>
 
       <div>
-        <h4 class="text-sm font-medium text-primary-300 mb-2">Vertical Toolbar</h4>
+        <Heading level={4} styles={typeRoles.label}>Vertical Toolbar</Heading>
         <StyledToolbar orientation="vertical" aria-label="Edit toolbar">
-          <button
-            type="button"
-            class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"
-          >
-            Cut
-          </button>
-          <button
-            type="button"
-            class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"
-          >
-            Copy
-          </button>
-          <button
-            type="button"
-            class="rounded bg-bg-200 px-3 py-1 text-sm text-primary-200 hover:bg-bg-100"
-          >
-            Paste
-          </button>
+          <ActionButton size="S" >Cut</ActionButton>
+          <ActionButton size="S" >Copy</ActionButton>
+          <ActionButton size="S" >Paste</ActionButton>
         </StyledToolbar>
       </div>
-    </div>
+    </Flex>
   );
 }
 
@@ -2627,8 +2582,8 @@ function ActionBarDemo(props: { onLastAction: (value: string) => void }) {
   };
 
   return (
-    <div class="space-y-4">
-      <div class="flex flex-wrap gap-2">
+    <Flex direction="column" gap={4}>
+      <Flex wrap gap={2}>
         <Button
           size="S"
           variant="secondary"
@@ -2646,34 +2601,24 @@ function ActionBarDemo(props: { onLastAction: (value: string) => void }) {
         <Button size="S" variant="secondary" onPress={clearSelection}>
           Clear all
         </Button>
-      </div>
+      </Flex>
 
       <StyledActionBarContainer>
-        <div class="rounded-lg border border-primary-700/30 bg-bg-300 p-4 text-sm text-primary-200">
-          Selected rows (mock): {selectedCount()}
-        </div>
+        <Well>
+          <Text styles={typeRoles.body}>Selected rows (mock): {selectedCount()}</Text>
+        </Well>
         <StyledActionBar
           selectedItemCount={selectedCount()}
           onClearSelection={clearSelection}
           aria-label="Bulk actions toolbar"
         >
-          <button
-            type="button"
-            class="rounded bg-bg-400 px-3 py-1 text-sm text-primary-100 hover:bg-bg-500"
-            onClick={() => props.onLastAction("ActionBar: archive")}
-          >
-            Archive
-          </button>
-          <button
-            type="button"
-            class="rounded bg-bg-400 px-3 py-1 text-sm text-primary-100 hover:bg-bg-500"
-            onClick={() => props.onLastAction("ActionBar: delete")}
-          >
-            Delete
-          </button>
+          <ActionButton size="S" onPress={() => props.onLastAction("ActionBar: archive")}
+          >Archive</ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("ActionBar: delete")}
+          >Delete</ActionButton>
         </StyledActionBar>
       </StyledActionBarContainer>
-    </div>
+    </Flex>
   );
 }
 
@@ -2723,7 +2668,7 @@ function TagGroupSelectionDemo() {
   };
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <TagGroup
         label="Languages"
         items={items}
@@ -2734,10 +2679,10 @@ function TagGroupSelectionDemo() {
       >
         {(item) => item.name}
       </TagGroup>
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Selected: {Array.from(selectedKeys()).join(", ") || "None"}
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -2749,10 +2694,10 @@ function CalendarDemo() {
   const [selectedDate, setSelectedDate] = createSignal<DateValue | null>(null);
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <Calendar aria-label="Select a date" value={selectedDate()} onChange={setSelectedDate} />
-      <p class="text-xs text-primary-400">Selected: {selectedDate()?.toString() || "None"}</p>
-    </div>
+      <Text styles={typeRoles.meta}>Selected: {selectedDate()?.toString() || "None"}</Text>
+    </Flex>
   );
 }
 
@@ -2788,10 +2733,10 @@ function DatePickerDemo() {
   const [selectedDate, setSelectedDate] = createSignal<DateValue | null>(null);
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <DatePicker label="Event Date" value={selectedDate()} onChange={setSelectedDate} />
-      <p class="text-xs text-primary-400">Selected: {selectedDate()?.toString() || "None"}</p>
-    </div>
+      <Text styles={typeRoles.meta}>Selected: {selectedDate()?.toString() || "None"}</Text>
+    </Flex>
   );
 }
 
@@ -2822,10 +2767,10 @@ function RangeSliderDemo(props: { onChange?: (start: number, end: number) => voi
   const [range, setRange] = createSignal({ start: 20, end: 80 });
 
   return (
-    <div class="space-y-8">
+    <Flex direction="column" gap={8}>
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">Basic Range Slider</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>Basic Range Slider</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <RangeSlider
             label="Price Range"
             value={range()}
@@ -2837,8 +2782,8 @@ function RangeSliderDemo(props: { onChange?: (start: number, end: number) => voi
         </div>
       </div>
       <div>
-        <h4 class="text-sm font-medium text-primary-200 mb-3">With Formatting</h4>
-        <div class="max-w-md">
+        <Heading level={4} styles={typeRoles.label}>With Formatting</Heading>
+        <div style={{ "max-width": "28rem" }}>
           <RangeSlider
             label="Budget"
             defaultValue={{ start: 200, end: 800 }}
@@ -2849,10 +2794,10 @@ function RangeSliderDemo(props: { onChange?: (start: number, end: number) => voi
           />
         </div>
       </div>
-      <p class="text-xs text-primary-400">
+      <Text styles={typeRoles.meta}>
         Range: {range().start} – {range().end}
-      </p>
-    </div>
+      </Text>
+    </Flex>
   );
 }
 
@@ -2864,16 +2809,16 @@ function ThemeInfoDisplay() {
   try {
     const theme = useTheme();
     return (
-      <div class="space-y-1 text-sm text-primary-300">
+      <Flex direction="column" gap={1}>
         <p>
-          Color scheme: <strong class="text-primary-200">{theme?.colorScheme ?? "default"}</strong>
+          Color scheme: <strong>{theme?.colorScheme ?? "default"}</strong>
         </p>
         <p>
-          Scale: <strong class="text-primary-200">{theme?.scale ?? "medium"}</strong>
+          Scale: <strong>{theme?.scale ?? "medium"}</strong>
         </p>
-      </div>
+      </Flex>
     );
   } catch {
-    return <p class="text-sm text-primary-400">No Provider context available — using defaults.</p>;
+    return <Text styles={typeRoles.body}>No Provider context available — using defaults.</Text>;
   }
 }

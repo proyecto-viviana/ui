@@ -1,8 +1,25 @@
 import { For, Show, type Accessor, type JSX } from "solid-js";
+import { Button, Flex, Heading, Text, ToggleButton, typeRoles } from "@proyecto-viviana/ui";
 import { SECTION_IDS, SECTION_NAMES, type SectionId } from "./section-data";
 
 export { SECTION_IDS, SECTION_NAMES };
 export type { SectionId };
+
+// Surfaces are described with the design system's own tokens rather than a local utility
+// vocabulary, so they track the register instead of a frozen copy of it.
+const panel: JSX.CSSProperties = {
+  "margin-bottom": "32px",
+  background: "var(--color-bg-300)",
+  border: "1px solid var(--border-subtle)",
+  "border-radius": "var(--radius-xl)",
+  overflow: "hidden",
+};
+
+const panelHeader: JSX.CSSProperties = {
+  padding: "16px",
+  "border-bottom": "1px solid var(--border-subtle)",
+  background: "var(--color-bg-400)",
+};
 
 interface SectionControlPanelProps {
   visibleSections: Accessor<Set<SectionId>>;
@@ -40,53 +57,42 @@ export function SectionControlPanel(props: SectionControlPanelProps) {
   };
 
   return (
-    <div class="mb-8 rounded-2xl border border-primary-700/30 bg-bg-300/50 backdrop-blur-sm overflow-hidden">
-      <div class="flex items-center justify-between p-4 border-b border-primary-700/30 bg-bg-400/50">
-        <div class="flex items-center gap-3">
-          <div class="w-2 h-8 rounded-full bg-linear-to-b from-accent to-primary-500" />
+    <div style={panel}>
+      <div style={panelHeader}>
+        <Flex alignItems="center" justifyContent="between" gap={3}>
           <div>
-            <h3 class="font-jost text-lg font-semibold text-primary-200">Component Sections</h3>
-            <p class="text-xs text-primary-500">
+            <Heading level={3}>Component Sections</Heading>
+            <Text styles={typeRoles.meta}>
               {props.visibleSections().size} of {SECTION_IDS.length} visible
-            </p>
+            </Text>
           </div>
-        </div>
-        <div class="flex gap-2">
-          <button
-            class="px-4 py-2 text-sm font-medium rounded-lg bg-accent/20 text-accent-200 hover:bg-accent/30 transition-colors"
-            onClick={showAll}
-            data-testid="show-all-sections"
-          >
-            Show All
-          </button>
-          <button
-            class="px-4 py-2 text-sm font-medium rounded-lg bg-primary-700/30 text-primary-300 hover:bg-primary-700/50 transition-colors"
-            onClick={hideAll}
-            data-testid="hide-all-sections"
-          >
-            Hide All
-          </button>
-        </div>
+          <Flex gap={2}>
+            <Button variant="accent" size="S" onPress={showAll} data-testid="show-all-sections">
+              Show All
+            </Button>
+            <Button variant="secondary" size="S" onPress={hideAll} data-testid="hide-all-sections">
+              Hide All
+            </Button>
+          </Flex>
+        </Flex>
       </div>
 
-      <div class="p-4">
-        <div class="flex flex-wrap gap-2">
+      <div style={{ padding: "16px" }}>
+        <Flex wrap gap={2}>
           <For each={SECTION_IDS}>
             {(id) => (
-              <button
-                onClick={() => jumpToSection(id)}
-                class={`px-3 py-1.5 text-sm font-medium rounded-full transition-all duration-200 ${
-                  props.visibleSections().has(id)
-                    ? "bg-accent/20 text-accent-200 border border-accent/40 hover:bg-accent/30"
-                    : "bg-bg-400/50 text-primary-500 border border-transparent hover:border-primary-600 hover:text-primary-300"
-                }`}
+              <ToggleButton
+                size="S"
+                isEmphasized
+                isSelected={props.visibleSections().has(id)}
+                onChange={() => jumpToSection(id)}
                 data-testid={`section-toggle-${id}`}
               >
                 {SECTION_NAMES[id]}
-              </button>
+              </ToggleButton>
             )}
           </For>
-        </div>
+        </Flex>
       </div>
     </div>
   );
@@ -97,23 +103,32 @@ interface SectionProps {
   title: string;
   description: string;
   children: JSX.Element;
-  class?: string;
+  /** Span the full width of the section grid rather than a single column. */
+  wide?: boolean;
   visibleSections: Accessor<Set<SectionId>>;
 }
 
+/* The card chrome here used to be three `vui-feature-card*` classes that no stylesheet in
+ * the repo ever defined — not the app's, not any package's, not the built output — so every
+ * section on this page rendered as a bare unstyled <section>. The surface is now built from
+ * the design system's tokens and type roles, which is what those classes were reaching for. */
 export function Section(props: SectionProps) {
   return (
     <Show when={props.visibleSections().has(props.id)}>
       <section
         id={props.id}
-        class={`vui-feature-card ${props.class ?? ""}`}
+        style={{
+          background: "var(--color-bg-300)",
+          border: "1px solid var(--border-subtle)",
+          "border-radius": "var(--radius-xl)",
+          padding: "20px",
+          ...(props.wide ? { "grid-column": "1 / -1" } : {}),
+        }}
         data-testid={`section-${props.id}`}
       >
-        <h3 class="vui-feature-card__title">{props.title}</h3>
-        <p class="vui-feature-card__description" style={{ "margin-bottom": "1rem" }}>
-          {props.description}
-        </p>
-        {props.children}
+        <Heading level={3}>{props.title}</Heading>
+        <Text styles={typeRoles.meta}>{props.description}</Text>
+        <div style={{ "margin-top": "16px" }}>{props.children}</div>
       </section>
     </Show>
   );

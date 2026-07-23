@@ -55,7 +55,7 @@ export function PlaygroundDataColorSections(props: PlaygroundDataColorSectionsPr
         visibleSections={props.visibleSections}
         title="Table"
         description="Data tables with sorting, selection, and keyboard navigation"
-        class="lg:col-span-2"
+        wide
       >
         <TableDemo />
       </Section>
@@ -155,7 +155,7 @@ export function PlaygroundDataColorSections(props: PlaygroundDataColorSectionsPr
         visibleSections={props.visibleSections}
         title="Date Range Picker"
         description="Select a start and end date with calendar popup"
-        class="lg:col-span-2"
+        wide
       >
         <DateRangePickerDemo />
       </Section>
