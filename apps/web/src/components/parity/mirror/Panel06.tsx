@@ -92,14 +92,14 @@ export function MirrorPanel06(): JSX.Element {
         style={{ display: "grid", "grid-template-columns": "1fr 1fr 1fr", gap: "14px" }}
       >
         {/* ── the media card ── */}
-        {/* GAP (surface): the spec's MeshCard takes `variant`/`amber` and paints a tinted
-            mesh gradient behind the glass. Card's `variant` is a flat opacity/elevation
-            scale (primary/secondary/tertiary/quiet) with no tint axis, so all three cards
-            here are the same primary plate and the spec's per-card warmth is dropped.
-            Its border does resolve through var(--border-subtle), so the rim matches. */}
+        {/* The spec's MeshCard paints a tinted hex-mesh weave behind the glass, and Card
+            carries it now: `mesh="ambient"` paints the register's quiet mixed gray/blue/
+            orange weave (card/index.tsx:47,67-72,852-866). `ambient` is the media card's
+            neutral warmth; the console cards below pick `signal` vs `ambient` per state.
+            Its border resolves through var(--border-subtle), so the rim matches too. */}
         {/* `id` is not optional: CardProps extends GridListItemProps, so even a standalone
             Card that never joins a collection has to be given a collection key. */}
-        <Card id="mirror-06-sdf-raymarching" size="M" UNSAFE_style={{ width: "100%" }}>
+        <Card id="mirror-06-sdf-raymarching" size="M" mesh="ambient" UNSAFE_style={{ width: "100%" }}>
           <CardPreview>
             {/* Image gets aspect-ratio 3/2 and object-fit:cover from the card's own
                 ImageContext. GAP (proportion): the spec fixes the thumbnail at 110px tall;
@@ -107,11 +107,11 @@ export function MirrorPanel06(): JSX.Element {
                 forcing a height would hide exactly the kind of difference this panel is
                 built to surface. */}
             <Image src="/glasselated/thumb-1.png" alt="" />
-            {/* SUBSTITUTION: the spec's overlay is a translucent blurred chip. Badge is the
-                library's chip and carries the label faithfully, but its fills are opaque —
-                no backdrop-filter anywhere in the register — so the glass reading of the
-                original is lost. Positioning is ours (CardPreview is position:relative);
-                the chip's own styling is entirely the component's. */}
+            {/* The spec's overlay is a translucent, backdrop-blurred chip. Badge carries
+                the label faithfully, but it paints no backdrop-filter of its own — that
+                glass blur is the one thing that does not carry across. Positioning is ours
+                (CardPreview is position:relative); the chip's own styling is entirely the
+                component's. */}
             <div style={{ position: "absolute", top: "10px", left: "10px" }}>
               <Badge variant="neutral" size="S">
                 SHADERS
@@ -142,14 +142,19 @@ export function MirrorPanel06(): JSX.Element {
         {/* ── the console cards ── */}
         <For each={CONSOLE_CARDS}>
           {(w) => (
-            <Card id={w.id} size="M" UNSAFE_style={{ width: "100%" }}>
+            <Card
+              id={w.id}
+              size="M"
+              mesh={w.status === "notice" ? "signal" : "ambient"}
+              UNSAFE_style={{ width: "100%" }}
+            >
               {/* CardPreview is documented for media, but it is the only slot that bleeds
                   to the card edge, which is what the spec's header strip does. Using it
                   keeps the geometry real instead of hand-rolling a bar with negative
-                  margins. GAP (fill): the spec's strip sits on --surface-inset; CardPreview
-                  has no background of its own and Card exposes no way to give a region one,
-                  so the strip reads flush with the card body rather than recessed. */}
-              <CardPreview>
+                  margins. `background="inset"` sits the strip on --surface-inset
+                  (card/index.tsx:101,343-345) — the register's own console-strip
+                  treatment — so it reads recessed from the card body, as the spec draws it. */}
+              <CardPreview background="inset">
                 <div style={consoleBar}>
                   {/* StatusLight is exactly the spec's dot + path pairing, dot colour and
                       all — one component instead of a span and a styled circle. */}

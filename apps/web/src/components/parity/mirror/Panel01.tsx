@@ -9,10 +9,11 @@
 import { type JSX } from "solid-js";
 import {
   ActionButton,
-  BellIcon,
   Button,
   Divider,
   NotificationBadge,
+  PixelNotificationIcon,
+  PixelPlusIcon,
   Provider,
 } from "@proyecto-viviana/ui";
 import { Panel } from "../lab-shell";
@@ -40,14 +41,19 @@ export function MirrorPanel01(): JSX.Element {
 
         <Button variant="secondary">Today</Button>
 
-        {/* The spec pairs the create-yellow fill with a 13px plus glyph. `create` is
-            a real Viviana-only variant so the fill is exact, but the glyph is a gap:
-            the package ships exactly seven icons (Bell/Close/Contrast/Lighten/Link/
-            MenuHamburger/Search) — AddIcon exists as a .d.ts in dist/icon/s2wf-icons
-            with no built .js and no subpath export, so it cannot be imported. Drawing
-            an inline <svg> here would be hand-rolling the thing this panel is meant
-            to detect, so the button ships label-only and the icon is reported. */}
-        <Button variant="create">Create</Button>
+        {/* The spec pairs the create-yellow fill with a plus glyph. `create` is a real
+            Viviana-only variant so the fill is exact, and the glyph is now real too:
+            PixelPlusIcon is the register's own plus (its path is byte-identical to the
+            register's plus.svg asset), and Button threads IconContext to it so it takes
+            the button's create ink and icon sizing — the same channel the spec draws it
+            in. NEAR-MISS: the register's plus is the blocky pixel glyph, whereas this
+            particular spec panel drew a thin 2.4px-stroke crosshair — the library is
+            self-consistent with its own plus asset; the spec's hairline plus is the
+            one-off, and its own bell (below) is pixel-art like ours. */}
+        <Button variant="create">
+          <PixelPlusIcon />
+          Create
+        </Button>
 
         {/* Spec ghost = transparent fill + --border-subtle + secondary ink, i.e. an
             outlined secondary, not a quiet ActionButton (which drops the border). */}
@@ -68,16 +74,17 @@ export function MirrorPanel01(): JSX.Element {
             centred flex row it takes the row height rather than the drawn 26px. */}
         <Divider orientation="vertical" size="S" />
 
-        {/* Substitution. ActionButton is the real host for NotificationBadge (it
-            provides the badge's context and absolute placement), and the badge count
-            is exact. Two gaps: no button in the library has a circular shape, so this
-            renders as the register's rounded rect rather than the spec's 40px circle;
-            and the spec's counter is create-yellow (--accent-create-bg/ink) whereas
-            NotificationBadge has no variant prop and always paints accent. The bell
-            is also Spectrum's vector BellIcon, not the island's masked pixel-art
-            PixelIcon — the library ships no pixel icon set. */}
+        {/* ActionButton is the real host for NotificationBadge (it provides the badge's
+            context and absolute placement), the badge count is exact, and the bell is
+            now the register's own PixelNotificationIcon — the masked pixel-art glyph,
+            drawn from the same notification.svg asset the spec uses, sized/inked through
+            ActionButton's IconContext. Two REAL residuals remain: no button in the
+            library has a circular shape, so this renders as the register's rounded rect
+            rather than the spec's 40px circle; and the spec's counter is create-yellow
+            (--accent-create-bg/ink) whereas NotificationBadge has no variant prop and
+            always paints accent. */}
         <ActionButton aria-label="Notifications">
-          <BellIcon />
+          <PixelNotificationIcon />
           <NotificationBadge value={3} />
         </ActionButton>
       </Provider>

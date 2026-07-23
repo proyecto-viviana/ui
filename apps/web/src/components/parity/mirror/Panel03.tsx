@@ -5,11 +5,12 @@
    The spec packs two families into one wrapping row: four topic chips (one accent-
    filled, three on the scan-gridded well surface) and a run of status badges either
    side of a hairline rule. TagGroup, Divider and Badge are the real counterparts.
-   The chips land almost literally — Tag already wears the register library-side.
-   The badges are where the register runs out of channels, and each mismatch is
-   documented at its site rather than patched from the app. */
+   The chips land almost literally — Tag already wears the register library-side — and
+   the badges now do too: the register's own `live` (orange-red, pulsing) and `metric`
+   (sky-blue) channels landed in Badge, and `subtle`/`outline` carry same-channel ink.
+   The residuals that remain are documented at their sites. */
 import { type JSX } from "solid-js";
-import { Badge, Divider, Provider, TagGroup, Text } from "@proyecto-viviana/ui";
+import { Badge, Divider, PixelFlameIcon, Provider, TagGroup, Text } from "@proyecto-viviana/ui";
 import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
 
@@ -48,10 +49,11 @@ export function MirrorPanel03(): JSX.Element {
             scan — which is exactly the spec's "#shaders filled, the other three scanned"
             split. So the distinction is expressed as selection state rather than as the
             spec's per-chip fg/bg/border/scan quadruple, and nothing here is restated.
-            Render the raw label, not a <Tag>: TagGroup wraps each item itself, and its
-            isRenderedTag() check is `instanceof HTMLElement` — always false on the
-            server, so a returned <Tag> gets double-wrapped into a nested role="row".
-            Library bug, same one the gallery works around. */}
+            Render the raw label: TagGroup wraps each item into its own role="row", so a
+            bare string is the simplest faithful form. (Returning a built <Tag> is fine
+            now too — the SSR double-wrap that used to force this workaround was fixed by
+            the library's isServer/duck-typed isRenderedTag branch, commit 1d7604f6; the
+            bare label just carries no per-tag props we need here.) */}
         <TagGroup
           aria-label="Topics"
           items={CHIPS}
@@ -62,31 +64,30 @@ export function MirrorPanel03(): JSX.Element {
           {(c) => c.label}
         </TagGroup>
 
-        {/* The spec's 1px × 26px hairline. Divider resolves to the same --border-default
-            token; it is 2px at size M and stretches to the row (align-self: stretch)
-            instead of taking a fixed height, neither of which it exposes a knob for. */}
-        <Divider orientation="vertical" />
+        {/* The spec's 1px × 26px hairline. `size="S"` draws the divider at 1px
+            (divider/index.tsx:95) — matching the spec's width exactly. It still stretches
+            to the row (align-self: stretch) rather than taking a fixed 26px height, which
+            it exposes no knob for; in this centred flex row that reads as full-height. */}
+        <Divider orientation="vertical" size="S" />
 
-        {/* GAP (colour): the spec's LIVE pill is white ink on --accent-live (#ff6b35), a
-            channel no badge variant resolves to — the ramps carry no orange-red. `notice`
-            is the nearer hue but renders as a pale peach plate with black ink, losing the
-            spec's saturated-fill/white-ink relationship entirely; `negative` keeps that
-            relationship and is closer in chroma, so it is the substitution — at the cost
-            of sharing a hue with DEGRADED below, which the spec deliberately separates.
-            GAP (motion): Badge has no live/pulsing affordance, so the spec's glxPulse
-            breathing is dropped rather than animated onto the component from here. */}
-        <Badge variant="negative">● LIVE</Badge>
+        {/* `live` is a real register channel now: white ink on --accent-live (#ff6b35),
+            the exact orange-red the spec's LIVE pill uses (badge/index.tsx:228,170-172),
+            and the glxPulse breathing comes free — badgeStyles animates `live` with a 2s
+            ease-in-out infinite livePulse (badge/index.tsx:329-347), reduced-motion aware.
+            So both former GAPs — the missing orange-red channel and the dropped pulse —
+            are closed by one variant, and no hue is shared with DEGRADED below. */}
+        <Badge variant="live">● LIVE</Badge>
 
-        {/* GAP: the spec draws NEW as violet ink on a violet 1px rule. `purple` is the
-            violet channel, but badgeStyles only branches `outline` for accent /
-            informative / positive / notice / negative / neutral — every other variant
-            falls through to a transparent border and default black/white ink, which would
-            erase the violet completely. Both remaining fills keep a violet plate — subtle
-            a tint (#f4ebfc / #40007a), bold the saturated fill (#9a47e2 / #9d4ee4) — but
-            neither can put violet in the *ink*, which is the part the spec actually draws.
-            Bold is the substitution because it holds the spec's chroma; either way this
-            reads as a violet plate where the spec draws a violet outline. */}
-        <Badge variant="purple">NEW</Badge>
+        {/* The spec draws NEW as an outline chip — coloured ink on a 1px coloured rule,
+            transparent fill. The register retired violet and replaced it with `metric`
+            (sky-blue, --status-metric), and `metric` is a first-class outline channel:
+            it carries a metric border (badge/index.tsx:322), metric ink (:213) and a
+            transparent fill (:303). So `outline` draws the spec's exact treatment —
+            coloured ink on a coloured rule, no plate — in the channel that stands in for
+            the spec's violet, where `purple` could only ever put the colour in the plate. */}
+        <Badge variant="metric" fillStyle="outline">
+          NEW
+        </Badge>
 
         {/* Outline is a real branch for `notice`, so these two are direct matches: token
             ink, token rule, transparent fill — the spec's treatment exactly. */}
@@ -97,27 +98,17 @@ export function MirrorPanel03(): JSX.Element {
           0x3F DEGRADED
         </Badge>
 
-        {/* GAP (fill): the spec's streak chip is --amber-600 ink on an --amber-100 plate.
-            `subtle` is the library's tinted-plate fill style, but it resets the ink to
-            plain black/white for every variant, so the amber-on-amber pairing has no
-            expression — the plate follows, the ink does not.
-            GAP (icon): Badge's icon slot is an IconContext render pipeline that only
-            library icons (createIcon → SVG) opt into, and Image — the raster component —
-            exposes no image-rendering control, so pixel art would arrive smoothed. The
-            flame therefore stays the spec's own <img> and misses the baseline-centring a
-            real badge icon would get. <Text> is explicit because mixed children skip
-            Badge's text-only fast path, which is what otherwise applies the label styles. */}
+        {/* The streak chip is the register's tinted-plate fill. `notice` + `subtle` now
+            renders the spec's amber-on-amber pairing directly: notice-800/900 ink on a
+            notice-subtle plate (badge/index.tsx:183-194) — the ink follows the channel,
+            no longer resetting to black/white. The flame is the register's own
+            PixelFlameIcon (createIcon), so Badge's icon pipeline baseline-centres and
+            sizes it and it inks from the badge's amber currentColor, where the spec's
+            raster <img> arrived un-centred and had to be hand-sized. <Text> is explicit
+            because mixed children (icon + label) skip Badge's text-only fast path that
+            otherwise applies the label styles. */}
         <Badge variant="notice" fillStyle="subtle">
-          <img
-            src="/glasselated/streak-flame.png"
-            alt=""
-            style={{
-              width: "20px",
-              height: "20px",
-              "image-rendering": "pixelated",
-              "flex-shrink": 0,
-            }}
-          />
+          <PixelFlameIcon />
           <Text>12-day streak</Text>
         </Badge>
       </Provider>

@@ -2,18 +2,14 @@
    components. Renders in the same <Panel> chrome as the spec so any difference
    between the pair is attributable to the components, not the container.
 
-   The two <Well>s come from lab-shell for the same reason: the well is the panel's
-   CONTAINER, and the library has no counterpart for it to begin with — S2 dropped
-   S1's Well, and the only surface a consumer can ask the library for is
-   `Provider background="base|layer-1|layer-2"`, which paints the library's own
-   neutral layer rather than the island's matte ink and is exactly the prop this
-   comparison forbids. Reusing the spec's Well keeps both sides on the identical
-   `--surface-well` + scan-grid so the readable delta is the CONTENT inside it.
+   The two <Well>s are the library's own now — the register's matte inset (the `well`
+   ink, its scan-grid and the `well-border` hairline), the same --surface-well surface
+   the spec's wells use. So the container is a real component on both sides and the
+   readable delta is the CONTENT inside it.
 
-   What the library is actually being asked for here is two things: a severity-keyed
-   log line and a labelled metric readout. StatusLight and LabeledValue/Meter are
-   the real counterparts; the gaps are in what they can express, documented at each
-   site. */
+   What the library is being asked for here is two things: a severity-keyed log line
+   and a labelled metric readout. StatusLight and LabeledValue/Meter are the real
+   counterparts; the residuals are in what they can express, documented at each site. */
 import { For, type JSX } from "solid-js";
 import {
   LabeledValue,
@@ -21,15 +17,15 @@ import {
   Provider,
   StatusLight,
   type StatusLightProps,
+  Well,
 } from "@proyecto-viviana/ui";
-import { Panel, Well } from "../lab-shell";
+import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
 
-/* Same six lines, same order, same strings as the spec's T3_LOG. Only the ink
-   changes shape: the spec paints each MESSAGE in a channel colour, so each line's
-   channel is restated here as the nearest StatusLight variant.
-
-   The mapping is not one-to-one and the misses are the finding:
+/* Same six lines, same order, same strings as the spec's T3_LOG. Each line's channel
+   maps to the StatusLight variant that paints the message in that channel's ink — and
+   StatusLight now tones the LABEL to the channel, not just a leading dot, so the message
+   carries the colour the spec gives it:
      • cy (info)   -> "informative"; accent/informative both alias the brand blue.
      • cy (passed) -> "positive". Reads as a success in the spec and resolves to the
        same blue by design — glasselated-ramps.ts retargets positive off green onto
@@ -37,10 +33,9 @@ import { useGlasselatedTheme } from "../glasselated-theme";
      • am (signal) -> "notice"; notice-color-* refs the orange slot, which now carries
        brand amber.
      • rd (fault)  -> "negative"; negative-color-* refs the brand red.
-     • vi (metric) -> nothing. Violet is published as a base ramp but is aliased by no
-       semantic role, and StatusLight's decorative variants (purple/indigo/…) are still
-       on Adobe values the library itself warns would clash. Substituted with "neutral",
-       so the metrics channel simply goes missing in the twin. */
+     • vi (metric) -> "metric". StatusLight now carries the register's metric channel —
+       the sky-blue that replaced the retired violet (--status-metric, statuslight/
+       index.tsx:32,106) — so the fourth channel is expressed rather than going missing. */
 const T3_LOG: readonly {
   readonly t: string;
   readonly msg: string;
@@ -48,7 +43,7 @@ const T3_LOG: readonly {
 }[] = [
   { t: "18:42:07", msg: "sampler.init — 6000 target samples", variant: "neutral" },
   { t: "18:43:51", msg: "checkpoint 0x3D passed ✓", variant: "positive" },
-  { t: "18:44:12", msg: "variance 0.0087 → 0.0031", variant: "neutral" },
+  { t: "18:44:12", msg: "variance 0.0087 → 0.0031", variant: "metric" },
   { t: "18:45:30", msg: "warn: firefly detected @ px(812,204)", variant: "notice" },
   { t: "18:47:02", msg: "err: memory cell 0x3F degraded", variant: "negative" },
   { t: "18:47:05", msg: "quiz: why do shorter paths dominate?", variant: "informative" },
@@ -74,18 +69,20 @@ export function MirrorPanel07(): JSX.Element {
         <Well style={{ padding: "14px 16px" }}>
           <For each={T3_LOG}>
             {(ln) => (
-              /* GAP (form): StatusLight spends its colour on a leading DOT and leaves the
-                 label on the neutral content ink. The spec has no dot and paints the
-                 message itself, so the twin inverts where the severity lives — the log
-                 stops reading as coloured transcript and starts reading as a status list.
-                 GAP (ink): there is no secondary/dim treatment inside StatusLight, so the
-                 timestamp cannot hold --well-dim against the message. It is passed as part
-                 of the same label (spacing preserved) and comes out at full strength, which
-                 costs the well its time gutter.
+              /* StatusLight tones its LABEL to the channel now, not just the dot
+                 (statuslight/index.tsx:92-108) — the same 800/900 pairs Meter's fill uses
+                 — so the message carries the severity colour exactly as the spec paints it.
+                 The timestamp holds --well-dim against it: it is a child span in the dim
+                 ink, while the rest of the label inherits the channel tone from the wrapper,
+                 so the well keeps its time gutter. REAL residual: StatusLight always draws
+                 its leading dot, which the spec's rows do not have — the twin reads as
+                 "dot + coloured line" where the spec is the coloured line alone.
                  size="S" is the closest rung to the spec's 11.5px/1.95 terminal line; the
                  exact size and row rhythm are the library's ui ramp, not the spec's. */
               <StatusLight variant={ln.variant} size="S">
-                {`${ln.t}  ${ln.msg}`}
+                <span style={{ color: "var(--well-dim)" }}>{ln.t}</span>
+                {"  "}
+                {ln.msg}
               </StatusLight>
             )}
           </For>
@@ -106,14 +103,16 @@ export function MirrorPanel07(): JSX.Element {
         <Well style={{ padding: "13px 15px" }}>
           <div style={{ display: "flex", "flex-direction": "column", gap: "6px" }}>
             {/* Meter is the library's gauge, and label/valueLabel land where the spec puts
-                them. GAP (form): the spec draws five discrete blocks, [▮▮▮▯▯]; Meter has a
-                single continuous track with no segmentation, so 3/5 becomes 60% of a bar.
-                variant is Meter's default informative — the brand blue, which is the
-                channel the spec paints "focus" in. */}
+                them. `segments={5}` draws it as five discrete blocks, [▮▮▮▯▯]
+                (meter/index.tsx:54-60,252-259) — round(3/5 × 5) = 3 filled — so the form
+                matches the spec's block meter rather than a continuous 60% bar. variant is
+                Meter's default informative — the brand blue, the channel the spec paints
+                "focus" in; the register keeps the channel ink on the label, not the blocks. */}
             <Meter
               label="focus"
               labelPosition="side"
               size="S"
+              segments={5}
               value={3}
               minValue={0}
               maxValue={5}

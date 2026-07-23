@@ -1,33 +1,32 @@
 /* Mirror of spec panel 09 (TYPE ROLES — the closed set) built from real
    @proyecto-viviana/ui components, in the same <Panel> chrome as the spec.
 
-   This panel is the hardest of the nine to twin, and the reason is structural.
-   The spec's eight roles are eight CSS custom properties (--type-display …
-   --type-terminal): an app can name a role and get it. The library has no such
-   surface. Its type lives in the build-time `font()` macro, so a role can only
-   be *baked into a component* — there is no exported component whose job is
-   "render text in role X", and no runtime way to ask for one. What the library
-   exposes to an app is therefore not a ladder of eight but a handful of
-   components that each happen to carry one baked role.
+   The spec's roles are CSS custom properties (--type-display … --type-terminal):
+   an app names a role and gets it. The library now exposes the same surface as a
+   precompiled class ladder — `typeRoles` (src/text/type-roles.ts), one macro-compiled
+   `style()` atom per role, verbatim the register's own values — that an app drops on a
+   bare element via `class={typeRoles.X}`. So every one of the roles has an answer now,
+   where three used to have none.
 
-   So the middle column below is the honest answer to "what does the library
-   give you for this role", one row at a time, and three of the eight have no
-   answer at all. Each is called out at its row rather than hand-set to match,
-   since a styled <span> here would hide the exact gap the panel measures.
+   The middle column shows the library's carrier for each role. Where a component bakes
+   the role standalone it is used directly — Heading (display/title/headline, one per
+   level), Content (body), Text (meta), Keyboard (terminal) — since that is the most
+   representative thing an app reaches for. The two roles with no dedicated component,
+   `label` and `micro`, use the `typeRoles` class on a bare <span>, which is the library's
+   surface for exactly that case.
 
    The name and spec columns are panel chrome, hand-set identically to the spec
    (same MONO/CH tokens, same widths) so the two panels line up row-for-row and
    only the middle column is under comparison. */
 import { type JSX } from "solid-js";
 import {
-  Badge,
   Content,
   Divider,
   Heading,
   Keyboard,
-  LabeledValue,
   Provider,
   Text,
+  typeRoles,
 } from "@proyecto-viviana/ui";
 import { CH, MONO, Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
@@ -86,13 +85,10 @@ export function MirrorPanel09(): JSX.Element {
         data-mirror="09"
         style={{ display: "flex", "flex-direction": "column", gap: "10px" }}
       >
-        {/* GAP (display/title/headline collapse to one): Heading is the only exported
-            component that bakes a type role, and it bakes exactly ONE. Its `level`
-            prop picks the tag (h1/h2/h3) and nothing else — the class list is a
-            module-level constant, identical for every level. So the spec's three
-            pixel-face tiers arrive here as three identical lines at one size. The
-            levels are still passed, because the semantic difference is real even
-            though the visual one is not. */}
+        {/* Heading bakes a distinct role per level now: h1 → display, h2 → title,
+            h3 → headline, taken verbatim from the typeRoles ladder (text/Heading.tsx
+            :46-53). So the spec's three pixel-face tiers arrive as three distinct sizes —
+            28/20/15px — the top of the type ladder no longer collapsing to one. */}
         <Row name="display" spec="Pixel · hero & page titles">
           <Heading level={1}>Think in circles</Heading>
         </Row>
@@ -103,23 +99,19 @@ export function MirrorPanel09(): JSX.Element {
           <Heading level={3}>Spaced Review</Heading>
         </Row>
 
-        {/* SUBSTITUTION: the library's "label" role is Spectrum's FieldLabel, and the
-            only way to render one standalone is LabeledValue's label slot — every
-            other carrier (Button, Tab, Checkbox…) welds it to a control. `value` is
-            deliberately omitted so the row shows the role and nothing else; that
-            leaves LabeledValue's value cell empty, which is why labelPosition="side"
-            is used — it parks the empty cell beside the label instead of under it. */}
+        {/* No component bakes `label` alone (Button/Tab/Checkbox all weld it to a control),
+            but that is exactly what the typeRoles ladder is for: `typeRoles.label` is the
+            register's label role — 600 13.5px Geist Pixel, the buttons/nav/chips face — as
+            a class on a bare <span> (type-roles.ts). No control, no substitution. */}
         <Row name="label" spec="Pixel · buttons/nav/chips — 13px floor">
-          <LabeledValue size="L" labelPosition="side" label="Resume · Home · #shaders" />
+          <span class={typeRoles.label}>Resume · Home · #shaders</span>
         </Row>
 
-        {/* GAP (no prose role): Content and Text are the library's prose and inline
-            components, but neither bakes any type at all — both render a bare
-            element with an empty class and inherit whatever encloses them. They are
-            slot markers for a parent (Card, InlineAlert, MenuItem) to style through
-            context, not type roles an app can request. Left as-is: what renders here
-            is the island's inherited type, not the library's, and that IS the
-            finding. */}
+        {/* Content and Text bake their roles standalone now: with no slotted context
+            around them, Content renders typeRoles.body (Geist prose) and Text renders
+            typeRoles.meta (Geist secondary, --text-secondary ink) — text/index.tsx. Inside
+            a Card or MenuItem the parent's context still wins; free-standing, they are the
+            body and meta roles, which is what the spec draws here. */}
         <Row name="body" spec="Geist · prose">
           <Content>
             March a ray through signed distance fields toward the nearest surface.
@@ -129,23 +121,19 @@ export function MirrorPanel09(): JSX.Element {
           <Text>Today 18:00 · 214 waiting</Text>
         </Row>
 
-        {/* SUBSTITUTION: nothing in the library renders bare micro text, but Badge at
-            size S bakes the smallest type it has, and the spec spends this role on
-            exactly these status chips. The cost is that Badge brings a pill — fill,
-            radius, padding — that the spec's micro role does not have, so this row
-            compares type inside a container against type on glass. */}
+        {/* `micro` is the other role with no dedicated component, so it too comes from the
+            ladder: `typeRoles.micro` is the register's below-the-floor role — 700 10px Geist
+            Mono, +0.1em — on a bare <span> (type-roles.ts). No pill, no container: type on
+            glass, exactly as the spec draws it. */}
         <Row name="micro" spec="Mono · below the pixel floor">
-          <Badge size="S" variant="neutral" fillStyle="subtle">
-            LIVE · DUE · 0x3F
-          </Badge>
+          <span class={typeRoles.micro}>LIVE · DUE · 0x3F</span>
         </Row>
 
-        {/* GAP (no mono role): Keyboard is the right component semantically — it is
-            the library's <kbd>, the terminal/monospace slot — but like Text and
-            Content it bakes nothing; it is styled only through a slotted
-            KeyboardContext that a parent such as MenuItem supplies. Standalone it
-            inherits, so the library has no reachable mono role. Same finding as the
-            trailing key hints in mirror panel 02. */}
+        {/* Keyboard bakes `terminal` standalone now: it is the library's <kbd>, and with
+            no slotted KeyboardContext around it, it renders typeRoles.terminal — 11.5px
+            Geist Mono, the wells-and-prompts face (text/Keyboard.tsx). Inside a MenuItem the
+            parent still styles it; free-standing, it is the reachable mono role — the same
+            one the key hints in mirror panel 02 now pick up. */}
         <Row name="terminal" spec="Mono · wells & prompts only">
           <Keyboard>{"> submit checkpoint --answer"}</Keyboard>
         </Row>

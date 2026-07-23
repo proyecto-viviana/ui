@@ -4,9 +4,11 @@
 
    The spec draws three readouts — a pixel ring with a centred score, an XP bar, and a
    stacked-avatar presence row — and all three have real counterparts (ProgressCircle,
-   ProgressBar, AvatarGroup). The gaps are therefore not "component missing" but
-   "component can't express it", which is the more useful finding; each is called out
-   at its site rather than papered over. */
+   ProgressBar, AvatarGroup) that now carry the register faithfully: ProgressCircle draws
+   the 16-block dithered/blinking pixel ring and centres a readout in it, ProgressBar
+   renders the "in flight" dither past its fill via `pendingValue`, and AvatarGroup stacks
+   at the register's 30px / -9px / raised-ring geometry. What is left between the pair is
+   footprint (L's 64px box inside the spec's 76px slot), called out at its site. */
 import { type JSX } from "solid-js";
 import { Avatar, AvatarGroup, ProgressBar, ProgressCircle, Provider } from "@proyecto-viviana/ui";
 import { MONO, Panel } from "../lab-shell";
@@ -32,17 +34,16 @@ export function MirrorPanel05(): JSX.Element {
           "flex-wrap": "wrap",
         }}
       >
-        {/* GAP (form): the spec's ring is 16 discrete 7px blocks — 10 lit, 2 dithered at
-            the leading edge, each on a staggered blink. ProgressCircle draws a single
-            continuous SVG arc at three fixed sizes (S/M/L = 16/32/64px), so neither the
-            quantisation, the dither, nor the blink survives. L is the closest size; the
-            76px box around it preserves the spec's footprint so the row's rhythm matches
-            and the ring itself is the only thing that reads differently.
-            value/minValue/maxValue carry the real 3-of-5, so the arc is genuinely 60%
-            rather than a hardcoded percentage. */}
+        {/* The ring is real now: ProgressCircle draws the register's 16 discrete pixel
+            blocks — lit blocks in the accent, the two at the leading edge on the ordered
+            checker dither, the rest recessed, every block on the staggered glxRingBlink
+            (progress/ProgressCircle.tsx:80-90,113-116,150-190). value/minValue/maxValue
+            carry the real 3-of-5, and the block quantisation and lead-dither follow that
+            value, so the whole form the spec draws survives — not just a percentage arc.
+            The only residual is footprint: L's ring lives in a 64px box, so the 76px
+            wrapper preserves the spec's slot and centres the smaller ring in it. */}
         <div
           style={{
-            position: "relative",
             width: "76px",
             height: "76px",
             display: "flex",
@@ -50,25 +51,12 @@ export function MirrorPanel05(): JSX.Element {
             "justify-content": "center",
           }}
         >
-          <ProgressCircle size="L" value={3} minValue={0} maxValue={5} aria-label="Focus" />
-          {/* GAP (composition): ProgressCircle takes no children and has no label slot, so
-              the centred readout cannot be handed to the component. It is overlaid here
-              instead of being moved beside the ring, because in the SPEC this readout is
-              also just two plain spans — mirroring plain text with plain text keeps the
-              comparison controlled, and keeps the spec's "3/5 then FOCUS" order that
-              LabeledValue (label-above-value only) would have inverted. The tokens are the
-              spec's own, so any visible difference here is the ring, not the type. */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              "flex-direction": "column",
-              "align-items": "center",
-              "justify-content": "center",
-              "pointer-events": "none",
-            }}
-          >
+          {/* The centred readout is handed to ProgressCircle as children: it renders them
+              in its own absolute-centred overlay (centerStyles) over the ring, keeping the
+              spec's "3/5 then FOCUS" order that a label-above-value component would invert.
+              The tokens are the spec's own, so any visible difference is the ring, not the
+              type. */}
+          <ProgressCircle size="L" value={3} minValue={0} maxValue={5} aria-label="Focus">
             <span
               style={{
                 font: "var(--type-headline)",
@@ -87,7 +75,7 @@ export function MirrorPanel05(): JSX.Element {
             >
               FOCUS
             </span>
-          </div>
+          </ProgressCircle>
         </div>
 
         <div
@@ -103,26 +91,28 @@ export function MirrorPanel05(): JSX.Element {
               the start and `valueLabel` at the end of a row above the track, which is the
               spec's arrangement, and its track carries an --edge-glass rim of its own. size
               "L" is a real 8px track, matching the spec's bar exactly — a component prop,
-              not a restyle.
-              GAP: past its 84% fill the spec adds a second 6% dithered segment (work "in
-              flight"). ProgressBar has one fill and no buffered/secondary value, so that
-              segment is dropped and the true 2,840 of 3,200 drives the single fill. */}
+              not a restyle. The spec's second "in flight" segment past the fill is real too:
+              `pendingValue` renders a dithered extension of the fill (progress-bar/index.tsx
+              :41-46,297-309). The true 2,840 of 3,200 drives the solid fill and 3,032 carries
+              it 6% further as the dithered band — (3032-2840)/3200 — exactly the spec's split. */}
           <ProgressBar
             size="L"
             label="Level 12"
             valueLabel="2,840 / 3,200 XP"
             value={2840}
+            pendingValue={3032}
             minValue={0}
             maxValue={3200}
           />
 
           {/* AvatarGroup owns the overlap and renders `label` as trailing text, so the
               spec's stack + "+214 learning now" arrangement needs neither part hand-rolled.
-              GAP: size is an enum (16…40), so the spec's 30px avatars round to 32, and the
-              overlap/ring treatment is the library's own rather than the spec's -9px inset
-              on --surface-raised. alt="" matches the spec — the group label supplies the
-              accessible name. */}
-          <AvatarGroup label="+214 learning now" size={32}>
+              size={30} is a real enum member — the register's own stack size — and the
+              overlap and ring are the spec's exactly: stacked avatars tuck by 30% of their
+              diameter (-9px at 30px) and each punches the knockout ring in --surface-raised
+              (avatar/index.tsx:41,96-121). alt="" matches the spec — the group label supplies
+              the accessible name. */}
+          <AvatarGroup label="+214 learning now" size={30}>
             <Avatar src="/glasselated/avatar-1.png" alt="" />
             <Avatar src="/glasselated/avatar-2.png" alt="" />
             <Avatar src="/glasselated/avatar-3.png" alt="" />

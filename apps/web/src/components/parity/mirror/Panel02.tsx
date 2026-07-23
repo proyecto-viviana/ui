@@ -5,10 +5,11 @@
    The spec draws two terminal *wells* — matte ink surfaces carrying a scan-grid, a
    glyph prefix, a blinking caret and a right-aligned key hint — flanking a bare
    three-way segment row. SearchField, SegmentedControl and TextField are the real
-   counterparts; what the wells add beyond them is either register (the well surface
-   itself, which is exactly what this side-by-side is measuring) or a slot the
-   fields do not have. Both are called out at their sites rather than hand-rolled:
-   a faked adornment would hide the gap this panel exists to surface. */
+   counterparts, and they now carry every adornment the wells add: a `prefix` glyph
+   slot, a trailing `suffix` key-hint slot, and — on the tutor prompt — the register's
+   own tutor well surface. What is left between the pair is register the fields already
+   own (the matte well fill, its radius and scan-grid) set against the spec's hand-drawn
+   decorations (the blinking caret), which is exactly what this side-by-side measures. */
 import { type JSX } from "solid-js";
 import {
   Keyboard,
@@ -40,28 +41,20 @@ export function MirrorPanel02(): JSX.Element {
           "flex-wrap": "wrap",
         }}
       >
-        {/* Spec well #1: `/` + "search lessons" + caret + ⌘K.
-            GAP (prefix): SearchField carries the search semantics and supplies its own
-            leading SearchIcon, but it has no `prefix` slot — that shared field
-            primitive (src/field/prefix.tsx) is threaded into TextField, ColorField,
-            NumberField and ComboBox only — so the `/` slash-command glyph cannot go
-            inside the field. The built-in magnifier stands in for it. */}
-        <div
-          style={{
-            display: "flex",
-            "align-items": "center",
-            gap: "10px",
-            "min-width": "240px",
-          }}
-        >
-          <SearchField aria-label="Search lessons" placeholder="search lessons" />
-          {/* GAP (trailing adornment): no field in the library exposes a slot at the
-              end of the input, so the key hint sits BESIDE the field rather than
-              inside it as the spec draws it. Keyboard is the library's own component
-              for a key cap, but it is styled only through a slotted KeyboardContext
-              (MenuItem provides one); standalone it renders a bare <kbd>. Left
-              unstyled deliberately — that is the finding. */}
-          <Keyboard>⌘K</Keyboard>
+        {/* Spec well #1: `/` + "search lessons" + caret + ⌘K. Both adornments are real
+            field slots now. `prefix="/"` renders the slash-command glyph in place of
+            SearchField's built-in magnifier (searchfield/index.tsx:612-621), and `suffix`
+            drops the ⌘K key hint inside the trailing edge of the field
+            (searchfield/index.tsx:630-632) — where the spec draws it, not beside it.
+            Keyboard needs no styling here: standalone it bakes typeRoles.terminal
+            (Keyboard.tsx), the register's mono key-cap face, rather than a bare <kbd>. */}
+        <div style={{ "min-width": "240px" }}>
+          <SearchField
+            aria-label="Search lessons"
+            placeholder="search lessons"
+            prefix="/"
+            suffix={<Keyboard>⌘K</Keyboard>}
+          />
         </div>
 
         {/* Spec segments: day / [week] / month, where the brackets are the terminal
@@ -74,34 +67,22 @@ export function MirrorPanel02(): JSX.Element {
           <SegmentedControlItem id="month">month</SegmentedControlItem>
         </SegmentedControl>
 
-        {/* Spec well #2 (tutor): `$` + the prompt + caret + ↵.
-            GAP (surface): the spec paints this one on --surface-well-tutor, a second
-            field surface marking the AI lane apart from the search well beside it.
-            The library has a single field appearance with no such variant, so the two
-            prompts read identically here where the spec distinguishes them. */}
-        <div
-          style={{
-            flex: 1,
-            "min-width": "260px",
-            display: "flex",
-            "align-items": "center",
-            gap: "10px",
-          }}
-        >
-          {/* The field root is a block-level grid whose input column is 1fr, so it
-              fills a plain sized container — hence this wrapper rather than making the
-              field a flex item, which would leave it at its intrinsic 208px default
-              instead of spanning the row as the spec's well does. */}
-          <div style={{ flex: 1, "min-width": 0 }}>
-            {/* `prefix` is a real field slot, so unlike the search well the `$`
-                renders inside the field exactly where the spec draws it. */}
-            <TextField
-              aria-label="Ask tutor"
-              prefix="$"
-              defaultValue={'ask tutor "why does variance drop?"'}
-            />
-          </div>
-          <Keyboard>↵</Keyboard>
+        {/* Spec well #2 (tutor): `$` + the prompt + caret + ↵, on the AI-lane surface.
+            `surface="tutor"` paints the field on --surface-well-tutor with its own
+            --well-tutor-ink (textfield/index.tsx:157-171) — the deeper AI-lane surface
+            the spec uses to set the tutor prompt apart from the search well beside it.
+            `prefix="$"` and `suffix={<Keyboard>↵</Keyboard>}` are both real field slots,
+            so the `$` and the return-key hint render inside the field exactly where the
+            spec draws them. The field root is a block grid (input column 1fr), so it
+            fills this flex item and spans the row as the spec's well does. */}
+        <div style={{ flex: 1, "min-width": "260px" }}>
+          <TextField
+            aria-label="Ask tutor"
+            surface="tutor"
+            prefix="$"
+            suffix={<Keyboard>↵</Keyboard>}
+            defaultValue={'ask tutor "why does variance drop?"'}
+          />
         </div>
       </Provider>
     </Panel>
