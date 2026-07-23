@@ -1,4 +1,16 @@
-/* React Spectrum S2 font-face definitions. Upstream source: @react-spectrum/s2/src/font-faces.css. */
+/* Viviana UI v2 register faces: Geist Pixel (display) · Geist (body/ui) · Geist
+   Mono (terminal).
+
+   This @import must stay the first rule in the file. CSS requires @import to
+   precede every rule other than @charset and @layer statements; placed after
+   the @font-face blocks below it is invalid, so browsers drop it and bundlers
+   strip it from the output — the whole Geist register silently falls back to
+   the default sans-serif with no error anywhere. */
+@import url("https://fonts.googleapis.com/css2?family=Geist+Pixel:ELSH@1..80&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;700;800&display=swap");
+
+/* React Spectrum S2 font-face definitions. Upstream source: @react-spectrum/s2/src/font-faces.css.
+   Inlined here so this file is self-contained (no bare @import into
+   @proyecto-viviana/solid-spectrum). */
 
 @font-face {
   font-family: "adobe-clean-spectrum-vf";
@@ -240,8 +252,3 @@
   font-weight: 400;
   font-stretch: normal;
 }
-
-/* Viviana UI v2 register faces: Geist Pixel (display) · Geist (body/ui) · Geist
-   Mono (terminal). Inlined above are the upstream S2 typekit faces so this file
-   is self-contained (no bare @import into @proyecto-viviana/solid-spectrum). */
-@import url("https://fonts.googleapis.com/css2?family=Geist+Pixel:ELSH@1..80&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;700;800&display=swap");

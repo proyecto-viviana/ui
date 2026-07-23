@@ -21,7 +21,6 @@ npm install @proyecto-viviana/ui solid-js
 import { Provider, Button } from "@proyecto-viviana/ui";
 import { TextField } from "@proyecto-viviana/ui/TextField";
 
-import "@proyecto-viviana/ui/theme.css";
 import "@proyecto-viviana/ui/components.css";
 
 export function App() {
@@ -42,31 +41,31 @@ The root barrel is convenient for examples and shared entry points.
 Components do not inject CSS. Import the design-system CSS once at your app
 entry.
 
-Most apps should import:
+Most apps need one import — `components.css` already contains the other three:
 
 ```ts
-import "@proyecto-viviana/ui/theme.css";
 import "@proyecto-viviana/ui/components.css";
 ```
 
-`theme.css` contains the color-scheme tokens and Viviana brand variables.
-`components.css` contains font faces plus the generated component styles.
-
-Apps that manage font loading themselves can import the two component-style
-halves separately:
+Apps that manage font loading themselves can import the halves separately:
 
 ```ts
 import "@proyecto-viviana/ui/theme.css";
-import "@proyecto-viviana/ui/font-faces.css";
 import "@proyecto-viviana/ui/styles.css";
 ```
 
-| Subpath          | Contents                                                   |
-| ---------------- | ---------------------------------------------------------- |
-| `theme.css`      | Color-scheme tokens + Viviana brand `--color-*` variables. |
-| `components.css` | `font-faces.css` + `styles.css`.                           |
-| `styles.css`     | Generated component rules, without font faces or tokens.   |
-| `font-faces.css` | Font-face declarations only.                               |
+| Subpath          | Contents                                                         |
+| ---------------- | ---------------------------------------------------------------- |
+| `components.css` | `font-faces.css` + `theme.css` + `styles.css`. The usual import. |
+| `theme.css`      | Color-scheme tokens + Viviana brand `--color-*` variables.       |
+| `styles.css`     | Generated component rules, without font faces or tokens.         |
+| `font-faces.css` | Font-face declarations, including the Geist register.            |
+
+Keep these as `@import` statements at the very top of your CSS entry, or as JS
+imports before any other stylesheet. `font-faces.css` begins with a remote
+`@import` for the Geist family, and CSS drops an `@import` that any rule
+precedes — load it after your own rules and the Geist register silently falls
+back to the default sans-serif.
 
 ### Using Tailwind alongside these styles
 
@@ -78,7 +77,6 @@ any import**:
 @layer theme, base, _, L, components, utilities;
 
 @import "tailwindcss";
-@import "@proyecto-viviana/ui/theme.css";
 @import "@proyecto-viviana/ui/components.css";
 ```
 
