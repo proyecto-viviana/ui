@@ -1,5 +1,107 @@
 # @proyecto-viviana/ui
 
+## 0.6.0
+
+### Minor Changes
+
+- 0eea012: Badge learns the register's status run: new `live` and `metric` variants (the
+  LIVE pill breathes at 0.25Hz, gated on prefers-reduced-motion; metric is the
+  sky-blue that replaced the retired violet channel), and subtle fills now carry
+  same-channel ink instead of flat gray. Tokens retire violet to the sky-blue
+  metric hue across both schemes (`--violet-500` kept as a legacy alias).
+- ab8f0a6: Card gains the Glasselated mesh axis: `mesh="ambient" | "signal"` renders the
+  seeded hex-weave as a scheme-flipping background-image (riding the lightningcss
+  space-toggle atoms, so it follows the Provider color scheme with no JS),
+  `meshSeed` varies the weave, and `data-mesh` is stamped on the root for
+  app-level mesh-field treatments. CardPreview gains `background="inset"` for the
+  register's recessed console-strip fill. The `meshStrip()` generator is now a
+  public export (`meshStrip`, `MeshStripOptions`).
+- 2b79f59: Register prompt wells: field `suffix` slot, SearchField `prefix`, and the tutor surface.
+  - New shared `FieldSuffix` slot — trailing adornment inside the field group
+    (key hints, units), styled as the mirror of the prefix slot. Its id joins
+    the input's `aria-labelledby` alongside the prefix id, and the labelledby
+    wiring now resolves ids lazily so adornments can mount/unmount live.
+  - `TextField` and `SearchField` accept `prefix` and `suffix`. SearchField's
+    `prefix` renders in place of the built-in magnifier icon; its `suffix`
+    sits between the input and the clear button.
+  - `TextField` gains `surface?: "well" | "tutor"` — the tutor surface is the
+    register's AI-lane fill (`--surface-well-tutor` / `--well-tutor-ink`),
+    one step deeper than the search well in dark and identical to it in light.
+
+- 0cf5b0c: The Glasselated pixel icon set and the register's two Tabs navigation forms. 34 new `Pixel*Icon` components (pixel-art SVGs from the design lane, createIcon-wrapped, each with its own build entry). Tabs gains `variant?: "line" | "pill"`: pill is the mobile tab bar — a full-radius glass capsule spreading column-flex slots (pixel icon stacked over a 10px micro label) space-around, with no selection indicator and no overflow collapse. Vertical tabs become the register rail: the indicator gives way to a mono ">" caret that ghosts in on hover and pins on the active row, rows sit on a flat 32px floor with 12px semi-bold labels, and a `NotificationBadge` child now parks flush right via a badge slot (`order: 2`, `marginStart: auto`).
+- baf4768: Discrete/dithered progress lands across the status family. ProgressCircle draws the register ring — 16 quantized pixel blocks on a circle, lit blocks blinking in with staggered step-end delays, a two-block dithered lead, and a centered children readout slot. ProgressBar gains `pendingValue`, the XP bar's dithered in-flight segment after the solid fill. Meter gains `segments`, the wells' `[▮▮▮▯▯]` capacity form as variant-inked blocks. StatusLight gains the sky-blue `metric` variant and register ink-toning on labels. AvatarGroup accepts the register's `30` stack size and overlaps stacked avatars by 30% of their diameter.
+- e32603d: Semantic status trio (negative / warning / success) across every status surface.
+  - New cohesive `green` ramp backs `positive`/`success` and by-name `green`, so
+    success stops aliasing blue and reads as a real state next to accent. Every
+    stop is contrast-matched to its amber sibling, so red/amber/green sit at one
+    weight wherever the three appear together. `warning` stays on amber, distinct
+    from the create-yellow wash.
+  - `Button`/`LinkButton` drop the inherited `premium` and `genai` variants and
+    gain `warning` and `success` — negative's semantic counterparts, saturated
+    fill with white ink on the amber and green channels. (Removing `premium`/
+    `genai` is a breaking change for consumers that referenced them.)
+  - `StatusLight`, `InlineAlert`, and `Meter` accept a public `success`/`warning`
+    variant that folds onto the canonical `positive`/`notice` channels.
+  - `Toast` gains the `notice` channel (its warning slot) with the diamond icon
+    and a `ToastQueue.notice` method; `success` rides `positive`.
+  - Fixes a latent bug: portaled toasts inherited no color-scheme, so
+    lightningcss's downlevelled `light-dark()` left the bold fills transparent on
+    every variant. The region now carries the scheme atoms via `setColorScheme()`,
+    restoring the solid fills (negative red, positive green, notice amber, info
+    blue) with white ink.
+
+- 6a45374: Ship the register's nine-role type ladder as a public API. New `typeRoles` export (with the `TypeRole` type) exposes one precompiled class per role — display, title, headline, label, body, meta, micro, terminal, button — at the register's exact metrics, usable through any `styles` prop or as a plain class. Heading levels 1–3 now render the display/title/headline tiers verbatim (28/20/15px with the inverted 500/600/700 weight ladder and +0.01em pixel-face tracking); h4+ share the headline rung. Standalone `Text`, `Content`, and `Keyboard` bake the meta, body, and terminal roles respectively — only when no slotted context claims them, so composed hosts (Button, MenuItem, Card…) are byte-identical to before. The style theme gains a `semi-bold` (600) font weight and a `letterSpacing` property (0/0.01em/0.1em) to make the ladder expressible.
+- 1d8d174: Well is now a public export. The matte terminal container — opaque well surface, 4px scan dither, 1px hairline border, 10px radius, never glass — was already in the package; it now ships from the barrel with its props type.
+
+### Patch Changes
+
+- b9817f3: ActionGroup items now paint correctly: the headless layer renders each item as a bare button with no class hook, so the UA button chrome (opaque ButtonFace fill, 2px outset border) painted around the styled span — burying the transparent resting state under grey lozenges and clipping the selected accent pill. The container now ships a css() reset for its direct-child buttons.
+- 094bf48: Restyle TabSwitch to the Glasselated raised-pill idiom and make it actually paint: the native button chrome (opaque ButtonFace fill, 2px outset border) was covering the sliding indicator, leaving the selected label as white text on a bare UA lozenge — illegible in light. Buttons now reset UA chrome; the track is the inset glass surface with a subtle border; the indicator is the raised surface with the edge-glass rim; inks are secondary/primary instead of white-on-accent, matching the island's segmented pill.
+- ea16b07: Resolve every CSS subpath export to `dist`, so a consumer can never be handed a
+  build source instead of the built sheet.
+
+  The five CSS entries were conditional — `{ "import": "./dist/X.css", "default":
+"./src/X.css" }` — and `src/styles.css` is no longer a real sheet: since the
+  macro started emitting one flat atomic file, it is a 64-byte comment, against
+  73KB of shipped CSS in `dist/styles.css`. Any resolver that fell through to
+  `default` (a CSS-level `@import` of the package, a `require`-conditioned
+  bundler) therefore got no component styling at all, and `components.css` — the
+  single-file convenience entry — inherited the same hole through its relative
+  `@import`. The subpaths are now plain strings pointing at `dist`, which resolves
+  identically under every condition.
+
+  The out-of-workspace consume smoke also stops fingerprinting the retired
+  `inline-macro-css.mjs` mechanism (a marker comment plus a nested
+  `@proyecto-viviana/solid-spectrum` `@import`, neither of which the current build
+  emits) and asserts the actual contract instead: the shipped sheet carries no
+  unresolvable bare `@import`, and every class the SSR render emits has a matching
+  rule in it.
+
+- 9be6690: Split the Glasselated edge-glass rim into a control rim and a surface rim, and
+  brighten both on dark.
+
+  The night `--edge-glass` top highlight was `rgba(255,255,255,0.14)` — all but
+  invisible — while daylight sat at `0.9`. Controls (buttons, chips, badges, tags,
+  nav pills, switches, meters) now match daylight exactly at `0.9 / 0.35`: they are
+  opaque, so their own fill contains the rim and it reads as the same lit edge in
+  either scheme.
+
+  Translucent containers cannot carry that value. Over a dark blurred backdrop the
+  full-strength ring outlines the whole container instead of catching its edge, so
+  they take a new `--edge-glass-surface` at `0.45 / 0.09` — cards, panels, popovers,
+  modals, trays, menus, the pill tab bar, and anything built on the `glassSurface()`
+  helper. The `boxShadow` theme keys follow suit: `emphasized` and `elevated` resolve
+  to the surface rim, `edge-glass` stays the control rim, and `edge-glass-surface` is
+  available for components that spell it directly. Daylight declares both aliases at
+  the same value — white-on-light barely separates from its ground, so one rim lifts
+  a button and a panel alike.
+
+  The `edgeGlassShadow` / `edgeGlassSurfaceShadow` fallbacks in
+  `style/spectrum-theme.ts` (used when a consumer never loads the token file) track
+  the same night values.
+
+- b31606d: Fix the Tree hydration abort ("Unable to find DOM nodes for hydration key"): a repeated `children`-prop read re-instantiated item content on the server, shifting every hydration key past the first item and killing the whole route. Standalone components now hug their content instead of stretching in grid or column-flex parents (ActionGroup, Toolbar, Card — `height: 100%` is now CardView-only). ColorEditor sizes its headless ColorArea/ColorSlider parts, which ship gradients but no dimensions. AssetCard previews give icons the square illustration treatment, scoped to the preview slot. Bespoke StepList Step children keep the flex-row list layout.
+
 ## 0.5.0
 
 ### Minor Changes
