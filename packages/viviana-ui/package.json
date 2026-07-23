@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/ui",
-  "version": "0.6.2",
+  "version": "0.5.0",
   "description": "Viviana design system. A reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is duplicated and remapped to the Viviana v2 (Glasselated) register, over the shared solidaria headless stack.",
   "license": "MIT",
   "repository": {
