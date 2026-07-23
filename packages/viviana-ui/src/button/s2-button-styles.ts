@@ -299,6 +299,16 @@ export const s2Button = style<S2ButtonStyleProps>(
         outline: {
           default: baseColor("neutral"),
           variant: {
+            /* Ghost is the register's outlined SECONDARY, and the handoff inks it in the
+             * MUTED slate, not the strong neutral its filled twin (Today) wears: the
+             * `Ghost` button is drawn `color: var(--text-secondary)` on a transparent fill
+             * inside `--border-subtle` (TerminalGlassLab.tsx:273-277), whereas the filled
+             * secondary is `--text-primary`. `--text-secondary` is pinned to `gray-500` in
+             * both schemes (glasselated-ramps.ts:114,855 — #64748b light / #9aa0a8 dark),
+             * so a secondary+outline button de-emphasises its label exactly the way the
+             * register draws it. Every other outline variant keeps `outline.default`'s
+             * neutral ink; only secondary steps down. */
+            secondary: baseColor("gray-500"),
             /* create-ink is near-black in the dark scheme — legible ON the pale fill, not
              * against a dark page. Outline drops the fill, so the dark scheme takes the
              * fill colour as its ink instead. */
