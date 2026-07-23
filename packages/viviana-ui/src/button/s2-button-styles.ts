@@ -106,21 +106,37 @@ export const s2Button = style<S2ButtonStyleProps>(
         secondary: "border-subtle",
         create: "create-border",
       },
-      /* Accent and negative previously had no border colour because they had no border.
-       * Now that `borderWidth.fillStyle.fill` is 1px they need one, or they fall back to
-       * `currentColor` — which is `"white"` for both (see the `color` map below) — and
-       * ring a blue button in its own label text.
+      /* Every FILLED variant needs its border colour spelled out HERE, under
+       * `fillStyle.fill.variant`. The earlier note claimed variants with no entry
+       * "fall through to `variant` above" the way `borderWidth` does — that is
+       * WRONG for a colour value, and it shipped Today (secondary-fill) and Create
+       * (create-fill) with a black rim. The reason `borderWidth` falls through is
+       * that BOTH its keys (`fillStyle.fill` and `variant.create`) name a width, so
+       * a fill button always has one to land on. `borderColor` does not: once the
+       * higher-priority `fillStyle` key matches (fillStyle === "fill"), it OWNS the
+       * result, and a fill variant with no leaf in this sub-map resolves to nothing
+       * from the winning branch — it does NOT consult the sibling `variant` map
+       * below. The only value left is the `forcedColors` fallback, `ButtonBorder`,
+       * which paints black in a normal viewport. So each fill variant is listed
+       * explicitly, mirroring the proven accent path stop for stop.
        *
-       * The handoff borders its accent button in the same token as its fill (:303-304),
-       * so these mirror the `backgroundColor` map below stop for stop, hover states
-       * included. Scoped under `fillStyle` rather than added to `variant` above so the
-       * outline variants keep the `currentColor` edge they already draw, and placed
-       * before `isDisabled`/`isStaticColor`/`forcedColors` so those still win. Variants
-       * with no entry here fall through to `variant` above — the same pattern
-       * `borderWidth.variant` already relies on. */
+       * The `variant` map below is kept for the OUTLINE variants (Ghost), which do
+       * not match `fillStyle.fill` and so still read secondary/create from it.
+       *
+       * accent/negative border the button in the same token as their fill
+       * (handoff :303-304), so they mirror the `backgroundColor` map stop for stop,
+       * hover included. secondary and create carry no hover-border step (the
+       * handoff declares none), so each is a flat token: `border-subtle` for the
+       * secondary hairline, `create-border` for the create rim (the pale wash needs
+       * the edge to hold its shape). primary tracks its neutral fill in gray-800,
+       * matching the `variant.primary` idiom. Placed before
+       * `isDisabled`/`isStaticColor`/`forcedColors` so those still win. */
       fillStyle: {
         fill: {
           variant: {
+            primary: baseColor("gray-800"),
+            secondary: "border-subtle",
+            create: "create-border",
             accent: {
               default: lightDark("accent-900", "accent-700"),
               isHovered: lightDark("accent-1000", "accent-800"),

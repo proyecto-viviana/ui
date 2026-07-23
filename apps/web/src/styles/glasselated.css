@@ -32,6 +32,27 @@
   margin: 0;
 }
 
+/* The register dresses every hand-built demo <button> in the mono control face
+   (`--type-button` = 400 15px/1 Geist Mono, `--type-button-track` = 0), which is
+   what the spec panels' own <button> markup needs to read as Glasselated rather
+   than falling back to the ambient Geist-sans body face.
+
+   LAYERED into `app-base` on purpose — this is the exact treatment the frozen
+   register uses (glasselated.css `@layer app-base`). `font:` is a shorthand and
+   `[data-glasselated] button` is specificity (0,1,1), which is HIGHER than an S2
+   atomic class (0,1,0); unlayered, this rule would beat the library's own
+   `control()` font atomics and reset the family/size/weight/line-height of every
+   real <Button>/<ActionButton> in the mirror column too. A named layer always
+   loses to the library's unlayered atomics, so the rule reaches only the spec
+   panels' bare <button>s (which carry no atomics and otherwise inherit the body
+   face) and leaves the mirror's real components untouched. */
+@layer app-base {
+  [data-glasselated] button {
+    font: var(--type-button);
+    letter-spacing: var(--type-button-track);
+  }
+}
+
 /* ── 3 — showcase chrome ────────────────────────────────────────────────── */
 
 /* Sticky top bar: one glass strip over the scene. */

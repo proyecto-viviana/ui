@@ -15,6 +15,7 @@ import {
   PixelNotificationIcon,
   PixelPlusIcon,
   Provider,
+  Text,
 } from "@proyecto-viviana/ui";
 import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
@@ -50,9 +51,17 @@ export function MirrorPanel01(): JSX.Element {
             particular spec panel drew a thin 2.4px-stroke crosshair — the library is
             self-consistent with its own plus asset; the spec's hairline plus is the
             one-off, and its own bell (below) is pixel-art like ours. */}
+        {/* The label is wrapped in <Text> — not a bare string — because that is the
+            slotted-label API a real consumer uses for an icon+label button. Button
+            auto-slots a *lone* string child, but alongside an icon the bare string
+            stays unslotted, and control()'s icon-only rule
+            (:has([slot=icon]):not(:has([data-rsp-slot=text]))) then reads the button
+            as icon-only and collapses its horizontal padding to 0. <Text> takes the
+            button's text slot (Button.tsx:167-170), so the label is seen and the
+            create CTA keeps its normal edge-to-text padding. */}
         <Button variant="create">
           <PixelPlusIcon />
-          Create
+          <Text>Create</Text>
         </Button>
 
         {/* Spec ghost = transparent fill + --border-subtle + secondary ink, i.e. an
