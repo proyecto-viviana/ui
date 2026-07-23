@@ -1,5 +1,24 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.6.3
+
+### Patch Changes
+
+- eea8910: Restore the upstream `--lightningcss-light` / `--lightningcss-dark` space-toggle
+  atoms in `setColorScheme`.
+
+  lightningcss downlevels `light-dark()` ahead of time, so it cannot see a
+  `color-scheme` supplied through a CSS variable and picks the wrong branch. S2
+  carries these two transform atoms for exactly that case (and for a component
+  compiled against an older S2 embedded in a newer provider); dropping them was a
+  divergence from the pin, not a simplification.
+
+- Updated dependencies eea8910:
+- Updated dependencies eea8910:
+  - @proyecto-viviana/solid-stately@0.5.0
+  - @proyecto-viviana/solidaria-components@0.5.0
+  - @proyecto-viviana/solidaria@0.4.2
+
 ## 0.6.2
 
 ### Patch Changes

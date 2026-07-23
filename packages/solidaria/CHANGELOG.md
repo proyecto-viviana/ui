@@ -1,5 +1,12 @@
 # @proyecto-viviana/solidaria
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies eea8910:
+  - @proyecto-viviana/solid-stately@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes

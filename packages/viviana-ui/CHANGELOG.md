@@ -1,5 +1,15 @@
 # @proyecto-viviana/ui
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies eea8910:
+- Updated dependencies eea8910:
+  - @proyecto-viviana/solid-stately@0.5.0
+  - @proyecto-viviana/solidaria-components@0.5.0
+  - @proyecto-viviana/solidaria@0.4.2
+
 ## 0.6.0
 
 ### Minor Changes
