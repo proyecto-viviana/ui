@@ -12,6 +12,36 @@ the recertification march (`recertification.md`) — most invented-styled librar
 components are march units, so their styling conversion happens as part of their
 red→green cert.
 
+## Status (2026-07-23) — Phase 4 reopened, target decided
+
+Phase 4 is **no longer descoped**, and its end-state is settled: `apps/web` takes
+its styling from **`@proyecto-viviana/ui`** — the components, tokens, and `style()`
+macro the library already ships — and `local-utilities.css` is deleted. Owner's
+call, and the direct application of "check what we already have": the file was a
+reimplementation of capabilities we own. No Tailwind build is added; `apps/web`
+already wires the macro in `vite.config.ts`, and the library already exports
+`Flex`, `Grid`, `Well`, `Divider`, `Content`, so nothing new is needed.
+
+**The scale numbers below are wrong — they were never re-measured.** Actual counts
+on 2026-07-23:
+
+|                | claimed below | actual                    |
+| -------------- | ------------- | ------------------------- |
+| utility usages | ~9,863        | **2,601**                 |
+| files touched  | 73            | **94**                    |
+| file size      | 1878 lines    | 1912 lines (now **1317**) |
+
+The job is ~4× smaller than documented, and heavily concentrated: **5 files carry
+1,523 of the 2,601 usages (59%)** — `components/playground/advanced-sections.tsx`
+(697), `routes/solid-spectrum/playground.tsx` (345),
+`components/playground/advanced-data-color-sections.tsx` (224),
+`routes/solid-spectrum/docs/components/color.tsx` (146),
+`components/ThemeCreator.tsx` (111).
+
+Progress: **143 of 299 class selectors (49%) were dead** and are deleted
+(`bb0c5edc`, 1912 → 1317 lines), verified against dynamically-assembled class
+names. Remaining work is converting the live usages, hot files first.
+
 ## Status (2026-07-18) — finalized at the library boundary
 
 The **shipped library is done and guarded.** Every `packages/*/src` surface is off
@@ -52,7 +82,7 @@ which is Adobe's own examples and not ours). What we have instead is:
   `apps/web/src/styles.css`.
 - **Components that emit those class strings** in `class=`/`className=`
   (e.g. `getContainerClassName()` → `"vui-action-group inline-flex items-center
-  gap-1 rounded-lg border border-primary-600 bg-bg-300 p-1"`).
+gap-1 rounded-lg border border-primary-600 bg-bg-300 p-1"`).
 
 ### Why this violates repo direction
 
@@ -76,16 +106,16 @@ which is Adobe's own examples and not ours). What we have instead is:
 `solid-spectrum/src` files emitting **invented design tokens** (`bg-bg-*`,
 `text-primary-*`, `border-primary-*`, `bg-accent`, `text-bg-*`):
 
-| File | March status | Note |
-| --- | --- | --- |
-| `actiongroup/index.tsx` | **next unit (CP9.51)** | S2 removed ActionGroup → style off S2 `ToggleButtonGroup`/`ActionButtonGroup`/`SegmentedControl` macro values |
-| `select/index.tsx` | certified (CP9.40) | recheck: invented strings on visual vs wrapper nodes; re-verify + re-baseline paint if needed |
-| `menu/index.tsx` | certified (CP9.39) | same |
-| `listbox/index.tsx` | certified (CP9.41) | same |
-| `steplist/index.tsx` | not yet | Tier-4 unit |
-| `landmark/index.tsx` | n/a | thin wrapper |
-| `button/LogicButton.tsx` | n/a | recheck |
-| `switch/index.tsx` | certified | one wrapper string (`relative bg-bg-400 rounded-full w-[250px]`) — likely a demo/track wrapper |
+| File                     | March status           | Note                                                                                                          |
+| ------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `actiongroup/index.tsx`  | **next unit (CP9.51)** | S2 removed ActionGroup → style off S2 `ToggleButtonGroup`/`ActionButtonGroup`/`SegmentedControl` macro values |
+| `select/index.tsx`       | certified (CP9.40)     | recheck: invented strings on visual vs wrapper nodes; re-verify + re-baseline paint if needed                 |
+| `menu/index.tsx`         | certified (CP9.39)     | same                                                                                                          |
+| `listbox/index.tsx`      | certified (CP9.41)     | same                                                                                                          |
+| `steplist/index.tsx`     | not yet                | Tier-4 unit                                                                                                   |
+| `landmark/index.tsx`     | n/a                    | thin wrapper                                                                                                  |
+| `button/LogicButton.tsx` | n/a                    | recheck                                                                                                       |
+| `switch/index.tsx`       | certified              | one wrapper string (`relative bg-bg-400 rounded-full w-[250px]`) — likely a demo/track wrapper                |
 
 Plus ~36 `solid-spectrum/src` files carrying **generic** utility strings
 (`inline-flex`, `items-center`, `gap-N`, …). Many overlap the 59 S2-macro files
@@ -132,12 +162,13 @@ invented contract).
 - **Phase 2 — viviana-ui custom (Tier 6).** chip, logo, timeline-item.
 - **Phase 3 — solidaria-components base.** Strip Breadcrumbs (and any other base)
   utility strings; base layers render unstyled.
-- **Phase 4 — apps/web. [DESCOPED from this PR → follow-up]** Re-styling the
-  internal docs/playground site off `local-utilities.css` (~9,863 utility usages
-  across 73 files) is orthogonal to the shipped visual system and would swamp this
-  PR. `apps/web` is unshipped internal tooling; its frozen utility layer works and
-  touches no cert. Split out as a self-contained follow-up PR — see the Status
-  block above.
+- **Phase 4 — apps/web. [ACTIVE as of 2026-07-23]** Re-style the internal
+  docs/playground site off `local-utilities.css` and onto `@proyecto-viviana/ui`
+  (components + tokens + `style()` macro), then delete the file. 2,601 usages
+  across 94 files, 59% of them in 5 files — convert hot files first, each one its
+  own verifiable commit. Dead rules already pruned. See the 2026-07-23 Status
+  block for the corrected numbers; the ~9,863/73 figures previously here were
+  never re-measured and overstated the job ~4×.
 - **Phase 5 — sweep + guard.** Static gate **done**: `guard:invented-utilities`
   (`scripts/check-invented-utilities.ts`) blocks CI if an invented utility token
   reappears in library source (comments stripped; standard Tailwind scales in
@@ -162,7 +193,7 @@ invented contract).
 **Oracle = the pinned v3 `react-aria` hooks `useActionGroup` / `useActionGroupItem`
 (react-aria 3.50.0).** S2 1.5.1 ships **no ActionGroup** (replaced by
 `ActionButtonGroup` / `ToggleButtonGroup` / `SegmentedControl`), and RAC ships no
-ActionGroup *component* — only these hooks, which our `createActionGroup` is a
+ActionGroup _component_ — only these hooks, which our `createActionGroup` is a
 faithful port of. Those hooks are still pinned upstream, so parity applies and the
 oracle is unambiguous ("no S2 component" ≠ "no oracle"). Same "no-S2-oracle → bare
 upstream, D5+D6 only" precedent as ListBox.
@@ -179,6 +210,7 @@ RTL arrow-flip, `aria-orientation`/`aria-disabled`.
 (self-inflicted divergence).
 
 **Plan:**
+
 1. Build a React reference hand-wired from the two v3 hooks (they're comparison
    deps) — mirrors what the vendored `@adobe/react-spectrum` ActionGroup does —
    plus the comparison surface (demo codec / page / both fixtures / manifest /
