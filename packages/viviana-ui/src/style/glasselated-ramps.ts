@@ -222,48 +222,63 @@ const RAMPS: Record<string, Ramp> = {
     1500: ["#28025c", "#ece9ff"],
     1600: ["#030014", "#fcfbff"],
   },
+  /* The success channel. The island genuinely has no green (its status channels are
+   *   "cyan=info · amber=signal/due · violet=metrics · red=fault", design-handoff-v2.css:90),
+   *   so this ramp is the ONE hue here not traced to the island — added by owner decision to
+   *   give `success`/`positive` a real green instead of aliasing it to blue (which made
+   *   positive read identically to accent/informative; see the resolved note under
+   *   SEMANTIC_OVERRIDES). Hue is Untitled-UI Success green (152 deg OKLCh), the same source
+   *   family as the brand's other anchors (blue #2e90fa, red #f04438, amber #f79009, violet
+   *   #8b5cf6 are Untitled-UI Blue/Error/Orange/Purple 500).
+   *
+   *   NOT synthesised from hue math in isolation. Every stop is L-solved to carry the SAME
+   *   WCAG contrast-on-white as its amber sibling, so the red/amber/green status trio read at
+   *   identical weight wherever they sit together (Badge, StatusLight, Meter, InlineAlert). The
+   *   consequence that matters: `notice`(amber) already works as fill and as ink in all those
+   *   components, so `positive`(this green) at the same contrast works identically — this is a
+   *   retrofit guarantee, not just an aesthetic one. The light 900..1600 tail departs from a
+   *   pure amber match to keep >= 0.02 OKLCh L gaps (a visible :hover step) once 900 is floored
+   *   to AA. 800 holds the vivid brand green; 900(light)/700(dark) are the white-ink fills,
+   *   pinned >= 4.5:1 (900 light #1a8346 = 4.80, 700 dark #1c7d43 = 5.17) exactly as the header
+   *   ACCESSIBILITY note requires of every semantic fill. */
+  green: {
+    100: ["#f9fdf9", "#0d110e"],
+    200: ["#ebf6ed", "#1b231d"],
+    300: ["#dbf3e0", "#233628"],
+    400: ["#c6ebce", "#24492f"],
+    500: ["#a8e1b6", "#1b5b32"],
+    600: ["#81d699", "#166d39"],
+    700: ["#56cb7e", "#1c7d43"],
+    800: ["#33c06b", "#208e4d"],
+    900: ["#1a8346", "#26a057"],
+    1000: ["#037339", "#40af68"],
+    1100: ["#016431", "#64be7f"],
+    1200: ["#005327", "#82cb96"],
+    1300: ["#00431e", "#9bd9ab"],
+    1400: ["#003517", "#b7e7c2"],
+    1500: ["#001f0a", "#d9f1de"],
+    1600: ["#000000", "#f8fdf9"],
+  },
 };
 
 /* Spectrum's semantic ramps are pure aliases resolved through `ref`: accent-color-* and
  * informative-color-* -> blue, negative-color-* -> red, positive-color-* -> GREEN, and
- * notice-color-* -> ORANGE. Blue and red land on the brand ramps above for free. Green and
- * orange are hues the brand does not have at all, so both are retargeted below. */
+ * notice-color-* -> ORANGE. Blue and red land on the brand ramps above for free, and green
+ * now does too — the real `green` ramp added above backs `positive`/`success`. Only `orange`
+ * is retargeted here: the brand's warm base is `--amber-*`, so amber is republished under the
+ * `orange`/`notice` keys the Spectrum tokens actually reference. */
 const SEMANTIC_OVERRIDES: Record<string, Ramp> = {
   /* The brand's warm is `--amber-*`, and Spectrum's warm base ramp is named `orange`.
    * Publishing amber under BOTH keys is what actually retires Adobe's orange: a ramp named
    * `amber` overrides nothing, because no Spectrum token references that name. */
   orange: RAMPS.amber,
-  /* Success -> blue, retiring green the way `orange` above retires Adobe's orange.
-   *
-   * The island has no green anywhere. Its palette is slate/blue/amber/violet/red and its
-   * status channels are "cyan=info · amber=signal/due · violet=metrics · red=fault"
-   * (design-handoff-v2.css:90) — four channels, no success slot. It does draw success once,
-   * and it draws it blue: the terminal log paints "checkpoint 0x3D passed ✓" in `--well-cy`
-   * (TerminalGlassLab.tsx:129), the same channel as `--status-info` — identical in light
-   * (both #1877e8, design-handoff-v2.css:64/:91), a brighter well-ink variant in dark
-   * (#6fc1ff vs #55a6f6, :188/:206) — while `warn:` goes amber and `err:` goes red on the two
-   * lines under it. Violet is not the alternative: the island spends it on metrics, so a
-   * violet "Online"/"Live" would read as the metrics channel.
-   *
-   * An earlier revision synthesised a green ramp off Untitled UI Success #12b76a to back
-   * positive. It was the one hue on the page that could not be traced to the island.
-   *
-   * KEY CHOICE. `positive: RAMPS.blue` would work identically for every semantic consumer —
-   * positive-color-* is stripped to `positive-N` by colorScale() (see the `notice` note
-   * below) — and would leave by-name green on Adobe. `green` is used here instead because it
-   * covers the by-name surface too: badge/index.tsx exposes `color="green"` (:139 bold,
-   * :168 subtle). The cost is that `<Badge color="green">` now paints as `color="blue"`, and
-   * green-visual-color moves with it. Nothing in the app or gallery asks for green today, so
-   * either key is defensible; this is a preference for having no green reachable at all, not
-   * a correctness argument against `positive`.
-   *
-   * NOT SETTLED — variant="positive" now renders identically to the informative/accent
-   * default on Meter (meter/index.tsx:193-195) and to variant="accent" on Badge, because
-   * informative-* and accent-* already alias blue. The gallery places those badges adjacent.
-   * The island never draws two status chips that must read as different states, so it does
-   * not answer this; it needs an owner decision (drop one, or add a success channel to
-   * design-handoff-v2.css), not a ramp edit. */
-  green: RAMPS.blue,
+  /* RESOLVED (was "no green"). `positive`/`success` used to alias RAMPS.blue, which the
+   * island's four-channel palette (no success slot) technically supported but which made
+   * positive read identically to accent/informative — flagged here as needing an owner
+   * decision. The owner added a success channel: a real `green` ramp now lives in RAMPS
+   * above and positive-color-* (a ref to {green-N}) resolves onto it, so `positive`/`success`
+   * and by-name `green` all paint the new green. Distinct from accent (blue) and from the
+   * warm channel (amber/notice) — the status trio red/amber/green now reads as three states. */
   /* Warning -> amber. The island states the channel assignment outright
    * (design-handoff-v2.css:90 "amber=signal/due · violet=metrics") and paints every warning
    * it has in amber: `warn:` log lines #ffb45e, the DUE badge #f9b45c, streak chips
