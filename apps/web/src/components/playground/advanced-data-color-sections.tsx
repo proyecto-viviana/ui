@@ -1,4 +1,4 @@
-import { type Accessor, createSignal, For } from "solid-js";
+import { type Accessor, createSignal, For, type JSX } from "solid-js";
 import {
   RangeCalendar,
   DateField,
@@ -41,6 +41,12 @@ import {
   parseColor,
   type Color,
 } from "@proyecto-viviana/solid-stately";
+// Page chrome — layout, type, and status colour — comes from the app-facing design system.
+// The demos themselves stay on the packages they document: the collections and colour
+// pickers below are the UNSTYLED solidaria primitives, so the state styling they need
+// (`data-selected`, hover, thumb geometry) lives in styles/headless-demos.css, which is
+// itself written entirely against viviana-ui tokens.
+import { Badge, Flex, Grid, Text, typeRoles } from "@proyecto-viviana/ui";
 import { Section, type SectionId } from "@/components/playground/sections";
 
 export interface PlaygroundDataColorSectionsProps {
@@ -181,13 +187,45 @@ export function PlaygroundDataColorSections(props: PlaygroundDataColorSectionsPr
   );
 }
 
+// ============================================
+// SHARED DEMO PIECES
+// ============================================
+
+/** The "Selected: …" / "Value: …" line every demo closes with. */
+function DemoReadout(props: { children: JSX.Element }) {
+  return <Text styles={typeRoles.meta}>{props.children}</Text>;
+}
+
+/** A colour chip beside its value, shared by the five picker demos. */
+function ColorReadout(props: { color: string; children: JSX.Element }) {
+  return (
+    <Flex alignItems="center" gap={2}>
+      <div class="hd-color-preview" style={{ background: props.color }} />
+      <Text styles={typeRoles.meta}>{props.children}</Text>
+    </Flex>
+  );
+}
+
+// ============================================
+// TABLE DEMO
+// ============================================
+
+type TableRowData = {
+  id: string;
+  name: string;
+  role: string;
+  status: "Active" | "Away" | "Offline";
+};
+
+// The status trio maps onto the design system's semantic badge variants rather than a
+// hand-picked pair of background/foreground colours per state.
+const statusVariant = {
+  Active: "success",
+  Away: "warning",
+  Offline: "neutral",
+} as const;
+
 function TableDemo() {
-  type TableRowData = {
-    id: string;
-    name: string;
-    role: string;
-    status: "Active" | "Away" | "Offline";
-  };
   const columns = [
     { key: "name", name: "Name" },
     { key: "role", name: "Role" },
@@ -205,7 +243,7 @@ function TableDemo() {
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set());
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <Table<TableRowData>
         aria-label="Team members"
         items={rows}
@@ -214,44 +252,30 @@ function TableDemo() {
         selectionMode="multiple"
         selectedKeys={selectedKeys()}
         onSelectionChange={(keys) => setSelectedKeys(keys as Set<string>)}
-        class="w-full border-collapse text-sm"
+        class={`hd-table ${typeRoles.body}`}
       >
         {() => (
           <>
-            <TableHeader class="bg-bg-300">
+            <TableHeader>
               <For each={columns}>
-                {(column) => (
-                  <TableColumn
-                    id={column.key}
-                    class="px-4 py-2 text-left font-medium text-primary-200 border-b border-bg-400"
-                  >
-                    {column.name}
-                  </TableColumn>
-                )}
+                {(column) => <TableColumn id={column.key}>{column.name}</TableColumn>}
               </For>
             </TableHeader>
-            <TableBody class="divide-y divide-bg-400">
+            <TableBody>
               {(row: TableRowData) => (
-                <TableRow
-                  id={row.id}
-                  class="hover:bg-bg-300 transition-colors data-[selected]:bg-accent-600/20"
-                >
+                <TableRow id={row.id}>
                   {() => (
                     <>
-                      <TableCell class="px-4 py-2 text-primary-100">{row.name}</TableCell>
-                      <TableCell class="px-4 py-2 text-primary-300">{row.role}</TableCell>
-                      <TableCell class="px-4 py-2">
-                        <span
-                          class={`px-2 py-0.5 rounded-full text-xs ${
-                            row.status === "Active"
-                              ? "bg-success-600/20 text-success-400"
-                              : row.status === "Away"
-                                ? "bg-warning-600/20 text-warning-400"
-                                : "bg-bg-400 text-primary-400"
-                          }`}
-                        >
-                          {row.status}
-                        </span>
+                      <TableCell>{row.name}</TableCell>
+                      <TableCell class={typeRoles.meta}>{row.role}</TableCell>
+                      <TableCell>
+                        {/* Badge lays out as a block, so it needs a row of its own to size
+                            to its label instead of stretching across the cell. */}
+                        <Flex alignItems="center">
+                          <Badge size="S" variant={statusVariant[row.status]}>
+                            {row.status}
+                          </Badge>
+                        </Flex>
                       </TableCell>
                     </>
                   )}
@@ -261,10 +285,10 @@ function TableDemo() {
           </>
         )}
       </Table>
-      <p class="text-xs text-primary-400">
+      <DemoReadout>
         Selected: {selectedKeys().size > 0 ? Array.from(selectedKeys()).join(", ") : "None"}
-      </p>
-    </div>
+      </DemoReadout>
+    </Flex>
   );
 }
 
@@ -285,7 +309,7 @@ function GridListDemo() {
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set());
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <GridList
         aria-label="File categories"
         items={items}
@@ -294,22 +318,19 @@ function GridListDemo() {
         selectionMode="multiple"
         selectedKeys={selectedKeys()}
         onSelectionChange={(keys) => setSelectedKeys(keys as Set<string>)}
-        class="grid grid-cols-3 gap-2"
+        class="hd-gridlist"
       >
         {(item) => (
-          <GridListItem
-            id={item.id}
-            class="flex flex-col items-center justify-center p-3 rounded-lg border border-bg-400 hover:border-accent-500 hover:bg-bg-300 cursor-pointer transition-colors data-[selected]:border-accent-500 data-[selected]:bg-accent-600/20"
-          >
-            <span class="text-2xl mb-1">{item.icon}</span>
-            <span class="text-xs text-primary-200">{item.label}</span>
+          <GridListItem id={item.id} class="hd-gridlist__item">
+            <span style={{ "font-size": "24px" }}>{item.icon}</span>
+            <span class={typeRoles.label}>{item.label}</span>
           </GridListItem>
         )}
       </GridList>
-      <p class="text-xs text-primary-400">
+      <DemoReadout>
         Selected: {selectedKeys().size > 0 ? Array.from(selectedKeys()).join(", ") : "None"}
-      </p>
-    </div>
+      </DemoReadout>
+    </Flex>
   );
 }
 
@@ -358,7 +379,7 @@ function TreeDemo() {
   const [selectedKeys, setSelectedKeys] = createSignal<Set<string>>(new Set());
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <Tree<TreeNodeValue>
         aria-label="Project structure"
         items={treeData}
@@ -367,31 +388,28 @@ function TreeDemo() {
         onSelectionChange={(keys) => setSelectedKeys(keys as Set<string>)}
         expandedKeys={expandedKeys()}
         onExpandedChange={(keys) => setExpandedKeys(keys as Set<string>)}
-        class="text-sm"
+        class={`hd-tree ${typeRoles.body}`}
       >
         {(item, state) => (
-          <TreeItem id={item.key!} class="group">
+          <TreeItem id={item.key!}>
             {() => (
-              <div
-                class="flex items-center gap-1 px-2 py-1 rounded hover:bg-bg-300 data-[selected]:bg-accent-600/20"
-                style={{ "padding-left": `${state.level * 16 + 8}px` }}
-              >
+              <div class="hd-tree__row" style={{ "padding-left": `${state.level * 16 + 8}px` }}>
                 {state.isExpandable ? (
-                  <TreeExpandButton class="w-4 h-4 text-primary-400 hover:text-primary-200" />
+                  <TreeExpandButton class="hd-tree__expand" />
                 ) : (
-                  <span class="w-4" />
+                  <span style={{ width: "16px" }} />
                 )}
-                <span class="text-primary-300">{item.value!.icon}</span>
-                <span class="text-primary-200">{item.value!.name}</span>
+                <span>{item.value!.icon}</span>
+                <span>{item.value!.name}</span>
               </div>
             )}
           </TreeItem>
         )}
       </Tree>
-      <p class="text-xs text-primary-400">
+      <DemoReadout>
         Selected: {selectedKeys().size > 0 ? Array.from(selectedKeys()).join(", ") : "None"}
-      </p>
-    </div>
+      </DemoReadout>
+    </Flex>
   );
 }
 
@@ -403,17 +421,17 @@ function RangeCalendarDemo() {
   const [range, setRange] = createSignal<RangeValue<DateValue> | null>(null);
 
   return (
-    <div class="space-y-2">
+    <Flex direction="column" gap={2}>
       <RangeCalendar
         aria-label="Select date range"
         defaultFocusedValue={new CalendarDate(2024, 6, 15)}
         value={range()}
         onChange={setRange}
       />
-      <p class="text-xs text-primary-400">
+      <DemoReadout>
         Range: {range() ? `${range()!.start?.toString()} - ${range()!.end?.toString()}` : "None"}
-      </p>
-    </div>
+      </DemoReadout>
+    </Flex>
   );
 }
 
@@ -425,10 +443,10 @@ function DateFieldDemo() {
   const [date, setDate] = createSignal<DateValue | null>(null);
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <DateField label="Birth Date" value={date()} onChange={setDate} />
-      <p class="text-xs text-primary-400">Value: {date()?.toString() || "None"}</p>
-    </div>
+      <DemoReadout>Value: {date()?.toString() || "None"}</DemoReadout>
+    </Flex>
   );
 }
 
@@ -440,10 +458,10 @@ function TimeFieldDemo() {
   const [time, setTime] = createSignal<TimeValue | null>(null);
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <TimeField label="Meeting Time" value={time()} onChange={setTime} />
-      <p class="text-xs text-primary-400">Value: {time()?.toString() || "None"}</p>
-    </div>
+      <DemoReadout>Value: {time()?.toString() || "None"}</DemoReadout>
+    </Flex>
   );
 }
 
@@ -451,64 +469,61 @@ function TimeFieldDemo() {
 // COLOR SLIDER DEMO
 // ============================================
 
+/** One labelled channel track. The three sliders differ only in channel, label, and unit. */
+function ChannelSlider(props: {
+  channel: "hue" | "saturation" | "lightness";
+  label: string;
+  unit: string;
+  value: Color;
+  onChange: (color: Color) => void;
+}) {
+  return (
+    <ColorSlider
+      channel={props.channel}
+      value={props.value}
+      onChange={props.onChange}
+      class="hd-color-slider"
+    >
+      {() => (
+        <>
+          <Flex justifyContent="between" style={{ "margin-bottom": "4px" }}>
+            <span class={typeRoles.label}>{props.label}</span>
+            <span class={typeRoles.meta}>
+              {Math.round(props.value.getChannelValue(props.channel))}
+              {props.unit}
+            </span>
+          </Flex>
+          <ColorSliderTrack class="hd-slider-track">
+            {() => <ColorSliderThumb class="hd-slider-thumb hd-slider-thumb--centered" />}
+          </ColorSliderTrack>
+        </>
+      )}
+    </ColorSlider>
+  );
+}
+
 function ColorSliderDemo() {
   const [color, setColor] = createSignal(parseColor("hsl(200, 100%, 50%)"));
 
   return (
-    <div class="space-y-4">
-      <ColorSlider channel="hue" value={color()} onChange={setColor} class="w-full">
-        {() => (
-          <>
-            <div class="flex justify-between text-sm text-primary-300 mb-1">
-              <span>Hue</span>
-              <span>{Math.round(color().getChannelValue("hue"))}°</span>
-            </div>
-            <ColorSliderTrack class="h-6 rounded-md">
-              {() => (
-                <ColorSliderThumb class="w-4 h-4 rounded-full border-2 border-white shadow-md transform -translate-y-1/2 top-1/2" />
-              )}
-            </ColorSliderTrack>
-          </>
-        )}
-      </ColorSlider>
-      <ColorSlider channel="saturation" value={color()} onChange={setColor} class="w-full">
-        {() => (
-          <>
-            <div class="flex justify-between text-sm text-primary-300 mb-1">
-              <span>Saturation</span>
-              <span>{Math.round(color().getChannelValue("saturation"))}%</span>
-            </div>
-            <ColorSliderTrack class="h-6 rounded-md">
-              {() => (
-                <ColorSliderThumb class="w-4 h-4 rounded-full border-2 border-white shadow-md transform -translate-y-1/2 top-1/2" />
-              )}
-            </ColorSliderTrack>
-          </>
-        )}
-      </ColorSlider>
-      <ColorSlider channel="lightness" value={color()} onChange={setColor} class="w-full">
-        {() => (
-          <>
-            <div class="flex justify-between text-sm text-primary-300 mb-1">
-              <span>Lightness</span>
-              <span>{Math.round(color().getChannelValue("lightness"))}%</span>
-            </div>
-            <ColorSliderTrack class="h-6 rounded-md">
-              {() => (
-                <ColorSliderThumb class="w-4 h-4 rounded-full border-2 border-white shadow-md transform -translate-y-1/2 top-1/2" />
-              )}
-            </ColorSliderTrack>
-          </>
-        )}
-      </ColorSlider>
-      <div class="flex items-center gap-2">
-        <div
-          class="w-8 h-8 rounded border border-bg-400"
-          style={{ background: color().toString("css") }}
-        />
-        <span class="text-xs text-primary-400">{color().toString("css")}</span>
-      </div>
-    </div>
+    <Flex direction="column" gap={4}>
+      <ChannelSlider channel="hue" label="Hue" unit="°" value={color()} onChange={setColor} />
+      <ChannelSlider
+        channel="saturation"
+        label="Saturation"
+        unit="%"
+        value={color()}
+        onChange={setColor}
+      />
+      <ChannelSlider
+        channel="lightness"
+        label="Lightness"
+        unit="%"
+        value={color()}
+        onChange={setColor}
+      />
+      <ColorReadout color={color().toString("css")}>{color().toString("css")}</ColorReadout>
+    </Flex>
   );
 }
 
@@ -520,29 +535,23 @@ function ColorAreaDemo() {
   const [color, setColor] = createSignal(parseColor("hsb(200, 100%, 100%)"));
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <ColorArea
         value={color()}
         onChange={setColor}
         xChannel="saturation"
         yChannel="brightness"
-        class="w-48 h-48 rounded-lg overflow-hidden"
+        class="hd-color-area"
       >
         {() => (
           <>
-            <ColorAreaGradient class="w-full h-full" />
-            <ColorAreaThumb class="w-4 h-4 rounded-full border-2 border-white shadow-md" />
+            <ColorAreaGradient class="hd-color-area__gradient" />
+            <ColorAreaThumb class="hd-slider-thumb" />
           </>
         )}
       </ColorArea>
-      <div class="flex items-center gap-2">
-        <div
-          class="w-8 h-8 rounded border border-bg-400"
-          style={{ background: color().toString("css") }}
-        />
-        <span class="text-xs text-primary-400">{color().toString("css")}</span>
-      </div>
-    </div>
+      <ColorReadout color={color().toString("css")}>{color().toString("css")}</ColorReadout>
+    </Flex>
   );
 }
 
@@ -554,25 +563,19 @@ function ColorWheelDemo() {
   const [color, setColor] = createSignal(parseColor("hsl(200, 100%, 50%)"));
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <ColorWheel value={color()} onChange={setColor}>
         {() => (
           <>
-            <ColorWheelTrack class="rounded-full w-48 h-48" />
-            <ColorWheelThumb class="w-4 h-4 rounded-full border-2 border-white shadow-md" />
+            <ColorWheelTrack class="hd-color-wheel__track" />
+            <ColorWheelThumb class="hd-slider-thumb" />
           </>
         )}
       </ColorWheel>
-      <div class="flex items-center gap-2">
-        <div
-          class="w-8 h-8 rounded border border-bg-400"
-          style={{ background: color().toString("css") }}
-        />
-        <span class="text-xs text-primary-400">
-          Hue: {Math.round(color().getChannelValue("hue"))}°
-        </span>
-      </div>
-    </div>
+      <ColorReadout color={color().toString("css")}>
+        Hue: {Math.round(color().getChannelValue("hue"))}°
+      </ColorReadout>
+    </Flex>
   );
 }
 
@@ -584,23 +587,22 @@ function ColorFieldDemo() {
   const [color, setColor] = createSignal<Color | null>(parseColor("#3b82f6"));
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <ColorField label="Color" value={color()} onChange={setColor}>
+        {/* ColorField renders its own `label`, so the row below is just the swatch and
+            the input — a second hand-written label would duplicate it. */}
         {() => (
-          <>
-            <div class="text-sm text-primary-300 mb-1">Color</div>
-            <div class="flex items-center gap-2">
-              <div
-                class="w-8 h-8 rounded border border-bg-400"
-                style={{ background: color()?.toString("css") || "transparent" }}
-              />
-              <ColorFieldInput class="flex-1 px-3 py-2 rounded-md border border-bg-400 bg-bg-200 text-primary-100 focus:outline-none focus:border-accent-500" />
-            </div>
-          </>
+          <Flex alignItems="center" gap={2} style={{ "margin-top": "4px" }}>
+            <div
+              class="hd-color-preview"
+              style={{ background: color()?.toString("css") || "transparent" }}
+            />
+            <ColorFieldInput class="hd-color-input" />
+          </Flex>
         )}
       </ColorField>
-      <p class="text-xs text-primary-400">Value: {color()?.toString("css") || "None"}</p>
-    </div>
+      <DemoReadout>Value: {color()?.toString("css") || "None"}</DemoReadout>
+    </Flex>
   );
 }
 
@@ -625,25 +627,27 @@ function ColorSwatchDemo() {
   const [selectedColor, setSelectedColor] = createSignal(colors[5]);
 
   return (
-    <div class="space-y-4">
-      <div class="flex flex-wrap gap-2">
+    <Flex direction="column" gap={4}>
+      <Flex wrap gap={2}>
         <For each={colors}>
           {(color) => (
             <button
+              type="button"
               onClick={() => setSelectedColor(color)}
               aria-label={`Select color ${color}`}
-              class={`rounded-lg overflow-hidden transition-transform ${selectedColor() === color ? "ring-2 ring-accent-500 ring-offset-2 ring-offset-bg-200 scale-110" : ""}`}
+              class="hd-swatch-button"
+              data-selected={selectedColor() === color ? "" : undefined}
             >
-              <ColorSwatch color={parseColor(color)} class="w-8 h-8" />
+              <ColorSwatch color={parseColor(color)} class="hd-swatch" />
             </button>
           )}
         </For>
-      </div>
-      <div class="flex items-center gap-2">
-        <ColorSwatch color={parseColor(selectedColor())} class="w-12 h-12 rounded-lg" />
-        <span class="text-sm text-primary-300">{selectedColor()}</span>
-      </div>
-    </div>
+      </Flex>
+      <Flex alignItems="center" gap={2}>
+        <ColorSwatch color={parseColor(selectedColor())} class="hd-swatch hd-swatch--lg" />
+        <Text styles={typeRoles.meta}>{selectedColor()}</Text>
+      </Flex>
+    </Flex>
   );
 }
 
@@ -655,15 +659,16 @@ function DateRangePickerDemo() {
   const [range, setRange] = createSignal<RangeValue<DateValue> | null>(null);
 
   return (
-    <div class="space-y-4">
-      <div class="grid gap-6 sm:grid-cols-2">
+    <Flex direction="column" gap={4}>
+      {/* An intrinsic column rule sizes this pair, so no breakpoint vocabulary is needed. */}
+      <Grid columns="repeat(auto-fit, minmax(260px, 1fr))" gap={6}>
         <DateRangePicker label="Trip Dates" value={range()} onChange={setRange} />
         <DateRangePicker label="Disabled" isDisabled />
-      </div>
-      <p class="text-xs text-primary-400">
+      </Grid>
+      <DemoReadout>
         Range: {range() ? `${range()!.start?.toString()} – ${range()!.end?.toString()}` : "None"}
-      </p>
-    </div>
+      </DemoReadout>
+    </Flex>
   );
 }
 
@@ -688,18 +693,12 @@ function ColorSwatchPickerDemo() {
   ];
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <ColorSwatchPicker value={color()} onChange={setColor} aria-label="Pick a color">
         <For each={swatchColors}>{(c) => <ColorSwatchPickerItem color={parseColor(c)} />}</For>
       </ColorSwatchPicker>
-      <div class="flex items-center gap-2">
-        <div
-          class="w-8 h-8 rounded border border-bg-400"
-          style={{ background: color().toString("css") }}
-        />
-        <span class="text-sm text-primary-300">{color().toString("css")}</span>
-      </div>
-    </div>
+      <ColorReadout color={color().toString("css")}>{color().toString("css")}</ColorReadout>
+    </Flex>
   );
 }
 
@@ -711,15 +710,9 @@ function ColorEditorDemo() {
   const [color, setColor] = createSignal<Color>(parseColor("hsl(200, 100%, 50%)"));
 
   return (
-    <div class="space-y-4">
+    <Flex direction="column" gap={4}>
       <ColorEditor value={color()} onChange={setColor} />
-      <div class="flex items-center gap-2">
-        <div
-          class="w-8 h-8 rounded border border-bg-400"
-          style={{ background: color().toString("css") }}
-        />
-        <span class="text-sm text-primary-300">{color().toString("css")}</span>
-      </div>
-    </div>
+      <ColorReadout color={color().toString("css")}>{color().toString("css")}</ColorReadout>
+    </Flex>
   );
 }

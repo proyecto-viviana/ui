@@ -56,8 +56,8 @@ import {
   TextField,
 } from "@proyecto-viviana/solid-spectrum";
 // Page chrome — layout, type, and surfaces — comes from the app-facing design system.
-// Flex/Grid are byte-identical to the solid-spectrum copies, so the sections below that
-// demo them still demo the same component.
+// Flex/Grid mirror the solid-spectrum copies apart from this package's added `style`
+// pass-through, so the sections below that demo them still demo the same layout.
 import { ActionButton, Flex, Grid, Heading, Text, Well, typeRoles } from "@proyecto-viviana/ui";
 import {
   createCheckboxGroup,

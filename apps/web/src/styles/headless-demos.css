@@ -136,3 +136,202 @@
   border-radius: var(--radius-lg);
   padding: 16px;
 }
+
+/* ── Collections: Table / GridList / Tree ─────────────────────────────────── */
+
+/* Table renders a real <table>, so its cells are reachable by element rather than
+   needing a class threaded onto every TableColumn/TableCell. Type comes from the
+   typeRoles class the component carries; only geometry and state live here. */
+.hd-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.hd-table thead {
+  background: var(--color-bg-300);
+}
+
+.hd-table th {
+  padding: 8px 16px;
+  text-align: left;
+  color: var(--color-primary-200);
+  border-bottom: 1px solid var(--color-bg-400);
+}
+
+.hd-table td {
+  padding: 8px 16px;
+}
+
+.hd-table tbody tr + tr {
+  border-top: 1px solid var(--color-bg-400);
+}
+
+.hd-table tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.hd-table tbody tr:hover {
+  background: var(--color-bg-300);
+}
+
+.hd-table tbody tr[data-selected] {
+  background: var(--color-accent-dim);
+}
+
+.hd-gridlist {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* GridListItem wraps whatever you pass it in its own `role="gridcell"` element, so the
+   tile's stacking has to be declared there rather than on the row. */
+.hd-gridlist__item > [role="gridcell"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.hd-gridlist__item {
+  padding: 12px;
+  cursor: pointer;
+  outline: none;
+  border: 1px solid var(--color-bg-400);
+  border-radius: var(--radius-lg);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.hd-gridlist__item:hover {
+  border-color: var(--color-accent);
+  background: var(--color-bg-300);
+}
+
+.hd-gridlist__item[data-selected] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+.hd-tree__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.hd-tree__row:hover {
+  background: var(--color-bg-300);
+}
+
+.hd-tree__row[data-selected] {
+  background: var(--color-accent-dim);
+}
+
+.hd-tree__expand {
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary-400);
+}
+
+.hd-tree__expand:hover {
+  color: var(--color-primary-200);
+}
+
+/* ── Colour pickers ───────────────────────────────────────────────────────── */
+
+/* The chip that previews the value a picker currently holds. */
+.hd-color-preview {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-bg-400);
+  border-radius: var(--radius-md);
+}
+
+.hd-color-slider {
+  width: 100%;
+}
+
+.hd-slider-track {
+  height: 24px;
+  border-radius: var(--radius-md);
+}
+
+/* One thumb for every picker: the slider, the area, and the wheel all draw the same
+   puck. `--centered` adds the vertical re-centring only the horizontal track needs. */
+.hd-slider-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
+}
+
+.hd-slider-thumb--centered {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.hd-color-area {
+  width: 192px;
+  height: 192px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.hd-color-area__gradient {
+  width: 100%;
+  height: 100%;
+}
+
+.hd-color-wheel__track {
+  width: 192px;
+  height: 192px;
+  border-radius: 999px;
+}
+
+.hd-color-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--color-bg-200);
+  border: 1px solid var(--color-bg-400);
+  border-radius: var(--radius-md);
+  color: var(--color-primary-100);
+  transition: border-color 150ms ease;
+}
+
+.hd-color-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.hd-swatch {
+  width: 32px;
+  height: 32px;
+}
+
+.hd-swatch--lg {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+}
+
+.hd-swatch-button {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform 150ms ease;
+}
+
+.hd-swatch-button[data-selected] {
+  transform: scale(1.1);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
