@@ -31,6 +31,10 @@ export function ShowcaseTopbar(): JSX.Element {
             </Link>
           )}
         </For>
+        {/* Not a numbered component panel — the spec ∥ viviana-ui side-by-side. */}
+        <Link to={"/showcase/parity" as "/showcase"} class="gls-navlink">
+          ≡≡ Parity
+        </Link>
       </nav>
       <ActionButton isQuiet aria-label="Toggle color scheme" onPress={wipeTheme}>
         <ContrastIcon />

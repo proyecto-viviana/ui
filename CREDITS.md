@@ -57,10 +57,16 @@ ported from the external, now-frozen design repository
 (`proyecto-viviana/visual-system-claude`, branch `design/glasselated-v2`):
 
 - `apps/web/public/glasselated/` — scene photographs (`bg-scene.png`,
-  `bg-scene-night.png`) and demo avatars/thumbnails generated during that
-  design lane; owner-owned, MIT with the rest of our work.
+  `bg-scene-night.png`), demo avatars/thumbnails, the `streak-flame.png`
+  sprite, and the pixel-art `icons/` set, all generated during that design
+  lane; owner-owned, MIT with the rest of our work.
 - `apps/web/src/lib/glasselated.ts` — the mesh/dither/theme-wipe runtime,
   ported from the lane's framework-neutral `glasselated.js`.
+- `apps/web/src/components/parity/` and the `.mesh-card` / `.tgl-*` /
+  `.glx-caret` signature-treatment CSS in `apps/web/src/styles/glasselated.css`
+  — the hand-built "Terminal Glass Lab" spec panels and their supporting paint,
+  ported from the lane's `Terminal Glass Lab.dc.html` / `glasselated.css` to sit
+  beside their `@proyecto-viviana/ui` twins on the showcase's Parity tab.
 - `packages/viviana-ui/src/icon/pixel-icons/` — the `Pixel*Icon` components,
   generated from the lane's pixel-art SVG set
   (`apps/akade/public/glasselated/icons`); owner-owned, MIT with the rest of

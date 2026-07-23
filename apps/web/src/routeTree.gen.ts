@@ -23,6 +23,7 @@ import { Route as ShowcaseStatusRouteImport } from './routes/showcase/status'
 import { Route as ShowcaseSlidersRouteImport } from './routes/showcase/sliders'
 import { Route as ShowcaseSelectionRouteImport } from './routes/showcase/selection'
 import { Route as ShowcasePickersRouteImport } from './routes/showcase/pickers'
+import { Route as ShowcaseParityRouteImport } from './routes/showcase/parity'
 import { Route as ShowcaseOverlaysRouteImport } from './routes/showcase/overlays'
 import { Route as ShowcaseNavigationRouteImport } from './routes/showcase/navigation'
 import { Route as ShowcaseInputsRouteImport } from './routes/showcase/inputs'
@@ -151,6 +152,11 @@ const ShowcaseSelectionRoute = ShowcaseSelectionRouteImport.update({
 const ShowcasePickersRoute = ShowcasePickersRouteImport.update({
   id: '/pickers',
   path: '/pickers',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseParityRoute = ShowcaseParityRouteImport.update({
+  id: '/parity',
+  path: '/parity',
   getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const ShowcaseOverlaysRoute = ShowcaseOverlaysRouteImport.update({
@@ -513,6 +519,7 @@ export interface FileRoutesByFullPath {
   '/showcase/inputs': typeof ShowcaseInputsRoute
   '/showcase/navigation': typeof ShowcaseNavigationRoute
   '/showcase/overlays': typeof ShowcaseOverlaysRoute
+  '/showcase/parity': typeof ShowcaseParityRoute
   '/showcase/pickers': typeof ShowcasePickersRoute
   '/showcase/selection': typeof ShowcaseSelectionRoute
   '/showcase/sliders': typeof ShowcaseSlidersRoute
@@ -586,6 +593,7 @@ export interface FileRoutesByTo {
   '/showcase/inputs': typeof ShowcaseInputsRoute
   '/showcase/navigation': typeof ShowcaseNavigationRoute
   '/showcase/overlays': typeof ShowcaseOverlaysRoute
+  '/showcase/parity': typeof ShowcaseParityRoute
   '/showcase/pickers': typeof ShowcasePickersRoute
   '/showcase/selection': typeof ShowcaseSelectionRoute
   '/showcase/sliders': typeof ShowcaseSlidersRoute
@@ -662,6 +670,7 @@ export interface FileRoutesById {
   '/showcase/inputs': typeof ShowcaseInputsRoute
   '/showcase/navigation': typeof ShowcaseNavigationRoute
   '/showcase/overlays': typeof ShowcaseOverlaysRoute
+  '/showcase/parity': typeof ShowcaseParityRoute
   '/showcase/pickers': typeof ShowcasePickersRoute
   '/showcase/selection': typeof ShowcaseSelectionRoute
   '/showcase/sliders': typeof ShowcaseSlidersRoute
@@ -739,6 +748,7 @@ export interface FileRouteTypes {
     | '/showcase/inputs'
     | '/showcase/navigation'
     | '/showcase/overlays'
+    | '/showcase/parity'
     | '/showcase/pickers'
     | '/showcase/selection'
     | '/showcase/sliders'
@@ -812,6 +822,7 @@ export interface FileRouteTypes {
     | '/showcase/inputs'
     | '/showcase/navigation'
     | '/showcase/overlays'
+    | '/showcase/parity'
     | '/showcase/pickers'
     | '/showcase/selection'
     | '/showcase/sliders'
@@ -887,6 +898,7 @@ export interface FileRouteTypes {
     | '/showcase/inputs'
     | '/showcase/navigation'
     | '/showcase/overlays'
+    | '/showcase/parity'
     | '/showcase/pickers'
     | '/showcase/selection'
     | '/showcase/sliders'
@@ -1057,6 +1069,13 @@ declare module '@tanstack/solid-router' {
       path: '/pickers'
       fullPath: '/showcase/pickers'
       preLoaderRoute: typeof ShowcasePickersRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/parity': {
+      id: '/showcase/parity'
+      path: '/parity'
+      fullPath: '/showcase/parity'
+      preLoaderRoute: typeof ShowcaseParityRouteImport
       parentRoute: typeof ShowcaseRouteRoute
     }
     '/showcase/overlays': {
@@ -1485,6 +1504,7 @@ interface ShowcaseRouteRouteChildren {
   ShowcaseInputsRoute: typeof ShowcaseInputsRoute
   ShowcaseNavigationRoute: typeof ShowcaseNavigationRoute
   ShowcaseOverlaysRoute: typeof ShowcaseOverlaysRoute
+  ShowcaseParityRoute: typeof ShowcaseParityRoute
   ShowcasePickersRoute: typeof ShowcasePickersRoute
   ShowcaseSelectionRoute: typeof ShowcaseSelectionRoute
   ShowcaseSlidersRoute: typeof ShowcaseSlidersRoute
@@ -1503,6 +1523,7 @@ const ShowcaseRouteRouteChildren: ShowcaseRouteRouteChildren = {
   ShowcaseInputsRoute: ShowcaseInputsRoute,
   ShowcaseNavigationRoute: ShowcaseNavigationRoute,
   ShowcaseOverlaysRoute: ShowcaseOverlaysRoute,
+  ShowcaseParityRoute: ShowcaseParityRoute,
   ShowcasePickersRoute: ShowcasePickersRoute,
   ShowcaseSelectionRoute: ShowcaseSelectionRoute,
   ShowcaseSlidersRoute: ShowcaseSlidersRoute,

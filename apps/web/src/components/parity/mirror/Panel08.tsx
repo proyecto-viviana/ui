@@ -1,0 +1,177 @@
+/* Mirror of spec panel 08 (LIST ROWS) built from real @proyecto-viviana/ui
+   components, in the same <Panel> chrome as the spec.
+
+   ListView is the library's counterpart here and it is a genuinely close one —
+   it is S2's GridList, a non-virtualized list of rows with label/description/
+   actions slots, which is exactly the shape the spec draws. So unlike most of
+   the nine, this twin fails on details rather than on the whole.
+
+   Two container decisions, both to keep the delta on the ROWS, which is what the
+   panel is named after:
+     • The <Well> is reused from lab-shell for the same reason mirror panel 07
+       reuses it — the matte ink + scan-grid is the panel's container and the
+       library has no surface to ask for that isn't `Provider background=…`,
+       the one prop this comparison forbids.
+     • ListView is therefore `isQuiet`, its documented "draw without the default
+       container chrome" variant, so it sits ON that well instead of stacking its
+       own gray-25 plate and 1px border inside one. This is a real library prop,
+       not an app override — but it does mean the twin is NOT exercising the
+       default ListView container, which is a separate surface worth its own look.
+
+   TableView was the other candidate (its columns would put `meta` inline right,
+   where the spec has it, instead of stacked under the title). It was rejected:
+   it brings a header row, sort affordances and column semantics the spec has
+   none of, and "list rows" is the thing being specified. */
+import { type JSX } from "solid-js";
+import {
+  Badge,
+  ListView,
+  ListViewItem,
+  Provider,
+  type BadgeProps,
+} from "@proyecto-viviana/ui";
+import { Panel, Well } from "../lab-shell";
+import { useGlasselatedTheme } from "../glasselated-theme";
+import { ClientOnly } from "./client-only";
+
+interface ListRow {
+  readonly id: string;
+  readonly title: string;
+  readonly meta: string;
+  readonly tag: string;
+  readonly variant: NonNullable<BadgeProps["variant"]>;
+}
+
+/* Same four rows, same order, same strings as the spec's LIST_ROWS. Only the tag
+   changes shape: the spec paints each tag as bare micro text in a channel colour,
+   so each row's channel is restated here as the nearest Badge variant.
+
+   The mapping costs two of the four channels:
+     • --text-tertiary (READ) -> "neutral". Right family, wrong weight: every
+       fillStyle resolves neutral ink to gray-1000, the STRONGEST neutral, and the
+       badge has no subdued/dim rung. The spec's deliberately-receding READ tag
+       comes out as loud as the live one.
+     • --status-info (RUNNING) -> "informative". The only exact hit; informative-*
+       aliases the brand blue this channel is defined as.
+     • --accent-live (● LIVE) -> "negative". `--accent-live` is #ff6b35 and the
+       island comments it as "its own channel" precisely because it is neither a
+       status nor a brand ramp. Nothing in the library carries it; red (#f04438) is
+       the nearest published hue, and it arrives with "this is an error" attached.
+     • --status-metric (NEW) -> "neutral" as well. Violet is published as a base
+       ramp but aliased by no semantic role, and Badge's decorative variants
+       (purple/indigo/…) are still on Adobe values the library itself warns would
+       clash. Same call, and same loss, as the metrics channel in mirror panel 07:
+       it goes missing rather than being faked in an off-palette hue. The visible
+       consequence is that READ and NEW, four rows apart in the spec, are now
+       indistinguishable. */
+const LIST_ROWS: ListRow[] = [
+  {
+    id: "radiometry",
+    title: "Radiometry Basics",
+    meta: "Reference · 8 min read",
+    tag: "READ",
+    variant: "neutral",
+  },
+  {
+    id: "pathtracing",
+    title: "Monte Carlo Path Tracing",
+    meta: "Journey · phase 3/5",
+    tag: "RUNNING",
+    variant: "informative",
+  },
+  {
+    id: "raymarching",
+    title: "SDF Raymarching — Live w/ Shader School",
+    meta: "Today 18:00 · 214 waiting",
+    tag: "● LIVE",
+    variant: "negative",
+  },
+  {
+    id: "firefly",
+    title: "Firefly Clamping Deep Dive",
+    meta: "Reference · 12 min read",
+    tag: "NEW",
+    variant: "neutral",
+  },
+];
+
+export function MirrorPanel08(): JSX.Element {
+  const { theme } = useGlasselatedTheme();
+
+  return (
+    <Panel label="08 // LIST ROWS (reference / live) — VIVIANA UI">
+      {/* GAP (SSR): this twin renders client-side only. `ListViewItem` does not hydrate
+          in the items + render-function form under ANY shape tried — with slots or
+          without, with `description` or without, four rows or two, inside the Well or
+          bare, and even when a row's only child is a plain string. Unlike panel 04 there
+          is no composition to trade away: the component simply cannot be server-rendered.
+          See ./client-only. */}
+      <ClientOnly>
+      {/* No background prop: the rows must sit on the well's own ink exactly as the
+          spec markup does. background="base" would paint an opaque plate over the
+          well and there would be nothing left to compare. */}
+      <Provider colorScheme={theme()} class="viviana-mirror-zone" data-mirror="08">
+        {/* padding 8px matches the spec well; `tutor` selects the same
+            --surface-well-tutor ink. */}
+        <Well tutor style={{ padding: "8px" }}>
+          {/* items + render function, not static <ListViewItem> children: a static
+              child registers itself through a createEffect (gridlist/index.tsx:1106)
+              which never runs on the server, so the collection would render empty
+              and then desync on hydrate. Same rule as Picker/ComboBox in the gallery.
+
+              GAP (row separators): the spec separates rows with 2px of gap and
+              nothing else. Every ListView row carries a 1px gray-300 borderBottom
+              that no prop turns off — isQuiet only drops it from the LAST row. The
+              twin therefore reads as a ruled table where the spec reads as a stack.
+
+              GAP (leading marker): the spec opens each row with a `>` prompt glyph in
+              --accent-primary. There is no library component for a row marker and no
+              caret/chevron among the seven icons the package actually exports, so it
+              is omitted rather than faked. `hasChildItems` was the one real option —
+              it renders the library's own Chevron — but it lands TRAILING, past the
+              badge, and asserts a drill-into-children semantic the spec's decorative
+              marker does not have. The rows lose their accent entry point. */}
+          <ListView aria-label="Lessons" items={LIST_ROWS} isQuiet>
+            {(row: ListRow) => (
+              <ListViewItem id={row.id} textValue={row.title} description={row.meta}>
+                {/* GAP (meta placement): `description` is the right home for the spec's
+                    meta line semantically, but the item's grid parks it in row 2 under
+                    the label (gridlist/index.tsx:334) where the spec has it inline and
+                    right-aligned. Every row doubles in height and the spec's four-column
+                    rhythm collapses into a two-line stack. There is no prop to inline it.
+
+                    NOTE (SSR): all of these slots — label, description, actions — get
+                    their grid-area from applyItemSlotClasses(), a querySelectorAll walk
+                    inside a createEffect. That is client-only, so the server paints the
+                    row unslotted and the layout only lands on hydrate. Worth catching if
+                    the sweep screenshots before mount. */}
+                {/* A plain <span>, not <Text>: the slot is what earns the row its
+                    grid-area, and a bare span carries it while dropping only Text's
+                    typography context. (Text was the first thing the SSR bisect caught
+                    here, but it is not the cause — the row does not hydrate with any
+                    child at all.) */}
+                <span slot="label">{row.title}</span>
+                {/* Plain wrapper, not a restyle: `slot="actions"` is the library's own
+                    contract for trailing row content, and Badge splits `slot` out of its
+                    DOM props (badge/index.tsx:353) so it cannot carry the attribute
+                    itself. The div exists only to hold the slot. */}
+                <div slot="actions">
+                  {/* GAP (form): the spec's tag is bare micro text. Badge is the library's
+                      only tag primitive and it is always a pill. fillStyle="outline" is the
+                      closest it gets — the sole fill-less option, transparent background with
+                      the ink mirroring the border channel — but it still adds a 1px rule,
+                      a radius and horizontal padding the spec does not draw, and it cannot
+                      reach the spec's 9.5px/0.1em tracked mono. size="S" is the floor. */}
+                  <Badge size="S" variant={row.variant} fillStyle="outline">
+                    {row.tag}
+                  </Badge>
+                </div>
+              </ListViewItem>
+            )}
+          </ListView>
+        </Well>
+      </Provider>
+      </ClientOnly>
+    </Panel>
+  );
+}
