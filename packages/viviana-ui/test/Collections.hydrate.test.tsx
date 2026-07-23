@@ -15,9 +15,12 @@ import {
   TabsFixture,
   TabsPlainFixture,
   TabsCompFixture,
+  TabsBadgeFixture,
+  TabsIconFixture,
   ListViewFixture,
   ListViewInteractiveFixture,
   ListViewStaticInteractiveFixture,
+  ListViewSlottedFixture,
 } from "./fixtures/collections";
 import { setupUser } from "../src/test-utils";
 
@@ -93,6 +96,21 @@ describe("collection components hydrate over SSR markup", () => {
     expect(r.thrown).toBeUndefined();
   });
 
+  it("Tabs with a mixed string + element (badge) child hydrates with no mismatch", () => {
+    const r = hydrateOverSsr("tabs-badge-ssr.html", TabsBadgeFixture);
+    expect(r.mismatches).toEqual([]);
+    expect(r.thrown).toBeUndefined();
+    // The badge element survives hydration rather than being dropped for an empty <span>.
+    expect(r.container.textContent).toContain("4");
+  });
+
+  it("Tabs with an element-first (icon) child hydrates with no mismatch", () => {
+    const r = hydrateOverSsr("tabs-icon-ssr.html", TabsIconFixture);
+    expect(r.mismatches).toEqual([]);
+    expect(r.thrown).toBeUndefined();
+    expect(r.container.textContent).toContain("Home");
+  });
+
   it("ListView hydrates with no mismatch", () => {
     const r = hydrateOverSsr("listview-ssr.html", ListViewFixture);
     expect(r.mismatches).toEqual([]);
@@ -143,5 +161,14 @@ describe("collection components hydrate over SSR markup", () => {
 
     expect(r.container.ownerDocument.activeElement).toBe(rowA);
     expect(rowA).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("ListView with label + description + actions slots hydrates with no mismatch", () => {
+    const r = hydrateOverSsr("listview-slotted-ssr.html", ListViewSlottedFixture);
+    expect(r.mismatches).toEqual([]);
+    expect(r.thrown).toBeUndefined();
+    expect(r.container.querySelectorAll('[role="row"]').length).toBe(2);
+    // The actions-slot Badge survives hydration.
+    expect(r.container.textContent).toContain("READ");
   });
 });

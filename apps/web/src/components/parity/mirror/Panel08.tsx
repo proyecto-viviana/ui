@@ -28,11 +28,11 @@ import {
   ListView,
   ListViewItem,
   Provider,
+  Text,
   type BadgeProps,
 } from "@proyecto-viviana/ui";
 import { Panel, Well } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
-import { ClientOnly } from "./client-only";
 
 interface ListRow {
   readonly id: string;
@@ -100,13 +100,14 @@ export function MirrorPanel08(): JSX.Element {
 
   return (
     <Panel label="08 // LIST ROWS (reference / live) — VIVIANA UI">
-      {/* GAP (SSR): this twin renders client-side only. `ListViewItem` does not hydrate
-          in the items + render-function form under ANY shape tried — with slots or
-          without, with `description` or without, four rows or two, inside the Well or
-          bare, and even when a row's only child is a plain string. Unlike panel 04 there
-          is no composition to trade away: the component simply cannot be server-rendered.
-          See ./client-only. */}
-      <ClientOnly>
+      {/* This twin server-renders in full. It used to be deferred: a ListView SSR'd its
+          empty state instead of its rows, because static-child registration ran in a
+          createEffect (which renderToString never flushes) and the collection accessor
+          was a createMemo (frozen at its first, empty read on the server). Both are fixed
+          in the library — render-effect registration + a plain accessor — so items +
+          render-function collections now hydrate cleanly; see
+          packages/viviana-ui/test/Collections.{ssr,hydrate}.test for the regression
+          fixtures. No ClientOnly. */}
       {/* No background prop: the rows must sit on the well's own ink exactly as the
           spec markup does. background="base" would paint an opaque plate over the
           well and there would be nothing left to compare. */}
@@ -114,10 +115,10 @@ export function MirrorPanel08(): JSX.Element {
         {/* padding 8px matches the spec well; `tutor` selects the same
             --surface-well-tutor ink. */}
         <Well tutor style={{ padding: "8px" }}>
-          {/* items + render function, not static <ListViewItem> children: a static
-              child registers itself through a createEffect (gridlist/index.tsx:1106)
-              which never runs on the server, so the collection would render empty
-              and then desync on hydrate. Same rule as Picker/ComboBox in the gallery.
+          {/* items + render function — the shape the spec's data maps onto most
+              directly. (Static <ListViewItem> children also server-render now: their
+              registration was moved to a render effect so renderToString sees the rows,
+              the same fix that let this twin drop its ClientOnly.)
 
               GAP (row separators): the spec separates rows with 2px of gap and
               nothing else. Every ListView row carries a 1px gray-300 borderBottom
@@ -140,17 +141,15 @@ export function MirrorPanel08(): JSX.Element {
                     right-aligned. Every row doubles in height and the spec's four-column
                     rhythm collapses into a two-line stack. There is no prop to inline it.
 
-                    NOTE (SSR): all of these slots — label, description, actions — get
+                    NOTE (first paint): these slots — label, description, actions — get
                     their grid-area from applyItemSlotClasses(), a querySelectorAll walk
                     inside a createEffect. That is client-only, so the server paints the
-                    row unslotted and the layout only lands on hydrate. Worth catching if
-                    the sweep screenshots before mount. */}
-                {/* A plain <span>, not <Text>: the slot is what earns the row its
-                    grid-area, and a bare span carries it while dropping only Text's
-                    typography context. (Text was the first thing the SSR bisect caught
-                    here, but it is not the cause — the row does not hydrate with any
-                    child at all.) */}
-                <span slot="label">{row.title}</span>
+                    row unslotted and the grid layout lands on mount; it does not change
+                    the node count, so hydration is clean. Worth catching if the sweep
+                    screenshots before mount. */}
+                {/* <Text slot="label">: the slot earns the row its grid-area and Text
+                    carries the slot while adding the label's typography context. */}
+                <Text slot="label">{row.title}</Text>
                 {/* Plain wrapper, not a restyle: `slot="actions"` is the library's own
                     contract for trailing row content, and Badge splits `slot` out of its
                     DOM props (badge/index.tsx:353) so it cannot carry the attribute
@@ -171,7 +170,6 @@ export function MirrorPanel08(): JSX.Element {
           </ListView>
         </Well>
       </Provider>
-      </ClientOnly>
     </Panel>
   );
 }

@@ -23,9 +23,12 @@ import {
   TabsFixture,
   TabsPlainFixture,
   TabsCompFixture,
+  TabsBadgeFixture,
+  TabsIconFixture,
   ListViewFixture,
   ListViewInteractiveFixture,
   ListViewStaticInteractiveFixture,
+  ListViewSlottedFixture,
 } from "./fixtures/collections";
 
 describe("collection components SSR", () => {
@@ -34,13 +37,22 @@ describe("collection components SSR", () => {
     mkdirSync(outDir, { recursive: true });
 
     const tabs = renderToString(() => <TabsFixture />);
+    const tabsBadge = renderToString(() => <TabsBadgeFixture />);
+    const tabsIcon = renderToString(() => <TabsIconFixture />);
     const listview = renderToString(() => <ListViewFixture />);
     const listviewInteractive = renderToString(() => <ListViewInteractiveFixture />);
     const listviewStaticInteractive = renderToString(() => <ListViewStaticInteractiveFixture />);
+    const listviewSlotted = renderToString(() => <ListViewSlottedFixture />);
 
     // The selected Tab's indicator is exactly the node whose presence diverged.
     expect(tabs).toContain('data-rsp-slot="selection-indicator"');
     expect(tabs).toContain('aria-selected="true"');
+    // A Tab with a mixed string + element child must emit the element (the badge's
+    // "4"), not an empty <span> in its place — the Panel04 rail shape.
+    expect(tabsBadge).toContain("4");
+    expect(tabsBadge).toContain('aria-selected="true"');
+    // Element-first child order (icon then label) must keep the label text.
+    expect(tabsIcon).toContain("Home");
     expect(listview).toContain('role="row"');
     expect(listviewInteractive).toContain('role="row"');
     // Static `<ListViewItem>` children must appear in the SSR markup as real rows,
@@ -48,6 +60,9 @@ describe("collection components SSR", () => {
     expect(listviewStaticInteractive).toContain('data-key="row-a"');
     expect(listviewStaticInteractive).toContain('data-key="row-b"');
     expect(listviewStaticInteractive).not.toContain('data-empty="true"');
+    // The Panel08 multi-slot shape (label + description + actions/Badge) must emit rows.
+    expect(listviewSlotted).toContain('data-key="radiometry"');
+    expect(listviewSlotted).toContain("READ");
 
     writeFileSync(
       resolve(outDir, "tabs-plain-ssr.html"),
@@ -60,6 +75,8 @@ describe("collection components SSR", () => {
       "utf8",
     );
     writeFileSync(resolve(outDir, "tabs-ssr.html"), tabs, "utf8");
+    writeFileSync(resolve(outDir, "tabs-badge-ssr.html"), tabsBadge, "utf8");
+    writeFileSync(resolve(outDir, "tabs-icon-ssr.html"), tabsIcon, "utf8");
     writeFileSync(resolve(outDir, "listview-ssr.html"), listview, "utf8");
     writeFileSync(resolve(outDir, "listview-interactive-ssr.html"), listviewInteractive, "utf8");
     writeFileSync(
@@ -67,5 +84,6 @@ describe("collection components SSR", () => {
       listviewStaticInteractive,
       "utf8",
     );
+    writeFileSync(resolve(outDir, "listview-slotted-ssr.html"), listviewSlotted, "utf8");
   });
 });

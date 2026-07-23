@@ -12,11 +12,10 @@
    Neither half renders panels. Tabs tolerates a TabList with no TabPanels, and the spec
    has no panel content to mirror — inventing some would break the like-for-like. */
 import { type JSX } from "solid-js";
-import { NotificationBadge, Provider, Tab, TabList, Tabs } from "@proyecto-viviana/ui";
+import { NotificationBadge, Provider, Tab, TabList, Tabs, Text } from "@proyecto-viviana/ui";
 import { Panel } from "../lab-shell";
 import { useGlasselatedTheme } from "../glasselated-theme";
 import { PixelIcon } from "../primitives";
-import { ClientOnly } from "./client-only";
 
 /* Same four rows, same order, same lowercase labels as the spec's NAV_ITEMS.
    `count` is the spec's amber pill on `review`; the colours are deliberately absent —
@@ -42,12 +41,14 @@ export function MirrorPanel04(): JSX.Element {
 
   return (
     <Panel label="04 // NAVIGATION — VIVIANA UI">
-      {/* GAP (SSR): this twin renders client-side only. `Tab` accepts a text-only child
-          on the server; the moment one carries an element — the rail's NotificationBadge,
-          the tab bar's icon — the server emits an empty <span></span> in its place and
-          hydration throws. Both are load-bearing here, so the panel is deferred rather
-          than stripped of the composition it exists to show. See ./client-only. */}
-      <ClientOnly>
+      {/* This twin server-renders in full. It used to be deferred past hydration: a
+          Tab carrying any element child — the rail's NotificationBadge, the tab bar's
+          icon — SSR'd an empty <span> and hydration threw. That was a collection SSR
+          defect in the library's own GridList (render-effect item registration + a
+          non-frozen collection accessor); see
+          packages/viviana-ui/test/Collections.{ssr,hydrate}.test for the
+          Tab-with-element-child regression fixtures. So the badge and icons are composed
+          directly, no ClientOnly. */}
       {/* No background prop: the components must sit on the panel's glass exactly as the
           spec markup does. background="base" would paint an opaque plate underneath them
           and there would be nothing left to compare. */}
@@ -77,14 +78,12 @@ export function MirrorPanel04(): JSX.Element {
             <TabList>
               {(n: (typeof NAV_ITEMS)[number]) => (
                 <Tab id={n.id}>
-                  {/* A bare string, not <Text>: wrapping the label in the library's own
-                      Text is what a Tab's TextContext is for, but Text is an element and
-                      an element child is exactly what Tab cannot server-render (see the
-                      ClientOnly note above — it was the first construct caught, which is
-                      why it looked like a Text bug until the bisect widened). Kept bare
-                      so this twin's only SSR concession is the deferral; the cost is that
-                      the label misses the slot's typography. */}
-                  {n.label}
+                  {/* <Text> is what a Tab's TextContext is for: it slots the label into
+                      the control's own typography. (This was where the SSR defect first
+                      surfaced — an element child looked like a Text bug until the bisect
+                      widened to every element — but with that fixed, the label is composed
+                      the idiomatic way rather than as a bare string.) */}
+                  <Text>{n.label}</Text>
                   {/* NotificationBadge is the library's own count component, so the "4"
                       is a real component rather than a styled pill. GAP (composition):
                       only ActionButton provides NotificationBadgeContext — Tab provides
@@ -131,14 +130,13 @@ export function MirrorPanel04(): JSX.Element {
                     IconContext, so it misses the centerBaseline alignment and icon sizing a
                     library icon would receive. */}
                 <PixelIcon name={t.icon} />
-                {/* Bare string for the same reason as the rail above. */}
-                {t.label}
+                {/* <Text> for the label, as the rail above. */}
+                <Text>{t.label}</Text>
               </Tab>
             )}
           </TabList>
         </Tabs>
       </Provider>
-      </ClientOnly>
     </Panel>
   );
 }

@@ -6,10 +6,12 @@
    pair is attributable to the components inside it, not the container — which is
    the whole point: read down a row and ask "does pair N look the same?".
 
-   Panels 04 and 08 do not server-render on the mirror side (Tab with an element
-   child, and ListViewItem in render-function form, both fail hydration — see
-   ../parity/mirror/client-only); those twins defer themselves past hydration, so
-   their cell is briefly empty on first paint and then fills in. */
+   Every pair server-renders. Panels 04 (Tab with badge/icon children) and 08
+   (ListView items + render-function) used to be deferred past hydration behind a
+   ClientOnly, because a collection SSR defect in the library rendered them empty
+   on the server; that was fixed (render-effect item registration + a non-frozen
+   collection accessor — see packages/viviana-ui/test/Collections.{ssr,hydrate}.test),
+   so both twins now paint on first byte alongside the rest. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { For } from "solid-js";
 import { SPEC_PANELS } from "@/components/parity/spec-panels";

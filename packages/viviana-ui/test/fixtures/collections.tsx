@@ -9,7 +9,18 @@
  * Panel04 (Tabs with defaultSelectedKey) and Panel08 (ListView with per-row descriptions).
  */
 import type { JSX } from "solid-js";
-import { ListView, ListViewItem, Provider, Tab, TabList, Tabs, Text } from "../../src";
+import {
+  Badge,
+  BellIcon,
+  ListView,
+  ListViewItem,
+  NotificationBadge,
+  Provider,
+  Tab,
+  TabList,
+  Tabs,
+  Text,
+} from "../../src";
 
 const TAB_ITEMS = [
   { id: "home", label: "Home" },
@@ -93,6 +104,70 @@ export function TabsCompFixture(): JSX.Element {
   );
 }
 
+/** Panel04 rail shape: a Tab whose children are a bare string AND a conditional
+ * element (NotificationBadge), i.e. multiple mixed children where one is an element.
+ * Every other Tabs fixture carries exactly one child; this is the shape the mirror
+ * claimed cannot server-render, so it is the one that must be proven. */
+const BADGE_ITEMS = [
+  { id: "home", label: "home", count: null as number | null },
+  { id: "review", label: "review", count: 4 as number | null },
+  { id: "live", label: "live", count: null as number | null },
+];
+
+export function TabsBadgeFixture(): JSX.Element {
+  return (
+    <Provider background="base" colorScheme="dark">
+      <Tabs
+        aria-label="Sections"
+        orientation="vertical"
+        items={BADGE_ITEMS}
+        getTextValue={(n: (typeof BADGE_ITEMS)[number]) => n.label}
+        defaultSelectedKey="home"
+      >
+        <TabList>
+          {(n: (typeof BADGE_ITEMS)[number]) => (
+            <Tab id={n.id}>
+              <Text>{n.label}</Text>
+              {n.count === null ? null : <NotificationBadge value={n.count} />}
+            </Tab>
+          )}
+        </TabList>
+      </Tabs>
+    </Provider>
+  );
+}
+
+/** Panel04 tab-bar shape: a Tab that leads with an element (icon) followed by a
+ * bare string. Element-first ordering, in case the child order changes which half
+ * of the pair the hydration walk trips on. */
+const ICON_ITEMS = [
+  { id: "home", label: "Home" },
+  { id: "explore", label: "Explore" },
+  { id: "play", label: "Play" },
+];
+
+export function TabsIconFixture(): JSX.Element {
+  return (
+    <Provider background="base" colorScheme="dark">
+      <Tabs
+        aria-label="App sections"
+        items={ICON_ITEMS}
+        getTextValue={(t: (typeof ICON_ITEMS)[number]) => t.label}
+        defaultSelectedKey="home"
+      >
+        <TabList>
+          {(t: (typeof ICON_ITEMS)[number]) => (
+            <Tab id={t.id}>
+              <BellIcon />
+              <Text>{t.label}</Text>
+            </Tab>
+          )}
+        </TabList>
+      </Tabs>
+    </Provider>
+  );
+}
+
 export function ListViewFixture(): JSX.Element {
   return (
     <Provider background="base" colorScheme="dark">
@@ -145,6 +220,35 @@ export function ListViewStaticInteractiveFixture(): JSX.Element {
         <ListViewItem id="row-b" textValue="Row B">
           <Text slot="label">Row B</Text>
         </ListViewItem>
+      </ListView>
+    </Provider>
+  );
+}
+
+const SLOTTED_ROWS = [
+  { id: "radiometry", title: "Radiometry Basics", meta: "Reference · 8 min", tag: "READ" },
+  { id: "pathtracing", title: "Monte Carlo Path Tracing", meta: "Journey · phase 3/5", tag: "RUNNING" },
+];
+
+/** Panel08 shape in full: items + render-function, each row carrying `description`,
+ * a plain `<span slot="label">` (not <Text>), and a `<div slot="actions">` wrapping a
+ * Badge. The mirror claims this shape "does not hydrate under ANY shape" — the other
+ * ListView fixtures use only a single <Text slot="label"> child, so this reproduces the
+ * multi-slot form (label + description + actions) the mirror actually renders. */
+export function ListViewSlottedFixture(): JSX.Element {
+  return (
+    <Provider background="base" colorScheme="dark">
+      <ListView aria-label="Lessons" items={SLOTTED_ROWS} isQuiet>
+        {(row: (typeof SLOTTED_ROWS)[number]) => (
+          <ListViewItem id={row.id} textValue={row.title} description={row.meta}>
+            <Text slot="label">{row.title}</Text>
+            <div slot="actions">
+              <Badge size="S" variant="neutral" fillStyle="outline">
+                {row.tag}
+              </Badge>
+            </div>
+          </ListViewItem>
+        )}
       </ListView>
     </Provider>
   );
