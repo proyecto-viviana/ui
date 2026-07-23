@@ -43,8 +43,28 @@ type StatusLightVariant =
   | "turquoise"
   | "brown"
   | "cinnamon"
-  | "silver";
+  | "silver"
+  /* `success` and `warning` are accepted alias names for the `positive` and
+   * `notice` status channels — the same negative/warning/success trio Button and
+   * Badge expose — folded onto the canonical channel by normalizeVariant before
+   * styling, so a consumer can name the status either way. */
+  | "success"
+  | "warning";
+/* The style maps below only know the canonical channels; the two alias names
+ * above never reach them. */
+type S2StatusLightVariant = Exclude<StatusLightVariant, "success" | "warning">;
 type StatusLightSize = "S" | "M" | "L" | "XL";
+
+function normalizeVariant(variant: StatusLightVariant | undefined): S2StatusLightVariant {
+  switch (variant) {
+    case "success":
+      return "positive";
+    case "warning":
+      return "notice";
+    default:
+      return variant ?? "neutral";
+  }
+}
 
 export interface StatusLightProps {
   /** The content to display as the label. */
@@ -81,7 +101,7 @@ export const StatusLightContext = createContext<SpectrumContextValue<StatusLight
 
 const wrapperStyles = style<{
   size: StatusLightSize;
-  variant: StatusLightVariant;
+  variant: S2StatusLightVariant;
 }>(
   {
     display: "flex",
@@ -113,7 +133,7 @@ const wrapperStyles = style<{
 
 const lightStyles = style<{
   size: StatusLightSize;
-  variant: StatusLightVariant;
+  variant: S2StatusLightVariant;
   isSkeleton: boolean;
 }>({
   size: {
@@ -180,7 +200,7 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
   ]);
   const isSkeleton = useIsSkeleton();
   const size = () => local.size ?? "M";
-  const variant = () => local.variant ?? "neutral";
+  const variant = () => normalizeVariant(local.variant);
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);

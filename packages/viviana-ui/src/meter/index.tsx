@@ -34,8 +34,23 @@ import {
 
 type MeterSize = "S" | "M" | "L" | "XL";
 type MeterVariant = "informative" | "positive" | "notice" | "negative";
+/* `success` and `warning` are accepted alias names for `positive`/`notice` — the
+ * negative/warning/success status trio Button and Badge also expose — folded onto
+ * the canonical channel by normalizeVariant before styling. */
+type MeterVariantProp = MeterVariant | "success" | "warning";
 type MeterStaticColor = "white" | "black" | "auto";
 type MeterLabelPosition = "top" | "side";
+
+function normalizeVariant(variant: MeterVariantProp | undefined): MeterVariant {
+  switch (variant) {
+    case "success":
+      return "positive";
+    case "warning":
+      return "notice";
+    default:
+      return variant ?? "informative";
+  }
+}
 
 export interface MeterProps {
   /** The current value (controlled). @default 0 */
@@ -58,8 +73,8 @@ export interface MeterProps {
    * continuous.
    */
   segments?: number;
-  /** The visual style variant. @default 'informative' */
-  variant?: MeterVariant;
+  /** The visual style variant. `success`/`warning` alias `positive`/`notice`. @default 'informative' */
+  variant?: MeterVariantProp;
   /** The label to display above the meter. */
   label?: JSX.Element;
   /** The static color style to apply over a color background. */
@@ -363,7 +378,7 @@ export function Meter(props: MeterProps): JSX.Element {
   ]);
   const labelId = createUniqueId();
   const size = () => local.size ?? "M";
-  const variant = () => local.variant ?? "informative";
+  const variant = () => normalizeVariant(local.variant);
   const labelPosition = () => local.labelPosition ?? "top";
   const isStaticColor = () => !!local.staticColor;
   const state = (labelAlign?: "start" | "end"): MeterStyleState => ({

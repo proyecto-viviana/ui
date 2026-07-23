@@ -44,16 +44,18 @@ import {
 import { ActionButton, Button } from "../button";
 import { CenterBaseline } from "../CenterBaseline";
 import { CloseButton } from "../dialog";
+import { AlertDiamondIcon } from "../icon/s2wf-icons/AlertDiamondIcon";
 import { AlertTriangleIcon } from "../icon/s2wf-icons/AlertTriangleIcon";
 import { CheckmarkCircleIcon } from "../icon/s2wf-icons/CheckmarkCircleIcon";
 import { ChevronDownIcon } from "../icon/s2wf-icons/ChevronDownIcon";
 import { InfoCircleIcon } from "../icon/s2wf-icons/InfoCircleIcon";
 import { s2IntlStrings } from "../intl";
 import { createMediaQuery } from "../utils/createMediaQuery";
-import { focusRing, style } from "../style" with { type: "macro" };
+import { useTheme } from "../provider";
+import { focusRing, lightDark, setColorScheme, style } from "../style" with { type: "macro" };
 
 export type ToastPlacement = "top" | "top end" | "bottom" | "bottom end";
-export type ToastVariant = "positive" | "negative" | "info" | "neutral";
+export type ToastVariant = "positive" | "negative" | "notice" | "info" | "neutral";
 type LegacyToastVariant = "success" | "warning" | "error";
 type ToastEdge = "top" | "bottom";
 type ToastAlign = "center" | "end";
@@ -373,7 +375,19 @@ interface ToastContainerContextValue {
 
 const ToastContainerContext = createContext<ToastContainerContextValue | null>(null);
 
-const toastRegion = style<{ placement: ToastEdge; align: ToastAlign; isExpanded?: boolean }>({
+const toastRegion = style<{
+  placement: ToastEdge;
+  align: ToastAlign;
+  isExpanded?: boolean;
+  colorScheme?: "light" | "dark" | "light dark";
+}>({
+  // The region is the toast overlay's portal root, so it carries the color-scheme
+  // atoms (--lightningcss-light/-dark) that setColorScheme() maintains. Without them
+  // the portaled toasts inherit no scheme, and lightningcss's downlevelled light-dark()
+  // — which every semantic fill token (negative/positive/notice…) compiles to — resolves
+  // to nothing, leaving the bold fills transparent. Set once here; the atoms inherit to
+  // every toast, background, and control below. Mirrors the Picker/Calendar popovers.
+  ...setColorScheme(),
   ...focusRing(),
   display: "flex",
   flexDirection: {
@@ -484,6 +498,16 @@ const toastStyle = style<{ variant: ToastVariant; isExpanded?: boolean }>({
       info: "informative",
       positive: "positive",
       negative: "negative",
+      /* The warning channel. A Toast paints a flat white ink over its fill and
+       * hangs white staticColor controls (close/action/expand) on top, so the
+       * fill has to carry white ink — which the bare `notice` token can't: it
+       * resolves to the light peach (notice-600 light) InlineAlert's boldFill
+       * pairs with BLACK ink. Rather than fork the whole white-ink model to
+       * black, this uses the SAME dark-amber fill Button's `warning` variant
+       * uses — lightDark("notice-900","notice-700"), both stops ≥4.7:1 white —
+       * so warning reads as the same orange across the button and the toast and
+       * every existing control stays legible untouched. */
+      notice: lightDark("notice-900", "notice-700"),
     },
   },
   "--iconPrimary": {
@@ -609,8 +633,13 @@ function normalizeVariant(
       return "positive";
     case "negative":
     case "error":
-    case "warning":
       return "negative";
+    /* `warning` folds onto the canonical `notice` (orange) channel — the same
+     * negative/warning/success trio Button, Badge, StatusLight, InlineAlert and
+     * Meter expose. It used to fall in with `negative` and render red. */
+    case "notice":
+    case "warning":
+      return "notice";
     case "info":
       return "info";
     case "neutral":
@@ -625,6 +654,8 @@ function getVariantIcon(variant: ToastVariant): JSX.Element | null {
       return <CheckmarkCircleIcon aria-hidden="true" />;
     case "negative":
       return <AlertTriangleIcon aria-hidden="true" />;
+    case "notice":
+      return <AlertDiamondIcon aria-hidden="true" />;
     case "info":
       return <InfoCircleIcon aria-hidden="true" />;
     case "neutral":
@@ -649,7 +680,11 @@ function addSpectrumToast(
   const key = headlessAddToast(
     {
       children,
-      variant,
+      // The shared headless ToastContent.variant union is S2's (no `notice`); the
+      // register's warning channel rides through it as a passthrough value that our
+      // renderer reads back via normalizeVariant. Widening the shared type would
+      // break solid-spectrum's narrower normalizeVariant, so cast at this seam only.
+      variant: variant as ToastContent["variant"],
       actionLabel: options.actionLabel,
       onAction: options.onAction,
       shouldCloseOnAction: options.shouldCloseOnAction,
@@ -679,6 +714,7 @@ export function ToastProvider(props: ToastProviderProps): JSX.Element {
 export function ToastRegion(props: ToastRegionProps): JSX.Element {
   const [local, rest] = splitProps(props, ["placement", "class"]);
   const placement = () => normalizePlacement(local.placement);
+  const theme = useTheme();
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const containerContext = useContext(ToastContainerContext);
   const isExpanded = () => containerContext?.isExpanded() ?? false;
@@ -743,6 +779,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
             placement: placement().edge,
             align: placement().align,
             isExpanded: isExpanded(),
+            colorScheme: theme.colorScheme,
           }),
           local.class ?? "",
         ]
@@ -1044,7 +1081,7 @@ export function Toast(props: ToastProps): JSX.Element {
 
 /**
  * Add a legacy Solid toast to the global queue.
- * Prefer ToastQueue.neutral/positive/negative/info for the React Spectrum S2 API.
+ * Prefer ToastQueue.neutral/positive/negative/notice/info for the React Spectrum S2 API.
  */
 export function addToast(content: ToastContent, options?: StatelyToastOptions): string {
   return headlessAddToast(content, options);
@@ -1078,7 +1115,7 @@ export function toastWarning(
   options?: Omit<StatelyToastOptions, "priority">,
 ): string {
   return addToast(
-    { title: message, type: "warning", variant: "negative" },
+    { title: message, type: "warning", variant: "notice" as ToastContent["variant"] },
     { timeout: 6000, ...options },
   );
 }
@@ -1103,6 +1140,10 @@ export const ToastQueue = {
   /** Queues a negative toast. */
   negative(children: string, options: ToastOptions = {}): () => void {
     return addSpectrumToast(children, "negative", options);
+  },
+  /** Queues a notice (warning) toast — the orange counterpart to `negative`. */
+  notice(children: string, options: ToastOptions = {}): () => void {
+    return addSpectrumToast(children, "notice", options);
   },
   /** Queues an informational toast. */
   info(children: string, options: ToastOptions = {}): () => void {

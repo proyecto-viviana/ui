@@ -26,8 +26,15 @@ export const Route = createFileRoute("/showcase/status")({
   component: Page,
 });
 
-const STATUS_LIGHT_VARIANTS = ["informative", "notice", "negative", "metric", "neutral"] as const;
-const INLINE_ALERT_VARIANTS = ["informative", "notice", "negative", "neutral"] as const;
+const STATUS_LIGHT_VARIANTS = [
+  "informative",
+  "positive",
+  "notice",
+  "negative",
+  "metric",
+  "neutral",
+] as const;
+const INLINE_ALERT_VARIANTS = ["informative", "positive", "notice", "negative", "neutral"] as const;
 
 function Page() {
   const def = panelBySlug("status")!;
@@ -35,7 +42,7 @@ function Page() {
 
   return (
     <Panel def={def}>
-      <Demo label="StatusLight · register variants — no green">
+      <Demo label="StatusLight · semantic + register variants — positive is a cohesive green">
         <Row>
           <For each={STATUS_LIGHT_VARIANTS}>
             {(variant) => (
@@ -64,7 +71,7 @@ function Page() {
         </Row>
       </Demo>
 
-      <Demo label="InlineAlert · register variants — no green">
+      <Demo label="InlineAlert · semantic variants — positive is a cohesive green">
         <Row>
           <For each={INLINE_ALERT_VARIANTS}>
             {(variant) => (
@@ -94,7 +101,7 @@ function Page() {
         </Row>
       </Demo>
 
-      <Demo label="Toast · queue — buttons enqueue onto the global toast queue">
+      <Demo label="Toast · queue — the status trio (negative / warning / success) plus info & neutral">
         <Row>
           <Button variant="secondary" onPress={() => ToastQueue.neutral("Queued for review")}>
             Neutral
@@ -104,6 +111,12 @@ function Page() {
           </Button>
           <Button variant="negative" onPress={() => ToastQueue.negative("Sync failed")}>
             Negative
+          </Button>
+          <Button variant="warning" onPress={() => ToastQueue.notice("Sync running low on space")}>
+            Warning
+          </Button>
+          <Button variant="success" onPress={() => ToastQueue.positive("Sync complete")}>
+            Success
           </Button>
         </Row>
         <ToastContainer placement="bottom end" />
@@ -169,9 +182,10 @@ function Page() {
         </Row>
       </Demo>
 
-      <Demo label="Meter · register variants — no green">
+      <Demo label="Meter · semantic variants — positive is a cohesive green">
         <Row>
           <Meter label="Disk" variant="informative" value={35} />
+          <Meter label="Uptime" variant="positive" value={62} />
           <Meter label="Memory" variant="notice" value={78} />
           <Meter label="CPU" variant="negative" value={96} />
         </Row>

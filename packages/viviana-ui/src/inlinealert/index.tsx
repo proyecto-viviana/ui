@@ -39,7 +39,24 @@ import { focusRing, lightDark, style } from "../style" with { type: "macro" };
 import { ContentContext, HeadingContext } from "../text";
 
 export type InlineAlertVariant = "informative" | "positive" | "notice" | "negative" | "neutral";
+/* `success` and `warning` are accepted alias names for the `positive` and
+ * `notice` channels — the negative/warning/success status trio Button and Badge
+ * also expose. normalizeVariant folds them onto the canonical channel before any
+ * styling, icon, or intl lookup, so nothing downstream needs a success/warning
+ * branch. */
+export type InlineAlertVariantProp = InlineAlertVariant | "success" | "warning";
 export type InlineAlertFillStyle = "border" | "subtleFill" | "boldFill";
+
+function normalizeVariant(variant: InlineAlertVariantProp | undefined): InlineAlertVariant {
+  switch (variant) {
+    case "success":
+      return "positive";
+    case "warning":
+      return "notice";
+    default:
+      return variant ?? "neutral";
+  }
+}
 
 interface InlineAlertStyleProps {
   /** The semantic tone of an InlineAlert. @default 'neutral' */
@@ -56,8 +73,8 @@ export interface InlineAlertProps extends Omit<
   children?: JSX.Element;
   /** Whether to automatically focus the InlineAlert when it first renders. */
   autoFocus?: boolean;
-  /** The semantic tone of an InlineAlert. @default 'neutral' */
-  variant?: InlineAlertVariant;
+  /** The semantic tone of an InlineAlert. `success`/`warning` alias `positive`/`notice`. @default 'neutral' */
+  variant?: InlineAlertVariantProp;
   /** The visual style of the InlineAlert. @default 'border' */
   fillStyle?: InlineAlertFillStyle;
   /** Spectrum-defined styles, returned by the `style()` macro. */
@@ -292,7 +309,7 @@ export function InlineAlert(props: InlineAlertProps): JSX.Element {
     "class",
   ]);
   const formatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
-  const variant = () => local.variant ?? "neutral";
+  const variant = () => normalizeVariant(local.variant);
   const fillStyle = () => local.fillStyle ?? "border";
   const autoFocus = () => !!local.autoFocus;
   const { isFocusVisible, focusProps } = createFocusRing({ autoFocus: autoFocus() });
