@@ -254,6 +254,20 @@
    `[data-glasselated]` so it is inert elsewhere.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* The mesh-card border-ring diameter. MUST be registered: the `::before` ring
+   masks a radial-gradient sized by `var(--bd)`, and only the hover rule sets a
+   value. Without this @property the resting `--bd` is an empty token, the
+   gradient (and thus the mask) is invalid, and the full `--ring-c` fill floods
+   every card with a flat accent-blue overlay that only clears on hover. The
+   `initial-value: 0%` collapses the ring to a point at rest so the card is
+   clean until hovered. (Top-level, not under `[data-glasselated]` — @property
+   cannot be scoped to a selector.) */
+@property --bd {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
 @keyframes glxCaret {
   50% {
     opacity: 0;
