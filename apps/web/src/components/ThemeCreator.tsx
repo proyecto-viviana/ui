@@ -1,5 +1,17 @@
 import { createSignal, createEffect, For } from "solid-js";
-import { TabSwitch } from "@proyecto-viviana/solid-spectrum";
+// The creator is page chrome, not a demo, so every piece of it comes from the
+// app-facing design system. The one exception is the native `<input type="color">`,
+// which opens the OS colour picker — nothing in the library replaces that.
+import {
+  Button,
+  Flex,
+  Heading,
+  SegmentedControl,
+  SegmentedControlItem,
+  Text,
+  TextField,
+  typeRoles,
+} from "@proyecto-viviana/ui";
 import {
   type ThemeMode,
   generatePalette,
@@ -7,11 +19,87 @@ import {
   generateAccentPalette,
   defaultColors,
   hexToOklch,
-  oklchToHex,
 } from "@/utils/color";
+
+// The three surfaces the library has no component for: the OS colour picker and the
+// two halves of the generated-ramp readout. All static, so they need no stylesheet.
+const pickerStyle = {
+  width: "40px",
+  height: "40px",
+  padding: "0",
+  cursor: "pointer",
+  background: "transparent",
+  border: "1px solid var(--color-primary-600)",
+  "border-radius": "var(--radius-md)",
+} as const;
+
+const shadeStyle = {
+  display: "flex",
+  "align-items": "center",
+  "justify-content": "center",
+  width: "32px",
+  height: "32px",
+  "border-radius": "var(--radius-md)",
+} as const;
+
+// The chip has to read on every step of the ramp, so its own colours are fixed.
+const shadeLabelStyle = {
+  padding: "0 2px",
+  "border-radius": "2px",
+  background: "#06131d",
+  color: "#f4f8fa",
+} as const;
 
 export interface ThemeCreatorProps {
   onThemeChange?: (cssVars: Record<string, string>) => void;
+}
+
+/** One colour: the OS picker, an editable hex, and the value read back in OKLCH. */
+function ColorControl(props: {
+  label: string;
+  value: string;
+  onChange: (hex: string) => void;
+}) {
+  // The hex field keeps its own draft so a half-typed value survives the keystroke.
+  // Binding the field straight to the colour would revert every character that does
+  // not yet spell a complete `#rrggbb`, which makes the input impossible to edit.
+  const [draft, setDraft] = createSignal(props.value);
+  createEffect(() => setDraft(props.value));
+
+  const oklch = () => {
+    const o = hexToOklch(props.value);
+    return `L:${o.l.toFixed(2)} C:${o.c.toFixed(2)} H:${o.h.toFixed(0)}`;
+  };
+
+  return (
+    <Flex direction="column" gap={2}>
+      <Text styles={typeRoles.label}>{props.label}</Text>
+      <Flex alignItems="start" gap={2}>
+        <input
+          type="color"
+          style={pickerStyle}
+          aria-label={`${props.label} color picker`}
+          value={props.value}
+          onInput={(e) => props.onChange(e.currentTarget.value)}
+        />
+        <Flex direction="column" gap={1}>
+          <TextField
+            size="S"
+            // A six-digit hex never needs more, and the five controls have to sit on
+            // one row at the width the panel actually gets.
+            UNSAFE_style={{ width: "128px" }}
+            aria-label={`${props.label} hex value`}
+            value={draft()}
+            onChange={(value: string) => {
+              setDraft(value);
+              if (/^#[0-9A-Fa-f]{6}$/.test(value)) props.onChange(value);
+            }}
+          />
+          <Text styles={typeRoles.micro}>{oklch()}</Text>
+        </Flex>
+      </Flex>
+    </Flex>
+  );
 }
 
 export function ThemeCreator(props: ThemeCreatorProps) {
@@ -66,183 +154,78 @@ export function ThemeCreator(props: ThemeCreatorProps) {
     document.documentElement.setAttribute("data-theme", appearance());
   });
 
-  const modeOptions = [
-    { value: "light", label: "Light" },
-    { value: "dim", label: "Dim" },
-    { value: "dark", label: "Dark" },
-  ];
-
-  const appearanceOptions = [
-    { value: "dark", label: "Dark" },
-    { value: "light", label: "Light" },
-  ];
+  const shades = ["100", "200", "300", "400", "500", "600", "700", "800"];
 
   return (
-    <div class="vui-theme-creator">
-      <h3 class="text-lg font-semibold text-primary-200 mb-4">Theme Creator</h3>
+    <div>
+      <Heading level={3} UNSAFE_style={{ "margin-bottom": "16px" }}>
+        Theme Creator
+      </Heading>
 
-      <div class="flex flex-wrap gap-6">
-        {/* Appearance Selector (light/dark) */}
-        <div class="flex flex-col gap-2">
-          <label class="text-sm text-primary-300">Appearance</label>
-          <TabSwitch
-            options={appearanceOptions}
-            value={appearance()}
-            onChange={(v) => setAppearance(v as "dark" | "light")}
-          />
-        </div>
+      <Flex wrap gap={6}>
+        <Flex direction="column" gap={2}>
+          <Text styles={typeRoles.label}>Appearance</Text>
+          <SegmentedControl
+            aria-label="Appearance"
+            selectedKey={appearance()}
+            onSelectionChange={(id) => setAppearance(id as "dark" | "light")}
+          >
+            <SegmentedControlItem id="dark">Dark</SegmentedControlItem>
+            <SegmentedControlItem id="light">Light</SegmentedControlItem>
+          </SegmentedControl>
+        </Flex>
 
-        {/* Palette Mode Selector */}
-        <div class="flex flex-col gap-2">
-          <label class="text-sm text-primary-300">Palette Mode</label>
-          <TabSwitch
-            options={modeOptions}
-            value={mode()}
-            onChange={(v) => setMode(v as ThemeMode)}
-          />
-        </div>
+        <Flex direction="column" gap={2}>
+          <Text styles={typeRoles.label}>Palette Mode</Text>
+          <SegmentedControl
+            aria-label="Palette mode"
+            selectedKey={mode()}
+            onSelectionChange={(id) => setMode(id as ThemeMode)}
+          >
+            <SegmentedControlItem id="light">Light</SegmentedControlItem>
+            <SegmentedControlItem id="dim">Dim</SegmentedControlItem>
+            <SegmentedControlItem id="dark">Dark</SegmentedControlItem>
+          </SegmentedControl>
+        </Flex>
 
-        {/* Primary Color */}
-        <div class="flex flex-col gap-2">
-          <label class="text-sm text-primary-300">Primary</label>
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              aria-label="Primary color picker"
-              value={primaryColor()}
-              onInput={(e) => setPrimaryColor(e.currentTarget.value)}
-              class="w-10 h-10 rounded cursor-pointer border border-primary-600 bg-transparent"
-            />
-            <div class="flex flex-col gap-1">
-              <input
-                type="text"
-                aria-label="Primary color hex value"
-                value={primaryColor()}
-                onInput={(e) => {
-                  const val = e.currentTarget.value;
-                  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                    setPrimaryColor(val);
-                  }
-                }}
-                class="w-24 px-2 py-0.5 text-xs bg-bg-300 border border-primary-600 rounded text-primary-200 font-mono"
-              />
-              <span class="text-[10px] text-primary-400 font-mono">
-                {(() => {
-                  const o = hexToOklch(primaryColor());
-                  return `L:${o.l.toFixed(2)} C:${o.c.toFixed(2)} H:${o.h.toFixed(0)}`;
-                })()}
-              </span>
-            </div>
-          </div>
-        </div>
+        <ColorControl label="Primary" value={primaryColor()} onChange={setPrimaryColor} />
+        <ColorControl label="Background" value={bgColor()} onChange={setBgColor} />
+        <ColorControl label="Accent" value={accentColor()} onChange={setAccentColor} />
 
-        {/* Background Color */}
-        <div class="flex flex-col gap-2">
-          <label class="text-sm text-primary-300">Background</label>
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              aria-label="Background color picker"
-              value={bgColor()}
-              onInput={(e) => setBgColor(e.currentTarget.value)}
-              class="w-10 h-10 rounded cursor-pointer border border-primary-600 bg-transparent"
-            />
-            <div class="flex flex-col gap-1">
-              <input
-                type="text"
-                aria-label="Background color hex value"
-                value={bgColor()}
-                onInput={(e) => {
-                  const val = e.currentTarget.value;
-                  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                    setBgColor(val);
-                  }
-                }}
-                class="w-24 px-2 py-0.5 text-xs bg-bg-300 border border-primary-600 rounded text-primary-200 font-mono"
-              />
-              <span class="text-[10px] text-primary-400 font-mono">
-                {(() => {
-                  const o = hexToOklch(bgColor());
-                  return `L:${o.l.toFixed(2)} C:${o.c.toFixed(2)} H:${o.h.toFixed(0)}`;
-                })()}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Accent Color */}
-        <div class="flex flex-col gap-2">
-          <label class="text-sm text-primary-300">Accent</label>
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              aria-label="Accent color picker"
-              value={accentColor()}
-              onInput={(e) => setAccentColor(e.currentTarget.value)}
-              class="w-10 h-10 rounded cursor-pointer border border-primary-600 bg-transparent"
-            />
-            <div class="flex flex-col gap-1">
-              <input
-                type="text"
-                aria-label="Accent color hex value"
-                value={accentColor()}
-                onInput={(e) => {
-                  const val = e.currentTarget.value;
-                  if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                    setAccentColor(val);
-                  }
-                }}
-                class="w-24 px-2 py-0.5 text-xs bg-bg-300 border border-primary-600 rounded text-primary-200 font-mono"
-              />
-              <span class="text-[10px] text-primary-400 font-mono">
-                {(() => {
-                  const o = hexToOklch(accentColor());
-                  return `L:${o.l.toFixed(2)} C:${o.c.toFixed(2)} H:${o.h.toFixed(0)}`;
-                })()}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Reset Button */}
-        <div class="flex flex-col gap-2 justify-end">
-          <button
-            onClick={() => {
+        <Flex direction="column" gap={2} justifyContent="end">
+          <Button
+            variant="secondary"
+            onPress={() => {
               setPrimaryColor(defaultColors.primary);
               setBgColor(defaultColors.bg);
               setAccentColor(defaultColors.accent);
               setMode("dark");
               setAppearance("dark");
             }}
-            class="px-3 py-2 text-sm bg-primary-700 text-primary-200 rounded hover:bg-primary-600 transition-colors"
           >
             Reset
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Flex>
+      </Flex>
 
-      {/* Color Preview */}
-      <div class="mt-4 flex gap-1">
-        <For each={["100", "200", "300", "400", "500", "600", "700", "800"]}>
+      {/* The generated primary ramp, read back as swatches. */}
+      <Flex gap={1} style={{ "margin-top": "16px" }}>
+        <For each={shades}>
           {(shade) => {
             const palette = () => generatePalette(primaryColor(), mode());
             return (
               <div
-                class="w-8 h-8 rounded text-[10px] flex items-center justify-center font-mono"
-                style={{ background: palette()[shade] }}
+                style={{ ...shadeStyle, background: palette()[shade] }}
                 aria-label={`Primary shade ${shade}`}
               >
-                <span
-                  class="rounded-[2px] px-0.5 leading-none font-bold"
-                  style={{ background: "#06131d", color: "#f4f8fa" }}
-                >
+                <span class={typeRoles.micro} style={shadeLabelStyle}>
                   {shade}
                 </span>
               </div>
             );
           }}
         </For>
-      </div>
+      </Flex>
     </div>
   );
 }
