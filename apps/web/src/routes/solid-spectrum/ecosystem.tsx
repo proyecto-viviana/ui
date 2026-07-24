@@ -10,21 +10,49 @@ export const Route = createFileRoute("/solid-spectrum/ecosystem")({
 
 /** A soft rounded chrome tile for one package/app — plain anchor, `--docs-*`
  *  tokens. Replaces the archived custom `ProjectCard`; inactive tiles dim and
- *  drop their link. */
+ *  drop their link.
+ *
+ *  The face is a two-letter monogram by default. The tiles used to point at
+ *  `/images/ecosystem/*`, which has never existed in `public/` — six 404s per
+ *  visit and six broken-image glyphs. Pass `imageSrc` only for art we actually
+ *  ship. */
 function ProjectTile(props: {
   name: string;
-  imageSrc: string;
+  glyph: string;
+  imageSrc?: string;
   href?: string;
   inactive?: boolean;
 }) {
   const inner: JSX.Element = (
     <>
-      <img
-        src={props.imageSrc}
-        alt=""
-        aria-hidden="true"
-        style={{ width: "40px", height: "40px", "object-fit": "contain" }}
-      />
+      {props.imageSrc ? (
+        <img
+          src={props.imageSrc}
+          alt=""
+          aria-hidden="true"
+          style={{ width: "40px", height: "40px", "object-fit": "contain" }}
+        />
+      ) : (
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-flex",
+            "align-items": "center",
+            "justify-content": "center",
+            width: "40px",
+            height: "40px",
+            "border-radius": "10px",
+            background: "var(--pv-accent-tint)",
+            color: "var(--docs-accent)",
+            "font-family": FONT_DISPLAY,
+            "font-size": "15px",
+            "font-weight": "700",
+            "letter-spacing": "0.02em",
+          }}
+        >
+          {props.glyph}
+        </span>
+      )}
       <span
         style={{
           "font-family": FONT_BODY,
@@ -132,22 +160,22 @@ function Ecosystem() {
           <div class="pv-tile-grid">
             <ProjectTile
               name="@proyecto-viviana/solid-spectrum"
-              imageSrc="/images/ecosystem/ui.svg"
+              glyph="SP"
               href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solid-spectrum"
             />
             <ProjectTile
               name="@proyecto-viviana/solidaria-components"
-              imageSrc="/images/ecosystem/solidaria.svg"
+              glyph="SC"
               href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solidaria-components"
             />
             <ProjectTile
               name="@proyecto-viviana/solidaria"
-              imageSrc="/images/ecosystem/solidaria.svg"
+              glyph="SA"
               href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solidaria"
             />
             <ProjectTile
               name="@proyecto-viviana/solid-stately"
-              imageSrc="/images/ecosystem/solid-stately.svg"
+              glyph="ST"
               href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solid-stately"
             />
           </div>
@@ -159,7 +187,8 @@ function Ecosystem() {
           <div class="pv-tile-grid">
             <ProjectTile
               name="PROYECTO VIVIANA"
-              imageSrc="/images/ecosystem/proyecto-viviana.png"
+              glyph="PV"
+              imageSrc="/logo.png"
               href="https://proyecto-viviana.uy"
             />
           </div>
@@ -169,8 +198,8 @@ function Ecosystem() {
         <section>
           <SectionHeading>Coming Soon</SectionHeading>
           <div class="pv-tile-grid">
-            <ProjectTile name="viviana-native" imageSrc="/images/ecosystem/native.svg" inactive />
-            <ProjectTile name="viviana-cli" imageSrc="/images/ecosystem/cli.svg" inactive />
+            <ProjectTile name="viviana-native" glyph="NA" inactive />
+            <ProjectTile name="viviana-cli" glyph="CL" inactive />
           </div>
         </section>
       </main>
