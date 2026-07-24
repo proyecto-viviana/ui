@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThemeRouteImport } from './routes/theme'
-import { Route as HomeRouteImport } from './routes/home'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -87,11 +86,6 @@ import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from './rout
 const ThemeRoute = ThemeRouteImport.update({
   id: '/theme',
   path: '/theme',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeRoute = HomeRouteImport.update({
-  id: '/home',
-  path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -507,7 +501,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/admin': typeof AdminRoute
-  '/home': typeof HomeRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
   '/showcase/buttons': typeof ShowcaseButtonsRoute
@@ -582,7 +575,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
-  '/home': typeof HomeRoute
   '/theme': typeof ThemeRoute
   '/showcase/buttons': typeof ShowcaseButtonsRoute
   '/showcase/cards': typeof ShowcaseCardsRoute
@@ -658,7 +650,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/admin': typeof AdminRoute
-  '/home': typeof HomeRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
   '/showcase/buttons': typeof ShowcaseButtonsRoute
@@ -736,7 +727,6 @@ export interface FileRouteTypes {
     | '/'
     | '/showcase'
     | '/admin'
-    | '/home'
     | '/theme'
     | '/solid-spectrum/docs'
     | '/showcase/buttons'
@@ -811,7 +801,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
-    | '/home'
     | '/theme'
     | '/showcase/buttons'
     | '/showcase/cards'
@@ -886,7 +875,6 @@ export interface FileRouteTypes {
     | '/'
     | '/showcase'
     | '/admin'
-    | '/home'
     | '/theme'
     | '/solid-spectrum/docs'
     | '/showcase/buttons'
@@ -963,7 +951,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShowcaseRouteRoute: typeof ShowcaseRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
-  HomeRoute: typeof HomeRoute
   ThemeRoute: typeof ThemeRoute
   SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren
   SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute
@@ -978,13 +965,6 @@ declare module '@tanstack/solid-router' {
       path: '/theme'
       fullPath: '/theme'
       preLoaderRoute: typeof ThemeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -1693,7 +1673,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
   AdminRoute: AdminRoute,
-  HomeRoute: HomeRoute,
   ThemeRoute: ThemeRoute,
   SolidSpectrumDocsRouteRoute: SolidSpectrumDocsRouteRouteWithChildren,
   SolidSpectrumEcosystemRoute: SolidSpectrumEcosystemRoute,

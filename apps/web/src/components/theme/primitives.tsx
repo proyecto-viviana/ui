@@ -215,7 +215,7 @@ export function SiteFooter() {
         Proyecto Viviana
       </span>
       <div style={{ display: "flex", gap: "20px" }}>
-        <Link to="/home" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>
+        <Link to="/" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>
           Home
         </Link>
         <Link to="/theme" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>

@@ -142,7 +142,7 @@ export function Header() {
       >
         {/* Left: Logo + Title */}
         <Link
-          to="/solid-spectrum"
+          to="/"
           style={{
             display: "flex",
             "align-items": "center",
@@ -158,7 +158,7 @@ export function Header() {
 
         {/* Right: Nav + GitHub + Theme Toggle */}
         <nav style={{ display: "flex", "align-items": "center", gap: "8px" }}>
-          <NavLink href="/home" isActive={isActive("/home")}>
+          <NavLink href="/" isActive={isActive("/")}>
             Home
           </NavLink>
           <NavLink href="/theme" isActive={isActive("/theme")}>
