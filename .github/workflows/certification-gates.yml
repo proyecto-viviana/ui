@@ -143,6 +143,14 @@ jobs:
         id: pair
         run: pnpm run comparison:test:pair
 
+      # The recertification bar itself: 2176 tests, ~17 min. Promoted 2026-07-24
+      # on a confirmed clean local run (2169 passed, 7 skipped, exit 0), which
+      # also settles the deferred D4 event-ordering worry empirically — whatever
+      # is deferred is not producing reds.
+      - name: comparison certified suite
+        id: certified
+        run: pnpm run comparison:test:certified
+
       # ---------------------------------------------------------------------
       # ADVISORY. Red today, or red on someone else's schedule. Each one names
       # the condition under which it becomes blocking — that condition is the
@@ -163,14 +171,6 @@ jobs:
         id: parity_strict
         continue-on-error: true
         run: pnpm run comparison:report:parity:strict
-
-      # 2176 tests. Not promoted because it has not been observed green
-      # end-to-end on this branch, and the deferred D4 event-ordering policy is
-      # still open (recertification.md). Promote on a confirmed clean run.
-      - name: comparison certified suite
-        id: certified
-        continue-on-error: true
-        run: pnpm run comparison:test:certified
 
       # Superset of the blocking a11y gate (site-gate.yml), which
       # excludes axe color-contrast and the stricter scans. The excluded rules
@@ -251,6 +251,7 @@ jobs:
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
             echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
+            echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
             echo ""
             echo "_\`typecheck\` passes today only because 35 \`solid-spectrum\` files carry \`@ts-nocheck\`; it starts surfacing breakage as those are removed._"
             echo ""
@@ -260,7 +261,6 @@ jobs:
             echo "| --- | --- | --- |"
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") | ❌ means Adobe shipped past our pin — a pin bump, not a branch defect |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") | Genuinely failing: 9 entries lack modeled control groups (\`labeledvalue-strict-parity\`) |"
-            echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") | 2176 tests, never observed green end-to-end; deferred D4 policy still open |"
             echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") | Superset of the blocking a11y gate; its extra rules are unmeasured |"
             echo ""
             echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"

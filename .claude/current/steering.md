@@ -61,9 +61,10 @@ the `launch` roadmap item.
   the scripts; every finding filed; the 9 `docs:check` errors cleared; stale docs
   trees deleted; the 174-file format drift and tracked strays cleaned.
 - **Make the gates real** (Phase 1) — **done.** The 5 stale e2e selectors that
-  turned `a11y:smoke` red (B8) are fixed; 17 certification gates are blocking
-  (including `vp check` and `docs:check`), 4 stay advisory with their promotion
-  condition written inline, and every workflow now fires on push to main. _A gate
+  turned `a11y:smoke` red (B8) are fixed; 18 certification gates are blocking
+  (including `vp check`, `docs:check` and the full certified suite), 3 stay
+  advisory with their promotion condition written inline, and every workflow now
+  fires on push to main. _A gate
   that cannot fire is not a gate_ — and neither is one promoted without being
   measured, which is why each was run locally first. Residual: main is not
   branch-protected, an owner call (`ci-gates-required`).

@@ -99,8 +99,8 @@ The lesson generalizes: **a gate that cannot fire is not a gate.** Making the
 existing gates actually block is itself a launch item, not a nice-to-have.
 
 **Closed 2026-07-24** (`tech-debt.md` → `launch-gates-cannot-fire`, which carries
-the full inventory). 17 gates in `certification-gates.yml` are now blocking;
-4 stay advisory and each states inline what would promote it. The a11y workflow
+the full inventory). 18 gates in `certification-gates.yml` are now blocking;
+3 stay advisory and each states inline what would promote it. The a11y workflow
 became `site-gate.yml` running `ci:site` (a11y + the 72-route sweep), and
 `ci:release-readiness` gained `vp run check`. Two guards that lived in
 `package.json` but in no workflow at all — `guard:invented-utilities` and
@@ -109,8 +109,12 @@ became `site-gate.yml` running `ci:site` (a11y + the 72-route sweep), and
 The method mattered as much as the result: **every gate was run locally and
 observed green before its `continue-on-error` came off.** Promoting a gate you
 have not measured is the same mistake as writing one that cannot fire — it just
-fails later and louder. The four that are still advisory are advisory precisely
-because they were measured and were not green.
+fails later and louder. The three that are still advisory are advisory precisely
+because they were measured and were not green. `comparison:test:certified` shows
+the rule working in both directions: it was held back for a day as unmeasured,
+then run to completion (2169 passed, 7 skipped, exit 0, 17.2 min) and promoted on
+the evidence — which also retires the long-standing assumption that the deferred
+D4 event-ordering policy was keeping it red.
 
 One thing this does **not** do: `main` has no branch protection, so a red
 workflow is visible but not preventive. That is an owner decision (Rule #3) and
