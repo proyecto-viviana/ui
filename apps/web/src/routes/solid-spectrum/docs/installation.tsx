@@ -1,12 +1,10 @@
 import { createFileRoute } from "@tanstack/solid-router";
+import { FONT_SANS, FONT_MONO } from "@/components/docs";
 import { useThemeColors } from "@/utils/theme";
 
 export const Route = createFileRoute("/solid-spectrum/docs/installation")({
   component: InstallationPage,
 });
-
-const FONT_TITLE = "var(--font-title)";
-const FONT_MONO = "var(--font-mono)";
 
 function InstallationPage() {
   const getColors = useThemeColors();
@@ -28,7 +26,7 @@ function InstallationPage() {
     <div style={{ "line-height": "1.6", "font-size": "14px", color: colors().textSecondary }}>
       <h1
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "20px",
           "font-weight": "600",
           margin: "0 0 16px 0",
@@ -80,7 +78,7 @@ function InstallationPage() {
                   padding: "8px 12px",
                   "text-align": "left",
                   "font-weight": "600",
-                  "font-family": FONT_TITLE,
+                  "font-family": FONT_SANS,
                   "font-size": "10px",
                   "text-transform": "uppercase",
                   "letter-spacing": "0.1em",
@@ -94,7 +92,7 @@ function InstallationPage() {
                   padding: "8px 12px",
                   "text-align": "left",
                   "font-weight": "600",
-                  "font-family": FONT_TITLE,
+                  "font-family": FONT_SANS,
                   "font-size": "10px",
                   "text-transform": "uppercase",
                   "letter-spacing": "0.1em",
@@ -175,16 +173,18 @@ function InstallationPage() {
 }
 
 function SectionHeading(props: { color: string; children: string }) {
+  const getColors = useThemeColors();
+  const colors = () => getColors();
   return (
     <h2
       style={{
-        "font-family": FONT_TITLE,
+        "font-family": FONT_SANS,
         "font-size": "15px",
         "font-weight": "600",
         margin: "2rem 0 0.75rem 0",
         "padding-left": "10px",
         "border-left": `2px solid ${props.color}`,
-        color: "var(--color-primary-100)",
+        color: colors().text,
       }}
     >
       {props.children}
@@ -205,7 +205,7 @@ function PkgRow(props: {
             background: `${props.colors.blue}15`,
             color: props.colors.blue,
             padding: "2px 6px",
-            "font-family": "var(--font-mono)",
+            "font-family": FONT_MONO,
             "font-size": "12px",
             "font-weight": "500",
             border: `1px solid ${props.colors.blue}40`,

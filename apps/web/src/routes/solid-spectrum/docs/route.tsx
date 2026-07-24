@@ -1,10 +1,13 @@
 import { Outlet, createFileRoute, Link, useLocation } from "@tanstack/solid-router";
 import { For, createSignal, Show, onMount, onCleanup } from "solid-js";
 import { Header } from "@/components";
+import { FONT_SANS } from "@/components/docs";
 import { useThemeColors, useTheme } from "@/utils/theme";
 
-const FONT_TITLE = "var(--font-title)";
-const FONT_BODY = "var(--font-body)";
+/* Spectrum's docs chrome rides the same Adobe Clean stack the S2 components paint
+   with — one face for headings and body, no Geist. */
+const FONT_TITLE = FONT_SANS;
+const FONT_BODY = FONT_SANS;
 
 export const Route = createFileRoute("/solid-spectrum/docs")({
   component: DocsLayout,

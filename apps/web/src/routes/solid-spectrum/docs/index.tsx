@@ -1,13 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/solid-router";
 import { Button } from "@proyecto-viviana/solid-spectrum";
+import { FONT_SANS, FONT_MONO } from "@/components/docs";
 import { useThemeColors } from "@/utils/theme";
 
 export const Route = createFileRoute("/solid-spectrum/docs/")({
   component: GettingStartedPage,
 });
-
-const FONT_TITLE = "var(--font-title)";
-const FONT_MONO = "var(--font-mono)";
 
 function GettingStartedPage() {
   const getColors = useThemeColors();
@@ -17,7 +15,7 @@ function GettingStartedPage() {
     <div style={{ "line-height": "1.6", "font-size": "14px", color: colors().textSecondary }}>
       <h1
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "20px",
           "font-weight": "600",
           margin: "0 0 16px 0",
@@ -59,8 +57,8 @@ function GettingStartedPage() {
           Start and other SSR frameworks
         </li>
         <li style={{ "margin-bottom": "0.375rem" }}>
-          <strong style={{ color: colors().text }}>Tailwind CSS v4</strong> — Modern styling with
-          CSS variables
+          <strong style={{ color: colors().text }}>Compiled styles</strong> — Spectrum tokens
+          compiled to a static stylesheet, themed through CSS custom properties
         </li>
       </ul>
 
@@ -186,16 +184,18 @@ function App() {
 }
 
 function SectionHeading(props: { color: string; children: string }) {
+  const getColors = useThemeColors();
+  const colors = () => getColors();
   return (
     <h2
       style={{
-        "font-family": FONT_TITLE,
+        "font-family": FONT_SANS,
         "font-size": "15px",
         "font-weight": "600",
         margin: "2rem 0 0.75rem 0",
         "padding-left": "10px",
         "border-left": `2px solid ${props.color}`,
-        color: "var(--color-primary-100)",
+        color: colors().text,
       }}
     >
       {props.children}

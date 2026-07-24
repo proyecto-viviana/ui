@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { Header } from "@/components";
+import { FONT_SANS } from "@/components/docs";
 import { useThemeColors, useTheme } from "@/utils/theme";
 
 export const Route = createFileRoute("/solid-spectrum/")({
@@ -19,7 +20,7 @@ function Landing() {
         background: colors().surface,
         display: "flex",
         "flex-direction": "column",
-        "font-family": "var(--font-body)",
+        "font-family": FONT_SANS,
         color: colors().text,
         transition: "background 0.3s ease, color 0.3s ease",
       }}
@@ -51,7 +52,7 @@ function Landing() {
             "font-weight": "600",
             "letter-spacing": "0.5px",
             color: isDark() ? colors().surface : "#ffffff",
-            "font-family": "var(--font-title)",
+            "font-family": FONT_SANS,
           }}
         >
           ACCESSIBLE UI LIBRARY FOR SOLIDJS
@@ -60,7 +61,7 @@ function Landing() {
         {/* Title */}
         <h1
           style={{
-            "font-family": "var(--font-title)",
+            "font-family": FONT_SANS,
             "font-size": "clamp(2.5rem, 8vw, 5rem)",
             "font-weight": "700",
             "line-height": "1",
@@ -111,7 +112,7 @@ function Landing() {
               "text-decoration": "none",
               "font-weight": "600",
               "font-size": "13px",
-              "font-family": "var(--font-title)",
+              "font-family": FONT_SANS,
               border: `2px solid ${colors().pink}`,
               transition: "filter 0.2s ease",
               filter: `drop-shadow(0 0 8px ${colors().pinkGlow})`,
@@ -150,7 +151,7 @@ function Landing() {
               "text-decoration": "none",
               "font-weight": "600",
               "font-size": "13px",
-              "font-family": "var(--font-title)",
+              "font-family": FONT_SANS,
               border: `2px solid ${colors().blue}`,
               transition: "background 0.2s ease",
             }}
@@ -247,7 +248,7 @@ function FeatureBlock(props: { title: string; desc: string; color: string; bgCol
       <div>
         <div
           style={{
-            "font-family": "var(--font-title)",
+            "font-family": FONT_SANS,
             "font-weight": "600",
             "font-size": "13px",
             "margin-bottom": "2px",

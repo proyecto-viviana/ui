@@ -15,10 +15,12 @@ export interface DocPageProps {
   children?: JSX.Element;
 }
 
-/* The site's faces, resolved from @proyecto-viviana/ui's type tokens rather than
-   named here: --font-title is Geist Pixel, --font-mono is Geist Mono. */
-const FONT_TITLE = "var(--font-title)";
-const FONT_MONO = "var(--font-mono)";
+/* The solid-spectrum docs wear Spectrum's own type, not viviana-ui's Geist trio:
+   headings and prose on the Adobe Clean stack the S2 components already paint with,
+   code on Source Code Pro. Both fall back to the system UI/mono faces with no new
+   font files. Exported so the docs layout and landing page share one source. */
+export const FONT_SANS = "adobe-clean-variable, adobe-clean, ui-sans-serif, system-ui, sans-serif";
+export const FONT_MONO = '"Source Code Pro", ui-monospace, "SF Mono", Menlo, monospace';
 
 export function DocPage(props: DocPageProps) {
   const getColors = useThemeColors();
@@ -29,7 +31,7 @@ export function DocPage(props: DocPageProps) {
       {/* Title — pink left-border accent with glow */}
       <h1
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "20px",
           "font-weight": "600",
           margin: "0 0 16px 0",
@@ -50,7 +52,7 @@ export function DocPage(props: DocPageProps) {
       {/* Import — code block with blue left-border */}
       <h2
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "15px",
           "font-weight": "600",
           margin: "2rem 0 0.75rem 0",
@@ -98,7 +100,7 @@ export function Example(props: ExampleProps) {
       {/* Section heading — blue left-border */}
       <h2
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "15px",
           "font-weight": "600",
           margin: "0 0 0.75rem 0",
@@ -158,7 +160,7 @@ export function PropsTable(props: PropsTableProps) {
     <section style={{ "margin-top": "2rem" }}>
       <h2
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "15px",
           "font-weight": "600",
           margin: "0 0 0.75rem 0",
@@ -186,7 +188,7 @@ export function PropsTable(props: PropsTableProps) {
                     padding: "8px 12px",
                     "text-align": "left",
                     "font-weight": "600",
-                    "font-family": FONT_TITLE,
+                    "font-family": FONT_SANS,
                     "font-size": "10px",
                     "text-transform": "uppercase",
                     "letter-spacing": "0.1em",
@@ -261,7 +263,7 @@ export function AccessibilitySection(props: { children: JSX.Element }) {
     <section style={{ "margin-top": "2rem" }}>
       <h2
         style={{
-          "font-family": FONT_TITLE,
+          "font-family": FONT_SANS,
           "font-size": "15px",
           "font-weight": "600",
           margin: "0 0 0.75rem 0",
