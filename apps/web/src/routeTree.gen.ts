@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThemeRouteImport } from './routes/theme'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as SolidSpectrumRouteRouteImport } from './routes/solid-spectrum/route'
 import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
@@ -93,6 +94,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SolidSpectrumRouteRoute = SolidSpectrumRouteRouteImport.update({
+  id: '/solid-spectrum',
+  path: '/solid-spectrum',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShowcaseRouteRoute = ShowcaseRouteRouteImport.update({
   id: '/showcase',
   path: '/showcase',
@@ -104,9 +110,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SolidSpectrumIndexRoute = SolidSpectrumIndexRouteImport.update({
-  id: '/solid-spectrum/',
-  path: '/solid-spectrum/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => SolidSpectrumRouteRoute,
 } as any)
 const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
   id: '/',
@@ -114,14 +120,14 @@ const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
   getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
-  id: '/solid-spectrum/playground',
-  path: '/solid-spectrum/playground',
-  getParentRoute: () => rootRouteImport,
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => SolidSpectrumRouteRoute,
 } as any)
 const SolidSpectrumEcosystemRoute = SolidSpectrumEcosystemRouteImport.update({
-  id: '/solid-spectrum/ecosystem',
-  path: '/solid-spectrum/ecosystem',
-  getParentRoute: () => rootRouteImport,
+  id: '/ecosystem',
+  path: '/ecosystem',
+  getParentRoute: () => SolidSpectrumRouteRoute,
 } as any)
 const ShowcaseTypeRoute = ShowcaseTypeRouteImport.update({
   id: '/type',
@@ -199,9 +205,9 @@ const ShowcaseButtonsRoute = ShowcaseButtonsRouteImport.update({
   getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const SolidSpectrumDocsRouteRoute = SolidSpectrumDocsRouteRouteImport.update({
-  id: '/solid-spectrum/docs',
-  path: '/solid-spectrum/docs',
-  getParentRoute: () => rootRouteImport,
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => SolidSpectrumRouteRoute,
 } as any)
 const SolidSpectrumDocsIndexRoute = SolidSpectrumDocsIndexRouteImport.update({
   id: '/',
@@ -500,6 +506,7 @@ const SolidSpectrumDocsComponentsAccordionRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/showcase': typeof ShowcaseRouteRouteWithChildren
+  '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
@@ -649,6 +656,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/showcase': typeof ShowcaseRouteRouteWithChildren
+  '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
@@ -726,6 +734,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/showcase'
+    | '/solid-spectrum'
     | '/admin'
     | '/theme'
     | '/solid-spectrum/docs'
@@ -874,6 +883,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/showcase'
+    | '/solid-spectrum'
     | '/admin'
     | '/theme'
     | '/solid-spectrum/docs'
@@ -950,12 +960,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShowcaseRouteRoute: typeof ShowcaseRouteRouteWithChildren
+  SolidSpectrumRouteRoute: typeof SolidSpectrumRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
   ThemeRoute: typeof ThemeRoute
-  SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren
-  SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute
-  SolidSpectrumPlaygroundRoute: typeof SolidSpectrumPlaygroundRoute
-  SolidSpectrumIndexRoute: typeof SolidSpectrumIndexRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -974,6 +981,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/solid-spectrum': {
+      id: '/solid-spectrum'
+      path: '/solid-spectrum'
+      fullPath: '/solid-spectrum'
+      preLoaderRoute: typeof SolidSpectrumRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/showcase': {
       id: '/showcase'
       path: '/showcase'
@@ -990,10 +1004,10 @@ declare module '@tanstack/solid-router' {
     }
     '/solid-spectrum/': {
       id: '/solid-spectrum/'
-      path: '/solid-spectrum'
+      path: '/'
       fullPath: '/solid-spectrum/'
       preLoaderRoute: typeof SolidSpectrumIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
     }
     '/showcase/': {
       id: '/showcase/'
@@ -1004,17 +1018,17 @@ declare module '@tanstack/solid-router' {
     }
     '/solid-spectrum/playground': {
       id: '/solid-spectrum/playground'
-      path: '/solid-spectrum/playground'
+      path: '/playground'
       fullPath: '/solid-spectrum/playground'
       preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
     }
     '/solid-spectrum/ecosystem': {
       id: '/solid-spectrum/ecosystem'
-      path: '/solid-spectrum/ecosystem'
+      path: '/ecosystem'
       fullPath: '/solid-spectrum/ecosystem'
       preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
     }
     '/showcase/type': {
       id: '/showcase/type'
@@ -1123,10 +1137,10 @@ declare module '@tanstack/solid-router' {
     }
     '/solid-spectrum/docs': {
       id: '/solid-spectrum/docs'
-      path: '/solid-spectrum/docs'
+      path: '/docs'
       fullPath: '/solid-spectrum/docs'
       preLoaderRoute: typeof SolidSpectrumDocsRouteRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
     }
     '/solid-spectrum/docs/': {
       id: '/solid-spectrum/docs/'
@@ -1669,15 +1683,29 @@ const SolidSpectrumDocsRouteRouteWithChildren =
     SolidSpectrumDocsRouteRouteChildren,
   )
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
-  AdminRoute: AdminRoute,
-  ThemeRoute: ThemeRoute,
+interface SolidSpectrumRouteRouteChildren {
+  SolidSpectrumDocsRouteRoute: typeof SolidSpectrumDocsRouteRouteWithChildren
+  SolidSpectrumEcosystemRoute: typeof SolidSpectrumEcosystemRoute
+  SolidSpectrumPlaygroundRoute: typeof SolidSpectrumPlaygroundRoute
+  SolidSpectrumIndexRoute: typeof SolidSpectrumIndexRoute
+}
+
+const SolidSpectrumRouteRouteChildren: SolidSpectrumRouteRouteChildren = {
   SolidSpectrumDocsRouteRoute: SolidSpectrumDocsRouteRouteWithChildren,
   SolidSpectrumEcosystemRoute: SolidSpectrumEcosystemRoute,
   SolidSpectrumPlaygroundRoute: SolidSpectrumPlaygroundRoute,
   SolidSpectrumIndexRoute: SolidSpectrumIndexRoute,
+}
+
+const SolidSpectrumRouteRouteWithChildren =
+  SolidSpectrumRouteRoute._addFileChildren(SolidSpectrumRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
+  SolidSpectrumRouteRoute: SolidSpectrumRouteRouteWithChildren,
+  AdminRoute: AdminRoute,
+  ThemeRoute: ThemeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
