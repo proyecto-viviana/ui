@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import { FONT_BODY, FONT_DISPLAY, SiteFooter } from "@/components/theme/primitives";
+import { repoPackageUrl } from "@/lib/site";
 import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/solid-spectrum/ecosystem")({
@@ -159,25 +160,32 @@ function Ecosystem() {
         <section style={{ "margin-bottom": "3rem" }}>
           <SectionHeading>Core Packages</SectionHeading>
           <div class="pv-tile-grid">
+            {/* Top of the chain first. The `ui` package publishes from
+                packages/viviana-ui — the directory and the package name differ. */}
+            <ProjectTile
+              name="@proyecto-viviana/ui"
+              glyph="UI"
+              href={repoPackageUrl("viviana-ui")}
+            />
             <ProjectTile
               name="@proyecto-viviana/solid-spectrum"
               glyph="SP"
-              href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solid-spectrum"
+              href={repoPackageUrl("solid-spectrum")}
             />
             <ProjectTile
               name="@proyecto-viviana/solidaria-components"
               glyph="SC"
-              href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solidaria-components"
+              href={repoPackageUrl("solidaria-components")}
             />
             <ProjectTile
               name="@proyecto-viviana/solidaria"
               glyph="SA"
-              href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solidaria"
+              href={repoPackageUrl("solidaria")}
             />
             <ProjectTile
               name="@proyecto-viviana/solid-stately"
               glyph="ST"
-              href="https://github.com/proyecto-viviana/proyecto-viviana/tree/main/packages/solid-stately"
+              href={repoPackageUrl("solid-stately")}
             />
           </div>
         </section>

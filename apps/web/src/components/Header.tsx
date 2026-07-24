@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { createVisuallyHidden } from "@proyecto-viviana/solidaria";
 import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js";
+import { REPO_URL } from "@/lib/site";
 import { useTheme } from "@/utils/theme";
 import "@/components/theme/studio.css";
 
@@ -178,7 +179,7 @@ export function Header() {
 
           {/* GitHub */}
           <a
-            href="https://github.com/proyecto-viviana/proyecto-viviana"
+            href={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"

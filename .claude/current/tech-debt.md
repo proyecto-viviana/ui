@@ -4,8 +4,9 @@ status: current
 tasks:
   - id: launch-broken-github-links
     title: Six site links point at a 404 GitHub repo
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
@@ -17,6 +18,18 @@ tasks:
     exit: >-
       Repoint all six to proyecto-viviana/ui. Consider a single shared constant so
       the URL has one definition rather than six.
+    resolution: >-
+      Closed 2026-07-24. New apps/web/src/lib/site.ts owns REPO_URL, NPM_ORG_URL,
+      repoUrl() and repoPackageUrl(); all six links derive from it, so the name
+      has one definition. New guard:outbound-links
+      (scripts/check-outbound-links.ts) blocks the dead slug from reappearing in
+      any link, requires apps/web source to go through the module rather than
+      hand-typing URLs, and checks every published package's repository.url
+      agrees. Verified it fires by reintroducing the dead link (exit 1) before
+      reverting. CHANGELOGs are exempt — Changesets wrote those under the repo's
+      former name and they are a historical record. Also added the missing
+      @proyecto-viviana/ui tile to the ecosystem page, which listed four of the
+      five packages and omitted the flagship.
   - id: launch-installation-page-wrong
     title: The installation page omits the flagship package and teaches hand-authored CSS variables
     state: open

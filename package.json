@@ -83,6 +83,7 @@
     "guard:idiomatic-solid": "vp exec tsx scripts/check-idiomatic-solid.ts",
     "guard:invented-utilities": "vp exec tsx scripts/check-invented-utilities.ts",
     "guard:publish-drift": "node scripts/check-publish-drift.mjs",
+    "guard:outbound-links": "vp exec tsx scripts/check-outbound-links.ts",
     "docs:check": "vp exec tsx scripts/check-docs-current.ts",
     "bench:bundle": "vp exec tsx benchmarks/bundle-size/analyze.ts",
     "bench:runtime": "vp test run benchmarks/runtime",

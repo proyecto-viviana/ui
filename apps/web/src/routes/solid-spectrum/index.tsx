@@ -9,6 +9,7 @@ import {
   PillTag,
   SiteFooter,
 } from "@/components/theme/primitives";
+import { REPO_URL } from "@/lib/site";
 import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/solid-spectrum/")({
@@ -127,7 +128,7 @@ function Landing() {
             Read the docs →
           </CtaButton>
           <a
-            href="https://github.com/proyecto-viviana/proyecto-viviana"
+            href={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             class="pv-cta pv-cta--secondary"
