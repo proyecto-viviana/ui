@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/solid-router";
+import { createFileRoute, Link } from "@tanstack/solid-router";
 import { Button, Badge, Flex, TextField, ToggleSwitch, typeRoles } from "@proyecto-viviana/ui";
 import { Header } from "@/components";
 import {
@@ -16,6 +16,81 @@ import "@/components/theme/studio.css";
 export const Route = createFileRoute("/")({
   component: LandingPage,
 });
+
+/** One of the two styled registers, presented as a peer on the landing: name,
+ *  register tagline, one-line pitch, its own install string, and the CTA into
+ *  that register's surface. */
+function RegisterCard(props: {
+  name: string;
+  tagline: string;
+  blurb: string;
+  pkg: string;
+  ctaHref: string;
+  ctaLabel: string;
+}) {
+  return (
+    <div
+      class="pv-card"
+      style={{
+        flex: "1 1 260px",
+        display: "flex",
+        "flex-direction": "column",
+        gap: "14px",
+        padding: "28px",
+      }}
+    >
+      <div style={{ display: "flex", "flex-direction": "column", gap: "4px" }}>
+        <span
+          style={{
+            "font-family": FONT_DISPLAY,
+            "font-size": "20px",
+            "font-weight": "700",
+            "letter-spacing": "-0.01em",
+            color: "var(--docs-text)",
+          }}
+        >
+          {props.name}
+        </span>
+        <span
+          style={{
+            "font-family": FONT_BODY,
+            "font-size": "12px",
+            "font-weight": "600",
+            "letter-spacing": "0.04em",
+            "text-transform": "uppercase",
+            color: ACCENT,
+          }}
+        >
+          {props.tagline}
+        </span>
+      </div>
+      <p
+        style={{
+          flex: "1",
+          "font-family": FONT_BODY,
+          "font-size": "13.5px",
+          "line-height": "1.6",
+          color: "var(--docs-text-secondary)",
+          margin: "0",
+        }}
+      >
+        {props.blurb}
+      </p>
+      <a
+        href={`https://www.npmjs.com/package/${props.pkg}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        class={typeRoles.terminal}
+        style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
+      >
+        npm i {props.pkg}
+      </a>
+      <CtaButton href={props.ctaHref} tone="primary">
+        {props.ctaLabel}
+      </CtaButton>
+    </div>
+  );
+}
 
 function LandingPage() {
   return (
@@ -47,7 +122,7 @@ function LandingPage() {
             "text-align": "center",
           }}
         >
-          <PillTag>Component library · Theme studio</PillTag>
+          <PillTag>Two styled systems · One Solid foundation</PillTag>
 
           <h1
             style={{
@@ -60,39 +135,71 @@ function LandingPage() {
               "margin-top": "0.25rem",
             }}
           >
-            Theme the <span style={{ color: ACCENT }}>whole library</span> from a handful of knobs.
+            Two styled component systems, one <span style={{ color: ACCENT }}>Solid foundation</span>.
           </h1>
 
           <p
             style={{
-              "max-width": "480px",
+              "max-width": "520px",
               "font-size": "15px",
               "line-height": "1.65",
               color: "var(--docs-text-secondary)",
             }}
           >
-            60+ certified-accessible components, faithfully ported from Adobe&rsquo;s React Spectrum. Every
-            color is a design token — tune a few, watch the whole library re-skin, then copy the CSS.
+            Accessible SolidJS components, faithfully ported from Adobe&rsquo;s React Aria. Pick the
+            look — the Glasselated <strong>viviana-ui</strong> or pixel-faithful{" "}
+            <strong>solid-spectrum</strong> — both share the same certified-accessible core.
           </p>
+        </section>
 
-          <Flex wrap alignItems="center" justifyContent="center" gap={4} style={{ "margin-top": "8px" }}>
-            <CtaButton href="/theme" tone="primary">
-              Create your theme →
-            </CtaButton>
-            <CtaButton href="/solid-spectrum/playground" tone="secondary">
-              Explore components
-            </CtaButton>
-          </Flex>
+        {/* The two registers, side by side as peers */}
+        <section
+          class="pv-registers"
+          style={{
+            display: "flex",
+            "flex-wrap": "wrap",
+            gap: "20px",
+            "margin-top": "8px",
+          }}
+        >
+          <RegisterCard
+            name="viviana-ui"
+            tagline="Glasselated"
+            blurb="Our expressive register — frosted glass, pixel accents, the Geist trio. The house design system, live in the showcase."
+            pkg="@proyecto-viviana/ui"
+            ctaHref="/showcase"
+            ctaLabel="Explore the showcase →"
+          />
+          <RegisterCard
+            name="solid-spectrum"
+            tagline="Spectrum 2 parity"
+            blurb="Adobe Spectrum 2 for Solid — pixel-faithful to React Spectrum and certified cell-by-cell against the upstream pin."
+            pkg="@proyecto-viviana/solid-spectrum"
+            ctaHref="/solid-spectrum/docs"
+            ctaLabel="Read the docs →"
+          />
+        </section>
 
-          <a
-            href="https://www.npmjs.com/package/@proyecto-viviana/ui"
-            target="_blank"
-            rel="noopener noreferrer"
+        {/* Shared foundation */}
+        <section
+          style={{
+            display: "flex",
+            "flex-wrap": "wrap",
+            "align-items": "center",
+            "justify-content": "center",
+            gap: "8px 16px",
+            "padding-block": "1.75rem",
+            "text-align": "center",
+          }}
+        >
+          <SectionLabel>Both built on</SectionLabel>
+          <Link
+            to="/solid-spectrum/ecosystem"
             class={typeRoles.terminal}
             style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
           >
-            npm i @proyecto-viviana/ui
-          </a>
+            solidaria · solid-stately · solidaria-components
+          </Link>
         </section>
 
         {/* Feature blocks */}

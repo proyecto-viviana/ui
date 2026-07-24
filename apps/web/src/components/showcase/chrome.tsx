@@ -32,6 +32,9 @@ export function ShowcaseTopbar(): JSX.Element {
 
   return (
     <header class="gls-topbar">
+      <Link to="/" class="gls-back" aria-label="Back to the main site">
+        ← Site
+      </Link>
       <Link to="/showcase" class="gls-brand">
         Viviana UI
       </Link>

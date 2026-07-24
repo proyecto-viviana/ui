@@ -80,6 +80,25 @@
   white-space: nowrap;
 }
 
+/* Out-link back to the main site — /showcase runs its own chrome, so without
+   this the register surface is a one-way trip. */
+[data-glasselated] .gls-back {
+  font: var(--type-micro);
+  letter-spacing: var(--type-micro-track);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+[data-glasselated] .gls-back:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
 [data-glasselated] .gls-topbar-nav {
   display: flex;
   align-items: center;
