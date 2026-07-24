@@ -8,8 +8,16 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/daterangepicker")({
+  head: () =>
+    seo({
+      title: "DateRangePicker",
+      description:
+        "A date range picker lets users select a start and end date using a combined input with a range calendar popup.",
+      path: "/solid-spectrum/docs/components/daterangepicker",
+    }),
   component: DateRangePickerPage,
 });
 

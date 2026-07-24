@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { TextArea } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/textarea")({
+  head: () =>
+    seo({
+      title: "TextArea",
+      description:
+        "A multi-line text input with label, description, and validation support. Shares the same accessibility and styling patterns as TextField.",
+      path: "/solid-spectrum/docs/components/textarea",
+    }),
   component: TextAreaPage,
 });
 

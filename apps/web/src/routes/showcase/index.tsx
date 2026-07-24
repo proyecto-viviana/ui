@@ -4,8 +4,16 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { For } from "solid-js";
 import { PANELS } from "@/components/showcase/registry";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/showcase/")({
+  head: () =>
+    seo({
+      title: "Glasselated Showcase",
+      description:
+        "Every Viviana UI component on the Glasselated register: the nine type roles as living specimens, the accent discipline, and the directory of panels.",
+      path: "/showcase",
+    }),
   component: Overview,
 });
 

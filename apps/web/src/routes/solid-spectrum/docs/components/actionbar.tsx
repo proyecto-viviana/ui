@@ -3,8 +3,15 @@ import { createSignal } from "solid-js";
 import { ActionBar, ActionBarContainer, ActionButton } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/actionbar")({
+  head: () =>
+    seo({
+      title: "ActionBar",
+      description: "ActionBar surfaces bulk actions for a selection inside a collection.",
+      path: "/solid-spectrum/docs/components/actionbar",
+    }),
   component: ActionBarPage,
 });
 

@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { AlertDialog, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/alertdialog")({
+  head: () =>
+    seo({
+      title: "AlertDialog",
+      description:
+        "A modal dialog that interrupts the user with important information, requiring an explicit action before continuing.",
+      path: "/solid-spectrum/docs/components/alertdialog",
+    }),
   component: AlertDialogPage,
 });
 

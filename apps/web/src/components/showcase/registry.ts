@@ -3,6 +3,7 @@
    panel is one child route under /showcase; `components` lists the exported
    names the panel is responsible for demonstrating, so coverage against the
    package's public surface stays checkable. */
+import { seo } from "@/seo";
 
 export interface PanelDef {
   /** Route slug under /showcase/. */
@@ -304,4 +305,37 @@ export const PANELS: readonly PanelDef[] = [
 
 export function panelBySlug(slug: string): PanelDef | undefined {
   return PANELS.find((p) => p.slug === slug);
+}
+
+/**
+ * Head metadata for a panel route, derived from the panel's own entry above.
+ *
+ * Derived rather than written per route so the browser tab, the search result
+ * and the on-page heading cannot drift apart — and so adding a panel to PANELS
+ * is the only edit a new panel needs. The component names are appended because
+ * a blurb alone runs ~40 characters, and the names are the words someone
+ * actually searches for ("solid combobox", "solid taggroup").
+ */
+export function panelSeo(slug: string) {
+  const def = panelBySlug(slug);
+  if (!def) {
+    throw new Error(`panelSeo: no showcase panel named "${slug}".`);
+  }
+
+  let description = def.blurb;
+  const names: string[] = [];
+  for (const name of def.components) {
+    const next = [...names, name].join(", ");
+    if (`${description} ${next}.`.length > 158) break;
+    names.push(name);
+  }
+  if (names.length > 0) {
+    description = `${description} ${names.join(", ")}.`;
+  }
+
+  return seo({
+    title: `${def.title} · Showcase`,
+    description,
+    path: `/showcase/${def.slug}`,
+  });
 }

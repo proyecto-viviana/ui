@@ -16,9 +16,10 @@ import {
   SearchIcon,
 } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
-import { panelBySlug } from "@/components/showcase/registry";
+import { panelBySlug, panelSeo } from "@/components/showcase/registry";
 
 export const Route = createFileRoute("/showcase/buttons")({
+  head: () => panelSeo("buttons"),
   component: ButtonsPanel,
 });
 

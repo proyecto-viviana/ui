@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { Checkbox, CheckboxGroup } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/checkbox")({
+  head: () =>
+    seo({
+      title: "Checkbox",
+      description:
+        "Checkboxes allow users to select one or more items from a set, or to turn an option on or off.",
+      path: "/solid-spectrum/docs/components/checkbox",
+    }),
   component: CheckboxPage,
 });
 

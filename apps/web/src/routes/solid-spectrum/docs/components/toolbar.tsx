@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Toolbar, ActionButton } from "@proyecto-viviana/solid-spectrum";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/toolbar")({
+  head: () =>
+    seo({
+      title: "Toolbar",
+      description:
+        "Toolbar groups a set of controls — buttons, toggles, and separators — into a single tab stop with arrow-key navigation between the items.",
+      path: "/solid-spectrum/docs/components/toolbar",
+    }),
   component: ToolbarPage,
 });
 

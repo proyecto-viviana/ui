@@ -4,6 +4,7 @@ import { TagGroup } from "@proyecto-viviana/solid-spectrum";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type TagItem = {
   id: string;
@@ -35,6 +36,13 @@ const statusTags: TagItem[] = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/taggroup")({
+  head: () =>
+    seo({
+      title: "TagGroup",
+      description:
+        "TagGroup displays a collection of tags that can be removable or selectable. Use tags to categorize content, filter results, or represent user selections.",
+      path: "/solid-spectrum/docs/components/taggroup",
+    }),
   component: TagGroupPage,
 });
 

@@ -9,8 +9,16 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { Flex } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/popover")({
+  head: () =>
+    seo({
+      title: "Popover",
+      description:
+        "Popover displays contextual content anchored to a trigger, without leaving the current view.",
+      path: "/solid-spectrum/docs/components/popover",
+    }),
   component: PopoverPage,
 });
 

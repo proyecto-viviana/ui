@@ -12,8 +12,16 @@ import {
   SiteFooter,
 } from "@/components/theme/primitives";
 import "@/components/theme/studio.css";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/")({
+  head: () =>
+    seo({
+      title: "Proyecto Viviana",
+      description:
+        "Two styled component systems on one accessible Solid foundation: solid-spectrum, a port of Adobe's React Spectrum, and Viviana UI's Glasselated register.",
+      path: "/",
+    }),
   component: LandingPage,
 });
 

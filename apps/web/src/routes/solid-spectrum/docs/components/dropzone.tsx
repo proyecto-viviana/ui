@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { DropZone, Text } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/dropzone")({
+  head: () =>
+    seo({
+      title: "DropZone",
+      description:
+        "DropZone is a styled drag-and-drop target for files, handling the drag-over, focus, and drop states for you.",
+      path: "/solid-spectrum/docs/components/dropzone",
+    }),
   component: DropZonePage,
 });
 

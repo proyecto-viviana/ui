@@ -4,8 +4,16 @@ import { DatePicker } from "@proyecto-viviana/solid-spectrum";
 import { CalendarDateClass as CalendarDate, type DateValue } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/datepicker")({
+  head: () =>
+    seo({
+      title: "DatePicker",
+      description:
+        "A date picker combines a segmented date input field with a dropdown calendar popup.",
+      path: "/solid-spectrum/docs/components/datepicker",
+    }),
   component: DatePickerPage,
 });
 

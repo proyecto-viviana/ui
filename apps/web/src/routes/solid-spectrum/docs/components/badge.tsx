@@ -2,11 +2,19 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { Badge, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 /** Nudges a count badge onto the top-right corner of whatever it is anchored to. */
 const corner = { position: "absolute", top: "-8px", right: "-8px" } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/badge")({
+  head: () =>
+    seo({
+      title: "Badge",
+      description:
+        "A small numeric or status indicator, typically shown attached to another element. Used for notification counts, status indicators, and labels.",
+      path: "/solid-spectrum/docs/components/badge",
+    }),
   component: BadgePage,
 });
 

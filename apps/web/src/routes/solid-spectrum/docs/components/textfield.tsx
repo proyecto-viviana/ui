@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { TextField } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/textfield")({
+  head: () =>
+    seo({
+      title: "TextField",
+      description:
+        "TextFields allow users to enter and edit text. They support various input types, validation, and accessibility features.",
+      path: "/solid-spectrum/docs/components/textfield",
+    }),
   component: TextFieldPage,
 });
 

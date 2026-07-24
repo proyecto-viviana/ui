@@ -13,11 +13,19 @@
    collection accessor — see packages/viviana-ui/test/Collections.{ssr,hydrate}.test),
    so both twins now paint on first byte alongside the rest. */
 import { createFileRoute } from "@tanstack/solid-router";
+import { seo } from "@/seo";
 import { For } from "solid-js";
 import { SPEC_PANELS } from "@/components/parity/spec-panels";
 import { MIRROR_PANELS } from "@/components/parity/mirror";
 
 export const Route = createFileRoute("/showcase/parity")({
+  head: () =>
+    seo({
+      title: "Parity · Showcase",
+      description:
+        "Each Glasselated panel twice in one row: the hand-built spec on the left, the same panel rebuilt from real @proyecto-viviana/ui components on the right.",
+      path: "/showcase/parity",
+    }),
   component: ParityPanel,
 });
 

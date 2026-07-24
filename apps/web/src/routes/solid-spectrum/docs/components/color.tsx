@@ -25,8 +25,16 @@ import { parseColor, type Color } from "@proyecto-viviana/solid-stately";
 // their geometry and state styling lives in styles/headless-demos.css.
 import { Flex, Text, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/color")({
+  head: () =>
+    seo({
+      title: "Color Components",
+      description:
+        "A suite of color picking primitives: sliders, 2D areas, wheels, text fields, swatches, and a full-featured editor.",
+      path: "/solid-spectrum/docs/components/color",
+    }),
   component: ColorPage,
 });
 

@@ -9,6 +9,7 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type SelectItem = {
   id: string;
@@ -17,6 +18,13 @@ type SelectItem = {
 };
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/select")({
+  head: () =>
+    seo({
+      title: "Select",
+      description:
+        "Select allows users to choose a single option from a dropdown list. It's ideal for forms where space is limited.",
+      path: "/solid-spectrum/docs/components/select",
+    }),
   component: SelectPage,
 });
 

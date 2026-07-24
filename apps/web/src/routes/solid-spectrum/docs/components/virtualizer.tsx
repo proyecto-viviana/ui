@@ -8,6 +8,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 const listItems = Array.from({ length: 1000 }, (_, i) => ({
   id: `item-${i}`,
@@ -39,6 +40,13 @@ const tile = {
 } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/virtualizer")({
+  head: () =>
+    seo({
+      title: "Virtualizer",
+      description:
+        "Virtualizer efficiently renders large collections by only mounting visible items.",
+      path: "/solid-spectrum/docs/components/virtualizer",
+    }),
   component: VirtualizerPage,
 });
 

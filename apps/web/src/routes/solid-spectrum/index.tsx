@@ -10,9 +10,17 @@ import {
   SiteFooter,
 } from "@/components/theme/primitives";
 import { REPO_URL } from "@/lib/site";
+import { seo } from "@/seo";
 import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/solid-spectrum/")({
+  head: () =>
+    seo({
+      title: "solid-spectrum",
+      description:
+        "An accessible UI library for SolidJS — an unofficial port of Adobe's React Spectrum 2, with compiled styles, SSR support, and full keyboard interaction.",
+      path: "/solid-spectrum",
+    }),
   component: Landing,
 });
 

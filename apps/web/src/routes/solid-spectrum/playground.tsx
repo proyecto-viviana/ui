@@ -162,6 +162,7 @@ import {
   SECTION_IDS,
   type SectionId,
 } from "@/components/playground/sections";
+import { seo } from "@/seo";
 const ADVANCED_SECTION_IDS: SectionId[] = [
   "createcheckboxgroup-hook",
   "listbox",
@@ -218,6 +219,13 @@ const PlaygroundAdvancedSections = lazy(() =>
 );
 
 export const Route = createFileRoute("/solid-spectrum/playground")({
+  head: () =>
+    seo({
+      title: "Playground",
+      description:
+        "A live sandbox for solid-spectrum: change colors in real time and watch buttons, tabs, alerts, pickers and forms respond across every section.",
+      path: "/solid-spectrum/playground",
+    }),
   component: Playground,
 });
 

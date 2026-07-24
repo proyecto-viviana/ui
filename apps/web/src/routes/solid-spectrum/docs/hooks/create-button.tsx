@@ -3,8 +3,15 @@ import { createSignal } from "solid-js";
 import { createButton } from "@proyecto-viviana/solidaria";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/hooks/create-button")({
+  head: () =>
+    seo({
+      title: "createButton",
+      description: "Provides the behavior and accessibility implementation for a button component.",
+      path: "/solid-spectrum/docs/hooks/create-button",
+    }),
   component: CreateButtonPage,
 });
 

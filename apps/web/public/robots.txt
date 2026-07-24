@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# The admin dashboard is dev-only — in a production build its beforeLoad
+# redirects to /. Crawling it costs a request and yields a duplicate of the
+# home page, so it is excluded here and from the sitemap.
+Disallow: /admin
+
+Sitemap: https://proyectoviviana.org/sitemap.xml

@@ -136,9 +136,13 @@ is the remainder of `ci-gates-required`.
   answers **200 with a full page of text**, so a page that throws looks healthy to
   status, byte-length and console checks alike — the sweep asserts the boundary is
   absent, and that assertion is the whole test.
-- **SEO surface essentially absent** — 5 of 75 routes define `head:`; no
-  robots.txt, sitemap, OG/Twitter cards, or canonical URLs. One global title and
-  description for the whole site.
+- ~~**SEO surface essentially absent**~~ — **closed 2026-07-24.** All 70
+  indexable routes now set their own title, description, canonical and OG tags
+  through `apps/web/src/seo.ts`; `robots.txt` ships in `public/` and
+  `sitemap.xml` is generated at build time from the route tree. `vp run test:seo`
+  is the gate, and it deliberately asserts each title is the route's _own_ rather
+  than merely present — the root fallback made "has a title" pass for all 72
+  routes while every one of them said "Proyecto Viviana".
 - **7 S2 exports still missing**, all drag-and-drop (`LabeledValueContext`,
   `useDragAndDrop`, `DragPreview`, `DIRECTORY_DRAG_TYPE`,
   `is{Text,File,Directory}DropItem`) — tracked as `dnd-subsystem-port`.
@@ -163,8 +167,13 @@ not only on PRs.
 installation page around the real shipped-CSS story (B2). Make the nav and
 landing carry the two-product story. Add npm metadata (B7).
 
-**Phase 3 — make it safe to deploy.** Route-sweep smoke over all 75 routes; per
-page `head:`; robots.txt and sitemap.
+**Phase 3 — make it safe to deploy.** ☑ Route-sweep smoke over all 75 routes;
+per page `head:`; robots.txt and sitemap. Both gates (`test:routes`,
+`test:seo`) run from `ci:site`. **Open question for the owner:** the canonical
+origin is set to `https://proyectoviviana.org` in `apps/web/src/seo.ts`;
+`/solid-spectrum/ecosystem` still tiles the parent project at
+`https://proyecto-viviana.uy`, which is either a second real domain or a stale
+link — it is a name with reach, so it was left alone (Rule #3).
 
 **Phase 4 — deploy.** `vp run build:web` (verified, 12.7s) then wrangler.
 

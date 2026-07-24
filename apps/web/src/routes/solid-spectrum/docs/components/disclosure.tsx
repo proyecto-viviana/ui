@@ -8,6 +8,7 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type FaqEntry = {
   id: string;
@@ -70,6 +71,12 @@ const settingsSections = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/disclosure")({
+  head: () =>
+    seo({
+      title: "Disclosure",
+      description: "Disclosure shows and hides content with an expand/collapse interaction.",
+      path: "/solid-spectrum/docs/components/disclosure",
+    }),
   component: DisclosurePage,
 });
 

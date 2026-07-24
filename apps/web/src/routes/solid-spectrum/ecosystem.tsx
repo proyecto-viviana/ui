@@ -3,9 +3,17 @@ import { type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import { FONT_BODY, FONT_DISPLAY, SiteFooter } from "@/components/theme/primitives";
 import { repoPackageUrl } from "@/lib/site";
+import { seo } from "@/seo";
 import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/solid-spectrum/ecosystem")({
+  head: () =>
+    seo({
+      title: "Ecosystem",
+      description:
+        "The five packages behind the port — solid-stately, solidaria, solidaria-components, solid-spectrum and @proyecto-viviana/ui — and the apps built on them.",
+      path: "/solid-spectrum/ecosystem",
+    }),
   component: Ecosystem,
 });
 

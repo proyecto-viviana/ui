@@ -8,8 +8,16 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/rangecalendar")({
+  head: () =>
+    seo({
+      title: "RangeCalendar",
+      description:
+        "A range calendar displays a grid of days and allows users to select a contiguous range of dates by clicking a start date and then an end date.",
+      path: "/solid-spectrum/docs/components/rangecalendar",
+    }),
   component: RangeCalendarPage,
 });
 

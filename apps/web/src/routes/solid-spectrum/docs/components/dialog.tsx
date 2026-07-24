@@ -9,8 +9,16 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/dialog")({
+  head: () =>
+    seo({
+      title: "Dialog",
+      description:
+        "Dialogs are modal windows that appear over the main content. They're used for important messages, confirmations, or collecting user input.",
+      path: "/solid-spectrum/docs/components/dialog",
+    }),
   component: DialogPage,
 });
 

@@ -4,6 +4,7 @@ import { Tree, TreeItem } from "@proyecto-viviana/solid-spectrum";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type FileNode = {
   name: string;
@@ -57,6 +58,12 @@ const orgChartData: TreeItemData<FileNode>[] = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/tree")({
+  head: () =>
+    seo({
+      title: "Tree",
+      description: "Tree displays hierarchical data in an expandable and collapsible structure.",
+      path: "/solid-spectrum/docs/components/tree",
+    }),
   component: TreePage,
 });
 

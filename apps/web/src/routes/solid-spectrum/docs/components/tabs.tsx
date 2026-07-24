@@ -3,6 +3,7 @@ import { createSignal } from "solid-js";
 import { Tabs, TabList, Tab, TabPanel } from "@proyecto-viviana/solid-spectrum";
 import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type TabItem = {
   id: string;
@@ -35,6 +36,13 @@ const verticalTabs: TabItem[] = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/tabs")({
+  head: () =>
+    seo({
+      title: "Tabs",
+      description:
+        "Tabs organize content into separate views where only one view is visible at a time. Users can switch between views by selecting the corresponding tab.",
+      path: "/solid-spectrum/docs/components/tabs",
+    }),
   component: TabsPage,
 });
 

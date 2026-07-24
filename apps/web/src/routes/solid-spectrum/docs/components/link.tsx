@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { Link } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/link")({
+  head: () =>
+    seo({
+      title: "Link",
+      description:
+        "An accessible link component that supports both navigation and press-event patterns. Normalizes mouse, touch, and keyboard interactions.",
+      path: "/solid-spectrum/docs/components/link",
+    }),
   component: LinkPage,
 });
 

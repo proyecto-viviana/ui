@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { FileTrigger, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/filetrigger")({
+  head: () =>
+    seo({
+      title: "FileTrigger",
+      description:
+        "FileTrigger opens the native file picker from any custom trigger and forwards the chosen files to your code.",
+      path: "/solid-spectrum/docs/components/filetrigger",
+    }),
   component: FileTriggerPage,
 });
 

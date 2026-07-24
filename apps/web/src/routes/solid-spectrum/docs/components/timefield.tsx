@@ -4,8 +4,16 @@ import { TimeField } from "@proyecto-viviana/solid-spectrum";
 import { type TimeValue } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/timefield")({
+  head: () =>
+    seo({
+      title: "TimeField",
+      description:
+        "A time field allows users to enter a time value using individually editable segments for hours, minutes, and optionally seconds.",
+      path: "/solid-spectrum/docs/components/timefield",
+    }),
   component: TimeFieldPage,
 });
 

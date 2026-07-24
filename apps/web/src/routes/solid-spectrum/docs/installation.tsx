@@ -2,8 +2,16 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { type JSX } from "solid-js";
 import { FONT_SANS, FONT_MONO } from "@/components/docs";
 import { useThemeColors } from "@/utils/theme";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/installation")({
+  head: () =>
+    seo({
+      title: "Installation",
+      description:
+        "Pick a package, install it, import the stylesheet, and wrap your app in a Provider. Every step here is checked against what the packages actually export.",
+      path: "/solid-spectrum/docs/installation",
+    }),
   component: InstallationPage,
 });
 

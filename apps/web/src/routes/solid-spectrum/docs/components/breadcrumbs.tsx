@@ -3,6 +3,7 @@ import { createSignal } from "solid-js";
 import { Breadcrumbs, BreadcrumbItem } from "@proyecto-viviana/solid-spectrum";
 import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type BreadcrumbEntry = {
   id: string;
@@ -32,6 +33,13 @@ const deepCrumbs: BreadcrumbEntry[] = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/breadcrumbs")({
+  head: () =>
+    seo({
+      title: "Breadcrumbs",
+      description:
+        "Breadcrumbs show a navigational hierarchy of pages, helping users understand where they are within a site and navigate back to parent sections.",
+      path: "/solid-spectrum/docs/components/breadcrumbs",
+    }),
   component: BreadcrumbsPage,
 });
 

@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { ToggleSwitch } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/switch")({
+  head: () =>
+    seo({
+      title: "Switch",
+      description:
+        "A toggle switch for binary on/off states. An alternative to checkboxes when the immediate effect of the change should be visually apparent.",
+      path: "/solid-spectrum/docs/components/switch",
+    }),
   component: SwitchPage,
 });
 

@@ -6,6 +6,7 @@ import macros from "unplugin-parcel-macros";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { adminApiPlugin } from "./src/app/admin/server/plugin";
+import { sitemapPlugin } from "./src/app/seo/plugin";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -174,6 +175,10 @@ export default defineConfig({
     // not the workerd SSR env (which has no repo filesystem). Ordered first so it
     // wins for /api/admin before the cloudflare SSR env. See admin-dashboard.md.
     adminApiPlugin(),
+    // Emits /sitemap.xml from the generated route tree, and serves it in dev.
+    // Ordered with adminApiPlugin so its middleware is registered before the
+    // cloudflare SSR env claims the request. See src/app/seo/plugin.ts.
+    sitemapPlugin(),
     // cloudflare provides the workerd SSR environment used in dev and prod alike.
     // Must stay ahead of tanstackStart so the SSR env is set up before routing.
     cloudflare({ viteEnvironment: { name: "ssr" } }),

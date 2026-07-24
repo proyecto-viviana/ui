@@ -4,8 +4,16 @@ import { DateField } from "@proyecto-viviana/solid-spectrum";
 import { CalendarDateClass as CalendarDate, type DateValue } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/datefield")({
+  head: () =>
+    seo({
+      title: "DateField",
+      description:
+        "A date field allows users to type a date value using individually editable segments for month, day, and year.",
+      path: "/solid-spectrum/docs/components/datefield",
+    }),
   component: DateFieldPage,
 });
 

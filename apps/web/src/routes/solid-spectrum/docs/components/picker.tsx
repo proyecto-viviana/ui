@@ -10,6 +10,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Picker, PickerItem } from "@proyecto-viviana/solid-spectrum";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 const plans = [
   { id: "free", name: "Free" },
@@ -19,6 +20,13 @@ const plans = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/picker")({
+  head: () =>
+    seo({
+      title: "Picker",
+      description:
+        "Picker is a styled single-selection control that combines a trigger, the selected value, and a popover listbox. It is Spectrum 2's select.",
+      path: "/solid-spectrum/docs/components/picker",
+    }),
   component: PickerPage,
 });
 

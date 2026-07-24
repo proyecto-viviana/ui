@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { ComboBox, ComboBoxOption, defaultContainsFilter } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/combobox")({
+  head: () =>
+    seo({
+      title: "ComboBox",
+      description:
+        "A combination of a text input and a dropdown listbox. Users can type to filter the options and select from the filtered list. Fully keyboard accessible.",
+      path: "/solid-spectrum/docs/components/combobox",
+    }),
   component: ComboBoxPage,
 });
 

@@ -4,18 +4,22 @@ import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/solid-r
 import { HydrationScript } from "solid-js/web";
 import { Provider } from "@proyecto-viviana/ui";
 import { useTheme } from "@/utils/theme";
+import { seo, SITE_NAME, SITE_DESCRIPTION } from "@/seo";
 import appStyles from "@/styles.css?url";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      { charSet: "utf-8" },
+      // `charset`, not React's `charSet`: Solid's MetaHTMLAttributes names it
+      // in lowercase. The React spelling only ever typechecked here by accident
+      // of how TS normalised this array literal, and stopped once `seo()` was
+      // spread into it.
+      { charset: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Proyecto Viviana" },
-      {
-        name: "description",
-        content: "Beautiful, accessible SolidJS components inspired by React Spectrum",
-      },
+      // Fallback only. Every route sets its own title and description via
+      // `seo()`; deeper routes win, so these are what a route gets if it
+      // forgot — which `e2e/seo.spec.ts` fails on rather than tolerating.
+      ...seo({ title: SITE_NAME, description: SITE_DESCRIPTION, path: "/" }).meta,
     ],
     links: [
       { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },

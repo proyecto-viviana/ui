@@ -9,6 +9,7 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 const sections = [
   {
@@ -29,6 +30,13 @@ const sections = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/accordion")({
+  head: () =>
+    seo({
+      title: "Accordion",
+      description:
+        "Accordion groups related sections of collapsible content — the styled Spectrum 2 wrapper over DisclosureGroup.",
+      path: "/solid-spectrum/docs/components/accordion",
+    }),
   component: AccordionPage,
 });
 

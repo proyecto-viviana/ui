@@ -3,11 +3,19 @@ import { createSignal, onCleanup } from "solid-js";
 import { ProgressBar, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, StatusLight } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 /** The two staticColor demos need real light/dark grounds, so they keep explicit colours. */
 const backdrop = { padding: "16px", "border-radius": "var(--radius-md)" } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/progressbar")({
+  head: () =>
+    seo({
+      title: "ProgressBar",
+      description:
+        "ProgressBar shows the completion progress of a task, either as a determinate bar or an indeterminate animation for unknown durations.",
+      path: "/solid-spectrum/docs/components/progressbar",
+    }),
   component: ProgressBarPage,
 });
 

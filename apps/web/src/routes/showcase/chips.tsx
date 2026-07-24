@@ -6,9 +6,10 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, For } from "solid-js";
 import { Badge, Tag, TagGroup } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
-import { panelBySlug } from "@/components/showcase/registry";
+import { panelBySlug, panelSeo } from "@/components/showcase/registry";
 
 export const Route = createFileRoute("/showcase/chips")({
+  head: () => panelSeo("chips"),
   component: Page,
 });
 

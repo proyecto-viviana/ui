@@ -8,16 +8,12 @@ import { ShowcaseTopbar } from "@/components/showcase/chrome";
 
 export const Route = createFileRoute("/showcase")({
   head: () => ({
-    meta: [
-      { title: "Viviana UI — Glasselated Showcase" },
-      {
-        name: "description",
-        content:
-          "Every Viviana UI component on the Glasselated register: glass surfaces, Geist Pixel display type, terminal mono controls.",
-      },
-    ],
-    /* The Geist trio itself is loaded site-wide from the root route now; this
-       layer only adds the Glasselated host styles on top. */
+    /* No meta here. This layout used to set the title and description for the
+       whole showcase, which meant all sixteen panels shared one. Each panel
+       route now sets its own from the registry (`panelSeo`), and the overview
+       at /showcase owns what this used to say. The Geist trio is loaded
+       site-wide from the root route; this layer only adds the Glasselated host
+       styles on top. */
     links: [{ rel: "stylesheet", href: glasselatedStyles }],
   }),
   component: ShowcaseLayout,

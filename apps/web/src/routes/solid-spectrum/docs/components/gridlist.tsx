@@ -4,6 +4,7 @@ import { GridList, GridListItem } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { Badge, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type PhotoItem = {
   id: string;
@@ -40,6 +41,13 @@ const taskItems: TaskItem[] = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/gridlist")({
+  head: () =>
+    seo({
+      title: "GridList",
+      description:
+        "GridList displays a list of interactive items with support for keyboard navigation and selection.",
+      path: "/solid-spectrum/docs/components/gridlist",
+    }),
   component: GridListPage,
 });
 

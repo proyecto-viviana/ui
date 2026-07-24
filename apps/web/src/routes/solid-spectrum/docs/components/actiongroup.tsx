@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { ActionGroup } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 const alignment = [
   { id: "left", label: "Left" },
@@ -10,6 +11,12 @@ const alignment = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/actiongroup")({
+  head: () =>
+    seo({
+      title: "ActionGroup",
+      description: "ActionGroup clusters a set of related actions into a single segmented control.",
+      path: "/solid-spectrum/docs/components/actiongroup",
+    }),
   component: ActionGroupPage,
 });
 

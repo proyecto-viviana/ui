@@ -4,8 +4,16 @@ import { Calendar } from "@proyecto-viviana/solid-spectrum";
 import { CalendarDateClass as CalendarDate, type DateValue } from "@proyecto-viviana/solid-stately";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/calendar")({
+  head: () =>
+    seo({
+      title: "Calendar",
+      description:
+        "A calendar displays a grid of days organized into weeks and months. Users can select a single date by clicking on a day cell.",
+      path: "/solid-spectrum/docs/components/calendar",
+    }),
   component: CalendarPage,
 });
 

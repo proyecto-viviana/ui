@@ -14,6 +14,7 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 /** Renders children only on the client after hydration. Same component tree on server/client for hydration compat. */
 const ClientOnly: FlowComponent<{ fallback?: JSX.Element }> = (props) => {
@@ -55,6 +56,13 @@ const sortableColumns = [
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/table")({
+  head: () =>
+    seo({
+      title: "Table",
+      description:
+        "Tables display data in rows and columns. They support sorting, selection, and custom rendering.",
+      path: "/solid-spectrum/docs/components/table",
+    }),
   component: TablePage,
 });
 

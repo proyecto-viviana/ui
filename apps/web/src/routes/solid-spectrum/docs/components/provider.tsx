@@ -2,8 +2,15 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { Provider, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, Well, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/provider")({
+  head: () =>
+    seo({
+      title: "Provider / Theme",
+      description: "The Provider component is the root-level context wrapper for Proyecto Viviana.",
+      path: "/solid-spectrum/docs/components/provider",
+    }),
   component: ProviderPage,
 });
 

@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { Slider } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/slider")({
+  head: () =>
+    seo({
+      title: "Slider",
+      description:
+        "A range input with a draggable thumb. Supports keyboard navigation, number formatting, custom ranges, and step values.",
+      path: "/solid-spectrum/docs/components/slider",
+    }),
   component: SliderPage,
 });
 

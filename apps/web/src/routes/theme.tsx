@@ -6,6 +6,7 @@ import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
 import { SpectrumPreviewGallery } from "@/components/theme/SpectrumPreviewGallery";
 import spectrumStyles from "@proyecto-viviana/solid-spectrum/styles.css?url";
+import { seo } from "@/seo";
 import {
   ACCENT,
   FONT_BODY,
@@ -24,9 +25,20 @@ import "@/components/theme/studio.css";
 // (plus a harmless `:where(:root,:host)` of --s2-* vars), so it can't bleed onto the
 // viviana-ui gallery that shares this page — only S2 components carry those classes.
 export const Route = createFileRoute("/theme")({
-  head: () => ({
-    links: [{ rel: "stylesheet", href: spectrumStyles }],
-  }),
+  head: () => {
+    // Spreading `seo()` and then redeclaring `links` would silently drop the
+    // canonical link it returns, so the two link lists are concatenated.
+    const base = seo({
+      title: "Theme Studio",
+      description:
+        "Build a theme in the browser: pick the accent, the neutrals and the type, preview it live across both registers, and copy the token block out.",
+      path: "/theme",
+    });
+    return {
+      meta: base.meta,
+      links: [...base.links, { rel: "stylesheet", href: spectrumStyles }],
+    };
+  },
   component: ThemePage,
 });
 

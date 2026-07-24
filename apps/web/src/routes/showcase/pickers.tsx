@@ -18,9 +18,10 @@ import {
   Autocomplete,
 } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
-import { panelBySlug } from "@/components/showcase/registry";
+import { panelBySlug, panelSeo } from "@/components/showcase/registry";
 
 export const Route = createFileRoute("/showcase/pickers")({
+  head: () => panelSeo("pickers"),
   component: Page,
 });
 

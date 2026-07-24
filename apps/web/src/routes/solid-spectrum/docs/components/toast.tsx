@@ -10,8 +10,16 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/toast")({
+  head: () =>
+    seo({
+      title: "Toast",
+      description:
+        "Toasts display brief, temporary notifications. They appear at the edge of the screen and automatically dismiss after a timeout.",
+      path: "/solid-spectrum/docs/components/toast",
+    }),
   component: ToastPage,
 });
 

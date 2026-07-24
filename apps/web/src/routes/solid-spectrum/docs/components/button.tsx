@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { Button, Link } from "@proyecto-viviana/solid-spectrum";
 import { Flex } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/button")({
+  head: () =>
+    seo({
+      title: "Button",
+      description:
+        "Buttons allow users to perform actions with a single click or tap. They are the primary way users interact with your application.",
+      path: "/solid-spectrum/docs/components/button",
+    }),
   component: ButtonPage,
 });
 

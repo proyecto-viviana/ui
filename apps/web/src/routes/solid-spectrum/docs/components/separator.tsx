@@ -2,8 +2,16 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { Separator } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/separator")({
+  head: () =>
+    seo({
+      title: "Separator",
+      description:
+        "A visual divider between groups of content. Supports horizontal and vertical orientations, multiple sizes, and visual variants.",
+      path: "/solid-spectrum/docs/components/separator",
+    }),
   component: SeparatorPage,
 });
 

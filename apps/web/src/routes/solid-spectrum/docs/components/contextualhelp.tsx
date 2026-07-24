@@ -2,8 +2,16 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { ContextualHelp, Heading, Content } from "@proyecto-viviana/solid-spectrum";
 import { Flex } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/contextualhelp")({
+  head: () =>
+    seo({
+      title: "ContextualHelp",
+      description:
+        "ContextualHelp attaches an unobtrusive help or info affordance next to a control.",
+      path: "/solid-spectrum/docs/components/contextualhelp",
+    }),
   component: ContextualHelpPage,
 });
 

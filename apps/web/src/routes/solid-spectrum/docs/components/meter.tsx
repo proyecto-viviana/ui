@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { Meter, Button } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/meter")({
+  head: () =>
+    seo({
+      title: "Meter",
+      description:
+        "Meter represents a quantity within a known range, such as disk usage, signal strength, or a relevance score.",
+      path: "/solid-spectrum/docs/components/meter",
+    }),
   component: MeterPage,
 });
 

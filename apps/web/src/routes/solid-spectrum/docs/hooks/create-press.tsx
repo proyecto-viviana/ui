@@ -4,6 +4,7 @@ import type { JSX } from "solid-js";
 import { createPress } from "@proyecto-viviana/solidaria";
 import { Flex, Well, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 /** The press target both demos use: a plain box whose whole job is to show the pressed state. */
 const target = {
@@ -17,6 +18,13 @@ const target = {
 } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/hooks/create-press")({
+  head: () =>
+    seo({
+      title: "createPress",
+      description:
+        "Handles press interactions across mouse, touch, keyboard, and virtual clicks. This is the foundation for createButton and other interactive components.",
+      path: "/solid-spectrum/docs/hooks/create-press",
+    }),
   component: CreatePressPage,
 });
 

@@ -10,6 +10,7 @@ import {
 } from "@proyecto-viviana/solid-spectrum";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 type MenuDocItem = {
   id: string;
@@ -20,6 +21,13 @@ type MenuDocItem = {
 };
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/menu")({
+  head: () =>
+    seo({
+      title: "Menu",
+      description:
+        "Menus display a list of actions or options that a user can choose. They're triggered by a button and appear as a popover.",
+      path: "/solid-spectrum/docs/components/menu",
+    }),
   component: MenuPage,
 });
 

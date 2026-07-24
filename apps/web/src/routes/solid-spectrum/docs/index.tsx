@@ -2,8 +2,16 @@ import { Link, createFileRoute } from "@tanstack/solid-router";
 import { Button } from "@proyecto-viviana/solid-spectrum";
 import { FONT_SANS, FONT_MONO } from "@/components/docs";
 import { useThemeColors } from "@/utils/theme";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/")({
+  head: () =>
+    seo({
+      title: "Getting started",
+      description:
+        "Accessible by default, SSR compatible, styles compiled at build time — and a quick example you can paste in to see solid-spectrum running.",
+      path: "/solid-spectrum/docs",
+    }),
   component: GettingStartedPage,
 });
 

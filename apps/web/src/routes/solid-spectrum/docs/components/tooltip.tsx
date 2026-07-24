@@ -2,8 +2,16 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { Tooltip, TooltipTrigger, ActionButton } from "@proyecto-viviana/solid-spectrum";
 import { Flex } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/tooltip")({
+  head: () =>
+    seo({
+      title: "Tooltip",
+      description:
+        "Tooltip shows a short, contextual description of a control on hover or keyboard focus.",
+      path: "/solid-spectrum/docs/components/tooltip",
+    }),
   component: TooltipPage,
 });
 

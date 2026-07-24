@@ -3,8 +3,16 @@ import { createSignal } from "solid-js";
 import { NumberField } from "@proyecto-viviana/solid-spectrum";
 import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/numberfield")({
+  head: () =>
+    seo({
+      title: "NumberField",
+      description:
+        "NumberFields allow users to enter and adjust numeric values with increment and decrement controls.",
+      path: "/solid-spectrum/docs/components/numberfield",
+    }),
   component: NumberFieldPage,
 });
 
