@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
-import { createSignal, onMount, onCleanup, Show } from "solid-js";
+import { createVisuallyHidden } from "@proyecto-viviana/solidaria";
+import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js";
 import { useTheme, useThemeColors } from "@/utils/theme";
 import "@/components/theme/studio.css";
 
@@ -97,12 +98,27 @@ export function Header() {
 
   const colors = () => getColors();
 
+  // The skip link is hidden until it takes focus, at which point these styles are the
+  // ones that apply — createVisuallyHidden swaps its clip-rect out for them wholesale.
+  const { visuallyHiddenProps: skipLinkProps } = createVisuallyHidden({
+    isFocusable: true,
+    style: {
+      position: "absolute",
+      top: "8px",
+      left: "8px",
+      "z-index": "210",
+      padding: "8px 12px",
+      "border-radius": "var(--pv-radius-sm)",
+      background: "var(--docs-bg-elevated)",
+      color: "var(--docs-text)",
+      "box-shadow": "0 0 0 1px var(--docs-border)",
+    },
+  });
+
   return (
     <>
-      <a
-        href="#main-content"
-        class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[210] focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:rounded-md focus:bg-bg-300 focus:text-primary-100"
-      >
+      {/* The hook types its props for a generic element, so the ref needs narrowing here. */}
+      <a href="#main-content" {...(skipLinkProps() as JSX.AnchorHTMLAttributes<HTMLAnchorElement>)}>
         Skip to main content
       </a>
       <header

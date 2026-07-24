@@ -1,10 +1,8 @@
 /* Layout + chrome for the landing (/home) and Theme Studio (/theme).
 
-   This app removed its Tailwind tooling (see `chore: remove tailwind tooling`);
-   `local-utilities.css` is now a frozen, curated utility set with NO JIT, so any
-   responsive or arbitrary-value class silently no-ops. Structural layout that
-   needs breakpoints or grid templates is therefore expressed here as real CSS.
-   Class names are `pv-`-prefixed to stay clear of the utility vocabulary.
+   These pages take their paint from `@proyecto-viviana/ui`; what the library has
+   no answer for is page-level structure — breakpoints and grid templates — so
+   that lives here as real CSS. Class names are `pv-`-prefixed.
 
    Aesthetic target: a clean, faithful Adobe Spectrum 2 look — rounded corners,
    calm neutral surfaces (`--docs-*` tokens), subtle 1px borders + soft shadows,

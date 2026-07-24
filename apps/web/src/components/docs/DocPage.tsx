@@ -114,7 +114,6 @@ export function Example(props: ExampleProps) {
 
       {/* Live preview — angular, pink top-border */}
       <div
-        class="not-prose"
         style={{
           margin: "0.75rem 0",
           padding: "1.25rem",
@@ -170,7 +169,6 @@ export function PropsTable(props: PropsTableProps) {
         Props
       </h2>
       <div
-        class="not-prose"
         style={{
           margin: "0.75rem 0",
           "overflow-x": "auto",
@@ -274,7 +272,6 @@ export function AccessibilitySection(props: { children: JSX.Element }) {
         Accessibility
       </h2>
       <div
-        class="not-prose"
         style={{
           margin: "0.75rem 0",
           padding: "12px 14px",

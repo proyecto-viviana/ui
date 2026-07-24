@@ -1,17 +1,16 @@
-/* Cascade-layer order, declared first so it's deterministic. `base` (our frozen
-   Tailwind Preflight reset, wrapped in @layer base in local-utilities.css) must
-   rank BELOW `_` — the root layer @proyecto-viviana/ui's S2 style() macro emits
-   its atomic rules into — so the library's per-variant component colors win over
-   the reset's `button,input{color:inherit}`. Without this, load order is a race:
-   in dev the package's `@layer _` CSS is injected by JS module eval before this
-   file's @import chain resolves, so `_` would otherwise be declared first and the
-   reset (declared later, higher priority) would clobber every filled Button label
-   (accent/danger unreadable on their fills, primary invisible in light). A @layer
-   STATEMENT may precede @import per spec; this <link> parses in <head> before any
-   JS injection, so it fixes the order for dev and prod alike. */
+/* Cascade-layer order, declared first so it's deterministic. `base` (our reset,
+   below) must rank BELOW `_` — the root layer @proyecto-viviana/ui's S2 style()
+   macro emits its atomic rules into — so the library's per-variant component
+   colors win over the reset's `button,input{color:inherit}`. Without this, load
+   order is a race: in dev the package's `@layer _` CSS is injected by JS module
+   eval before this file's @import chain resolves, so `_` would otherwise be
+   declared first and the reset (declared later, higher priority) would clobber
+   every filled Button label (accent/danger unreadable on their fills, primary
+   invisible in light). A @layer STATEMENT may precede @import per spec; this
+   <link> parses in <head> before any JS injection, so it fixes the order for dev
+   and prod alike. */
 @layer base, _;
 
-@import "./local-utilities.css";
 /* viviana-ui is the umbrella package: its components.css re-exports
    solid-spectrum's full CSS (font-faces + atomic rules) and adds the migrated
    custom components' extracted atomic CSS. */
@@ -20,6 +19,57 @@
    unstyled primitives and so cannot use the styled components. Imported after the design
    system because every value resolves to one of its tokens. */
 @import "./styles/headless-demos.css";
+
+/* The app's own reset — @proyecto-viviana/ui ships atomic component CSS and no
+   reset, so normalising UA defaults is the page's job. It stays in `base`, the
+   lowest author layer, so it beats the UA sheet and nothing else. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    color: inherit;
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+}
 
 /* Docs-site semantic tokens — driven by the data-color-scheme attribute (which
    useTheme() toggles), NOT by light-dark(): the CSS color-scheme property is
@@ -227,18 +277,7 @@
   --color-danger-bg: rgba(248, 81, 73, 0.1);
 }
 
-/* ===== FONT UTILITIES ===== */
-.font-sen {
-  font-family: "Sen", sans-serif;
-}
-
-.font-jost {
-  font-family: "Jost", sans-serif;
-}
-
-/* ===== ANIMATION KEYFRAMES ===== */
-
-/* Gradient mesh animation - subtle breathing effect */
+/* Drives the animated gradient wordmark below. */
 @keyframes gradient-shift {
   0%,
   100% {
@@ -247,190 +286,6 @@
   50% {
     background-position: 100% 50%;
   }
-}
-
-/* Floating animation for decorative elements */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-10px) rotate(2deg);
-  }
-  66% {
-    transform: translateY(5px) rotate(-1deg);
-  }
-}
-
-/* Pulse glow for accent elements */
-@keyframes pulse-glow {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-/* Shimmer effect for loading/highlights */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Fade in from bottom */
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Scale in with spring feel */
-@keyframes scale-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  70% {
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Typing cursor blink */
-@keyframes blink {
-  0%,
-  50% {
-    opacity: 1;
-  }
-  51%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Ripple effect */
-@keyframes ripple {
-  0% {
-    transform: scale(0);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-/* Rotate slowly for decorative elements */
-@keyframes rotate-slow {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Crystal lattice line animation */
-@keyframes lattice-draw {
-  from {
-    stroke-dashoffset: 1000;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* ===== ANIMATION UTILITIES ===== */
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 8s ease infinite;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-slow {
-  animation: float 10s ease-in-out infinite;
-}
-
-.animate-float-fast {
-  animation: float 4s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-blink {
-  animation: blink 1s step-end infinite;
-}
-
-/* Staggered animation delays */
-.delay-100 {
-  animation-delay: 0.1s;
-}
-.delay-200 {
-  animation-delay: 0.2s;
-}
-.delay-300 {
-  animation-delay: 0.3s;
-}
-.delay-400 {
-  animation-delay: 0.4s;
-}
-.delay-500 {
-  animation-delay: 0.5s;
-}
-.delay-600 {
-  animation-delay: 0.6s;
-}
-.delay-700 {
-  animation-delay: 0.7s;
-}
-.delay-800 {
-  animation-delay: 0.8s;
-}
-
-/* Initially hidden for animation */
-.animate-initial {
-  opacity: 0;
 }
 
 /* Respect user motion preferences for accessibility */
@@ -443,98 +298,9 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-
-  .animate-gradient,
-  .animate-float,
-  .animate-float-slow,
-  .animate-float-fast,
-  .animate-pulse-glow,
-  .animate-shimmer,
-  .animate-fade-in-up,
-  .animate-scale-in,
-  .animate-blink {
-    animation: none !important;
-  }
-
-  .hover-lift:hover,
-  .hover-scale:hover,
-  .tilt-card:hover {
-    transform: none !important;
-  }
 }
 
-/* ===== GLASS MORPHISM UTILITIES ===== */
-.glass {
-  background: rgba(17, 17, 17, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(128, 204, 255, 0.1);
-}
-
-.glass-subtle {
-  background: rgba(17, 17, 17, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(128, 204, 255, 0.08);
-}
-
-.glass-strong {
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(128, 204, 255, 0.15);
-}
-
-/* ===== GLOW UTILITIES ===== */
-.glow-accent {
-  box-shadow:
-    0 0 20px rgba(255, 160, 213, 0.3),
-    0 0 40px rgba(255, 160, 213, 0.1);
-}
-
-.glow-accent-strong {
-  box-shadow:
-    0 0 30px rgba(255, 160, 213, 0.5),
-    0 0 60px rgba(255, 160, 213, 0.2);
-}
-
-.glow-primary {
-  box-shadow:
-    0 0 20px rgba(77, 160, 255, 0.3),
-    0 0 40px rgba(77, 160, 255, 0.1);
-}
-
-.text-glow-accent {
-  text-shadow:
-    0 0 20px rgba(255, 160, 213, 0.5),
-    0 0 40px rgba(255, 160, 213, 0.3);
-}
-
-.text-glow-primary {
-  text-shadow:
-    0 0 20px rgba(77, 160, 255, 0.5),
-    0 0 40px rgba(77, 160, 255, 0.3);
-}
-
-/* ===== GRADIENT UTILITIES ===== */
-.gradient-mesh {
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(255, 160, 213, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(56, 139, 253, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 60%, rgba(247, 120, 186, 0.1) 0%, transparent 40%),
-    var(--color-bg-300);
-}
-
-.gradient-mesh-animated {
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(255, 160, 213, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(56, 139, 253, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 60%, rgba(247, 120, 186, 0.15) 0%, transparent 40%),
-    linear-gradient(135deg, var(--color-bg-300) 0%, var(--color-bg-400) 100%);
-  background-size: 200% 200%;
-  animation: gradient-shift 15s ease infinite;
-}
-
+/* The animated gradient wordmark on the landing hero. */
 .gradient-text-animated {
   background: linear-gradient(
     135deg,
@@ -549,151 +315,6 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: gradient-shift 6s ease infinite;
-}
-
-/* ===== DECORATIVE PATTERNS ===== */
-.pattern-grid {
-  background-image:
-    linear-gradient(rgba(128, 204, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(128, 204, 255, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-.pattern-dots {
-  background-image: radial-gradient(rgba(128, 204, 255, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-.pattern-crystal {
-  background-image:
-    linear-gradient(
-      30deg,
-      rgba(255, 160, 213, 0.03) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(255, 160, 213, 0.03) 87.5%,
-      rgba(255, 160, 213, 0.03)
-    ),
-    linear-gradient(
-      150deg,
-      rgba(255, 160, 213, 0.03) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(255, 160, 213, 0.03) 87.5%,
-      rgba(255, 160, 213, 0.03)
-    ),
-    linear-gradient(
-      30deg,
-      rgba(255, 160, 213, 0.03) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(255, 160, 213, 0.03) 87.5%,
-      rgba(255, 160, 213, 0.03)
-    ),
-    linear-gradient(
-      150deg,
-      rgba(255, 160, 213, 0.03) 12%,
-      transparent 12.5%,
-      transparent 87%,
-      rgba(255, 160, 213, 0.03) 87.5%,
-      rgba(255, 160, 213, 0.03)
-    ),
-    linear-gradient(
-      60deg,
-      rgba(56, 139, 253, 0.04) 25%,
-      transparent 25.5%,
-      transparent 75%,
-      rgba(56, 139, 253, 0.04) 75%,
-      rgba(56, 139, 253, 0.04)
-    ),
-    linear-gradient(
-      60deg,
-      rgba(56, 139, 253, 0.04) 25%,
-      transparent 25.5%,
-      transparent 75%,
-      rgba(56, 139, 253, 0.04) 75%,
-      rgba(56, 139, 253, 0.04)
-    );
-  background-size: 80px 140px;
-  background-position:
-    0 0,
-    0 0,
-    40px 70px,
-    40px 70px,
-    0 0,
-    40px 70px;
-}
-
-/* ===== NOISE TEXTURE ===== */
-.noise {
-  position: relative;
-}
-
-.noise::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ===== SPRING EASING ===== */
-.transition-spring {
-  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.transition-smooth {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ===== HOVER EFFECTS ===== */
-.hover-lift {
-  transition:
-    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-}
-
-.hover-glow {
-  transition: box-shadow 0.3s ease;
-}
-
-.hover-glow:hover {
-  box-shadow: 0 0 30px rgba(255, 160, 213, 0.3);
-}
-
-.hover-scale {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.hover-scale:hover {
-  transform: scale(1.05);
-}
-
-/* ===== 3D TILT EFFECT ===== */
-.tilt-card {
-  transform-style: preserve-3d;
-  perspective: 1000px;
-  transition: transform 0.3s ease;
-}
-
-.tilt-card:hover {
-  transform: rotateX(2deg) rotateY(-2deg);
-}
-
-/* ===== FOCUS STATES ===== */
-.focus-glow:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--color-bg-400),
-    0 0 0 4px var(--color-accent-300),
-    0 0 20px rgba(255, 160, 213, 0.3);
 }
 
 /* ===== SCROLLBAR STYLING ===== */
@@ -879,80 +500,8 @@
   --color-danger-bg: rgba(248, 81, 73, 0.1);
 }
 
-/* Light mode glass overrides */
-[data-color-scheme="light"] .glass {
-  background: rgba(236, 242, 245, 0.6);
-  border-color: rgba(25, 80, 115, 0.1);
-}
-
-[data-color-scheme="light"] .glass-subtle {
-  background: rgba(236, 242, 245, 0.4);
-  border-color: rgba(25, 80, 115, 0.08);
-}
-
-[data-color-scheme="light"] .glass-strong {
-  background: rgba(244, 248, 250, 0.8);
-  border-color: rgba(25, 80, 115, 0.15);
-}
-
-/* Light mode glow overrides */
-[data-color-scheme="light"] .glow-accent {
-  box-shadow:
-    0 0 20px rgba(160, 37, 88, 0.2),
-    0 0 40px rgba(160, 37, 88, 0.08);
-}
-
-[data-color-scheme="light"] .glow-primary {
-  box-shadow:
-    0 0 20px rgba(25, 80, 115, 0.2),
-    0 0 40px rgba(25, 80, 115, 0.08);
-}
-
 /* Light mode selection */
 [data-color-scheme="light"] ::selection {
   background: rgba(160, 37, 88, 0.2);
   color: var(--color-primary-100);
-}
-
-/* Light mode focus */
-[data-color-scheme="light"] .focus-glow:focus-visible {
-  box-shadow:
-    0 0 0 2px var(--color-bg-400),
-    0 0 0 4px var(--color-accent-300),
-    0 0 20px rgba(160, 37, 88, 0.2);
-}
-
-/* Light mode hover glow */
-[data-color-scheme="light"] .hover-glow:hover {
-  box-shadow: 0 0 30px rgba(160, 37, 88, 0.15);
-}
-
-/* Light mode gradient mesh */
-[data-color-scheme="light"] .gradient-mesh {
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(160, 37, 88, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(25, 80, 115, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 60%, rgba(212, 80, 138, 0.04) 0%, transparent 40%),
-    var(--color-bg-300);
-}
-
-[data-color-scheme="light"] .gradient-mesh-animated {
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(160, 37, 88, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 80%, rgba(25, 80, 115, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 40% 60%, rgba(212, 80, 138, 0.06) 0%, transparent 40%),
-    linear-gradient(135deg, var(--color-bg-300) 0%, var(--color-bg-400) 100%);
-  background-size: 200% 200%;
-  animation: gradient-shift 15s ease infinite;
-}
-
-/* Light mode decorative patterns */
-[data-color-scheme="light"] .pattern-grid {
-  background-image:
-    linear-gradient(rgba(25, 80, 115, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(25, 80, 115, 0.05) 1px, transparent 1px);
-}
-
-[data-color-scheme="light"] .pattern-dots {
-  background-image: radial-gradient(rgba(25, 80, 115, 0.1) 1px, transparent 1px);
 }

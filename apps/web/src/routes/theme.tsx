@@ -178,7 +178,8 @@ function ThemePage() {
                   </For>
                 </div>
               </div>
-              <div class="pv-frame__body">
+              {/* The frame's own `overflow: hidden` is what clips this to the rounding. */}
+              <div>
                 <Show
                   when={mounted()}
                   fallback={
