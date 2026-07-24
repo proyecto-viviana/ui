@@ -113,7 +113,14 @@ for (const rootRel of SCAN_ROOTS) {
   }
 }
 
-/** Every published package must agree on where its source lives. */
+/**
+ * What a published package tells npm about itself. `repository`, `homepage` and
+ * `bugs` are the three links npm renders beside a package, and all three were
+ * either missing or pointing somewhere dead at audit time. `description` and
+ * `keywords` are how the package is found at all — `@proyecto-viviana/ui`
+ * shipped six versions with zero keywords and a description that explained the
+ * fork's internals to a maintainer rather than the package to a user.
+ */
 const manifestErrors: string[] = [];
 for (const dir of await readdir(path.join(ROOT, "packages"), { withFileTypes: true })) {
   if (!dir.isDirectory()) continue;
@@ -125,11 +132,20 @@ for (const dir of await readdir(path.join(ROOT, "packages"), { withFileTypes: tr
     continue;
   }
   if (manifest.private) continue;
-  const url: string | undefined = manifest.repository?.url;
-  if (!url || !url.includes(REPO_SLUG)) {
-    manifestErrors.push(
-      `  packages/${dir.name}/package.json  repository.url = ${url ?? "(missing)"}`,
-    );
+
+  const at = (field: string, value: string) =>
+    manifestErrors.push(`  packages/${dir.name}/package.json  ${field} = ${value}`);
+
+  for (const [field, url] of [
+    ["repository.url", manifest.repository?.url],
+    ["homepage", manifest.homepage],
+    ["bugs", typeof manifest.bugs === "string" ? manifest.bugs : manifest.bugs?.url],
+  ] as const) {
+    if (typeof url !== "string" || !url.includes(REPO_SLUG)) at(field, url ?? "(missing)");
+  }
+  if (!manifest.description) at("description", "(missing)");
+  if (!Array.isArray(manifest.keywords) || manifest.keywords.length === 0) {
+    at("keywords", "(missing or empty)");
   }
 }
 
@@ -162,9 +178,11 @@ if (hardcoded.length > 0) {
 
 if (manifestErrors.length > 0) {
   failed = true;
-  console.error("guard:outbound-links — published packages disagree about the repository:\n");
+  console.error("guard:outbound-links — published packages are missing npm metadata:\n");
   for (const line of manifestErrors) console.error(line);
-  console.error(`\nEvery published package needs repository.url pointing at ${REPO_SLUG}.\n`);
+  console.error(
+    `\nEvery published package needs repository.url, homepage and bugs pointing at\n${REPO_SLUG}, plus a description and at least one keyword.\n`,
+  );
 }
 
 if (failed) process.exit(1);

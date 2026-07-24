@@ -10,6 +10,8 @@
     "state",
     "stately"
   ],
+  "homepage": "https://github.com/proyecto-viviana/ui/tree/main/packages/solid-stately#readme",
+  "bugs": "https://github.com/proyecto-viviana/ui/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

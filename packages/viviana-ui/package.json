@@ -1,7 +1,20 @@
 {
   "name": "@proyecto-viviana/ui",
   "version": "0.6.2",
-  "description": "Viviana design system. A reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is duplicated and remapped to the Viviana v2 (Glasselated) register, over the shared solidaria headless stack.",
+  "description": "The Viviana design system for SolidJS: accessible, themeable components on a headless ARIA foundation",
+  "keywords": [
+    "a11y",
+    "accessibility",
+    "aria",
+    "components",
+    "design-system",
+    "solid",
+    "solidjs",
+    "ui",
+    "viviana"
+  ],
+  "homepage": "https://github.com/proyecto-viviana/ui/tree/main/packages/viviana-ui#readme",
+  "bugs": "https://github.com/proyecto-viviana/ui/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

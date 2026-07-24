@@ -10,6 +10,8 @@
     "solidjs",
     "spectrum-2"
   ],
+  "homepage": "https://github.com/proyecto-viviana/ui/tree/main/packages/solid-spectrum#readme",
+  "bugs": "https://github.com/proyecto-viviana/ui/issues",
   "license": "MIT",
   "repository": {
     "type": "git",

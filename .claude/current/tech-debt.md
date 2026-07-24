@@ -137,8 +137,9 @@ tasks:
       safety phase (route sweep, head metadata) have landed.
   - id: launch-npm-metadata
     title: Published packages carry no homepage and the flagship has no keywords
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P1
     roadmap: launch
     note: >-
@@ -151,6 +152,17 @@ tasks:
     exit: >-
       homepage + repository.directory + keywords on all five; a user-facing
       description on viviana-ui that says what it is rather than how it was built.
+    resolution: >-
+      Closed 2026-07-24. All five now carry `homepage` (the package's own README
+      on the default branch) and `bugs` (the shared issue tracker);
+      @proyecto-viviana/ui gained nine keywords and a description written for
+      someone browsing npm rather than for a maintainer. guard:outbound-links
+      now also checks repository.url + homepage + bugs all resolve to
+      proyecto-viviana/ui and that every published package has a description and
+      at least one keyword — verified it fires by stripping solidaria's homepage
+      and keywords (exit 1) before restoring. Follow-up: `homepage` points at
+      GitHub because the docs site has no stable public URL yet; repoint it at
+      the per-package docs page once `launch-site-deploy` lands one.
   - id: launch-a11y-smoke-selector-drift
     title: a11y:smoke red — 12 tests still select <p> where the rebuild renders <Text>
     state: done
