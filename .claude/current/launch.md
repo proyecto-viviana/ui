@@ -69,7 +69,7 @@ Each is tracked in `tech-debt.md`; IDs below are stable references.
 | B3  | No API docs for the flagship package — 238 exported names, zero reference pages                                                                                                                           | `packages/viviana-ui/src/index.ts`                                                                                            |
 | B4  | `vp check` RED on main — 174 files with format drift, invisible in CI because `ci:release-readiness` has no format step and `certification-gates.yml` runs everything `continue-on-error: true`           | `vp check` exit 1                                                                                                             |
 | B5  | `docs:check` RED — 9 errors (5 missing status headers, 1 bad roadmap ref, 2 done-without-finished-date, 1 invalid roadmap status)                                                                         | gate output                                                                                                                   |
-| B6  | Site is 24 days stale — last Cloudflare deploy 2026-06-30, predating all Glasselated work                                                                                                                 | deployment history                                                                                                            |
+| B6  | ~~Site is 24 days stale~~ → **the docs site has no deploy target of its own**; its worker name is the live production app's                                                                               | `wrangler versions view`; see below                                                                                           |
 | B7  | npm metadata gaps — no `homepage` on any of the 5 packages; `viviana-ui` has 0 keywords and an internal-jargon description                                                                                | `package.json` × 5                                                                                                            |
 | B8  | `a11y:smoke` RED (12 failed / 32 passed) — stale test selectors, not a product regression                                                                                                                 | see below                                                                                                                     |
 
@@ -87,6 +87,39 @@ The 8 calendar failures die in _setup_, at the first `expectVisibleCount(page, 0
 before any interaction, polling a `<p>` that no longer exists until the 15s
 timeout. Confirmed not the stale-preview trap: no listener on the test ports and
 `apps/web/dist` was rebuilt during the run; it reproduces on a clean rebuild.
+
+### B6 re-scoped — the deploy target is not ours
+
+The audit read "last Cloudflare deployment 2026-06-30" as _our_ site going
+stale. Checked before deploying, that turned out to be the wrong reading, and
+the correction is the more important finding.
+
+`apps/web/wrangler.jsonc` declares `name: "proyecto-viviana"`. The Worker by
+that name in this account is the **live parent application**. `wrangler versions
+view 7693d091-…` on the current deployment shows a D1 binding, a
+`WEB_CLIENT_SECRET`, and `APP_URL=https://proyectoviviana.org` /
+`AUTH_URL=https://auth.proyectoviviana.org` / `ENVIRONMENT=production` on
+compatibility date 2026-06-27; ours declares no bindings and 2025-12-01. From
+outside, `https://proyectoviviana.org` 302s to `/es` and serves a locale-routed
+app that 404s `/es/showcase` — none of our routes exist there.
+
+So `vp run deploy` from this repo would have uploaded the docs site **over a
+running production application**. The 2026-06-30 date is that app's last deploy
+(by CI — author `undefined`); the manual deploys from 06-22 to 06-29 are most
+likely this site, which means the two have been sharing one worker name and the
+app won last.
+
+No host is reserved for the docs: `ui.proyectoviviana.org`,
+`docs.proyectoviviana.org` and `proyecto-viviana.workers.dev` all fail to
+resolve, and nothing in the repo documents a target. **Phase 4 is therefore
+blocked on an owner decision**, not on engineering — the build and both site
+gates are ready. Tracked as `tech-debt.md` → `launch-site-deploy-stale`, which
+carries the four things the decision has to settle.
+
+Same probe answered the other open question: **`https://proyecto-viviana.uy` has
+no DNS record at all** — the ecosystem tile's link to the parent project is dead,
+and the parent project actually lives at `https://proyectoviviana.org`. Left
+unchanged pending the same owner pass, since it is the same class of call.
 
 ### Why B4, B5 and B8 were invisible
 
@@ -169,13 +202,15 @@ landing carry the two-product story. Add npm metadata (B7).
 
 **Phase 3 — make it safe to deploy.** ☑ Route-sweep smoke over all 75 routes;
 per page `head:`; robots.txt and sitemap. Both gates (`test:routes`,
-`test:seo`) run from `ci:site`. **Open question for the owner:** the canonical
-origin is set to `https://proyectoviviana.org` in `apps/web/src/seo.ts`;
-`/solid-spectrum/ecosystem` still tiles the parent project at
-`https://proyecto-viviana.uy`, which is either a second real domain or a stale
-link — it is a name with reach, so it was left alone (Rule #3).
+`test:seo`) run from `ci:site`.
 
-**Phase 4 — deploy.** `vp run build:web` (verified, 12.7s) then wrangler.
+**Phase 4 — deploy. BLOCKED on an owner decision** (see "B6 re-scoped" above).
+The build is ready and both site gates are green; what is missing is a worker
+name that is not the production app's and a hostname to serve from. Running
+`vp run deploy` today would overwrite the live application. Once the target is
+chosen, `SITE_URL` in `apps/web/src/seo.ts` moves with it — every canonical and
+the whole sitemap are derived from that one constant — as does `homepage` on the
+five published packages.
 
 **Phase 5 — close coverage.** viviana-ui API docs (B3); the ~31–40 missing
 component pages; then `dnd-subsystem-port` and `macro-route-styled`.

@@ -6,4 +6,5 @@ Allow: /
 # home page, so it is excluded here and from the sitemap.
 Disallow: /admin
 
-Sitemap: https://proyectoviviana.org/sitemap.xml
+# Keep this origin in step with SITE_URL in src/seo.ts — test:seo asserts it.
+Sitemap: https://ui.proyectoviviana.org/sitemap.xml

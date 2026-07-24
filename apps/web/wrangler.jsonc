@@ -1,7 +1,17 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "proyecto-viviana",
+  // NOT "proyecto-viviana". That Worker is the live parent application — D1,
+  // WEB_CLIENT_SECRET, APP_URL=https://proyectoviviana.org — and this config
+  // carried its name until 2026-07-24, one `vp run deploy` away from replacing
+  // it. `guard:deploy-target` refuses that name now; see
+  // .claude/current/tech-debt.md → launch-site-deploy-stale.
+  "name": "viviana-ui-docs",
   "compatibility_date": "2025-12-01",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/solid-start/server-entry",
+  // The docs site's own hostname. `custom_domain` makes wrangler create and own
+  // the DNS record on first deploy, so the zone and the Worker cannot drift.
+  // SITE_URL in src/seo.ts must agree — every canonical and the sitemap derive
+  // from it.
+  "routes": [{ "pattern": "ui.proyectoviviana.org", "custom_domain": true }],
 }

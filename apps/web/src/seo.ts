@@ -17,8 +17,15 @@
  * Canonical origin. Everything absolute — canonical links, OpenGraph URLs,
  * sitemap entries — is built from this one value, so a domain change is a
  * one-line edit. No trailing slash.
+ *
+ * A subdomain, not the apex: `proyectoviviana.org` is the parent application,
+ * and it is a different Worker with its own D1 and auth. This must stay in step
+ * with the `routes` pattern in `apps/web/wrangler.jsonc` — the Worker answers on
+ * one hostname and the canonicals claim another the moment they disagree.
+ * `public/robots.txt` repeats the origin in its `Sitemap:` line, and the
+ * `test:seo` spec asserts the two agree.
  */
-export const SITE_URL = "https://proyectoviviana.org";
+export const SITE_URL = "https://ui.proyectoviviana.org";
 
 export const SITE_NAME = "Proyecto Viviana";
 

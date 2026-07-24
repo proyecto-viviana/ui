@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import { FONT_BODY, FONT_DISPLAY, SiteFooter } from "@/components/theme/primitives";
-import { repoPackageUrl } from "@/lib/site";
+import { PARENT_APP_URL, repoPackageUrl } from "@/lib/site";
 import { seo } from "@/seo";
 import "@/components/theme/studio.css";
 
@@ -206,7 +206,7 @@ function Ecosystem() {
               name="PROYECTO VIVIANA"
               glyph="PV"
               imageSrc="/logo.png"
-              href="https://proyecto-viviana.uy"
+              href={PARENT_APP_URL}
             />
           </div>
         </section>

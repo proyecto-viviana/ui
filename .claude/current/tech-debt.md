@@ -122,19 +122,50 @@ tasks:
     note: >-
       Audit finding B5 (launch.md).
   - id: launch-site-deploy-stale
-    title: The site has not been deployed since before the Glasselated work
-    state: open
+    title: The docs site has no deploy target of its own — its worker name belongs to the production app
+    state: blocked
     filed: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
-      Last Cloudflare deployment 2026-06-30 — 24 days stale, predating every
-      commit of the Glasselated register port and the whole-site cohesion pass.
-      What is publicly visible is not what the repo builds. `vp run build:web`
-      is verified working (12.69s). Audit finding B6 (launch.md).
+      Originally filed as "24 days stale, last deployed 2026-06-30". That
+      framing was wrong, and the correction is the finding. `apps/web/wrangler.jsonc`
+      declares `name: "proyecto-viviana"`, and the Cloudflare Worker by that name
+      is the **live parent application**, not this docs site — verified
+      2026-07-24 with `wrangler versions view 7693d091-…` (the current
+      deployment): it binds a D1 database, a `WEB_CLIENT_SECRET`, and env vars
+      `APP_URL=https://proyectoviviana.org`, `AUTH_URL=https://auth.proyectoviviana.org`,
+      `ENVIRONMENT=production`, on compatibility date 2026-06-27. Ours declares
+      no bindings and compatibility date 2025-12-01. Fetching
+      https://proyectoviviana.org confirms it from the outside: it 302s to `/es`,
+      serves a locale-routed Solid Start app with a `proyecto-viviana-theme`
+      storage key, and 404s `/es/showcase`; our own routes (`/showcase`,
+      `/solid-spectrum/docs`, `/theme`) only get the redirect, because they do
+      not exist there. So `vp run deploy` from this repo would upload the docs
+      site **over a live production application**, dropping its bindings with it.
+      The "2026-06-30" date the audit read as our staleness is that app's last
+      deploy, by CI (author `undefined`); the manual deploys from 2026-06-22 to
+      06-29 are most likely this docs site, which means the two have been
+      clobbering each other on one name and the app won last. Neither
+      `ui.proyectoviviana.org`, `docs.proyectoviviana.org` nor
+      `proyecto-viviana.workers.dev` resolves, so no host is reserved for us.
+      Nothing in the repo documents a deploy target. Audit finding B6 (launch.md),
+      re-scoped.
     exit: >-
-      Deploy once the truth phase (links, installation page, metadata) and the
-      safety phase (route sweep, head metadata) have landed.
+      Owner decision, not an implementation task (rule #3 — the worker name and
+      the hostname both have public reach). Needs: (1) a worker name that is not
+      `proyecto-viviana`, set in apps/web/wrangler.jsonc; (2) a hostname —
+      a subdomain of proyectoviviana.org with a DNS record and a Custom Domain
+      binding, or the account's workers.dev subdomain; (3) `SITE_URL` in
+      apps/web/src/seo.ts repointed at it, which moves every canonical and the
+      sitemap; (4) the five packages' `homepage` repointed off GitHub
+      (launch-npm-metadata). The build itself is ready and both site gates pass.
+      Until (1) lands, `vp run deploy` refuses: `guard:deploy-target`
+      (scripts/check-deploy-target.mjs) is the first step of the web app's own
+      `deploy` script and exits 1 while the name is still the app's. It is
+      **expected to be red** and is therefore deliberately not wired into
+      certification-gates.yml — it guards the deploy path, not the branch.
+      Choosing a name is what unblocks it; deleting the check is not.
   - id: launch-npm-metadata
     title: Published packages carry no homepage and the flagship has no keywords
     state: done

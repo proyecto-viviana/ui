@@ -30,6 +30,12 @@ test("the sitemap route list is derived and non-empty", () => {
 });
 
 test("titles are unique across the site", async ({ page }) => {
+  // Uniqueness is a property of the whole set, so this one test has to visit
+  // every route in sequence — 70 navigations against the default 30s budget,
+  // which it outgrew the first time the machine was busy. The per-route
+  // assertions below stay on the default; only this sweep gets the longer clock.
+  test.setTimeout(180_000);
+
   const seen = new Map<string, string>();
 
   for (const route of ROUTES) {

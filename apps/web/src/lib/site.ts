@@ -13,6 +13,14 @@ export const REPO_URL = "https://github.com/proyecto-viviana/ui";
 /** The npm organization the packages publish under. */
 export const NPM_ORG_URL = "https://www.npmjs.com/org/proyecto-viviana";
 
+/**
+ * The parent application these packages were built for. The ecosystem page
+ * linked it at `https://proyecto-viviana.uy` until 2026-07-24, when a probe
+ * found that hostname has no DNS record at all — the app serves from
+ * `proyectoviviana.org`, which redirects to a locale route.
+ */
+export const PARENT_APP_URL = "https://proyectoviviana.org";
+
 /** A package's source directory on the default branch. */
 export function repoPackageUrl(dir: string): string {
   return `${REPO_URL}/tree/main/packages/${dir}`;
