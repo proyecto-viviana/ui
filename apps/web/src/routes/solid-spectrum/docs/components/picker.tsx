@@ -1,5 +1,14 @@
+/**
+ * Every example on this page opens a populated listbox. The version this
+ * replaced had three, two of which opened an EMPTY one: it demonstrated static
+ * `<PickerItem>` children with no `items`, and a `title` prop on
+ * `<PickerSection>`. Neither exists. Both typechecked red and rendered nothing,
+ * and the page had shipped that way. Picker's collection is items-driven and
+ * flat — see `tech-debt.md` → `picker-static-children-and-sections`. If you add
+ * an example here, open it in a browser and count the options.
+ */
 import { createFileRoute } from "@tanstack/solid-router";
-import { Picker, PickerItem, PickerSection } from "@proyecto-viviana/solid-spectrum";
+import { Picker, PickerItem } from "@proyecto-viviana/solid-spectrum";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 const plans = [
@@ -17,35 +26,13 @@ function PickerPage() {
   return (
     <DocPage
       title="Picker"
-      description="Picker is a styled single-selection control that combines a trigger, the selected value, and a popover listbox. It is Spectrum 2's select — built on the collection stack so it takes either static items or an items collection with a render function."
-      importCode={`import {
-  Picker,
-  PickerItem,
-  PickerSection
-} from '@proyecto-viviana/solid-spectrum';`}
+      description="Picker is a styled single-selection control that combines a trigger, the selected value, and a popover listbox. It is Spectrum 2's select. The collection is data-driven: pass an `items` array and a render function — static option JSX is not part of the Solid API, because children evaluate before the collection context exists."
+      importCode={`import { Picker, PickerItem } from '@proyecto-viviana/solid-spectrum';`}
     >
       <Example
-        title="Static items"
-        description="Pass PickerItem children directly for a fixed set of options. defaultSelectedKey seeds the uncontrolled selection."
-        code={`<Picker label="Plan" defaultSelectedKey="pro">
-  <PickerItem id="free">Free</PickerItem>
-  <PickerItem id="pro">Pro</PickerItem>
-  <PickerItem id="team">Team</PickerItem>
-  <PickerItem id="enterprise">Enterprise</PickerItem>
-</Picker>`}
-      >
-        <Picker label="Plan" defaultSelectedKey="pro">
-          <PickerItem id="free">Free</PickerItem>
-          <PickerItem id="pro">Pro</PickerItem>
-          <PickerItem id="team">Team</PickerItem>
-          <PickerItem id="enterprise">Enterprise</PickerItem>
-        </Picker>
-      </Example>
-
-      <Example
-        title="Dynamic collection"
-        description="Pass an items array and a render function to build options from data. Each item needs a stable id and textValue for typeahead."
-        code={`<Picker aria-label="Plan" items={plans} defaultSelectedKey="free">
+        title="Options come from items"
+        description="Pass an items array and a render function. Each item needs a stable id, and a textValue for typeahead when the child content is not plain text. defaultSelectedKey seeds the uncontrolled selection."
+        code={`<Picker label="Plan" items={plans} defaultSelectedKey="pro">
   {(item) => (
     <PickerItem id={item.id} textValue={item.name}>
       {item.name}
@@ -53,7 +40,7 @@ function PickerPage() {
   )}
 </Picker>`}
       >
-        <Picker aria-label="Plan" items={plans} defaultSelectedKey="free">
+        <Picker label="Plan" items={plans} defaultSelectedKey="pro">
           {(item) => (
             <PickerItem id={item.id} textValue={item.name}>
               {item.name}
@@ -63,30 +50,38 @@ function PickerPage() {
       </Example>
 
       <Example
-        title="Sections and disabled"
-        description="Group options with PickerSection, and mark unavailable ones with disabledKeys."
-        code={`<Picker label="Plan" disabledKeys={["enterprise"]}>
-  <PickerSection title="Personal">
-    <PickerItem id="free">Free</PickerItem>
-    <PickerItem id="pro">Pro</PickerItem>
-  </PickerSection>
-  <PickerSection title="Organization">
-    <PickerItem id="team">Team</PickerItem>
-    <PickerItem id="enterprise">Enterprise</PickerItem>
-  </PickerSection>
+        title="Disabled options"
+        description="disabledKeys marks individual options unselectable. They stay announced but are skipped during keyboard navigation."
+        code={`<Picker aria-label="Plan" items={plans} disabledKeys={["enterprise"]}>
+  {(item) => (
+    <PickerItem id={item.id} textValue={item.name}>
+      {item.name}
+    </PickerItem>
+  )}
 </Picker>`}
       >
-        <Picker label="Plan" disabledKeys={["enterprise"]}>
-          <PickerSection title="Personal">
-            <PickerItem id="free">Free</PickerItem>
-            <PickerItem id="pro">Pro</PickerItem>
-          </PickerSection>
-          <PickerSection title="Organization">
-            <PickerItem id="team">Team</PickerItem>
-            <PickerItem id="enterprise">Enterprise</PickerItem>
-          </PickerSection>
+        <Picker aria-label="Plan" items={plans} disabledKeys={["enterprise"]}>
+          {(item) => (
+            <PickerItem id={item.id} textValue={item.name}>
+              {item.name}
+            </PickerItem>
+          )}
         </Picker>
       </Example>
+
+      <h2>What Picker does not do yet</h2>
+      <p>
+        Picker's collection is <strong>flat</strong>. There is no grouped variant:{" "}
+        <code>PickerSection</code> is exported, but it is a primitive for the composed{" "}
+        <code>Select</code> / <code>SelectListBox</code> assembly, not something <code>Picker</code>{" "}
+        reads. It also takes no <code>title</code> — a section's heading is a <code>Header</code>{" "}
+        child, as in React Aria Components.
+      </p>
+      <p>
+        Both are gaps against React Spectrum, where static children and grouped options are ordinary
+        usage. They are tracked; until they close, reach for the composed <code>Select</code>{" "}
+        assembly if you need groups.
+      </p>
 
       <h2>Picker Props</h2>
       <PropsTable
@@ -98,8 +93,9 @@ function PickerPage() {
           },
           {
             name: "items",
-            type: "Iterable<T>",
-            description: "Data collection rendered via the children render function",
+            type: "T[]",
+            description:
+              "Required. The data the options are built from, rendered via the children render function",
           },
           {
             name: "selectedKey",
@@ -129,8 +125,8 @@ function PickerPage() {
           },
           {
             name: "children",
-            type: "JSX.Element | (item: T) => JSX.Element",
-            description: "PickerItem/PickerSection elements, or a render function for items",
+            type: "(item: T) => JSX.Element",
+            description: "Render function turning one item into a PickerItem",
           },
         ]}
       />

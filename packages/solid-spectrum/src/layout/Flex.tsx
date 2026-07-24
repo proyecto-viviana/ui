@@ -15,6 +15,8 @@ export interface FlexProps {
   inline?: boolean;
   /** Additional CSS class name. */
   class?: string;
+  /** Additional inline styles. */
+  style?: JSX.CSSProperties;
   /** The content. */
   children?: JSX.Element;
 }
@@ -69,12 +71,17 @@ export function Flex(props: FlexProps): JSX.Element {
     "justifyContent",
     "inline",
     "class",
+    "style",
     "children",
   ]);
 
+  // `style` is merged rather than left in `rest`, where the assignment below would have
+  // silently dropped it. Grid already accepted one; the two primitives are meant to be
+  // interchangeable, and without it every decorated row has to fall back to a bare div.
   const flexStyle = (): JSX.CSSProperties => {
     const s: JSX.CSSProperties = {
       display: local.inline ? "inline-flex" : "flex",
+      ...local.style,
     };
 
     if (local.direction) s["flex-direction"] = local.direction;

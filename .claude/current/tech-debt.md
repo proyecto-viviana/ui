@@ -249,6 +249,36 @@ tasks:
       still in place, it failed correctly. Also fixed en route: the shared
       Header's "Skip to main content" link had no target on any of the seventeen
       /showcase routes, because the layout's <main> carried no id.
+  - id: picker-static-children-and-sections
+    title: Picker takes neither static option children nor sections, unlike upstream
+    state: open
+    filed: 2026-07-24
+    priority: P2
+    roadmap: upstream-api-parity
+    note: >-
+      Two divergences from React Spectrum, found because they made
+      `typecheck:apps` red. (1) `items` is REQUIRED —
+      solidaria-components/src/Select.tsx:108 declares `items: T[]`, not
+      `items?`. Upstream Select/Picker treat static `<PickerItem>` children as
+      the ordinary form; ours needs a data array and a render function, because
+      children evaluate before the collection context exists. (2) The collection
+      is flat: `PickerSection` is exported but `Picker` never reads it — it is a
+      primitive for the composed Select/SelectListBox assembly. It also has no
+      `title`; a heading is a `Header` child, which IS RAC-correct.
+      Both are already stated accurately in
+      apps/web/src/routes/showcase/pickers.tsx's header comment, so the knowledge
+      existed — the docs page just contradicted it. Worth noting the same spine
+      already solved (1) for Menu: solidaria-components/Menu supports static JSX
+      children with a synthetic item descriptor (see upstream-release-audit.md
+      T-38), so there is a working pattern to copy rather than invent.
+      Impact when open is documentation, not breakage: everything works, it just
+      works one way. Filed P2 because the flat collection is a real ceiling for
+      any consumer with grouped options.
+    exit: >-
+      Make `items` optional and support static PickerItem children via the Menu
+      pattern; teach Picker's collection to read PickerSection. Then restore the
+      two examples on the Picker docs page and drop the "what Picker does not do
+      yet" section.
   - id: tree-multi-root-hydration
     title: Tree beside a static sibling breaks hydration in production builds
     state: open
