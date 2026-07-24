@@ -4,6 +4,8 @@ import { Button, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { Header } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
+import { SpectrumPreviewGallery } from "@/components/theme/SpectrumPreviewGallery";
+import spectrumStyles from "@proyecto-viviana/solid-spectrum/styles.css?url";
 import {
   ACCENT,
   FONT_BODY,
@@ -17,9 +19,22 @@ import { buildThemeCss, THEME_HOWTO } from "@/utils/themeExport";
 import { buildThemeTokens, DEFAULT_INPUTS, type Scheme } from "@/utils/themeGen";
 import "@/components/theme/studio.css";
 
+// The solid-spectrum register preview needs the package's own stylesheet, which is
+// otherwise only loaded on the /solid-spectrum layout. Its atoms are hashed classes
+// (plus a harmless `:where(:root,:host)` of --s2-* vars), so it can't bleed onto the
+// viviana-ui gallery that shares this page — only S2 components carry those classes.
 export const Route = createFileRoute("/theme")({
+  head: () => ({
+    links: [{ rel: "stylesheet", href: spectrumStyles }],
+  }),
   component: ThemePage,
 });
+
+type Register = "viviana-ui" | "solid-spectrum";
+const REGISTERS: { id: Register; label: string; pkg: string }[] = [
+  { id: "viviana-ui", label: "viviana-ui", pkg: "@proyecto-viviana/ui" },
+  { id: "solid-spectrum", label: "solid-spectrum", pkg: "@proyecto-viviana/solid-spectrum" },
+];
 
 function ThemePage() {
   const [result, setResult] = createSignal<ThemeResult>({
@@ -30,6 +45,10 @@ function ThemePage() {
   // The preview scheme lives here on the route so the device frame's header bar
   // can carry its toggle, independent of the knob editor.
   const [scheme, setScheme] = createSignal<Scheme>("dark");
+  // Which styled register the live preview shows. The knobs drive viviana-ui only;
+  // solid-spectrum wears its own fixed Spectrum palette, so this is a preview flip.
+  const [register, setRegister] = createSignal<Register>("viviana-ui");
+  const activePkg = () => REGISTERS.find((r) => r.id === register())!.pkg;
   const [copied, setCopied] = createSignal(false);
   const [mounted, setMounted] = createSignal(false);
   onMount(() => setMounted(true));
@@ -140,17 +159,42 @@ function ThemePage() {
 
           {/* Live preview */}
           <div class="pv-studio__main">
-            <Flex alignItems="center" justifyContent="between" gap={3} style={{ "margin-bottom": "16px" }}>
+            <Flex
+              alignItems="center"
+              justifyContent="between"
+              gap={3}
+              wrap
+              style={{ "margin-bottom": "16px" }}
+            >
               <SectionLabel>Live preview</SectionLabel>
-              <span
-                style={{
-                  "font-family": FONT_BODY,
-                  "font-size": "12px",
-                  color: "var(--docs-text-secondary)",
-                }}
-              >
-                Rethemes as you tune the knobs.
-              </span>
+              <Flex alignItems="center" gap={3}>
+                <span
+                  style={{
+                    "font-family": FONT_BODY,
+                    "font-size": "12px",
+                    color: "var(--docs-text-secondary)",
+                  }}
+                >
+                  {register() === "viviana-ui"
+                    ? "Rethemes as you tune the knobs."
+                    : "Spectrum's own palette — knobs drive viviana-ui."}
+                </span>
+                {/* Register selector: flips the previewed styled register. */}
+                <div class="pv-frame__seg" role="group" aria-label="Preview register">
+                  <For each={REGISTERS}>
+                    {(r) => (
+                      <button
+                        type="button"
+                        onClick={() => setRegister(r.id)}
+                        data-active={register() === r.id ? "true" : "false"}
+                        style={{ "text-transform": "none" }}
+                      >
+                        {r.label}
+                      </button>
+                    )}
+                  </For>
+                </div>
+              </Flex>
             </Flex>
 
             {/* Device frame: an app-window chrome around the themed canvas. Its
@@ -163,7 +207,7 @@ function ThemePage() {
                   <span />
                   <span />
                 </span>
-                <span class="pv-frame__title">@proyecto-viviana/ui</span>
+                <span class="pv-frame__title">{activePkg()}</span>
                 <div class="pv-frame__seg" role="group" aria-label="Preview color scheme">
                   <For each={["dark", "light"] as Scheme[]}>
                     {(s) => (
@@ -193,7 +237,12 @@ function ThemePage() {
                     </Flex>
                   }
                 >
-                  <ThemePreviewGallery tokens={activeTokens()} scheme={scheme()} framed />
+                  <Show
+                    when={register() === "solid-spectrum"}
+                    fallback={<ThemePreviewGallery tokens={activeTokens()} scheme={scheme()} framed />}
+                  >
+                    <SpectrumPreviewGallery scheme={scheme()} framed />
+                  </Show>
                 </Show>
               </div>
             </div>
