@@ -14,7 +14,7 @@ npm install @proyecto-viviana/solid-spectrum solid-js
 
 ```tsx
 import { Provider, Button } from "@proyecto-viviana/solid-spectrum";
-import "@proyecto-viviana/solid-spectrum/styles.css";
+import "@proyecto-viviana/solid-spectrum/components.css";
 
 export function App() {
   return (
@@ -25,23 +25,32 @@ export function App() {
 }
 ```
 
+Components do not inject their own styles, so that import is required — without
+it everything renders unstyled. `components.css` is `font-faces.css` +
+`styles.css`; import those two separately only if your app loads fonts itself.
+Keep whichever you choose ahead of your other stylesheets: `font-faces.css`
+opens with an `@import`, and CSS drops an `@import` that any rule precedes.
+
 ## Styling Rule
 
 Do not implement S2 parity with handwritten component CSS or screenshot-tuned
 values. The controlling decision is
-[`../../docs/adr/0001-s2-styling-source-of-truth.md`](../../docs/adr/0001-s2-styling-source-of-truth.md).
+[ADR 0001 — S2 styling source of truth](https://github.com/proyecto-viviana/ui/blob/main/docs/adr/0001-s2-styling-source-of-truth.md).
 
 ## Current Parity Evidence
 
-As of the 2026-05-15 local reports:
+As of the 2026-07-24 local reports:
 
-- `69` official S2 catalogue entries are tracked in the comparison app.
-- `33` entries are live on both React and Solid sides.
-- `36` entries are still missing or blocked.
-- root catalogue exports are present, but `80` non-root/support S2 value
-  exports are still missing, mostly contexts, slots, hooks, and helpers.
+- `78` official S2 catalogue entries are tracked in the comparison app.
+- `78` entries are live on both React and Solid sides — the catalogue gap is
+  closed.
+- `7` non-root S2 value exports are still missing: `LabeledValueContext` and the
+  six drag-and-drop names (`useDragAndDrop`, `DragPreview`,
+  `DIRECTORY_DRAG_TYPE`, `isTextDropItem`, `isFileDropItem`,
+  `isDirectoryDropItem`). Drag-and-drop is the one un-ported subsystem.
 
-Use the comparison app as the roadmap:
+Those numbers are a snapshot; the reports are the authority. Re-run them rather
+than trusting this section:
 
 ```bash
 vp run comparison:report:gaps

@@ -14,9 +14,8 @@ snapshot that had gone 18 days stale and was materially wrong about the release
 train: it claimed Version PR #7 was stuck with 101 changesets pending and npm a
 patch behind on 3 packages. **All of that is resolved** — every package is
 published and local `main` == `origin/main` == npm. It also claimed the format
-and a11y gates were green; both were red at audit time (format is now closed).
-Treat the age of this header as the
-first thing to check.
+and a11y gates were green; both were red at audit time, and both are now closed.
+Treat the age of this header as the first thing to check.
 
 ## Snapshot
 

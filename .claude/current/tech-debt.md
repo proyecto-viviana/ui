@@ -32,8 +32,9 @@ tasks:
       five packages and omitted the flagship.
   - id: launch-installation-page-wrong
     title: The installation page omits the flagship package and teaches hand-authored CSS variables
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
@@ -51,6 +52,22 @@ tasks:
       import story, with solid-spectrum documented as the parity alternative.
       Source of truth is packages/viviana-ui/README.md — the site should not
       restate it divergently.
+    resolution: >-
+      Closed 2026-07-24. The page is rewritten from the packages' real exports
+      map: a five-row "pick a package" table led by @proyecto-viviana/ui, the
+      required components.css import with the subpath table and the
+      font-faces-must-load-first @import gotcha, a Provider + deep-import
+      example, the Tailwind cascade-layer order and why both ways of getting it
+      wrong fail silently, and vivianaMacros() framed as optional — needed only
+      when you author your own style() calls. The fabricated ":root
+      { --color-primary-* }" block is deleted outright; no shipped component
+      reads those variables. Verified by rendering the built route, not just
+      typecheck. Two npm-shipped inaccuracies found in the same research and
+      fixed in packages/solid-spectrum/README.md: it recommended styles.css when
+      that package's theme.css is an empty stub and components.css is the correct
+      single import, and its "Current Parity Evidence" block was ~2 months stale
+      (69 entries / 33 live / 36 missing / 80 missing exports) against the real
+      78 / 78 / 0 / 7.
   - id: launch-viviana-ui-api-docs
     title: The flagship package has 238 exports and zero API documentation
     state: open
