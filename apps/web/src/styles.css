@@ -159,19 +159,20 @@
   --color-primary-800: #0d419d;
   --color-primary-900: #050a12;
 
-  /* Accent — pink */
-  --color-accent: #df5c9a;
-  --color-accent-50: #100810;
-  --color-accent-100: #0f0508;
-  --color-accent-200: #150a12;
-  --color-accent-300: #ffa0d5;
-  --color-accent-400: #f778ba;
-  --color-accent-500: #d84a8f;
-  --color-accent-600: #f778ba;
-  --color-accent-700: #ffa0d5;
-  --color-accent-800: #ffc9e9;
-  --color-accent-900: #0f0508;
-  --color-accent-highlight: #e2a2be;
+  /* Accent — aliased to the blue chrome accent so `variant="accent"` matches
+     --docs-accent everywhere; the ramp tracks the primary blue scale. */
+  --color-accent: var(--docs-accent);
+  --color-accent-50: var(--color-primary-50);
+  --color-accent-100: var(--color-primary-100);
+  --color-accent-200: var(--color-primary-200);
+  --color-accent-300: var(--color-primary-300);
+  --color-accent-400: var(--color-primary-400);
+  --color-accent-500: var(--color-primary-500);
+  --color-accent-600: var(--color-primary-600);
+  --color-accent-700: var(--color-primary-700);
+  --color-accent-800: var(--color-primary-800);
+  --color-accent-900: var(--color-primary-900);
+  --color-accent-highlight: var(--color-primary-300);
 
   /* Semantic colors */
   --color-success-100: #e5fff3;
@@ -262,14 +263,14 @@
 :root {
   /* Dim versions (wire base / inactive elements) */
   --color-primary-dim: #1a3040;
-  --color-accent-dim: #301520;
+  --color-accent-dim: var(--color-primary-dim);
 
   /* Header background */
   --color-header-bg: #181818;
 
   /* Glow effects (for drop-shadow filters) */
   --color-primary-glow: rgba(128, 204, 255, 0.6);
-  --color-accent-glow: rgba(255, 160, 213, 0.6);
+  --color-accent-glow: var(--color-primary-glow);
 
   /* Fusion glow */
   --color-fusion-glow: rgba(180, 140, 230, 0.7);
@@ -343,7 +344,7 @@
 
 /* ===== SELECTION STYLING ===== */
 ::selection {
-  background: rgba(255, 160, 213, 0.3);
+  background: rgba(77, 160, 255, 0.3);
   color: var(--color-primary-100);
 }
 
@@ -417,14 +418,14 @@
   --color-primary-800: #9dcce4;
   --color-primary-900: #0d2a3d;
 
-  /* Accent — pink */
-  --color-accent: #df5c9a;
-  --color-accent-100: #fef2f7;
-  --color-accent-200: #7d1c48;
-  --color-accent-300: #f78fb9;
-  --color-accent-400: #df5c9a;
-  --color-accent-500: #8a1e4a;
-  --color-accent-highlight: #d4508a;
+  /* Accent — aliased to the blue chrome accent (see the dark block above). */
+  --color-accent: var(--docs-accent);
+  --color-accent-100: var(--color-primary-100);
+  --color-accent-200: var(--color-primary-200);
+  --color-accent-300: var(--color-primary-300);
+  --color-accent-400: var(--color-primary-400);
+  --color-accent-500: var(--color-primary-500);
+  --color-accent-highlight: var(--color-primary-300);
 
   /* Semantic — darker for readability on light bgs */
   --color-success-100: #e5fff3;
@@ -493,10 +494,10 @@
 
   /* New variables — dim, glow, bg tints */
   --color-primary-dim: #b6d9eb;
-  --color-accent-dim: #fcc7e0;
+  --color-accent-dim: var(--color-primary-dim);
   --color-header-bg: #d0e4ed;
   --color-primary-glow: rgba(117, 171, 199, 0.4);
-  --color-accent-glow: rgba(223, 92, 154, 0.4);
+  --color-accent-glow: var(--color-primary-glow);
   --color-fusion-glow: rgba(170, 130, 180, 0.5);
   --color-success-bg: rgba(63, 185, 80, 0.1);
   --color-warning-bg: rgba(210, 153, 34, 0.15);

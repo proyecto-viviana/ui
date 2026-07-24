@@ -191,5 +191,5 @@ export function generateAccentPalette(baseHex: string): Record<string, string> {
 export const defaultColors = {
   primary: "#75ABC7",
   bg: "#0a0a0a",
-  accent: "#DF5C9A",
+  accent: "#4BA3FF",
 };
