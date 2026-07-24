@@ -123,8 +123,9 @@ tasks:
       description on viviana-ui that says what it is rather than how it was built.
   - id: launch-a11y-smoke-selector-drift
     title: a11y:smoke red — 12 tests still select <p> where the rebuild renders <Text>
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
@@ -146,6 +147,15 @@ tasks:
     exit: >-
       Replace the five with tag-agnostic selectors so a restyle cannot break them
       again, and re-run to 44/44.
+    resolution: >-
+      Closed 2026-07-24. The readouts now carry the contract instead of the
+      tests inferring it: data-testid="demo-readout" on the DemoReadout helper
+      and on CalendarDemo's readout, data-testid="visible-section-count" on the
+      playground section counter. solid-spectrum's Text already forwards
+      data-* (getContentDomProps in text/shared.ts), so no library change was
+      needed. All five selectors now go through getByTestId, which no restyle
+      can break. a11y:smoke 44/44, and the full a11y:check gate is green
+      (axe:aa 2, axe:comparison 80, smoke 44 — exit 0).
   - id: launch-gates-cannot-fire
     title: The gates that would have caught the red main cannot fire on main
     state: open

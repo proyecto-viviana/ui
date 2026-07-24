@@ -2913,7 +2913,9 @@ function CalendarDemo() {
   return (
     <Flex direction="column" gap={2}>
       <Calendar aria-label="Select a date" value={selectedDate()} onChange={setSelectedDate} />
-      <Text styles={typeRoles.meta}>Selected: {selectedDate()?.toString() || "None"}</Text>
+      <Text styles={typeRoles.meta} data-testid="demo-readout">
+        Selected: {selectedDate()?.toString() || "None"}
+      </Text>
     </Flex>
   );
 }

@@ -62,7 +62,7 @@ export function SectionControlPanel(props: SectionControlPanelProps) {
         <Flex alignItems="center" justifyContent="between" gap={3}>
           <div>
             <Heading level={3}>Component Sections</Heading>
-            <Text styles={typeRoles.meta}>
+            <Text styles={typeRoles.meta} data-testid="visible-section-count">
               {props.visibleSections().size} of {SECTION_IDS.length} visible
             </Text>
           </div>

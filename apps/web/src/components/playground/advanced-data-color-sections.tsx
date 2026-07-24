@@ -191,9 +191,20 @@ export function PlaygroundDataColorSections(props: PlaygroundDataColorSectionsPr
 // SHARED DEMO PIECES
 // ============================================
 
-/** The "Selected: …" / "Value: …" line every demo closes with. */
+/**
+ * The "Selected: …" / "Value: …" line every demo closes with.
+ *
+ * Carries `data-testid` because the e2e specs assert on these readouts. They
+ * used to select them by tag, which broke the moment the Glasselated rebuild
+ * swapped `<p>` for solid-spectrum `<Text>` (a `<span>`). The testid is the
+ * contract; the element is free to change.
+ */
 function DemoReadout(props: { children: JSX.Element }) {
-  return <Text styles={typeRoles.meta}>{props.children}</Text>;
+  return (
+    <Text styles={typeRoles.meta} data-testid="demo-readout">
+      {props.children}
+    </Text>
+  );
 }
 
 /** A colour chip beside its value, shared by the five picker demos. */

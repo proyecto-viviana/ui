@@ -31,10 +31,7 @@ async function waitForPageReady(page: Page) {
 }
 
 function getVisibleCountText(page: Page) {
-  return page
-    .locator("p")
-    .filter({ hasText: /\d+\s+of\s+\d+\s+visible/ })
-    .first();
+  return page.getByTestId("visible-section-count").first();
 }
 
 async function getVisibleAndTotalCount(page: Page) {

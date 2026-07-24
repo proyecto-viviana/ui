@@ -315,7 +315,10 @@ test.describe("Playground Page", () => {
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Space");
 
-    const selectedSummary = section.locator("p", { hasText: "Selected:" }).first();
+    const selectedSummary = section
+      .getByTestId("demo-readout")
+      .filter({ hasText: "Selected:" })
+      .first();
     await expect(selectedSummary).toBeVisible();
     await expect(selectedSummary).not.toContainText("None");
 
@@ -337,7 +340,10 @@ test.describe("Playground Page", () => {
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Space");
 
-    const selectedSummary = section.locator("p", { hasText: "Selected:" }).first();
+    const selectedSummary = section
+      .getByTestId("demo-readout")
+      .filter({ hasText: "Selected:" })
+      .first();
     await expect(selectedSummary).toBeVisible();
     await expect(selectedSummary).not.toContainText("None");
 
@@ -359,7 +365,10 @@ test.describe("Playground Page", () => {
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Space");
 
-    const selectedSummary = section.locator("p", { hasText: "Selected:" }).first();
+    const selectedSummary = section
+      .getByTestId("demo-readout")
+      .filter({ hasText: "Selected:" })
+      .first();
     await expect(selectedSummary).toBeVisible();
     await expect(selectedSummary).not.toContainText("None");
 
@@ -412,7 +421,10 @@ test.describe("Playground Page", () => {
     await expect(dayButton).toBeVisible();
     await dayButton.click();
 
-    const selectedText = section.locator("p", { hasText: "Selected:" }).first();
+    const selectedText = section
+      .getByTestId("demo-readout")
+      .filter({ hasText: "Selected:" })
+      .first();
     await expect(selectedText).toBeVisible();
     await expect(selectedText).not.toContainText("None");
 
