@@ -656,7 +656,7 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             data-testid="dropzone-active"
             aria-label="Upload files drop zone"
             onDrop={() => props.onLastAction("DropZone: drop event")}
-            UNSAFE_className="min-h-[120px] flex items-center justify-center"
+            UNSAFE_style={{ "min-height": "120px", display: "flex", "align-items": "center", "justify-content": "center" }}
           >
             <div style={{ "text-align": "center" }}>
               <Text styles={typeRoles.label}>Drop files here</Text>

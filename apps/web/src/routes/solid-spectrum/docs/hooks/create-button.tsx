@@ -189,9 +189,17 @@ function GradientButton(props: { onPress?: () => void; children: string }) {
   return (
     <button
       {...buttonProps}
-      class={`rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-3 font-medium text-white shadow-md transition-all hover:shadow-lg ${
-        isPressed() ? "scale-[0.98] shadow-sm" : ""
-      }`}
+      class={typeRoles.label}
+      style={{
+        padding: "12px 24px",
+        border: "none",
+        "border-radius": "var(--radius-lg)",
+        background: "linear-gradient(90deg, var(--color-accent), var(--color-primary-500))",
+        color: "var(--color-grey-900)",
+        cursor: "pointer",
+        transition: "transform 150ms ease",
+        transform: isPressed() ? "scale(0.98)" : "none",
+      }}
     >
       {props.children}
     </button>

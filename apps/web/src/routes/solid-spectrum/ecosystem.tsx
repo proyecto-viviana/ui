@@ -97,7 +97,11 @@ function Ecosystem() {
     >
       <Header />
 
-      <main id="main-content" class="pv-wrap pv-wrap--wide flex-1 px-6" style={{ "padding-block": "3rem" }}>
+      <main
+        id="main-content"
+        class="pv-wrap pv-wrap--wide"
+        style={{ flex: "1", "padding-inline": "1.5rem", "padding-block": "3rem" }}
+      >
         <h1
           style={{
             "font-family": FONT_DISPLAY,

@@ -141,7 +141,7 @@ export function Header() {
         </Link>
 
         {/* Right: Nav + GitHub + Theme Toggle */}
-        <nav class="flex items-center gap-2">
+        <nav style={{ display: "flex", "align-items": "center", gap: "8px" }}>
           <NavLink href="/home" isActive={isActive("/home")}>
             Home
           </NavLink>

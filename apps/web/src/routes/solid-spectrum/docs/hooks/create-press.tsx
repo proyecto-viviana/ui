@@ -5,6 +5,17 @@ import { createPress } from "@proyecto-viviana/solidaria";
 import { Flex, Well, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
+/** The press target both demos use: a plain box whose whole job is to show the pressed state. */
+const target = {
+  padding: "16px",
+  "border-radius": "var(--radius-lg)",
+  "border-width": "2px",
+  "border-style": "solid",
+  cursor: "pointer",
+  "user-select": "none",
+  transition: "background-color 150ms ease, border-color 150ms ease, transform 150ms ease",
+} as const;
+
 export const Route = createFileRoute("/solid-spectrum/docs/hooks/create-press")({
   component: CreatePressPage,
 });
@@ -61,11 +72,13 @@ return (
           {...(pressProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
           tabIndex={0}
           role="button"
-          class={`cursor-pointer select-none rounded-xl border-2 p-6 transition-all ${
-            isPressed()
-              ? "border-primary-500 bg-primary-50 scale-[0.98]"
-              : "border-bg-200 bg-white hover:border-bg-300"
-          }`}
+          style={{
+            ...target,
+            padding: "24px",
+            "border-color": isPressed() ? "var(--color-accent)" : "var(--color-bg-400)",
+            background: isPressed() ? "var(--color-accent-dim)" : "transparent",
+            transform: isPressed() ? "scale(0.98)" : "none",
+          }}
         >
           <p class={typeRoles.headline}>Press count: {pressCount()}</p>
           <p class={typeRoles.meta}>Last input: {lastPointerType()}</p>
@@ -244,17 +257,6 @@ return (
     </DocPage>
   );
 }
-
-/** The press target: a plain box whose whole job is to show the pressed state. */
-const target = {
-  padding: "16px",
-  "border-radius": "var(--radius-lg)",
-  "border-width": "2px",
-  "border-style": "solid",
-  cursor: "pointer",
-  "user-select": "none",
-  transition: "background-color 150ms ease, border-color 150ms ease, transform 150ms ease",
-} as const;
 
 function PressStateDemo() {
   const [events, setEvents] = createSignal<string[]>([]);

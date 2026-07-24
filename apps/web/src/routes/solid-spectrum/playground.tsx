@@ -1146,6 +1146,16 @@ function Playground() {
   );
 }
 
+// The two demos below exist to show `createButton` driving a button the library does
+// not ship, so they own their paint. Everything they use is a design token, not a
+// utility class.
+const customButton = {
+  padding: "12px 24px",
+  "border-radius": "var(--radius-lg)",
+  cursor: "pointer",
+  transition: "background-color 150ms ease, transform 150ms ease",
+} as const;
+
 function CustomGradientButton(props: { onPress?: () => void; children: string }) {
   const { buttonProps, isPressed } = createButton({
     onPress: props.onPress,
@@ -1154,9 +1164,14 @@ function CustomGradientButton(props: { onPress?: () => void; children: string })
   return (
     <button
       {...buttonProps}
-      class={`rounded-lg bg-gradient-to-r from-primary-500 to-accent px-6 py-3 font-medium text-white shadow-md transition-all hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-        isPressed() ? "scale-[0.98] shadow-sm" : ""
-      }`}
+      class={typeRoles.label}
+      style={{
+        ...customButton,
+        border: "none",
+        background: "linear-gradient(90deg, var(--color-primary-500), var(--color-accent))",
+        color: "var(--color-grey-900)",
+        transform: isPressed() ? "scale(0.98)" : "none",
+      }}
     >
       {props.children}
     </button>
@@ -1171,9 +1186,14 @@ function CustomOutlineButton(props: { onPress?: () => void; children: string }) 
   return (
     <button
       {...buttonProps}
-      class={`rounded-lg border-2 border-primary-500 bg-transparent px-6 py-3 font-medium text-primary-200 transition-all hover:bg-primary-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
-        isPressed() ? "scale-[0.98] bg-primary-700" : ""
-      }`}
+      class={typeRoles.label}
+      style={{
+        ...customButton,
+        border: "2px solid var(--color-primary-500)",
+        background: isPressed() ? "var(--color-primary-700)" : "transparent",
+        color: "var(--color-text)",
+        transform: isPressed() ? "scale(0.98)" : "none",
+      }}
     >
       {props.children}
     </button>

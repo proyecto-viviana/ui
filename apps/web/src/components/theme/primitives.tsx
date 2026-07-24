@@ -141,7 +141,15 @@ export function Panel(props: {
 }) {
   return (
     <section class="pv-card" style={{ padding: "24px" }}>
-      <div class="flex items-center justify-between gap-3" style={{ "margin-bottom": "18px" }}>
+      <div
+        style={{
+          display: "flex",
+          "align-items": "center",
+          "justify-content": "space-between",
+          gap: "12px",
+          "margin-bottom": "18px",
+        }}
+      >
         <h2
           style={{
             "font-family": FONT_DISPLAY,

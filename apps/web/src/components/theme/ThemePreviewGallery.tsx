@@ -26,6 +26,8 @@ import {
   Footer,
   StatusLight,
   Avatar,
+  Flex,
+  typeRoles,
 } from "@proyecto-viviana/ui";
 import { Provider } from "@proyecto-viviana/ui/Provider";
 import { type TokenMap } from "@/utils/themeBase";
@@ -76,15 +78,15 @@ export interface ThemePreviewGalleryProps {
 function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) {
   return (
     <section
-      class="p-4"
       classList={{ "pv-gallery__wide": props.wide }}
       style={{
+        padding: "16px",
         background: "var(--color-surface)",
         border: "1px solid var(--color-border)",
         "border-radius": "12px",
       }}
     >
-      <div class="mb-3 flex items-center gap-2">
+      <Flex alignItems="center" gap={2} style={{ "margin-bottom": "12px" }}>
         <span
           aria-hidden="true"
           style={{
@@ -97,16 +99,12 @@ function Panel(props: { title: string; children: JSX.Element; wide?: boolean }) 
           }}
         />
         <h3
-          class="font-jost text-xs font-semibold"
-          style={{
-            color: "var(--color-text-secondary)",
-            "letter-spacing": "0.08em",
-            "text-transform": "uppercase",
-          }}
+          class={typeRoles.micro}
+          style={{ color: "var(--color-text-secondary)", "text-transform": "uppercase" }}
         >
           {props.title}
         </h3>
-      </div>
+      </Flex>
       {props.children}
     </section>
   );
@@ -140,8 +138,7 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
       data-preview-canvas
       style={`${tokensToInlineStyle(props.tokens)}; background: var(--color-background); color: var(--color-text);${
         props.framed ? "" : " border: 1px solid var(--color-border); border-radius: 16px;"
-      }`}
-      class="p-5"
+      }; padding: 20px`}
     >
       {/* The Provider does double duty here, and BOTH jobs need care:
 
@@ -166,37 +163,37 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           div, so no extra nesting level — the Panels stay its direct grid children. */}
       <Provider colorScheme={props.scheme} class="pv-gallery" style={props.tokens as JSX.CSSProperties}>
         <Panel title="Buttons">
-          <div class="flex flex-wrap gap-2">
+          <Flex wrap gap={2}>
             <Button variant="primary">Primary</Button>
             <Button variant="accent">Accent</Button>
             <Button variant="secondary">Secondary</Button>
             <Button variant="negative">Danger</Button>
-          </div>
-          <div class="mt-2 flex flex-wrap gap-2">
+          </Flex>
+          <Flex wrap gap={2} style={{ "margin-top": "8px" }}>
             <Button variant="accent" fillStyle="outline">
               Outline
             </Button>
             <Button variant="primary" isDisabled>
               Disabled
             </Button>
-          </div>
+          </Flex>
         </Panel>
 
         <Panel title="Tags & badges">
           <TagGroup aria-label="Topics" items={TAGS}>
             {(item) => <Tag id={item.id}>{item.name}</Tag>}
           </TagGroup>
-          <div class="mt-3 flex flex-wrap items-center gap-3">
+          <Flex wrap alignItems="center" gap={3} style={{ "margin-top": "12px" }}>
             <Badge count={5} variant="primary" />
             <Badge count={12} variant="accent" />
             <Badge count={3} variant="success" />
             <Badge count={9} variant="warning" />
             <Badge count={1} variant="danger" />
-          </div>
+          </Flex>
         </Panel>
 
         <Panel title="Inputs">
-          <div class="space-y-3">
+          <Flex direction="column" gap={3}>
             <TextField
               label="Email"
               placeholder="you@example.com"
@@ -210,26 +207,26 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
               value={search()}
               onChange={setSearch}
             />
-          </div>
+          </Flex>
         </Panel>
 
         <Panel title="Selection">
-          <div class="space-y-3">
+          <Flex direction="column" gap={3}>
             <ToggleSwitch isSelected={switchOn()} onChange={setSwitchOn}>
               Email notifications
             </ToggleSwitch>
-            <div class="space-y-2">
+            <Flex direction="column" gap={2}>
               <Checkbox isSelected={agree()} onChange={setAgree}>
                 Accept terms
               </Checkbox>
               <Checkbox defaultSelected>Subscribe to newsletter</Checkbox>
               <Checkbox isIndeterminate>Partial selection</Checkbox>
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         </Panel>
 
         <Panel title="Feedback">
-          <div class="space-y-2">
+          <Flex direction="column" gap={2}>
             <InlineAlert variant="positive">
               <Heading>Saved</Heading>
               <Content>Your theme is ready to copy.</Content>
@@ -242,7 +239,7 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
               <Heading>Error</Heading>
               <Content>Something needs attention.</Content>
             </InlineAlert>
-          </div>
+          </Flex>
         </Panel>
 
         <Panel title="Calendar">
@@ -250,11 +247,11 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
         </Panel>
 
         <Panel title="Progress">
-          <div class="space-y-4">
+          <Flex direction="column" gap={4}>
             <ProgressBar value={72} label="Uploading" />
             <ProgressBar isIndeterminate label="Processing" />
             <Meter value={64} label="Storage used" variant="notice" />
-          </div>
+          </Flex>
         </Panel>
 
         <Panel title="Tabs">
@@ -268,17 +265,17 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           >
             <TabList<(typeof TABS)[number]>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
             <TabPanel id="overview">
-              <p class="p-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              <p class={typeRoles.body} style={{ padding: "8px", color: "var(--color-text-secondary)" }}>
                 A live snapshot of the design system under your theme.
               </p>
             </TabPanel>
             <TabPanel id="activity">
-              <p class="p-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              <p class={typeRoles.body} style={{ padding: "8px", color: "var(--color-text-secondary)" }}>
                 Recent activity would appear here.
               </p>
             </TabPanel>
             <TabPanel id="settings">
-              <p class="p-2 text-sm" style={{ color: "var(--color-text-secondary)" }}>
+              <p class={typeRoles.body} style={{ padding: "8px", color: "var(--color-text-secondary)" }}>
                 Settings would appear here.
               </p>
             </TabPanel>
@@ -293,18 +290,18 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
               <Text slot="description">Accessible SolidJS components, themeable to the core.</Text>
             </Content>
             <Footer>
-              <div class="flex gap-2">
+              <Flex gap={2}>
                 <Button variant="primary">Follow</Button>
                 <Button variant="secondary" fillStyle="outline">
                   Message
                 </Button>
-              </div>
+              </Flex>
             </Footer>
           </UserCard>
         </Panel>
 
         <Panel title="Status">
-          <div class="flex flex-col gap-2">
+          <Flex direction="column" gap={2}>
             <For each={STATUSES}>
               {(s) => (
                 <StatusLight variant={s.variant} role="status">
@@ -312,11 +309,11 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
                 </StatusLight>
               )}
             </For>
-          </div>
+          </Flex>
         </Panel>
 
         <Panel title="Cards" wide>
-          <div class="flex flex-wrap gap-4">
+          <Flex wrap gap={4}>
             <For each={CARDS}>
               {(c) => (
                 <Card id={c.title} size="M" variant="primary" textValue={c.title} UNSAFE_style={{ width: "220px" }}>
@@ -333,7 +330,7 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
                 </Card>
               )}
             </For>
-          </div>
+          </Flex>
         </Panel>
       </Provider>
     </div>

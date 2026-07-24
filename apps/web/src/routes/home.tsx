@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { Button, Badge, TextField, ToggleSwitch } from "@proyecto-viviana/ui";
+import { Button, Badge, Flex, TextField, ToggleSwitch, typeRoles } from "@proyecto-viviana/ui";
 import { Header } from "@/components";
 import {
   ACCENT,
@@ -31,9 +31,22 @@ function HomePage() {
     >
       <Header />
 
-      <main id="main-content" class="pv-wrap pv-wrap--narrow flex-1 px-6">
+      <main
+        id="main-content"
+        class="pv-wrap pv-wrap--narrow"
+        style={{ flex: "1", "padding-inline": "1.5rem" }}
+      >
         {/* Hero */}
-        <section class="pv-hero flex flex-col items-center gap-6 text-center">
+        <section
+          class="pv-hero"
+          style={{
+            display: "flex",
+            "flex-direction": "column",
+            "align-items": "center",
+            gap: "24px",
+            "text-align": "center",
+          }}
+        >
           <PillTag>Component library · Theme studio</PillTag>
 
           <h1
@@ -62,24 +75,21 @@ function HomePage() {
             color is a design token — tune a few, watch the whole library re-skin, then copy the CSS.
           </p>
 
-          <div class="mt-2 flex flex-wrap items-center justify-center gap-4">
+          <Flex wrap alignItems="center" justifyContent="center" gap={4} style={{ "margin-top": "8px" }}>
             <CtaButton href="/theme" tone="primary">
               Create your theme →
             </CtaButton>
             <CtaButton href="/solid-spectrum/playground" tone="secondary">
               Explore components
             </CtaButton>
-          </div>
+          </Flex>
 
           <a
             href="https://www.npmjs.com/package/@proyecto-viviana/ui"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-xs transition-opacity hover:opacity-70"
-            style={{
-              "font-family": "'JetBrains Mono', ui-monospace, monospace",
-              color: "var(--docs-text-secondary)",
-            }}
+            class={typeRoles.terminal}
+            style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
           >
             npm i @proyecto-viviana/ui
           </a>
@@ -107,28 +117,40 @@ function HomePage() {
 
         {/* Live sample strip */}
         <section
-          class="pv-card flex flex-col gap-6"
-          style={{ "margin-bottom": "2.5rem", padding: "28px" }}
+          class="pv-card"
+          style={{
+            display: "flex",
+            "flex-direction": "column",
+            gap: "24px",
+            "margin-bottom": "2.5rem",
+            padding: "28px",
+          }}
         >
           <SectionLabel>Real components, live</SectionLabel>
-          <div class="flex flex-wrap items-center gap-6">
-            <div class="flex flex-wrap items-center gap-3">
+          <Flex wrap alignItems="center" gap={6}>
+            <Flex wrap alignItems="center" gap={3}>
               <Button variant="primary">Primary</Button>
               <Button variant="accent">Accent</Button>
               <Badge count={3} variant="success" />
               <Badge count={7} variant="accent" />
-            </div>
-            <div class="flex w-full max-w-xs flex-col gap-3">
+            </Flex>
+            <Flex direction="column" gap={3} style={{ width: "100%", "max-width": "20rem" }}>
               <TextField label="Email" placeholder="you@example.com" />
               <ToggleSwitch defaultSelected>Notifications</ToggleSwitch>
-            </div>
-          </div>
+            </Flex>
+          </Flex>
         </section>
 
         {/* Bottom CTA */}
         <section
-          class="flex flex-col items-center gap-5 text-center"
-          style={{ "padding-block": "3rem 3.5rem" }}
+          style={{
+            display: "flex",
+            "flex-direction": "column",
+            "align-items": "center",
+            gap: "20px",
+            "text-align": "center",
+            "padding-block": "3rem 3.5rem",
+          }}
         >
           <h2
             style={{

@@ -1,6 +1,6 @@
 import { createEffect, createMemo, createSignal, For } from "solid-js";
+import { ActionButton, Flex, Text, typeRoles } from "@proyecto-viviana/ui";
 import { ColorKnob } from "./ColorKnob";
-import { FONT_DISPLAY } from "./primitives";
 import { type TokenMap } from "@/utils/themeBase";
 import {
   buildThemeTokens,
@@ -45,7 +45,7 @@ export function ThemeStudio(props: ThemeStudioProps) {
   );
 
   return (
-    <div class="flex flex-col gap-5">
+    <Flex direction="column" gap={5}>
       <div class="pv-knobs">
         <For each={FAMILIES}>
           {(fam) => (
@@ -59,54 +59,18 @@ export function ThemeStudio(props: ThemeStudioProps) {
         </For>
       </div>
 
-      <div
-        class="flex flex-wrap items-center justify-between gap-3 pt-4"
-        style={{ "border-top": "1px solid var(--docs-border)" }}
+      <Flex
+        wrap
+        alignItems="center"
+        justifyContent="between"
+        gap={3}
+        style={{ "padding-top": "16px", "border-top": "1px solid var(--docs-border)" }}
       >
-        <span
-          style={{
-            "font-family": FONT_DISPLAY,
-            "font-size": "11px",
-            "letter-spacing": "0.02em",
-            color: "var(--docs-text-secondary)",
-          }}
-        >
-          Starts from a Spectrum preset.
-        </span>
-
-        <button
-          type="button"
-          onClick={reset}
-          disabled={isDefault()}
-          style={{
-            "font-family": FONT_DISPLAY,
-            "font-size": "11px",
-            "font-weight": "600",
-            "letter-spacing": "0.06em",
-            "text-transform": "uppercase",
-            padding: "6px 16px",
-            border: "1px solid var(--docs-border)",
-            "border-radius": "999px",
-            background: "transparent",
-            color: "var(--docs-text-secondary)",
-            cursor: isDefault() ? "not-allowed" : "pointer",
-            opacity: isDefault() ? "0.4" : "1",
-            transition: "border-color 0.2s ease, color 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            if (!isDefault()) {
-              e.currentTarget.style.borderColor = "var(--docs-accent)";
-              e.currentTarget.style.color = "var(--docs-text)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--docs-border)";
-            e.currentTarget.style.color = "var(--docs-text-secondary)";
-          }}
-        >
+        <Text styles={typeRoles.meta}>Starts from a Spectrum preset.</Text>
+        <ActionButton size="S" isDisabled={isDefault()} onPress={reset}>
           Reset
-        </button>
-      </div>
-    </div>
+        </ActionButton>
+      </Flex>
+    </Flex>
   );
 }

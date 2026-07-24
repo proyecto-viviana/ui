@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, For, onMount, Show } from "solid-js";
+import { Button, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { Header } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
@@ -59,9 +60,13 @@ function ThemePage() {
     >
       <Header />
 
-      <main id="main-content" class="pv-wrap pv-wrap--wide flex-1 px-6 py-10">
+      <main
+        id="main-content"
+        class="pv-wrap pv-wrap--wide"
+        style={{ flex: "1", padding: "2.5rem 1.5rem" }}
+      >
         {/* Title */}
-        <div class="flex flex-col items-start gap-4" style={{ "margin-bottom": "2.5rem" }}>
+        <Flex direction="column" alignItems="start" gap={4} style={{ "margin-bottom": "2.5rem" }}>
           <PillTag>Theme studio</PillTag>
           <h1
             style={{
@@ -87,11 +92,11 @@ function ThemePage() {
             react instantly. When it looks right, copy the CSS and paste it into your app to re-skin the whole
             library.
           </p>
-        </div>
+        </Flex>
 
         <div class="pv-studio">
           {/* Controls + export */}
-          <div class="pv-studio__aside flex flex-col gap-6">
+          <Flex direction="column" gap={6} class="pv-studio__aside">
             <Panel title="Create theme">
               <ThemeStudio onChange={setResult} />
             </Panel>
@@ -100,20 +105,9 @@ function ThemePage() {
             <Panel
               title="Copy your theme"
               trailing={
-                <button
-                  type="button"
-                  onClick={copy}
-                  class="pv-cta pv-cta--primary"
-                  style={{
-                    padding: "8px 18px",
-                    "font-size": "13px",
-                    ...(copied()
-                      ? { background: "var(--color-success)", "box-shadow": "none" }
-                      : {}),
-                  }}
-                >
+                <Button size="S" variant={copied() ? "success" : "accent"} onPress={copy}>
                   {copied() ? "Copied!" : "Copy CSS"}
-                </button>
+                </Button>
               }
             >
               <p
@@ -127,8 +121,9 @@ function ThemePage() {
                 {THEME_HOWTO}
               </p>
               <pre
-                class="custom-scrollbar pv-copy-pre p-3"
+                class="custom-scrollbar pv-copy-pre"
                 style={{
+                  padding: "12px",
                   background: "var(--docs-bg)",
                   color: "var(--docs-text-secondary)",
                   border: "1px solid var(--docs-border)",
@@ -141,11 +136,11 @@ function ThemePage() {
                 {css()}
               </pre>
             </Panel>
-          </div>
+          </Flex>
 
           {/* Live preview */}
           <div class="pv-studio__main">
-            <div class="mb-4 flex items-center justify-between gap-3">
+            <Flex alignItems="center" justifyContent="between" gap={3} style={{ "margin-bottom": "16px" }}>
               <SectionLabel>Live preview</SectionLabel>
               <span
                 style={{
@@ -156,7 +151,7 @@ function ThemePage() {
               >
                 Rethemes as you tune the knobs.
               </span>
-            </div>
+            </Flex>
 
             {/* Device frame: an app-window chrome around the themed canvas. Its
                 bar carries the dark/light scheme toggle; the body clips the
@@ -187,15 +182,14 @@ function ThemePage() {
                 <Show
                   when={mounted()}
                   fallback={
-                    <div
-                      class="flex items-center justify-center text-sm"
-                      style={{
-                        "min-height": "24rem",
-                        color: "var(--docs-text-secondary)",
-                      }}
+                    <Flex
+                      alignItems="center"
+                      justifyContent="center"
+                      class={typeRoles.body}
+                      style={{ "min-height": "24rem", color: "var(--docs-text-secondary)" }}
                     >
                       Loading preview…
-                    </div>
+                    </Flex>
                   }
                 >
                   <ThemePreviewGallery tokens={activeTokens()} scheme={scheme()} framed />
