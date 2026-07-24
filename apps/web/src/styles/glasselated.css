@@ -116,6 +116,33 @@
   box-shadow: var(--edge-glass);
 }
 
+/* Narrow-width nav: the tab strip becomes a select. On wide desktop the strip
+   stays and this control is hidden; below the threshold they swap so the panels
+   never have to scroll off a small screen. */
+[data-glasselated] .gls-nav-select {
+  display: none;
+  flex: 1;
+  min-width: 0;
+  font: var(--type-micro);
+  letter-spacing: var(--type-micro-track);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-default);
+  border-radius: 5px;
+  box-shadow: var(--edge-glass);
+  padding: 7px 9px;
+}
+@media (width <= 820px) {
+  [data-glasselated] .gls-topbar-nav {
+    display: none;
+  }
+  [data-glasselated] .gls-nav-select {
+    display: block;
+  }
+}
+
 /* Content column. */
 [data-glasselated] .gls-main {
   position: relative;

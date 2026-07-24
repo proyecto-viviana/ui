@@ -3,7 +3,7 @@
    paint comes from the `gls-*` classes in styles/glasselated.css, which in
    turn use only register tokens. */
 import { For, type JSX } from "solid-js";
-import { Link } from "@tanstack/solid-router";
+import { Link, useLocation, useNavigate } from "@tanstack/solid-router";
 import { ActionButton } from "@proyecto-viviana/ui";
 import ContrastIcon from "@proyecto-viviana/ui/ContrastIcon";
 import { dualWipe } from "@/lib/glasselated";
@@ -11,11 +11,23 @@ import { useTheme } from "@/utils/theme";
 import { glasselatedRoot } from "./GlasselatedShell";
 import { PANELS, type PanelDef } from "./registry";
 
+/* The nav is a scrolling tab strip on wide desktop; below --gls-nav-collapse
+   (see glasselated.css) CSS swaps it for the select below, which is the only
+   one that reads well once the strip would have to scroll on a small screen. */
+
 export function ShowcaseTopbar(): JSX.Element {
   const { toggleTheme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const wipeTheme = (): void => {
     dualWipe(glasselatedRoot() ?? null, { onCovered: toggleTheme });
+  };
+
+  /* The trailing segment of /showcase/<slug>; "" on the /showcase index. */
+  const currentSlug = (): string => {
+    const rest = location().pathname.replace(/^\/showcase\/?/, "").replace(/\/$/, "");
+    return rest;
   };
 
   return (
@@ -36,6 +48,22 @@ export function ShowcaseTopbar(): JSX.Element {
           ≡≡ Parity
         </Link>
       </nav>
+      {/* Narrow-width equivalent of the tab strip above — same order, one control. */}
+      <select
+        class="gls-nav-select"
+        aria-label="Showcase panels"
+        value={currentSlug()}
+        onChange={(e) => navigate({ to: `/showcase/${e.currentTarget.value}` })}
+      >
+        <For each={PANELS}>
+          {(panel) => (
+            <option value={panel.slug}>
+              {panel.num} {panel.title}
+            </option>
+          )}
+        </For>
+        <option value="parity">≡≡ Parity</option>
+      </select>
       <ActionButton isQuiet aria-label="Toggle color scheme" onPress={wipeTheme}>
         <ContrastIcon />
       </ActionButton>
