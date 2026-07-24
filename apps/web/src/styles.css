@@ -41,6 +41,9 @@
 
   body {
     margin: 0;
+    /* The register's app canvas, so there's no white flash behind the fixed
+       SiteBackdrop and page roots can sit transparent over it. */
+    background: var(--surface-app);
   }
 
   img,
@@ -76,25 +79,25 @@
   }
 }
 
-/* Docs-site semantic tokens — driven by the data-color-scheme attribute (which
-   useTheme() toggles), NOT by light-dark(): the CSS color-scheme property is
-   never set here, so light-dark() would freeze on its light branch. Dark is the
-   zero-specificity default so any [data-color-scheme="light"] rule overrides it. */
+/* Docs-site semantic tokens — now thin aliases onto @proyecto-viviana/ui's
+   Glasselated register tokens (viviana-tokens.css). Those are themselves keyed to
+   the data-color-scheme attribute, so ONE scheme-agnostic block re-skins the whole
+   docs site onto the register: frosted-glass panels, matte terminal code wells,
+   register text + the blue register accent. Every surface that reads these
+   (Header, DocPage, docs sidebar, theme primitives, landing) turns Glasselated
+   with no per-site rewrite.
+
+   `--docs-bg` maps to the matte WELL (its code-block duty), NOT to the page fill —
+   page roots set their own `background: transparent` so the fixed SiteBackdrop
+   (calm on docs/theme, the photographic scene on marketing heroes) shows through
+   the glass. `--docs-bg-elevated` is the glass panel fill. */
 :where(:root) {
-  --docs-bg: rgb(10, 10, 10);
-  --docs-bg-elevated: rgb(27, 27, 27);
-  --docs-text: rgb(250, 250, 250);
-  --docs-text-secondary: rgb(163, 163, 163);
-  --docs-border: rgb(38, 38, 38);
-  --docs-accent: rgb(75, 163, 255);
-}
-[data-color-scheme="light"] {
-  --docs-bg: rgb(255, 255, 255);
-  --docs-bg-elevated: rgb(248, 248, 248);
-  --docs-text: rgb(23, 23, 23);
-  --docs-text-secondary: rgb(82, 82, 82);
-  --docs-border: rgb(229, 229, 229);
-  --docs-accent: rgb(38, 128, 235);
+  --docs-bg: var(--surface-well);
+  --docs-bg-elevated: var(--surface-panel);
+  --docs-text: var(--text-primary);
+  --docs-text-secondary: var(--text-secondary);
+  --docs-border: var(--border-default);
+  --docs-accent: var(--accent-primary);
 }
 
 /* Viviana UI theme tokens */

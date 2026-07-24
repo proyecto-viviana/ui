@@ -1,33 +1,76 @@
-import { createFileRoute, Link } from "@tanstack/solid-router";
+import { createFileRoute } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
-import { Header } from "@/components";
-import { FONT_SANS } from "@/components/docs";
-import { useThemeColors, useTheme } from "@/utils/theme";
+import { Header, SiteBackdrop } from "@/components";
+import {
+  ACCENT,
+  CtaButton,
+  FONT_BODY,
+  FONT_DISPLAY,
+  PillTag,
+  SiteFooter,
+} from "@/components/theme/primitives";
+import "@/components/theme/studio.css";
 
 export const Route = createFileRoute("/solid-spectrum/")({
   component: Landing,
 });
 
-function Landing() {
-  const getColors = useThemeColors();
-  const { isDark } = useTheme();
-  const colors = () => getColors();
+/** A glass stat card — pixel headline, Geist caption, register-blue accent tick. */
+function StatCard(props: { title: string; desc: string }) {
+  return (
+    <div
+      class="pv-card"
+      style={{
+        display: "flex",
+        "align-items": "flex-start",
+        gap: "12px",
+        padding: "18px",
+        "text-align": "left",
+      }}
+    >
+      <div
+        style={{
+          width: "3px",
+          height: "36px",
+          background: "var(--accent-primary)",
+          "border-radius": "2px",
+          "flex-shrink": "0",
+        }}
+      />
+      <div>
+        <div
+          style={{
+            "font-family": FONT_DISPLAY,
+            "font-weight": "700",
+            "font-size": "15px",
+            "letter-spacing": "0.01em",
+            "margin-bottom": "3px",
+            color: "var(--docs-text)",
+          }}
+        >
+          {props.title}
+        </div>
+        <div style={{ "font-size": "12px", color: "var(--docs-text-secondary)" }}>{props.desc}</div>
+      </div>
+    </div>
+  );
+}
 
+function Landing() {
   return (
     <div
       style={{
         "min-height": "100vh",
-        background: colors().surface,
+        background: "transparent",
         display: "flex",
         "flex-direction": "column",
-        "font-family": FONT_SANS,
-        color: colors().text,
-        transition: "background 0.3s ease, color 0.3s ease",
+        "font-family": FONT_BODY,
+        color: "var(--docs-text)",
       }}
     >
+      <SiteBackdrop variant="scene" />
       <Header />
 
-      {/* Hero */}
       <main
         id="main-content"
         style={{
@@ -38,57 +81,36 @@ function Landing() {
           "justify-content": "center",
           padding: "4rem 2rem",
           "text-align": "center",
+          gap: "20px",
         }}
       >
-        {/* Tag */}
-        <div
-          style={{
-            display: "inline-flex",
-            "align-items": "center",
-            background: colors().pink,
-            padding: "4px 12px",
-            "margin-bottom": "1.5rem",
-            "font-size": "11px",
-            "font-weight": "600",
-            "letter-spacing": "0.5px",
-            color: isDark() ? colors().surface : "#ffffff",
-            "font-family": FONT_SANS,
-          }}
-        >
-          ACCESSIBLE UI LIBRARY FOR SOLIDJS
-        </div>
+        <PillTag>Accessible UI library for SolidJS</PillTag>
 
-        {/* Title */}
         <h1
           style={{
-            "font-family": FONT_SANS,
-            "font-size": "clamp(2.5rem, 8vw, 5rem)",
+            "font-family": FONT_DISPLAY,
+            "font-size": "clamp(2.5rem, 8vw, 4.75rem)",
             "font-weight": "700",
-            "line-height": "1",
-            margin: "0 0 1.5rem 0",
+            "line-height": "1.02",
+            margin: "0",
             "letter-spacing": "-0.02em",
+            "max-width": "16ch",
           }}
         >
-          <span style={{ color: colors().blue }}>A11y</span> at
-          <br />
-          <span style={{ color: colors().pink }}>Solid</span> speed
+          Accessibility at <span style={{ color: ACCENT }}>Solid speed</span>.
         </h1>
 
-        {/* Subtitle */}
         <p
           style={{
-            "font-size": "14px",
-            "max-width": "420px",
-            "line-height": "1.6",
-            margin: "0 0 2rem 0",
-            color: colors().textSecondary,
-            "border-left": `3px solid ${colors().pink}`,
-            "padding-left": "12px",
-            "text-align": "left",
+            "font-size": "15px",
+            "max-width": "480px",
+            "line-height": "1.65",
+            margin: "0",
+            color: "var(--docs-text-secondary)",
           }}
         >
-          A meticulously crafted port of Adobe's React Spectrum. 60+ accessible components, 3680
-          tests, zero compromises.
+          A meticulously crafted port of Adobe&rsquo;s React Spectrum — 60+ accessible components,
+          certified cell-by-cell against the upstream pin, zero compromises.
         </p>
 
         {/* CTA Buttons */}
@@ -98,166 +120,42 @@ function Landing() {
             gap: "12px",
             "flex-wrap": "wrap",
             "justify-content": "center",
+            "margin-top": "4px",
           }}
         >
-          <Link
-            to="/solid-spectrum/docs"
-            style={{
-              display: "inline-flex",
-              "align-items": "center",
-              gap: "8px",
-              padding: "10px 20px",
-              background: colors().pink,
-              color: isDark() ? colors().surface : "#ffffff",
-              "text-decoration": "none",
-              "font-weight": "600",
-              "font-size": "13px",
-              "font-family": FONT_SANS,
-              border: `2px solid ${colors().pink}`,
-              transition: "filter 0.2s ease",
-              filter: `drop-shadow(0 0 8px ${colors().pinkGlow})`,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.filter = `drop-shadow(0 0 12px ${colors().pinkGlow})`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.filter = `drop-shadow(0 0 8px ${colors().pinkGlow})`;
-            }}
-          >
-            Get Started
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-
+          <CtaButton href="/solid-spectrum/docs" tone="primary">
+            Read the docs →
+          </CtaButton>
           <a
             href="https://github.com/proyecto-viviana/proyecto-viviana"
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: "inline-flex",
-              "align-items": "center",
-              gap: "8px",
-              padding: "10px 20px",
-              background: "transparent",
-              color: colors().blue,
-              "text-decoration": "none",
-              "font-weight": "600",
-              "font-size": "13px",
-              "font-family": FONT_SANS,
-              border: `2px solid ${colors().blue}`,
-              transition: "background 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = `${colors().blue}20`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-            }}
+            class="pv-cta pv-cta--secondary"
+            style={{ display: "inline-flex", "align-items": "center", gap: "8px" }}
           >
             <GitHubIcon size={16} />
             GitHub
           </a>
         </div>
 
-        {/* Feature blocks */}
+        {/* Stat cards */}
         <div
           style={{
             display: "grid",
             "grid-template-columns": "repeat(auto-fit, minmax(180px, 1fr))",
-            gap: "8px",
-            "margin-top": "3rem",
-            "max-width": "600px",
+            gap: "12px",
+            "margin-top": "2rem",
+            "max-width": "620px",
             width: "100%",
           }}
         >
-          <FeatureBlock
-            title="3680 Tests"
-            desc="World-class a11y coverage"
-            color={colors().pink}
-            bgColor={colors().surfaceElevated}
-          />
-          <FeatureBlock
-            title="60+ Components"
-            desc="Forms, data, overlays, dates"
-            color={colors().blue}
-            bgColor={colors().surfaceElevated}
-          />
-          <FeatureBlock
-            title="4-Layer Arch"
-            desc="State → ARIA → Headless → UI"
-            color={colors().pink}
-            bgColor={colors().surfaceElevated}
-          />
+          <StatCard title="3,680 tests" desc="World-class a11y coverage" />
+          <StatCard title="60+ components" desc="Forms, data, overlays, dates" />
+          <StatCard title="4-layer arch" desc="State → ARIA → Headless → UI" />
         </div>
       </main>
 
-      {/* Status bar footer */}
-      <footer
-        style={{
-          display: "flex",
-          "justify-content": "space-between",
-          "align-items": "center",
-          height: "32px",
-          padding: "0 24px",
-          "border-top": `1px solid ${colors().muted}`,
-          background: colors().surfaceElevated,
-          color: colors().textSecondary,
-          "flex-wrap": "wrap",
-          "font-size": "11px",
-        }}
-      >
-        <span style={{ "font-weight": "600", color: colors().text }}>Proyecto Viviana</span>
-        <div style={{ display: "flex", gap: "16px", "font-size": "10px" }}>
-          <span style={{ color: colors().blue }}>SolidJS</span>
-          <span style={{ color: colors().pink }}>Tailwind v4</span>
-          <span style={{ color: colors().blue }}>WAI-ARIA</span>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-function FeatureBlock(props: { title: string; desc: string; color: string; bgColor: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        "align-items": "flex-start",
-        gap: "10px",
-        padding: "12px",
-        background: props.bgColor,
-        border: `2px solid ${props.color}40`,
-      }}
-    >
-      <div
-        style={{
-          width: "3px",
-          height: "32px",
-          background: props.color,
-          "flex-shrink": "0",
-        }}
-      />
-      <div>
-        <div
-          style={{
-            "font-family": FONT_SANS,
-            "font-weight": "600",
-            "font-size": "13px",
-            "margin-bottom": "2px",
-          }}
-        >
-          {props.title}
-        </div>
-        <div style={{ "font-size": "11px", opacity: "0.7" }}>{props.desc}</div>
-      </div>
+      <SiteFooter />
     </div>
   );
 }

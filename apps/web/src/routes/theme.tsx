@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, For, onMount, Show } from "solid-js";
 import { Button, Flex, typeRoles } from "@proyecto-viviana/ui";
-import { Header } from "@/components";
+import { Header, SiteBackdrop } from "@/components";
 import { ThemeStudio, type ThemeResult } from "@/components/theme/ThemeStudio";
 import { ThemePreviewGallery } from "@/components/theme/ThemePreviewGallery";
 import { SpectrumPreviewGallery } from "@/components/theme/SpectrumPreviewGallery";
@@ -70,13 +70,14 @@ function ThemePage() {
     <div
       style={{
         "min-height": "100vh",
-        background: "var(--docs-bg)",
+        background: "transparent",
         color: "var(--docs-text)",
         display: "flex",
         "flex-direction": "column",
         "font-family": FONT_BODY,
       }}
     >
+      <SiteBackdrop variant="calm" />
       <Header />
 
       <main

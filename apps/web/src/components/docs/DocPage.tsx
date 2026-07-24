@@ -1,5 +1,4 @@
 import { type JSX, For, Show } from "solid-js";
-import { useThemeColors } from "@/utils/theme";
 
 export interface PropDefinition {
   name: string;
@@ -15,72 +14,91 @@ export interface DocPageProps {
   children?: JSX.Element;
 }
 
-/* The solid-spectrum docs wear Spectrum's own type, not viviana-ui's Geist trio:
-   headings and prose on the Adobe Clean stack the S2 components already paint with,
-   code on Source Code Pro. Both fall back to the system UI/mono faces with no new
-   font files. Exported so the docs layout and landing page share one source. */
-export const FONT_SANS = "adobe-clean-variable, adobe-clean, ui-sans-serif, system-ui, sans-serif";
-export const FONT_MONO = '"Source Code Pro", ui-monospace, "SF Mono", Menlo, monospace';
+/* The docs chrome wears the Glasselated register: the Geist trio (pixel display
+   for headings, Geist for prose, Geist Mono for code), frosted-glass preview
+   panels, and matte terminal wells for code. The live solid-spectrum components
+   inside the preview boxes paint their own Spectrum look; everything around them
+   is the house register. Exported so the docs layout and landing share one
+   source. The names are kept (some callers import FONT_SANS/FONT_MONO); the
+   values now resolve to @proyecto-viviana/ui's type tokens — no font files. */
+export const FONT_SANS = "var(--font-body)";
+export const FONT_MONO = "var(--font-mono)";
+export const FONT_DISPLAY = "var(--font-display)";
 
 export function DocPage(props: DocPageProps) {
-  const getColors = useThemeColors();
-  const colors = () => getColors();
-
   return (
-    <div style={{ "line-height": "1.6", "font-size": "14px", color: colors().textSecondary }}>
-      {/* Title — pink left-border accent with glow */}
+    <div
+      style={{
+        "line-height": "1.7",
+        "font-size": "14.5px",
+        "font-family": FONT_SANS,
+        color: "var(--text-secondary)",
+      }}
+    >
+      {/* Title — pixel display, bottom rule */}
       <h1
         style={{
-          "font-family": FONT_SANS,
-          "font-size": "20px",
+          "font-family": FONT_DISPLAY,
+          "font-size": "26px",
           "font-weight": "600",
-          margin: "0 0 16px 0",
-          "padding-bottom": "10px",
-          "padding-left": "12px",
-          "border-left": `3px solid ${colors().pink}`,
-          "border-bottom": `1px solid ${colors().pink}40`,
-          "letter-spacing": "-0.01em",
-          color: colors().text,
-          filter: `drop-shadow(0 0 4px ${colors().pinkGlow})`,
+          margin: "0 0 10px 0",
+          "padding-bottom": "12px",
+          "border-bottom": "1px solid var(--border-default)",
+          "letter-spacing": "0.01em",
+          color: "var(--text-primary)",
         }}
       >
         {props.title}
       </h1>
 
-      <p style={{ "margin-bottom": "1.5rem", "max-width": "60ch" }}>{props.description}</p>
+      <p style={{ "margin-bottom": "1.5rem", "max-width": "62ch" }}>{props.description}</p>
 
-      {/* Import — code block with blue left-border */}
-      <h2
-        style={{
-          "font-family": FONT_SANS,
-          "font-size": "15px",
-          "font-weight": "600",
-          margin: "2rem 0 0.75rem 0",
-          "padding-left": "10px",
-          "border-left": `2px solid ${colors().blue}`,
-          color: colors().text,
-        }}
-      >
-        Import
-      </h2>
-      <pre
-        style={{
-          background: colors().surface,
-          color: colors().text,
-          padding: "12px 14px",
-          "overflow-x": "auto",
-          margin: "0.75rem 0",
-          "font-family": FONT_MONO,
-          "font-size": "12px",
-          border: `1px solid ${colors().muted}`,
-          "border-left": `3px solid ${colors().blue}`,
-        }}
-      >
-        <code>{props.importCode}</code>
-      </pre>
+      <SectionHeading>Import</SectionHeading>
+      <CodeBlock>{props.importCode}</CodeBlock>
 
       {props.children}
     </div>
+  );
+}
+
+/** A section heading — pixel display with a register-blue accent rule on the left. */
+function SectionHeading(props: { children: JSX.Element }) {
+  return (
+    <h2
+      style={{
+        "font-family": FONT_DISPLAY,
+        "font-size": "14px",
+        "font-weight": "600",
+        margin: "2rem 0 0.75rem 0",
+        "padding-left": "12px",
+        "border-left": "2px solid var(--accent-primary)",
+        "letter-spacing": "0.01em",
+        color: "var(--text-primary)",
+      }}
+    >
+      {props.children}
+    </h2>
+  );
+}
+
+/** A matte terminal well — the register's code surface. */
+function CodeBlock(props: { children: JSX.Element }) {
+  return (
+    <pre
+      style={{
+        background: "var(--surface-well)",
+        color: "var(--text-primary)",
+        padding: "12px 14px",
+        "overflow-x": "auto",
+        margin: "0.75rem 0",
+        "font-family": FONT_MONO,
+        "font-size": "12.5px",
+        border: "1px solid var(--well-border)",
+        "border-radius": "var(--radius-md)",
+      }}
+    >
+      <code>{props.children}</code>
+    </pre>
   );
 }
 
@@ -92,58 +110,31 @@ export interface ExampleProps {
 }
 
 export function Example(props: ExampleProps) {
-  const getColors = useThemeColors();
-  const colors = () => getColors();
-
   return (
     <section style={{ "margin-top": "2rem" }}>
-      {/* Section heading — blue left-border */}
-      <h2
-        style={{
-          "font-family": FONT_SANS,
-          "font-size": "15px",
-          "font-weight": "600",
-          margin: "0 0 0.75rem 0",
-          "padding-left": "10px",
-          "border-left": `2px solid ${colors().blue}`,
-          color: colors().text,
-        }}
-      >
-        {props.title}
-      </h2>
+      <SectionHeading>{props.title}</SectionHeading>
       <Show when={props.description}>
         <p style={{ "margin-bottom": "0.75rem" }}>{props.description}</p>
       </Show>
 
-      {/* Live preview — angular, pink top-border */}
+      {/* Live preview — a frosted-glass panel over the fixed backdrop. The
+          Spectrum component inside paints itself. */}
       <div
         style={{
           margin: "0.75rem 0",
-          padding: "1.25rem",
-          background: colors().surfaceElevated,
-          border: `1px solid ${colors().muted}`,
-          "border-top": `2px solid ${colors().pink}`,
+          padding: "1.5rem",
+          background: "var(--surface-panel)",
+          "backdrop-filter": "var(--blur-panel)",
+          "-webkit-backdrop-filter": "var(--blur-panel)",
+          border: "1px solid var(--border-default)",
+          "border-radius": "var(--radius-lg)",
+          "box-shadow": "var(--edge-glass-surface)",
         }}
       >
         {props.children}
       </div>
 
-      {/* Code block — blue left-border */}
-      <pre
-        style={{
-          background: colors().surface,
-          color: colors().text,
-          padding: "12px 14px",
-          "overflow-x": "auto",
-          margin: "0.75rem 0",
-          "font-family": FONT_MONO,
-          "font-size": "12px",
-          border: `1px solid ${colors().muted}`,
-          "border-left": `3px solid ${colors().blue}`,
-        }}
-      >
-        <code>{props.code}</code>
-      </pre>
+      <CodeBlock>{props.code}</CodeBlock>
     </section>
   );
 }
@@ -153,46 +144,32 @@ export interface PropsTableProps {
 }
 
 export function PropsTable(props: PropsTableProps) {
-  const getColors = useThemeColors();
-  const colors = () => getColors();
-
   return (
     <section style={{ "margin-top": "2rem" }}>
-      <h2
-        style={{
-          "font-family": FONT_SANS,
-          "font-size": "15px",
-          "font-weight": "600",
-          margin: "0 0 0.75rem 0",
-          "padding-left": "10px",
-          "border-left": `2px solid ${colors().blue}`,
-          color: colors().text,
-        }}
-      >
-        Props
-      </h2>
+      <SectionHeading>Props</SectionHeading>
       <div
         style={{
           margin: "0.75rem 0",
           "overflow-x": "auto",
-          border: `1px solid ${colors().muted}`,
-          background: colors().surface,
+          border: "1px solid var(--border-default)",
+          "border-radius": "var(--radius-md)",
+          background: "var(--surface-well)",
         }}
       >
         <table style={{ width: "100%", "font-size": "13px", "border-collapse": "collapse" }}>
           <thead>
-            <tr style={{ "border-bottom": `1px solid ${colors().muted}` }}>
+            <tr style={{ "border-bottom": "1px solid var(--border-default)" }}>
               {["Prop", "Type", "Default", "Description"].map((h) => (
                 <th
                   style={{
-                    padding: "8px 12px",
+                    padding: "9px 12px",
                     "text-align": "left",
-                    "font-weight": "600",
-                    "font-family": FONT_SANS,
+                    "font-weight": "700",
+                    "font-family": FONT_MONO,
                     "font-size": "10px",
                     "text-transform": "uppercase",
-                    "letter-spacing": "0.1em",
-                    color: colors().pink,
+                    "letter-spacing": "0.09em",
+                    color: "var(--text-secondary)",
                   }}
                 >
                   {h}
@@ -203,17 +180,18 @@ export function PropsTable(props: PropsTableProps) {
           <tbody>
             <For each={props.props}>
               {(prop) => (
-                <tr style={{ "border-bottom": `1px solid ${colors().muted}` }}>
+                <tr style={{ "border-bottom": "1px solid var(--border-default)" }}>
                   <td style={{ padding: "8px 12px" }}>
                     <code
                       style={{
-                        background: `${colors().blue}15`,
-                        color: colors().blue,
+                        background: "color-mix(in srgb, var(--accent-primary) 12%, transparent)",
+                        color: "var(--accent-primary)",
                         padding: "2px 6px",
+                        "border-radius": "var(--radius-sm)",
                         "font-family": FONT_MONO,
                         "font-size": "12px",
                         "font-weight": "500",
-                        border: `1px solid ${colors().blue}40`,
+                        border: "1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)",
                       }}
                     >
                       {prop.name}
@@ -224,19 +202,19 @@ export function PropsTable(props: PropsTableProps) {
                       padding: "8px 12px",
                       "font-family": FONT_MONO,
                       "font-size": "12px",
-                      color: colors().textSecondary,
+                      color: "var(--text-secondary)",
                     }}
                   >
                     {prop.type}
                   </td>
-                  <td style={{ padding: "8px 12px", color: colors().textSecondary }}>
+                  <td style={{ padding: "8px 12px", color: "var(--text-secondary)" }}>
                     <Show when={prop.default} fallback="—">
                       <code style={{ "font-family": FONT_MONO, "font-size": "12px" }}>
                         {prop.default}
                       </code>
                     </Show>
                   </td>
-                  <td style={{ padding: "8px 12px", color: colors().textSecondary }}>
+                  <td style={{ padding: "8px 12px", color: "var(--text-secondary)" }}>
                     {prop.description}
                   </td>
                 </tr>
@@ -256,33 +234,22 @@ export function PropsTable(props: PropsTableProps) {
  * below carry no styling of their own.
  */
 export function AccessibilitySection(props: { children: JSX.Element }) {
-  const getColors = useThemeColors();
-  const colors = () => getColors();
-
   return (
     <section style={{ "margin-top": "2rem" }}>
-      <h2
-        style={{
-          "font-family": FONT_SANS,
-          "font-size": "15px",
-          "font-weight": "600",
-          margin: "0 0 0.75rem 0",
-          "padding-left": "10px",
-          "border-left": `2px solid ${colors().blue}`,
-          color: colors().text,
-        }}
-      >
-        Accessibility
-      </h2>
+      <SectionHeading>Accessibility</SectionHeading>
       <div
         style={{
           margin: "0.75rem 0",
-          padding: "12px 14px",
-          background: colors().surfaceElevated,
-          "border-left": `3px solid ${colors().blue}`,
+          padding: "14px 16px",
+          background: "var(--surface-panel)",
+          "backdrop-filter": "var(--blur-panel)",
+          "-webkit-backdrop-filter": "var(--blur-panel)",
+          border: "1px solid var(--border-default)",
+          "border-left": "3px solid var(--accent-primary)",
+          "border-radius": "var(--radius-md)",
           "font-size": "13px",
-          "line-height": "1.6",
-          color: colors().textSecondary,
+          "line-height": "1.7",
+          color: "var(--text-secondary)",
         }}
       >
         <ul
@@ -292,7 +259,7 @@ export function AccessibilitySection(props: { children: JSX.Element }) {
             "list-style": "disc",
             display: "flex",
             "flex-direction": "column",
-            gap: "0.25rem",
+            gap: "0.3rem",
           }}
         >
           {props.children}

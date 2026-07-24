@@ -161,7 +161,7 @@ import {
   parseColor,
   type Color,
 } from "@proyecto-viviana/solid-stately";
-import { Header, ThemeCreator } from "@/components";
+import { Header, SiteBackdrop, ThemeCreator } from "@/components";
 import {
   Section,
   SectionControlPanel,
@@ -243,10 +243,16 @@ const glow: JSX.CSSProperties = {
   "pointer-events": "none",
 };
 
+// Chrome panels wear the Glasselated register — frosted glass over the fixed
+// SiteBackdrop, soft rims, register borders. The live component demos inside keep
+// their own paint.
 const cardSurface: JSX.CSSProperties = {
-  background: "var(--color-bg-300)",
-  border: "1px solid var(--border-subtle)",
-  "border-radius": "var(--radius-xl)",
+  background: "var(--surface-panel)",
+  "backdrop-filter": "var(--blur-panel)",
+  "-webkit-backdrop-filter": "var(--blur-panel)",
+  border: "1px solid var(--border-default)",
+  "border-radius": "var(--radius-lg)",
+  "box-shadow": "var(--edge-glass-surface), var(--shadow-card)",
 };
 
 const panelSurface: JSX.CSSProperties = {
@@ -257,8 +263,8 @@ const panelSurface: JSX.CSSProperties = {
 
 const panelHeaderSurface: JSX.CSSProperties = {
   padding: "16px",
-  "border-bottom": "1px solid var(--border-subtle)",
-  background: "var(--color-bg-400)",
+  "border-bottom": "1px solid var(--border-default)",
+  background: "var(--surface-raised)",
 };
 
 function Playground() {
@@ -288,11 +294,12 @@ function Playground() {
           "flex-direction": "column",
           "min-height": "100vh",
           width: "100%",
-          "background-color": "var(--color-background)",
+          background: "transparent",
           color: "var(--color-text)",
           "padding-top": "64px",
         }}
       >
+        <SiteBackdrop variant="calm" />
         <Header />
 
         <main id="main-content" style={mainStyle}>

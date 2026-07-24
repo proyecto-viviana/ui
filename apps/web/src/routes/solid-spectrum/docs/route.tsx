@@ -1,12 +1,13 @@
 import { Outlet, createFileRoute, Link, useLocation } from "@tanstack/solid-router";
 import { For, createSignal, Show, onMount, onCleanup } from "solid-js";
-import { Header } from "@/components";
-import { FONT_SANS } from "@/components/docs";
+import { Header, SiteBackdrop } from "@/components";
+import { FONT_SANS, FONT_DISPLAY } from "@/components/docs";
 import { useThemeColors, useTheme } from "@/utils/theme";
 
-/* Spectrum's docs chrome rides the same Adobe Clean stack the S2 components paint
-   with — one face for headings and body, no Geist. */
-const FONT_TITLE = FONT_SANS;
+/* The docs chrome wears the house Glasselated register: pixel display for the
+   wordmark and section labels, Geist for the nav and prose. Only the live
+   component previews inside each page keep the Spectrum look. */
+const FONT_TITLE = FONT_DISPLAY;
 const FONT_BODY = FONT_SANS;
 
 export const Route = createFileRoute("/solid-spectrum/docs")({
@@ -200,24 +201,26 @@ function DocsLayout() {
 
   const navLinkStyle = (href: string) => ({
     display: "block",
-    width: "100%",
-    padding: "8px 14px",
+    width: "calc(100% - 16px)",
+    margin: "1px 8px",
+    padding: "7px 12px",
     "text-align": "left" as const,
-    background: isActive(href) ? colors().pink : "transparent",
+    background: isActive(href) ? "var(--accent-primary)" : "transparent",
     border: "none",
-    "border-left": isActive(href) ? `3px solid ${colors().pink}` : "3px solid transparent",
-    color: isActive(href) ? colors().surface : colors().textSecondary,
+    "border-radius": "var(--radius-sm)",
+    color: isActive(href) ? "var(--text-on-accent)" : colors().textSecondary,
     "font-family": FONT_BODY,
-    "font-size": "12px",
+    "font-size": "12.5px",
     "font-weight": isActive(href) ? "600" : "400",
     "text-decoration": "none",
     cursor: "pointer",
-    transition: "all 0.1s",
+    transition: "background 0.12s ease, color 0.12s ease",
+    "box-shadow": isActive(href) ? "var(--edge-glass)" : "none",
   });
 
   const handleLinkMouseOver = (href: string, e: MouseEvent) => {
     if (!isActive(href)) {
-      (e.currentTarget as HTMLElement).style.background = `${colors().pink}20`;
+      (e.currentTarget as HTMLElement).style.background = "var(--surface-hover)";
       (e.currentTarget as HTMLElement).style.color = colors().text;
     }
   };
@@ -233,12 +236,13 @@ function DocsLayout() {
     <div
       style={{
         "min-height": "100vh",
-        background: colors().surface,
+        background: "transparent",
         "font-family": FONT_BODY,
         color: colors().text,
-        transition: "background 0.3s ease, color 0.3s ease",
+        transition: "color 0.3s ease",
       }}
     >
+      <SiteBackdrop variant="calm" />
       <Header />
 
       {/* Mobile overlay */}
@@ -261,14 +265,15 @@ function DocsLayout() {
             "z-index": "160",
             width: "44px",
             height: "44px",
-            background: colors().pink,
-            color: isDark() ? colors().surface : "#fff",
+            background: "var(--accent-primary)",
+            color: "var(--text-on-accent)",
             border: "none",
+            "border-radius": "var(--radius-md)",
             cursor: "pointer",
             display: "flex",
             "align-items": "center",
             "justify-content": "center",
-            filter: `drop-shadow(0 0 6px ${colors().pinkGlow})`,
+            "box-shadow": "var(--edge-glass), var(--shadow-float)",
           }}
         >
           <svg
@@ -306,7 +311,11 @@ function DocsLayout() {
             position: "fixed",
             top: "0",
             left: isMobile() ? (sidebarOpen() ? "0" : "-280px") : "0",
-            background: colors().surfaceElevated,
+            background: "var(--surface-panel)",
+            "backdrop-filter": "var(--blur-panel)",
+            "-webkit-backdrop-filter": "var(--blur-panel)",
+            "border-right": "1px solid var(--border-default)",
+            "box-shadow": "var(--edge-glass-surface)",
             "overflow-y": "auto",
             "z-index": "50",
             transition: "left 0.2s ease",
@@ -314,20 +323,6 @@ function DocsLayout() {
             "flex-direction": "column",
           }}
         >
-          {/* SVG border on sidebar right edge — starts below header */}
-          <svg
-            style={{
-              position: "absolute",
-              top: "72px",
-              right: "0",
-              width: "2px",
-              height: "calc(100% - 72px)",
-              "pointer-events": "none",
-            }}
-          >
-            <line x1="1" y1="0" x2="1" y2="100%" stroke={colors().muted} stroke-width="1" />
-          </svg>
-
           {/* Sidebar header — content reveals when main header scrolls away */}
           <div
             style={{
@@ -338,7 +333,7 @@ function DocsLayout() {
               "align-items": "center",
               "justify-content": "space-between",
               "border-bottom": `1px solid ${colors().muted}`,
-              background: colors().headerBg,
+              background: "transparent",
             }}
           >
             <div
@@ -368,15 +363,16 @@ function DocsLayout() {
                     style={{
                       width: "28px",
                       height: "28px",
-                      background: colors().pink,
+                      background: "var(--accent-primary)",
+                      "border-radius": "var(--radius-sm)",
                       display: "flex",
                       "align-items": "center",
                       "justify-content": "center",
                       "font-weight": "700",
-                      color: colors().surface,
+                      color: "var(--text-on-accent)",
                       "font-size": "12px",
                       "font-family": FONT_TITLE,
-                      filter: `drop-shadow(0 0 4px ${colors().pinkGlow})`,
+                      "box-shadow": "var(--edge-glass)",
                     }}
                   >
                     V
@@ -586,21 +582,22 @@ function DocsLayout() {
                 "justify-content": "center",
                 gap: "8px",
                 padding: "10px 14px",
-                background: colors().blue,
-                color: colors().surface,
+                background: "var(--accent-primary)",
+                color: "var(--text-on-accent)",
                 "text-decoration": "none",
                 "font-weight": "600",
                 "font-size": "12px",
                 "font-family": FONT_BODY,
-                border: `2px solid ${colors().blue}`,
-                filter: `drop-shadow(0 0 4px ${colors().blueGlow})`,
-                transition: "filter 0.2s ease",
+                border: "1px solid var(--accent-primary)",
+                "border-radius": "var(--radius-sm)",
+                "box-shadow": "var(--edge-glass)",
+                transition: "background 0.2s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.filter = `drop-shadow(0 0 8px ${colors().blueGlow})`;
+                e.currentTarget.style.background = "var(--blue-600)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.filter = `drop-shadow(0 0 4px ${colors().blueGlow})`;
+                e.currentTarget.style.background = "var(--accent-primary)";
               }}
             >
               Open Playground

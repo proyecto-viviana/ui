@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { createVisuallyHidden } from "@proyecto-viviana/solidaria";
 import { createSignal, onMount, onCleanup, Show, type JSX } from "solid-js";
-import { useTheme, useThemeColors } from "@/utils/theme";
+import { useTheme } from "@/utils/theme";
 import "@/components/theme/studio.css";
 
 function useScrollDirection() {
@@ -87,7 +87,6 @@ function ThemeToggle() {
 
 export function Header() {
   const location = useLocation();
-  const getColors = useThemeColors();
   const headerVisible = useScrollDirection();
 
   const isActive = (path: string) => {
@@ -95,8 +94,6 @@ export function Header() {
     if (path === "/") return current === "/";
     return current === path || current.startsWith(`${path}/`);
   };
-
-  const colors = () => getColors();
 
   // The skip link is hidden until it takes focus, at which point these styles are the
   // ones that apply — createVisuallyHidden swaps its clip-rect out for them wholesale.
@@ -131,9 +128,14 @@ export function Header() {
           display: "flex",
           "justify-content": "space-between",
           "align-items": "center",
-          padding: "16px 24px",
-          "padding-bottom": "24px",
-          background: `linear-gradient(to bottom, ${colors().headerBg} 0%, ${colors().headerBg} 40%, transparent 100%)`,
+          padding: "12px 24px",
+          // One frosted-glass bar shared across the whole site — the showcase
+          // topbar language. It blurs the fixed SiteBackdrop scrolling beneath it.
+          background: "var(--surface-panel)",
+          "backdrop-filter": "var(--blur-panel)",
+          "-webkit-backdrop-filter": "var(--blur-panel)",
+          "border-bottom": "1px solid var(--border-default)",
+          "box-shadow": "var(--edge-glass-surface)",
           transition: "opacity 0.3s ease, transform 0.3s ease",
           opacity: headerVisible() ? "1" : "0",
           transform: headerVisible() ? "translateY(0)" : "translateY(-10px)",
@@ -191,7 +193,7 @@ export function Header() {
       </header>
 
       {/* Spacer for fixed header */}
-      <div style={{ height: "72px" }} />
+      <div style={{ height: "60px" }} />
     </>
   );
 }

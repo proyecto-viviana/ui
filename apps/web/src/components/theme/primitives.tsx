@@ -3,15 +3,16 @@ import { type JSX } from "solid-js";
 
 /**
  * Shared design vocabulary for the docs-site chrome (landing + Theme Studio),
- * faithful to Adobe Spectrum 2: rounded corners, calm neutral surfaces, subtle
- * 1px borders + soft shadows, a SINGLE blue accent, generous whitespace, no glow.
- * This mirrors the rounded, soft `@proyecto-viviana/ui` components the pages
- * showcase, so chrome and components read as one system. Chrome colors ride the
- * auto-theming `--docs-*` tokens; the accent is `--docs-accent` (blue).
+ * in the house Glasselated register: frosted-glass cards (`.pv-card`), the Geist
+ * trio (pixel display for headings/labels, Geist for body), a single blue accent,
+ * soft rims and rounded corners. This is the same register the /showcase surface
+ * wears, so chrome and the live viviana-ui components read as one system. Chrome
+ * colors ride the `--docs-*` tokens, which are repointed onto the register's
+ * surface/text/border tokens; the accent is `--docs-accent` (= --accent-primary).
  *
  * A few legacy export names (PINK, PINK_GLOW, AccentBar, tone props) are kept as
- * thin aliases so existing imports keep compiling — the palette is now blue-only,
- * so they resolve to the single accent.
+ * thin aliases so existing imports keep compiling — the palette is blue-only, so
+ * they resolve to the single accent.
  */
 
 export const ACCENT = "var(--docs-accent)";

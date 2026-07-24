@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { type JSX } from "solid-js";
-import { Header } from "@/components";
+import { Header, SiteBackdrop } from "@/components";
 import { FONT_BODY, FONT_DISPLAY, SiteFooter } from "@/components/theme/primitives";
 import "@/components/theme/studio.css";
 
@@ -116,13 +116,14 @@ function Ecosystem() {
     <div
       style={{
         "min-height": "100vh",
-        background: "var(--docs-bg)",
+        background: "transparent",
         color: "var(--docs-text)",
         display: "flex",
         "flex-direction": "column",
         "font-family": FONT_BODY,
       }}
     >
+      <SiteBackdrop variant="calm" />
       <Header />
 
       <main

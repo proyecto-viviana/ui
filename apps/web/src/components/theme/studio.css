@@ -1,59 +1,59 @@
-/* Layout + chrome for the landing (/home) and Theme Studio (/theme).
+/* Layout + chrome for the landing (/home), Theme Studio (/theme), ecosystem, and
+   the shared site Header — the Glasselated register applied to page-level chrome.
 
    These pages take their paint from `@proyecto-viviana/ui`; what the library has
    no answer for is page-level structure — breakpoints and grid templates — so
    that lives here as real CSS. Class names are `pv-`-prefixed.
 
-   Aesthetic target: a clean, faithful Adobe Spectrum 2 look — rounded corners,
-   calm neutral surfaces (`--docs-*` tokens), subtle 1px borders + soft shadows,
-   a SINGLE blue accent, generous whitespace, no glow. This deliberately mirrors
-   the rounded, soft `@proyecto-viviana/ui` components the pages showcase, so the
-   chrome and the components read as one system. The `--pv-*` vars below are the
-   local chrome scale; the global `--radius-*` tokens are 0 (a brutalist choice
-   the components override themselves), so chrome radii are set explicitly here. */
+   Aesthetic target: the /showcase Glasselated look — frosted-glass panels
+   (`--surface-panel` + `--blur-panel` + `--edge-glass-surface`), matte terminal
+   wells for code, the Geist trio (pixel display / Geist body / Geist Mono), and
+   the register's blue accent with the create-yellow reserved for real create
+   actions. Chrome colours ride the register tokens directly; the `--docs-*`
+   aliases in styles.css already point at them, so `--pv-*` here is just the local
+   radius/accent scale. */
 
 :where(:root) {
-  --pv-radius-sm: 8px;
-  --pv-radius-md: 12px;
-  --pv-radius-lg: 16px;
+  --pv-radius-sm: var(--radius-sm);
+  --pv-radius-md: var(--radius-md);
+  --pv-radius-lg: var(--radius-lg);
   --pv-radius-pill: 999px;
-  /* Spectrum accent blue — solid fill for primary actions, safe with white text
-     in both schemes. Separate from `--docs-accent` (used for text/tint/borders),
-     which goes lighter in dark mode and wouldn't hold white text. */
-  --pv-accent-solid: #2680eb;
-  --pv-accent-solid-hover: #1473e6;
-  --pv-accent-tint: color-mix(in srgb, var(--docs-accent) 12%, transparent);
-  --pv-accent-tint-strong: color-mix(in srgb, var(--docs-accent) 20%, transparent);
-  /* Soft elevation. Barely-there in dark (borders carry structure there). */
-  --pv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
-  --pv-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-[data-color-scheme="light"] {
-  --pv-accent-solid: #1473e6;
-  --pv-accent-solid-hover: #0d66d0;
+  /* Primary-action fill: the register's blue accent, safe with --text-on-accent
+     in both schemes. */
+  --pv-accent-solid: var(--accent-primary);
+  --pv-accent-solid-hover: var(--blue-600);
+  --pv-accent-tint: color-mix(in srgb, var(--accent-primary) 12%, transparent);
+  --pv-accent-tint-strong: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  /* Repointed onto the register elevation so anything still reading these gets
+     the glass shadow rather than the old flat drop. */
+  --pv-shadow-sm: var(--shadow-card);
+  --pv-shadow-md: var(--shadow-panel);
 }
 
 /* ── Surfaces ──────────────────────────────────────────────────────────── */
 
-/* A soft, rounded, subtly-elevated card — the recurring panel primitive. */
+/* The recurring panel primitive — a frosted-glass card that blurs the fixed
+   SiteBackdrop behind it. */
 .pv-card {
-  background: var(--docs-bg-elevated);
-  border: 1px solid var(--docs-border);
-  border-radius: var(--pv-radius-lg);
-  box-shadow: var(--pv-shadow-sm);
+  background: var(--surface-panel);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--edge-glass-surface), var(--shadow-card);
 }
 
-/* ── Buttons (Spectrum-2 pill) ─────────────────────────────────────────── */
+/* ── Buttons (Glasselated glass control) ───────────────────────────────── */
 
 .pv-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 22px;
-  border-radius: var(--pv-radius-pill);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
   letter-spacing: 0.01em;
   text-decoration: none;
   white-space: nowrap;
@@ -62,57 +62,63 @@
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
-    filter 0.18s ease,
     box-shadow 0.18s ease;
 }
 .pv-cta--primary {
-  background: var(--pv-accent-solid);
-  color: #ffffff;
-  box-shadow: var(--pv-shadow-sm);
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
+  box-shadow: var(--edge-glass);
 }
 .pv-cta--primary:hover {
-  background: var(--pv-accent-solid-hover);
+  background: var(--blue-600);
 }
 .pv-cta--secondary {
-  background: transparent;
-  color: var(--docs-text);
-  border-color: var(--docs-border);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+  box-shadow: var(--edge-glass);
 }
 .pv-cta--secondary:hover {
-  background: var(--pv-accent-tint);
-  border-color: var(--docs-accent);
+  background: var(--surface-hover);
+  border-color: var(--accent-primary);
 }
 .pv-cta:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 2px var(--docs-bg),
-    0 0 0 4px var(--docs-accent);
+    0 0 0 2px var(--surface-app),
+    0 0 0 4px var(--accent-primary);
 }
 
 /* ── Header nav ────────────────────────────────────────────────────────── */
 
+/* Mono micro nav pills, the showcase topbar idiom. */
 .pv-navlink {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
-  border-radius: var(--pv-radius-pill);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--docs-text-secondary);
+  padding: 7px 11px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
   text-decoration: none;
+  border: 1px solid transparent;
   transition:
     background 0.18s ease,
-    color 0.18s ease;
+    color 0.18s ease,
+    border-color 0.18s ease;
 }
 .pv-navlink:hover {
-  background: var(--pv-accent-tint);
-  color: var(--docs-text);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 .pv-navlink[data-active="true"] {
-  background: var(--pv-accent-solid);
-  color: #ffffff;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+  box-shadow: var(--edge-glass);
 }
 .pv-iconbtn {
   display: inline-flex;
@@ -120,10 +126,11 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: var(--pv-radius-pill);
-  border: 1px solid var(--docs-border);
-  background: transparent;
-  color: var(--docs-text-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  box-shadow: var(--edge-glass);
   cursor: pointer;
   transition:
     background 0.18s ease,
@@ -131,32 +138,27 @@
     color 0.18s ease;
 }
 .pv-iconbtn:hover {
-  background: var(--pv-accent-tint);
-  border-color: var(--docs-accent);
-  color: var(--docs-accent);
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
-/* Site wordmark. A plain two-word mark (the legacy Logo component was archived
-   with the rest of the custom set). Typography mirrors the old `black`-weight
-   `title-xl` ramp; the two child words carry the site palette (neutral text +
-   the single blue accent). Until the from-scratch brand lands, this keeps the
-   chrome wordmark on-palette without pulling in an archived component. */
+/* Site wordmark — the Geist Pixel display face, two words: neutral + accent. */
 .pv-wordmark {
   display: inline-flex;
   align-items: baseline;
   column-gap: 8px;
   white-space: nowrap;
-  font-family: var(--font-title);
-  font-weight: 900;
-  font-size: 1.375rem;
-  letter-spacing: 0.01em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
   line-height: 1;
 }
 .pv-wordmark > span {
-  color: var(--docs-text);
+  color: var(--text-primary);
 }
 .pv-wordmark > span:last-child {
-  color: var(--docs-accent);
+  color: var(--accent-primary);
 }
 
 /* Centered page column */
@@ -270,10 +272,12 @@
    frame's rounding. Chrome rides the site --docs-* / --pv-* tokens; the themed
    --color-* map lives only inside the body's canvas. */
 .pv-frame {
-  border: 1px solid var(--docs-border);
-  border-radius: var(--pv-radius-lg);
-  background: var(--docs-bg-elevated);
-  box-shadow: var(--pv-shadow-md);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-panel);
+  backdrop-filter: var(--blur-panel);
+  -webkit-backdrop-filter: var(--blur-panel);
+  box-shadow: var(--edge-glass-surface), var(--shadow-panel);
   overflow: hidden;
 }
 .pv-frame__bar {
@@ -281,8 +285,8 @@
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--docs-border);
-  background: var(--docs-bg-elevated);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-raised);
 }
 .pv-frame__dots {
   display: inline-flex;
@@ -293,7 +297,7 @@
   width: 10px;
   height: 10px;
   border-radius: var(--pv-radius-pill);
-  background: var(--docs-border);
+  background: var(--border-default);
 }
 .pv-frame__title {
   flex: 1;
@@ -302,7 +306,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.02em;
-  color: var(--docs-text-secondary);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -311,32 +315,32 @@
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  border: 1px solid var(--docs-border);
-  border-radius: var(--pv-radius-pill);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .pv-frame__seg > button {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: capitalize;
-  padding: 4px 13px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
   border: none;
-  border-radius: var(--pv-radius-pill);
+  border-radius: 6px;
   background: transparent;
-  color: var(--docs-text-secondary);
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
     background 0.2s ease,
     color 0.2s ease;
 }
 .pv-frame__seg > button:hover[data-active="false"] {
-  color: var(--docs-text);
+  color: var(--text-primary);
 }
 .pv-frame__seg > button[data-active="true"] {
-  background: var(--pv-accent-solid);
-  color: #ffffff;
+  background: var(--accent-primary);
+  color: var(--text-on-accent);
 }
 
 /* Live-preview gallery inside the canvas: single column → two across.
