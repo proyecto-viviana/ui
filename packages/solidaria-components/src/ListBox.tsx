@@ -596,8 +596,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const dropIndicatorTargetsEqual = (
     a: DropTarget | null | undefined,
     b: ItemDropTarget,
-  ): boolean =>
-    !!a && a.type === "item" && a.key === b.key && a.dropPosition === b.dropPosition;
+  ): boolean => !!a && a.type === "item" && a.key === b.key && a.dropPosition === b.dropPosition;
   // Faithful port of useDropIndicator's label logic: "Drop on X" for an on-item
   // target, else "Insert between X and Y" / "Insert before X" / "Insert after X"
   // resolved from the target's neighbours in the collection.
@@ -860,132 +859,132 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     >
       <ListBoxStateContext.Provider value={state}>
         <CollectionRendererContext.Provider value={collectionRenderer()}>
-         <DropIndicatorContext.Provider value={dropIndicatorContextValue}>
-          <>
-            <Show when={ariaProps.label}>
-              <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
-            </Show>
-            <div
-              {...mergeProps(
-                domProps(),
-                cleanListBoxProps(),
-                cleanFocusProps(),
-                (droppableCollection()?.collectionProps as Record<string, unknown> | undefined) ??
-                  {},
-              )}
-              ref={(el) => {
-                setListRef(el);
-                assignRef(local.ref, el);
-                autocompleteCtx?.collectionRef(el);
-              }}
-              class={renderProps.class()}
-              style={renderProps.style()}
-              data-focused={state.isFocused() || undefined}
-              data-focus-visible={isFocusVisible() || undefined}
-              data-disabled={resolveDisabled() || undefined}
-              data-empty={isEmpty() || undefined}
-              data-layout={stateProps.layout}
-              data-orientation={stateProps.orientation}
-              data-drop-target={isRootDropTarget() || undefined}
-              slot={local.slot}
-            >
-              <SharedElementTransition>
-                {isEmpty() && local.renderEmptyState ? (
-                  <div role="option" style={{ display: "contents" }} data-empty-state>
-                    {local.renderEmptyState()}
-                  </div>
-                ) : hasSections() ? (
-                  <For each={sectionedRenderEntries()}>
-                    {(entry) =>
-                      entry.type === "section" ? (
-                        <div role="presentation" data-section-wrapper>
-                          <Section class="solidaria-ListBox-section">
-                            {entry.section.title != null && (
-                              <Header class="solidaria-ListBox-sectionHeader">
-                                {entry.section.title}
-                              </Header>
-                            )}
-                            <Group class="solidaria-ListBox-sectionGroup">
-                              <div role="group" aria-label={entry.section["aria-label"]}>
-                                <For each={entry.items}>
-                                  {(indexedItem) => (
-                                    <>
-                                      {collectionRenderer().renderDropIndicator?.(
-                                        indexedItem.index,
-                                        "before",
-                                      )}
-                                      {collectionRenderer().renderDropIndicator?.(
-                                        indexedItem.index,
-                                        "on",
-                                      )}
-                                      {local.children(indexedItem.item)}
-                                      {collectionRenderer().renderDropIndicator?.(
-                                        indexedItem.index,
-                                        "after",
-                                      )}
-                                    </>
-                                  )}
-                                </For>
-                              </div>
-                            </Group>
-                          </Section>
-                        </div>
-                      ) : (
-                        <>
-                          {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
-                          {collectionRenderer().renderDropIndicator?.(entry.item.index, "on")}
-                          {local.children(entry.item.item)}
-                          {collectionRenderer().renderDropIndicator?.(entry.item.index, "after")}
-                        </>
-                      )
-                    }
-                  </For>
-                ) : (
-                  <>
-                    {virtualRange()?.offsetTop ? (
-                      <div
-                        role="presentation"
-                        aria-hidden="true"
-                        style={virtualSpacerStyle(virtualRange()!.offsetTop)}
-                        data-virtualizer-spacer="top"
-                      />
-                    ) : null}
-                    <For each={visibleItems()}>
-                      {(item, index) => {
-                        const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                        const beforeIndicator = () =>
-                          collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
-                        const onIndicator = () =>
-                          collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
-                        const afterIndicator = () =>
-                          collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
-                        return (
-                          <>
-                            {beforeIndicator()}
-                            {onIndicator()}
-                            {local.children(item as T)}
-                            {afterIndicator()}
-                          </>
-                        );
-                      }}
-                    </For>
-                    {virtualRange()?.offsetBottom ? (
-                      <div
-                        role="presentation"
-                        aria-hidden="true"
-                        style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
-                        data-virtualizer-spacer="bottom"
-                      />
-                    ) : null}
-                  </>
+          <DropIndicatorContext.Provider value={dropIndicatorContextValue}>
+            <>
+              <Show when={ariaProps.label}>
+                <span {...cleanLabelProps()}>{ariaProps.label as JSX.Element}</span>
+              </Show>
+              <div
+                {...mergeProps(
+                  domProps(),
+                  cleanListBoxProps(),
+                  cleanFocusProps(),
+                  (droppableCollection()?.collectionProps as Record<string, unknown> | undefined) ??
+                    {},
                 )}
-              </SharedElementTransition>
-              {local.hasMore && local.onLoadMore && (
-                <ListBoxLoadMoreItem onLoadMore={local.onLoadMore} isLoading={local.isLoading} />
-              )}
-            </div>
-          </>
-         </DropIndicatorContext.Provider>
+                ref={(el) => {
+                  setListRef(el);
+                  assignRef(local.ref, el);
+                  autocompleteCtx?.collectionRef(el);
+                }}
+                class={renderProps.class()}
+                style={renderProps.style()}
+                data-focused={state.isFocused() || undefined}
+                data-focus-visible={isFocusVisible() || undefined}
+                data-disabled={resolveDisabled() || undefined}
+                data-empty={isEmpty() || undefined}
+                data-layout={stateProps.layout}
+                data-orientation={stateProps.orientation}
+                data-drop-target={isRootDropTarget() || undefined}
+                slot={local.slot}
+              >
+                <SharedElementTransition>
+                  {isEmpty() && local.renderEmptyState ? (
+                    <div role="option" style={{ display: "contents" }} data-empty-state>
+                      {local.renderEmptyState()}
+                    </div>
+                  ) : hasSections() ? (
+                    <For each={sectionedRenderEntries()}>
+                      {(entry) =>
+                        entry.type === "section" ? (
+                          <div role="presentation" data-section-wrapper>
+                            <Section class="solidaria-ListBox-section">
+                              {entry.section.title != null && (
+                                <Header class="solidaria-ListBox-sectionHeader">
+                                  {entry.section.title}
+                                </Header>
+                              )}
+                              <Group class="solidaria-ListBox-sectionGroup">
+                                <div role="group" aria-label={entry.section["aria-label"]}>
+                                  <For each={entry.items}>
+                                    {(indexedItem) => (
+                                      <>
+                                        {collectionRenderer().renderDropIndicator?.(
+                                          indexedItem.index,
+                                          "before",
+                                        )}
+                                        {collectionRenderer().renderDropIndicator?.(
+                                          indexedItem.index,
+                                          "on",
+                                        )}
+                                        {local.children(indexedItem.item)}
+                                        {collectionRenderer().renderDropIndicator?.(
+                                          indexedItem.index,
+                                          "after",
+                                        )}
+                                      </>
+                                    )}
+                                  </For>
+                                </div>
+                              </Group>
+                            </Section>
+                          </div>
+                        ) : (
+                          <>
+                            {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
+                            {collectionRenderer().renderDropIndicator?.(entry.item.index, "on")}
+                            {local.children(entry.item.item)}
+                            {collectionRenderer().renderDropIndicator?.(entry.item.index, "after")}
+                          </>
+                        )
+                      }
+                    </For>
+                  ) : (
+                    <>
+                      {virtualRange()?.offsetTop ? (
+                        <div
+                          role="presentation"
+                          aria-hidden="true"
+                          style={virtualSpacerStyle(virtualRange()!.offsetTop)}
+                          data-virtualizer-spacer="top"
+                        />
+                      ) : null}
+                      <For each={visibleItems()}>
+                        {(item, index) => {
+                          const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                          const beforeIndicator = () =>
+                            collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
+                          const onIndicator = () =>
+                            collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
+                          const afterIndicator = () =>
+                            collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
+                          return (
+                            <>
+                              {beforeIndicator()}
+                              {onIndicator()}
+                              {local.children(item as T)}
+                              {afterIndicator()}
+                            </>
+                          );
+                        }}
+                      </For>
+                      {virtualRange()?.offsetBottom ? (
+                        <div
+                          role="presentation"
+                          aria-hidden="true"
+                          style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
+                          data-virtualizer-spacer="bottom"
+                        />
+                      ) : null}
+                    </>
+                  )}
+                </SharedElementTransition>
+                {local.hasMore && local.onLoadMore && (
+                  <ListBoxLoadMoreItem onLoadMore={local.onLoadMore} isLoading={local.isLoading} />
+                )}
+              </div>
+            </>
+          </DropIndicatorContext.Provider>
         </CollectionRendererContext.Provider>
       </ListBoxStateContext.Provider>
     </ListBoxContext.Provider>

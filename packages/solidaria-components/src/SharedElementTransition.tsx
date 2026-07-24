@@ -202,82 +202,79 @@ export function SharedElement(props: SharedElementProps): JSX.Element | null {
   // fresh-enter branch: with no committed div there is nothing to measure, so we
   // wait — exactly as React never runs the body before commit.
   createEffect(
-    on(
-      [() => local.isVisible !== false, element] as const,
-      ([isVisible, el]) => {
-        const name = local.name;
+    on([() => local.isVisible !== false, element] as const, ([isVisible, el]) => {
+      const name = local.name;
 
-        if (frame != null) {
-          cancelAnimationFrame(frame);
-          frame = undefined;
-        }
+      if (frame != null) {
+        cancelAnimationFrame(frame);
+        frame = undefined;
+      }
 
-        if (isVisible && el) {
-          const prevSnapshot = scope.snapshots[name];
+      if (isVisible && el) {
+        const prevSnapshot = scope.snapshots[name];
 
-          if (prevSnapshot) {
-            // FLIP: Element is transitioning from a previous instance.
-            setLifecycle("visible");
-            const animations = getAnimations(el);
+        if (prevSnapshot) {
+          // FLIP: Element is transitioning from a previous instance.
+          setLifecycle("visible");
+          const animations = getAnimations(el);
 
-            // Set properties to animate from.
-            const values = prevSnapshot.style.map(([property, prevValue]) => {
-              const value = el.style.getPropertyValue(property);
-              if (property === "translate") {
-                const prevRect = prevSnapshot.rect;
-                const currentRect = el.getBoundingClientRect();
-                const deltaX = prevRect.left - currentRect.left;
-                const deltaY = prevRect.top - currentRect.top;
-                el.style.setProperty("translate", `${deltaX}px ${deltaY}px`);
-              } else {
-                el.style.setProperty(property, prevValue);
-              }
-              return [property, value] as [string, string];
-            });
-
-            // Cancel any new animations triggered by these properties.
-            for (const a of getAnimations(el)) {
-              if (!animations.includes(a)) {
-                a.cancel();
-              }
-            }
-
-            // Remove overrides after one frame to animate to the current values.
-            frame = requestAnimationFrame(() => {
-              frame = undefined;
-              for (const [property, value] of values) {
-                el.style.setProperty(property, value);
-              }
-            });
-
-            delete scope.snapshots[name];
-          } else {
-            // No previous instance exists, apply the entering state.
-            queueMicrotask(() => setLifecycle("entering"));
-            frame = requestAnimationFrame(() => {
-              frame = undefined;
-              setLifecycle("visible");
-            });
-          }
-        } else if (!isVisible && el) {
-          // Wait a microtask to check if a snapshot still exists (meaning no new
-          // SharedElement consumed it), then enter exiting state.
-          queueMicrotask(() => {
-            if (scope.snapshots[name]) {
-              delete scope.snapshots[name];
-              setLifecycle("exiting");
-              // Wait for animations to finish before hiding.
-              Promise.all(getAnimations(el).map((a) => a.finished))
-                .then(() => setLifecycle("hidden"))
-                .catch(() => {});
+          // Set properties to animate from.
+          const values = prevSnapshot.style.map(([property, prevValue]) => {
+            const value = el.style.getPropertyValue(property);
+            if (property === "translate") {
+              const prevRect = prevSnapshot.rect;
+              const currentRect = el.getBoundingClientRect();
+              const deltaX = prevRect.left - currentRect.left;
+              const deltaY = prevRect.top - currentRect.top;
+              el.style.setProperty("translate", `${deltaX}px ${deltaY}px`);
             } else {
-              // Snapshot was consumed by another instance, unmount immediately.
-              setLifecycle("hidden");
+              el.style.setProperty(property, prevValue);
+            }
+            return [property, value] as [string, string];
+          });
+
+          // Cancel any new animations triggered by these properties.
+          for (const a of getAnimations(el)) {
+            if (!animations.includes(a)) {
+              a.cancel();
+            }
+          }
+
+          // Remove overrides after one frame to animate to the current values.
+          frame = requestAnimationFrame(() => {
+            frame = undefined;
+            for (const [property, value] of values) {
+              el.style.setProperty(property, value);
             }
           });
+
+          delete scope.snapshots[name];
+        } else {
+          // No previous instance exists, apply the entering state.
+          queueMicrotask(() => setLifecycle("entering"));
+          frame = requestAnimationFrame(() => {
+            frame = undefined;
+            setLifecycle("visible");
+          });
         }
-      },
-    ),
+      } else if (!isVisible && el) {
+        // Wait a microtask to check if a snapshot still exists (meaning no new
+        // SharedElement consumed it), then enter exiting state.
+        queueMicrotask(() => {
+          if (scope.snapshots[name]) {
+            delete scope.snapshots[name];
+            setLifecycle("exiting");
+            // Wait for animations to finish before hiding.
+            Promise.all(getAnimations(el).map((a) => a.finished))
+              .then(() => setLifecycle("hidden"))
+              .catch(() => {});
+          } else {
+            // Snapshot was consumed by another instance, unmount immediately.
+            setLifecycle("hidden");
+          }
+        });
+      }
+    }),
   );
 
   // Cancel any pending FLIP frame on disposal. The snapshot store lives in the

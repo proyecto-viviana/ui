@@ -10,11 +10,7 @@
  */
 
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import {
-  createDateField,
-  type AriaDateFieldProps,
-  type DateFieldAria,
-} from "./createDateField";
+import { createDateField, type AriaDateFieldProps, type DateFieldAria } from "./createDateField";
 import type { TimeFieldState, TimeValue } from "@proyecto-viviana/solid-stately";
 
 export type AriaTimeFieldProps = AriaDateFieldProps;

@@ -717,12 +717,7 @@ export function createDroppableCollection(
 
             let target = state.target;
             if (!target) {
-              target = nextValidTarget(
-                null,
-                types,
-                drag.allowedDropOperations,
-                getPreviousTarget,
-              );
+              target = nextValidTarget(null, types, drag.allowedDropOperations, getPreviousTarget);
             } else if (target.type === "item") {
               // If at the top already, switch to the root. Otherwise navigate a page up.
               if (target.key === keyboardDelegate.getFirstKey?.()) {
@@ -809,9 +804,13 @@ function normalizeSelection(selection: "all" | Iterable<Key> | undefined): "all"
 // stamps `data-key={String(key)}`, so the attribute is the stringified key; map it
 // back to the real (possibly numeric) collection key by matching against the
 // collection's nodes.
-function keyFromDragElement(element: HTMLElement | null, collection: Collection | undefined): Key | null {
+function keyFromDragElement(
+  element: HTMLElement | null,
+  collection: Collection | undefined,
+): Key | null {
   if (!element) return null;
-  const raw = element.getAttribute("data-key") ?? element.closest("[data-key]")?.getAttribute("data-key");
+  const raw =
+    element.getAttribute("data-key") ?? element.closest("[data-key]")?.getAttribute("data-key");
   if (raw == null) return null;
   if (!collection) return raw;
   // Fast path: the raw string is already a valid key.

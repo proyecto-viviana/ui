@@ -25,7 +25,13 @@ import {
 import { useLocale } from "@proyecto-viviana/solidaria";
 import { DateFormatter, type RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, lightDark, setColorScheme, style } from "../style" with { type: "macro" };
+import {
+  baseColor,
+  focusRing,
+  lightDark,
+  setColorScheme,
+  style,
+} from "../style" with { type: "macro" };
 import ChevronLeftIcon from "../icon/s2wf-icons/ChevronLeftIcon";
 import ChevronRightIcon from "../icon/s2wf-icons/ChevronRightIcon";
 import { pressScale } from "../pressScale";

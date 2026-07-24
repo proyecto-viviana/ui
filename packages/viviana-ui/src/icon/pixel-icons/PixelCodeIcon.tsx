@@ -18,7 +18,10 @@ function PixelCodeIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       {...rest}
       class={className}
     >
-      <path d="M7 9h2v2H7zM5 11h2v2H5zM7 13h2v2H7zM15 9h2v2h-2zM17 11h2v2h-2zM15 13h2v2h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M7 9h2v2H7zM5 11h2v2H5zM7 13h2v2H7zM15 9h2v2h-2zM17 11h2v2h-2zM15 13h2v2h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

@@ -91,7 +91,11 @@ function PickerPage() {
       <h2>Picker Props</h2>
       <PropsTable
         props={[
-          { name: "label", type: "string", description: "Visible label rendered above the trigger" },
+          {
+            name: "label",
+            type: "string",
+            description: "Visible label rendered above the trigger",
+          },
           {
             name: "items",
             type: "Iterable<T>",

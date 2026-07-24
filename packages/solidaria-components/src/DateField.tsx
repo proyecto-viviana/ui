@@ -305,8 +305,7 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
   // onto the <Input> via InputContext so useFormReset/useFormValidation target
   // that element. We mirror that: create it here, hand it to createDateField
   // below, and attach it to the same input through the context getter.
-  const [validationInputRef, setValidationInputRef] =
-    createSignal<HTMLInputElement | null>(null);
+  const [validationInputRef, setValidationInputRef] = createSignal<HTMLInputElement | null>(null);
 
   const state = createDateFieldState(stateProps);
 
@@ -474,9 +473,7 @@ function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
     const value = props.state.value();
     if (!value) return "";
     if (granularity() === "day") return toCalendarDate(value).toString();
-    return toCalendarDateTime(
-      "timeZone" in value ? toLocalTimeZone(value) : value,
-    ).toString();
+    return toCalendarDateTime("timeZone" in value ? toLocalTimeZone(value) : value).toString();
   };
 
   const onChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
@@ -484,8 +481,9 @@ function RootHiddenDateInput(props: RootHiddenDateInputProps): JSX.Element {
     if (!targetString) return;
     try {
       const g = granularity();
-      const targetValue = (g === "day" ? parseDate(targetString) : parseDateTime(targetString)) as
-        unknown as Record<string, number>;
+      const targetValue = (g === "day"
+        ? parseDate(targetString)
+        : parseDateTime(targetString)) as unknown as Record<string, number>;
       let timeSegments = HIDDEN_TIME_SEGMENTS;
       if (HIDDEN_TIME_SEGMENTS.includes(g)) {
         timeSegments = HIDDEN_TIME_SEGMENTS.slice(0, HIDDEN_GRANULARITY_MAP[g]);

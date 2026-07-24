@@ -151,10 +151,36 @@ function Page() {
       <Demo label="Well · composed — the same well built from library primitives">
         <Well style={{ "max-width": "28rem" }}>
           <Flex direction="column" gap="sm">
-            <Meter label="Focus" variant="informative" labelPosition="side" segments={5} value={3} maxValue={5} valueLabel="3/5" />
-            <Meter label="Streak" variant="notice" labelPosition="side" segments={5} value={4} maxValue={5} valueLabel="4/5" />
-            <Meter label="Memory" variant="negative" labelPosition="side" segments={5} value={1} maxValue={5} valueLabel="1/5" />
-            <div class={typeRoles.terminal} style={{ color: "var(--well-hi)" }}>{"> "}resume session</div>
+            <Meter
+              label="Focus"
+              variant="informative"
+              labelPosition="side"
+              segments={5}
+              value={3}
+              maxValue={5}
+              valueLabel="3/5"
+            />
+            <Meter
+              label="Streak"
+              variant="notice"
+              labelPosition="side"
+              segments={5}
+              value={4}
+              maxValue={5}
+              valueLabel="4/5"
+            />
+            <Meter
+              label="Memory"
+              variant="negative"
+              labelPosition="side"
+              segments={5}
+              value={1}
+              maxValue={5}
+              valueLabel="1/5"
+            />
+            <div class={typeRoles.terminal} style={{ color: "var(--well-hi)" }}>
+              {"> "}resume session
+            </div>
           </Flex>
         </Well>
       </Demo>

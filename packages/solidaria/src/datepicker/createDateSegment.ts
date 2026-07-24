@@ -13,13 +13,7 @@ import { toCalendar, CalendarDate } from "@internationalized/date";
 import { NumberParser } from "@internationalized/number";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
-import {
-  isMac,
-  isIOS,
-  scrollIntoViewport,
-  getScrollParent,
-  nodeContains,
-} from "../utils";
+import { isMac, isIOS, scrollIntoViewport, getScrollParent, nodeContains } from "../utils";
 import { createId } from "../ssr";
 import { createLabels } from "../label/createLabels";
 import { useLocale, createDateFormatter, createFilter } from "../i18n";
@@ -190,12 +184,20 @@ export function createDateSegment<T extends DateFieldState>(
   const am = createMemo(() => {
     const date = new Date();
     date.setHours(0);
-    return amPmFormatter().formatToParts(date).find((part) => part.type === "dayPeriod")?.value ?? "";
+    return (
+      amPmFormatter()
+        .formatToParts(date)
+        .find((part) => part.type === "dayPeriod")?.value ?? ""
+    );
   });
   const pm = createMemo(() => {
     const date = new Date();
     date.setHours(12);
-    return amPmFormatter().formatToParts(date).find((part) => part.type === "dayPeriod")?.value ?? "";
+    return (
+      amPmFormatter()
+        .formatToParts(date)
+        .find((part) => part.type === "dayPeriod")?.value ?? ""
+    );
   });
 
   // Get a list of formatted era names so users can type the first character to choose one.
@@ -265,7 +267,8 @@ export function createDateSegment<T extends DateFieldState>(
         state.setSegment(seg.type, segmentValue);
         if (
           seg.maxValue !== undefined &&
-          (Number(numberValue + "0") > seg.maxValue || newValue.length >= String(seg.maxValue).length)
+          (Number(numberValue + "0") > seg.maxValue ||
+            newValue.length >= String(seg.maxValue).length)
         ) {
           enteredKeys = "";
           focusManager?.focusNext();
@@ -394,7 +397,8 @@ export function createDateSegment<T extends DateFieldState>(
       ariaDescribedBy = undefined;
     }
     // Allow an explicitly passed describedby (e.g. from a datepicker) to compose.
-    ariaDescribedBy = [p["aria-describedby"], ariaDescribedBy].filter(Boolean).join(" ") || undefined;
+    ariaDescribedBy =
+      [p["aria-describedby"], ariaDescribedBy].filter(Boolean).join(" ") || undefined;
 
     const isEditable = !state.isDisabled() && !state.isReadOnly() && seg.isEditable;
     // Prepend the label passed from the field to each segment name.
@@ -433,35 +437,39 @@ export function createDateSegment<T extends DateFieldState>(
       }
     }
 
-    return mergeProps(spinButton.spinButtonProps as Record<string, unknown>, labelProps as Record<string, unknown>, {
-      id: segmentId,
-      ...touchPropOverrides,
-      "aria-invalid": state.isInvalid() ? "true" : undefined,
-      "aria-describedby": ariaDescribedBy,
-      "aria-readonly": state.isReadOnly() || !seg.isEditable ? "true" : undefined,
-      "aria-controls": (p["aria-controls"] as string | undefined) || undefined,
-      "data-placeholder": seg.isPlaceholder || undefined,
-      contentEditable: isEditable,
-      suppressContentEditableWarning: isEditable,
-      spellCheck: isEditable ? "false" : undefined,
-      autoCorrect: isEditable ? "off" : undefined,
-      enterKeyHint: isEditable ? "next" : undefined,
-      inputMode:
-        state.isDisabled() || seg.type === "dayPeriod" || seg.type === "era" || !isEditable
-          ? undefined
-          : "numeric",
-      tabIndex: state.isDisabled() ? undefined : 0,
-      onKeyDown,
-      onFocus,
-      style: segmentStyle,
-      // Prevent pointer events from reaching the group's press handler, and allow native focus.
-      onPointerDown(e: PointerEvent) {
-        e.stopPropagation();
+    return mergeProps(
+      spinButton.spinButtonProps as Record<string, unknown>,
+      labelProps as Record<string, unknown>,
+      {
+        id: segmentId,
+        ...touchPropOverrides,
+        "aria-invalid": state.isInvalid() ? "true" : undefined,
+        "aria-describedby": ariaDescribedBy,
+        "aria-readonly": state.isReadOnly() || !seg.isEditable ? "true" : undefined,
+        "aria-controls": (p["aria-controls"] as string | undefined) || undefined,
+        "data-placeholder": seg.isPlaceholder || undefined,
+        contentEditable: isEditable,
+        suppressContentEditableWarning: isEditable,
+        spellCheck: isEditable ? "false" : undefined,
+        autoCorrect: isEditable ? "off" : undefined,
+        enterKeyHint: isEditable ? "next" : undefined,
+        inputMode:
+          state.isDisabled() || seg.type === "dayPeriod" || seg.type === "era" || !isEditable
+            ? undefined
+            : "numeric",
+        tabIndex: state.isDisabled() ? undefined : 0,
+        onKeyDown,
+        onFocus,
+        style: segmentStyle,
+        // Prevent pointer events from reaching the group's press handler, and allow native focus.
+        onPointerDown(e: PointerEvent) {
+          e.stopPropagation();
+        },
+        onMouseDown(e: MouseEvent) {
+          e.stopPropagation();
+        },
       },
-      onMouseDown(e: MouseEvent) {
-        e.stopPropagation();
-      },
-    });
+    );
   });
 
   return {

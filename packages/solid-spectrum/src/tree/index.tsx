@@ -1144,10 +1144,7 @@ export function TreeExpandButton(
         {typeof local.children === "function"
           ? local.children(renderState())
           : (local.children ?? (
-              <Chevron
-                size="S"
-                class={treeExpandIcon({ ...renderState(), isExpanded: false })}
-              />
+              <Chevron size="S" class={treeExpandIcon({ ...renderState(), isExpanded: false })} />
             ))}
       </button>
     );
@@ -1162,10 +1159,7 @@ export function TreeExpandButton(
     >
       {local.children ??
         (({ isExpanded }: { isExpanded: boolean }) => (
-          <Chevron
-            size="S"
-            class={treeExpandIcon({ ...renderState(), isExpanded })}
-          />
+          <Chevron size="S" class={treeExpandIcon({ ...renderState(), isExpanded })} />
         ))}
     </HeadlessTreeExpandButton>
   );
@@ -1207,9 +1201,7 @@ export function TreeSelectionCheckbox(props: {
         aria-label={props["aria-label"] ?? "Select"}
       />
       <span class={treeCheckboxBox(renderProps())}>
-        {renderProps().isSelected ? (
-          <Checkmark size="XS" class={treeCheckboxIcon} />
-        ) : null}
+        {renderProps().isSelected ? <Checkmark size="XS" class={treeCheckboxIcon} /> : null}
       </span>
     </span>
   );

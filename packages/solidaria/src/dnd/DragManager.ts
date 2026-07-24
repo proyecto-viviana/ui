@@ -245,10 +245,7 @@ class DragSession {
     this.cancelEvent(e);
 
     if (e.key === "Enter") {
-      if (
-        e.altKey ||
-        nodeContains(this.getCurrentActivateButton(), getEventTarget<Node>(e))
-      ) {
+      if (e.altKey || nodeContains(this.getCurrentActivateButton(), getEventTarget<Node>(e))) {
         this.activate(this.currentDropTarget, this.currentDropItem);
       } else {
         this.drop();
@@ -556,7 +553,10 @@ class DragSession {
     }
 
     if (item != null && item !== this.currentDropItem) {
-      if (this.currentDropTarget && typeof this.currentDropTarget.onDropTargetEnter === "function") {
+      if (
+        this.currentDropTarget &&
+        typeof this.currentDropTarget.onDropTargetEnter === "function"
+      ) {
         this.currentDropTarget.onDropTargetEnter(item.target);
       }
       item.element.focus();

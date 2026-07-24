@@ -77,7 +77,9 @@ function TagGroupPage() {
             {(item) => item.name}
           </TagGroup>
           {removableTags().length === 0 && (
-            <p class={typeRoles.meta} style={{ "font-style": "italic" }}>All tags removed</p>
+            <p class={typeRoles.meta} style={{ "font-style": "italic" }}>
+              All tags removed
+            </p>
           )}
           <Flex alignItems="center" gap={2}>
             <p class={typeRoles.meta}>

@@ -75,12 +75,10 @@ const listbox: TargetResolver = ({ canvas }) =>
   canvas.getByRole("listbox", { name: "Permissions" });
 
 /** The boundary button BEFORE the listbox in DOM order (forward Tab entry). */
-const beforeButton: TargetResolver = ({ canvas }) =>
-  canvas.getByRole("button", { name: "Before" });
+const beforeButton: TargetResolver = ({ canvas }) => canvas.getByRole("button", { name: "Before" });
 
 /** The boundary button AFTER the listbox in DOM order (backward Shift+Tab entry). */
-const afterButton: TargetResolver = ({ canvas }) =>
-  canvas.getByRole("button", { name: "After" });
+const afterButton: TargetResolver = ({ canvas }) => canvas.getByRole("button", { name: "After" });
 
 const scenario: DriverScenario = {
   slug: "listbox",

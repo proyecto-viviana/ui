@@ -46,7 +46,11 @@ function Page() {
         <Row>
           <For each={TRACK_STYLES}>
             {(trackStyle) => (
-              <Slider label={TRACK_STYLE_LABELS[trackStyle]} trackStyle={trackStyle} defaultValue={60} />
+              <Slider
+                label={TRACK_STYLE_LABELS[trackStyle]}
+                trackStyle={trackStyle}
+                defaultValue={60}
+              />
             )}
           </For>
         </Row>
@@ -54,7 +58,9 @@ function Page() {
 
       <Demo label="Slider · sizes">
         <Row>
-          <For each={SIZES}>{(size) => <Slider label={SIZE_LABELS[size]} size={size} defaultValue={50} />}</For>
+          <For each={SIZES}>
+            {(size) => <Slider label={SIZE_LABELS[size]} size={size} defaultValue={50} />}
+          </For>
         </Row>
       </Demo>
 
@@ -73,7 +79,13 @@ function Page() {
       <Demo label="RangeSlider · sizes">
         <Row>
           <For each={SIZES}>
-            {(size) => <RangeSlider label={SIZE_LABELS[size]} size={size} defaultValue={{ start: 20, end: 80 }} />}
+            {(size) => (
+              <RangeSlider
+                label={SIZE_LABELS[size]}
+                size={size}
+                defaultValue={{ start: 20, end: 80 }}
+              />
+            )}
           </For>
         </Row>
       </Demo>

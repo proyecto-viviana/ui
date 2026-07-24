@@ -176,9 +176,33 @@ function Page() {
         {/* The register draws these inline — `focus [▮▮▮▯▯] 3/5` — so the well
             form is the side label position. */}
         <Row>
-          <Meter label="Focus" variant="informative" labelPosition="side" segments={5} value={3} maxValue={5} valueLabel="3/5" />
-          <Meter label="Streak" variant="notice" labelPosition="side" segments={5} value={4} maxValue={5} valueLabel="4/5" />
-          <Meter label="Memory" variant="negative" labelPosition="side" segments={5} value={1} maxValue={5} valueLabel="1/5" />
+          <Meter
+            label="Focus"
+            variant="informative"
+            labelPosition="side"
+            segments={5}
+            value={3}
+            maxValue={5}
+            valueLabel="3/5"
+          />
+          <Meter
+            label="Streak"
+            variant="notice"
+            labelPosition="side"
+            segments={5}
+            value={4}
+            maxValue={5}
+            valueLabel="4/5"
+          />
+          <Meter
+            label="Memory"
+            variant="negative"
+            labelPosition="side"
+            segments={5}
+            value={1}
+            maxValue={5}
+            valueLabel="1/5"
+          />
         </Row>
       </Demo>
 

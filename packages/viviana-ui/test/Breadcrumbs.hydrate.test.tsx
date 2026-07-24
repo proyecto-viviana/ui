@@ -71,7 +71,7 @@ describe("Breadcrumbs hydrates over SSR markup", () => {
     expect(r.mismatches).toEqual([]);
     expect(r.thrown).toBeUndefined();
     // Collapsed shape survives hydration: root item, overflow menu trigger, fallback tail.
-    expect(r.container.querySelector('[data-rsp-breadcrumb-menu]')).not.toBeNull();
+    expect(r.container.querySelector("[data-rsp-breadcrumb-menu]")).not.toBeNull();
     expect(r.container.textContent).toContain("Home");
     expect(r.container.textContent).toContain("Annual report");
   });

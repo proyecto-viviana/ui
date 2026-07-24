@@ -167,7 +167,9 @@ function MenuPage() {
         </MenuTrigger>
       </Example>
 
-      <p class={typeRoles.meta} style={{ "margin-bottom": "24px" }}>Last action: {lastAction()}</p>
+      <p class={typeRoles.meta} style={{ "margin-bottom": "24px" }}>
+        Last action: {lastAction()}
+      </p>
 
       <h2>MenuTrigger Props</h2>
       <PropsTable

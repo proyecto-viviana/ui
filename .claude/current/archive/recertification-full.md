@@ -286,13 +286,13 @@ March order (dependency/leverage; within a tier, top to bottom):
   native tab stops, the panel body is not focusable) + **D6** (AX tree —
   disclosure `standard`/`collapsed`/`region`/`heading-level` + accordion
   `single`/`disabled`). The pair-oracle caught two port divergences the jsdom
-  units missed (both had asserted the *wrong* parity): (1) the trigger was missing
+  units missed (both had asserted the _wrong_ parity): (1) the trigger was missing
   the always-`tabindex="0"` that RAC's `<Button>` applies via `useFocusable`
   (`useFocusable.tsx:114` — "always set a tabIndex so Safari can focus native
   buttons"); the port's bespoke `DisclosureTrigger` built the `<button>` from
   `createFocusRing` (focus-visible only, no tabIndex). (2) S2's `DisclosurePanel`
   runs its props through `filterDOMProps(otherProps)` (S2 `Disclosure.tsx:387`, no
-  `propNames`), whose allowlist (id + data-*/aria-*) EXCLUDES `role`, so S2
+  `propNames`), whose allowlist (id + data-_/aria-_) EXCLUDES `role`, so S2
   silently discards the `group`/`region` opt-in and the panel is ALWAYS `group` —
   but the styled port forwarded `role` raw to the headless panel (bare RAC honors
   it), emitting a `region` landmark S2 never renders. Faithful fixes: emit
@@ -305,7 +305,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   styled-S2 oracle. Registered **D6** (AX tree — `standard`/`all`/`emphasized`) +
   **D5** (focus trail — one roving walk within the single actions toolbar). The
   pair-oracle caught FOUR coupled structural divergences the jsdom units missed
-  (they asserted the *invented* base contract): (1) the port ROOT carried
+  (they asserted the _invented_ base contract): (1) the port ROOT carried
   `role="toolbar"` but S2's root is roleless — its only `keyboardProps` is an
   Escape handler; (2) DOM order was selection-first but S2 writes actions-first
   and swaps VISUAL order via CSS `order`; (3) because the root was a toolbar, the
@@ -323,8 +323,8 @@ March order (dependency/leverage; within a tier, top to bottom):
   "Director pass 2026-07-06" below).
 
   **ActionGroup ✓ certified 2026-07-09 (CP9.51)** — TWELFTH Tier-4 unit; and the
-  first cert whose oracle is a pair of react-aria *hooks*, not an S2 or RAC
-  *component*. S2 1.5.x ships no ActionGroup (it was split into
+  first cert whose oracle is a pair of react-aria _hooks_, not an S2 or RAC
+  _component_. S2 1.5.x ships no ActionGroup (it was split into
   `ActionButtonGroup` / `ToggleButtonGroup` / `SegmentedControl`) and RAC exposes
   no ActionGroup component, so the only surviving upstream is the pinned
   react-aria 3.50.0 `useActionGroup` / `useActionGroupItem` hooks — the direct
@@ -336,7 +336,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   button and driven across BOTH arrow axes + Home/End), **D6** (AX tree across
   `none`/`single`/`multiple`/`disabled`), **D10** (RTL re-run of the horizontal
   walk under `ar-AE`). The browser caught FOUR self-inflicted port divergences the
-  150+ jsdom units had codified as the *invented* contract: (1) item at-rest
+  150+ jsdom units had codified as the _invented_ contract: (1) item at-rest
   tabIndex — the port invented a `getDefaultTabStopKey` single tab stop biased to
   the selected key, but the hook makes EVERY enabled item tabbable until focus
   engages (`isFocused || focusedKey == null ? 0 : -1`); (2) selection-follows-focus
@@ -369,7 +369,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   7/7 green; package unit suites 5527 pass / 1 expected-fail; solid-spectrum
   typecheck clean. (Corrected 2026-07-09 during CP9.52: the original 9/9 count
   was measured against a stale comparison build — the pre-S2-macro-restyle
-  ActionGroup — so its `registerRtlDriver` still ran the RTL *state-matrix* half,
+  ActionGroup — so its `registerRtlDriver` still ran the RTL _state-matrix_ half,
   which after the restyle diffs the styled Solid stack against the unstyled
   react-aria reference and can never match. That half has no valid oracle here,
   per the "paint scoped out" note above, so D10 is now `focusOnly: true` — the
@@ -378,7 +378,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   (via its hosts).
 
   **Toolbar ✓ certified 2026-07-09 (CP9.52)** — THIRTEENTH Tier-4 unit. Oracle is
-  the react-aria-components `Toolbar` — a *real* component (unlike ActionGroup's
+  the react-aria-components `Toolbar` — a _real_ component (unlike ActionGroup's
   hand-wired hooks), because S2 1.5.1 ships Toolbar as a bare passthrough
   (`export function Toolbar(props) { return <RACToolbar {...props} />; }`, zero
   style/variant/size, re-exports `ToolbarProps` from RAC), so the pair oracle is
@@ -430,7 +430,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   **TableView ✓ certified 2026-07-09 (CP9.53)** — FOURTEENTH Tier-4 unit; the 2D
   data grid, and the first unit certified on the **D6 accessibility tree ALONE**.
   Oracle is `@react-spectrum/s2` `TableView`. **Why D6-only — a deliberate,
-  unwaivable architecture divergence.** S2's `TableView` is *always* virtualized:
+  unwaivable architecture divergence.** S2's `TableView` is _always_ virtualized:
   it wraps its collection in a `Virtualizer` + `S2TableLayout` (s2
   `TableView.tsx:97,336`), and RAC's `Table` renders a `<div role="grid">` tree
   of absolutely-positioned rows/cells (`display: grid`/`flex`) whenever
@@ -438,7 +438,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   instead renders a SEMANTIC NATIVE `<table>`/`<thead>`/`<tbody>`/`<tr>`/`<th>`/
   `<td>` tree with a SPACER-BASED virtualizer (windows by slice + spacer rows on a
   1D scroll axis — the established `virtualizer-decomposition` design), faithful
-  to RAC's *non-virtualized* `<table>` default and the more semantic DOM. That
+  to RAC's _non-virtualized_ `<table>` default and the more semantic DOM. That
   makes the two stacks structurally incomparable at every paint/geometry
   dimension: **D1** state-matrix / **D7** contrast (cell `display` is
   `table-cell`/`table-row` here vs `flex`/`grid` in S2 — an exact-string diff that
@@ -448,7 +448,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   so strict trail equality can never reconcile them), and **D8** target size
   (same divergent box model). These are not port bugs; they are the downstream
   shadow of one foundation choice, tracked as tech-debt `tableview-div-grid-paint`
-  (a future BEHAVIOR cert could pair-diff against RAC's *non-virtualized* `Table`,
+  (a future BEHAVIOR cert could pair-diff against RAC's _non-virtualized_ `Table`,
   whose native-`<table>` DOM matches the port tag-for-tag, restoring D5/D10 —
   wants new RAC-Table fixtures, deferred). **The D6 AX tree is the one
   structure-agnostic dimension** — it compares role / accessible name / state /
@@ -462,7 +462,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   now its own "Select" text + the row-header cell, matching
   `useTableSelectionCheckbox` (so SRs read "Select Project brief.pdf"); (4) the
   disabled-row selection checkbox — ported S2's `selectionCheckbox` `visibility:
-  hidden` variant (`[slot="selection"][data-disabled="true"]`), which prunes it
+hidden` variant (`[slot="selection"][data-disabled="true"]`), which prunes it
   from the AX tree exactly as the S2 oracle prunes its disabled checkbox
   (React sets `visibility: hidden`; Playwright's `ariaSnapshot` prunes those
   nodes — the Solid port kept it `visible` and over-exposed it). Alongside, the
@@ -506,7 +506,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   fix keeps the aria object and reads `treeAria.treeProps` fresh inside
   `cleanTreeProps`, so Solid's reactive spread re-enters the memo and tracks
   `focusedKey` (the identical freeze GridList/TableView already documented). (2)
-  **focus entry** was a non-bubbling `onFocus` that always seeded the *first*
+  **focus entry** was a non-bubbling `onFocus` that always seeded the _first_
   navigable row; replaced with bubbling `onFocusIn`/`onFocusOut` (the TagGroup
   lesson — Solid `onFocus` doesn't bubble, so backward Shift+Tab stranded on the
   last checkbox) plus selected-key + direction logic mirroring
@@ -531,7 +531,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   **StepList ✓ certified 2026-07-09 (CP9.55)** — SIXTEENTH Tier-4 unit; the
   wizard step sequence, and the SECOND hooks-oracle cert (after ActionGroup).
   React Spectrum S2 1.5.x ships no `StepList` and RAC exposes no StepList
-  *component* — the only surviving upstream is the pinned react-aria (3.50.0)
+  _component_ — the only surviving upstream is the pinned react-aria (3.50.0)
   `useStepList` / `useStepListItem` hooks plus react-stately (3.48.0)
   `useStepListState`, the direct source of our `createStepList` / `createStep` /
   `createStepListState` port. So the React panel hand-wires those hooks exactly as
@@ -550,13 +550,13 @@ March order (dependency/leverage; within a tier, top to bottom):
   — four Tabs walk step 1→2→3→out) and **D6** across four cases
   (`default`/`progress`/`disabled`/`readonly`). The browser driver caught and
   drove **three faithful port fixes**: (1) the **selectability model** — the port
-  had invented a `prevKey === selectedKey()` clause that made the step *after* the
+  had invented a `prevKey === selectedKey()` clause that made the step _after_ the
   currently selected one selectable/tabbable; upstream `useStepListState.isSelectable`
   is `isCompleted(step) || isCompleted(prevStep) || step === firstKey` with no such
   clause (a fresh list exposes only step 1, the next step opens when its
-  predecessor is *completed*, not merely selected). The D5 `(start)` roving
+  predecessor is _completed_, not merely selected). The D5 `(start)` roving
   snapshot — taken before any Tab — pinned the extra tabbable step; clause removed.
-  (2) the **auto-complete effect** — vendored `useStepListState` runs an *ungated*
+  (2) the **auto-complete effect** — vendored `useStepListState` runs an _ungated_
   `useEffect` that, when the selected step sits more than one past the last
   completed step (mounted ahead), auto-completes its immediate predecessor (and
   thus, since completion is cumulative, every intermediate step); it fires even
@@ -565,7 +565,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   `createEffect` (React→Solid `useEffect`→`createEffect` maps cleanly). (3) the
   **accessible name** — the styled port had (a) an invented flat `aria-label`
   ("Step 1: …") on the anchor and (b) a marker that swapped the step number for a
-  check *icon* when completed, emptying the marker's text; the vendored StepListItem
+  check _icon_ when completed, emptying the marker's text; the vendored StepListItem
   composes the name via `aria-labelledby` from a marker (ALWAYS
   `numberFormatter.format(index+1)`, color-coded not icon-swapped), a
   `VisuallyHidden` state prefix ("Current: "/"Completed: "/"Not completed: "), and
@@ -588,10 +588,10 @@ March order (dependency/leverage; within a tier, top to bottom):
   windowing renderer a collection host mounts. Per `virtualizer-decomposition`
   the DOM windowing STRUCTURE is a known, scoped divergence — RAC positions rows
   via absolute layout rects inside one full-height scroller where the ListBox
-  element *is* the scroll container; our port computes a 1D scroll axis, slices
+  element _is_ the scroll container; our port computes a 1D scroll axis, slices
   the collection, and pads with `data-virtualizer-spacer` top/bottom divs inside a
   wrapping `[data-virtualizer]` scroll container — so the cert deliberately does
-  **not** diff DOM structure. The certifiable observable is the *logical* windowed
+  **not** diff DOM structure. The certifiable observable is the _logical_ windowed
   behavior: at each scroll offset, which `[data-key]` rows are majority-visible,
   their **windowed AX** (`aria-posinset`/`aria-setsize`), and whether keyboard
   focus survives row recycling. A new **D-scroll-window** driver
@@ -611,7 +611,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   **one faithful port divergence**: under virtualization the DOM holds only the
   windowed rows, so `@react-aria/listbox` `useOption` publishes each option's
   absolute `aria-posinset = item.index + 1` and `aria-setsize =
-  getItemCount(collection)` **only when `isVirtualized`** (a flag that flows
+getItemCount(collection)` **only when `isVirtualized`** (a flag that flows
   ListBox→option through the list data context) — assistive tech can no longer
   derive set position from the incomplete DOM. Our `createOption` emitted neither.
   Fixed faithfully end-to-end: ported the missing `getItemCount` helper into
@@ -623,7 +623,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   `isVirtualized()`. Gotcha reused: the Solid demo fixture crashed twice inside
   the comparison `hc` wrapper — a bare inner `hc(ListBox, …)` child tripped the
   render-prop guard (fix: wrap the child in an array), and passing the
-  `ListLayout` *class* as a value prop made `unwrapAccessorProps` invoke the
+  `ListLayout` _class_ as a value prop made `unwrapAccessorProps` invoke the
   constructor without `new` ("Class constructor cannot be invoked without 'new'")
   (fix: pass `layout` as a getter — getters are skipped by `unwrapAccessorProps`).
   Guard units are meaningful here because posinset/setsize is rendered ARIA, not
@@ -703,7 +703,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   shared `filterDOMProps` (that speculative change was reverted — too broad a blast
   radius); (3) a **drag-session focus guard** — shared `createSelectableItem`'s
   roving-focus `createEffect` needed a `const dragSession = createDragSession(); if
-  (dragSession()) return;` early-return so it does not steal DOM focus back from the
+(dragSession()) return;` early-return so it does not steal DOM focus back from the
   drop indicator mid-drag (upstream React `useSelectableItem`'s effect provably
   can't re-run mid-drag — frozen dep array); (4) a **default drop-indicator
   regression** — the new inline `ListBoxDropIndicator` was missing
@@ -713,7 +713,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   had accreted: removed **two invented PUBLIC fields** (`keyboardDelegate`,
   `onKeyDown`) from `useDragAndDrop.ts`'s `DragAndDropOptions` — upstream RAC 1.19.0
   `DragAndDropOptions = Omit<DraggableCollectionProps,'preview'|'getItems'> &
-  DroppableCollectionProps` plus only `getItems`/`renderDragPreview`/
+DroppableCollectionProps` plus only `getItems`/`renderDragPreview`/
   `renderDropIndicator`/`dropTargetDelegate`/`isDisabled`, and vendored
   `useDragAndDrop.tsx:194` = `useDroppableCollection({...props, ...options})` so a
   user literally cannot pass them — collapsing the two threading sites from
@@ -722,24 +722,25 @@ March order (dependency/leverage; within a tier, top to bottom):
   unit test** that asserted the removed self-contained engine (coverage now lives in
   the certified e2e); and rewrote **`scripts/check-dnd-keyboard-parity.ts`**, whose
   core-file assertion still pinned the PRE-PORT engine (`resolveFallbackKeyboardTarget`
-  + inline fallback + SSR guards, all removed by the faithful port, so the guard had
-  been RED since `a0e4471b`/`8e132ec4`) — the new assertion pins the DragManager
-  architecture (the `keyboardDelegate`/`onKeyDown` option types, the `onKeyDown(e,
-  drag)` DropTarget walking `keyboardDelegate.getKeyBelow/getKeyAbove`, and the host
-  `opts.onKeyDown?.(e)` composition); component-path checks unchanged, guard green
-  (6/6 ✓). Verification: dnd-listbox cert e2e **3/3 green** (2 D-reorder walks + D6)
-  on the rebuilt chain (solidaria → solidaria-components → comparison; solid-stately
-  rebuilt too — its `createDroppableCollectionState.ts` +125 is part of the
-  increment); `guard:dnd-keyboard-parity` green; root typecheck exit 0; every
-  CP9.57-touched unit file green in isolation (solidaria-components
-  useDragAndDrop/ListBox/DragAndDrop = 103; solidaria createDroppableCollection×3/
-  createDroppableItem/createDraggableCollection/createSelectableItem = 39); full
-  certified suite **1615 pass / 6 skip / 0 fail** (up exactly 3 from CP9.56's 1612 —
-  the two reorder walks + D6) — no regression. (The full unit suite's 4 failures —
-  3 in `createTree.test.ts` (RTL/LTR expand-collapse + focus-entry 'all') and 1
-  treegrid snapshot in `solid-spectrum/regression.test.tsx` — are the PRE-EXISTING
-  Tree tech-debt failures proven identical at pre-port baseline `e4430cd7`, not
-  introduced here.) **NEXT: Tier 5 — date/time/color, opening with Calendar.**
+  - inline fallback + SSR guards, all removed by the faithful port, so the guard had
+    been RED since `a0e4471b`/`8e132ec4`) — the new assertion pins the DragManager
+    architecture (the `keyboardDelegate`/`onKeyDown` option types, the `onKeyDown(e,
+drag)` DropTarget walking `keyboardDelegate.getKeyBelow/getKeyAbove`, and the host
+    `opts.onKeyDown?.(e)` composition); component-path checks unchanged, guard green
+    (6/6 ✓). Verification: dnd-listbox cert e2e **3/3 green** (2 D-reorder walks + D6)
+    on the rebuilt chain (solidaria → solidaria-components → comparison; solid-stately
+    rebuilt too — its `createDroppableCollectionState.ts` +125 is part of the
+    increment); `guard:dnd-keyboard-parity` green; root typecheck exit 0; every
+    CP9.57-touched unit file green in isolation (solidaria-components
+    useDragAndDrop/ListBox/DragAndDrop = 103; solidaria createDroppableCollection×3/
+    createDroppableItem/createDraggableCollection/createSelectableItem = 39); full
+    certified suite **1615 pass / 6 skip / 0 fail** (up exactly 3 from CP9.56's 1612 —
+    the two reorder walks + D6) — no regression. (The full unit suite's 4 failures —
+    3 in `createTree.test.ts` (RTL/LTR expand-collapse + focus-entry 'all') and 1
+    treegrid snapshot in `solid-spectrum/regression.test.tsx` — are the PRE-EXISTING
+    Tree tech-debt failures proven identical at pre-port baseline `e4430cd7`, not
+    introduced here.) **NEXT: Tier 5 — date/time/color, opening with Calendar.**
+
 - **Tier 5 — date/time/color:** Calendar, RangeCalendar, DateField, TimeField,
   DatePicker, DateRangePicker, ColorArea/Slider/Wheel/Field/Swatch(Picker),
   ColorEditor. **Calendar ✓ certified 2026-07-10 (CP9.58)** — the Tier-5 opener
@@ -751,7 +752,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   scenario (D5 focus-trail over the grid arrow model, D6 AX tree of the resting
   application subtree, D10 RTL re-run of the D5 walk under `ar-AE`). D2 (no
   Calendar mount animation), D4 (value-change event surface, better certified on
-  the composed DatePicker) and RTL *paint* (D10 runs focus-only; the grid is
+  the composed DatePicker) and RTL _paint_ (D10 runs focus-only; the grid is
   DOM-order-mirrored) scoped out with rationale in the spec docblock. The browser
   drivers caught four styled paint divergences, each fixed against the S2 style
   macros: (1) D7 contrast ×6 + multimonth D3 — the heading was one
@@ -774,7 +775,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   roving `tabIndex` kept separate + ungated; `isCellDisabled` now bounds the
   visible range (padding cells aria-disabled, upstream line 319); `createCalendar`
   nav-button labels are localized via `formatCalendarLabel(locale, "previous"/
-  "next")` = "Previous"/"Next" (not hardcoded "Previous month"/"Next month") with
+"next")` = "Previous"/"Next" (not hardcoded "Previous month"/"Next month") with
   the invented `tabIndex:-1` dropped; `createCalendarGrid` headerProps now carry
   `aria-hidden:true` (the column-header row is AX-hidden upstream) with the invented
   grid tabIndex dropped; and `Calendar.tsx` adds the RAC visually-hidden trailing
@@ -839,7 +840,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   (ungated by calendar focus); `createRangeCalendar` localizes the nav labels via
   `formatCalendarLabel(locale, "previous"/"next")` = "Previous"/"Next" (dropping
   the hardcoded "…month" and the invented `tabIndex:-1`) and GATES the
-  `setCalendarHookData` write on an identifying prop (id/aria-*/errorMessage) so
+  `setCalendarHookData` write on an identifying prop (id/aria-\*/errorMessage) so
   the bare `RangeCalendarButton` re-invocation of `createRangeCalendar({}, state)`
   stops clobbering the calendar's published ariaLabel/selectedDateDescription;
   `RangeCalendar.tsx` (solidaria-components) adds the RAC visually-hidden trailing
@@ -854,8 +855,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   `createRangeCalendarState` also backs DateRangePicker (`DatePicker.tsx`) — the
   full unit suite confirmed no DateRangePicker regression. Verification:
   RangeCalendar cert e2e **39/39 green** on the rebuilt comparison chain; full
-  certified suite **1701 pass / 6 skip / 0 fail** (up exactly 39 from CP9.58's
-  1662) — no regression; root typecheck exit 0; the full unit suite's only failures
+  certified suite **1701 pass / 6 skip / 0 fail** (up exactly 39 from CP9.58's 1662) — no regression; root typecheck exit 0; the full unit suite's only failures
   are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1 treegrid
   `regression.test.tsx` snapshot), not introduced here.
   **DateField ✓ certified 2026-07-11 (CP9.60)** — Tier-5 unit 3, the third
@@ -871,187 +871,187 @@ March order (dependency/leverage; within a tier, top to bottom):
   (react-aria `useDatePickerGroup`), so the oracle shape differs from
   Calendar/RangeCalendar on every axis. The paint scenario (D1 state-matrix
   targeting the month segment — the S2 `dateSegment` macro's focused accent fill
-  + inverted text and its placeholder colour — with the styled FieldGroup shell,
-  the inner group's `unicode-bidi: isolate`, the day segment's unfocused
-  treatment and the help-text row as parts; cases default/placeholder/invalid/
-  disabled/readonly; states default + focus-visible only because the macro has
-  no hover branch and segments have no press state — press lives on the group;
-  D3 pixel of the field root, D7 contrast, D8 target size, D9 forced-colors with
-  the macro's explicit Highlight branches + `forcedColorAdjust: none` on the
-  focused fill) and a behavior scenario (D5 focus trails, D6 AX + spin
-  announcements, D10 RTL under `ar-AE`). D5 pins the segment keyboard model —
-  `segment-nav` (ArrowRight/Left through the focus-manager layer), `tab-walk`
-  (every editable segment a real tab stop, with the always-rendered clipped
-  `HiddenDateInput` `<input tabindex="-1" type="date">` also pinned in the
-  layout), `spin-keys` (ArrowUp/PageUp/End/Home/ArrowDown must NOT move focus —
-  they route to the spinbutton value model, so an invented Home/End =
-  first/last-segment nav would diverge), `typed-entry` (a maxing digit
-  auto-advances) and `backspace`; because segment accessible names carry no
-  value, D6 certifies the value model through the assertive live-region
-  announcements `useSpinButton` emits on change (`spin-up` "3 – March",
-  `page-up` "4 – April", `end-max` "12 – December" = incrementToMax, NOT
-  navigation), with disabled/readonly producing IDENTICAL empty transcripts.
-  The browser drivers caught eight DateField divergences, each fixed FAITHFULLY
-  against pinned `@react-aria/datepicker@3.16.0` / RAC 1.19.0 `DateSegment` /
-  `DateInputInner`: (1) **segment name self-reference** — React `mergeIds`
-  collapses each segment's own `useId` and the `useLabels` self-ref token so the
-  DOM `id` equals the labelledby token and the accname resolves to
-  "month, Appointment date"; Solid has no `mergeIds` registry, so the faithful
-  adaptation threads the segment's `createId()` INTO `createLabels({ id:
-  segmentId, "aria-labelledby": … })` in `createDateSegment` — the self-ref
-  token then IS the element id; (2) **frozen-context describedby** — the
-  `DateFieldContext` `aria` object literal captured `fieldAria.fieldProps`
-  EAGERLY at first render, before `createDescription`'s deferred effect appended
-  the hidden "Selected Date: …" node, so the group's (and the FieldGroup's)
-  `aria-describedby` never picked up the value description; fixed by converting
-  the context `aria` fields to GETTERS so each read re-derives the live props
-  (the recurring Solid landmine: reading a getter eagerly freezes a snapshot);
-  (3) **missing native-validation input** — RAC `DateInputInner` renders a
-  sibling `<input hidden type="text" required>` (the `validationBehavior:
-  "native"` default for a standalone field) that blocks empty-required form
-  submission; it was absent, so `createDateField.inputProps` now seeds the
-  native branch (`type → "text"`, `hidden`, `required`, no-op `onChange`) and
-  the `DateInput` component renders the gated sibling; (4) **FieldGroup ARIA
-  identity** — S2's outer styled FieldGroup is a RAC `<Group
-  role="presentation">` and the inner `DateInput` is a RAC `<Group
-  role="group">`, and BOTH read the SAME `fieldProps` (shared
-  id/labelledby/describedby, differing only in role); the port's presentation
-  FieldGroup now mirrors `aria-labelledby`/`aria-describedby` from the shared
-  props (only the ARIA identity, NOT the group's keyboard handlers — duplicating
-  those would double-fire nav, since `useDatePickerGroup` `stopPropagation`s the
-  arrow keys on the inner group precisely to stop the outer group seeing them);
-  (5) **segment focus-ring + hover + faithful data-attrs** — a local `isFocused`
-  signal + an invented `data-editable` were replaced with `createFocusRing()` +
-  `createHover(() => ({ isDisabled: state.isDisabled() || segment.type ===
-  "literal" }))` (mirroring RAC `DateSegment`'s `useFocusRing`/`useHover`),
-  emitting the faithful `data-hovered`/`data-focused`/`data-focus-visible` (all
-  `X || undefined` so booleans don't stringify to `"true"`) and re-shaping
-  `DateSegmentRenderProps` to the RAC set (isHovered/isFocused/isFocusVisible/
-  isPlaceholder/isReadOnly/isDisabled/isInvalid/type/text, dropping the invented
-  `isEditable`). (6) **FieldGroup focus-visible paint** — S2's styled FieldGroup
-  paints the focused accent border/ring and brightens the segment text only under
-  keyboard modality (`isFocusVisibleWithin`), but the solid-spectrum `DateField`
-  presentation wrapper (a non-focusable `role="presentation"` element, separate
-  from the headless group that actually holds focus) tracked no focus, so the D1
-  state-matrix focus-visible cases painted the unfocused treatment; fixed by
-  tracking `isFocusWithin` via the reliably-bubbling `onFocusIn`/`onFocusOut`
-  (Solid's `onFocus` does not bubble to a container) plus `isFocusVisibleModality`
-  via `createFocusVisibleListener` + `isGlobalFocusVisible`, deriving
-  `isFocusVisibleWithin = isFocusWithin() && isFocusVisibleModality()` (exactly how
-  `createFocusRing` composes `isFocused && focusVisibleFlag`) and feeding it to the
-  `dateFieldGroup` class + `data-focus-visible`. (7) **Root autofill input +
-  validation-input rewiring** — RAC `DateField` renders TWO hidden inputs: besides
-  the native-validation `<input hidden type="text">` DateInput sibling of fix (3)
-  (which SUBMITS via name/form/value and is the field's `inputRef` target for
-  form reset), the root also renders an unconditional clipped `position:fixed`
-  `aria-hidden` `tabindex="-1"` `<input type="date" form="">` whose `form=""`
-  detaches it from submission, so it exists only for browser autofill / native
-  form value; the port had neither, so this increment adds `RootHiddenDateInput`
-  (a Solid port of RAC `HiddenDateInput`) as the trailing sibling inside the
-  `DateFieldContext` provider and threads the validation input's ref through a
-  `validationInputRef` signal into `createDateField({ inputRef })` — the two
-  inputs prevent double form submission; D5 `tab-walk` pins the trailing
-  `{tag:input, tabindex:"-1"}` in the layout, certifying the root input's presence
-  and position. (8) **Segment style kebab-case (Solid `setProperty` raw-key
-  landmine)** — the RTL numeric-segment override painted `unicode-bidi: normal` in
-  Solid because a `style` object passed through `mergeProps` and SPREAD is applied
-  by Solid's runtime `style()` helper via `el.style.setProperty(rawKey, val)`, and
-  `setProperty` silently ignores camelCase CSS names (`unicodeBidi`, `caretColor`)
-  — only real kebab property names take (React auto-kebabs `CSSProperties`; a Solid
-  spread does not); fixed by emitting kebab-case `caret-color` / `unicode-bidi`
-  keys in `createDateSegment`'s segment style, closing the D10 RTL state-matrix
-  `unicode-bidi: embed` cases. Behind the fixes this increment also extracted the
-  port substance the segment/field lean on: a standalone `spinbutton` subsystem
-  (`packages/solidaria/src/spinbutton/createSpinButton.ts` + intl) faithfully
-  porting react-aria `useSpinButton` (PageUp/Down inline the arrow branch,
-  non-reactive `isFocused` flag, assertive announce via `createEffect`);
-  `createDisplayNames` (`useDisplayNames` month/era long names); the datepicker
-  `intl` table; a rewritten `createDatePickerGroup` (onKeyDown guards
-  `nodeContains`, arrow cases `preventDefault` + `stopPropagation`); and
-  `createFocusManager` on `FocusScope`. Scope-outs (documented, not silent): D2
-  (no S2 mount animation), D4 (the value-change event surface → the composed
-  DatePicker unit later in this tier, per the NumberField/RangeCalendar
-  precedent), time granularities (hour/minute/second, hourCycle, zoned values →
-  the TimeField unit, NEXT), and RTL paint (D10 runs on the behavior scenario,
-  diffing `direction`/`unicode-bidi` on the group + month segment — numeric
-  segments carry an explicit `direction: ltr; unicode-bidi: embed` override
-  inside the RTL group, which is why the RTL behavior target is the GROUP). This
-  unit supersedes the pre-certified `e2e/datefield-visual.spec.ts` (`git rm`'d)
-  by re-expressing its coverage in the certified pair-oracle `register*Driver`
-  form; the `test:datefield` npm script now points at the cert. Verification:
-  DateField cert e2e **69/69 green** on the rebuilt comparison chain (the cert
-  file carries 69 pair-oracle tests across D1/D3/D5/D6/D7/D8/D9/D10 — an earlier
-  "29 passed" reading was a false green from a `| tail` pipe that masked
-  Playwright's real exit code and truncated the run to a passing subset); full
-  certified suite **1770 pass / 6 skip / 0 fail** (up exactly 69 from CP9.59's
-  1701) — no regression; root typecheck exit 0; the full unit suite's only
-  failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
-  treegrid `regression.test.tsx` snapshot), not introduced here.
-  **TimeField ✓ certified 2026-07-12 (CP9.61)** — Tier-5 unit 4, again an oracle
-  owning BOTH paint and behavior, so it certifies in one spec
-  (`apps/comparison/e2e/certified/timefield.certified.spec.ts`, 69 tests) against
-  the styled `@react-spectrum/s2` TimeField. The governing fact is that upstream
-  TimeField is NOT its own primitive: RAC `TimeField` reuses `DateInput`/
-  `DateSegment` (there is no `TimeInput`/`TimeSegment`), `useTimeField(props,
-  state, ref)` = `useDateField(...)` with a single line rewriting
-  `inputProps.value` to the value in the `Time` domain, and `useTimeFieldState`
-  wraps `useDateFieldState` (anchoring the `Time` on a `CalendarDateTime` — or a
-  zoned date when the value/default carries a zone — with `maxGranularity: 'hour'`
-  and `granularity || 'minute'`) returning `{...state, timeValue}` without
-  overriding `value`/`setValue`. So the faithful port is a THIN WRAPPER over the
-  certified DateField stack, and this unit REWROTE it as one (476 insertions /
-  890 deletions): the standalone fork was deleted — `createTimeSegment.ts` (+ its
-  test), `HiddenTimeInput.tsx`, and the forked body of `createTimeFieldState` —
-  and re-expressed as reuse. `createTimeFieldState` now drives
-  `createDateFieldState` (Time → CalendarDateTime via `convertValue`,
-  `maxGranularity: 'hour'`), layering the `timeValue` accessor with a **Proxy,
-  NOT an object spread** — spreading would invoke and freeze `DateFieldState`'s
-  `calendar`/`dateFormatter`/`granularity`/`locale`/`timeZone` getters (the same
-  Solid getter-freezing landmine that recurs across this tier); `createTimeField`
-  calls `createDateField` and rewrites only `inputProps.value =
-  state.timeValue()?.toString() || ""` through a getter; and the
-  solidaria-components `TimeField` provides the shared `DateFieldContext`/
-  `DateFieldStateContext` that the reused `DateInput`/`DateSegment` read, renders
-  the segments through that certified stack, and — a documented divergence from
-  DateField — renders NO root autofill `<input>` (RAC TimeField renders none),
-  keeping only the inner `DateInput`'s native-validation `<input>` sibling. The
-  distinct certifiable surface vs DateField is the SUB-DAY domain: hour/minute
-  (optionally second/dayPeriod) segments, `hourCycle` 12/24,
-  `shouldForceLeadingZeros`, and Time-domain serialization — `Time.toString()`
-  ALWAYS emits seconds, so the faithful hidden-input value is "09:30:00" (the unit
-  tests now assert this, correcting the fork's stale "09:30"). The paint scenario
-  targets the hour segment with the FieldGroup shell, the inner group's
-  `unicode-bidi: isolate`, the minute segment and help-text row as parts (cases
-  default/placeholder/invalid/disabled/readonly; D3 pixel, D7 contrast, D8 target
-  size, D9 forced-colors); the behavior scenario reuses DateField's model
-  wholesale (D5 segment tab-walk + spin-keys that must NOT move focus, D6
-  assertive `useSpinButton` announcements since segment names carry no value, D10
-  RTL on the group). The browser driver caught ONE faithful divergence, a
-  **FieldGroup `white-space`**: S2 TimeField's FieldGroup `styles` prop is only
-  `{...fieldInput(), paddingX: 'edge-to-text'}` — it deliberately DROPS the
-  `textWrap: 'nowrap'` that S2 DateField's FieldGroup carries — so the FieldGroup
-  computes `white-space: normal`; the port's `timeFieldGroup` had copied
-  DateField's `textWrap: 'nowrap'` and computed `nowrap`. Fixed by removing that
-  line (the inner `segmentContainer` still pins `nowrap`, exactly as S2 does via
-  the shared `DateInputContainer`). This cert's paint scenario adds `white-space`
-  to the D1/D9 diff allowlist — which DateField's cert did not — so it is also a
-  coverage improvement, not just a port fix. Scope-outs mirror DateField: D2 (no
-  S2 mount animation), D4 (value-change events → the composed DatePicker unit,
-  NEXT), and the root autofill input (N/A — RAC TimeField renders none). Two unit
-  skips carry the same jsdom-limit rationale DateField documented: RTL segment nav
-  (`getBoundingClientRect` returns all-zeros, so geometric `findNextSegment` can't
-  run) and full-width digit entry (typed input flows through `onBeforeInput`,
-  which jsdom does not fire). This unit supersedes the pre-certified
-  `e2e/timefield-visual.spec.ts` (`git rm`'d) by re-expressing its coverage in the
-  certified pair-oracle `register*Driver` form; the `test:timefield` npm script now
-  points at the cert. Verification: TimeField cert e2e **69/69 green** (exit 0 read
-  from a captured code, not a `| tail` pipe); full certified suite **1838 pass / 6
-  skip** (up exactly 69 from CP9.60's 1770 — the single full-suite failure was a
-  pre-existing `D4 Dialog close button · escape-close` flake that passes 7/7 in
-  isolation, with no Dialog files touched); root typecheck exit 0; TimeField unit
-  suites **59 pass / 2 documented jsdom skips**; the full unit suite's only other
-  failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
-  treegrid `regression.test.tsx` snapshot), not introduced here.
+  - inverted text and its placeholder colour — with the styled FieldGroup shell,
+    the inner group's `unicode-bidi: isolate`, the day segment's unfocused
+    treatment and the help-text row as parts; cases default/placeholder/invalid/
+    disabled/readonly; states default + focus-visible only because the macro has
+    no hover branch and segments have no press state — press lives on the group;
+    D3 pixel of the field root, D7 contrast, D8 target size, D9 forced-colors with
+    the macro's explicit Highlight branches + `forcedColorAdjust: none` on the
+    focused fill) and a behavior scenario (D5 focus trails, D6 AX + spin
+    announcements, D10 RTL under `ar-AE`). D5 pins the segment keyboard model —
+    `segment-nav` (ArrowRight/Left through the focus-manager layer), `tab-walk`
+    (every editable segment a real tab stop, with the always-rendered clipped
+    `HiddenDateInput` `<input tabindex="-1" type="date">` also pinned in the
+    layout), `spin-keys` (ArrowUp/PageUp/End/Home/ArrowDown must NOT move focus —
+    they route to the spinbutton value model, so an invented Home/End =
+    first/last-segment nav would diverge), `typed-entry` (a maxing digit
+    auto-advances) and `backspace`; because segment accessible names carry no
+    value, D6 certifies the value model through the assertive live-region
+    announcements `useSpinButton` emits on change (`spin-up` "3 – March",
+    `page-up` "4 – April", `end-max` "12 – December" = incrementToMax, NOT
+    navigation), with disabled/readonly producing IDENTICAL empty transcripts.
+    The browser drivers caught eight DateField divergences, each fixed FAITHFULLY
+    against pinned `@react-aria/datepicker@3.16.0` / RAC 1.19.0 `DateSegment` /
+    `DateInputInner`: (1) **segment name self-reference** — React `mergeIds`
+    collapses each segment's own `useId` and the `useLabels` self-ref token so the
+    DOM `id` equals the labelledby token and the accname resolves to
+    "month, Appointment date"; Solid has no `mergeIds` registry, so the faithful
+    adaptation threads the segment's `createId()` INTO `createLabels({ id:
+segmentId, "aria-labelledby": … })` in `createDateSegment` — the self-ref
+    token then IS the element id; (2) **frozen-context describedby** — the
+    `DateFieldContext` `aria` object literal captured `fieldAria.fieldProps`
+    EAGERLY at first render, before `createDescription`'s deferred effect appended
+    the hidden "Selected Date: …" node, so the group's (and the FieldGroup's)
+    `aria-describedby` never picked up the value description; fixed by converting
+    the context `aria` fields to GETTERS so each read re-derives the live props
+    (the recurring Solid landmine: reading a getter eagerly freezes a snapshot);
+    (3) **missing native-validation input** — RAC `DateInputInner` renders a
+    sibling `<input hidden type="text" required>` (the `validationBehavior:
+"native"` default for a standalone field) that blocks empty-required form
+    submission; it was absent, so `createDateField.inputProps` now seeds the
+    native branch (`type → "text"`, `hidden`, `required`, no-op `onChange`) and
+    the `DateInput` component renders the gated sibling; (4) **FieldGroup ARIA
+    identity** — S2's outer styled FieldGroup is a RAC `<Group
+role="presentation">` and the inner `DateInput` is a RAC `<Group
+role="group">`, and BOTH read the SAME `fieldProps` (shared
+    id/labelledby/describedby, differing only in role); the port's presentation
+    FieldGroup now mirrors `aria-labelledby`/`aria-describedby` from the shared
+    props (only the ARIA identity, NOT the group's keyboard handlers — duplicating
+    those would double-fire nav, since `useDatePickerGroup` `stopPropagation`s the
+    arrow keys on the inner group precisely to stop the outer group seeing them);
+    (5) **segment focus-ring + hover + faithful data-attrs** — a local `isFocused`
+    signal + an invented `data-editable` were replaced with `createFocusRing()` +
+    `createHover(() => ({ isDisabled: state.isDisabled() || segment.type ===
+"literal" }))` (mirroring RAC `DateSegment`'s `useFocusRing`/`useHover`),
+    emitting the faithful `data-hovered`/`data-focused`/`data-focus-visible` (all
+    `X || undefined` so booleans don't stringify to `"true"`) and re-shaping
+    `DateSegmentRenderProps` to the RAC set (isHovered/isFocused/isFocusVisible/
+    isPlaceholder/isReadOnly/isDisabled/isInvalid/type/text, dropping the invented
+    `isEditable`). (6) **FieldGroup focus-visible paint** — S2's styled FieldGroup
+    paints the focused accent border/ring and brightens the segment text only under
+    keyboard modality (`isFocusVisibleWithin`), but the solid-spectrum `DateField`
+    presentation wrapper (a non-focusable `role="presentation"` element, separate
+    from the headless group that actually holds focus) tracked no focus, so the D1
+    state-matrix focus-visible cases painted the unfocused treatment; fixed by
+    tracking `isFocusWithin` via the reliably-bubbling `onFocusIn`/`onFocusOut`
+    (Solid's `onFocus` does not bubble to a container) plus `isFocusVisibleModality`
+    via `createFocusVisibleListener` + `isGlobalFocusVisible`, deriving
+    `isFocusVisibleWithin = isFocusWithin() && isFocusVisibleModality()` (exactly how
+    `createFocusRing` composes `isFocused && focusVisibleFlag`) and feeding it to the
+    `dateFieldGroup` class + `data-focus-visible`. (7) **Root autofill input +
+    validation-input rewiring** — RAC `DateField` renders TWO hidden inputs: besides
+    the native-validation `<input hidden type="text">` DateInput sibling of fix (3)
+    (which SUBMITS via name/form/value and is the field's `inputRef` target for
+    form reset), the root also renders an unconditional clipped `position:fixed`
+    `aria-hidden` `tabindex="-1"` `<input type="date" form="">` whose `form=""`
+    detaches it from submission, so it exists only for browser autofill / native
+    form value; the port had neither, so this increment adds `RootHiddenDateInput`
+    (a Solid port of RAC `HiddenDateInput`) as the trailing sibling inside the
+    `DateFieldContext` provider and threads the validation input's ref through a
+    `validationInputRef` signal into `createDateField({ inputRef })` — the two
+    inputs prevent double form submission; D5 `tab-walk` pins the trailing
+    `{tag:input, tabindex:"-1"}` in the layout, certifying the root input's presence
+    and position. (8) **Segment style kebab-case (Solid `setProperty` raw-key
+    landmine)** — the RTL numeric-segment override painted `unicode-bidi: normal` in
+    Solid because a `style` object passed through `mergeProps` and SPREAD is applied
+    by Solid's runtime `style()` helper via `el.style.setProperty(rawKey, val)`, and
+    `setProperty` silently ignores camelCase CSS names (`unicodeBidi`, `caretColor`)
+    — only real kebab property names take (React auto-kebabs `CSSProperties`; a Solid
+    spread does not); fixed by emitting kebab-case `caret-color` / `unicode-bidi`
+    keys in `createDateSegment`'s segment style, closing the D10 RTL state-matrix
+    `unicode-bidi: embed` cases. Behind the fixes this increment also extracted the
+    port substance the segment/field lean on: a standalone `spinbutton` subsystem
+    (`packages/solidaria/src/spinbutton/createSpinButton.ts` + intl) faithfully
+    porting react-aria `useSpinButton` (PageUp/Down inline the arrow branch,
+    non-reactive `isFocused` flag, assertive announce via `createEffect`);
+    `createDisplayNames` (`useDisplayNames` month/era long names); the datepicker
+    `intl` table; a rewritten `createDatePickerGroup` (onKeyDown guards
+    `nodeContains`, arrow cases `preventDefault` + `stopPropagation`); and
+    `createFocusManager` on `FocusScope`. Scope-outs (documented, not silent): D2
+    (no S2 mount animation), D4 (the value-change event surface → the composed
+    DatePicker unit later in this tier, per the NumberField/RangeCalendar
+    precedent), time granularities (hour/minute/second, hourCycle, zoned values →
+    the TimeField unit, NEXT), and RTL paint (D10 runs on the behavior scenario,
+    diffing `direction`/`unicode-bidi` on the group + month segment — numeric
+    segments carry an explicit `direction: ltr; unicode-bidi: embed` override
+    inside the RTL group, which is why the RTL behavior target is the GROUP). This
+    unit supersedes the pre-certified `e2e/datefield-visual.spec.ts` (`git rm`'d)
+    by re-expressing its coverage in the certified pair-oracle `register*Driver`
+    form; the `test:datefield` npm script now points at the cert. Verification:
+    DateField cert e2e **69/69 green** on the rebuilt comparison chain (the cert
+    file carries 69 pair-oracle tests across D1/D3/D5/D6/D7/D8/D9/D10 — an earlier
+    "29 passed" reading was a false green from a `| tail` pipe that masked
+    Playwright's real exit code and truncated the run to a passing subset); full
+    certified suite **1770 pass / 6 skip / 0 fail** (up exactly 69 from CP9.59's
+  1701. — no regression; root typecheck exit 0; the full unit suite's only
+        failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
+        treegrid `regression.test.tsx` snapshot), not introduced here.
+        **TimeField ✓ certified 2026-07-12 (CP9.61)** — Tier-5 unit 4, again an oracle
+        owning BOTH paint and behavior, so it certifies in one spec
+        (`apps/comparison/e2e/certified/timefield.certified.spec.ts`, 69 tests) against
+        the styled `@react-spectrum/s2` TimeField. The governing fact is that upstream
+        TimeField is NOT its own primitive: RAC `TimeField` reuses `DateInput`/
+        `DateSegment` (there is no `TimeInput`/`TimeSegment`), `useTimeField(props,
+state, ref)` = `useDateField(...)` with a single line rewriting
+        `inputProps.value` to the value in the `Time` domain, and `useTimeFieldState`
+        wraps `useDateFieldState` (anchoring the `Time` on a `CalendarDateTime` — or a
+        zoned date when the value/default carries a zone — with `maxGranularity: 'hour'`
+        and `granularity || 'minute'`) returning `{...state, timeValue}` without
+        overriding `value`/`setValue`. So the faithful port is a THIN WRAPPER over the
+        certified DateField stack, and this unit REWROTE it as one (476 insertions /
+        890 deletions): the standalone fork was deleted — `createTimeSegment.ts` (+ its
+        test), `HiddenTimeInput.tsx`, and the forked body of `createTimeFieldState` —
+        and re-expressed as reuse. `createTimeFieldState` now drives
+        `createDateFieldState` (Time → CalendarDateTime via `convertValue`,
+        `maxGranularity: 'hour'`), layering the `timeValue` accessor with a **Proxy,
+        NOT an object spread** — spreading would invoke and freeze `DateFieldState`'s
+        `calendar`/`dateFormatter`/`granularity`/`locale`/`timeZone` getters (the same
+        Solid getter-freezing landmine that recurs across this tier); `createTimeField`
+        calls `createDateField` and rewrites only `inputProps.value =
+state.timeValue()?.toString() || ""` through a getter; and the
+        solidaria-components `TimeField` provides the shared `DateFieldContext`/
+        `DateFieldStateContext` that the reused `DateInput`/`DateSegment` read, renders
+        the segments through that certified stack, and — a documented divergence from
+        DateField — renders NO root autofill `<input>` (RAC TimeField renders none),
+        keeping only the inner `DateInput`'s native-validation `<input>` sibling. The
+        distinct certifiable surface vs DateField is the SUB-DAY domain: hour/minute
+        (optionally second/dayPeriod) segments, `hourCycle` 12/24,
+        `shouldForceLeadingZeros`, and Time-domain serialization — `Time.toString()`
+        ALWAYS emits seconds, so the faithful hidden-input value is "09:30:00" (the unit
+        tests now assert this, correcting the fork's stale "09:30"). The paint scenario
+        targets the hour segment with the FieldGroup shell, the inner group's
+        `unicode-bidi: isolate`, the minute segment and help-text row as parts (cases
+        default/placeholder/invalid/disabled/readonly; D3 pixel, D7 contrast, D8 target
+        size, D9 forced-colors); the behavior scenario reuses DateField's model
+        wholesale (D5 segment tab-walk + spin-keys that must NOT move focus, D6
+        assertive `useSpinButton` announcements since segment names carry no value, D10
+        RTL on the group). The browser driver caught ONE faithful divergence, a
+        **FieldGroup `white-space`**: S2 TimeField's FieldGroup `styles` prop is only
+        `{...fieldInput(), paddingX: 'edge-to-text'}` — it deliberately DROPS the
+        `textWrap: 'nowrap'` that S2 DateField's FieldGroup carries — so the FieldGroup
+        computes `white-space: normal`; the port's `timeFieldGroup` had copied
+        DateField's `textWrap: 'nowrap'` and computed `nowrap`. Fixed by removing that
+        line (the inner `segmentContainer` still pins `nowrap`, exactly as S2 does via
+        the shared `DateInputContainer`). This cert's paint scenario adds `white-space`
+        to the D1/D9 diff allowlist — which DateField's cert did not — so it is also a
+        coverage improvement, not just a port fix. Scope-outs mirror DateField: D2 (no
+        S2 mount animation), D4 (value-change events → the composed DatePicker unit,
+        NEXT), and the root autofill input (N/A — RAC TimeField renders none). Two unit
+        skips carry the same jsdom-limit rationale DateField documented: RTL segment nav
+        (`getBoundingClientRect` returns all-zeros, so geometric `findNextSegment` can't
+        run) and full-width digit entry (typed input flows through `onBeforeInput`,
+        which jsdom does not fire). This unit supersedes the pre-certified
+        `e2e/timefield-visual.spec.ts` (`git rm`'d) by re-expressing its coverage in the
+        certified pair-oracle `register*Driver` form; the `test:timefield` npm script now
+        points at the cert. Verification: TimeField cert e2e **69/69 green** (exit 0 read
+        from a captured code, not a `| tail` pipe); full certified suite **1838 pass / 6
+        skip** (up exactly 69 from CP9.60's 1770 — the single full-suite failure was a
+        pre-existing `D4 Dialog close button · escape-close` flake that passes 7/7 in
+        isolation, with no Dialog files touched); root typecheck exit 0; TimeField unit
+        suites **59 pass / 2 documented jsdom skips**; the full unit suite's only other
+        failures are the SAME pre-existing Tree tech-debt (3 `createTree.test.ts` + 1
+        treegrid `regression.test.tsx` snapshot), not introduced here.
 
   **DatePicker ✓ certified 2026-07-12 (CP9.62)** — Tier-5 unit 5, the composed
   unit: a date field + a calendar-popover trigger button, wired by
@@ -1063,7 +1063,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     (plus `aria-labelledby`/`aria-describedby` + `onKeyDown`/`onKeyUp`),
     faithfully mirroring `@react-aria/datepicker` `useDatePicker.mjs`
     (`mergeProps(domProps, groupProps, fieldProps, descProps, focusWithinProps,
-    {role:'group', 'aria-disabled': isDisabled || null, …})`). The `fieldProps`
+{role:'group', 'aria-disabled': isDisabled || null, …})`). The `fieldProps`
     merged in is the **label-association** object (id/labelledby/describedby),
     NOT the value-model fieldProps — value/onChange never leak onto the group.
   - **Headless `DatePicker` root = a BARE ROLELESS `<div>`** (mirrors
@@ -1104,7 +1104,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   `Collection.tsx` does not consume `GroupContext`; the date components thread
   group props via `DateFieldContext`/`DatePickerContext` `pickerAria` instead — a
   documented divergence, fragile to retrofit reactively, out of scope here), and
-  full pointer-driven date *selection* stays a browser-only concern (jsdom can't
+  full pointer-driven date _selection_ stays a browser-only concern (jsdom can't
   drive it; the cert covers it). Twelve unit tests across four files
   (`solidaria` createDatePicker `.ts`+`.tsx`, `solidaria-components`,
   `solid-spectrum`) were retargeted from the pre-cert **named-group-root**
@@ -1113,7 +1113,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   not a `| tail` pipe); full certified suite **1894 pass / 7 skip** (up exactly
   56 pass + 1 skip from CP9.61's 1838/6 — the datepicker cert's own totals; the
   single full-suite failure is the SAME pre-existing `D4 Dialog trigger ·
-  open-escape-close` flake noted at CP9.61, which passes 5/5 in isolation with no
+open-escape-close` flake noted at CP9.61, which passes 5/5 in isolation with no
   Dialog files touched here); DatePicker unit suites **92 pass across 7 files**;
   the old `datepicker-visual.spec.ts` was retired and `test:datepicker`
   retargeted at the certified spec.
@@ -1153,17 +1153,17 @@ March order (dependency/leverage; within a tier, top to bottom):
   - **Segment-name folding over TWO fields**: each field's localized label
     ("Start Date"/"End Date", from `stringFormatter.format('startDate'/'endDate')`)
     folds into its OWN segments' accessible names (`aria-label="month, Start Date, "`
-    + `aria-labelledby`). The range field groups are `role="presentation"` with NO
-    queryable `aria-label` — the ONLY place the "Start Date"/"End Date" labels
-    surface is folded into the segment names. So
-    `getAllByRole("spinbutton", { name: /Start Date/i })` → 3, `/End Date/i` → 3,
-    `/day, Start Date/i` → 1 (unique). The single-picker equivalent folds "Date".
+    - `aria-labelledby`). The range field groups are `role="presentation"` with NO
+      queryable `aria-label` — the ONLY place the "Start Date"/"End Date" labels
+      surface is folded into the segment names. So
+      `getAllByRole("spinbutton", { name: /Start Date/i })` → 3, `/End Date/i` → 3,
+      `/day, Start Date/i` → 1 (unique). The single-picker equivalent folds "Date".
   - **Shared focus manager**: `createFocusManager(ref)` scoped to the roleless
     root, handed to BOTH fields — so auto-advance and arrow keys walk ACROSS the
     start→end boundary (each inner presentation field disables its own arrow-nav
     and lets the key bubble to the group).
   - **`dialogProps` = `{id, role:"dialog", 'aria-labelledby': "<buttonId>
-    <labelId>"}`** with NO `aria-label` (query the popup with a bare
+<labelId>"}`** with NO `aria-label` (query the popup with a bare
     `getByRole("dialog")`); `buttonProps` carries `aria-describedby` +
     `aria-labelledby` too; the trigger's default `aria-label` is the `"calendar"`
     string ("Calendar"); the group carries neither `aria-required` nor
@@ -1182,7 +1182,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   mirroring the single `DatePickerContent`; description/error render as `<span>`
   (AX "text"), not `<p>`; the trigger wires its own
   `createFocusRing`/`createHover`/`pressScale` and `isButtonDisabled = disabled ||
-  readOnly`; a popover-open `setFocused(true)` effect reproduces RAC re-mounting a
+readOnly`; a popover-open `setFocused(true)` effect reproduces RAC re-mounting a
   fresh range state per open (autoFocus); `RangeCalendarWithState` reuses the
   composite's shared `RangeCalendarContext` state instead of minting its own
   (mirrors the single `CalendarWithState`); the styled popover motion tokens were
@@ -1208,7 +1208,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   `.ts`+`.tsx`, `solidaria-components`, and `solid-spectrum`. The old
   `daterangepicker-visual.spec.ts` was retired and `test:daterangepicker`
   retargeted at the certified spec.
-  **NEXT: Color* (ColorField / ColorArea / ColorWheel / ColorSlider /
+  **NEXT: Color\* (ColorField / ColorArea / ColorWheel / ColorSlider /
   ColorSwatch) then ColorEditor — Tier 5 continues with the color units; their
   i18n/RTL intl is already ported (see the Color memories), so the cert focus is
   the paint + drag (D4) surfaces, not the string tables.**
@@ -1280,15 +1280,15 @@ March order (dependency/leverage; within a tier, top to bottom):
     across `solidaria` createColorField, `solidaria-components` Color.test, and
     `solid-spectrum` ColorField.test (87 total). The old `colorfield-visual.spec.ts` was
     retired and `test:colorfield` retargeted at the certified spec.
-  **ColorArea ✓ certified 2026-07-12 (CP9.65)** — Tier-5 unit 8, the FIRST 2D
-  color surface (a two-axis gradient thumb-drag control). Port stack:
-  `createColorArea` (hook, `solidaria`) → headless ColorArea
-  (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorArea
-  (`solid-spectrum/src/color`); state = `createColorAreaState` (`solid-stately`);
-  color model = `solid-stately/src/color/Color.ts`. Certified in one paint+behavior
-  spec vs styled S2 (**18 pass / 0 skip**). Upstream oracle: S2 `ColorArea.tsx` =
-  `AriaColorArea` (react-aria-components/ColorArea → `useColorArea`) rendering a single
-  `ColorHandle`/`ColorThumb` with the gradient painted on the ROOT.
+    **ColorArea ✓ certified 2026-07-12 (CP9.65)** — Tier-5 unit 8, the FIRST 2D
+    color surface (a two-axis gradient thumb-drag control). Port stack:
+    `createColorArea` (hook, `solidaria`) → headless ColorArea
+    (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorArea
+    (`solid-spectrum/src/color`); state = `createColorAreaState` (`solid-stately`);
+    color model = `solid-stately/src/color/Color.ts`. Certified in one paint+behavior
+    spec vs styled S2 (**18 pass / 0 skip**). Upstream oracle: S2 `ColorArea.tsx` =
+    `AriaColorArea` (react-aria-components/ColorArea → `useColorArea`) rendering a single
+    `ColorHandle`/`ColorThumb` with the gradient painted on the ROOT.
   - **NOT the slider inversion — the distinguishing strength of this cert.**
     Slider / RangeSlider / ColorSlider inverted the thumb (the `<div>` carries
     `role="slider"` + tabindex while the native `<input>` is aria-hidden +
@@ -1326,7 +1326,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     `toFixed(_, 2)`, exactly as upstream's constructor path does). `hslToRgb`/`hsbToRgb`
     (integer `Math.round(r*255)`) and the `RGBColor` constructor were LEFT UNCHANGED —
     they match upstream `toRGB`'s integer 8-bit rounding. `toFixedNumber(v,d) =
-    Math.round(v*10^d)/10^d` is byte-identical to the port's `toFixed`, and the port's
+Math.round(v*10^d)/10^d` is byte-identical to the port's `toFixed`, and the port's
     centralized-constructor clamp is a no-op for the in-range values every conversion and
     cert path produces, so the certified gradient is now bit-exact to S2 (cert 18/18
     green). The clamp-vs-`normalizeHue` handling of out-of-range hues is a PRE-EXISTING
@@ -1365,18 +1365,18 @@ March order (dependency/leverage; within a tier, top to bottom):
     blast radius; 75 color-model + 250 color-adjacent tests green). The old
     `colorarea-visual.spec.ts` was retired (git rm) and `test:colorarea` retargeted at
     the certified spec.
-  **ColorWheel ✓ certified 2026-07-13 (CP9.66)** — Tier-5 unit 9, the hue wheel (a
-  hue-only ring with a thumb dragged around the circumference). Port stack:
-  `createColorWheel` (hook, `solidaria`) → headless ColorWheel
-  (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorWheel
-  (`solid-spectrum/src/color`); state = `createColorWheelState` (`solid-stately`);
-  color model = the shared `solid-stately/src/color/Color.ts`. Certified in one
-  paint+behavior spec vs styled S2 (**18 pass / 0 skip**). Upstream oracle: S2
-  `ColorWheel.tsx` = `AriaColorWheel` (react-aria-components/ColorWheel →
-  `useColorWheel`) rendering a `ColorWheelTrack`, an inner-border `<div>`, and a single
-  `ColorHandle`/`ColorThumb` — a VERBATIM match to the port's styled
-  `colorWheelRoot`/`colorWheelTrack`/`colorWheelInnerBorder`/`colorWheelThumb` macros
-  and the track/inner-border/handle render order.
+    **ColorWheel ✓ certified 2026-07-13 (CP9.66)** — Tier-5 unit 9, the hue wheel (a
+    hue-only ring with a thumb dragged around the circumference). Port stack:
+    `createColorWheel` (hook, `solidaria`) → headless ColorWheel
+    (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorWheel
+    (`solid-spectrum/src/color`); state = `createColorWheelState` (`solid-stately`);
+    color model = the shared `solid-stately/src/color/Color.ts`. Certified in one
+    paint+behavior spec vs styled S2 (**18 pass / 0 skip**). Upstream oracle: S2
+    `ColorWheel.tsx` = `AriaColorWheel` (react-aria-components/ColorWheel →
+    `useColorWheel`) rendering a `ColorWheelTrack`, an inner-border `<div>`, and a single
+    `ColorHandle`/`ColorThumb` — a VERBATIM match to the port's styled
+    `colorWheelRoot`/`colorWheelTrack`/`colorWheelInnerBorder`/`colorWheelThumb` macros
+    and the track/inner-border/handle render order.
   - **NOT the slider inversion — the same distinguishing strength as ColorArea, and it
     CORRECTS the recalled "ColorWheel is an inverted 1D slider" claim.** Reading the
     actual code falsified that: upstream `useColorWheel` and the port `createColorWheel`
@@ -1405,7 +1405,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     carries no `tabIndex` — unlike `createFocusable`, ColorField's CP9.64 culprit — so the
     attribute vanishes entirely). Faithful revert, Parity Rule #1.
   - **The one dependent snapshot update:** `solid-spectrum/test/__snapshots__/
-    regression.test.tsx.snap`'s ColorWheel entry had captured the input WITH
+regression.test.tsx.snap`'s ColorWheel entry had captured the input WITH
     `tabindex="0"`; the faithful output drops it, so the snapshot's `<input>` was edited
     to remove exactly ` tabindex="0"` (surgical one-attribute deletion, nothing else in
     the 267-file / 5539-test suite changed — confirmed by a full run showing exactly that
@@ -1442,19 +1442,19 @@ March order (dependency/leverage; within a tier, top to bottom):
     10 skip / 0 unexpected fail** — identical to CP9.65 (the tabIndex revert + snapshot
     edit have zero unit blast radius). The old `colorwheel-visual.spec.ts` was retired
     (git rm) and a new `test:colorwheel` script points at the certified spec.
-  **ColorSlider ✓ certified 2026-07-13 (CP9.67)** — Tier-5 unit 10, the 1D color
-  slider (a single channel dragged along a horizontal or vertical track). Port stack:
-  `createColorSlider` (hook, `solidaria`) → headless ColorSlider
-  (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorSlider
-  (`solid-spectrum/src/color`); state = `createColorSliderState` (`solid-stately`);
-  color model = the shared `solid-stately/src/color/Color.ts`. Certified in one
-  paint+behavior spec vs styled S2 (**28 pass / 0 skip**). Upstream oracle: S2
-  `ColorSlider.tsx` = `AriaColorSlider` (react-aria-components/ColorSlider →
-  `useColorSlider` → `useSlider` + `useSliderThumb`) rendering (for a horizontal
-  slider) a `FieldLabel`, a `SliderOutput`, and a `SliderTrack` holding one
-  `ColorHandle`/`ColorThumb` — a VERBATIM match to the port's styled
-  `colorSliderRoot`/`colorSliderLabel`/`colorSliderOutput`/`colorSliderTrack`/`colorSliderThumb`
-  macros and the label/output/track render order.
+    **ColorSlider ✓ certified 2026-07-13 (CP9.67)** — Tier-5 unit 10, the 1D color
+    slider (a single channel dragged along a horizontal or vertical track). Port stack:
+    `createColorSlider` (hook, `solidaria`) → headless ColorSlider
+    (`solidaria-components`) → the styled `@react-spectrum/s2`-shaped ColorSlider
+    (`solid-spectrum/src/color`); state = `createColorSliderState` (`solid-stately`);
+    color model = the shared `solid-stately/src/color/Color.ts`. Certified in one
+    paint+behavior spec vs styled S2 (**28 pass / 0 skip**). Upstream oracle: S2
+    `ColorSlider.tsx` = `AriaColorSlider` (react-aria-components/ColorSlider →
+    `useColorSlider` → `useSlider` + `useSliderThumb`) rendering (for a horizontal
+    slider) a `FieldLabel`, a `SliderOutput`, and a `SliderTrack` holding one
+    `ColorHandle`/`ColorThumb` — a VERBATIM match to the port's styled
+    `colorSliderRoot`/`colorSliderLabel`/`colorSliderOutput`/`colorSliderTrack`/`colorSliderThumb`
+    macros and the label/output/track render order.
   - **NOT the slider inversion — the same distinguishing strength as ColorArea /
     ColorWheel, and it RESOLVES the recalled "Slider / RangeSlider / ColorSlider
     inverted the thumb" open question.** Reading the actual code settled it: upstream
@@ -1497,7 +1497,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     reading the oracle, not produced as a red; it is reverted on Parity Rule #1
     principle. The four drivers stay green either way.
   - **The one dependent snapshot update:** `solid-spectrum/test/__snapshots__/
-    regression.test.tsx.snap`'s ColorSlider entry had captured the thumb WITH
+regression.test.tsx.snap`'s ColorSlider entry had captured the thumb WITH
     `role="presentation"`; the faithful output drops it, so that one `<div>`'s attribute
     was removed (surgically targeted at the `grid-area: track` thumb so ColorArea's
     identically-classed — but genuinely-`presentation` — thumb was untouched). Fix 1
@@ -1513,7 +1513,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     `left`/`top`/`right`/`bottom`, `box-sizing`, and the four `background-*` companions
     the layered `<gradient>, checkerboard` needs. Cases: `default` (hue, horizontal,
     aria-labelled → children `[output, track]`), `labeled` (a visible label → `[label,
-    output, track]`), `disabled` (track outline/bg + thumb border to disabled tokens),
+output, track]`), `disabled` (track outline/bg + thumb border to disabled tokens),
     `rgb-red` (the 2-stop red-channel gradient that caught Fix 1), `alpha` (the
     transparent gradient that makes the track's always-appended checkerboard show
     through), and `vertical` (`display:block`, no output, `aria-orientation="vertical"`,
@@ -1528,23 +1528,23 @@ March order (dependency/leverage; within a tier, top to bottom):
   - Verification: cert e2e **28 pass / 0 skip** (exit 0, captured code — not a `| tail`
     pipe); full certified suite **2049 pass / 8 skip / 0 fail** (CERT_FULL_EXIT=0; up 28
     pass from CP9.66's 2021/8, no flakes this run). Full unit suite (`vp test run
-    packages`, base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected
+  packages`, base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected
     fail** — identical to CP9.66 (both fixes have zero unit blast radius). The old
     `colorslider-visual.spec.ts` was retired (git rm) and a new `test:colorslider` script
     points at the certified spec.
-  **ColorSwatch ✓ certified 2026-07-13 (CP9.68)** — Tier-5 unit 11, the static
-  color preview (a single `<div role="img">` painting one color — no thumb, track,
-  input, or gradient channel, and NOTHING focusable). Port stack: `createColorSwatch`
-  (hook, `solidaria`) → headless ColorSwatch (`solidaria-components/src/Color.tsx`) →
-  the styled `@react-spectrum/s2`-shaped ColorSwatch (`solid-spectrum/src/color`);
-  the color model is the shared `solid-stately/src/color/Color.ts`. Certified in one
-  paint + AX spec vs styled S2 (**31 pass / 0 skip**). Upstream oracle: S2
-  `ColorSwatch.tsx` = `AriaColorSwatch` (react-aria-components/ColorSwatch →
-  `useColorSwatch`), a LEAF `role="img"` div with `aria-roledescription="color swatch"`
-  and a background that is either a flat color over a checkerboard (`linear-gradient(c,c),
-  repeating-conic-gradient(...) 0% 50% / 16px 16px`) or, when alpha == 0, a diagonal
-  red slash (`linear-gradient(...) no-repeat`) — a byte-for-byte match to the port's
-  styled `colorSwatchRoot` macro + `getStyle`.
+    **ColorSwatch ✓ certified 2026-07-13 (CP9.68)** — Tier-5 unit 11, the static
+    color preview (a single `<div role="img">` painting one color — no thumb, track,
+    input, or gradient channel, and NOTHING focusable). Port stack: `createColorSwatch`
+    (hook, `solidaria`) → headless ColorSwatch (`solidaria-components/src/Color.tsx`) →
+    the styled `@react-spectrum/s2`-shaped ColorSwatch (`solid-spectrum/src/color`);
+    the color model is the shared `solid-stately/src/color/Color.ts`. Certified in one
+    paint + AX spec vs styled S2 (**31 pass / 0 skip**). Upstream oracle: S2
+    `ColorSwatch.tsx` = `AriaColorSwatch` (react-aria-components/ColorSwatch →
+    `useColorSwatch`), a LEAF `role="img"` div with `aria-roledescription="color swatch"`
+    and a background that is either a flat color over a checkerboard (`linear-gradient(c,c),
+repeating-conic-gradient(...) 0% 50% / 16px 16px`) or, when alpha == 0, a diagonal
+    red slash (`linear-gradient(...) no-repeat`) — a byte-for-byte match to the port's
+    styled `colorSwatchRoot` macro + `getStyle`.
   - **First Tier-5 color unit with NO D5 (nothing focusable).** The swatch is a
     static preview — `role="img"`, no `tabIndex`, no interactive descendant — so it is
     not in the tab order and has no focus trail. It also has no D4 (no interaction), no
@@ -1567,10 +1567,10 @@ March order (dependency/leverage; within a tier, top to bottom):
     hardcoded two English strings.** `"color swatch"` (the `aria-roledescription`) and
     `"transparent"` (the alpha == 0 color name) were literals, where upstream
     `useColorSwatch` localizes BOTH via `stringFormatter.format('colorSwatch' |
-    'transparent')` and every sibling port hook (`createColorArea`, `createColorSlider`)
+'transparent')` and every sibling port hook (`createColorArea`, `createColorSlider`)
     already threads `createColorStringFormatter()`. The swatch was the lone outlier. The
     fix imports `createColorStringFormatter`, declares `const stringFormatter =
-    createColorStringFormatter();` at the hook top (beside the existing `useLocale()`),
+createColorStringFormatter();` at the hook top (beside the existing `useLocale()`),
     and replaces the two literals with `stringFormatter().format("transparent")` /
     `stringFormatter().format("colorSwatch")`. The port intl catalog already carried both
     keys (en-US identical: `"color swatch"` / `"transparent"`), so the change is en-US
@@ -1608,23 +1608,23 @@ March order (dependency/leverage; within a tier, top to bottom):
     `colorswatch-visual.spec.ts` was retired (git rm) and a new `test:colorswatch`
     script points at the certified spec. (`colorswatchpicker-visual.spec.ts` is a
     SEPARATE unit — ColorSwatchPicker — and was left untouched.)
-  **ColorSwatchPicker ✓ certified 2026-07-14 (CP9.69)** — Tier-5 unit 12 and the
-  FINAL S2 color unit; certifying it completes the S2 color roster 6/6 (ColorArea /
-  ColorField / ColorSlider / ColorSwatch / ColorSwatchPicker / ColorWheel) and CLOSES
-  Tier 5. A single-select swatch GRID — a focusable collection of `ColorSwatch`
-  children. Unlike every prior color unit there is NO bespoke `@react-aria/color` hook:
-  upstream S2 `ColorSwatchPicker.tsx` = `AriaColorSwatchPicker`
-  (react-aria-components/ColorSwatchPicker) is a BARE `<ListBox layout={props.layout ||
-  'grid'} selectionMode="single" disallowEmptySelection selectedKeys={[color]}>`, so the
-  port assembles it on the certified ListBox collection spine, not a color hook. Port
-  stack: headless `ColorSwatchPicker` / `ColorSwatchPickerItem`
-  (`solidaria-components/src/Color.tsx`, built on `createListBox` + a `handleGridKeyDown`
-  2D grid delegate) → the styled `@react-spectrum/s2`-shaped ColorSwatchPicker
-  (`solid-spectrum/src/color/ColorSwatchPicker.tsx` — `colorSwatchPickerRoot` +
-  `colorSwatchPickerItemRoot` + `colorSwatchPickerSelectedOverlay` +
-  `pickerColorSwatchRoot`); the color model is the shared
-  `solid-stately/src/color/Color.ts`. Certified in one paint + focus + AX spec vs styled
-  S2 (**28 pass / 0 skip**).
+    **ColorSwatchPicker ✓ certified 2026-07-14 (CP9.69)** — Tier-5 unit 12 and the
+    FINAL S2 color unit; certifying it completes the S2 color roster 6/6 (ColorArea /
+    ColorField / ColorSlider / ColorSwatch / ColorSwatchPicker / ColorWheel) and CLOSES
+    Tier 5. A single-select swatch GRID — a focusable collection of `ColorSwatch`
+    children. Unlike every prior color unit there is NO bespoke `@react-aria/color` hook:
+    upstream S2 `ColorSwatchPicker.tsx` = `AriaColorSwatchPicker`
+    (react-aria-components/ColorSwatchPicker) is a BARE `<ListBox layout={props.layout ||
+'grid'} selectionMode="single" disallowEmptySelection selectedKeys={[color]}>`, so the
+    port assembles it on the certified ListBox collection spine, not a color hook. Port
+    stack: headless `ColorSwatchPicker` / `ColorSwatchPickerItem`
+    (`solidaria-components/src/Color.tsx`, built on `createListBox` + a `handleGridKeyDown`
+    2D grid delegate) → the styled `@react-spectrum/s2`-shaped ColorSwatchPicker
+    (`solid-spectrum/src/color/ColorSwatchPicker.tsx` — `colorSwatchPickerRoot` +
+    `colorSwatchPickerItemRoot` + `colorSwatchPickerSelectedOverlay` +
+    `pickerColorSwatchRoot`); the color model is the shared
+    `solid-stately/src/color/Color.ts`. Certified in one paint + focus + AX spec vs styled
+    S2 (**28 pass / 0 skip**).
   - **S2 ColorSwatchPicker is GRID-ONLY, single-select, toggle-behavior, no-wrap.** The
     oracle passes NO `selectionBehavior` (→ default `'toggle'` → an arrow moves roving
     FOCUS without selecting; only Enter/Space commits) and NO `shouldFocusWrap` (→
@@ -1700,72 +1700,72 @@ March order (dependency/leverage; within a tier, top to bottom):
     center; an icon-only button's sub-structure hit-test is unstable). Logged as harness tech
     debt (candidate fix: normalize the recorded event target up to its nearest interactive
     ancestor); out of scope for this ColorSwatchPicker-scoped commit. Full unit suite (`vp test
-    run packages`,
+run packages`,
     base+ssr+hydrate = 5539) **5528 pass / 1 xfail / 10 skip / 0 unexpected fail** —
     identical to CP9.68 (the aria-label / no-wrap / follow-focus reverts land inside the 7
     rewritten ColorSwatchPicker unit tests, zero blast radius elsewhere). The old
     `colorswatchpicker-visual.spec.ts` was retired (git rm) and a new
     `test:colorswatchpicker` script points at the certified spec.
-  **Tier 5 COMPLETE — 12/12 (Calendar, RangeCalendar, DateField, TimeField, DatePicker,
-  DateRangePicker + the color roster 6/6). Tier 6 COMPLETE — 12/12, the whole custom Viviana
-  `viviana-ui/src/custom/*` layer (Chip, NavHeader, EventCard, CalendarCard, ProfileCard,
-  ProjectCard, LateralNav, TimelineItem, Conversation, Logo, Header, PageLayout), which has
-  NO upstream pair → the D1/D3 pair drivers are out of scope; D5–D11 still apply and
-  contrast/target-size assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
-  (record below), establishing the Solid-only `frameworks` harness + absolute-WCAG
-  methodology. NavHeader ✓ certified 2026-07-14 (CP9.71) — unit 2, first `<nav>`
-  landmark + `scopeVivianaTokens` helper. EventCard ✓ certified 2026-07-15 (CP9.72) —
-  unit 3, two-surface card + list-item; large-text (bold path) vs small-text split fix.
-  CalendarCard ✓ certified 2026-07-15 (CP9.73) — unit 4, followed-calendar card composing
-  the certified Chip; bold accent follower-names dropped from fixed pink (2.42:1 light) to
-  the flipping `--color-text`. ProfileCard ✓ certified 2026-07-15 (CP9.74) — unit 5, S2
-  UserCard-shaped card; bio + stat connectors dropped from `--color-text-secondary`
-  (3.84:1 light on `bg-200`) to the flipping `--color-text`; footer "Seguir" Chip is the D8
-  target. ProjectCard ✓ certified 2026-07-15 (CP9.75) — unit 6, square logo/preview tile;
-  the caption's `color` was clobbered by the S2 `style()` macro `font` shorthand's default
-  text color (declared BEFORE `font`) and never painted its intended `--color-primary-200`;
-  fix = order `color` AFTER `font`; the whole card is the `href` link and is the D8 target.
-  LateralNav ✓ certified 2026-07-15 (CP9.76) — unit 7, sidebar nav; TWO fixes: the resting
-  link's `--color-text-secondary` (3.84:1 light on `bg-200`) → the flipping `--color-text`,
-  and the bare inline `<a>` links (~15px tall) → a `minHeight:32` flex row to clear the WCAG
-  2.5.8 24px target floor. TimelineItem ✓ certified 2026-07-15 (CP9.77) — unit 8, a
-  purely-presentational social-timeline event card (two `role=img` avatars + icon + message,
-  nothing focusable) → D5/D8 out of scope (like the static ColorSwatch); TWO D7 fixes: the
-  emphasized names (`--color-accent`, ~1.9:1 light / ~4.48:1 dark) and the message body
-  (`--color-text-secondary`, 3.84:1 light) both → the flipping `--color-text`, names kept
-  apart by `bold` weight. Conversation ✓ certified 2026-07-15 (CP9.78) — unit 9, a chat
-  surface (a pressable `ConversationPreview` list row over a thread of `user`/`other`
-  message bubbles); SIX D7 reds across three backgrounds, in two established families:
-  MUTED text on the light panels (preview + neutral-bubble timestamps
-  `--color-text-muted`, preview message `--color-text-secondary`) → the flipping
-  `--color-text`; and LIGHT text on the non-flipping pink `--color-accent` fill (unread
-  badge, user-bubble body + timestamp, ~2.4–2.7:1 light) → `--color-grey-900` (the Chip
-  CP9.70 accent-fill resolution); the preview row `HeadlessButton` is the D8 target.
-  Logo ✓ certified 2026-07-15 (CP9.79) — unit 10, a two-word wordmark; certified BEFORE
-  Header (its composer imports it — leaf-before-composer, as Chip preceded CalendarCard).
-  Presentational (a `<span>` of two colored word `<span>`s, nothing focusable) → D5/D8 out.
-  The `black`-weight `title-xl` earns the 3:1 large-text floor (unlike NavHeader CP9.71's
-  `normal`-weight wordmark, which got 4.5); the accent word was the non-flipping
-  `--color-accent` (1.89:1 light on `bg-200`, fails even 3:1) → the flipping
-  `--color-accent-500` (3.86 dark / 4.91 light), keeping the two-tone identity.
-  Header ✓ certified 2026-07-15 (CP9.80) — unit 11, the first Tier-6 surface to render a
-  `<header>` banner landmark: a top app-bar composing the certified Logo wordmark (left)
-  and solid-fill nav Chips (right, in a `<nav>`). A clean-green composition cert (every
-  text run is pre-certified — Logo tones now green on the lighter `--color-header-bg`, chip
-  labels on their own fills) with NO source fix. The one blocker was a HARNESS bug: the
-  greedy panel-label rule `.s2-framework-panel header` clobbered the nested Viviana
-  `<header>` with `position:absolute`, collapsing the canvas to `h=0`; tightened to the
-  direct-child `.s2-framework-panel > header` (the label is a direct child; component
-  landmarks are nested) — a root-cause fix for any future `<header>`-rendering unit.
-  PageLayout ✓ certified 2026-07-15 (CP9.81) — unit 12 and the FINAL custom unit: a
-  full-height page shell (`min-height:100vh`) painting the base `--color-background` /
-  `--color-text` pairing. Purely presentational (a pass-through `<div>`, nothing focusable)
-  → D5/D8 out, like Logo/TimelineItem. A clean-green self-paint cert: the base pairing (both
-  flipping tones) clears AA huge in both themes — 21.0:1 dark, 12.63:1 light — no fix. **The
-  Tier-6 custom `viviana-ui/src/custom/*` roster is now COMPLETE — 12/12 (Chip, NavHeader,
-  EventCard, CalendarCard, ProfileCard, ProjectCard, LateralNav, TimelineItem, Conversation,
-  Logo, Header, PageLayout).** ColorEditor stays OUT of the S2-parity march (survey finding
-  below — pinned S2 1.5.1 ships no ColorEditor oracle).**
+    **Tier 5 COMPLETE — 12/12 (Calendar, RangeCalendar, DateField, TimeField, DatePicker,
+    DateRangePicker + the color roster 6/6). Tier 6 COMPLETE — 12/12, the whole custom Viviana
+    `viviana-ui/src/custom/*` layer (Chip, NavHeader, EventCard, CalendarCard, ProfileCard,
+    ProjectCard, LateralNav, TimelineItem, Conversation, Logo, Header, PageLayout), which has
+    NO upstream pair → the D1/D3 pair drivers are out of scope; D5–D11 still apply and
+    contrast/target-size assert against WCAG directly. Chip ✓ certified 2026-07-14 (CP9.70) — the Tier-6 opener
+    (record below), establishing the Solid-only `frameworks` harness + absolute-WCAG
+    methodology. NavHeader ✓ certified 2026-07-14 (CP9.71) — unit 2, first `<nav>`
+    landmark + `scopeVivianaTokens` helper. EventCard ✓ certified 2026-07-15 (CP9.72) —
+    unit 3, two-surface card + list-item; large-text (bold path) vs small-text split fix.
+    CalendarCard ✓ certified 2026-07-15 (CP9.73) — unit 4, followed-calendar card composing
+    the certified Chip; bold accent follower-names dropped from fixed pink (2.42:1 light) to
+    the flipping `--color-text`. ProfileCard ✓ certified 2026-07-15 (CP9.74) — unit 5, S2
+    UserCard-shaped card; bio + stat connectors dropped from `--color-text-secondary`
+    (3.84:1 light on `bg-200`) to the flipping `--color-text`; footer "Seguir" Chip is the D8
+    target. ProjectCard ✓ certified 2026-07-15 (CP9.75) — unit 6, square logo/preview tile;
+    the caption's `color` was clobbered by the S2 `style()` macro `font` shorthand's default
+    text color (declared BEFORE `font`) and never painted its intended `--color-primary-200`;
+    fix = order `color` AFTER `font`; the whole card is the `href` link and is the D8 target.
+    LateralNav ✓ certified 2026-07-15 (CP9.76) — unit 7, sidebar nav; TWO fixes: the resting
+    link's `--color-text-secondary` (3.84:1 light on `bg-200`) → the flipping `--color-text`,
+    and the bare inline `<a>` links (~15px tall) → a `minHeight:32` flex row to clear the WCAG
+    2.5.8 24px target floor. TimelineItem ✓ certified 2026-07-15 (CP9.77) — unit 8, a
+    purely-presentational social-timeline event card (two `role=img` avatars + icon + message,
+    nothing focusable) → D5/D8 out of scope (like the static ColorSwatch); TWO D7 fixes: the
+    emphasized names (`--color-accent`, ~1.9:1 light / ~4.48:1 dark) and the message body
+    (`--color-text-secondary`, 3.84:1 light) both → the flipping `--color-text`, names kept
+    apart by `bold` weight. Conversation ✓ certified 2026-07-15 (CP9.78) — unit 9, a chat
+    surface (a pressable `ConversationPreview` list row over a thread of `user`/`other`
+    message bubbles); SIX D7 reds across three backgrounds, in two established families:
+    MUTED text on the light panels (preview + neutral-bubble timestamps
+    `--color-text-muted`, preview message `--color-text-secondary`) → the flipping
+    `--color-text`; and LIGHT text on the non-flipping pink `--color-accent` fill (unread
+    badge, user-bubble body + timestamp, ~2.4–2.7:1 light) → `--color-grey-900` (the Chip
+    CP9.70 accent-fill resolution); the preview row `HeadlessButton` is the D8 target.
+    Logo ✓ certified 2026-07-15 (CP9.79) — unit 10, a two-word wordmark; certified BEFORE
+    Header (its composer imports it — leaf-before-composer, as Chip preceded CalendarCard).
+    Presentational (a `<span>` of two colored word `<span>`s, nothing focusable) → D5/D8 out.
+    The `black`-weight `title-xl` earns the 3:1 large-text floor (unlike NavHeader CP9.71's
+    `normal`-weight wordmark, which got 4.5); the accent word was the non-flipping
+    `--color-accent` (1.89:1 light on `bg-200`, fails even 3:1) → the flipping
+    `--color-accent-500` (3.86 dark / 4.91 light), keeping the two-tone identity.
+    Header ✓ certified 2026-07-15 (CP9.80) — unit 11, the first Tier-6 surface to render a
+    `<header>` banner landmark: a top app-bar composing the certified Logo wordmark (left)
+    and solid-fill nav Chips (right, in a `<nav>`). A clean-green composition cert (every
+    text run is pre-certified — Logo tones now green on the lighter `--color-header-bg`, chip
+    labels on their own fills) with NO source fix. The one blocker was a HARNESS bug: the
+    greedy panel-label rule `.s2-framework-panel header` clobbered the nested Viviana
+    `<header>` with `position:absolute`, collapsing the canvas to `h=0`; tightened to the
+    direct-child `.s2-framework-panel > header` (the label is a direct child; component
+    landmarks are nested) — a root-cause fix for any future `<header>`-rendering unit.
+    PageLayout ✓ certified 2026-07-15 (CP9.81) — unit 12 and the FINAL custom unit: a
+    full-height page shell (`min-height:100vh`) painting the base `--color-background` /
+    `--color-text` pairing. Purely presentational (a pass-through `<div>`, nothing focusable)
+    → D5/D8 out, like Logo/TimelineItem. A clean-green self-paint cert: the base pairing (both
+    flipping tones) clears AA huge in both themes — 21.0:1 dark, 12.63:1 light — no fix. **The
+    Tier-6 custom `viviana-ui/src/custom/*` roster is now COMPLETE — 12/12 (Chip, NavHeader,
+    EventCard, CalendarCard, ProfileCard, ProjectCard, LateralNav, TimelineItem, Conversation,
+    Logo, Header, PageLayout).** ColorEditor stays OUT of the S2-parity march (survey finding
+    below — pinned S2 1.5.1 ships no ColorEditor oracle).**
 
   **ColorEditor is OUT of the S2-parity scope (survey finding, 2026-07-14).** Pinned
   `@react-spectrum/s2` 1.5.1 ships NO `ColorEditor` — not as an export (its color
@@ -1780,6 +1780,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   fixture). It therefore has no pair-oracle to certify against and is excluded from the
   recertification march. (If it needs a guard later, that is a self/regression snapshot,
   a separate non-parity effort — not part of this S2-parity march.)
+
 - **Tier 6 — custom Viviana layer:** EventCard, Chip, NavHeader, and every
   `viviana-ui/src/custom/*` surface (no upstream pair → D1/D3 pair drivers are
   out of scope; D5–D11 still apply, contrast/target-size assert against WCAG
@@ -1813,7 +1814,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     `default · button:Accent · 2.74:1`; restoring greens it.
   - **Harness — a backward-compatible `frameworks` field makes the pair panel go
     Solid-only, proven zero-blast.** `DriverScenario.frameworks?: readonly
-    PanelFramework[]` defaults to `["react","solid"]` via `scenarioFrameworks()`;
+PanelFramework[]` defaults to `["react","solid"]` via `scenarioFrameworks()`;
     `forEachScenarioPanel`/`walkScenario` iterate it and `waitForComparisonRouteReady`
     gates each canvas wait, so all 66 prior certs keep byte-identical behavior.
     `contrast.ts` was already solid-only-safe (its pair loop over `captures.react`
@@ -1868,7 +1869,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   - **DRIVER LESSON — `title-xl` is NOT WCAG "large text".** The first fix attempt
     (`primary-600`, 4.27:1 light) still red at `span:Silapse · 4.27:1`. The D7
     driver is large-text-aware (`largeText = fontSize>=24 || (fontSize>=18.66 &&
-    weight>=700)` → floor 3:1, else 4.5:1) and measured the RENDERED `title-xl`
+weight>=700)` → floor 3:1, else 4.5:1) and measured the RENDERED `title-xl`
     under 24px, so it scored the wordmark as normal text (4.5:1 floor). The
     smallest ramp step clearing 4.5:1 in both modes is `primary-500`, not the
     `primary-600` that only clears the 3:1 large-text exception — never assume a
@@ -1914,7 +1915,7 @@ March order (dependency/leverage; within a tier, top to bottom):
       `accent-500` flips (bright pink dark / deep magenta light) and clears 3:1 both
       (**3.87:1 dark / 4.91:1 light**). This is the COMPLEMENT to the NavHeader
       `title-xl` lesson: there a normal-weight "xl" scored as small; here a 22px
-      *bold* `heading` scores as large. Empirically confirmed by the red run — the
+      _bold_ `heading` scores as large. Empirically confirmed by the red run — the
       dark title passed at 4.48 (only possible under the 3:1 large floor) while the
       same-ratio small `ui-sm` glyph spans failed.
     - **meta icons + meta text + "+N más" → `--color-text`** (small `ui-sm`, 4.5:1
@@ -1983,11 +1984,11 @@ March order (dependency/leverage; within a tier, top to bottom):
 
   **ProfileCard ✓ certified 2026-07-15 (CP9.74)** — Tier-6 unit 5, a profile card
   in the S2 UserCard shape (`viviana-ui/src/custom/profile-card/index.tsx`): avatar
-  + name/bio + follower/following stats + a footer action row. Like CalendarCard it
-  COMPOSES an already-certified surface — the footer action renders the CP9.70 Chip.
-  No upstream React pair → the same method: pair drivers out, Solid-only route,
-  absolute WCAG oracles.
-  - **The red→green — one run, one fix.** The card is a `--color-bg-200` surface
+  - name/bio + follower/following stats + a footer action row. Like CalendarCard it
+    COMPOSES an already-certified surface — the footer action renders the CP9.70 Chip.
+    No upstream React pair → the same method: pair drivers out, Solid-only route,
+    absolute WCAG oracles.
+  * **The red→green — one run, one fix.** The card is a `--color-bg-200` surface
     (dark-grey dark / light-blue light). Its name (`heading-sm`) and bold stat VALUES
     are `--color-primary-100`, which already clears AA (13.47 dark / 10.37 light). The
     one failure: the bio and the stat connector words ("seguidores" / "siguiendo")
@@ -1998,7 +1999,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     runs take the flipping `--color-text` (**15.33:1 dark / 7.53:1 light**) and stay
     visually secondary to the `heading-sm` name through their smaller `ui-sm` size,
     not a sub-AA color.
-  - **Harness — fifth `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
+  * **Harness — fifth `customComparisonEntries` entry; `scopeVivianaTokens` reused.**
     Demo binds tokens under `data-viviana-profile-card-scope` (mandatory-scoped, so
     the composed Chip and the S2 Avatar read tokens from the scoped island) and
     renders one card — "María López", a bio, 12.4K followers / 320 following, and a
@@ -2007,12 +2008,12 @@ March order (dependency/leverage; within a tier, top to bottom):
     measured subtree has zero interactive elements, and the base card (avatar + text)
     has none — the Chip is the single D8 target / D5 focus stop / D6 button, mirroring
     the S2 UserCard footer-actions slot.
-  - **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24` on the footer
+  * **Scope / drivers:** D7 (`assertAA`, both themes) + D8 (`assert24` on the footer
     Chip) + inline D5/D6. `states: ["default"]` (every run state-independent). D6 = the
     name renders as a level-3 heading, exactly one button named "Seguir" from its
     content, the bio + compact stat values ("12.4K", "320") as visible text, no links.
     D5 = the footer Chip is a real focus stop.
-  - Verification: ProfileCard cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
+  * Verification: ProfileCard cert e2e **5 pass / 0 skip** (exit 0 — D7×2 themes, D8,
     D5, D6); calibrated by the pre-fix red run (D7 light `p:Organizadora…`,
     `span:12.4K seguidores`, `span:320 siguiendo` all **3.84:1**; dark passed at 5.86).
     Regression: ProfileCard + CalendarCard + EventCard + NavHeader + Chip together
@@ -2027,7 +2028,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   pair → same method: pair drivers out, Solid-only route, absolute WCAG oracles.
   - **The red→green — an invisible design-color regression, not a floor break.** The
     caption is the card's only text run. Its style listed `color:
-    [var(--color-primary-200)]` BEFORE a *responsive* `font: { size: {...} }` object —
+[var(--color-primary-200)]` BEFORE a _responsive_ `font: { size: {...} }` object —
     and in the S2 `style()` macro the `font` shorthand emits a DEFAULT text color
     (`--s2-text`, `light-dark(#292929,#dbdbdb)`) that wins on source order, so the
     caption silently rendered `#292929`/`#dbdbdb` and NEVER painted its intended
@@ -2060,9 +2061,9 @@ March order (dependency/leverage; within a tier, top to bottom):
     D5, D6); calibrated by a post-fix red run (caption → `--color-text-secondary`,
     which now that `color` applies drives D7 light red at **3.84:1** while dark and the
     rest stay green). Regression: ProjectCard + ProfileCard + CalendarCard + EventCard
-    + NavHeader + Chip together **30 pass / 0 fail**. Scoped e2e typecheck of the new
-    spec (temp `tsc -p`, then deleted) **clean** (only pre-existing `visual-diff.ts`
-    `Buffer`/`@types/node` noise, unrelated to the unit).
+    - NavHeader + Chip together **30 pass / 0 fail**. Scoped e2e typecheck of the new
+      spec (temp `tsc -p`, then deleted) **clean** (only pre-existing `visual-diff.ts`
+      `Buffer`/`@types/node` noise, unrelated to the unit).
 
   **LateralNav ✓ certified 2026-07-15 (CP9.76)** — Tier-6 unit 7, a sidebar
   navigation (`viviana-ui/src/custom/lateral-nav/index.tsx`): a `--color-bg-200`
@@ -2142,7 +2143,7 @@ March order (dependency/leverage; within a tier, top to bottom):
   - **The red→green — SIX D7 reds, in two already-established families.** (a) MUTED text
     on the light panels: the preview timestamp and the neutral-bubble timestamp
     (`--color-text-muted`, ~1.7–2.8:1) and the preview last-message (`--color-text-
-    secondary`, **3.84:1 light**) → the flipping `--color-text`, muting carried by the
+secondary`, **3.84:1 light**) → the flipping `--color-text`, muting carried by the
     smaller `detail-sm`/`ui-sm` size not a sub-AA color; (b) LIGHT text on the non-flipping
     pink `--color-accent` fill (the Chip CP9.70 pattern): the unread badge number
     (`--color-bg-400`, **2.74:1 light**), the user-bubble body (`--color-bg-400`, **2.74:1
@@ -2184,7 +2185,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     (asserting D8 would trip the "no interactive elements" guard). Correctness = D7 + D6.
   - **The large-text floor is EARNED here (contrast to NavHeader CP9.71).** The rendered
     `title-xl` is under 24px, but Logo sets `fontWeight: black` (900), so the driver puts it
-    on the large-text *bold* path (`fontSize ≥ 18.66 && weight ≥ 700`) → the **3:1** floor.
+    on the large-text _bold_ path (`fontSize ≥ 18.66 && weight ≥ 700`) → the **3:1** floor.
     NavHeader's wordmark used `fontWeight: normal`, so its sub-24px `title-xl` was scored as
     normal text (4.5 floor). Confirmed empirically: the accent word's **4.48:1 dark** run
     PASSED (would fail a 4.5 floor), proving the 3:1 classification.
@@ -2193,13 +2194,13 @@ March order (dependency/leverage; within a tier, top to bottom):
     near-black/near-white tone and passes comfortably. The accent word was `--color-accent`
     (#df5c9a, the SAME pink in both themes) → **1.89:1 light / 4.48:1 dark** on `bg-200`; the
     light value fails even the 3:1 floor. No single non-flipping shade clears a near-white
-    AND a near-black panel, so it takes the *flipping* `--color-accent-500` (dark #d84a8f /
+    AND a near-black panel, so it takes the _flipping_ `--color-accent-500` (dark #d84a8f /
     light #8a1e4a) → **3.86:1 dark / 4.91:1 light**, clearing the large-text floor in both
     themes while keeping the two-tone pink/blue wordmark identity (a neutral `--color-text`
     would clear it too but would collapse the deliberate two-tone design).
   - **Harness — tenth `customComparisonEntries` entry; `scopeVivianaTokens` reused** under
     `data-viviana-logo-scope`. Demo renders `<Logo size="lg" firstWord="Proyecto"
-    secondWord="Viviana" />` on a `--color-bg-200` panel — the worst-case common background
+secondWord="Viviana" />` on a `--color-bg-200` panel — the worst-case common background
     for the accent (its lightest light value), so a green here is green on the lighter
     `--color-header-bg` the Logo also lives on inside Header.
   - **Scope / drivers:** D7 (`assertAA`, both themes) + inline D6. `states: ["default"]`.
@@ -2224,7 +2225,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     fills, so their contrast is exactly what the Chip cert pinned, independent of the bar).
   - **First Tier-6 unit to render a `<header>` banner landmark — exposed a HARNESS bug.**
     The panel-label rule `.s2-framework-panel header { position:absolute; inset… }` (styling
-    each framework panel's small "Solid"/"React" caption) used a *descendant* selector, so it
+    each framework panel's small "Solid"/"React" caption) used a _descendant_ selector, so it
     greedily caught the nested Viviana `<header>`, yanked it out of flow, and collapsed the
     reference canvas to `height:0` → `waitForComparisonRouteReady` timed out on a canvas that
     was mounted but not visible. Root-caused with a stylesheet walk (`el.matches(selectorText)`
@@ -2257,7 +2258,7 @@ March order (dependency/leverage; within a tier, top to bottom):
     (a styled `<div>` that passes its children through; nothing focusable, no roles), so — like
     the static ColorSwatch (CP9.68), TimelineItem (CP9.77) and the Logo (CP9.79) — **D5/D8 are
     out of scope**. Correctness is D7 contrast plus an inline D6 renders-text / no-roles check.
-    The two paint tokens are the *base* pairing every surface inherits, and both flip with the
+    The two paint tokens are the _base_ pairing every surface inherits, and both flip with the
     theme, so `--color-text` on `--color-background` clears AA with huge margins in both modes:
     **21.0:1 dark** (#ffffff on #000000) and **12.63:1 light** (#1a3040 on #f2f7fa). PageLayout
     is the canonical owner/consumer of this base surface/text pairing — no fix needed.
@@ -2345,10 +2346,11 @@ the blockers were spot-verified fixed; the last concrete still-open divergence
 survivable residuals — documented-out-of-scope unexercised paths (Skeleton
 Image `SkeletonWrapper` clone) and the legacy hand-authored-Tailwind family
 (`StyledModal`/`select`/`listbox` + 11 more) — are tracked in `tailwind-removal.md`
-+ `tech-debt.md`. Nothing open lived only in the scaffolding, so deleting the
-ephemeral session-storage `audit-durable/` dir lost nothing; the audit's totals
-also survive in git (`origin/ticket/audit-scaffolding`) and the 2026-06-15
-review synthesis. The machinery has provably subsumed the audit.
+
+- `tech-debt.md`. Nothing open lived only in the scaffolding, so deleting the
+  ephemeral session-storage `audit-durable/` dir lost nothing; the audit's totals
+  also survive in git (`origin/ticket/audit-scaffolding`) and the 2026-06-15
+  review synthesis. The machinery has provably subsumed the audit.
 
 ## Session protocol (strict)
 
@@ -2474,10 +2476,10 @@ same day.)
   DOM and does not reconcile a divergent client-initial value** (React would warn +
   patch; Solid silently keeps the server markup and binds reactivity on top). Proven
   empirically: navigating to `/d12/button?variant=negative` (the static server always
-  SSRs the *default* primary button; the island reads its props from
+  SSRs the _default_ primary button; the island reads its props from
   `window.location.search` at hydration) — the client verifiably sees
   `?variant=negative` and parses it, yet the button's class/attributes and
-  `data-comparison-control-props` stay *primary* with ZERO console warning; the
+  `data-comparison-control-props` stay _primary_ with ZERO console warning; the
   negative variant is invisible until a later reactive control event. CONSEQUENCES:
   (a) a window-read / query-param divergence is NOT a valid perturbation — Solid
   masks it by design, so it can never red a snapshot diff; (b) this is exactly WHY
@@ -2541,7 +2543,7 @@ same day.)
   surface (route `/d12/button`) — the 80+ live-viewer pages are untouched. It uses
   the recreation pattern proven hydration-safe above (createMemo rebuilds the whole
   Button subtree; label always wrapped in a `data-rsp-slot="text"` span). LESSON
-  (a silent-type-error catch, cf. D11): this is the app's first *compiled-JSX*
+  (a silent-type-error catch, cf. D11): this is the app's first _compiled-JSX_
   Solid file, and the app inherits astro's `jsx: preserve` with no `jsxImportSource`,
   so `astro check` resolved the file against React's global JSX namespace
   (`className`/`ReactNode`/`React.JSX.Element`) → 10 type errors the babel transform
@@ -2562,11 +2564,11 @@ same day.)
   pattern (a control event swaps `demoProps`, the memo rebuilds the whole Button
   subtree, label always wrapped in an explicit `data-rsp-slot="text"` span), and
   that shape re-binds cleanly after hydration (`before "count: 0"` → `after
-  "count: 1"`, zero throw / zero console.error). So NO Button fix is required
+"count: 1"`, zero throw / zero console.error). So NO Button fix is required
   before the migration. The fine-grained non-reactivity is real but off the
   critical path: its root cause is `Button.ResolvedContent` (`Button.tsx:172`)
   returning a once-evaluated plain ternary `getSingleTextChild(...) !== undefined ?
-  <span>{textChild()}</span> : content()` — the branch selection isn't inside a
+<span>{textChild()}</span> : content()` — the branch selection isn't inside a
   reactive boundary, so a multi-node dynamic child renders `content()` once and
   never re-tracks. It's a general Button limitation (not hydration-specific); left
   unfixed (Button is already certified — a reactive-children refactor risks that
@@ -4899,7 +4901,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      (upstream `rgb(16,16,16)` vs port `currentColor`) to a `<ul>`-vs-`<div>` UA quirk and said the refactor would
      retire it. FALSE: verified empirically the port `<div role="menu">` STILL resolves `outline-color:currentColor`
      (`light-dark(rgb(41,41,41), rgb(219,219,219))`) vs upstream's `rgb(16,16,16)` — dropping `styleProps.remove:
-     ["outline-color"]` fails 12 D1 cases. The real cause is a `color`-INHERITANCE delta (both unpainted,
+["outline-color"]` fails 12 D1 cases. The real cause is a `color`-INHERITANCE delta (both unpainted,
      `outline-style:none`), independent of the element type. The removal STAYS; closing it for real means aligning
      the menu root's inherited `color`, tracked separately (zero paint effect, low priority).
   2. **ul→div does NOT make D5 green on its own.** With `tag` parity fixed, the D5 focus-trail driver surfaces
@@ -4940,11 +4942,11 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      a pure accessible-name (D6) delta leaking into the D5 diff. Both announce identically to a screen reader. Fixed
      per the ARIA name computation: a labelledby target contributes its own accessible name (`aria-label` first, then
      textContent). Strictly more faithful; only changes results where a labelledby target has an `aria-label`.
-  Result: **D5 green on both** (`menu` 15/15, `actionmenu` 16/16 including the new trigger); all **18 D5 specs green**
-  (no regression from the shared `createMenu`/oracle changes); menu unit suites **215 green**. **D6 (AX-tree) remains
-  the last open phase** of `menu-actionmenu-d5-d6-backfill` (two-context `Text`/`Keyboard` id delegation + restore the
-  stripped item `aria-describedby` + field-regression sweep); the gate adoption ("D5+D6 mandatory for keyboard-heavy
-  composites" in `certification.md`) lands with it.
+     Result: **D5 green on both** (`menu` 15/15, `actionmenu` 16/16 including the new trigger); all **18 D5 specs green**
+     (no regression from the shared `createMenu`/oracle changes); menu unit suites **215 green**. **D6 (AX-tree) remains
+     the last open phase** of `menu-actionmenu-d5-d6-backfill` (two-context `Text`/`Keyboard` id delegation + restore the
+     stripped item `aria-describedby` + field-regression sweep); the gate adoption ("D5+D6 mandatory for keyboard-heavy
+     composites" in `certification.md`) lands with it.
 
 - ✓ **Menu/ActionMenu D6 AX-tree certified 2026-07-06 (CP9.39 — backfill phase 3, `menu-actionmenu-d5-d6-backfill`
   DONE):** closed the last phase — restored upstream's TWO-CONTEXT item description delegation so each `menuitem`
@@ -4957,7 +4959,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
      /`keyboardId` were static `${key}-desc`/`${key}-kbd` strings emitted unconditionally; swapped to `createSlotId()`
      (the repo's 1:1 port of upstream `useSlotId`), which resolves to `undefined` unless an element carrying that id
      is actually in the DOM. `aria-describedby` is now `[descriptionId(), keyboardId()].filter(Boolean).join(" ") ||
-     undefined` — exactly upstream's shape — so a description-less item leaves it UNSET instead of dangling (verified:
+undefined` — exactly upstream's shape — so a description-less item leaves it UNSET instead of dangling (verified:
      72/72 axe tests green, no `aria-describedby` reference violation anywhere in the playground). `descriptionProps`
      /`keyboardShortcutProps` became getters so the reactively-cleared slot id re-tracks.
   2. **Thread the id-carrying props through the render channel** (`solidaria-components/src/Menu.tsx`). Stopped
@@ -4968,13 +4970,13 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   3. **Merge the ids into the styled contexts** (`solid-spectrum/src/menu/index.tsx`). `textContextValue`'s
      `description` slot now carries `id: renderProps.descriptionProps?.id` and `keyboardContextValue` carries
      `id: renderProps.keyboardShortcutProps?.id`, so the rendered `Text slot="description"` (`id={props.id ??
-     contextProps?.id}`) and `Keyboard` (`getContentDomProps` spreads `id`) carry the ids the item's
+contextProps?.id}`) and `Keyboard` (`getContentDomProps` spreads `id`) carry the ids the item's
      `aria-describedby` references. ActionMenu items render through this SAME certified `MenuItem`, so the one edit
      certifies both.
-  Result: **D6 green on both** (`menu` + `actionmenu` AX tree), full certified suites **48/48 green** (every driver
-  D1/D3/D5/D6/D7 across both units + the ActionMenu trigger), menu unit **215 green**, field+text unit **580 green**
-  (shared infra untouched, confirmed), axe smoke **72 green**. `menu-actionmenu-d5-d6-backfill` is **DONE** (phases
-  1 ul→div / 2 D5 / 3 D6 all landed). Gate adopted below.
+     Result: **D6 green on both** (`menu` + `actionmenu` AX tree), full certified suites **48/48 green** (every driver
+     D1/D3/D5/D6/D7 across both units + the ActionMenu trigger), menu unit **215 green**, field+text unit **580 green**
+     (shared infra untouched, confirmed), axe smoke **72 green**. `menu-actionmenu-d5-d6-backfill` is **DONE** (phases
+     1 ul→div / 2 D5 / 3 D6 all landed). Gate adopted below.
 
 - ✓ **Picker/Select certified 2026-07-06 (CP9.40 — Tier-4 opener, `592ebc3e`):** FIRST collections unit certified.
   `picker.certified.spec.ts` — two scenarios (trigger + open list) across D1/D3/D5/D6/D7/D8 = **52/52 green**. Four
@@ -5017,7 +5019,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     handler runs. Select STRIPS the trampoline `onFocus` in `cleanListBoxProps` (it drives its own faithful click-open
     model — `isFocused` true but `focusedKey` null until the first arrow), which restored Select's 4 regressed tests.
     Verified: solidaria `createListBox` 66 + full solidaria 1488 + full solidaria-components 2158 (ListBox/Select/
-    Color/ComboBox) + certified e2e all green (5 unrelated pre-existing datepicker/daterangepicker *-visual reds only).
+    Color/ComboBox) + certified e2e all green (5 unrelated pre-existing datepicker/daterangepicker \*-visual reds only).
     The two consumer-facing bugs (`picker-popover-anchor`, `picker-item-checkmark`) remain separately
     tracked in `tech-debt.md`.
 
@@ -5055,7 +5057,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
 
 - ✓ **`select-value-content-mirror` DONE — Picker trigger mirrors the full selected node (icon/avatar +
   label), not just text.** (Deferred follow-up (a) from the CP9.40 Picker cert, above.) Upstream S2
-  `SelectValue`'s default children are `rendered[0]` = the selected item's *content* (`item.props.children`),
+  `SelectValue`'s default children are `rendered[0]` = the selected item's _content_ (`item.props.children`),
   so an option with an `<Icon slot="icon">`/`<Avatar slot="avatar">` shows it in the trigger. Our data-driven
   Picker (`items` + a `(item) => JSX` render fn, not a JSX collection) had no `item.props.children` to mirror,
   so `pickerValueContent` rendered `valueProps.selectedText` — text only. Fix reconstructs the content the same
@@ -5183,7 +5185,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     container the way React's synthetic capture does. The fix therefore had to gate **at the container, explicitly**
     — the same lesson as ListBox `7030e518`: only a browser driver exercises the real event-propagation/focus flow.
   - **Faithful fix (`createGridList.ts` ArrowRight/ArrowLeft):** gate the container branch on `orientation ===
-    "horizontal" && (keyboardNavigationBehavior ?? "arrow") === "tab"` — so it stays inert in `arrow` mode (RAC's
+"horizontal" && (keyboardNavigationBehavior ?? "arrow") === "tab"` — so it stays inert in `arrow` mode (RAC's
     row owns the axis) and inert for a vertical `tab` stack (RAC strips it), and only navigates rows for a
     horizontal `tab` stack, direction-aware (`forward = ArrowRight ? !isRtl : isRtl`). Preserves parity in BOTH
     modes rather than deleting the branch (which would have dropped the `tab`-mode row nav RAC does have). The
@@ -5193,7 +5195,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     (`arrow`/`tab`) alongside `selectionMode`/`orientation`, plus the `?locale` (`en-US`/`ar-AE`) passthrough for
     D10 (re-mirrors `picker-demo.ts`); both React (`AriaGridList` `keyboardNavigationBehavior`) and Solid
     (`SolidSpectrumGridListDemo` getter) fixtures thread it; the horizontal cert case runs `{ orientation:
-    "horizontal", keyboardNavigationBehavior: "tab" }`. The port already read `ariaProps.keyboardNavigationBehavior`
+"horizontal", keyboardNavigationBehavior: "tab" }`. The port already read `ariaProps.keyboardNavigationBehavior`
     and resolves `direction` from the DOM (`resolveDirection()`), so RTL flows from the Provider's `dir="rtl"`, not
     a prop. Two unit suites retargeted the old assertions (which asserted the invented `arrow`-mode nav) to `tab`
     mode and added an **`arrow`-mode-inert regression guard** so the invented branch can't silently return.
@@ -5261,7 +5263,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   oracle caught a wrong-ui-icon-variant on the remove button.** TagGroup is the ONLY collection unit that owns BOTH
   the base and styled surfaces in one component: S2 ships a single publicly-styled `TagGroup`/`Tag` (its own style
   macro) that IS the base (`useTagGroup` builds on `useGridList` + a `ListKeyboardDelegate({orientation:'horizontal',
-  direction})`; `useTag` is a thin `useGridListItem` wrapper whose only extra keydown is Delete/Backspace removal).
+direction})`; `useTag` is a thin `useGridListItem` wrapper whose only extra keydown is Delete/Backspace removal).
   So unlike GridList (base cert) / ListView (paint cert) — two components, two certs — TagGroup splits its ONE
   component across two checkpoints: **CP9.44a (this entry) = S2 PAINT (D1/D3/D7/D8)**; **CP9.44b (next) = roving
   focus + AX + RTL (D5/D6/D10) + the `createTag` fixes those drivers surface.** Both panels render the labelled
@@ -5342,7 +5344,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     `aria-label = node.textValue`, which cascades (row name → remove-button `aria-labelledby` → gridcell
     name-from-contents). S2 auto-derives `node.textValue` from string children; the port's styled `Tag` never
     computed it, so the row was unnamed. Fixed by deriving `textValue = props.textValue ?? (typeof children ===
-    'string' ? children : undefined)` and threading it to `HeadlessTag` (mirrors S2 `Tag`).
+'string' ? children : undefined)` and threading it to `HeadlessTag` (mirrors S2 `Tag`).
   - **(5) Remove icon hidden from the AX tree (D6 removable).** S2's `ClearButton` leaves the bare `CrossIcon` svg
     exposed (Chromium reports an unnamed `img` under the labelled remove button); the port set `aria-hidden="true"`
     on it, dropping that node. Removed the `aria-hidden` — the bare `createUIIcon` svg then matches S2's AX shape.
@@ -5391,7 +5393,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     faithful source of the divergence, NOT the port-ism of adding `isHovered` to the root render props.
   - **(3) Listbox labelled by the input id (D6).** The port set `listBoxProps['aria-labelledby'] = inputId`; upstream
     `useComboBox.ts:326-330` names it via `useLabels` (`aria-label` "Suggestions" folded with `props['aria-labelledby']
-    || labelProps.id`), never the input. Ported the `createLabels` call for both the listbox and the trigger button.
+|| labelProps.id`), never the input. Ported the `createLabels` call for both the listbox and the trigger button.
   - **(4) Description / error message wrapped in `<div>` (D6/D7).** RAC's `Text` defaults `elementType='span'`
     (Text.tsx:24) and S2 renders help text via `<Text slot=description>`; the port's `ComboBoxDescription`/
     `ComboBoxErrorMessage` rendered `<div>`. Changed both to `<span>` (matches the TextField cert precedent —
@@ -5411,11 +5413,11 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   - Verified: **ComboBox + ListBox + spine units 307/307 green** (7 files, incl. `createComboBox` 40, `createListBox`
     66, `createComboBoxState` 28 — the two pre-fix-divergence assertions rewritten to the faithful contract) +
     ComboBox **certified e2e 58/58 green** (was 22 red / 36 pass, now all green) + ListBox regression cert 3/3 green
-    + `typecheck` clean. Deferred: **CP9.45b — D6 ANNOUNCEMENTS** (the live-region "N options available" filter
-    transcript, the never-before-exercised announce channel; split so a driver-calibration surprise can't block the
-    paint/focus cert) and the shared **createListBox/createSelectableCollection spine rebuild** (createComboBox builds
-    `listBoxProps` directly rather than composing the shared collection hook — the same inline shortcut ListBox/
-    Select/TagGroup took). Next Tier-4 unit: **Autocomplete**.
+    - `typecheck` clean. Deferred: **CP9.45b — D6 ANNOUNCEMENTS** (the live-region "N options available" filter
+      transcript, the never-before-exercised announce channel; split so a driver-calibration surprise can't block the
+      paint/focus cert) and the shared **createListBox/createSelectableCollection spine rebuild** (createComboBox builds
+      `listBoxProps` directly rather than composing the shared collection hook — the same inline shortcut ListBox/
+      Select/TagGroup took). Next Tier-4 unit: **Autocomplete**.
 
 - ✓ **Autocomplete certified 2026-07-08 (CP9.46 — Tier-4, seventh collections unit, the FIRST
   CROSS-COMPONENT virtual-focus unit) — the browser D5 focus driver caught TWO coupled bridge port
@@ -5441,17 +5443,17 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   activedescendant clears), and `tab-order` (`Tab,Tab,Shift+Tab` from a Before boundary button — the
   virtual-focus options are OUTSIDE the tab order, so Tab skips the whole list and lands on the After
   button). Both reds diagnosed to root cause against vendored `useAutocomplete.ts` before any fix:
-  - **(1) `onKeyDown` froze the activedescendant and never forwarded the arrow (D5 `virtual-filter-nav`
-    + `filter-then-clear`, the crux red).** Two coupled bugs in the port's forward channel. (a) The
-    re-dispatch of the key onto the collection was gated on `!e.defaultPrevented`, but arrow keys call
-    `preventDefault` to hold the input's text cursor (`useAutocomplete.ts:246-262` only preventDefaults
-    to stop the cursor — it forwards the key to the item whenever `collectionRef.current !== null`,
-    NOT gated on preventDefault), so the arrow was swallowed and the row never moved. (b) `onKeyDown`
-    navigated off the LIVE `state.focusedNodeId()`, but that signal is written on a 500ms delay (see
-    below), so on the first keystroke it read null and found no item. Fixed both: dropped the
-    `!e.defaultPrevented` gate on the forward dispatch, and switched `onKeyDown` to navigate off a new
-    synchronous `queuedActiveDescendant` ref (upstream's `queuedActiveDescendant.current`, tracked on
-    every `focusin`).
+  - \*\*(1) `onKeyDown` froze the activedescendant and never forwarded the arrow (D5 `virtual-filter-nav`
+    - `filter-then-clear`, the crux red).\*\* Two coupled bugs in the port's forward channel. (a) The
+      re-dispatch of the key onto the collection was gated on `!e.defaultPrevented`, but arrow keys call
+      `preventDefault` to hold the input's text cursor (`useAutocomplete.ts:246-262` only preventDefaults
+      to stop the cursor — it forwards the key to the item whenever `collectionRef.current !== null`,
+      NOT gated on preventDefault), so the arrow was swallowed and the row never moved. (b) `onKeyDown`
+      navigated off the LIVE `state.focusedNodeId()`, but that signal is written on a 500ms delay (see
+      below), so on the first keystroke it read null and found no item. Fixed both: dropped the
+      `!e.defaultPrevented` gate on the forward dispatch, and switched `onKeyDown` to navigate off a new
+      synchronous `queuedActiveDescendant` ref (upstream's `queuedActiveDescendant.current`, tracked on
+      every `focusin`).
   - **(2) The port named the first row IMMEDIATELY on type where RAC names NONE during a 500ms delay
     (D5 typed-step snapshot).** Upstream `focusFirstItem` sets a `delayNextActiveDescendant` ref before
     dispatching the collection's focus event; `updateActiveDescendant` then records
@@ -5501,12 +5503,12 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     always entered fresh instead of sliding. Ported React's two-phase commit into
     `packages/solidaria-components/src/SharedElementTransition.tsx` as THREE coupled pieces: (1) a
     render-phase **mount-in-render** effect mirroring `if (isVisible && state === 'hidden')
-    setState('visible')` so the incoming div is committed before any read; (2) a **store-phase**
+setState('visible')` so the incoming div is committed before any read; (2) a **store-phase**
     render-effect whose `onCleanup` runs on the next `isVisible` flip and stores ONLY while the
     captured `isVisible` was true (mirroring React closing over a null `ref.current` while hidden, so
     an incoming element's stale cleanup can't clobber the outgoing snapshot); (3) a signal-driven
     **read-phase** effect — `element` is a `createSignal`, and the FLIP read keys on `[isVisible,
-    element]` so it runs only once the `<Show>` has actually inserted the div (a plain `createEffect`
+element]` so it runs only once the `<Show>` has actually inserted the div (a plain `createEffect`
     raced the insertion render-effect and read an undefined ref → the dead fresh-enter branch, which
     is now removed entirely). Fresh enter is now microtask-deferred (faithful to React's
     `queueMicrotask(() => flushSync(() => setState('entering')))`); the one unit asserting
@@ -5561,7 +5563,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     `sliceIndex = max(1, 3 - 2) = 1`, so the collapse branch rendered a `BreadcrumbMenu` over
     `items.slice(1, 1)` — an **empty** overflow menu — while `shouldCollapse` was still true.
     Upstream S2 (`Breadcrumbs.tsx:543`) renders that exact empty-menu frame (`children.slice(1,
-    sliceIndex)` with `sliceIndex=1`) and heals it on the next `useLayoutEffect` re-measure, because
+sliceIndex)` with `sliceIndex=1`) and heals it on the next `useLayoutEffect` re-measure, because
     React batches the `onAction` state settle into one commit. The port's fine-grained overflow
     machine (ResizeObserver + MutationObserver + triple `queueMicrotask`/`rAF`/`setTimeout` measure)
     instead re-fired on the open→closing menu's DOM churn, recomputed `visibleTailCount`, flipped
@@ -5581,7 +5583,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     the baseline `<nav class=wrapperStyles>` + inner `<ol style=reset>` into a single element (to
     match RAC, which renders a list, not a `<nav>` landmark) had left the styled `wrapperStyles` class
     AND a hard-coded inline reset (`display:flex; align-items:center; list-style:none; margin:0;
-    padding:0`) on the same `<ol>` — and inline styles beat class rules, so `margin:0` killed
+padding:0`) on the same `<ol>` — and inline styles beat class rules, so `margin:0` killed
     `wrapperStyles`' `marginStart:6px` and `align-items:center` overrode the wrapper default (S2's
     `wrapperStyles` deliberately omits `align-items`). RAC's `<ol>` carries only
     `style={props.style}`, so the port now renders `style={renderProps.style()}` (bare) and lets
@@ -5596,7 +5598,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     fixed-width cert harness the React oracle's ResizeObserver never re-fires after the initial layout,
     so S2 renders a STALE **tail=0** collapse (menu = `[Files, Projects, Reports, Annual report]`, only
     `Home` + menu visible), while the Solid port correctly re-measures to **tail=2** (menu = `[Files,
-    Projects]`, `Reports` + `Annual report` visible). The measurement inputs are byte-identical between
+Projects]`, `Reports` + `Annual report` visible). The measurement inputs are byte-identical between
     the stacks (item widths `[51,43,62,61,91]`, gap 6, folder 32, container ~512) and the S2 slice
     algorithm computes tail=2 on either settled DOM — the divergence is purely the oracle's un-refired
     observer, so forcing byte-parity would regress the port's correct re-measurement. The AX case is
@@ -5648,7 +5650,7 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     `solidaria-components` `DisclosurePanel` STAYS role-honoring (it is the bare-RAC layer, and bare RAC
     does support the override) — the fix is scoped to the styled S2 layer. A prior "fix" had ADDED role
     forwarding to the styled port plus a unit test `passes a caller-supplied role through to the
-    disclosure panel (upstream parity)` asserting RAC parity — the wrong oracle for a styled S2 component;
+disclosure panel (upstream parity)` asserting RAC parity — the wrong oracle for a styled S2 component;
     it was rewritten to `discards a caller-supplied panel role to match S2` (asserts `queryByRole("region")`
     null + `getByRole("group")`). The D6 `region` case now certifies both stacks render `group` — a
     lock-in: re-adding role forwarding would break the S2 match; the cert docblock was rewritten from
@@ -5681,30 +5683,26 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
   - **What the D6 pair-oracle diff showed (identical Chromium).** Expected (S2): `toolbar "Actions"` →
     `button Edit/Copy/Delete`, then a SIBLING `button "Clear selection"` containing an `img`, then
     `text: 3 selected`. Received (port): `toolbar "Actions"` at the ROOT, containing `button "Clear
-    selection"` + `text: 3 selected` + a nested `group "Actions"` wrapping the actions. Four divergences,
-    all rooted in the invented base contract:
-    1. **Root was a toolbar; S2's root is roleless.** The base `ActionBar` applied
-       `createToolbar({orientation:"horizontal", aria-label})` to its root div (`{...toolbarProps}` →
-       `role="toolbar"`). S2's `ActionBar` (`ActionBar.tsx:192`) spreads only `keyboardProps` on the root
-       (an Escape handler via `useKeyboard`) — it is NOT a toolbar. FIX: drop `createToolbar` from the base
-       root entirely; it is now a plain container (Escape `handleKeyDown` + the `announce` effect stay).
-    2. **DOM order was selection-first; S2 is actions-first.** S2 writes the actions wrapper FIRST
-       (`order:1 marginStart:auto`) and the selection wrapper SECOND (`order:0`), so CSS `order` swaps the
-       VISUAL order (selection reads leading) while the AX/DOM order stays actions-first. The styled port
-       had the two `<div>`s reversed. FIX: emit actions wrapper first, selection wrapper second (same
-       `order` values → identical paint).
-    3. **Inner `ActionButtonGroup` nested-downgraded to `group`.** Because the root was a toolbar,
-       `createToolbar`'s `isInToolbar()` (`createToolbar.ts:266` — `.closest('[role="toolbar"]')`) saw the
-       inner ActionButtonGroup as nested and gave it `role="group"` + `aria-orientation:undefined`. S2 makes
-       the ActionButtonGroup the ONE and ONLY `toolbar`. Removing the root toolbar (fix #1) fixes this for
-       free — the group promotes back to a non-nested `toolbar "Actions"`.
-    4. **Clear-button icon was `aria-hidden`; S2's is exposed as `img`.** S2's `CloseButton` (compiled
-       `CloseButton.mjs`) renders the `Cross` UI-icon, whose factory (`Cross.mjs` → `S2_CrossSize100.mjs`)
-       is a BARE `<svg>` with NO `aria-hidden` and NO `role` — this is the UI-icon path, which (unlike the
-       `createIcon`/`createIllustration` factory in `Icon.tsx:99/168` that sets `aria-hidden` for
-       label-less icons) never adds it. Chromium exposes a bare `<svg>` as `role="img"`, so it surfaces as
-       an `img` child of the clear button. The port's hand-rolled `ActionBarCloseIcon` carried
-       `aria-hidden="true"`. FIX: drop it (bare `<svg>`, mirroring the UI-icon).
+selection"` + `text: 3 selected` + a nested `group "Actions"` wrapping the actions. Four divergences,
+    all rooted in the invented base contract: 1. **Root was a toolbar; S2's root is roleless.** The base `ActionBar` applied
+    `createToolbar({orientation:"horizontal", aria-label})` to its root div (`{...toolbarProps}` →
+    `role="toolbar"`). S2's `ActionBar` (`ActionBar.tsx:192`) spreads only `keyboardProps` on the root
+    (an Escape handler via `useKeyboard`) — it is NOT a toolbar. FIX: drop `createToolbar` from the base
+    root entirely; it is now a plain container (Escape `handleKeyDown` + the `announce` effect stay). 2. **DOM order was selection-first; S2 is actions-first.** S2 writes the actions wrapper FIRST
+    (`order:1 marginStart:auto`) and the selection wrapper SECOND (`order:0`), so CSS `order` swaps the
+    VISUAL order (selection reads leading) while the AX/DOM order stays actions-first. The styled port
+    had the two `<div>`s reversed. FIX: emit actions wrapper first, selection wrapper second (same
+    `order` values → identical paint). 3. **Inner `ActionButtonGroup` nested-downgraded to `group`.** Because the root was a toolbar,
+    `createToolbar`'s `isInToolbar()` (`createToolbar.ts:266` — `.closest('[role="toolbar"]')`) saw the
+    inner ActionButtonGroup as nested and gave it `role="group"` + `aria-orientation:undefined`. S2 makes
+    the ActionButtonGroup the ONE and ONLY `toolbar`. Removing the root toolbar (fix #1) fixes this for
+    free — the group promotes back to a non-nested `toolbar "Actions"`. 4. **Clear-button icon was `aria-hidden`; S2's is exposed as `img`.** S2's `CloseButton` (compiled
+    `CloseButton.mjs`) renders the `Cross` UI-icon, whose factory (`Cross.mjs` → `S2_CrossSize100.mjs`)
+    is a BARE `<svg>` with NO `aria-hidden` and NO `role` — this is the UI-icon path, which (unlike the
+    `createIcon`/`createIllustration` factory in `Icon.tsx:99/168` that sets `aria-hidden` for
+    label-less icons) never adds it. Chromium exposes a bare `<svg>` as `role="img"`, so it surfaces as
+    an `img` child of the clear button. The port's hand-rolled `ActionBarCloseIcon` carried
+    `aria-hidden="true"`. FIX: drop it (bare `<svg>`, mirroring the UI-icon).
   - **The invented base contract was the divergence — its unit tests asserted the wrong oracle** (the
     CP9.49 pattern). `solidaria-components/test/ActionBar.test.tsx` asserted the root was a `toolbar` with
     `aria-label="Actions"` and provided arrow-roving; all invented. Rewritten to the S2-faithful contract:
@@ -5729,10 +5727,10 @@ size=…/>` adds nothing). Chrome still exposes a bare `<svg>` as an unnamed `im
     measurement-layer glyph family as the burn-down note below; the contract one is a pre-existing harness
     flake. Neither is a port divergence.
   - Verified: **ActionBar certified e2e 4/4 green** (D5 `standard·roving`; D6 `standard`/`all`/`emphasized`)
-    + **units green** (full `packages` run: 268 files, **5525 passed** / 1 expected-fail / 8 skipped — the
-    base + styled ActionBar test files rewritten to the S2 contract) + `typecheck` clean + **full
-    `e2e/certified` suite: no regression** (the two pre-existing reds above live in the
-    `actionbar-visual`/`actionbar-contract` specs, not the certified suite). Next Tier-4 unit: **ActionGroup**.
+    - **units green** (full `packages` run: 268 files, **5525 passed** / 1 expected-fail / 8 skipped — the
+      base + styled ActionBar test files rewritten to the S2 contract) + `typecheck` clean + **full
+      `e2e/certified` suite: no regression** (the two pre-existing reds above live in the
+      `actionbar-visual`/`actionbar-contract` specs, not the certified suite). Next Tier-4 unit: **ActionGroup**.
 
 - **D3 sub-pixel burn-down (measurement-layer, cross-component):** the comparison harness lays the two framework
   panels side-by-side, and the Solid panel can land at a half-pixel viewport x (measured 651.5) vs React's integer
@@ -5757,8 +5755,8 @@ is **done**.
   compiles every component's `style({...})` into (a) generated CSS and (b) the
   class/runtime-selector output; an engine-level divergence silently mis-paints
   the whole library, and nothing else in the suite diffs the raw macro output
-  (the D3 pixel drivers check rendered *components*; `ui:macro-smoke` only proves
-  it *runs*). New guard **`guard:style-macro-parity`**
+  (the D3 pixel drivers check rendered _components_; `ui:macro-smoke` only proves
+  it _runs_). New guard **`guard:style-macro-parity`**
   (`scripts/check-style-macro-parity.ts`, wired into `package.json` +
   `certification-gates.yml`) compiles a 20-case corpus — upstream's own
   `style/__tests__/style-macro.test.js` feature set (nested/runtime/variant
@@ -5773,7 +5771,7 @@ is **done**.
   `import()` (the vendored tree is CJS); skips cleanly (exit 0) when the
   `react-spectrum/` oracle or tokens dep is absent (never cry wolf).
 
-  **Red→green:** the guard first went RED on all 20 cases with the *only*
+  **Red→green:** the guard first went RED on all 20 cases with the _only_
   difference being the class-name POSTFIX — ours hardcoded `"13"` (stale, from
   the old 1.3.0 pin), upstream derives `"151"` from `@react-spectrum/s2@1.5.1`
   (`json.version.replace(/[0.]/g,'')`). Per Rule #1 the fix is the real
@@ -5790,7 +5788,7 @@ is **done**.
   `radiogroup-visual.spec.ts` (`class*="sd13"`→`sd151`), and
   `regression.test.tsx.snap` (regenerated; **proven** the only changes are
   `13→151` plus the content-hash debug atoms that track it — `id =
-  toBase62(hash(className+loc))` — via a normalize-and-diff to byte-identity, so
+toBase62(hash(className+loc))` — via a normalize-and-diff to byte-identity, so
   zero style/structure drift). A broadened repo-wide sweep confirmed no other
   test asserts on a `13` atom (`avatar-visual` `M13` path + `Calendar` `day13`
   var are false positives). Verified: **`guard:style-macro-parity` GREEN**;
@@ -5824,7 +5822,7 @@ is **done**.
   **Fixes (reactive-`props` destructure → reactive access):** `createLabels`
   (direct `props.x`); `createFocus` + `createFocusWithin` (handlers read
   `props.x` live, returns are getters re-reading `props.isDisabled` — the real
-  bug: createOverlay/createVisuallyHidden pass a *live* `isDisabled` getter that
+  bug: createOverlay/createVisuallyHidden pass a _live_ `isDisabled` getter that
   the frozen early-return dropped); `createFocusVisible` (read `props.isTextInput`
   inside the effect so it re-subscribes, matching upstream's `[isTextInput]` dep);
   `FocusableProvider` (object-rest → `splitProps`, and read `props.children`
@@ -5849,7 +5847,7 @@ is **done**.
   **`typecheck` clean**; browser regression clean — **pair suite 6/6** (incl.
   ToggleButton/ButtonGroup) and **contract suite 93/93** (incl. Switch /
   ToggleButton / ToggleButtonGroup / fields, real focus). Getter-based returns
-  yield the *same* handler reference as before for every static path (identical
+  yield the _same_ handler reference as before for every static path (identical
   when enabled, `undefined` when disabled) — behavior preserved by construction,
   reactivity added on top. Cross-ref: CP9.82 (sibling Phase-3 guard).
 
@@ -5862,7 +5860,7 @@ is **done**.
   `assert24` floors, which stay AA-level and untouched).
   - **Driver annotations.** `drivers/contrast.ts` now pushes a
     `contrast-sub-AAA (reported)` annotation listing every node with `aaa ===
-    false` (flagging `(also <AA)` when `aa === false`); `drivers/target-size.ts`
+false` (flagging `(also <AA)` when `aa === false`); `drivers/target-size.ts`
     pushes `target-size-sub-44 (reported)` for every `!meets44` control (flagging
     `(also <24)`). Both are additive — they do not perturb the existing
     pair-oracle diffs, which remain the hard gate.
@@ -5878,7 +5876,7 @@ is **done**.
     distinct row (themes + gesture states fold into the worst ratio) — without
     this, Button's `accent-fill` 4.81:1 hid behind `disabled` 1.41:1.
   - **Regenerate:** `WCAG_REPORT=1 vp exec playwright test e2e/certified --grep
-    "D7 contrast|D8 target size"` (from `apps/comparison`) — the two drivers
+"D7 contrast|D8 target size"` (from `apps/comparison`) — the two drivers
     cover every certified component far cheaper than the full suite.
   - **Verified:** full sweep **270 passed (1.6m)**; report published across
     **56 components (contrast) / 30 (target size)**, 16 fully AAA-clean on
@@ -5892,9 +5890,9 @@ is **done**.
   true strict-mode diff for every cell (`mismatched/total`, `maxΔ`, mismatch
   bounds, both panels' dims) without failing — so the exact gap each waiver hid
   became measurable. It was reverted before commit (the technique lives in memory
-  + here; re-add is ~8 lines: `diffScreenshots(page, react, solid, 0)` under
-  `process.env.D3_DIAG`).
-  - **What the diag showed (deterministic across two runs).** The 7
+  - here; re-add is ~8 lines: `diffScreenshots(page, react, solid, 0)` under
+    `process.env.D3_DIAG`).
+  * **What the diag showed (deterministic across two runs).** The 7
     "antialias-1lsb" waivers split cleanly: **colorslider, colorswatch,
     colorswatchpicker, colorwheel are 100 % strict pair-clean** (`maxΔ=0` on every
     case × theme — the waiver was pure over-scoping); **slider / rangeslider**
@@ -5906,26 +5904,26 @@ is **done**.
     glyphs (10–12), form side-label half-pixel baseline (148–168, ~0.5 % of
     pixels), tooltip `<OverlayArrow>` (104–120) — each already scoped to the exact
     failing case(s) in both themes; **kept as-is**.
-  - **A harness phase-snap does not reach the LSB.** Rounding the clone's pinned
+  * **A harness phase-snap does not reach the LSB.** Rounding the clone's pinned
     `width`/`height` in `clonedElementScreenshot` (recertification.md's suggested
     fix) changed nothing — the panels' dims are already integer-equal; the ±1 LSB
-    comes from a sub-pixel-different *internal* thumb position between the two
+    comes from a sub-pixel-different _internal_ thumb position between the two
     renderers that only crosses a rounding boundary in dark theme. So the correct
     burn-down is **scope, not snap**.
-  - **Edits (7 specs, e2e-only).** Deleted the `pixel` block on the 4 clean
+  * **Edits (7 specs, e2e-only).** Deleted the `pixel` block on the 4 clean
     color components (fall back to `exactPairDiff`, with a breadcrumb comment);
     scoped slider + rangeslider to two entries (`theme:"dark"` all-cases +
     `caseId:"track-thick", theme:"light"`); scoped colorarea to
     `caseId:"colorSpace-hsb"`. Every unwaived cell is now strict, and the surviving
     ±1 waivers still fail any real ≥2-LSB shift, resize, or recolor.
-  - **Verified:** D3 on the 7 changed specs **94 passed (1.6m)** at the new
+  * **Verified:** D3 on the 7 changed specs **94 passed (1.6m)** at the new
     stricter gates; scoped `tsc` on the two changed waiver shapes clean. Harness
     (`pixel.ts`, `visual-diff.ts`) reverted to a no-diff state. Cross-ref: CP9.84
     (sibling closer); D3 driver (`drivers/pixel.ts` / `visual-diff.ts`).
 
 - **CP9.86 — audit-scaffolding retirement (Phase 3 closer 5/5; 2026-07-15).**
   The final Phase-3 unit: prove the 2026-07 sampled audit is subsumed by the
-  driver machinery, then retire `audit-durable/`. This is a *reconciliation*
+  driver machinery, then retire `audit-durable/`. This is a _reconciliation_
   unit, not a component cert.
   - **What the scaffolding held.** `audit-durable/` (session storage, untracked,
     231 files) = ~264 adversarially verified findings: `style/` (33 component
@@ -5955,7 +5953,7 @@ is **done**.
     drag-loupe outline hardcoded `stroke="rgba(0, 0, 0, 0.42)"`
     (`color/index.tsx:817`) vs pinned upstream S2 1.5.1 `ColorHandle.tsx`
     `style({strokeWidth:1, stroke:{default:'transparent-black-200',
-    forcedColors:'ButtonBorder'}, fill:'white'})` (resolves `#0000001f`, 12 %
+forcedColors:'ButtonBorder'}, fill:'white'})` (resolves `#0000001f`, 12 %
     black — ours was 3.5× too dark and lacked the WHCM `ButtonBorder` adaptation).
     The loupe is drag-only + portals to `<body>`, so every ColorArea/Wheel/Slider
     driver excludes it — no cert could rediscover it, the exact "driver has a
@@ -5974,13 +5972,13 @@ is **done**.
     `.claude/current/tailwind-removal.md` + `tech-debt.md` (route through
     `style()`, delete `local-utilities.css`). (b) Documented-out-of-scope
     unexercised paths (Skeleton Image, now the fixed loupe). No open finding
-    lived *only* in the scaffolding.
+    lived _only_ in the scaffolding.
   - **Retired.** Deleted the ephemeral session-storage `audit-durable/` dir; its
     conclusions are preserved in this record + the Calibration note, and the
     audit's raw totals survive in git (`origin/ticket/audit-scaffolding`) and the
     2026-06-15 review synthesis. Left the remote branch untouched (no unprompted
     remote deletes). No repo-tracked "session memory" of the audit exists to
-    retire beyond the fleet-incident *lesson*, which is kept deliberately.
+    retire beyond the fleet-incident _lesson_, which is kept deliberately.
   - **Phase 3 (and the recertification march) COMPLETE.** Cross-ref: Calibration
     note above; `tailwind-removal.md`; Skeleton cert §3867.
 
@@ -5988,7 +5986,7 @@ is **done**.
   Post-march burn-down of the "deferred D4 event-ordering reds" thread. First
   re-scoped it empirically: `grep` + a full D4 run showed the epic had already
   collapsed from the historically-cited "4–5 reds" to **one** — `Tabs
-  horizontal-regular · touch-tap`. (Tabs `arrow-next-from-selected` and the D5
+horizontal-regular · touch-tap`. (Tabs `arrow-next-from-selected` and the D5
   roving trail pass; Dialog's only remaining `knownDivergence` is a **D6**
   aria-hidden waiver, not D4; the ActionButton-class watch-list is green.) So the
   epic was one red, not a family.
@@ -5997,21 +5995,21 @@ is **done**.
     handler. Solid reflects that signal write into the roving `tabIndex`
     attribute synchronously, and the microtask checkpoint that Playwright's
     touch-tap synthesis inserts falls **between `focus` and `focusin`** — so the
-    flip to `tabIndex=0` landed *before* the D4 oracle's document capture-phase
+    flip to `tabIndex=0` landed _before_ the D4 oracle's document capture-phase
     read at `focusin`. React's `onFocus` is instead a single **`focusin`**-delegated
     listener at the app root, so its roving reflection lands one native event
-    later; for a touch tap (selection on press-up, *after* focus) React still
+    later; for a touch tap (selection on press-up, _after_ focus) React still
     reads `tabIndex=-1` at `focusin`. Only the mid-flight attribute value diverged;
     event order + callbacks were already identical.
   - **Why the sanctioned "microtask-defer" primitive can't fix it.** Probes
     confirmed the whole microtask queue drains in that single pre-`focusin`
-    checkpoint, so *no* microtask depth escapes it; only a timer-macrotask
+    checkpoint, so _no_ microtask depth escapes it; only a timer-macrotask
     (`setTimeout`) reaches past `focusin`, which would make the roving `tabIndex`
     reflect asynchronously on a timer for every touch focus — a real behavioral
     divergence introduced to satisfy a snapshot. Rejected.
   - **The fix (faithful mirror of React's delegation).** Bind the roving-tabindex
     commit to **`focusin`** instead of `focus` (`solidaria/src/tabs/createTabs.ts`
-    new `handleFocusIn`; the focus *ring* stays on `focus`). The oracle records
+    new `handleFocusIn`; the focus _ring_ stays on `focus`). The oracle records
     targets from a document-level **capture-phase** listener
     (`dom-oracle.ts:429`, `addEventListener(type, listener, true)`), which runs
     before this at-target handler — so touch reads `-1` and mouse (which syncs
@@ -6039,20 +6037,20 @@ is **done**.
   Highest-value open consumer-delivery item (`tech-debt.md`): the `Popover` (and
   every Picker/ComboBox/DatePicker/Menu built on it) rendered at the
   `createOverlayPosition` fallback (`position: fixed; top: 0; left: 0; z-index:
-  100000; max-height: 100vh`) at the viewport origin for an installed consumer
+100000; max-height: 100vh`) at the viewport origin for an installed consumer
   (Tortafritapp admin role picker), never anchored to the trigger.
   - **Root cause (Solid reactive-ref timing).** `Popover.tsx` held the overlay ref
     as a plain local — `let popoverRef!: HTMLDivElement` — and fed
     `popoverRef: () => popoverRef ?? null` into `createPopover`, while the sibling
-    `groupRef` in the *same file* was already a `createSignal`. A Solid `ref={…}`
+    `groupRef` in the _same file_ was already a `createSignal`. A Solid `ref={…}`
     assignment to a plain `let` notifies **no** reactive scope. `createOverlayPosition`'s
     main effect (`createOverlayPosition.ts:226-245`) tracks `overlayRef()` as a
     dependency, first ran while the ref was still null (the portal node mounts lazily
-    on open, *after* that first run), and — with nothing to re-trigger it — never
+    on open, _after_ that first run), and — with nothing to re-trigger it — never
     re-ran; `position()` stayed `null`, so the `overlayProps.style` getter
     (`:346-355`) returned the `position: fixed / top: 0 / left: 0` fallback. Whether
     it anchored at all was pure timing luck: a stray ResizeObserver (`:260`) or
-    `isOpen` re-run happening to read `overlayRef()` *after* assignment. That is
+    `isOpen` re-run happening to read `overlayRef()` _after_ assignment. That is
     exactly why the comparison harness cert stayed green (lucky ordering) while the
     external consumer latched the fallback at 0,0.
   - **Parity confirmed first (Rule #1).** React Aria `useOverlayPosition`/`usePopover`
@@ -6063,11 +6061,11 @@ is **done**.
     already in the file.
   - **The fix (4 edits, all inside `solidaria-components/src/Popover.tsx`).**
     (1) `let popoverRef!: HTMLDivElement` → `const [popoverRef, setPopoverRef] =
-    createSignal<HTMLDivElement | null>(null)` (with an explanatory comment; the
+createSignal<HTMLDivElement | null>(null)` (with an explanatory comment; the
     `groupRef` signal sits right below). (2) The `createPopover` call:
     `popoverRef: () => popoverRef ?? null` → `popoverRef: () => popoverRef()`.
     (3) The focus effect: `if (!popoverRef) return` → resolve `const node =
-    popoverRef()` once and gate on `!node` / `document.activeElement === node` /
+popoverRef()` once and gate on `!node` / `document.activeElement === node` /
     `node.contains(...)` / `node.focus()`. (4) The JSX: `ref={popoverRef}` →
     `ref={setPopoverRef}`. `createSignal` was already imported.
   - **Why it's low-risk.** All six `popoverRef` usages are internal to `Popover.tsx`;
@@ -6088,7 +6086,7 @@ is **done**.
     **218 passed, 2 skipped** (both `EXIT=0`). Full unit suite **267 files, 5533
     passed**, 1 expected-fail, 10 skipped. Pair-oracle certs carry no committed PNG
     baselines (project non-goal) — they diff live React S2 vs live Solid, so a
-    correctly-anchored popover can only *improve* alignment, never regress a stale
+    correctly-anchored popover can only _improve_ alignment, never regress a stale
     snapshot. `tech-debt.md` `picker-popover-anchor` → **done**. The sibling
     `picker-item-checkmark` was reconciled the same day as **already fixed** (commit
     `094ca40e`, 2026-07-07 — checkmark routed through the raw `class` prop, since

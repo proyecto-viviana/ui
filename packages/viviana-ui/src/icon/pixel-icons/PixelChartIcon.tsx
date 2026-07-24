@@ -18,7 +18,10 @@ function PixelChartIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elem
       {...rest}
       class={className}
     >
-      <path d="M4 12h3v6H4zM10 9h3v9h-3zM16 5h3v13h-3zM3 18h18v2H3z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M4 12h3v6H4zM10 9h3v9h-3zM16 5h3v13h-3zM3 18h18v2H3z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

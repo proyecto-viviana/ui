@@ -87,8 +87,7 @@ const comboBoxInput: TargetResolver = ({ canvas }) =>
  *  that paints the border/background/focus-ring. Parity: S2 `FieldGroup`
  *  (ComboBox.tsx:710) and the port (`combobox/index.tsx:583`) both render it as
  *  the single presentation element in the closed field. */
-const fieldGroup: TargetResolver = ({ canvas }) =>
-  canvas.locator('[role="presentation"]').first();
+const fieldGroup: TargetResolver = ({ canvas }) => canvas.locator('[role="presentation"]').first();
 /** The chevron `button[aria-haspopup=listbox]` — dynamic accessible name, so
  *  resolve by the haspopup role. */
 const chevronButton: TargetResolver = ({ canvas }) =>

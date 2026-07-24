@@ -93,7 +93,9 @@ function nextDropTarget(
     } else {
       nextKey = keyboardDelegate.getKeyBelow?.(target.key, { includeDisabled: true });
     }
-    let nextCollectionKey = getNextItem(collection, target.key, (key) => collection.getKeyAfter(key));
+    let nextCollectionKey = getNextItem(collection, target.key, (key) =>
+      collection.getKeyAfter(key),
+    );
 
     // If the keyboard delegate did not move to the next key in the collection,
     // jump to that key with the same drop position. Otherwise, try the other
@@ -137,7 +139,8 @@ function nextDropTarget(
         // If this is the last sibling in a level, traverse to the parent.
         let targetNode = collection.getItem(target.key);
         let nextSiblingKey = targetNode != null ? collection.getKeyAfter(targetNode.key) : null;
-        let nextItemInSameLevel = nextSiblingKey != null ? collection.getItem(nextSiblingKey) : null;
+        let nextItemInSameLevel =
+          nextSiblingKey != null ? collection.getItem(nextSiblingKey) : null;
         while (nextItemInSameLevel != null && nextItemInSameLevel.type !== "item") {
           let afterKey = collection.getKeyAfter(nextItemInSameLevel.key);
           nextItemInSameLevel = afterKey != null ? collection.getItem(afterKey) : null;
@@ -306,8 +309,7 @@ function getLastChild(collection: Collection, key: Key): DropTarget | null {
   let nextNode = nextKey != null ? collection.getItem(nextKey) : null;
   if (targetNode && nextNode && nextNode.level > targetNode.level) {
     let lastChild: CollectionNode | null = null;
-    lastChild =
-      Array.from(targetNode.childNodes).findLast((item) => item.type === "item") || null;
+    lastChild = Array.from(targetNode.childNodes).findLast((item) => item.type === "item") || null;
 
     if (lastChild) {
       return {

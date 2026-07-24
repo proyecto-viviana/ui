@@ -136,7 +136,8 @@ function LandingPage() {
               "margin-top": "0.25rem",
             }}
           >
-            Two styled component systems, one <span style={{ color: ACCENT }}>Solid foundation</span>.
+            Two styled component systems, one{" "}
+            <span style={{ color: ACCENT }}>Solid foundation</span>.
           </h1>
 
           <p
@@ -209,17 +210,20 @@ function LandingPage() {
           style={{ "border-top": "1px solid var(--docs-border)", "padding-block": "2.5rem" }}
         >
           <FeatureBlock title="Token-driven">
-            Components read every color from <code style={{ "font-family": "monospace" }}>--color-*</code>{" "}
-            custom properties. Override the vars and the whole library adopts your palette — no forks, no
-            per-component overrides.
+            Components read every color from{" "}
+            <code style={{ "font-family": "monospace" }}>--color-*</code> custom properties.
+            Override the vars and the whole library adopts your palette — no forks, no per-component
+            overrides.
           </FeatureBlock>
           <FeatureBlock title="Accessible">
             Keyboard navigation, focus management, and screen-reader semantics are built in and
-            contrast-certified — the same behavior React Spectrum ships, ported faithfully to SolidJS.
+            contrast-certified — the same behavior React Spectrum ships, ported faithfully to
+            SolidJS.
           </FeatureBlock>
           <FeatureBlock title="Copy-paste">
-            The Theme Studio generates the exact <code style={{ "font-family": "monospace" }}>:root</code>{" "}
-            and light-scheme blocks. Paste them after the library&rsquo;s stylesheet and you&rsquo;re done.
+            The Theme Studio generates the exact{" "}
+            <code style={{ "font-family": "monospace" }}>:root</code> and light-scheme blocks. Paste
+            them after the library&rsquo;s stylesheet and you&rsquo;re done.
           </FeatureBlock>
         </section>
 

@@ -114,7 +114,9 @@ export function createDraggableItem(
     if (opts.hasAction && dragModality === "keyboard") {
       msg += "Alt";
     }
-    return stringFormatter().format(msg as Parameters<ReturnType<typeof stringFormatter>["format"]>[0]);
+    return stringFormatter().format(
+      msg as Parameters<ReturnType<typeof stringFormatter>["format"]>[0],
+    );
   });
   const descriptionProps = createDescription(dragDescription);
 

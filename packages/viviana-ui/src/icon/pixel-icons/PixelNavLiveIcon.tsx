@@ -18,7 +18,10 @@ function PixelNavLiveIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       {...rest}
       class={className}
     >
-      <path d="M10 10h4v4h-4zM5 5h2v2H5zM17 5h2v2h-2zM3 7h2v10H3zM19 7h2v10h-2zM5 17h2v2H5zM17 17h2v2h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M10 10h4v4h-4zM5 5h2v2H5zM17 5h2v2h-2zM3 7h2v10H3zM19 7h2v10h-2zM5 17h2v2H5zM17 17h2v2h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

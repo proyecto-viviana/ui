@@ -55,11 +55,7 @@ export interface ThemeCreatorProps {
 }
 
 /** One colour: the OS picker, an editable hex, and the value read back in OKLCH. */
-function ColorControl(props: {
-  label: string;
-  value: string;
-  onChange: (hex: string) => void;
-}) {
+function ColorControl(props: { label: string; value: string; onChange: (hex: string) => void }) {
   // The hex field keeps its own draft so a half-typed value survives the keystroke.
   // Binding the field straight to the colour would revert every character that does
   // not yet spell a complete `#rrggbb`, which makes the input impossible to edit.

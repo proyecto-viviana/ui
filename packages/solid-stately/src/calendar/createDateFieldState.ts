@@ -307,7 +307,9 @@ export function createDateFieldState<T extends DateValue = DateValue>(
   };
 
   // The current value, converted to the display calendar.
-  const calendarValue = createMemo<DateValue | null>(() => convertValue(rawValue(), calendar()) ?? null);
+  const calendarValue = createMemo<DateValue | null>(
+    () => convertValue(rawValue(), calendar()) ?? null,
+  );
 
   const initialValue = untrack(calendarValue);
 
@@ -352,7 +354,9 @@ export function createDateFieldState<T extends DateValue = DateValue>(
     shouldForceLeadingZeros: props.shouldForceLeadingZeros,
   }));
 
-  const dateFormatter = createMemo(() => new DateFormatter(locale(), getFormatOptions({}, formatOpts())));
+  const dateFormatter = createMemo(
+    () => new DateFormatter(locale(), getFormatOptions({}, formatOpts())),
+  );
   const resolvedOptions = createMemo(() => dateFormatter().resolvedOptions());
 
   const displaySegments = createMemo<DateSegmentType[]>(() => {
@@ -632,9 +636,7 @@ function processSegments(
     const isPlaceholder =
       EDITABLE_SEGMENTS[type] === true &&
       displayValue[segment.type as keyof IncompleteDate] == null;
-    const placeholder = EDITABLE_SEGMENTS[type]
-      ? getPlaceholder(type, segment.value, locale)
-      : "";
+    const placeholder = EDITABLE_SEGMENTS[type] ? getPlaceholder(type, segment.value, locale) : "";
     const limits = displayValue.getSegmentLimits(type);
     const dateSegment: DateSegment = {
       type,
@@ -736,13 +738,12 @@ export function getFormatOptions(
   let endIdx = keys.indexOf(granularity);
   if (endIdx < 0) endIdx = 2;
   if (startIdx > endIdx) throw new Error("maxGranularity must be greater than granularity");
-  const opts: Record<string, unknown> = keys.slice(startIdx, endIdx + 1).reduce(
-    (acc: Record<string, unknown>, key) => {
+  const opts: Record<string, unknown> = keys
+    .slice(startIdx, endIdx + 1)
+    .reduce((acc: Record<string, unknown>, key) => {
       acc[key] = merged[key];
       return acc;
-    },
-    {},
-  );
+    }, {});
   if (options.hourCycle != null) opts.hour12 = options.hourCycle === 12;
   opts.timeZone = options.timeZone || "UTC";
   const hasTime = granularity === "hour" || granularity === "minute" || granularity === "second";
@@ -751,7 +752,10 @@ export function getFormatOptions(
   return opts as Intl.DateTimeFormatOptions;
 }
 
-function convertValue(value: DateValue | null | undefined, calendar: Calendar): DateValue | null | undefined {
+function convertValue(
+  value: DateValue | null | undefined,
+  calendar: Calendar,
+): DateValue | null | undefined {
   if (value === null) return null;
   if (!value) return undefined;
   return toCalendar(value, calendar);

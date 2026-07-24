@@ -18,7 +18,10 @@ function PixelNotificationIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): J
       {...rest}
       class={className}
     >
-      <path d="M11 3h2v2h-2zM9 5h6v2H9zM8 7h2v7H8zM14 7h2v7h-2zM6 14h12v2H6zM10 17h4v2h-4z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M11 3h2v2h-2zM9 5h6v2H9zM8 7h2v7H8zM14 7h2v7h-2zM6 14h12v2H6zM10 17h4v2h-4z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

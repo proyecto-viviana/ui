@@ -18,7 +18,10 @@ function PixelChevronDownIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JS
       {...rest}
       class={className}
     >
-      <path d="M6 9h2v2H6zM8 11h2v2H8zM10 13h2v2h-2zM12 11h2v2h-2zM14 9h2v2h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M6 9h2v2H6zM8 11h2v2H8zM10 13h2v2h-2zM12 11h2v2h-2zM14 9h2v2h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

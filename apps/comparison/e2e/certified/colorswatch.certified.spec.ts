@@ -124,7 +124,10 @@ const colorSwatchScenario: DriverScenario = {
     { id: "alpha", params: { color: "hsla(30, 100%, 50%, 0.5)", ariaLabel: "Background color" } },
     // rounding `full` → a circle: certifies `border-radius:9999px` and the
     // all-around edge AA (waived ±1 LSB below).
-    { id: "rounded", params: { color: "#0066ff", rounding: "full", ariaLabel: "Background color" } },
+    {
+      id: "rounded",
+      params: { color: "#0066ff", rounding: "full", ariaLabel: "Background color" },
+    },
     // rounding `none` + size XS → a 16px sharp-cornered swatch: the smallest
     // geometry with no corner AA.
     {

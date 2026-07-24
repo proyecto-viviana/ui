@@ -42,7 +42,9 @@ function NumberFieldPage() {
       >
         <div style={{ "max-width": "20rem" }}>
           <NumberField label="Items" value={quantity()} onChange={setQuantity} />
-          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Current quantity: {quantity()}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+            Current quantity: {quantity()}
+          </p>
         </div>
       </Example>
 
@@ -115,7 +117,9 @@ function NumberFieldPage() {
               currency: "USD",
             }}
           />
-          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Raw value: {price()}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+            Raw value: {price()}
+          </p>
         </div>
       </Example>
 
@@ -305,8 +309,7 @@ function NumberFieldPage() {
           Increment and decrement buttons have <code>aria-label</code> for screen readers
         </li>
         <li>
-          Supports keyboard interaction: Arrow Up/Down to increment/decrement, Home/End for
-          min/max
+          Supports keyboard interaction: Arrow Up/Down to increment/decrement, Home/End for min/max
         </li>
         <li>Stepper buttons are automatically disabled at min/max boundaries</li>
         <li>

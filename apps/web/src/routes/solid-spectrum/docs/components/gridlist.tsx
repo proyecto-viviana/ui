@@ -102,7 +102,10 @@ function GridListPage() {
             {(item) => (
               <GridListItem id={item.id} textValue={item.title}>
                 {(renderProps) => (
-                  <div class="hd-row hd-row--split" classList={{ "hd-row--selected": renderProps.isSelected }}>
+                  <div
+                    class="hd-row hd-row--split"
+                    classList={{ "hd-row--selected": renderProps.isSelected }}
+                  >
                     <div>
                       <div class={typeRoles.label}>{item.title}</div>
                       <div class={typeRoles.meta}>{item.category}</div>

@@ -602,7 +602,7 @@ mismatch **aborts hydration for the entire route**, not just the offending
 subtree: the whole page renders but silently loses all interactivity.
 
 Two authoring patterns desync the counter. Both are easy to write and neither
-fails SSR *or* client render in isolation — only the paired hydrate run catches
+fails SSR _or_ client render in isolation — only the paired hydrate run catches
 them.
 
 ### Bug class 1 — reading a props-children getter more than once
@@ -612,7 +612,7 @@ component the JSX holds** (each read re-runs `createComponent` for a nested
 `<Text>`, icon, etc.), so N reads emit N instances and advance the counter N
 times. **On the client the same getter is memoized after the first read**, so N
 reads yield 1 instance. Read children twice on the server (a common shape: one
-read to *probe* whether it's a render-prop function, a second to use the value)
+read to _probe_ whether it's a render-prop function, a second to use the value)
 and the server emits one extra element than the client — mismatch.
 
 ```tsx
@@ -622,8 +622,8 @@ function hasRenderChildren() {
 }
 function ResolvedTabContent() {
   const value = hasRenderChildren()
-    ? (local.children as Fn)(renderProps)   // read #2 (server re-instantiates <Text>)
-    : local.children;                        // ...or here
+    ? (local.children as Fn)(renderProps) // read #2 (server re-instantiates <Text>)
+    : local.children; // ...or here
   return typeof value === "string" ? <span>{value}</span> : value;
 }
 ```
@@ -658,9 +658,13 @@ node ahead of the server → mismatch.
 ```tsx
 // ❌ BAD - `framed` is built even when we return `collection`; its <div> steals a key
 const framed = (
-  <div class={wrapper()}>{label}{collection}{description}</div>
+  <div class={wrapper()}>
+    {label}
+    {collection}
+    {description}
+  </div>
 );
-return (local.label || local.description) ? framed : collection;
+return local.label || local.description ? framed : collection;
 ```
 
 ```tsx

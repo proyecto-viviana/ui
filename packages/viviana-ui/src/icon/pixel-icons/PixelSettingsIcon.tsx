@@ -18,7 +18,10 @@ function PixelSettingsIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       {...rest}
       class={className}
     >
-      <path d="M9 9h6v6H9zM10 4h4v5h-4zM10 15h4v5h-4zM4 10h5v4H4zM15 10h5v4h-4zM6 6h3v3H6zM15 6h3v3h-3zM6 15h3v3H6zM15 15h3v3h-3z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M9 9h6v6H9zM10 4h4v5h-4zM10 15h4v5h-4zM4 10h5v4H4zM15 10h5v4h-4zM6 6h3v3H6zM15 6h3v3h-3zM6 15h3v3H6zM15 15h3v3h-3z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

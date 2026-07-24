@@ -442,9 +442,7 @@ export function Meter(props: MeterProps): JSX.Element {
   };
   const filledCount = createMemo(() => {
     const segments = segmentCount();
-    return segments == null
-      ? 0
-      : clamp(Math.round((percentage() / 100) * segments), 0, segments);
+    return segments == null ? 0 : clamp(Math.round((percentage() / 100) * segments), 0, segments);
   });
   const showValue = () => !!local.label;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);

@@ -178,7 +178,8 @@ const colorAreaScenario: DriverScenario = {
         state: "*",
         theme: "*",
         threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason: "colorarea-hsb-antialias-1lsb: HSB saturation/brightness gradient band rounds ±1 LSB grayscale",
+        reason:
+          "colorarea-hsb-antialias-1lsb: HSB saturation/brightness gradient band rounds ±1 LSB grayscale",
       },
     ],
   },

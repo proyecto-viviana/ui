@@ -327,12 +327,29 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         <Flex direction="column" gap={6}>
           {/* Headless Disclosure */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Headless Disclosure</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Headless Disclosure
+            </Heading>
             <HeadlessDisclosure>
-              <HeadlessDisclosureTrigger style={{ width: "100%", "text-align": "left", padding: "12px", background: "var(--color-bg-400)", "border-radius": "var(--radius-md)" }}>
+              <HeadlessDisclosureTrigger
+                style={{
+                  width: "100%",
+                  "text-align": "left",
+                  padding: "12px",
+                  background: "var(--color-bg-400)",
+                  "border-radius": "var(--radius-md)",
+                }}
+              >
                 Headless Toggle
               </HeadlessDisclosureTrigger>
-              <HeadlessDisclosurePanel style={{ padding: "12px", "margin-top": "4px", background: "var(--color-bg-300)", "border-radius": "var(--radius-md)" }}>
+              <HeadlessDisclosurePanel
+                style={{
+                  padding: "12px",
+                  "margin-top": "4px",
+                  background: "var(--color-bg-300)",
+                  "border-radius": "var(--radius-md)",
+                }}
+              >
                 This is a headless disclosure panel built from primitives.
               </HeadlessDisclosurePanel>
             </HeadlessDisclosure>
@@ -340,7 +357,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Single Disclosure */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Single Disclosure (Styled)</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Single Disclosure (Styled)
+            </Heading>
             <Disclosure variant="bordered">
               <DisclosureTrigger>What is a Disclosure?</DisclosureTrigger>
               <DisclosurePanel>
@@ -352,7 +371,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Accordion (DisclosureGroup) */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Accordion (Single Expand)</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Accordion (Single Expand)
+            </Heading>
             <DisclosureGroup variant="bordered">
               <Disclosure id="section-1">
                 <DisclosureTrigger>Section 1: Introduction</DisclosureTrigger>
@@ -380,7 +401,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Multiple Expand Accordion */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Accordion (Multiple Expand)</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Accordion (Multiple Expand)
+            </Heading>
             <DisclosureGroup allowsMultipleExpanded variant="filled">
               <Disclosure id="multi-1">
                 <DisclosureTrigger>Panel A</DisclosureTrigger>
@@ -395,7 +418,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Variants */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Variants</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Variants
+            </Heading>
             <Grid columns="repeat(auto-fit, minmax(260px, 1fr))" gap={4}>
               <Disclosure variant="default">
                 <DisclosureTrigger>Default Variant</DisclosureTrigger>
@@ -428,7 +453,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         <Flex direction="column" gap={6}>
           {/* Sizes */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Sizes</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Sizes
+            </Heading>
             <Flex direction="column" gap={3}>
               <Meter label="Storage Used" value={75} />
               <Meter label="Memory" value={45} size="S" />
@@ -438,7 +465,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Color variants */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Color Variants</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Color Variants
+            </Heading>
             <Flex direction="column" gap={3}>
               <Meter label="Positive" value={30} variant="positive" />
               <Meter label="Notice" value={65} variant="notice" />
@@ -449,7 +478,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Without label */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Without Label</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Without Label
+            </Heading>
             <Meter value={60} aria-label="Progress" />
           </div>
         </Flex>
@@ -465,19 +496,25 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
         <Flex direction="column" gap={6}>
           {/* Basic removable tags */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Removable Tags</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Removable Tags
+            </Heading>
             <TagGroupDemo />
           </div>
 
           {/* Selection */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Selectable Tags</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Selectable Tags
+            </Heading>
             <TagGroupSelectionDemo />
           </div>
 
           {/* Variants */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Tag Variants</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Tag Variants
+            </Heading>
             <Flex direction="column" gap={4}>
               <TagGroup
                 items={[
@@ -514,7 +551,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
 
           {/* Sizes */}
           <div>
-            <Heading level={4} styles={typeRoles.label}>Tag Sizes</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Tag Sizes
+            </Heading>
             <Flex direction="column" gap={4}>
               <TagGroup
                 items={[
@@ -656,7 +695,12 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             data-testid="dropzone-active"
             aria-label="Upload files drop zone"
             onDrop={() => props.onLastAction("DropZone: drop event")}
-            UNSAFE_style={{ "min-height": "120px", display: "flex", "align-items": "center", "justify-content": "center" }}
+            UNSAFE_style={{
+              "min-height": "120px",
+              display: "flex",
+              "align-items": "center",
+              "justify-content": "center",
+            }}
           >
             <div style={{ "text-align": "center" }}>
               <Text styles={typeRoles.label}>Drop files here</Text>
@@ -669,7 +713,12 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             data-testid="dropzone-disabled"
             aria-label="Disabled drop zone"
             isDisabled
-            style={{ "min-height": "80px", display: "flex", "align-items": "center", "justify-content": "center" }}
+            style={{
+              "min-height": "80px",
+              display: "flex",
+              "align-items": "center",
+              "justify-content": "center",
+            }}
           >
             <Text styles={typeRoles.meta}>Disabled drop zone</Text>
           </HeadlessDropZone>
@@ -858,7 +907,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
       >
         <Flex direction="column" gap={6}>
           <div>
-            <Heading level={4} styles={typeRoles.label}>Row (default)</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Row (default)
+            </Heading>
             <Flex gap="md" wrap>
               <Button variant="primary">Item 1</Button>
               <Button variant="secondary">Item 2</Button>
@@ -866,7 +917,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             </Flex>
           </div>
           <div>
-            <Heading level={4} styles={typeRoles.label}>Column with alignment</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Column with alignment
+            </Heading>
             <Flex direction="column" gap="sm" alignItems="start">
               <Button variant="primary">First</Button>
               <Button variant="secondary">Second</Button>
@@ -874,7 +927,9 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
             </Flex>
           </div>
           <div>
-            <Heading level={4} styles={typeRoles.label}>Space between</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Space between
+            </Heading>
             <Flex justifyContent="between" alignItems="center" class="demo-row">
               <Text styles={typeRoles.body}>Left</Text>
               <Text styles={typeRoles.body}>Center</Text>
@@ -896,34 +951,50 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
       >
         <Flex direction="column" gap={6}>
           <div>
-            <Heading level={4} styles={typeRoles.label}>3-column grid</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              3-column grid
+            </Heading>
             <Grid columns={3} gap="md">
-              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>1</Well>
-              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>2</Well>
-              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>3</Well>
-              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>4</Well>
-              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>5</Well>
-              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>6</Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>
+                1
+              </Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>
+                2
+              </Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>
+                3
+              </Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>
+                4
+              </Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>
+                5
+              </Well>
+              <Well style={{ "text-align": "center", background: "var(--color-accent-dim)" }}>
+                6
+              </Well>
             </Grid>
           </div>
           <div>
-            <Heading level={4} styles={typeRoles.label}>Auto-fill responsive</Heading>
+            <Heading level={4} styles={typeRoles.label}>
+              Auto-fill responsive
+            </Heading>
             <Grid columns="repeat(auto-fill, minmax(120px, 1fr))" gap="sm">
-              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
-                A
-              </Text></Well>
-              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
-                B
-              </Text></Well>
-              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
-                C
-              </Text></Well>
-              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
-                D
-              </Text></Well>
-              <Well style={{ "text-align": "center" }}><Text styles={typeRoles.meta}>
-                E
-              </Text></Well>
+              <Well style={{ "text-align": "center" }}>
+                <Text styles={typeRoles.meta}>A</Text>
+              </Well>
+              <Well style={{ "text-align": "center" }}>
+                <Text styles={typeRoles.meta}>B</Text>
+              </Well>
+              <Well style={{ "text-align": "center" }}>
+                <Text styles={typeRoles.meta}>C</Text>
+              </Well>
+              <Well style={{ "text-align": "center" }}>
+                <Text styles={typeRoles.meta}>D</Text>
+              </Well>
+              <Well style={{ "text-align": "center" }}>
+                <Text styles={typeRoles.meta}>E</Text>
+              </Well>
             </Grid>
           </div>
         </Flex>
@@ -946,12 +1017,19 @@ export function PlaygroundAdvancedSections(props: PlaygroundAdvancedSectionsProp
           </Text>
           <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={4}>
             <Well>
-              <Heading level={4} styles={typeRoles.label}>Current Theme</Heading>
+              <Heading level={4} styles={typeRoles.label}>
+                Current Theme
+              </Heading>
               <ThemeInfoDisplay />
             </Well>
             <Well>
-              <Heading level={4} styles={typeRoles.label}>Usage</Heading>
-              <pre class={typeRoles.terminal} style={{ "white-space": "pre-wrap" }}>{`<Provider colorScheme="dark">
+              <Heading level={4} styles={typeRoles.label}>
+                Usage
+              </Heading>
+              <pre
+                class={typeRoles.terminal}
+                style={{ "white-space": "pre-wrap" }}
+              >{`<Provider colorScheme="dark">
   <App />
 </Provider>`}</pre>
             </Well>
@@ -989,9 +1067,18 @@ function CheckboxGroupDemo(props: { onSelectionChange?: (values: string[]) => vo
     <Flex direction="column" gap={6}>
       {/* Basic Checkbox Group */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic Group</Heading>
-        <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
-          <span {...labelProps} class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic Group
+        </Heading>
+        <div
+          {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
+          style={{ display: "flex", "flex-direction": "column", gap: "8px" }}
+        >
+          <span
+            {...labelProps}
+            class={typeRoles.label}
+            style={{ display: "block", "margin-bottom": "8px" }}
+          >
             Notification Settings
           </span>
           <CustomCheckbox value="notifications" state={state}>
@@ -1010,11 +1097,15 @@ function CheckboxGroupDemo(props: { onSelectionChange?: (values: string[]) => vo
       {/* Disabled & Read-only Examples */}
       <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={4}>
         <div>
-          <Heading level={4} styles={typeRoles.label}>Disabled Checkbox</Heading>
+          <Heading level={4} styles={typeRoles.label}>
+            Disabled Checkbox
+          </Heading>
           <DisabledCheckboxDemo />
         </div>
         <div>
-          <Heading level={4} styles={typeRoles.label}>Read-only Checkbox</Heading>
+          <Heading level={4} styles={typeRoles.label}>
+            Read-only Checkbox
+          </Heading>
           <ReadonlyCheckboxDemo />
         </div>
       </Grid>
@@ -1083,7 +1174,10 @@ function DisabledCheckboxDemo() {
   const { groupProps } = createCheckboxGroup(() => ({}), state);
 
   return (
-    <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
+    <div
+      {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
+      style={{ display: "flex", "flex-direction": "column", gap: "8px" }}
+    >
       <CustomCheckbox value="option1" state={state} isDisabled>
         Disabled (checked)
       </CustomCheckbox>
@@ -1103,7 +1197,10 @@ function ReadonlyCheckboxDemo() {
   const { groupProps } = createCheckboxGroup(() => ({}), state);
 
   return (
-    <div {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)} style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
+    <div
+      {...(groupProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
+      style={{ display: "flex", "flex-direction": "column", gap: "8px" }}
+    >
       <CustomCheckbox value="readonly1" state={state} isReadOnly>
         Read-only (checked)
       </CustomCheckbox>
@@ -1149,11 +1246,7 @@ function ListBoxDemo(props: { onSelectionChange?: (key: string | number) => void
         class="hd-listbox"
       >
         {(item) => (
-          <ListBoxOption
-            id={item.id}
-            item={item}
-            class="hd-option"
-          >
+          <ListBoxOption id={item.id} item={item} class="hd-option">
             <Flex alignItems="center" justifyContent="between">
               <div>
                 <Text styles={typeRoles.label}>{item.name}</Text>
@@ -1193,9 +1286,22 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
     <Flex direction="column" gap={6}>
       {/* Basic Menu */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic Menu</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic Menu
+        </Heading>
         <MenuTrigger>
-          <MenuButton style={{ display: "inline-flex", "align-items": "center", gap: "8px", padding: "8px 16px", background: "var(--color-primary-700)", color: "var(--color-primary-100)", border: "1px solid var(--color-primary-500)", "border-radius": "var(--radius-lg)" }}>
+          <MenuButton
+            style={{
+              display: "inline-flex",
+              "align-items": "center",
+              gap: "8px",
+              padding: "8px 16px",
+              background: "var(--color-primary-700)",
+              color: "var(--color-primary-100)",
+              border: "1px solid var(--color-primary-500)",
+              "border-radius": "var(--radius-lg)",
+            }}
+          >
             Actions
             <Text styles={typeRoles.micro}>▼</Text>
           </MenuButton>
@@ -1204,7 +1310,16 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
             getKey={(item) => item.id}
             onAction={(key) => props.onAction?.(String(key))}
             aria-label="Actions menu"
-            style={{ position: "absolute", "margin-top": "4px", "min-width": "12rem", "z-index": 50, background: "var(--color-bg-200)", border: "1px solid var(--color-primary-600)", "border-radius": "var(--radius-lg)", overflow: "hidden" }}
+            style={{
+              position: "absolute",
+              "margin-top": "4px",
+              "min-width": "12rem",
+              "z-index": 50,
+              background: "var(--color-bg-200)",
+              border: "1px solid var(--color-primary-600)",
+              "border-radius": "var(--radius-lg)",
+              overflow: "hidden",
+            }}
           >
             {(item) => (
               <MenuItem
@@ -1220,9 +1335,22 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
 
       {/* Menu with Disabled Items */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Menu with Disabled Items</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Menu with Disabled Items
+        </Heading>
         <MenuTrigger>
-          <MenuButton style={{ display: "inline-flex", "align-items": "center", gap: "8px", padding: "8px 16px", background: "var(--color-primary-700)", color: "var(--color-primary-100)", border: "1px solid var(--color-primary-500)", "border-radius": "var(--radius-lg)" }}>
+          <MenuButton
+            style={{
+              display: "inline-flex",
+              "align-items": "center",
+              gap: "8px",
+              padding: "8px 16px",
+              background: "var(--color-primary-700)",
+              color: "var(--color-primary-100)",
+              border: "1px solid var(--color-primary-500)",
+              "border-radius": "var(--radius-lg)",
+            }}
+          >
             Menu with Disabled
             <Text styles={typeRoles.micro}>▼</Text>
           </MenuButton>
@@ -1232,13 +1360,19 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
             disabledKeys={["item2", "item3"]}
             onAction={(key) => props.onAction?.(String(key))}
             aria-label="Menu with disabled items"
-            style={{ position: "absolute", "margin-top": "4px", "min-width": "12rem", "z-index": 50, background: "var(--color-bg-200)", border: "1px solid var(--color-primary-600)", "border-radius": "var(--radius-lg)", overflow: "hidden" }}
+            style={{
+              position: "absolute",
+              "margin-top": "4px",
+              "min-width": "12rem",
+              "z-index": 50,
+              background: "var(--color-bg-200)",
+              border: "1px solid var(--color-primary-600)",
+              "border-radius": "var(--radius-lg)",
+              overflow: "hidden",
+            }}
           >
             {(item) => (
-              <MenuItem
-                id={item.id}
-                class="hd-menu-item"
-              >
+              <MenuItem id={item.id} class="hd-menu-item">
                 {item.label}
               </MenuItem>
             )}
@@ -1282,7 +1416,9 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
       <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
         {/* Basic Select */}
         <div>
-          <Heading level={4} styles={typeRoles.label}>Basic Select</Heading>
+          <Heading level={4} styles={typeRoles.label}>
+            Basic Select
+          </Heading>
           <Select
             items={selectItems}
             getKey={(item) => item.id}
@@ -1294,13 +1430,20 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
               <SelectValue placeholder="Select a size..." />
               <Text styles={typeRoles.meta}>▼</Text>
             </SelectTrigger>
-            <SelectListBox style={{ position: "absolute", "margin-top": "4px", width: "100%", "z-index": 50, background: "var(--color-bg-200)", border: "1px solid var(--color-primary-600)", "border-radius": "var(--radius-lg)", overflow: "hidden" }}>
+            <SelectListBox
+              style={{
+                position: "absolute",
+                "margin-top": "4px",
+                width: "100%",
+                "z-index": 50,
+                background: "var(--color-bg-200)",
+                border: "1px solid var(--color-primary-600)",
+                "border-radius": "var(--radius-lg)",
+                overflow: "hidden",
+              }}
+            >
               {(item: SelectDemoItem) => (
-                <SelectOption
-                  id={item.id}
-                  item={item}
-                  class="hd-option"
-                >
+                <SelectOption id={item.id} item={item} class="hd-option">
                   <Flex alignItems="center" justifyContent="between">
                     <div>
                       <Text styles={typeRoles.label}>{item.label}</Text>
@@ -1315,7 +1458,9 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
 
         {/* Disabled Select */}
         <div>
-          <Heading level={4} styles={typeRoles.label}>Disabled Select</Heading>
+          <Heading level={4} styles={typeRoles.label}>
+            Disabled Select
+          </Heading>
           <Select
             items={selectItems}
             getKey={(item) => item.id}
@@ -1341,8 +1486,7 @@ function SelectDemo(props: { onSelectionChange?: (key: string | number | null) =
       <div>
         <Text styles={typeRoles.meta}>
           Click to open dropdown, use arrow keys to navigate options, Enter/Space to select, Escape
-          to close. The selected value is:{" "}
-          <strong>{selectedKey() || "none"}</strong>
+          to close. The selected value is: <strong>{selectedKey() || "none"}</strong>
         </Text>
       </div>
     </Flex>
@@ -1441,8 +1585,7 @@ function StyledSelectDemo(props: { onSelectionChange?: (key: string | number | n
         </StyledSelect>
       </Grid>
       <Text styles={typeRoles.meta}>
-        Pre-styled Select with size variants. Selected:{" "}
-        <strong>{selectedKey() || "none"}</strong>
+        Pre-styled Select with size variants. Selected: <strong>{selectedKey() || "none"}</strong>
       </Text>
     </Flex>
   );
@@ -1676,7 +1819,9 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
     <Flex direction="column" gap={8}>
       {/* Controlled selection (regular density, the default) */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Controlled Selection</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Controlled Selection
+        </Heading>
         <StyledTabs<TabItem>
           items={tabItems}
           getKey={(item: TabItem) => item.id}
@@ -1699,7 +1844,9 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
 
       {/* Compact density */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Compact Density</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Compact Density
+        </Heading>
         <StyledTabs<TabItem>
           items={tabItems}
           getKey={(item: TabItem) => item.id}
@@ -1719,7 +1866,9 @@ function StyledTabsDemo(props: { onSelectionChange?: (key: string | number) => v
 
       {/* Densities and orientation */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Densities and Orientation</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Densities and Orientation
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
           {/* Regular density */}
           <StyledTabs<TabItem>
@@ -1805,7 +1954,9 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
     <Flex direction="column" gap={8}>
       {/* Default variant */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Default Variant</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Default Variant
+        </Heading>
         <StyledBreadcrumbs<BreadcrumbData>
           items={breadcrumbItems}
           getKey={(item: BreadcrumbData) => item.id}
@@ -1825,7 +1976,9 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
 
       {/* Subtle variant */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Subtle Variant</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Subtle Variant
+        </Heading>
         <StyledBreadcrumbs<BreadcrumbData>
           items={breadcrumbItems}
           getKey={(item: BreadcrumbData) => item.id}
@@ -1846,7 +1999,9 @@ function StyledBreadcrumbsDemo(props: { onNavigate?: (path: string) => void }) {
 
       {/* Size variants */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Size Variants
+        </Heading>
         <Flex direction="column" gap={4}>
           {/* Small */}
           <div>
@@ -1926,7 +2081,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
     <Flex direction="column" gap={8}>
       {/* Basic NumberField */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic NumberField</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic NumberField
+        </Heading>
         <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Quantity"
@@ -1941,7 +2098,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Size variants */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Size Variants
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(160px, 1fr))" gap={6}>
           <StyledNumberField label="Small" defaultValue={10} size="S" minValue={0} maxValue={50} />
           <StyledNumberField
@@ -1964,7 +2123,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* With min/max constraints */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>With Min/Max Constraints (0-10)</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          With Min/Max Constraints (0-10)
+        </Heading>
         <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Rating"
@@ -1979,7 +2140,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Currency formatting */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Currency Formatting</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Currency Formatting
+        </Heading>
         <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Price"
@@ -1997,7 +2160,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Percent formatting */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Percent Formatting</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Percent Formatting
+        </Heading>
         <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Discount"
@@ -2014,7 +2179,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Disabled state */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>States</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          States
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledNumberField label="Disabled" defaultValue={42} isDisabled />
           <StyledNumberField
@@ -2028,7 +2195,9 @@ function StyledNumberFieldDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Hidden stepper */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Hidden Stepper (keyboard only)</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Hidden Stepper (keyboard only)
+        </Heading>
         <div style={{ "max-width": "20rem" }}>
           <StyledNumberField
             label="Amount"
@@ -2063,7 +2232,9 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
     <Flex direction="column" gap={8}>
       {/* Basic SearchField */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic SearchField</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic SearchField
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledSearchField
             label="Search"
@@ -2078,7 +2249,9 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
 
       {/* Size variants */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Size Variants
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
           <StyledSearchField
             label="Small"
@@ -2103,7 +2276,9 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
 
       {/* Variant styles */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Variants
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledSearchField
             label="Outline (default)"
@@ -2122,7 +2297,9 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
 
       {/* With description */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>With Description</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          With Description
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledSearchField
             label="Product Search"
@@ -2135,7 +2312,9 @@ function StyledSearchFieldDemo(props: { onSearch?: (value: string) => void }) {
 
       {/* States */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>States</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          States
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledSearchField
             label="Disabled"
@@ -2210,7 +2389,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
     <Flex direction="column" gap={8}>
       {/* Basic ComboBox */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic ComboBox with Filtering</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic ComboBox with Filtering
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
@@ -2224,7 +2405,14 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
           >
             {(item: ComboBoxItem) => (
               <StyledComboBoxOption id={item.id}>
-                <div style={{ display: "flex", "justify-content": "space-between", "align-items": "center", width: "100%" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    "justify-content": "space-between",
+                    "align-items": "center",
+                    width: "100%",
+                  }}
+                >
                   <span>{item.name}</span>
                   <Text styles={typeRoles.meta}>{item.category}</Text>
                 </div>
@@ -2236,7 +2424,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
 
       {/* Size variants */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Size Variants
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(180px, 1fr))" gap={6}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
@@ -2284,7 +2474,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
 
       {/* With description and validation */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>With Description & Validation</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          With Description & Validation
+        </Heading>
         <Grid columns="repeat(auto-fit, minmax(240px, 1fr))" gap={6}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
@@ -2322,7 +2514,9 @@ function StyledComboBoxDemo(props: { onSelectionChange?: (key: string | number |
 
       {/* Disabled state */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Disabled</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Disabled
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledComboBox<ComboBoxItem>
             items={comboBoxItems}
@@ -2360,7 +2554,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
     <Flex direction="column" gap={8}>
       {/* Basic Slider */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic Slider</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic Slider
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledSlider label="Volume" value={value()} onChange={handleChange} />
         </div>
@@ -2368,7 +2564,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Size variants */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Size Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Size Variants
+        </Heading>
         <Grid gap={6}>
           <StyledSlider label="Small" defaultValue={30} size="sm" onChange={props.onChange} />
           <StyledSlider
@@ -2383,7 +2581,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Variant styles */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Variants</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Variants
+        </Heading>
         <Grid gap={6}>
           <StyledSlider
             label="Default"
@@ -2402,7 +2602,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Custom range and step */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Custom Range and Step</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Custom Range and Step
+        </Heading>
         <Grid gap={6}>
           <StyledSlider
             label="Temperature (°C)"
@@ -2427,7 +2629,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
 
       {/* With formatting */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>With Formatting</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          With Formatting
+        </Heading>
         <Grid gap={6}>
           <StyledSlider
             label="Price"
@@ -2451,7 +2655,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Disabled */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Disabled</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Disabled
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledSlider label="Disabled Slider" defaultValue={50} isDisabled />
         </div>
@@ -2459,7 +2665,9 @@ function StyledSliderDemo(props: { onChange?: (value: number) => void }) {
 
       {/* Without output */}
       <div>
-        <Heading level={4} styles={typeRoles.label}>Without Output</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Without Output
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <StyledSlider
             label="Brightness"
@@ -2550,23 +2758,30 @@ function ToolbarDemo(props: { onLastAction: (value: string) => void }) {
   return (
     <Flex direction="column" gap={6}>
       <div>
-        <Heading level={4} styles={typeRoles.label}>Horizontal Toolbar</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Horizontal Toolbar
+        </Heading>
         <StyledToolbar aria-label="Text formatting toolbar">
-          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: bold")}
-          >Bold</ActionButton>
-          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: italic")}
-          >Italic</ActionButton>
-          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: underline")}
-          >Underline</ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: bold")}>
+            Bold
+          </ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: italic")}>
+            Italic
+          </ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("Toolbar: underline")}>
+            Underline
+          </ActionButton>
         </StyledToolbar>
       </div>
 
       <div>
-        <Heading level={4} styles={typeRoles.label}>Vertical Toolbar</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Vertical Toolbar
+        </Heading>
         <StyledToolbar orientation="vertical" aria-label="Edit toolbar">
-          <ActionButton size="S" >Cut</ActionButton>
-          <ActionButton size="S" >Copy</ActionButton>
-          <ActionButton size="S" >Paste</ActionButton>
+          <ActionButton size="S">Cut</ActionButton>
+          <ActionButton size="S">Copy</ActionButton>
+          <ActionButton size="S">Paste</ActionButton>
         </StyledToolbar>
       </div>
     </Flex>
@@ -2612,10 +2827,12 @@ function ActionBarDemo(props: { onLastAction: (value: string) => void }) {
           onClearSelection={clearSelection}
           aria-label="Bulk actions toolbar"
         >
-          <ActionButton size="S" onPress={() => props.onLastAction("ActionBar: archive")}
-          >Archive</ActionButton>
-          <ActionButton size="S" onPress={() => props.onLastAction("ActionBar: delete")}
-          >Delete</ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("ActionBar: archive")}>
+            Archive
+          </ActionButton>
+          <ActionButton size="S" onPress={() => props.onLastAction("ActionBar: delete")}>
+            Delete
+          </ActionButton>
         </StyledActionBar>
       </StyledActionBarContainer>
     </Flex>
@@ -2769,7 +2986,9 @@ function RangeSliderDemo(props: { onChange?: (start: number, end: number) => voi
   return (
     <Flex direction="column" gap={8}>
       <div>
-        <Heading level={4} styles={typeRoles.label}>Basic Range Slider</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          Basic Range Slider
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <RangeSlider
             label="Price Range"
@@ -2782,7 +3001,9 @@ function RangeSliderDemo(props: { onChange?: (start: number, end: number) => voi
         </div>
       </div>
       <div>
-        <Heading level={4} styles={typeRoles.label}>With Formatting</Heading>
+        <Heading level={4} styles={typeRoles.label}>
+          With Formatting
+        </Heading>
         <div style={{ "max-width": "28rem" }}>
           <RangeSlider
             label="Budget"

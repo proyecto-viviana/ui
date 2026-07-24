@@ -127,7 +127,16 @@ const scenario: DriverScenario = {
       {
         id: "horizontal",
         start: beforeButton,
-        keys: ["Tab", "ArrowRight", "ArrowDown", "ArrowRight", "ArrowLeft", "ArrowUp", "Home", "End"],
+        keys: [
+          "Tab",
+          "ArrowRight",
+          "ArrowDown",
+          "ArrowRight",
+          "ArrowLeft",
+          "ArrowUp",
+          "Home",
+          "End",
+        ],
       },
     ],
   },

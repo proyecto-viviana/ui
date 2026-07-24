@@ -18,7 +18,10 @@ function PixelPlayIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       {...rest}
       class={className}
     >
-      <path d="M7 4h2v16H7zM9 6h2v12H9zM11 8h2v8h-2zM13 10h2v4h-2zM15 11h2v2h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M7 4h2v16H7zM9 6h2v12H9zM11 8h2v8h-2zM13 10h2v4h-2zM15 11h2v2h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

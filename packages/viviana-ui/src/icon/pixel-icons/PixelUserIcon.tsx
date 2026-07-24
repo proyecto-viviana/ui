@@ -18,7 +18,10 @@ function PixelUserIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       {...rest}
       class={className}
     >
-      <path d="M9 4h6v2H9zM8 6h2v4H8zM14 6h2v4h-2zM9 10h6v2H9zM8 13h8v2H8zM6 15h2v5H6zM16 15h2v5h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M9 4h6v2H9zM8 6h2v4H8zM14 6h2v4h-2zM9 10h6v2H9zM8 13h8v2H8zM6 15h2v5H6zM16 15h2v5h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

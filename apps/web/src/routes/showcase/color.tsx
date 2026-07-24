@@ -53,7 +53,9 @@ function ColorPanel() {
       <Demo label="ColorField · hex input — sizes">
         <Row>
           <For each={FIELD_SIZES}>
-            {(size) => <ColorField size={size} defaultValue="#2e90fa" aria-label={`Color ${size}`} />}
+            {(size) => (
+              <ColorField size={size} defaultValue="#2e90fa" aria-label={`Color ${size}`} />
+            )}
           </For>
         </Row>
       </Demo>
@@ -83,7 +85,11 @@ function ColorPanel() {
       </Demo>
 
       <Demo label="ColorSwatchPickerItem · explicit items — compatibility composition">
-        <ColorSwatchPicker aria-label="Accent color, explicit items" defaultValue={PALETTE[1]} rounding="full">
+        <ColorSwatchPicker
+          aria-label="Accent color, explicit items"
+          defaultValue={PALETTE[1]}
+          rounding="full"
+        >
           <For each={PALETTE}>{(color) => <ColorSwatchPickerItem color={color} />}</For>
         </ColorSwatchPicker>
       </Demo>

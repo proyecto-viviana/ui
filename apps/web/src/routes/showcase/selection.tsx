@@ -146,10 +146,20 @@ function Page() {
       </Demo>
 
       <Demo label="TabSwitch — custom Viviana control, no S2 upstream, fully controlled">
-        <span style={{ font: "var(--type-terminal)", "font-family": "var(--font-mono)", color: "var(--text-secondary)" }}>
+        <span
+          style={{
+            font: "var(--type-terminal)",
+            "font-family": "var(--font-mono)",
+            color: "var(--text-secondary)",
+          }}
+        >
           {tabSwitchValue()}
         </span>
-        <TabSwitch options={TAB_SWITCH_OPTIONS} value={tabSwitchValue()} onChange={setTabSwitchValue} />
+        <TabSwitch
+          options={TAB_SWITCH_OPTIONS}
+          value={tabSwitchValue()}
+          onChange={setTabSwitchValue}
+        />
       </Demo>
     </Panel>
   );

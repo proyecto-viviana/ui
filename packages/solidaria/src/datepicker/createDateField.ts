@@ -177,7 +177,9 @@ export function createDateField<T extends DateFieldState>(
     if (isPresentation()) {
       return fp["aria-describedby"];
     }
-    return [descProps["aria-describedby"], fp["aria-describedby"]].filter(Boolean).join(" ") || undefined;
+    return (
+      [descProps["aria-describedby"], fp["aria-describedby"]].filter(Boolean).join(" ") || undefined
+    );
   };
 
   const propsFocusManager = getProps()[focusManagerSymbol] as FocusManager | undefined;

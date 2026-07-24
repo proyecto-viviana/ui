@@ -85,7 +85,9 @@ function SelectPage() {
               {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
             </SelectListBox>
           </Select>
-          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Selected: {selected() || "None"}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+            Selected: {selected() || "None"}
+          </p>
         </div>
       </Example>
 

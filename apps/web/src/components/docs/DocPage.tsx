@@ -191,7 +191,8 @@ export function PropsTable(props: PropsTableProps) {
                         "font-family": FONT_MONO,
                         "font-size": "12px",
                         "font-weight": "500",
-                        border: "1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)",
+                        border:
+                          "1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)",
                       }}
                     >
                       {prop.name}

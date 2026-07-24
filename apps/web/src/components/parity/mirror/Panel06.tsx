@@ -99,7 +99,12 @@ export function MirrorPanel06(): JSX.Element {
             Its border resolves through var(--border-subtle), so the rim matches too. */}
         {/* `id` is not optional: CardProps extends GridListItemProps, so even a standalone
             Card that never joins a collection has to be given a collection key. */}
-        <Card id="mirror-06-sdf-raymarching" size="M" mesh="ambient" UNSAFE_style={{ width: "100%" }}>
+        <Card
+          id="mirror-06-sdf-raymarching"
+          size="M"
+          mesh="ambient"
+          UNSAFE_style={{ width: "100%" }}
+        >
           <CardPreview>
             {/* Image gets aspect-ratio 3/2 and object-fit:cover from the card's own
                 ImageContext. GAP (proportion): the spec fixes the thumbnail at 110px tall;

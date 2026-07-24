@@ -133,8 +133,7 @@ const trackTarget: TargetResolver = ({ canvas }) => canvas.locator(`${root} [rol
 /** The roleless thumb `<div>` (the sole `<div>` child of the track) — absolute left/top at
  *  the channel %, `transform:translate(-50%,-50%)`, 16→32px size, 2px white border, 1px
  *  black/42 outline, `linear-gradient(color,color), checkerboard` bg. */
-const thumbTarget: TargetResolver = ({ canvas }) =>
-  canvas.locator(`${root} [role="group"] > div`);
+const thumbTarget: TargetResolver = ({ canvas }) => canvas.locator(`${root} [role="group"] > div`);
 /** The inner ring `<div>` (the sole `<div>` grandchild of the track — the `<input>` is
  *  skipped since it is not a `<div>`; the loupe is drag-only + portals to `<body>`) — 1px
  *  black/42 border, full radius. */

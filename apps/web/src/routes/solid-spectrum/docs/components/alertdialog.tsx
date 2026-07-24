@@ -44,7 +44,11 @@ function AlertDialogPage() {
           >
             Are you sure you want to delete this item? This action cannot be undone.
           </AlertDialog>
-          {lastAction() && <span class={typeRoles.meta} style={{ "align-self": "center" }}>{lastAction()}</span>}
+          {lastAction() && (
+            <span class={typeRoles.meta} style={{ "align-self": "center" }}>
+              {lastAction()}
+            </span>
+          )}
         </Flex>
       </Example>
 

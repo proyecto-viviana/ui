@@ -7,106 +7,106 @@ export type SpinButtonStringKey = "Empty";
 
 export const spinButtonStrings: Record<string, Record<SpinButtonStringKey, string>> = {
   "ar-AE": {
-  "Empty": `\u{641}\u{627}\u{631}\u{63A}`
+    Empty: `\u{641}\u{627}\u{631}\u{63A}`,
   },
   "bg-BG": {
-  "Empty": `\u{418}\u{437}\u{43F}\u{440}\u{430}\u{437}\u{43D}\u{438}`
+    Empty: `\u{418}\u{437}\u{43F}\u{440}\u{430}\u{437}\u{43D}\u{438}`,
   },
   "cs-CZ": {
-  "Empty": `Pr\xe1zdn\xe9`
+    Empty: `Pr\xe1zdn\xe9`,
   },
   "da-DK": {
-  "Empty": `Tom`
+    Empty: `Tom`,
   },
   "de-DE": {
-  "Empty": `Leer`
+    Empty: `Leer`,
   },
   "el-GR": {
-  "Empty": `\u{386}\u{3B4}\u{3B5}\u{3B9}\u{3BF}`
+    Empty: `\u{386}\u{3B4}\u{3B5}\u{3B9}\u{3BF}`,
   },
   "en-US": {
-  "Empty": `Empty`
+    Empty: `Empty`,
   },
   "es-ES": {
-  "Empty": `Vac\xedo`
+    Empty: `Vac\xedo`,
   },
   "et-EE": {
-  "Empty": `T\xfchjenda`
+    Empty: `T\xfchjenda`,
   },
   "fi-FI": {
-  "Empty": `Tyhj\xe4`
+    Empty: `Tyhj\xe4`,
   },
   "fr-FR": {
-  "Empty": `Vide`
+    Empty: `Vide`,
   },
   "he-IL": {
-  "Empty": `\u{5E8}\u{5D9}\u{5E7}`
+    Empty: `\u{5E8}\u{5D9}\u{5E7}`,
   },
   "hr-HR": {
-  "Empty": `Prazno`
+    Empty: `Prazno`,
   },
   "hu-HU": {
-  "Empty": `\xdcres`
+    Empty: `\xdcres`,
   },
   "it-IT": {
-  "Empty": `Vuoto`
+    Empty: `Vuoto`,
   },
   "ja-JP": {
-  "Empty": `\u{7A7A}`
+    Empty: `\u{7A7A}`,
   },
   "ko-KR": {
-  "Empty": `\u{BE44}\u{C5B4} \u{C788}\u{C74C}`
+    Empty: `\u{BE44}\u{C5B4} \u{C788}\u{C74C}`,
   },
   "lt-LT": {
-  "Empty": `Tu\u{161}\u{10D}ias`
+    Empty: `Tu\u{161}\u{10D}ias`,
   },
   "lv-LV": {
-  "Empty": `Tuk\u{161}s`
+    Empty: `Tuk\u{161}s`,
   },
   "nb-NO": {
-  "Empty": `Tom`
+    Empty: `Tom`,
   },
   "nl-NL": {
-  "Empty": `Leeg`
+    Empty: `Leeg`,
   },
   "pl-PL": {
-  "Empty": `Pusty`
+    Empty: `Pusty`,
   },
   "pt-BR": {
-  "Empty": `Vazio`
+    Empty: `Vazio`,
   },
   "pt-PT": {
-  "Empty": `Vazio`
+    Empty: `Vazio`,
   },
   "ro-RO": {
-  "Empty": `Gol`
+    Empty: `Gol`,
   },
   "ru-RU": {
-  "Empty": `\u{41D}\u{435} \u{437}\u{430}\u{43F}\u{43E}\u{43B}\u{43D}\u{435}\u{43D}\u{43E}`
+    Empty: `\u{41D}\u{435} \u{437}\u{430}\u{43F}\u{43E}\u{43B}\u{43D}\u{435}\u{43D}\u{43E}`,
   },
   "sk-SK": {
-  "Empty": `Pr\xe1zdne`
+    Empty: `Pr\xe1zdne`,
   },
   "sl-SI": {
-  "Empty": `Prazen`
+    Empty: `Prazen`,
   },
   "sr-SP": {
-  "Empty": `Prazno`
+    Empty: `Prazno`,
   },
   "sv-SE": {
-  "Empty": `Tomt`
+    Empty: `Tomt`,
   },
   "tr-TR": {
-  "Empty": `Bo\u{15F}`
+    Empty: `Bo\u{15F}`,
   },
   "uk-UA": {
-  "Empty": `\u{41F}\u{443}\u{441}\u{442}\u{43E}`
+    Empty: `\u{41F}\u{443}\u{441}\u{442}\u{43E}`,
   },
   "zh-CN": {
-  "Empty": `\u{7A7A}`
+    Empty: `\u{7A7A}`,
   },
   "zh-TW": {
-  "Empty": `\u{7A7A}\u{767D}`
+    Empty: `\u{7A7A}\u{767D}`,
   },
 };
 

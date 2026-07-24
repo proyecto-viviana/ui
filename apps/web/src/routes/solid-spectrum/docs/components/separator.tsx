@@ -57,16 +57,28 @@ function SeparatorPage() {
       >
         <Flex direction="column" gap={4}>
           <Flex alignItems="center" gap={3}>
-            <span class={typeRoles.meta} style={{ width: "24px" }}>sm</span>
-            <div style={{ flex: "1" }}><Separator size="sm" /></div>
+            <span class={typeRoles.meta} style={{ width: "24px" }}>
+              sm
+            </span>
+            <div style={{ flex: "1" }}>
+              <Separator size="sm" />
+            </div>
           </Flex>
           <Flex alignItems="center" gap={3}>
-            <span class={typeRoles.meta} style={{ width: "24px" }}>md</span>
-            <div style={{ flex: "1" }}><Separator size="md" /></div>
+            <span class={typeRoles.meta} style={{ width: "24px" }}>
+              md
+            </span>
+            <div style={{ flex: "1" }}>
+              <Separator size="md" />
+            </div>
           </Flex>
           <Flex alignItems="center" gap={3}>
-            <span class={typeRoles.meta} style={{ width: "24px" }}>lg</span>
-            <div style={{ flex: "1" }}><Separator size="lg" /></div>
+            <span class={typeRoles.meta} style={{ width: "24px" }}>
+              lg
+            </span>
+            <div style={{ flex: "1" }}>
+              <Separator size="lg" />
+            </div>
           </Flex>
         </Flex>
       </Example>
@@ -80,16 +92,28 @@ function SeparatorPage() {
       >
         <Flex direction="column" gap={4}>
           <Flex alignItems="center" gap={3}>
-            <span class={typeRoles.meta} style={{ width: "64px" }}>default</span>
-            <div style={{ flex: "1" }}><Separator variant="default" /></div>
+            <span class={typeRoles.meta} style={{ width: "64px" }}>
+              default
+            </span>
+            <div style={{ flex: "1" }}>
+              <Separator variant="default" />
+            </div>
           </Flex>
           <Flex alignItems="center" gap={3}>
-            <span class={typeRoles.meta} style={{ width: "64px" }}>subtle</span>
-            <div style={{ flex: "1" }}><Separator variant="subtle" /></div>
+            <span class={typeRoles.meta} style={{ width: "64px" }}>
+              subtle
+            </span>
+            <div style={{ flex: "1" }}>
+              <Separator variant="subtle" />
+            </div>
           </Flex>
           <Flex alignItems="center" gap={3}>
-            <span class={typeRoles.meta} style={{ width: "64px" }}>strong</span>
-            <div style={{ flex: "1" }}><Separator variant="strong" /></div>
+            <span class={typeRoles.meta} style={{ width: "64px" }}>
+              strong
+            </span>
+            <div style={{ flex: "1" }}>
+              <Separator variant="strong" />
+            </div>
           </Flex>
         </Flex>
       </Example>

@@ -286,8 +286,7 @@ describe("createDroppableCollection keyboard engine (DragManager seam)", () => {
 
   it("skips targets the state rejects via getDropOperation (nextValidTarget)", () => {
     // Reject every drop position on item 1 — navigation should land on item 2.
-    const reject1: GetDropOperation = (t) =>
-      t.type === "item" && t.key === 1 ? "cancel" : "move";
+    const reject1: GetDropOperation = (t) => (t.type === "item" && t.key === 1 ? "cancel" : "move");
     const { state, calls } = makeState(reject1);
     const { descriptor } = mountHarness({ keys: [1, 2, 3], state });
 

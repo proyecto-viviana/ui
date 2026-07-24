@@ -123,7 +123,9 @@ function BreadcrumbsPage() {
       >
         <Flex direction="column" gap={4}>
           <div>
-            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>Small</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>
+              Small
+            </p>
             <Breadcrumbs size="sm" items={dashboardCrumbs}>
               {(crumb: BreadcrumbEntry) => (
                 <BreadcrumbItem id={crumb.id} href={crumb.href}>
@@ -133,7 +135,9 @@ function BreadcrumbsPage() {
             </Breadcrumbs>
           </div>
           <div>
-            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>Medium (default)</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>
+              Medium (default)
+            </p>
             <Breadcrumbs size="md" items={dashboardCrumbs}>
               {(crumb: BreadcrumbEntry) => (
                 <BreadcrumbItem id={crumb.id} href={crumb.href}>
@@ -143,7 +147,9 @@ function BreadcrumbsPage() {
             </Breadcrumbs>
           </div>
           <div>
-            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>Large</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>
+              Large
+            </p>
             <Breadcrumbs size="lg" items={dashboardCrumbs}>
               {(crumb: BreadcrumbEntry) => (
                 <BreadcrumbItem id={crumb.id} href={crumb.href}>

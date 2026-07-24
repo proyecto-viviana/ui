@@ -150,7 +150,11 @@ function Page() {
           </Breadcrumbs>
         </Row>
         <Row>
-          <Breadcrumbs aria-label="Path — BreadcrumbItem alias" items={TRAIL} getKey={(item) => item.id}>
+          <Breadcrumbs
+            aria-label="Path — BreadcrumbItem alias"
+            items={TRAIL}
+            getKey={(item) => item.id}
+          >
             {(item) => <BreadcrumbItem>{item.label}</BreadcrumbItem>}
           </Breadcrumbs>
         </Row>
@@ -231,7 +235,11 @@ function Page() {
               </Step>
             )}
           </StepList>
-          <StepList aria-label="Bare steps (StepListItem alias)" items={STEPS} defaultSelectedKey="details">
+          <StepList
+            aria-label="Bare steps (StepListItem alias)"
+            items={STEPS}
+            defaultSelectedKey="details"
+          >
             {(item, state) => (
               <StepListItem item={item} stepNumber={state.stepNumber}>
                 {state.stepNumber}. {item.label}

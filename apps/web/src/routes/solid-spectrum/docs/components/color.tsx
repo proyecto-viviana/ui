@@ -87,7 +87,12 @@ import { parseColor, type Color } from '@proyecto-viviana/solid-stately';`}
 </ColorSlider>`}
       >
         <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
-          <ColorSlider channel="hue" value={sliderColor()} onChange={setSliderColor} class="hd-color-slider">
+          <ColorSlider
+            channel="hue"
+            value={sliderColor()}
+            onChange={setSliderColor}
+            class="hd-color-slider"
+          >
             {() => (
               <>
                 <Flex justifyContent="between" style={{ "margin-bottom": "4px" }}>

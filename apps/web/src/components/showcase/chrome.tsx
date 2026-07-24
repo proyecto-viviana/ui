@@ -26,7 +26,9 @@ export function ShowcaseTopbar(): JSX.Element {
 
   /* The trailing segment of /showcase/<slug>; "" on the /showcase index. */
   const currentSlug = (): string => {
-    const rest = location().pathname.replace(/^\/showcase\/?/, "").replace(/\/$/, "");
+    const rest = location()
+      .pathname.replace(/^\/showcase\/?/, "")
+      .replace(/\/$/, "");
     return rest;
   };
 
@@ -94,7 +96,10 @@ export function Panel(props: {
 }
 
 /** A labeled demo cluster inside a panel. */
-export function Demo(props: { readonly label: string; readonly children: JSX.Element }): JSX.Element {
+export function Demo(props: {
+  readonly label: string;
+  readonly children: JSX.Element;
+}): JSX.Element {
   return (
     <div class="gls-demo">
       <span class="gls-demo-label">{props.label}</span>

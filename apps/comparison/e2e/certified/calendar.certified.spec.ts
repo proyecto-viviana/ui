@@ -84,8 +84,7 @@ const dayThreeCell: TargetResolver = (ctx) =>
  * locale-independent, and both stacks put `tabIndex 0` on exactly the focused
  * cell (`createCalendarCell` buttonProps `isFocused ? 0 : -1`).
  */
-const rovingCell: TargetResolver = (ctx) =>
-  calendar(ctx).locator('[role="button"][tabindex="0"]');
+const rovingCell: TargetResolver = (ctx) => calendar(ctx).locator('[role="button"][tabindex="0"]');
 
 const calendarPaintScenario: DriverScenario = {
   slug: "calendar",

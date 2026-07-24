@@ -345,13 +345,9 @@ function DateFieldContent(props: {
   // compose focus-visible from the global interaction modality — exactly how
   // createFocusRing derives `isFocusVisible = isFocused && focusVisibleFlag`.
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
-  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(
-    isGlobalFocusVisible(),
-  );
+  const [isFocusVisibleModality, setIsFocusVisibleModality] = createSignal(isGlobalFocusVisible());
   createEffect(() => {
-    const cleanup = createFocusVisibleListener((visible) =>
-      setIsFocusVisibleModality(visible),
-    );
+    const cleanup = createFocusVisibleListener((visible) => setIsFocusVisibleModality(visible));
     onCleanup(cleanup);
   });
   const isFocusVisibleWithin = () => isFocusWithin() && isFocusVisibleModality();

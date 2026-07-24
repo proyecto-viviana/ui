@@ -272,9 +272,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     : undefined;
 
   const mergedProps = withFormValidationBehavior(
-    autocompleteProps
-      ? (mergeProps(baseProps, autocompleteProps) as SearchFieldProps)
-      : baseProps,
+    autocompleteProps ? (mergeProps(baseProps, autocompleteProps) as SearchFieldProps) : baseProps,
     formContext,
   );
 

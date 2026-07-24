@@ -23,7 +23,7 @@ in this repository. Goals:
 
 ## What Glasselated is
 
-The v2 register from the external design repo: *glass + pixelated* — frosted
+The v2 register from the external design repo: _glass + pixelated_ — frosted
 translucent panels over a photographic scene, Geist Pixel for display type,
 Geist for body, Geist Mono inside terminal components, and pixel-art details
 (ordered dither, block states) as craft. It supersedes the "Aurora Glass"
@@ -217,7 +217,7 @@ gutter removed. Tab now provides `NotificationBadgeContext` with
 mutually-exclusive `variant: { line: …, pill: … }` nesting dodges
 sibling-condition cascade-order ambiguity; branches typed at only one variant
 emit nothing when unmatched, so internal callers must always pass `variant`.
-Landmines: `getComputedStyle` margin-* returns the USED value — `auto`
+Landmines: `getComputedStyle` margin-\* returns the USED value — `auto`
 reports `0px` when the flex row has no free space (the demo Well had shrunk
 to content because `max-width` alone doesn't size a flex item; fix `width`);
 diagnose via CDP `CSS.getMatchedStylesForNode`, not `cssRules` walks (CSS

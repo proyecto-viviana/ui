@@ -1260,10 +1260,7 @@ function SolidSpectrumProviderDemo() {
 function scopeVivianaTokens(scopeAttr: string): string {
   return vivianaTokensCss
     .replaceAll(":root {", `[${scopeAttr}] {`)
-    .replaceAll(
-      '[data-color-scheme="light"] {',
-      `[${scopeAttr}] [data-color-scheme="light"] {`,
-    );
+    .replaceAll('[data-color-scheme="light"] {', `[${scopeAttr}] [data-color-scheme="light"] {`);
 }
 
 const vivianaChipScopedTokensCss = scopeVivianaTokens("data-viviana-chip-scope");
@@ -1280,7 +1277,10 @@ const chipRowStyle = {
   "flex-wrap": "wrap",
 };
 
-const chipVariants: readonly { text: string; variant: "primary" | "secondary" | "accent" | "outline" }[] = [
+const chipVariants: readonly {
+  text: string;
+  variant: "primary" | "secondary" | "accent" | "outline";
+}[] = [
   { text: "Primary", variant: "primary" },
   { text: "Secondary", variant: "secondary" },
   { text: "Accent", variant: "accent" },
@@ -1720,7 +1720,12 @@ const conversationAvatar =
   "data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2064%2064'%3E%3Crect%20width%3D'64'%20height%3D'64'%20fill%3D'%23df5c9a'%2F%3E%3C%2Fsvg%3E";
 
 const conversationMessages = [
-  { id: "m1", content: "¿Vienes al evento del sábado?", sender: "other" as const, timestamp: "10:02" },
+  {
+    id: "m1",
+    content: "¿Vienes al evento del sábado?",
+    sender: "other" as const,
+    timestamp: "10:02",
+  },
   { id: "m2", content: "¡Sí, allí estaré!", sender: "user" as const, timestamp: "10:04" },
 ];
 
@@ -2912,8 +2917,7 @@ function SolidSpectrumAutocompleteDemo() {
     hc(
       SolidHeadlessAutocomplete,
       {
-        filter: (textValue: string, inputValue: string) =>
-          filter().contains(textValue, inputValue),
+        filter: (textValue: string, inputValue: string) => filter().contains(textValue, inputValue),
       },
       [
         hc(
@@ -2951,7 +2955,9 @@ function SolidSpectrumAutocompleteDemo() {
                 getTextValue: (item: AutocompleteDemoItem) => item.label,
               },
               renderProp((item: AutocompleteDemoItem) =>
-                hc(SolidHeadlessListBoxOption, { id: item.id, textValue: item.label }, [item.label]),
+                hc(SolidHeadlessListBoxOption, { id: item.id, textValue: item.label }, [
+                  item.label,
+                ]),
               ),
             ),
           ],
@@ -3199,11 +3205,11 @@ function SolidSpectrumStepListDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        { class: "comparison-gridlist-row" },
-        [h("button", {}, "Before"), renderedStepList, h("button", {}, "After")],
-      ),
+      hc("div", { class: "comparison-gridlist-row" }, [
+        h("button", {}, "Before"),
+        renderedStepList,
+        h("button", {}, "After"),
+      ]),
     ],
   );
 }
@@ -3282,11 +3288,11 @@ function SolidSpectrumToolbarDemo() {
       style: providerShellStyle,
     },
     [
-      hc(
-        "div",
-        { class: "comparison-gridlist-row" },
-        [h("button", {}, "Before"), renderedToolbar, h("button", {}, "After")],
-      ),
+      hc("div", { class: "comparison-gridlist-row" }, [
+        h("button", {}, "Before"),
+        renderedToolbar,
+        h("button", {}, "After"),
+      ]),
     ],
   );
 }

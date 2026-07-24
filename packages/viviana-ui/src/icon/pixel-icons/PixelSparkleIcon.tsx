@@ -18,7 +18,10 @@ function PixelSparkleIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       {...rest}
       class={className}
     >
-      <path d="M11 3h2v6h-2zM11 15h2v6h-2zM3 11h6v2H3zM15 11h6v2h-6zM10 10h4v4h-4z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M11 3h2v6h-2zM11 15h2v6h-2zM3 11h6v2H3zM15 11h6v2h-6zM10 10h4v4h-4z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

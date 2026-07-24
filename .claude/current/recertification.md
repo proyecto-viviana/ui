@@ -43,7 +43,7 @@ react-aria `3.50.0`. Re-bump the pins together when Adobe releases (see
     so D1/D2/D3 are out, D5/D6 run inline, and D7/D8 assert against WCAG in the
     absolute (`assertAA` / 24px target) rather than against a styled S2 oracle.
 - **Phase 3 — closers: CP9.82–86.** `guard:style-macro-parity`, `guard:idiomatic-
-  solid`, the gated WCAG-AAA report, the D3 waiver burn-down, and retiring the
+solid`, the gated WCAG-AAA report, the D3 waiver burn-down, and retiring the
   audit scaffolding.
 - **Post-march:** the D4 Tabs touch-tap event-ordering red was closed by binding
   roving to `focusin` (React delegation) rather than the native `focus` event.

@@ -40,7 +40,9 @@ function SwitchPage() {
   <span>Enable notifications</span>
 </label>`}
       >
-        <label style={{ display: "flex", "align-items": "center", gap: "0.75rem", cursor: "pointer" }}>
+        <label
+          style={{ display: "flex", "align-items": "center", gap: "0.75rem", cursor: "pointer" }}
+        >
           <ToggleSwitch isSelected={notifications()} onChange={setNotifications} />
           <span class={typeRoles.body}>Enable notifications</span>
         </label>

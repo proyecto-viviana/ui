@@ -132,9 +132,7 @@ export function registerReorderDriver(scenario: DriverScenario, config: ReorderC
           expect(trails.solid, "solid panel produced no trail").toBeTruthy();
           expect(trails.react, "react panel produced no trail").toBeTruthy();
           // The keyboard-drag focus trail + reorder result must match the oracle.
-          expect(JSON.stringify(trails.solid, null, 2)).toBe(
-            JSON.stringify(trails.react, null, 2),
-          );
+          expect(JSON.stringify(trails.solid, null, 2)).toBe(JSON.stringify(trails.react, null, 2));
         });
       }
     }

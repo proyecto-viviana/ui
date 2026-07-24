@@ -31,8 +31,8 @@ function Overview() {
             The Glasselated register
           </h1>
           <p class="gls-panel-blurb">
-            Real @proyecto-viviana/ui components over a photographed scene: frosted glass
-            surfaces, matte terminal wells, and a strict three-face type system.
+            Real @proyecto-viviana/ui components over a photographed scene: frosted glass surfaces,
+            matte terminal wells, and a strict three-face type system.
           </p>
         </div>
         <div>

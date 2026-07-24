@@ -43,7 +43,9 @@ function ButtonsPanel() {
           <For each={VARIANTS}>
             {(variant) => (
               <Button variant={variant}>
-                {variant === "create" ? "+ Create" : variant.charAt(0).toUpperCase() + variant.slice(1)}
+                {variant === "create"
+                  ? "+ Create"
+                  : variant.charAt(0).toUpperCase() + variant.slice(1)}
               </Button>
             )}
           </For>
@@ -85,7 +87,12 @@ function ButtonsPanel() {
           <LinkButton href="/showcase" variant="primary">
             Back to overview
           </LinkButton>
-          <LinkButton href="https://github.com" target="_blank" variant="secondary" fillStyle="outline">
+          <LinkButton
+            href="https://github.com"
+            target="_blank"
+            variant="secondary"
+            fillStyle="outline"
+          >
             External
           </LinkButton>
         </Row>
@@ -145,12 +152,24 @@ function ButtonsPanel() {
         <Row>
           <FileTrigger
             onSelect={(list: FileList | null) =>
-              setFiles(list && list.length > 0 ? Array.from(list).map((f) => f.name).join(", ") : "no file selected")
+              setFiles(
+                list && list.length > 0
+                  ? Array.from(list)
+                      .map((f) => f.name)
+                      .join(", ")
+                  : "no file selected",
+              )
             }
           >
             <Button variant="secondary">Choose file…</Button>
           </FileTrigger>
-          <span style={{ font: "var(--type-terminal)", "font-family": "var(--font-mono)", color: "var(--text-secondary)" }}>
+          <span
+            style={{
+              font: "var(--type-terminal)",
+              "font-family": "var(--font-mono)",
+              color: "var(--text-secondary)",
+            }}
+          >
             {files()}
           </span>
         </Row>

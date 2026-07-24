@@ -61,7 +61,9 @@ function CreateButtonPage() {
         >
           Custom Gradient Button
         </GradientButton>
-        <p class={typeRoles.meta} style={{ "margin-top": "12px" }}>Status: {status()}</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "12px" }}>
+          Status: {status()}
+        </p>
       </Example>
 
       <Example

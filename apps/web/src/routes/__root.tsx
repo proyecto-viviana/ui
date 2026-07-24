@@ -86,7 +86,9 @@ function RootDocument(props: { children: JSX.Element }) {
             Sets both data-theme (legacy) and data-color-scheme (the styling switch). */}
         <script>{`(function(){try{var t=localStorage.getItem('pv-theme');var s=(t==='dark'||t==='light')?t:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',s);document.documentElement.setAttribute('data-color-scheme',s)}catch(e){}})()`}</script>
       </head>
-      <body style={{ "-webkit-font-smoothing": "antialiased", "-moz-osx-font-smoothing": "grayscale" }}>
+      <body
+        style={{ "-webkit-font-smoothing": "antialiased", "-moz-osx-font-smoothing": "grayscale" }}
+      >
         <ErrorBoundary fallback={(err, reset) => <ErrorFallback error={err} reset={reset} />}>
           <Suspense>{props.children}</Suspense>
         </ErrorBoundary>

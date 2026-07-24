@@ -715,7 +715,14 @@ export function DatePicker<T extends DateValue = CalendarDate>(
         <DatePickerButton
           ref={setButtonEl}
           class={({ isDisabled, isOpen, isHovered, isPressed, isFocusVisible }) =>
-            calendarButton({ isDisabled, isOpen, isHovered, isPressed, isFocusVisible, size: size() })
+            calendarButton({
+              isDisabled,
+              isOpen,
+              isHovered,
+              isPressed,
+              isFocusVisible,
+              size: size(),
+            })
           }
           style={pressScale(buttonEl)}
         >

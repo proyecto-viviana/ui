@@ -282,7 +282,9 @@ export function SpectrumPreviewGallery(props: SpectrumPreviewGalleryProps) {
               onSelectionChange={(k) => setTab(String(k))}
               aria-label="Preview tabs"
             >
-              <TabList<(typeof TABS)[number]>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
+              <TabList<(typeof TABS)[number]>>
+                {(item) => <Tab id={item.id}>{item.label}</Tab>}
+              </TabList>
               <TabPanel id="overview">
                 <p style={{ ...bodyNote, color: chrome().textSecondary }}>
                   A live snapshot of the Spectrum register.
@@ -302,7 +304,12 @@ export function SpectrumPreviewGallery(props: SpectrumPreviewGalleryProps) {
           </Panel>
 
           <Panel title="Profile" chrome={chrome()}>
-            <UserCard id="profile" size="M" textValue="Solid Spectrum" UNSAFE_style={{ width: "100%" }}>
+            <UserCard
+              id="profile"
+              size="M"
+              textValue="Solid Spectrum"
+              UNSAFE_style={{ width: "100%" }}
+            >
               <Avatar src={AVATAR_IMAGE} alt="" />
               <Content>
                 <Text slot="title">@solid_spectrum</Text>
@@ -335,7 +342,13 @@ export function SpectrumPreviewGallery(props: SpectrumPreviewGalleryProps) {
             <Flex wrap gap={4}>
               <For each={CARDS}>
                 {(c) => (
-                  <Card id={c.title} size="M" variant="primary" textValue={c.title} UNSAFE_style={{ width: "220px" }}>
+                  <Card
+                    id={c.title}
+                    size="M"
+                    variant="primary"
+                    textValue={c.title}
+                    UNSAFE_style={{ width: "220px" }}
+                  >
                     <CardPreview>
                       <Image src={CARD_IMAGE} alt="" />
                     </CardPreview>

@@ -66,7 +66,9 @@ function ComboBoxPage() {
             {(item: FoodItem) => (
               <ComboBoxOption id={item.id}>
                 <span class={typeRoles.label}>{item.name}</span>
-                <span class={typeRoles.meta} style={{ "margin-left": "8px" }}>{item.category}</span>
+                <span class={typeRoles.meta} style={{ "margin-left": "8px" }}>
+                  {item.category}
+                </span>
               </ComboBoxOption>
             )}
           </ComboBox>

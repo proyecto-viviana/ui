@@ -239,7 +239,10 @@ describe("Menu (solid-spectrum)", () => {
     // hashes; jsdom loads no CSS), so these assert a non-empty class and that a
     // distinct variant/size yields a distinct class string rather than matching
     // literal Tailwind utilities.
-    const renderMenuButton = (props: { variant?: "primary" | "secondary" | "quiet" } = {}, size?: "sm" | "lg") => {
+    const renderMenuButton = (
+      props: { variant?: "primary" | "secondary" | "quiet" } = {},
+      size?: "sm" | "lg",
+    ) => {
       const { unmount } = render(() => (
         <MenuTrigger size={size}>
           <MenuButton variant={props.variant}>Actions</MenuButton>
@@ -258,11 +261,15 @@ describe("Menu (solid-spectrum)", () => {
     });
 
     it("applies a distinct primary variant class", () => {
-      expect(renderMenuButton({ variant: "primary" })).not.toBe(renderMenuButton({ variant: "secondary" }));
+      expect(renderMenuButton({ variant: "primary" })).not.toBe(
+        renderMenuButton({ variant: "secondary" }),
+      );
     });
 
     it("applies a distinct quiet variant class", () => {
-      expect(renderMenuButton({ variant: "quiet" })).not.toBe(renderMenuButton({ variant: "secondary" }));
+      expect(renderMenuButton({ variant: "quiet" })).not.toBe(
+        renderMenuButton({ variant: "secondary" }),
+      );
     });
 
     it("applies a non-empty md size class by default", () => {

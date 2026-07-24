@@ -46,7 +46,14 @@ import path from "node:path";
 process.env.NODE_ENV = "production";
 
 const ROOT = process.cwd();
-const OUR_THEME = path.join(ROOT, "packages", "solid-spectrum", "src", "style", "spectrum-theme.ts");
+const OUR_THEME = path.join(
+  ROOT,
+  "packages",
+  "solid-spectrum",
+  "src",
+  "style",
+  "spectrum-theme.ts",
+);
 const UP_THEME = path.join(
   ROOT,
   "react-spectrum",
@@ -96,7 +103,10 @@ interface Case {
  */
 const CORPUS: Case[] = [
   // --- upstream's own feature probes -----------------------------------------
-  { name: "nested-css-conditions", style: { marginTop: { ":first-child": { default: 4, lg: 8 } } } },
+  {
+    name: "nested-css-conditions",
+    style: { marginTop: { ":first-child": { default: 4, lg: 8 } } },
+  },
   {
     name: "self-references",
     style: {

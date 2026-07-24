@@ -39,9 +39,9 @@ function ParityPanel() {
             Parity
           </h1>
           <p class="gls-panel-blurb">
-            The hand-built Glasselated spec beside its twin built from real
-            @proyecto-viviana/ui components — one pair per row, so every divergence is the
-            component's, not the container's.
+            The hand-built Glasselated spec beside its twin built from real @proyecto-viviana/ui
+            components — one pair per row, so every divergence is the component's, not the
+            container's.
           </p>
         </div>
         <div class="gls-parity-cols" aria-hidden="true">

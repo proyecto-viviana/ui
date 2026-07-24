@@ -811,9 +811,7 @@ export interface MenuSeparatorProps {
  * A visual separator between menu items.
  */
 export function MenuSeparator(props: MenuSeparatorProps): JSX.Element {
-  return (
-    <div role="separator" class={[separatorStyles, props.class].filter(Boolean).join(" ")} />
-  );
+  return <div role="separator" class={[separatorStyles, props.class].filter(Boolean).join(" ")} />;
 }
 
 function ChevronIcon(props: { class?: string }): JSX.Element {

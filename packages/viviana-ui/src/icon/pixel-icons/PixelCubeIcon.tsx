@@ -18,7 +18,10 @@ function PixelCubeIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       {...rest}
       class={className}
     >
-      <path d="M5 5h14v2H5zM5 17h14v2H5zM5 7h2v10H5zM17 7h2v10h-2zM9 9h6v6H9z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M5 5h14v2H5zM5 17h14v2H5zM5 7h2v10H5zM17 7h2v10h-2zM9 9h6v6H9z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

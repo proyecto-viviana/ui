@@ -16,11 +16,7 @@ import type {
   HSLColor,
   HSBColor,
 } from "./types";
-import {
-  getColorStringForLocale,
-  formatColorMessage,
-  type ColorStringKey,
-} from "./intl";
+import { getColorStringForLocale, formatColorMessage, type ColorStringKey } from "./intl";
 
 // Channel ranges
 const RGB_CHANNEL_RANGE: ColorChannelRange = {
@@ -230,7 +226,7 @@ function getOklchHueName(l: number, c: number, h: number, locale: string): [stri
       }
 
       const name = getColorStringForLocale(hueName as ColorStringKey, locale).toLocaleLowerCase(
-        locale
+        locale,
       );
       return [name, l];
     }
@@ -282,7 +278,9 @@ function getColorNameFromColor(color: Color, locale: string): string {
 
   const alpha = color.getChannelValue("alpha");
   if (alpha < 1) {
-    const percentTransparent = new Intl.NumberFormat(locale, { style: "percent" }).format(1 - alpha);
+    const percentTransparent = new Intl.NumberFormat(locale, { style: "percent" }).format(
+      1 - alpha,
+    );
     return formatColorMessage("transparentColorName", locale, {
       lightness,
       chroma,

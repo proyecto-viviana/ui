@@ -46,7 +46,11 @@ export interface FamilyMeta {
 
 export const FAMILY_META: Record<Family, FamilyMeta> = {
   primary: { label: "Primary", hint: "Brand blue — buttons, links, focus", ref: "--color-primary" },
-  accent: { label: "Accent", hint: "Secondary highlight — indigo by default", ref: "--color-accent" },
+  accent: {
+    label: "Accent",
+    hint: "Secondary highlight — indigo by default",
+    ref: "--color-accent",
+  },
   background: {
     label: "Background",
     hint: "Surfaces, cards, borders (tint only)",
@@ -90,7 +94,11 @@ export function familyOf(token: string): Family | null {
   if (t.startsWith("--color-success") || t === "--color-correct") return "success";
   if (t.startsWith("--color-warning")) return "warning";
   if (t.startsWith("--color-danger") || t === "--color-incorrect") return "danger";
-  if (t.startsWith("--color-bg-blue") || t.startsWith("--color-primary") || t.startsWith("--color-blue"))
+  if (
+    t.startsWith("--color-bg-blue") ||
+    t.startsWith("--color-primary") ||
+    t.startsWith("--color-blue")
+  )
     return "primary";
   if (t.startsWith("--color-accent") || t.startsWith("--color-pink")) return "accent";
   if (t.startsWith("--color-text")) return "text";
@@ -129,7 +137,10 @@ function normHue(h: number): number {
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
-  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  const h = (n: number) =>
+    Math.max(0, Math.min(255, Math.round(n)))
+      .toString(16)
+      .padStart(2, "0");
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 

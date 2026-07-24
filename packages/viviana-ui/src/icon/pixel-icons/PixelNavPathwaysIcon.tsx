@@ -18,7 +18,10 @@ function PixelNavPathwaysIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JS
       {...rest}
       class={className}
     >
-      <path d="M4 4h4v4H4zM6 8h2v4H6zM8 10h6v2H8zM12 12h2v4h-2zM10 16h6v4h-6z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M4 4h4v4H4zM6 8h2v4H6zM8 10h6v2H8zM12 12h2v4h-2zM10 16h6v4h-6z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

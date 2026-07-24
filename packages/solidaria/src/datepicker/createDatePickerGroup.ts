@@ -33,7 +33,11 @@ export function createDatePickerGroup(
   const focusManager = createFocusManager(ref);
 
   // Geometric segment lookup for RTL, where DOM order does not match visual order.
-  const findNextSegment = (group: HTMLElement, fromX: number, direction: number): HTMLElement | null => {
+  const findNextSegment = (
+    group: HTMLElement,
+    fromX: number,
+    direction: number,
+  ): HTMLElement | null => {
     const walker = getFocusableTreeWalker(group, { tabbable: true });
     let node = walker.nextNode() as HTMLElement | null;
     let closest: HTMLElement | null = null;
@@ -106,9 +110,9 @@ export function createDatePickerGroup(
       return;
     }
     // Try to find the segment prior to the element that was clicked on.
-    let target = (typeof window !== "undefined" ? (window.event as Event | undefined)?.target : null) as
-      | HTMLElement
-      | null;
+    let target = (
+      typeof window !== "undefined" ? (window.event as Event | undefined)?.target : null
+    ) as HTMLElement | null;
     const walker = getFocusableTreeWalker(root, { tabbable: true });
     if (target) {
       walker.currentNode = target;

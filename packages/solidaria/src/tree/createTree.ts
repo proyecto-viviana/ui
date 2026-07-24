@@ -287,10 +287,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
       // enters at the first selected row, else the first navigable row.
       const backward =
         !!relatedTarget &&
-        !!(
-          currentTarget.compareDocumentPosition(relatedTarget) &
-          Node.DOCUMENT_POSITION_FOLLOWING
-        );
+        !!(currentTarget.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING);
       key = backward
         ? (lastSelectedKey(s) ??
           findNextNavigableKey(s, s.collection.getLastKey(), (k) => s.collection.getKeyBefore(k)))

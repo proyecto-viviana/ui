@@ -3,12 +3,7 @@
  * Port of @react-aria/table/utils (`getRowLabelledBy` / cell id derivation).
  */
 
-import type {
-  Key,
-  GridNode,
-  TableState,
-  TableCollection,
-} from "@proyecto-viviana/solid-stately";
+import type { Key, GridNode, TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import { getTableData } from "./createTable";
 
 /**

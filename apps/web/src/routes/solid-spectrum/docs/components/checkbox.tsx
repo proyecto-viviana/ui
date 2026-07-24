@@ -28,7 +28,9 @@ function CheckboxPage() {
         <Checkbox isSelected={selected()} onChange={setSelected}>
           Accept terms and conditions
         </Checkbox>
-        <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Selected: {selected() ? "Yes" : "No"}</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+          Selected: {selected() ? "Yes" : "No"}
+        </p>
       </Example>
 
       <Example
@@ -75,7 +77,9 @@ function CheckboxPage() {
           <Checkbox value="sms">SMS notifications</Checkbox>
           <Checkbox value="push">Push notifications</Checkbox>
         </CheckboxGroup>
-        <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Selected: {groupValues().join(", ") || "None"}</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+          Selected: {groupValues().join(", ") || "None"}
+        </p>
       </Example>
 
       <Example

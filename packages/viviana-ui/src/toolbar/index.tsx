@@ -51,7 +51,10 @@ export function Toolbar(props: ToolbarProps): JSX.Element {
 
   const mergedClass = (rp: ToolbarRenderProps): string => {
     const cls = local.class;
-    return [toolbarStyles({ orientation: rp.orientation }), typeof cls === "function" ? cls(rp) : cls]
+    return [
+      toolbarStyles({ orientation: rp.orientation }),
+      typeof cls === "function" ? cls(rp) : cls,
+    ]
       .filter(Boolean)
       .join(" ");
   };

@@ -370,7 +370,8 @@ const renderedClasses = [...html.matchAll(/class="([^"]*)"/g)]
   .filter(Boolean);
 const uniqueClasses = [...new Set(renderedClasses)];
 const unstyled = uniqueClasses.filter(
-  (cls) => !new RegExp(`\\.${cls.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&")}[\\s,{:.>~+]`).test(stylesCss),
+  (cls) =>
+    !new RegExp(`\\.${cls.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&")}[\\s,{:.>~+]`).test(stylesCss),
 );
 process.stdout.write(
   `rendered classes backed by a rule: ${uniqueClasses.length - unstyled.length}/${uniqueClasses.length}\n`,

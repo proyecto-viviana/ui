@@ -858,7 +858,8 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
 
     const start = v.start as unknown as DateValue;
     const end = v.end as unknown as DateValue;
-    const startTimeZone = "timeZone" in start ? (start as { timeZone: string }).timeZone : undefined;
+    const startTimeZone =
+      "timeZone" in start ? (start as { timeZone: string }).timeZone : undefined;
     const startGranularity = "minute" in start ? "minute" : "day";
     const endTimeZone = "timeZone" in end ? (end as { timeZone: string }).timeZone : undefined;
     const endGranularity = "minute" in end ? "minute" : "day";

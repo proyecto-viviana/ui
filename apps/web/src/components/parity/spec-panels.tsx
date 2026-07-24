@@ -294,7 +294,9 @@ export function SpecPanel01(): JSX.Element {
         >
           [ F5 ] RUN
         </button>
-        <span style={{ width: "1px", height: "26px", "background-color": "var(--border-default)" }} />
+        <span
+          style={{ width: "1px", height: "26px", "background-color": "var(--border-default)" }}
+        />
         <button
           type="button"
           aria-label="Notifications"
@@ -443,7 +445,9 @@ export function SpecPanel03(): JSX.Element {
             </span>
           )}
         </For>
-        <span style={{ width: "1px", height: "26px", "background-color": "var(--border-default)" }} />
+        <span
+          style={{ width: "1px", height: "26px", "background-color": "var(--border-default)" }}
+        />
         <span
           style={{
             ...badgeBase,
@@ -457,7 +461,9 @@ export function SpecPanel03(): JSX.Element {
         </span>
         <span style={{ ...badgeBase, color: CH.vi, border: `1px solid ${CH.vi}` }}>NEW</span>
         <span style={{ ...badgeBase, color: CH.am, border: `1px solid ${CH.am}` }}>DUE</span>
-        <span style={{ ...badgeBase, color: CH.rd, border: `1px solid ${CH.rd}` }}>0x3F DEGRADED</span>
+        <span style={{ ...badgeBase, color: CH.rd, border: `1px solid ${CH.rd}` }}>
+          0x3F DEGRADED
+        </span>
         <span
           style={{
             "font-family": MONO,
@@ -477,7 +483,12 @@ export function SpecPanel03(): JSX.Element {
           <img
             src="/glasselated/streak-flame.png"
             alt=""
-            style={{ width: "20px", height: "20px", "image-rendering": "pixelated", "flex-shrink": 0 }}
+            style={{
+              width: "20px",
+              height: "20px",
+              "image-rendering": "pixelated",
+              "flex-shrink": 0,
+            }}
           />
           12-day streak
         </span>
@@ -502,7 +513,9 @@ export function SpecPanel04(): JSX.Element {
         }}
       >
         <ScanOverlay />
-        <div style={{ position: "relative", display: "flex", "flex-direction": "column", gap: "6px" }}>
+        <div
+          style={{ position: "relative", display: "flex", "flex-direction": "column", gap: "6px" }}
+        >
           <For each={NAV_ITEMS}>
             {(nv) => (
               <div
@@ -634,7 +647,12 @@ export function SpecPanel05(): JSX.Element {
               "justify-content": "center",
             }}
           >
-            <span style={{ font: "var(--type-headline)", "letter-spacing": "var(--type-headline-track)" }}>
+            <span
+              style={{
+                font: "var(--type-headline)",
+                "letter-spacing": "var(--type-headline-track)",
+              }}
+            >
               3/5
             </span>
             <span
@@ -650,11 +668,17 @@ export function SpecPanel05(): JSX.Element {
           </div>
         </div>
         <div style={{ flex: 1, "min-width": "180px" }}>
-          <div style={{ display: "flex", "justify-content": "space-between", "margin-bottom": "6px" }}>
-            <span style={{ font: "var(--type-label)", "letter-spacing": "var(--type-label-track)" }}>
+          <div
+            style={{ display: "flex", "justify-content": "space-between", "margin-bottom": "6px" }}
+          >
+            <span
+              style={{ font: "var(--type-label)", "letter-spacing": "var(--type-label-track)" }}
+            >
               Level 12
             </span>
-            <span style={{ "font-family": MONO, "font-size": "10.5px", color: "var(--text-secondary)" }}>
+            <span
+              style={{ "font-family": MONO, "font-size": "10.5px", color: "var(--text-secondary)" }}
+            >
               2,840 / 3,200 XP
             </span>
           </div>
@@ -685,7 +709,9 @@ export function SpecPanel05(): JSX.Element {
               }}
             />
           </div>
-          <div style={{ display: "flex", "align-items": "center", gap: "8px", "margin-top": "14px" }}>
+          <div
+            style={{ display: "flex", "align-items": "center", gap: "8px", "margin-top": "14px" }}
+          >
             <div style={{ display: "flex" }}>
               <For each={["avatar-1", "avatar-2", "avatar-3"]}>
                 {(av, i) => (
@@ -769,14 +795,21 @@ export function SpecPanel06(): JSX.Element {
             >
               March a ray through signed distance fields.
             </div>
-            <div style={{ "font-family": MONO, "font-size": "10px", color: "var(--text-tertiary)" }}>
+            <div
+              style={{ "font-family": MONO, "font-size": "10px", color: "var(--text-tertiary)" }}
+            >
               12 lessons · [▮▮▮▮▯▯▯▯▯▯] 40%
             </div>
           </div>
         </MeshCard>
         <For each={CONSOLE_CARDS}>
           {(w) => (
-            <MeshCard surface="card" variant={w.variant} amber={w.amber} style={{ overflow: "hidden" }}>
+            <MeshCard
+              surface="card"
+              variant={w.variant}
+              amber={w.amber}
+              style={{ overflow: "hidden" }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -796,7 +829,9 @@ export function SpecPanel06(): JSX.Element {
                     "background-color": w.dot,
                   }}
                 />
-                <span style={{ "font-size": "10px", color: "var(--text-secondary)" }}>{w.path}</span>
+                <span style={{ "font-size": "10px", color: "var(--text-secondary)" }}>
+                  {w.path}
+                </span>
                 <span
                   style={{
                     "margin-left": "auto",
@@ -900,7 +935,9 @@ export function SpecPanel08(): JSX.Element {
         }}
       >
         <ScanOverlay />
-        <div style={{ position: "relative", display: "flex", "flex-direction": "column", gap: "2px" }}>
+        <div
+          style={{ position: "relative", display: "flex", "flex-direction": "column", gap: "2px" }}
+        >
           <For each={LIST_ROWS}>
             {(lr) => (
               <div
@@ -930,11 +967,18 @@ export function SpecPanel08(): JSX.Element {
                 </span>
                 <span
                   class="tgl-label"
-                  style={{ "font-family": MONO, "font-size": "12.5px", "font-weight": 600, flex: 1 }}
+                  style={{
+                    "font-family": MONO,
+                    "font-size": "12.5px",
+                    "font-weight": 600,
+                    flex: 1,
+                  }}
                 >
                   {lr.title}
                 </span>
-                <span style={{ "font-family": MONO, "font-size": "11px", color: "var(--well-dim)" }}>
+                <span
+                  style={{ "font-family": MONO, "font-size": "11px", color: "var(--well-dim)" }}
+                >
                   {lr.meta}
                 </span>
                 <span
@@ -973,7 +1017,9 @@ export function SpecPanel09(): JSX.Element {
                 "padding-bottom": "10px",
               }}
             >
-              <span style={{ "font-family": MONO, "font-size": "10px", color: CH.cy, width: "78px" }}>
+              <span
+                style={{ "font-family": MONO, "font-size": "10px", color: CH.cy, width: "78px" }}
+              >
                 {tr.name}
               </span>
               <span style={{ font: tr.font, "letter-spacing": tr.track }}>{tr.sample}</span>

@@ -108,9 +108,11 @@ function ThemePage() {
             }}
           >
             Adjust the color families and watch a live slice of{" "}
-            <code style={{ "font-family": "monospace", "font-size": "13px" }}>@proyecto-viviana/ui</code>{" "}
-            react instantly. When it looks right, copy the CSS and paste it into your app to re-skin the whole
-            library.
+            <code style={{ "font-family": "monospace", "font-size": "13px" }}>
+              @proyecto-viviana/ui
+            </code>{" "}
+            react instantly. When it looks right, copy the CSS and paste it into your app to re-skin
+            the whole library.
           </p>
         </Flex>
 
@@ -240,7 +242,9 @@ function ThemePage() {
                 >
                   <Show
                     when={register() === "solid-spectrum"}
-                    fallback={<ThemePreviewGallery tokens={activeTokens()} scheme={scheme()} framed />}
+                    fallback={
+                      <ThemePreviewGallery tokens={activeTokens()} scheme={scheme()} framed />
+                    }
                   >
                     <SpectrumPreviewGallery scheme={scheme()} framed />
                   </Show>

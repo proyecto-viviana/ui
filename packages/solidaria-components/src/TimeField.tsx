@@ -32,11 +32,7 @@ import {
   type TimeSegment as TimeSegmentType,
   type TimeValue,
 } from "@proyecto-viviana/solid-stately";
-import {
-  DateFieldContext,
-  DateFieldStateContext,
-  type DateFieldContextValue,
-} from "./DateField";
+import { DateFieldContext, DateFieldStateContext, type DateFieldContextValue } from "./DateField";
 import {
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -220,8 +216,7 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
   // Ref to the hidden validation <input> (the DateInput's `<Input>` sibling).
   // Mirrors DateField: create it here, hand it to createTimeField below, and
   // attach it to the same input through the DateFieldContext getter.
-  const [validationInputRef, setValidationInputRef] =
-    createSignal<HTMLInputElement | null>(null);
+  const [validationInputRef, setValidationInputRef] = createSignal<HTMLInputElement | null>(null);
 
   const state = createTimeFieldState(stateProps);
 
@@ -307,9 +302,7 @@ function TimeFieldInner<T extends TimeValue = TimeValue>(
 
   return (
     <TimeFieldStateContext.Provider value={state as unknown as TimeFieldState<TimeValue>}>
-      <DateFieldStateContext.Provider
-        value={state as unknown as DateFieldContextValue["state"]}
-      >
+      <DateFieldStateContext.Provider value={state as unknown as DateFieldContextValue["state"]}>
         <DateFieldContext.Provider value={dateFieldContextValue}>
           <TimeFieldContext.Provider
             value={{

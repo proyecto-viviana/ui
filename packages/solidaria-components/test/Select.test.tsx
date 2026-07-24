@@ -108,15 +108,13 @@ describe("Select", () => {
       // still label its <option>s from `name` — never falling back to
       // String(item), which renders the useless "[object Object]".
       render(() => (
-        <Select<TestItem>
-          aria-label="Animals"
-          items={testItems}
-          getKey={(item) => item.id}
-        >
+        <Select<TestItem> aria-label="Animals" items={testItems} getKey={(item) => item.id}>
           <SelectTrigger>
             <SelectValue placeholder="Select an option" />
           </SelectTrigger>
-          <SelectListBox>{(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}</SelectListBox>
+          <SelectListBox>
+            {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+          </SelectListBox>
         </Select>
       ));
 

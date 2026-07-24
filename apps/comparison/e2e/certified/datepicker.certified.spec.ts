@@ -172,11 +172,19 @@ const paintCases = [
   { id: "invalid", params: { value: "2025-02-14", isInvalid: "true" } },
   // Disabled — capture at rest: the disabled trigger is unfocusable, so hover/
   // press/focus-visible have nothing to drive.
-  { id: "disabled", params: { value: "2025-02-14", isDisabled: "true" }, states: ["default"] as const },
+  {
+    id: "disabled",
+    params: { value: "2025-02-14", isDisabled: "true" },
+    states: ["default"] as const,
+  },
   // Read-only — like disabled, upstream `useDatePicker` disables the trigger
   // (`isDisabled: props.isDisabled || props.isReadOnly`), so the button is
   // unfocusable: hover/press/focus-visible have nothing to drive → default only.
-  { id: "readonly", params: { value: "2025-02-14", isReadOnly: "true" }, states: ["default"] as const },
+  {
+    id: "readonly",
+    params: { value: "2025-02-14", isReadOnly: "true" },
+    states: ["default"] as const,
+  },
 ];
 
 const datePickerPaintScenario: DriverScenario = {

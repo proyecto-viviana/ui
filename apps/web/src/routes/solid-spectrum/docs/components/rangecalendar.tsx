@@ -186,13 +186,10 @@ const maxDate = new CalendarDate(2026, 12, 31);
         <li>
           Uses a <code>grid</code> role with <code>gridcell</code> elements for each day
         </li>
-        <li>
-          Full keyboard navigation: Arrow keys move between days, Page Up/Down change months
-        </li>
+        <li>Full keyboard navigation: Arrow keys move between days, Page Up/Down change months</li>
         <li>Range start and end are visually distinct with rounded corners at the endpoints</li>
         <li>
-          Days within the range use <code>aria-selected="true"</code> for screen reader
-          announcement
+          Days within the range use <code>aria-selected="true"</code> for screen reader announcement
         </li>
         <li>
           Unavailable dates are announced as disabled via <code>aria-disabled</code>

@@ -77,86 +77,80 @@ type ListboxHandle = ElementHandle<HTMLElement | SVGElement>;
  */
 
 async function scrollTo(handle: ListboxHandle, offset: number): Promise<void> {
-  await handle.evaluate(
-    (listbox, to) => {
-      const isScrollable = (el: HTMLElement): boolean => {
-        const style = getComputedStyle(el);
-        return el.scrollHeight - el.clientHeight > 1 && /(auto|scroll)/.test(style.overflowY);
-      };
-      const findScroller = (start: HTMLElement): HTMLElement => {
-        let el: HTMLElement | null = start;
-        while (el && el !== document.body) {
-          if (isScrollable(el)) return el;
-          el = el.parentElement;
-        }
-        for (const c of Array.from(start.querySelectorAll<HTMLElement>("*"))) {
-          if (isScrollable(c)) return c;
-        }
-        return start;
-      };
-      const scroller = findScroller(listbox as HTMLElement);
-      scroller.scrollTop = to;
-      // Native assignment already fires a scroll event; dispatch one explicitly
-      // too so the port's capturing document listener updates deterministically.
-      scroller.dispatchEvent(new Event("scroll", { bubbles: false }));
-    },
-    offset,
-  );
+  await handle.evaluate((listbox, to) => {
+    const isScrollable = (el: HTMLElement): boolean => {
+      const style = getComputedStyle(el);
+      return el.scrollHeight - el.clientHeight > 1 && /(auto|scroll)/.test(style.overflowY);
+    };
+    const findScroller = (start: HTMLElement): HTMLElement => {
+      let el: HTMLElement | null = start;
+      while (el && el !== document.body) {
+        if (isScrollable(el)) return el;
+        el = el.parentElement;
+      }
+      for (const c of Array.from(start.querySelectorAll<HTMLElement>("*"))) {
+        if (isScrollable(c)) return c;
+      }
+      return start;
+    };
+    const scroller = findScroller(listbox as HTMLElement);
+    scroller.scrollTop = to;
+    // Native assignment already fires a scroll event; dispatch one explicitly
+    // too so the port's capturing document listener updates deterministically.
+    scroller.dispatchEvent(new Event("scroll", { bubbles: false }));
+  }, offset);
 }
 
 async function captureWindow(
   handle: ListboxHandle,
   offset: number,
 ): Promise<OffsetWindow & { rendered: number }> {
-  return handle.evaluate(
-    (listbox, at) => {
-      const isScrollable = (el: HTMLElement): boolean => {
-        const style = getComputedStyle(el);
-        return el.scrollHeight - el.clientHeight > 1 && /(auto|scroll)/.test(style.overflowY);
-      };
-      const findScroller = (start: HTMLElement): HTMLElement => {
-        let el: HTMLElement | null = start;
-        while (el && el !== document.body) {
-          if (isScrollable(el)) return el;
-          el = el.parentElement;
-        }
-        for (const c of Array.from(start.querySelectorAll<HTMLElement>("*"))) {
-          if (isScrollable(c)) return c;
-        }
-        return start;
-      };
-      const scroller = findScroller(listbox as HTMLElement);
-      const scrollerRect = scroller.getBoundingClientRect();
-      const viewTop = scrollerRect.top + scroller.clientTop;
-      const viewBottom = viewTop + scroller.clientHeight;
-
-      const options = Array.from((listbox as HTMLElement).querySelectorAll('[role="option"]'));
-      const visible = [];
-      for (const option of options) {
-        const rect = option.getBoundingClientRect();
-        if (rect.height === 0) continue;
-        const overlap = Math.min(rect.bottom, viewBottom) - Math.max(rect.top, viewTop);
-        // Majority-visible → strictly in the window (overscan rows sit off-screen
-        // and are excluded; with offsets that are row-height multiples every
-        // in-window row is fully visible, so this is unambiguous).
-        if (overlap > rect.height / 2) {
-          visible.push({
-            label: (option.textContent ?? "").trim(),
-            posinset: option.getAttribute("aria-posinset"),
-            setsize: option.getAttribute("aria-setsize"),
-            selected: option.getAttribute("aria-selected"),
-          });
-        }
+  return handle.evaluate((listbox, at) => {
+    const isScrollable = (el: HTMLElement): boolean => {
+      const style = getComputedStyle(el);
+      return el.scrollHeight - el.clientHeight > 1 && /(auto|scroll)/.test(style.overflowY);
+    };
+    const findScroller = (start: HTMLElement): HTMLElement => {
+      let el: HTMLElement | null = start;
+      while (el && el !== document.body) {
+        if (isScrollable(el)) return el;
+        el = el.parentElement;
       }
-      return {
-        offset: at,
-        visible,
-        scrollHeight: scroller.scrollHeight,
-        rendered: options.length,
-      };
-    },
-    offset,
-  );
+      for (const c of Array.from(start.querySelectorAll<HTMLElement>("*"))) {
+        if (isScrollable(c)) return c;
+      }
+      return start;
+    };
+    const scroller = findScroller(listbox as HTMLElement);
+    const scrollerRect = scroller.getBoundingClientRect();
+    const viewTop = scrollerRect.top + scroller.clientTop;
+    const viewBottom = viewTop + scroller.clientHeight;
+
+    const options = Array.from((listbox as HTMLElement).querySelectorAll('[role="option"]'));
+    const visible = [];
+    for (const option of options) {
+      const rect = option.getBoundingClientRect();
+      if (rect.height === 0) continue;
+      const overlap = Math.min(rect.bottom, viewBottom) - Math.max(rect.top, viewTop);
+      // Majority-visible → strictly in the window (overscan rows sit off-screen
+      // and are excluded; with offsets that are row-height multiples every
+      // in-window row is fully visible, so this is unambiguous).
+      if (overlap > rect.height / 2) {
+        visible.push({
+          label: (option.textContent ?? "").trim(),
+          posinset: option.getAttribute("aria-posinset"),
+          setsize: option.getAttribute("aria-setsize"),
+          selected: option.getAttribute("aria-selected"),
+        });
+      }
+    }
+    return {
+      offset: at,
+      visible,
+      scrollHeight: scroller.scrollHeight,
+      rendered: options.length,
+    };
+  }, offset);
 }
 
 async function captureActiveLabel(handle: ListboxHandle): Promise<string> {

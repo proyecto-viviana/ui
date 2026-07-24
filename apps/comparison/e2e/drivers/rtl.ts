@@ -106,7 +106,10 @@ export function registerRtlDriver(scenario: DriverScenario, config: RtlConfig = 
 
             for (const [state, reactParts] of captures.react) {
               const solidParts = captures.solid.get(state);
-              expect(solidParts, `solid panel produced no capture for state "${state}"`).toBeTruthy();
+              expect(
+                solidParts,
+                `solid panel produced no capture for state "${state}"`,
+              ).toBeTruthy();
               for (const [part, reactStyles] of Object.entries(reactParts)) {
                 expect(
                   solidParts![part],
@@ -125,9 +128,10 @@ export function registerRtlDriver(scenario: DriverScenario, config: RtlConfig = 
     return;
   }
 
-  const focusCases = driverCases(scenario, config.focusCases ?? config.cases ?? focusConfig.cases).map(
-    rtlCase,
-  );
+  const focusCases = driverCases(
+    scenario,
+    config.focusCases ?? config.cases ?? focusConfig.cases,
+  ).map(rtlCase);
 
   test.describe(`D10 RTL focus trail — ${scenario.title}`, () => {
     for (const caseDef of focusCases) {
@@ -144,7 +148,9 @@ export function registerRtlDriver(scenario: DriverScenario, config: RtlConfig = 
 
             const root = focusConfig.root ? await focusConfig.root(ctx).elementHandle() : null;
 
-            const direction = await scenario.target(ctx).evaluate((el) => getComputedStyle(el).direction);
+            const direction = await scenario
+              .target(ctx)
+              .evaluate((el) => getComputedStyle(el).direction);
             expect(
               direction,
               `${ctx.framework} panel did not render RTL — locale=${rtlLocale} routing is missing for "${scenario.slug}"`,

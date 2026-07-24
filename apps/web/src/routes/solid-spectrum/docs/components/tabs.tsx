@@ -108,13 +108,19 @@ function TabsPage() {
           >
             <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
             <TabPanel id="tab1">
-              <div class={typeRoles.body} style={{ padding: "16px" }}>Content for Tab 1</div>
+              <div class={typeRoles.body} style={{ padding: "16px" }}>
+                Content for Tab 1
+              </div>
             </TabPanel>
             <TabPanel id="tab2">
-              <div class={typeRoles.body} style={{ padding: "16px" }}>Content for Tab 2</div>
+              <div class={typeRoles.body} style={{ padding: "16px" }}>
+                Content for Tab 2
+              </div>
             </TabPanel>
             <TabPanel id="tab3">
-              <div class={typeRoles.body} style={{ padding: "16px" }}>Content for Tab 3</div>
+              <div class={typeRoles.body} style={{ padding: "16px" }}>
+                Content for Tab 3
+              </div>
             </TabPanel>
           </Tabs>
         </div>
@@ -134,13 +140,19 @@ function TabsPage() {
         >
           <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="free">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>Free tier features available to all users.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              Free tier features available to all users.
+            </div>
           </TabPanel>
           <TabPanel id="pro">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>Premium features for Pro subscribers.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              Premium features for Pro subscribers.
+            </div>
           </TabPanel>
           <TabPanel id="enterprise">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>Enterprise features.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              Enterprise features.
+            </div>
           </TabPanel>
         </Tabs>
       </Example>
@@ -159,16 +171,24 @@ function TabsPage() {
         >
           <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="general">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>General settings and preferences.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              General settings and preferences.
+            </div>
           </TabPanel>
           <TabPanel id="security">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>Security and authentication settings.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              Security and authentication settings.
+            </div>
           </TabPanel>
           <TabPanel id="privacy">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>Privacy and data sharing options.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              Privacy and data sharing options.
+            </div>
           </TabPanel>
           <TabPanel id="advanced">
-            <div class={typeRoles.body} style={{ padding: "16px" }}>Advanced configuration options.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
+              Advanced configuration options.
+            </div>
           </TabPanel>
         </Tabs>
       </Example>

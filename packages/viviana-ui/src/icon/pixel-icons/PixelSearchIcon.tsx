@@ -18,7 +18,10 @@ function PixelSearchIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       {...rest}
       class={className}
     >
-      <path d="M4 4h10v2H4zM4 12h10v2H4zM4 6h2v6H4zM12 6h2v6h-2zM14 14h2v2h-2zM16 16h2v2h-2zM18 18h2v2h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M4 4h10v2H4zM4 12h10v2H4zM4 6h2v6H4zM12 6h2v6h-2zM14 14h2v2h-2zM16 16h2v2h-2zM18 18h2v2h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

@@ -119,9 +119,7 @@ describe("createDateRangePicker", () => {
   });
 
   it("groupProps carries aria-disabled but not aria-required/aria-invalid (faithful useDateRangePicker)", () => {
-    render(() => (
-      <TestDateRangePickerAria aria-label="Range" isDisabled isRequired isInvalid />
-    ));
+    render(() => <TestDateRangePickerAria aria-label="Range" isDisabled isRequired isInvalid />);
 
     const group = screen.getByTestId("group");
     // useDateRangePicker groupProps = { role:'group', aria-disabled, aria-labelledby,

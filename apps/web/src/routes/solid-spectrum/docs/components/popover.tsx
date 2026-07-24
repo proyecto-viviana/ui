@@ -117,14 +117,22 @@ function PopoverPage() {
       <PropsTable
         props={[
           { name: "title", type: "string", description: "The popover's heading" },
-          { name: "description", type: "string", description: "Optional supporting text under the title" },
+          {
+            name: "description",
+            type: "string",
+            description: "Optional supporting text under the title",
+          },
         ]}
       />
 
       <h2>PopoverFooter Props</h2>
       <PropsTable
         props={[
-          { name: "children", type: "JSX.Element", description: "Footer content, typically buttons" },
+          {
+            name: "children",
+            type: "JSX.Element",
+            description: "Footer content, typically buttons",
+          },
         ]}
       />
 

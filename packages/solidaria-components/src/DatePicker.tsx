@@ -601,10 +601,10 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
         >
           <CalendarContext.Provider value={calendarState as unknown as CalendarState<DateValue>}>
             {/* BARE ROLELESS root — mirrors RAC `DatePicker`'s outer `<div>`. The
-              * presentation FieldGroup shell (rendered as a child via
-              * `DatePickerFieldGroup`) is what carries `pickerAria.groupProps`
-              * (role="presentation" + label/describedby + arrow-nav/press). A
-              * described node here would be a spurious AX entry the S2 oracle lacks. */}
+             * presentation FieldGroup shell (rendered as a child via
+             * `DatePickerFieldGroup`) is what carries `pickerAria.groupProps`
+             * (role="presentation" + label/describedby + arrow-nav/press). A
+             * described node here would be a spurious AX entry the S2 oracle lacks. */}
             <div
               ref={setFieldRef}
               class={renderProps.class()}
@@ -960,12 +960,12 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
           value={calendarState as unknown as RangeCalendarState<DateValue>}
         >
           {/* BARE ROLELESS root — mirrors RAC `DateRangePicker`'s outer `<div>`.
-            * The presentation FieldGroup shell (rendered as a child via the styled
-            * DateRangeDisplay) is what carries `pickerAria.groupProps` (role=
-            * "presentation" + label/describedby + outer arrow-nav/press). A described
-            * or role="group" node here would be a spurious AX entry the S2 oracle
-            * lacks. The ref scopes the shared segment focus manager across both
-            * fields (see createDateRangePicker). */}
+           * The presentation FieldGroup shell (rendered as a child via the styled
+           * DateRangeDisplay) is what carries `pickerAria.groupProps` (role=
+           * "presentation" + label/describedby + outer arrow-nav/press). A described
+           * or role="group" node here would be a spurious AX entry the S2 oracle
+           * lacks. The ref scopes the shared segment focus manager across both
+           * fields (see createDateRangePicker). */}
           <div
             ref={setFieldRef}
             class={renderProps.class()}
@@ -1409,14 +1409,14 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
       <Portal mount={portalContainer()}>
         <FocusScope contain restoreFocus>
           {/* Un-folded to mirror S2's `<Popover>` DOM. The OUTER role-null `<div>`
-            * is the positioned surface that carries the enter motion + chrome —
-            * this is the element RAC/S2 animate (`AriaPopover`'s div: role null, no
-            * tabindex, accessible name computed from the calendar's textContent).
-            * A nested `role="dialog"` element (RAC's `Dialog`, which S2's
-            * CalendarPopover wraps the Calendar in) carries the dialog semantics.
-            * Folding both onto one `<section role="dialog">` made D2 animate the
-            * dialog node instead of the role-null div; the role-null wrapper is
-            * pruned from the AX tree so D5/D6 are unaffected. */}
+           * is the positioned surface that carries the enter motion + chrome —
+           * this is the element RAC/S2 animate (`AriaPopover`'s div: role null, no
+           * tabindex, accessible name computed from the calendar's textContent).
+           * A nested `role="dialog"` element (RAC's `Dialog`, which S2's
+           * CalendarPopover wraps the Calendar in) carries the dialog semantics.
+           * Folding both onto one `<section role="dialog">` made D2 animate the
+           * dialog node instead of the role-null div; the role-null wrapper is
+           * pruned from the AX tree so D5/D6 are unaffected. */}
           <div
             ref={setContentRef}
             {...cleanPopoverProps()}
@@ -1426,8 +1426,8 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
             data-entering={dataAttr(isEntering())}
           >
             {/* RAC's `Dialog` renders a `<section role="dialog">` by default — the
-              * D5 roving trail records this element's tag, so it must be `section`
-              * (a `<div>` here regressed the focus-trail tag match). */}
+             * D5 roving trail records this element's tag, so it must be `section`
+             * (a `<div>` here regressed the focus-trail tag match). */}
             <section {...context.pickerAria.dialogProps} tabIndex={-1}>
               {props.children}
             </section>
@@ -1514,11 +1514,11 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
       <Portal mount={portalContainer()}>
         <FocusScope contain restoreFocus>
           {/* Un-folded to mirror S2's `<Popover>` DOM (see DatePickerContent).
-            * OUTER role-null `<div>` = positioned surface carrying the enter
-            * motion + chrome (the element RAC/S2 animate; pruned from the AX
-            * tree). Nested `<section role="dialog">` carries the dialog
-            * semantics — the D5 roving trail records this tag, so it must be
-            * `section`, not a folded `div`. */}
+           * OUTER role-null `<div>` = positioned surface carrying the enter
+           * motion + chrome (the element RAC/S2 animate; pruned from the AX
+           * tree). Nested `<section role="dialog">` carries the dialog
+           * semantics — the D5 roving trail records this tag, so it must be
+           * `section`, not a folded `div`. */}
           <div
             ref={setContentRef}
             {...cleanPopoverProps()}

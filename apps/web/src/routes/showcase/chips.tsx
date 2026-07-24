@@ -121,7 +121,11 @@ function Page() {
       </Demo>
 
       <Demo label="TagGroup · basic — arrow-key grid navigation">
-        <TagGroup<ChipItem> items={CATEGORY_ITEMS} label="Categories" defaultSelectedKeys={["landscape"]}>
+        <TagGroup<ChipItem>
+          items={CATEGORY_ITEMS}
+          label="Categories"
+          defaultSelectedKeys={["landscape"]}
+        >
           {(item) => item.name}
         </TagGroup>
       </Demo>
@@ -130,14 +134,20 @@ function Page() {
         <TagGroup<ChipItem>
           items={removableItems()}
           label="Labels"
-          onRemove={(keys) => setRemovableItems((prev) => prev.filter((item) => !keys.has(item.id)))}
+          onRemove={(keys) =>
+            setRemovableItems((prev) => prev.filter((item) => !keys.has(item.id)))
+          }
         >
           {(item) => item.name}
         </TagGroup>
       </Demo>
 
       <Demo label="TagGroup · disabled tags">
-        <TagGroup<ChipItem> items={CATEGORY_ITEMS} label="Some disabled" disabledKeys={["travel", "night"]}>
+        <TagGroup<ChipItem>
+          items={CATEGORY_ITEMS}
+          label="Some disabled"
+          disabledKeys={["travel", "night"]}
+        >
           {(item) => item.name}
         </TagGroup>
       </Demo>
@@ -157,7 +167,11 @@ function Page() {
       </Demo>
 
       <Demo label="Tag · explicit composition">
-        <TagGroup<ChipItem> items={CATEGORY_ITEMS.slice(0, 3)} label="Explicit tags" selectionMode="none">
+        <TagGroup<ChipItem>
+          items={CATEGORY_ITEMS.slice(0, 3)}
+          label="Explicit tags"
+          selectionMode="none"
+        >
           {(item) => <Tag id={item.id}>{item.name}</Tag>}
         </TagGroup>
       </Demo>

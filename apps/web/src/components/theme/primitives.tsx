@@ -137,11 +137,7 @@ export function FeatureBlock(props: { tone?: unknown; title: string; children: J
 }
 
 /** A titled, soft, rounded chrome panel. Optional trailing control in the header. */
-export function Panel(props: {
-  title: string;
-  children: JSX.Element;
-  trailing?: JSX.Element;
-}) {
+export function Panel(props: { title: string; children: JSX.Element; trailing?: JSX.Element }) {
   return (
     <section class="pv-card" style={{ padding: "24px" }}>
       <div
@@ -219,7 +215,10 @@ export function SiteFooter() {
         <Link to="/" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>
           Home
         </Link>
-        <Link to="/theme" style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}>
+        <Link
+          to="/theme"
+          style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
+        >
           Theme
         </Link>
         <a

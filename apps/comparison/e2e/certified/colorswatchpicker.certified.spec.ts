@@ -137,8 +137,7 @@ const beforeButton: TargetResolver = ({ canvas }) => canvas.getByRole("button", 
 
 /** The first swatch OPTION (`[role="option"]`) — item chrome: `position:relative`,
  *  rounding-driven `border-radius`, the focus ring. */
-const firstItem: TargetResolver = ({ canvas }) =>
-  canvas.locator(`${root} [role="option"]`).first();
+const firstItem: TargetResolver = ({ canvas }) => canvas.locator(`${root} [role="option"]`).first();
 
 /** The first swatch itself (`[role="img"]` inside the first option) — prop-driven
  *  `width`/`height` (size) + `border-radius` (rounding) + the flat-color `background`. */

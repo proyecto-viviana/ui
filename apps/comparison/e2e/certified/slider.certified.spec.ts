@@ -212,14 +212,16 @@ const sliderScenario: DriverScenario = {
         state: "*",
         theme: "dark",
         threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason: "slider-thumb-antialias-1lsb (dark): thumb/track curved edges round ±1 LSB grayscale",
+        reason:
+          "slider-thumb-antialias-1lsb (dark): thumb/track curved edges round ±1 LSB grayscale",
       },
       {
         caseId: "track-thick",
         state: "*",
         theme: "light",
         threshold: { maxMismatchRatio: 0, maxDimensionDelta: 0, pixelThreshold: 1 },
-        reason: "slider-thumb-antialias-1lsb (light track-thick): thick-track edge rounds ±1 LSB grayscale",
+        reason:
+          "slider-thumb-antialias-1lsb (light track-thick): thick-track edge rounds ±1 LSB grayscale",
       },
     ],
   },

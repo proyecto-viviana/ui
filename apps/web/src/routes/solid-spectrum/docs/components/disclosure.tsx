@@ -139,7 +139,9 @@ function DisclosurePage() {
                   <span class={typeRoles.label}>{faq.question}</span>
                 </DisclosureTrigger>
                 <DisclosurePanel>
-                  <div class={typeRoles.body} style={{ padding: "12px 0" }}>{faq.answer}</div>
+                  <div class={typeRoles.body} style={{ padding: "12px 0" }}>
+                    {faq.answer}
+                  </div>
                 </DisclosurePanel>
               </Disclosure>
             ))}
@@ -171,7 +173,9 @@ function DisclosurePage() {
                   <span class={typeRoles.label}>{section.title}</span>
                 </DisclosureTrigger>
                 <DisclosurePanel>
-                  <div class={typeRoles.body} style={{ padding: "12px 0" }}>{section.content}</div>
+                  <div class={typeRoles.body} style={{ padding: "12px 0" }}>
+                    {section.content}
+                  </div>
                 </DisclosurePanel>
               </Disclosure>
             ))}

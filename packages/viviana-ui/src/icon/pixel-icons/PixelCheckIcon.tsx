@@ -18,7 +18,10 @@ function PixelCheckIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elem
       {...rest}
       class={className}
     >
-      <path d="M7 12h2v2H7zM9 14h2v2H9zM11 12h2v2h-2zM13 10h2v2h-2zM15 8h2v2h-2z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M7 12h2v2H7zM9 14h2v2H9zM11 12h2v2h-2zM13 10h2v2h-2zM15 8h2v2h-2z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

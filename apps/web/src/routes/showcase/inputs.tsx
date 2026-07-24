@@ -60,7 +60,9 @@ function InputsPanel() {
 
       <Demo label="TextField · sizes">
         <Row>
-          <For each={SIZES}>{(size) => <TextField size={size} label={size} defaultValue="Value" />}</For>
+          <For each={SIZES}>
+            {(size) => <TextField size={size} label={size} defaultValue="Value" />}
+          </For>
         </Row>
       </Demo>
 
@@ -84,7 +86,11 @@ function InputsPanel() {
 
       <Demo label="TextArea">
         <Row>
-          <TextArea label="Notes" description="Internal only, not shared with the client." placeholder="Add context…" />
+          <TextArea
+            label="Notes"
+            description="Internal only, not shared with the client."
+            placeholder="Add context…"
+          />
           <TextArea
             label="Reason for rejection"
             isRequired
@@ -96,8 +102,17 @@ function InputsPanel() {
 
       <Demo label="NumberField · formatOptions">
         <Row>
-          <NumberField label="Price" defaultValue={42} formatOptions={{ style: "currency", currency: "USD" }} />
-          <NumberField label="Discount" defaultValue={0.15} step={0.01} formatOptions={{ style: "percent" }} />
+          <NumberField
+            label="Price"
+            defaultValue={42}
+            formatOptions={{ style: "currency", currency: "USD" }}
+          />
+          <NumberField
+            label="Discount"
+            defaultValue={0.15}
+            step={0.01}
+            formatOptions={{ style: "percent" }}
+          />
         </Row>
       </Demo>
 
@@ -110,7 +125,12 @@ function InputsPanel() {
             maxValue={20}
             description="Between 0 and 20."
           />
-          <NumberField label="Seats" defaultValue={0} isInvalid errorMessage="Must be at least 1." />
+          <NumberField
+            label="Seats"
+            defaultValue={0}
+            isInvalid
+            errorMessage="Must be at least 1."
+          />
           <NumberField label="Capacity" defaultValue={10} isDisabled hideStepper />
         </Row>
       </Demo>
@@ -118,7 +138,12 @@ function InputsPanel() {
       <Demo label="SearchField · states">
         <Row>
           <SearchField label="Search" placeholder="Search components…" />
-          <SearchField label="Search" defaultValue="no results" isInvalid errorMessage="No results match." />
+          <SearchField
+            label="Search"
+            defaultValue="no results"
+            isInvalid
+            errorMessage="No results match."
+          />
           <SearchField label="Search" defaultValue="disabled" isDisabled />
         </Row>
       </Demo>
@@ -134,7 +159,11 @@ function InputsPanel() {
       <Demo label="LabeledValue — string, number formatOptions, list">
         <Row>
           <LabeledValue label="Project name" value="Quarterly report" />
-          <LabeledValue label="Budget" value={1234567.89} formatOptions={{ style: "currency", currency: "USD" }} />
+          <LabeledValue
+            label="Budget"
+            value={1234567.89}
+            formatOptions={{ style: "currency", currency: "USD" }}
+          />
           <LabeledValue label="Stakeholders" value={["Adobe", "Apple", "Google"]} />
         </Row>
       </Demo>

@@ -45,7 +45,9 @@ function TextFieldPage() {
             onChange={setValue}
             placeholder="you@example.com"
           />
-          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Value: {value() || "(empty)"}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+            Value: {value() || "(empty)"}
+          </p>
         </div>
       </Example>
 

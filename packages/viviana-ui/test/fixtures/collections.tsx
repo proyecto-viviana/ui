@@ -227,7 +227,12 @@ export function ListViewStaticInteractiveFixture(): JSX.Element {
 
 const SLOTTED_ROWS = [
   { id: "radiometry", title: "Radiometry Basics", meta: "Reference · 8 min", tag: "READ" },
-  { id: "pathtracing", title: "Monte Carlo Path Tracing", meta: "Journey · phase 3/5", tag: "RUNNING" },
+  {
+    id: "pathtracing",
+    title: "Monte Carlo Path Tracing",
+    meta: "Journey · phase 3/5",
+    tag: "RUNNING",
+  },
 ];
 
 /** Panel08 shape in full: items + render-function, each row carrying `description`,

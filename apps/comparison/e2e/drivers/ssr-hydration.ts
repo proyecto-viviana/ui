@@ -162,9 +162,10 @@ export function registerSsrHydrationDriver(scenario: SsrHydrationScenario) {
         const hydrated = await snapshotTarget(caseDef.target(page));
         expect(hydrated.tag).toBe(server.tag);
         expect(hydrated.text).toBe(server.text);
-        expect(hydrated.attributes, "every target attribute (ids, aria, class) must survive hydration").toEqual(
-          server.attributes,
-        );
+        expect(
+          hydrated.attributes,
+          "every target attribute (ids, aria, class) must survive hydration",
+        ).toEqual(server.attributes);
         expect(normalizeHtml(hydrated.normalizedHtml)).toBe(normalizeHtml(server.normalizedHtml));
 
         const errors = consoleIssues.filter(

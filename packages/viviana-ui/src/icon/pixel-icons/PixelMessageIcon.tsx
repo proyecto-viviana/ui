@@ -18,7 +18,10 @@ function PixelMessageIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       {...rest}
       class={className}
     >
-      <path d="M4 5h16v2H4zM4 7h2v6H4zM18 7h2v6h-2zM4 13h16v2H4zM7 15h2v2H7z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M4 5h16v2H4zM4 7h2v6H4zM18 7h2v6h-2zM4 13h16v2H4zM7 15h2v2H7z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

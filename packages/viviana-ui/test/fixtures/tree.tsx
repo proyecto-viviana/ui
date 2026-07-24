@@ -56,12 +56,7 @@ export function TreeFixture(): JSX.Element {
 export function TreeLabeledFixture(): JSX.Element {
   return (
     <Provider background="base" colorScheme="dark">
-      <Tree
-        aria-label="Files"
-        label="Files"
-        items={TREE_ITEMS}
-        defaultExpandedKeys={["projects"]}
-      >
+      <Tree aria-label="Files" label="Files" items={TREE_ITEMS} defaultExpandedKeys={["projects"]}>
         {renderRow}
       </Tree>
     </Provider>

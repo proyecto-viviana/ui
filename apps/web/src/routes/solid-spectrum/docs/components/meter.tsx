@@ -109,15 +109,21 @@ function MeterPage() {
       >
         <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <div>
-            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>Password strength:</p>
+            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>
+              Password strength:
+            </p>
             <Meter aria-label="Password strength" value={60} variant="notice" />
           </div>
           <div>
-            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>Battery level:</p>
+            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>
+              Battery level:
+            </p>
             <Meter aria-label="Battery level" value={85} variant="positive" />
           </div>
           <div>
-            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>Signal strength:</p>
+            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>
+              Signal strength:
+            </p>
             <Meter aria-label="Signal strength" value={30} variant="negative" />
           </div>
         </Flex>

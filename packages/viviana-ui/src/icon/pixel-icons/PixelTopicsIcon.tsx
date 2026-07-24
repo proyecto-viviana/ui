@@ -18,7 +18,10 @@ function PixelTopicsIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       {...rest}
       class={className}
     >
-      <path d="M5 5h6v6H5zM13 5h6v6h-6zM5 13h6v6H5zM13 13h6v6h-6z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M5 5h6v6H5zM13 5h6v6h-6zM5 13h6v6H5zM13 13h6v6h-6z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

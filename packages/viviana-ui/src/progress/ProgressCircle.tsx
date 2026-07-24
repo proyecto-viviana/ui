@@ -372,7 +372,7 @@ export function ProgressCircle(props: ProgressCircleProps): JSX.Element {
         }}
       </For>
       {/* Read `children` exactly once per run — a repeated getter read
-        * re-instantiates the subtree and desyncs hydration keys. */}
+       * re-instantiates the subtree and desyncs hydration keys. */}
       {(() => {
         const content = local.children;
         return content != null ? <div class={centerStyles}>{content}</div> : undefined;

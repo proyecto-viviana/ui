@@ -124,10 +124,7 @@ export default function SolidButtonIsland() {
   const renderedButton = createMemo(() => {
     const props = demoProps();
     const label = () => (
-      <span
-        class={s2ButtonText({ isProgressVisible: props.isPending })}
-        data-rsp-slot="text"
-      >
+      <span class={s2ButtonText({ isProgressVisible: props.isPending })} data-rsp-slot="text">
         {props.children}
       </span>
     );

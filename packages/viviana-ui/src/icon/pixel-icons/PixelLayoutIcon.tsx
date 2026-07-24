@@ -18,7 +18,10 @@ function PixelLayoutIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       {...rest}
       class={className}
     >
-      <path d="M4 5h16v2H4zM4 17h16v2H4zM4 7h2v10H4zM18 7h2v10h-2zM6 7h12v2H6zM9 9h2v8H9z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M4 5h16v2H4zM4 17h16v2H4zM4 7h2v10H4zM18 7h2v10h-2zM6 7h12v2H6zM9 9h2v8H9z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

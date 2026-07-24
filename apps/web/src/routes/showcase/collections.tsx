@@ -173,7 +173,14 @@ function Page() {
 
       <Demo label="ActionBar · ActionBarContainer — the bar floats over the bottom of the wrapped view">
         <ActionBarContainer>
-          <div style={{ display: "flex", "flex-direction": "column", gap: "8px", "min-height": "160px" }}>
+          <div
+            style={{
+              display: "flex",
+              "flex-direction": "column",
+              gap: "8px",
+              "min-height": "160px",
+            }}
+          >
             <div>Quarterly report</div>
             <div>Launch checklist</div>
             <div>Design brief</div>
@@ -200,7 +207,9 @@ function Page() {
           items={PEOPLE}
           columns={TABLE_COLUMNS}
           getKey={(row) => row.id}
-          getTextValue={(row, column) => String(row[column.key as keyof (typeof PEOPLE)[number]] ?? "")}
+          getTextValue={(row, column) =>
+            String(row[column.key as keyof (typeof PEOPLE)[number]] ?? "")
+          }
         >
           {() => (
             <>
@@ -233,7 +242,9 @@ function Page() {
           items={PEOPLE}
           columns={TABLE_COLUMNS}
           getKey={(row) => row.id}
-          getTextValue={(row, column) => String(row[column.key as keyof (typeof PEOPLE)[number]] ?? "")}
+          getTextValue={(row, column) =>
+            String(row[column.key as keyof (typeof PEOPLE)[number]] ?? "")
+          }
           selectionMode="multiple"
         >
           {() => (

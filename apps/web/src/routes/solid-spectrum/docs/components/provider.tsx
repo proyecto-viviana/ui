@@ -50,7 +50,9 @@ function App() {
       >
         <Flex direction="column" gap={4}>
           <Well>
-            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>Default (`light`)</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>
+              Default (`light`)
+            </p>
             <Button variant="primary">Default Theme</Button>
           </Well>
         </Flex>
@@ -69,13 +71,17 @@ function App() {
       >
         <Flex direction="column" gap={3}>
           <Well>
-            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>scale: "medium" (default)</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>
+              scale: "medium" (default)
+            </p>
             <Button variant="secondary" size="M">
               Medium Scale
             </Button>
           </Well>
           <Well>
-            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>scale: "large" (touch-optimized)</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>
+              scale: "large" (touch-optimized)
+            </p>
             <Button variant="secondary" size="L">
               Large Scale
             </Button>

@@ -315,9 +315,9 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
       return;
     }
 
-    const hiddenItems = Array.from(
-      measureRoot.querySelectorAll("[data-hidden-breadcrumb]"),
-    ).filter((element): element is HTMLElement => element instanceof HTMLElement);
+    const hiddenItems = Array.from(measureRoot.querySelectorAll("[data-hidden-breadcrumb]")).filter(
+      (element): element is HTMLElement => element instanceof HTMLElement,
+    );
     const folder =
       measurementMenuButton ??
       (measureRoot.querySelector("[data-hidden-breadcrumb-menu-button]") as HTMLElement | null);
@@ -679,12 +679,19 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
           <For each={allItems()}>
             {(item, index) => {
               const isLast = () => index() === allItems().length - 1;
-              const itemKey = () =>
-                local.getKey?.(item) ?? defaultItemKey(item, index());
+              const itemKey = () => local.getKey?.(item) ?? defaultItemKey(item, index());
               return (
-                <div data-hidden-breadcrumb style={{ display: "inline-flex", "align-items": "center" }}>
+                <div
+                  data-hidden-breadcrumb
+                  style={{ display: "inline-flex", "align-items": "center" }}
+                >
                   <HeadlessBreadcrumbItemContext.Provider
-                    value={{ get itemKey() { return itemKey(); }, isLast }}
+                    value={{
+                      get itemKey() {
+                        return itemKey();
+                      },
+                      isLast,
+                    }}
                   >
                     {renderDynamicItem(item)}
                   </HeadlessBreadcrumbItemContext.Provider>

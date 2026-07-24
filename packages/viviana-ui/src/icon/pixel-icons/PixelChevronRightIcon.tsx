@@ -18,7 +18,10 @@ function PixelChevronRightIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): J
       {...rest}
       class={className}
     >
-      <path d="M9 6h2v2H9zM11 8h2v2h-2zM13 10h2v2h-2zM11 12h2v2h-2zM9 14h2v2H9z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M9 6h2v2H9zM11 8h2v2h-2zM13 10h2v2h-2zM11 12h2v2h-2zM9 14h2v2H9z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

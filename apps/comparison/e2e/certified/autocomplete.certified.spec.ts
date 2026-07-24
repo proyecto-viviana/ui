@@ -89,8 +89,7 @@ const listbox: TargetResolver = ({ canvas }) => canvas.getByRole("listbox", { na
 /** The boundary button BEFORE the widget in DOM order (forward Tab entry). The
  *  fixture also renders an `After` button so the `tab-order` walk has somewhere
  *  to land past the virtual-focus list; it is reached via Tab, not resolved. */
-const beforeButton: TargetResolver = ({ canvas }) =>
-  canvas.getByRole("button", { name: "Before" });
+const beforeButton: TargetResolver = ({ canvas }) => canvas.getByRole("button", { name: "Before" });
 
 const scenario: DriverScenario = {
   slug: "autocomplete",

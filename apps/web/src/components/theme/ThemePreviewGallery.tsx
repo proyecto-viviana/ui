@@ -161,7 +161,11 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
 
           The Provider IS the gallery grid: it merges `class` onto that same wrapper
           div, so no extra nesting level — the Panels stay its direct grid children. */}
-      <Provider colorScheme={props.scheme} class="pv-gallery" style={props.tokens as JSX.CSSProperties}>
+      <Provider
+        colorScheme={props.scheme}
+        class="pv-gallery"
+        style={props.tokens as JSX.CSSProperties}
+      >
         <Panel title="Buttons">
           <Flex wrap gap={2}>
             <Button variant="primary">Primary</Button>
@@ -263,19 +267,30 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
             onSelectionChange={(k) => setTab(String(k))}
             aria-label="Preview tabs"
           >
-            <TabList<(typeof TABS)[number]>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
+            <TabList<(typeof TABS)[number]>>
+              {(item) => <Tab id={item.id}>{item.label}</Tab>}
+            </TabList>
             <TabPanel id="overview">
-              <p class={typeRoles.body} style={{ padding: "8px", color: "var(--color-text-secondary)" }}>
+              <p
+                class={typeRoles.body}
+                style={{ padding: "8px", color: "var(--color-text-secondary)" }}
+              >
                 A live snapshot of the design system under your theme.
               </p>
             </TabPanel>
             <TabPanel id="activity">
-              <p class={typeRoles.body} style={{ padding: "8px", color: "var(--color-text-secondary)" }}>
+              <p
+                class={typeRoles.body}
+                style={{ padding: "8px", color: "var(--color-text-secondary)" }}
+              >
                 Recent activity would appear here.
               </p>
             </TabPanel>
             <TabPanel id="settings">
-              <p class={typeRoles.body} style={{ padding: "8px", color: "var(--color-text-secondary)" }}>
+              <p
+                class={typeRoles.body}
+                style={{ padding: "8px", color: "var(--color-text-secondary)" }}
+              >
                 Settings would appear here.
               </p>
             </TabPanel>
@@ -316,7 +331,13 @@ export function ThemePreviewGallery(props: ThemePreviewGalleryProps) {
           <Flex wrap gap={4}>
             <For each={CARDS}>
               {(c) => (
-                <Card id={c.title} size="M" variant="primary" textValue={c.title} UNSAFE_style={{ width: "220px" }}>
+                <Card
+                  id={c.title}
+                  size="M"
+                  variant="primary"
+                  textValue={c.title}
+                  UNSAFE_style={{ width: "220px" }}
+                >
                   <CardPreview>
                     <Image src={CARD_IMAGE} alt="" />
                   </CardPreview>

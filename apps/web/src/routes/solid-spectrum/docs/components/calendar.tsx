@@ -167,9 +167,7 @@ const maxDate = new CalendarDate(2026, 12, 31);
         <li>
           Uses a <code>grid</code> role with proper <code>gridcell</code> roles for each day
         </li>
-        <li>
-          Full keyboard navigation: Arrow keys move between days, Page Up/Down change months
-        </li>
+        <li>Full keyboard navigation: Arrow keys move between days, Page Up/Down change months</li>
         <li>Today's date is visually indicated and announced to screen readers</li>
         <li>
           Disabled and unavailable dates are announced as such via <code>aria-disabled</code>

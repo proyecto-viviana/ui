@@ -1665,7 +1665,7 @@ export const customComparisonEntries: ComparisonEntry[] = [
     category: "Components",
     componentStatus: "parity",
     summary:
-      "Custom Viviana Logo: a two-word wordmark — the S2 title ramp sizes it (`title-xl` at `black` weight for `size=\"lg\"`), Silapse colors paint it (a primary word + an accent word, `inverted` swaps which takes accent). No upstream S2 pair — certified against WCAG directly.",
+      'Custom Viviana Logo: a two-word wordmark — the S2 title ramp sizes it (`title-xl` at `black` weight for `size="lg"`), Silapse colors paint it (a primary word + an accent word, `inverted` swaps which takes accent). No upstream S2 pair — certified against WCAG directly.',
     parity: "matched",
     priority: "live",
     gapSummary: [

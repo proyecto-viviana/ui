@@ -1536,26 +1536,27 @@ green (5537 passed). No source change needed.
 color visual-spec reds, both ar-AE (RTL) locale parity gaps — NOT introduced by
 the 2026-07-07 drag fix (`8cf9e084`); proven pre-existing because the untouched
 `createColorSlider` fails identically. Facets:
-  - **A — hardcoded ColorArea aria strings.** `createColorArea.ts:35` sets
-    `colorPickerLabel = () => "Color picker"` and `aria-roledescription: "2D slider"`
-    as English literals. Upstream `useColorArea` routes both through
-    `useLocalizedStringFormatter(intlMessages, '@react-aria/color')` — `colorPicker`
-    and `twoDimensionalSlider` keys carry 30+ locales (ar-AE `أداة انتقاء اللون`).
-    `colorarea-visual.spec.ts:360` asserts `solid.ariaLabel === react.ariaLabel`
-    and gets `"Color, Color picker"` vs `"Color, أداة انتقاء اللون"`. Fix = feed the
-    color hooks a string formatter over a color intl catalog (reuse the shipped
-    `createStringFormatter`/i18n stack in `@proyecto-viviana/ui` — do NOT hardcode;
-    see the calendar-i18n cell/grid pass for the pattern) and format `colorPicker`
-    + `colorInputLabel` + the `twoDimensionalSlider` roledescription. Likely also
+
+- **A — hardcoded ColorArea aria strings.** `createColorArea.ts:35` sets
+  `colorPickerLabel = () => "Color picker"` and `aria-roledescription: "2D slider"`
+  as English literals. Upstream `useColorArea` routes both through
+  `useLocalizedStringFormatter(intlMessages, '@react-aria/color')` — `colorPicker`
+  and `twoDimensionalSlider` keys carry 30+ locales (ar-AE `أداة انتقاء اللون`).
+  `colorarea-visual.spec.ts:360` asserts `solid.ariaLabel === react.ariaLabel`
+  and gets `"Color, Color picker"` vs `"Color, أداة انتقاء اللون"`. Fix = feed the
+  color hooks a string formatter over a color intl catalog (reuse the shipped
+  `createStringFormatter`/i18n stack in `@proyecto-viviana/ui` — do NOT hardcode;
+  see the calendar-i18n cell/grid pass for the pattern) and format `colorPicker`
+  - `colorInputLabel` + the `twoDimensionalSlider` roledescription. Likely also
     covers ColorWheel/ColorSlider channel roledescriptions that are hardcoded.
-  - **B — ColorSlider RTL output column width.** `colorslider-visual.spec.ts:445`
-    fails on `gridTemplateColumns` — React `"155px 37px"` vs Solid `"177px 15px"`.
-    The `"label output"` grid's `output` column is `auto`, so it sizes to the
-    rendered value-label text; in ar-AE the Solid output renders a narrower/
-    differently-formatted value than React (15px vs 37px), i.e. the thumb value
-    label is not localized to the same string under RTL. Root-cause the value
-    formatting (`getThumbValueLabel`/channel-value format) in the Arabic locale
-    before adjusting any CSS — the grid template itself matches (`"1fr auto"`).
+- **B — ColorSlider RTL output column width.** `colorslider-visual.spec.ts:445`
+  fails on `gridTemplateColumns` — React `"155px 37px"` vs Solid `"177px 15px"`.
+  The `"label output"` grid's `output` column is `auto`, so it sizes to the
+  rendered value-label text; in ar-AE the Solid output renders a narrower/
+  differently-formatted value than React (15px vs 37px), i.e. the thumb value
+  label is not localized to the same string under RTL. Root-cause the value
+  formatting (`getThumbValueLabel`/channel-value format) in the Arabic locale
+  before adjusting any CSS — the grid template itself matches (`"1fr auto"`).
 
 **Exit:** both color visual specs pass at ar-AE; color aria strings + the slider
 output value label localize through the i18n dictionary (no English literals),

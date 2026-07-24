@@ -18,7 +18,10 @@ function PixelCommunityIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.
       {...rest}
       class={className}
     >
-      <path d="M5 5h4v4H5zM15 5h4v4h-4zM3 11h8v6H3zM13 11h8v6h-8z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M5 5h4v4H5zM15 5h4v4h-4zM3 11h8v6H3zM13 11h8v6h-8z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

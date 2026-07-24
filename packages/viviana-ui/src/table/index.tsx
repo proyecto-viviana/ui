@@ -1964,9 +1964,7 @@ export function TableSelectionCheckbox(props: {
                 isDisabled: !!props.isDisabled,
               })}
             >
-              {props.isSelected ? (
-                <Checkmark size="XS" class={selectionCheckboxIcon} />
-              ) : null}
+              {props.isSelected ? <Checkmark size="XS" class={selectionCheckboxIcon} /> : null}
             </span>
           </span>
           {renderProps.isFocusVisible ? <CellFocusRing /> : null}

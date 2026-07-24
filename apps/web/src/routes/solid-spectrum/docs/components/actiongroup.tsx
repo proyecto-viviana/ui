@@ -125,14 +125,17 @@ function ActionGroupPage() {
 
       <AccessibilitySection>
         <li>
-          Renders with a <code>toolbar</code> role, or a radio/checkbox group when a selectionMode is set
+          Renders with a <code>toolbar</code> role, or a radio/checkbox group when a selectionMode
+          is set
         </li>
         <li>
           Requires an <code>aria-label</code> or <code>aria-labelledby</code> to name the group
         </li>
         <li>Arrow keys move focus between items using a roving tabindex</li>
         <li>Enter or Space toggles selection when a selectionMode is active</li>
-        <li>Selected items expose <code>aria-pressed</code> or <code>aria-checked</code></li>
+        <li>
+          Selected items expose <code>aria-pressed</code> or <code>aria-checked</code>
+        </li>
         <li>Disabled items are skipped by keyboard navigation</li>
       </AccessibilitySection>
     </DocPage>

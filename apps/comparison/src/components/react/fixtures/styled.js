@@ -2128,88 +2128,89 @@ function ReactTableViewDemo() {
       children: [
         jsx("button", { children: "Before" }, "before"),
         jsxs(
-        SpectrumTableView,
-        {
-          "aria-label": "Project documents",
-          density: demoProps.density,
-          overflowMode: demoProps.overflowMode,
-          isQuiet: demoProps.isQuiet,
-          selectionMode: demoProps.selectionMode,
-          disabledKeys,
-          ...selectionProps,
-          sortDescriptor,
-          onSortChange: setSortDescriptor,
-          onSelectionChange: (keys) =>
-            setSelectedKeys(keys === "all" ? new Set(rows.map((row) => row.id)) : new Set(keys)),
-          onAction: (key) => setActionKey(String(key)),
-          renderActionBar: demoProps.showActionBar ? actionBar : undefined,
-          UNSAFE_style: { ...collectionTableStyle, height: 260 },
-          children: [
-            jsxs(SpectrumTableHeader, {
-              children: visibleColumns.map((column) =>
-                jsx(
-                  SpectrumColumn,
-                  {
-                    id: column.id,
-                    isRowHeader: column.isRowHeader,
-                    align: demoProps.showDividers ? column.align : undefined,
-                    showDivider: demoProps.showDividers ? column.showDivider : undefined,
-                    allowsSorting: demoProps.sortColumn !== "none",
-                    allowsResizing: demoProps.allowsResizing,
-                    width:
-                      demoProps.allowsResizing && column.id === "status"
-                        ? 112
-                        : demoProps.allowsResizing && column.id === "type"
-                          ? 128
+          SpectrumTableView,
+          {
+            "aria-label": "Project documents",
+            density: demoProps.density,
+            overflowMode: demoProps.overflowMode,
+            isQuiet: demoProps.isQuiet,
+            selectionMode: demoProps.selectionMode,
+            disabledKeys,
+            ...selectionProps,
+            sortDescriptor,
+            onSortChange: setSortDescriptor,
+            onSelectionChange: (keys) =>
+              setSelectedKeys(keys === "all" ? new Set(rows.map((row) => row.id)) : new Set(keys)),
+            onAction: (key) => setActionKey(String(key)),
+            renderActionBar: demoProps.showActionBar ? actionBar : undefined,
+            UNSAFE_style: { ...collectionTableStyle, height: 260 },
+            children: [
+              jsxs(SpectrumTableHeader, {
+                children: visibleColumns.map((column) =>
+                  jsx(
+                    SpectrumColumn,
+                    {
+                      id: column.id,
+                      isRowHeader: column.isRowHeader,
+                      align: demoProps.showDividers ? column.align : undefined,
+                      showDivider: demoProps.showDividers ? column.showDivider : undefined,
+                      allowsSorting: demoProps.sortColumn !== "none",
+                      allowsResizing: demoProps.allowsResizing,
+                      width:
+                        demoProps.allowsResizing && column.id === "status"
+                          ? 112
+                          : demoProps.allowsResizing && column.id === "type"
+                            ? 128
+                            : undefined,
+                      minWidth: demoProps.allowsResizing && column.id === "name" ? 180 : undefined,
+                      maxWidth: demoProps.allowsResizing && column.id === "name" ? 320 : undefined,
+                      children: column.name,
+                    },
+                    column.id,
+                  ),
+                ),
+              }),
+              jsx(SpectrumTableBody, {
+                items: rows,
+                renderEmptyState: () =>
+                  jsxs(SpectrumIllustratedMessage, {
+                    children: [
+                      jsx(SpectrumHeading, { children: "No documents" }),
+                      jsx(SpectrumContent, { children: "Create or upload a file to continue." }),
+                    ],
+                  }),
+                children: (row) =>
+                  jsxs(
+                    SpectrumRow,
+                    {
+                      id: row.id,
+                      textValue: row.name,
+                      isDisabled: demoProps.disabledItem === row.id,
+                      href:
+                        demoProps.rowLinks && row.id === "project-brief"
+                          ? "https://example.com/project-brief"
                           : undefined,
-                    minWidth: demoProps.allowsResizing && column.id === "name" ? 180 : undefined,
-                    maxWidth: demoProps.allowsResizing && column.id === "name" ? 320 : undefined,
-                    children: column.name,
-                  },
-                  column.id,
-                ),
-              ),
-            }),
-            jsx(SpectrumTableBody, {
-              items: rows,
-              renderEmptyState: () =>
-                jsxs(SpectrumIllustratedMessage, {
-                  children: [
-                    jsx(SpectrumHeading, { children: "No documents" }),
-                    jsx(SpectrumContent, { children: "Create or upload a file to continue." }),
-                  ],
-                }),
-              children: (row) =>
-                jsxs(
-                  SpectrumRow,
-                  {
-                    id: row.id,
-                    textValue: row.name,
-                    isDisabled: demoProps.disabledItem === row.id,
-                    href:
-                      demoProps.rowLinks && row.id === "project-brief"
-                        ? "https://example.com/project-brief"
-                        : undefined,
-                    target: demoProps.rowLinks && row.id === "project-brief" ? "_blank" : undefined,
-                    children: visibleColumns.map((column) =>
-                      jsx(
-                        SpectrumCell,
-                        {
-                          align: demoProps.showDividers ? column.align : undefined,
-                          showDivider: demoProps.showDividers ? column.showDivider : undefined,
-                          children: row[column.id],
-                        },
-                        column.id,
+                      target:
+                        demoProps.rowLinks && row.id === "project-brief" ? "_blank" : undefined,
+                      children: visibleColumns.map((column) =>
+                        jsx(
+                          SpectrumCell,
+                          {
+                            align: demoProps.showDividers ? column.align : undefined,
+                            showDivider: demoProps.showDividers ? column.showDivider : undefined,
+                            children: row[column.id],
+                          },
+                          column.id,
+                        ),
                       ),
-                    ),
-                  },
-                  row.id,
-                ),
-            }),
-          ],
-        },
-        renderKey,
-      ),
+                    },
+                    row.id,
+                  ),
+              }),
+            ],
+          },
+          renderKey,
+        ),
         jsx("button", { children: "After" }, "after"),
       ],
     }),
@@ -2291,59 +2292,61 @@ function ReactTagGroupDemo() {
           "data-comparison-tag-count": String(tags.length),
           "data-comparison-action-count": String(actionCount),
           children: jsx(SpectrumTagGroup, {
-        key: renderKey,
-        label: demoProps.label,
-        size: demoProps.size,
-        labelPosition: demoProps.labelPosition,
-        labelAlign: demoProps.labelAlign,
-        selectionMode: demoProps.selectionMode,
-        selectionBehavior: demoProps.selectionBehavior,
-        isEmphasized: demoProps.isEmphasized,
-        isInvalid: demoProps.isInvalid,
-        isDisabled: demoProps.isDisabled,
-        description: demoProps.showDescription ? "Use tags to organize photo metadata." : undefined,
-        errorMessage:
-          demoProps.isInvalid && demoProps.showErrorMessage
-            ? "Choose at least one usable tag."
-            : undefined,
-        renderEmptyState: () => "No categories",
-        disabledKeys: disabledTagGroupKeys(demoProps),
-        items: tags,
-        ...selectionProps,
-        onSelectionChange: (keys) =>
-          setSelectedKeys(
-            keys === "all" ? new Set(tagGroupItems.map((item) => item.id)) : new Set(keys),
-          ),
-        onRemove: demoProps.allowsRemoving
-          ? (keys) => {
-              setTags((currentTags) => currentTags.filter((item) => !keys.has(item.id)));
-              setSelectedKeys((currentKeys) => {
-                const nextKeys = new Set(currentKeys);
-                for (const key of keys) {
-                  nextKeys.delete(key);
+            key: renderKey,
+            label: demoProps.label,
+            size: demoProps.size,
+            labelPosition: demoProps.labelPosition,
+            labelAlign: demoProps.labelAlign,
+            selectionMode: demoProps.selectionMode,
+            selectionBehavior: demoProps.selectionBehavior,
+            isEmphasized: demoProps.isEmphasized,
+            isInvalid: demoProps.isInvalid,
+            isDisabled: demoProps.isDisabled,
+            description: demoProps.showDescription
+              ? "Use tags to organize photo metadata."
+              : undefined,
+            errorMessage:
+              demoProps.isInvalid && demoProps.showErrorMessage
+                ? "Choose at least one usable tag."
+                : undefined,
+            renderEmptyState: () => "No categories",
+            disabledKeys: disabledTagGroupKeys(demoProps),
+            items: tags,
+            ...selectionProps,
+            onSelectionChange: (keys) =>
+              setSelectedKeys(
+                keys === "all" ? new Set(tagGroupItems.map((item) => item.id)) : new Set(keys),
+              ),
+            onRemove: demoProps.allowsRemoving
+              ? (keys) => {
+                  setTags((currentTags) => currentTags.filter((item) => !keys.has(item.id)));
+                  setSelectedKeys((currentKeys) => {
+                    const nextKeys = new Set(currentKeys);
+                    for (const key of keys) {
+                      nextKeys.delete(key);
+                    }
+                    return nextKeys;
+                  });
                 }
-                return nextKeys;
-              });
-            }
-          : undefined,
-        onAction: () => setActionCount((count) => count + 1),
-        groupActionLabel: demoProps.withGroupAction ? "Add tag" : undefined,
-        onGroupAction: demoProps.withGroupAction
-          ? () => setActionCount((count) => count + 1)
-          : undefined,
-        UNSAFE_style: collectionTagGroupStyle,
-        children: (item) =>
-          jsx(SpectrumTag, {
-            children:
-              demoProps.contentMode === "icon"
-                ? jsxs(Fragment, {
-                    children: [
-                      jsx(ReactButtonIcon, { "aria-hidden": "true" }),
-                      jsx(SpectrumText, { children: item.name }),
-                    ],
-                  })
-                : item.name,
-          }),
+              : undefined,
+            onAction: () => setActionCount((count) => count + 1),
+            groupActionLabel: demoProps.withGroupAction ? "Add tag" : undefined,
+            onGroupAction: demoProps.withGroupAction
+              ? () => setActionCount((count) => count + 1)
+              : undefined,
+            UNSAFE_style: collectionTagGroupStyle,
+            children: (item) =>
+              jsx(SpectrumTag, {
+                children:
+                  demoProps.contentMode === "icon"
+                    ? jsxs(Fragment, {
+                        children: [
+                          jsx(ReactButtonIcon, { "aria-hidden": "true" }),
+                          jsx(SpectrumText, { children: item.name }),
+                        ],
+                      })
+                    : item.name,
+              }),
           }),
         }),
         jsx("button", { children: "After" }),
@@ -2500,33 +2503,33 @@ function ReactTreeViewDemo() {
         jsx("button", { children: "Before" }),
         jsx(
           SpectrumTreeView,
-        {
-          "aria-label": "Files",
-          "data-comparison-control-root": "treeview",
-          "data-comparison-control-props": serializeTreeViewDemoProps(demoProps),
-          selectionMode: demoProps.selectionMode,
-          selectionStyle: demoProps.selectionStyle,
-          overflowMode: demoProps.overflowMode,
-          disabledKeys,
-          items,
-          ...selectionProps,
-          ...expandedProps,
-          UNSAFE_style: collectionTreeStyle,
-          renderEmptyState: () =>
-            jsxs(SpectrumIllustratedMessage, {
-              children: [
-                jsx(SpectrumHeading, { children: "No files" }),
-                jsx(SpectrumContent, { children: "Create or upload a file to continue." }),
-              ],
-            }),
-          renderActionBar: demoProps.showActionBar ? actionBar : undefined,
-          onAction: (key) => setActionKey(String(key)),
-          onSelectionChange: (keys) =>
-            setSelectedKeys(keys === "all" ? new Set(itemKeys) : new Set(keys)),
-          onExpandedChange: (keys) => setExpandedKeys(new Set(keys)),
-          children: renderTreeItem,
-        },
-        renderKey,
+          {
+            "aria-label": "Files",
+            "data-comparison-control-root": "treeview",
+            "data-comparison-control-props": serializeTreeViewDemoProps(demoProps),
+            selectionMode: demoProps.selectionMode,
+            selectionStyle: demoProps.selectionStyle,
+            overflowMode: demoProps.overflowMode,
+            disabledKeys,
+            items,
+            ...selectionProps,
+            ...expandedProps,
+            UNSAFE_style: collectionTreeStyle,
+            renderEmptyState: () =>
+              jsxs(SpectrumIllustratedMessage, {
+                children: [
+                  jsx(SpectrumHeading, { children: "No files" }),
+                  jsx(SpectrumContent, { children: "Create or upload a file to continue." }),
+                ],
+              }),
+            renderActionBar: demoProps.showActionBar ? actionBar : undefined,
+            onAction: (key) => setActionKey(String(key)),
+            onSelectionChange: (keys) =>
+              setSelectedKeys(keys === "all" ? new Set(itemKeys) : new Set(keys)),
+            onExpandedChange: (keys) => setExpandedKeys(new Set(keys)),
+            children: renderTreeItem,
+          },
+          renderKey,
         ),
         jsx("button", { children: "After" }),
       ],

@@ -113,9 +113,7 @@ export function MirrorPanel09(): JSX.Element {
             a Card or MenuItem the parent's context still wins; free-standing, they are the
             body and meta roles, which is what the spec draws here. */}
         <Row name="body" spec="Geist · prose">
-          <Content>
-            March a ray through signed distance fields toward the nearest surface.
-          </Content>
+          <Content>March a ray through signed distance fields toward the nearest surface.</Content>
         </Row>
         <Row name="meta" spec="Geist · secondary">
           <Text>Today 18:00 · 214 waiting</Text>

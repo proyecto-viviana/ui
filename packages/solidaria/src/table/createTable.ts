@@ -615,9 +615,8 @@ export function createTable<T extends object>(
     const s = state();
 
     const describedBy =
-      [sortDescriptionProps["aria-describedby"], p["aria-describedby"]]
-        .filter(Boolean)
-        .join(" ") || undefined;
+      [sortDescriptionProps["aria-describedby"], p["aria-describedby"]].filter(Boolean).join(" ") ||
+      undefined;
 
     const baseProps: Record<string, unknown> = {
       role: "grid",

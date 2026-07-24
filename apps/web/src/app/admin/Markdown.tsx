@@ -40,6 +40,7 @@ function inline(src: string): string {
   s = escapeHtml(s);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  // eslint-disable-next-line no-control-regex -- NUL is the placeholder delimiter, by design (see above)
   s = s.replace(/\u0000(\d+)\u0000/g, (_match, index: string) => tokens[Number(index)]);
   return s;
 }

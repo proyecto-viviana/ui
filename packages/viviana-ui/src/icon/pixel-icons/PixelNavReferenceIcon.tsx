@@ -18,7 +18,10 @@ function PixelNavReferenceIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): J
       {...rest}
       class={className}
     >
-      <path d="M5 3h12v2H5zM5 5h2v16H5zM17 5h2v14h-2zM7 19h10v2H7zM9 8h6v2H9zM9 11h6v2H9z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M5 3h12v2H5zM5 5h2v16H5zM17 5h2v14h-2zM7 19h10v2H7zM9 8h6v2H9zM9 11h6v2H9z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

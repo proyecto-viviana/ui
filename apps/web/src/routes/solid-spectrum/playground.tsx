@@ -91,13 +91,7 @@ import {
 // the components being demonstrated below still come from their own packages.
 // `Heading` is aliased because the bare `Heading` above is solid-spectrum's, which is what
 // the InlineAlert demos slot into; only the page's own headings use this one.
-import {
-  Flex,
-  Grid,
-  Heading as PageHeading,
-  Text,
-  typeRoles,
-} from "@proyecto-viviana/ui";
+import { Flex, Grid, Heading as PageHeading, Text, typeRoles } from "@proyecto-viviana/ui";
 import {
   createButton,
   createCheckboxGroup,
@@ -309,8 +303,28 @@ function Playground() {
             aria-labelledby="playground-heading"
           >
             {/* Background decoration */}
-            <div style={{ ...glow, top: "-16px", left: "-16px", width: "96px", height: "96px", background: "var(--color-accent)", filter: "blur(40px)" }} />
-            <div style={{ ...glow, top: "32px", right: "0", width: "128px", height: "128px", background: "var(--color-primary-500)", filter: "blur(64px)" }} />
+            <div
+              style={{
+                ...glow,
+                top: "-16px",
+                left: "-16px",
+                width: "96px",
+                height: "96px",
+                background: "var(--color-accent)",
+                filter: "blur(40px)",
+              }}
+            />
+            <div
+              style={{
+                ...glow,
+                top: "32px",
+                right: "0",
+                width: "128px",
+                height: "128px",
+                background: "var(--color-primary-500)",
+                filter: "blur(64px)",
+              }}
+            />
 
             <div style={{ position: "relative" }}>
               <div
@@ -325,22 +339,51 @@ function Playground() {
                   border: "1px solid var(--color-accent)",
                 }}
               >
-                <span style={{ display: "inline-flex", width: "8px", height: "8px", "border-radius": "999px", background: "var(--color-accent)" }} />
+                <span
+                  style={{
+                    display: "inline-flex",
+                    width: "8px",
+                    height: "8px",
+                    "border-radius": "999px",
+                    background: "var(--color-accent)",
+                  }}
+                />
                 <span class={typeRoles.micro} style={{ color: "var(--color-accent)" }}>
                   Interactive Demo
                 </span>
               </div>
 
-              <PageHeading level={1} id="playground-heading" UNSAFE_style={{ "margin-bottom": "16px" }}>
+              <PageHeading
+                level={1}
+                id="playground-heading"
+                UNSAFE_style={{ "margin-bottom": "16px" }}
+              >
                 Component <span class="gradient-text-animated">Playground</span>
               </PageHeading>
-              <Text styles={typeRoles.body} UNSAFE_style={{ display: "block", "max-width": "42rem" }}>
+              <Text
+                styles={typeRoles.body}
+                UNSAFE_style={{ display: "block", "max-width": "42rem" }}
+              >
                 Explore and interact with all 60+ components from the Proyecto Viviana UI library.
                 Toggle sections, customize themes, and see everything in action.
               </Text>
 
-              <div style={{ display: "flex", "align-items": "center", gap: "8px", "margin-top": "24px" }}>
-                <span style={{ width: "8px", height: "8px", "border-radius": "999px", background: "var(--color-success)" }} />
+              <div
+                style={{
+                  display: "flex",
+                  "align-items": "center",
+                  gap: "8px",
+                  "margin-top": "24px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "8px",
+                    height: "8px",
+                    "border-radius": "999px",
+                    background: "var(--color-success)",
+                  }}
+                />
                 <Text styles={typeRoles.meta}>Last action: {lastAction()}</Text>
               </div>
             </div>
@@ -523,7 +566,12 @@ function Playground() {
               <Flex direction="column" gap={6}>
                 {/* Placement variants */}
                 <div>
-                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Placements</Text>
+                  <Text
+                    styles={typeRoles.label}
+                    UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}
+                  >
+                    Placements
+                  </Text>
                   <Flex wrap gap={4}>
                     <TooltipTrigger>
                       <Button variant="secondary">Top</Button>
@@ -545,7 +593,12 @@ function Playground() {
                 </div>
                 {/* With arrow */}
                 <div>
-                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>With Arrow</Text>
+                  <Text
+                    styles={typeRoles.label}
+                    UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}
+                  >
+                    With Arrow
+                  </Text>
                   <Flex wrap gap={4}>
                     <TooltipTrigger>
                       <Button variant="primary">Hover me</Button>
@@ -563,7 +616,12 @@ function Playground() {
                 </div>
                 {/* Delay */}
                 <div>
-                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Custom Delay (500ms)</Text>
+                  <Text
+                    styles={typeRoles.label}
+                    UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}
+                  >
+                    Custom Delay (500ms)
+                  </Text>
                   <TooltipTrigger delay={500}>
                     <Button variant="secondary" fillStyle="outline">
                       Delayed tooltip
@@ -584,7 +642,12 @@ function Playground() {
               <Flex direction="column" gap={6}>
                 {/* Basic placements */}
                 <div>
-                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Placement Options</Text>
+                  <Text
+                    styles={typeRoles.label}
+                    UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}
+                  >
+                    Placement Options
+                  </Text>
                   <Flex wrap gap={3}>
                     <PopoverTrigger>
                       <Button
@@ -633,7 +696,12 @@ function Playground() {
                 </div>
                 {/* With footer actions */}
                 <div>
-                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>With Footer Actions</Text>
+                  <Text
+                    styles={typeRoles.label}
+                    UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}
+                  >
+                    With Footer Actions
+                  </Text>
                   <PopoverTrigger>
                     <Button variant="primary" data-testid="popover-actions-trigger">
                       Open with Actions
@@ -656,7 +724,12 @@ function Playground() {
                 </div>
                 {/* Size variants */}
                 <div>
-                  <Text styles={typeRoles.label} UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}>Size Variants</Text>
+                  <Text
+                    styles={typeRoles.label}
+                    UNSAFE_style={{ display: "block", "margin-bottom": "12px" }}
+                  >
+                    Size Variants
+                  </Text>
                   <Flex wrap gap={3}>
                     <PopoverTrigger>
                       <Button variant="secondary" fillStyle="outline">
@@ -671,7 +744,9 @@ function Playground() {
                         Medium
                       </Button>
                       <Popover placement="bottom" size="M">
-                        <Text styles={typeRoles.body}>Medium popover content with more room for details.</Text>
+                        <Text styles={typeRoles.body}>
+                          Medium popover content with more room for details.
+                        </Text>
                       </Popover>
                     </PopoverTrigger>
                     <PopoverTrigger>
@@ -731,7 +806,12 @@ function Playground() {
                   <Text styles={typeRoles.meta}>{toggleOn() ? "On" : "Off"}</Text>
                 </Flex>
                 <div>
-                  <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Tab Switch:</span>
+                  <span
+                    class={typeRoles.label}
+                    style={{ display: "block", "margin-bottom": "8px" }}
+                  >
+                    Tab Switch:
+                  </span>
                   <TabSwitch
                     options={[
                       { label: "TRENDING", value: "trending" },
@@ -740,7 +820,12 @@ function Playground() {
                     value={switchValue()}
                     onChange={setSwitchValue}
                   />
-                  <Text styles={typeRoles.meta} UNSAFE_style={{ display: "block", "margin-top": "8px" }}>Selected: {switchValue()}</Text>
+                  <Text
+                    styles={typeRoles.meta}
+                    UNSAFE_style={{ display: "block", "margin-top": "8px" }}
+                  >
+                    Selected: {switchValue()}
+                  </Text>
                 </div>
               </Flex>
             </Section>
@@ -766,7 +851,14 @@ function Playground() {
                   <Checkbox isDisabled>Disabled option</Checkbox>
                   <Checkbox isIndeterminate>Indeterminate state</Checkbox>
                 </Flex>
-                <div style={{ display: "flex", "align-items": "center", gap: "16px", "padding-top": "8px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    "align-items": "center",
+                    gap: "16px",
+                    "padding-top": "8px",
+                  }}
+                >
                   <Text styles={typeRoles.meta}>Sizes:</Text>
                   <Checkbox size="sm" aria-label="Small checkbox" />
                   <Checkbox size="md" aria-label="Medium checkbox" />
@@ -859,23 +951,34 @@ function Playground() {
                   <ProgressBar value={100} label="Complete" />
                 </Flex>
                 <Flex direction="column" gap={4}>
-                  <span class={typeRoles.label} style={{ display: "block" }}>Indeterminate:</span>
+                  <span class={typeRoles.label} style={{ display: "block" }}>
+                    Indeterminate:
+                  </span>
                   <ProgressBar isIndeterminate label="Loading..." />
                 </Flex>
                 <Flex direction="column" gap={4}>
-                  <span class={typeRoles.label} style={{ display: "block" }}>Sizes:</span>
+                  <span class={typeRoles.label} style={{ display: "block" }}>
+                    Sizes:
+                  </span>
                   <ProgressBar value={60} size="S" label="Small" />
                   <ProgressBar value={60} size="M" label="Medium" />
                   <ProgressBar value={60} size="L" label="Large" />
                   <ProgressBar value={60} size="XL" label="Extra large" />
                 </Flex>
                 <Flex direction="column" gap={4}>
-                  <span class={typeRoles.label} style={{ display: "block" }}>Label position:</span>
+                  <span class={typeRoles.label} style={{ display: "block" }}>
+                    Label position:
+                  </span>
                   <ProgressBar value={40} label="Top label" labelPosition="top" />
                   <ProgressBar value={40} label="Side label" labelPosition="side" />
                 </Flex>
                 <div>
-                  <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Custom value label:</span>
+                  <span
+                    class={typeRoles.label}
+                    style={{ display: "block", "margin-bottom": "8px" }}
+                  >
+                    Custom value label:
+                  </span>
                   <ProgressBar
                     value={2}
                     minValue={0}
@@ -885,10 +988,22 @@ function Playground() {
                   />
                 </div>
                 <Grid columns="repeat(auto-fit, minmax(220px, 1fr))" gap={3}>
-                  <div style={{ background: "#0f172a", padding: "16px", "border-radius": "var(--radius-md)" }}>
+                  <div
+                    style={{
+                      background: "#0f172a",
+                      padding: "16px",
+                      "border-radius": "var(--radius-md)",
+                    }}
+                  >
                     <ProgressBar value={56} label="Static white" staticColor="white" />
                   </div>
-                  <div style={{ background: "#f1f5f9", padding: "16px", "border-radius": "var(--radius-md)" }}>
+                  <div
+                    style={{
+                      background: "#f1f5f9",
+                      padding: "16px",
+                      "border-radius": "var(--radius-md)",
+                    }}
+                  >
                     <ProgressBar value={56} label="Static black" staticColor="black" />
                   </div>
                 </Grid>
@@ -903,13 +1018,27 @@ function Playground() {
             >
               <Flex direction="column" gap={6}>
                 <Flex direction="column" gap={4}>
-                  <span class={typeRoles.label} style={{ display: "block" }}>Horizontal (default):</span>
+                  <span class={typeRoles.label} style={{ display: "block" }}>
+                    Horizontal (default):
+                  </span>
                   <Separator />
                   <Text styles={typeRoles.meta}>Content above and below the separator.</Text>
                 </Flex>
                 <div>
-                  <span class={typeRoles.label} style={{ display: "block", "margin-bottom": "8px" }}>Vertical:</span>
-                  <div style={{ display: "flex", "align-items": "center", gap: "16px", height: "32px" }}>
+                  <span
+                    class={typeRoles.label}
+                    style={{ display: "block", "margin-bottom": "8px" }}
+                  >
+                    Vertical:
+                  </span>
+                  <div
+                    style={{
+                      display: "flex",
+                      "align-items": "center",
+                      gap: "16px",
+                      height: "32px",
+                    }}
+                  >
                     <Text styles={typeRoles.body}>Item 1</Text>
                     <Separator orientation="vertical" />
                     <Text styles={typeRoles.body}>Item 2</Text>
@@ -918,22 +1047,30 @@ function Playground() {
                   </div>
                 </div>
                 <Flex direction="column" gap={4}>
-                  <span class={typeRoles.label} style={{ display: "block" }}>Sizes:</span>
+                  <span class={typeRoles.label} style={{ display: "block" }}>
+                    Sizes:
+                  </span>
                   <Flex direction="column" gap={2}>
                     <Flex alignItems="center" gap={2}>
-                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>sm:</Text>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>
+                        sm:
+                      </Text>
                       <div style={{ flex: 1 }}>
                         <Separator size="sm" />
                       </div>
                     </Flex>
                     <Flex alignItems="center" gap={2}>
-                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>md:</Text>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>
+                        md:
+                      </Text>
                       <div style={{ flex: 1 }}>
                         <Separator size="md" />
                       </div>
                     </Flex>
                     <Flex alignItems="center" gap={2}>
-                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>lg:</Text>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "32px" }}>
+                        lg:
+                      </Text>
                       <div style={{ flex: 1 }}>
                         <Separator size="lg" />
                       </div>
@@ -941,22 +1078,30 @@ function Playground() {
                   </Flex>
                 </Flex>
                 <Flex direction="column" gap={4}>
-                  <span class={typeRoles.label} style={{ display: "block" }}>Variants:</span>
+                  <span class={typeRoles.label} style={{ display: "block" }}>
+                    Variants:
+                  </span>
                   <Flex direction="column" gap={2}>
                     <Flex alignItems="center" gap={2}>
-                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>default:</Text>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>
+                        default:
+                      </Text>
                       <div style={{ flex: 1 }}>
                         <Separator variant="default" />
                       </div>
                     </Flex>
                     <Flex alignItems="center" gap={2}>
-                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>subtle:</Text>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>
+                        subtle:
+                      </Text>
                       <div style={{ flex: 1 }}>
                         <Separator variant="subtle" />
                       </div>
                     </Flex>
                     <Flex alignItems="center" gap={2}>
-                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>strong:</Text>
+                      <Text styles={typeRoles.meta} UNSAFE_style={{ "min-width": "64px" }}>
+                        strong:
+                      </Text>
                       <div style={{ flex: 1 }}>
                         <Separator variant="strong" />
                       </div>
@@ -1133,7 +1278,13 @@ function Playground() {
                 fallback={
                   <div
                     class={typeRoles.meta}
-                    style={{ "grid-column": "1 / -1", padding: "16px", background: "var(--color-bg-300)", border: "1px solid var(--border-subtle)", "border-radius": "var(--radius-xl)" }}
+                    style={{
+                      "grid-column": "1 / -1",
+                      padding: "16px",
+                      background: "var(--color-bg-300)",
+                      border: "1px solid var(--border-subtle)",
+                      "border-radius": "var(--radius-xl)",
+                    }}
                   >
                     Loading advanced playground sections...
                   </div>

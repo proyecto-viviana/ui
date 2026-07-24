@@ -11,9 +11,21 @@ import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 const sections = [
-  { id: "overview", title: "Overview", body: "What the register sets out to do and where it applies." },
-  { id: "tokens", title: "Tokens", body: "The color, type, and radius atoms every component reads from." },
-  { id: "components", title: "Components", body: "The panels this showcase walks, one register surface at a time." },
+  {
+    id: "overview",
+    title: "Overview",
+    body: "What the register sets out to do and where it applies.",
+  },
+  {
+    id: "tokens",
+    title: "Tokens",
+    body: "The color, type, and radius atoms every component reads from.",
+  },
+  {
+    id: "components",
+    title: "Components",
+    body: "The panels this showcase walks, one register surface at a time.",
+  },
 ];
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/accordion")({

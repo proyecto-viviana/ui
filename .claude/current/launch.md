@@ -40,12 +40,12 @@ The single most important structural gap, because it misleads every new user.
 
 The repo ships two products on one stack:
 
-| | `@proyecto-viviana/solid-spectrum` | `@proyecto-viviana/ui` |
-| --- | --- | --- |
-| What it is | S2-parity port, pinned to Spectrum 1.5.1 | The Viviana register (Glasselated) |
-| Visual identity | Adobe Spectrum, parity-locked | Geist trio, glass + pixel |
-| Docs-site coverage | 45 doc pages, playground, ecosystem | **zero API docs** — `/showcase` is a visual gallery |
-| What the root README tells users to install | — | **this one** |
+|                                             | `@proyecto-viviana/solid-spectrum`       | `@proyecto-viviana/ui`                              |
+| ------------------------------------------- | ---------------------------------------- | --------------------------------------------------- |
+| What it is                                  | S2-parity port, pinned to Spectrum 1.5.1 | The Viviana register (Glasselated)                  |
+| Visual identity                             | Adobe Spectrum, parity-locked            | Geist trio, glass + pixel                           |
+| Docs-site coverage                          | 45 doc pages, playground, ecosystem      | **zero API docs** — `/showcase` is a visual gallery |
+| What the root README tells users to install | —                                        | **this one**                                        |
 
 So the package we point users at has no reference documentation, and the fully
 documented package is the one framed as the parity substrate.
@@ -62,16 +62,16 @@ with public reach (AGENTS.md rule #3).
 
 Each is tracked in `tech-debt.md`; IDs below are stable references.
 
-| ID | Finding | Evidence |
-| --- | --- | --- |
-| B1 | 6 broken GitHub links — `github.com/proyecto-viviana/proyecto-viviana` 404s; the repo is `proyecto-viviana/ui` | `Header.tsx:181`, `solid-spectrum/index.tsx:130`, `ecosystem.tsx:165,170,175,180` |
-| B2 | Installation page is materially wrong — never mentions `@proyecto-viviana/ui`, tells users to hand-author `:root` custom properties instead of importing the shipped stylesheets, omits `vivianaMacros()` | `apps/web/src/routes/solid-spectrum/docs/installation.tsx`; contradicted by `packages/viviana-ui/README.md`, which is correct |
-| B3 | No API docs for the flagship package — 238 exported names, zero reference pages | `packages/viviana-ui/src/index.ts` |
-| B4 | `vp check` RED on main — 174 files with format drift, invisible in CI because `ci:release-readiness` has no format step and `certification-gates.yml` runs everything `continue-on-error: true` | `vp check` exit 1 |
-| B5 | `docs:check` RED — 9 errors (5 missing status headers, 1 bad roadmap ref, 2 done-without-finished-date, 1 invalid roadmap status) | gate output |
-| B6 | Site is 24 days stale — last Cloudflare deploy 2026-06-30, predating all Glasselated work | deployment history |
-| B7 | npm metadata gaps — no `homepage` on any of the 5 packages; `viviana-ui` has 0 keywords and an internal-jargon description | `package.json` × 5 |
-| B8 | `a11y:smoke` RED (12 failed / 32 passed) — stale test selectors, not a product regression | see below |
+| ID  | Finding                                                                                                                                                                                                   | Evidence                                                                                                                      |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| B1  | 6 broken GitHub links — `github.com/proyecto-viviana/proyecto-viviana` 404s; the repo is `proyecto-viviana/ui`                                                                                            | `Header.tsx:181`, `solid-spectrum/index.tsx:130`, `ecosystem.tsx:165,170,175,180`                                             |
+| B2  | Installation page is materially wrong — never mentions `@proyecto-viviana/ui`, tells users to hand-author `:root` custom properties instead of importing the shipped stylesheets, omits `vivianaMacros()` | `apps/web/src/routes/solid-spectrum/docs/installation.tsx`; contradicted by `packages/viviana-ui/README.md`, which is correct |
+| B3  | No API docs for the flagship package — 238 exported names, zero reference pages                                                                                                                           | `packages/viviana-ui/src/index.ts`                                                                                            |
+| B4  | `vp check` RED on main — 174 files with format drift, invisible in CI because `ci:release-readiness` has no format step and `certification-gates.yml` runs everything `continue-on-error: true`           | `vp check` exit 1                                                                                                             |
+| B5  | `docs:check` RED — 9 errors (5 missing status headers, 1 bad roadmap ref, 2 done-without-finished-date, 1 invalid roadmap status)                                                                         | gate output                                                                                                                   |
+| B6  | Site is 24 days stale — last Cloudflare deploy 2026-06-30, predating all Glasselated work                                                                                                                 | deployment history                                                                                                            |
+| B7  | npm metadata gaps — no `homepage` on any of the 5 packages; `viviana-ui` has 0 keywords and an internal-jargon description                                                                                | `package.json` × 5                                                                                                            |
+| B8  | `a11y:smoke` RED (12 failed / 32 passed) — stale test selectors, not a product regression                                                                                                                 | see below                                                                                                                     |
 
 ### B8 root cause
 

@@ -101,10 +101,7 @@ export function createActionGroup<T>(
     return out;
   };
 
-  const focusRelative = (
-    root: HTMLElement,
-    direction: "next" | "previous",
-  ): HTMLElement | null => {
+  const focusRelative = (root: HTMLElement, direction: "next" | "previous"): HTMLElement | null => {
     const focusables = getFocusableItems(root);
     if (focusables.length === 0) return null;
 

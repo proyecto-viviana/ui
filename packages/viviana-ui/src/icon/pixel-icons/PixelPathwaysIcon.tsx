@@ -18,7 +18,10 @@ function PixelPathwaysIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       {...rest}
       class={className}
     >
-      <path d="M4 15h4v4H4zM8 11h4v4H8zM12 7h4v4h-4zM16 3h4v4h-4z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M4 15h4v4H4zM8 11h4v4H8zM12 7h4v4h-4zM16 3h4v4h-4z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

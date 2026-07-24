@@ -18,7 +18,10 @@ function PixelNavPlaygroundIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): 
       {...rest}
       class={className}
     >
-      <path d="M13 2h4v3h-4zM11 5h4v3h-4zM9 8h6v3H9zM12 11h4v3h-4zM10 14h4v3h-4zM8 17h4v5H8z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M13 2h4v3h-4zM11 5h4v3h-4zM9 8h6v3H9zM12 11h4v3h-4zM10 14h4v3h-4zM8 17h4v5H8z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

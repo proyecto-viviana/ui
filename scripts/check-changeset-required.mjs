@@ -25,10 +25,14 @@ function changesetPackages() {
   const named = new Set();
   for (const file of readdirSync(".changeset")) {
     if (!file.endsWith(".md") || file === "README.md") continue;
-    const frontmatter = readFileSync(`.changeset/${file}`, "utf8").match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    const frontmatter = readFileSync(`.changeset/${file}`, "utf8").match(
+      /^---\r?\n([\s\S]*?)\r?\n---/,
+    );
     if (!frontmatter) continue;
     for (const line of frontmatter[1].split("\n")) {
-      const match = line.match(/^\s*["']?(@[^"':]+\/[^"':]+|[^"':\s]+)["']?\s*:\s*(major|minor|patch)\s*$/);
+      const match = line.match(
+        /^\s*["']?(@[^"':]+\/[^"':]+|[^"':\s]+)["']?\s*:\s*(major|minor|patch)\s*$/,
+      );
       if (match) named.add(match[1]);
     }
   }

@@ -82,7 +82,9 @@ return (
         >
           <p class={typeRoles.headline}>Press count: {pressCount()}</p>
           <p class={typeRoles.meta}>Last input: {lastPointerType()}</p>
-          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Try clicking, touching, or pressing Enter/Space</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
+            Try clicking, touching, or pressing Enter/Space
+          </p>
         </div>
       </Example>
 
@@ -285,15 +287,15 @@ function PressStateDemo() {
         }}
       >
         <p class={typeRoles.label}>Press and hold me</p>
-        <p class={typeRoles.meta} style={{ "margin-top": "4px" }}>Watch the events log →</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "4px" }}>
+          Watch the events log →
+        </p>
       </div>
       <Well class={typeRoles.terminal} style={{ flex: "1" }}>
-        <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>Event Log:</p>
-        {events().length === 0 ? (
-          <p>No events yet...</p>
-        ) : (
-          events().map((event) => <p>{event}</p>)
-        )}
+        <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>
+          Event Log:
+        </p>
+        {events().length === 0 ? <p>No events yet...</p> : events().map((event) => <p>{event}</p>)}
       </Well>
     </Flex>
   );

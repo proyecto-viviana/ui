@@ -18,7 +18,10 @@ function PixelFlameIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elem
       {...rest}
       class={className}
     >
-      <path d="M11 4h2v2h-2zM10 6h4v2h-4zM9 8h6v2H9zM8 10h8v6H8zM9 16h6v2H9z" fill="var(--iconPrimary, currentColor)" />
+      <path
+        d="M11 4h2v2h-2zM10 6h4v2h-4zM9 8h6v2H9zM8 10h8v6H8zM9 16h6v2H9z"
+        fill="var(--iconPrimary, currentColor)"
+      />
     </svg>
   );
 }

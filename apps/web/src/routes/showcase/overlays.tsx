@@ -110,7 +110,9 @@ function Page() {
           <For each={CONTEXTUAL_HELP_VARIANTS}>
             {(variant) => (
               <ContextualHelp variant={variant}>
-                <Heading slot="title">{variant === "info" ? "Did you know?" : "Need help?"}</Heading>
+                <Heading slot="title">
+                  {variant === "info" ? "Did you know?" : "Need help?"}
+                </Heading>
                 <Content>
                   {variant === "info"
                     ? "This panel reflects live register tokens."
@@ -174,7 +176,11 @@ function Page() {
           <For each={ALERT_VARIANTS}>
             {(variant) => (
               <AlertDialog
-                trigger={<Button variant="secondary">{variant.charAt(0).toUpperCase() + variant.slice(1)}</Button>}
+                trigger={
+                  <Button variant="secondary">
+                    {variant.charAt(0).toUpperCase() + variant.slice(1)}
+                  </Button>
+                }
                 title={`${variant.charAt(0).toUpperCase() + variant.slice(1)} example`}
                 variant={variant}
                 primaryActionLabel="Confirm"
@@ -212,7 +218,8 @@ function Page() {
                 <FullscreenDialog variant={variant}>
                   <Heading slot="title">Fullscreen surface</Heading>
                   <Content>
-                    Takes the viewport{variant === "fullscreenTakeover" ? ", edge to edge" : " minus a margin"}.
+                    Takes the viewport
+                    {variant === "fullscreenTakeover" ? ", edge to edge" : " minus a margin"}.
                     Escape or the trigger closes it.
                   </Content>
                 </FullscreenDialog>

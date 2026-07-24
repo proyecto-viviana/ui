@@ -68,9 +68,7 @@ function FileTriggerPage() {
           allowsMultiple
           onSelect={(list) =>
             setFiles(
-              list && list.length > 0
-                ? `${list.length} image(s) selected`
-                : "no file selected",
+              list && list.length > 0 ? `${list.length} image(s) selected` : "no file selected",
             )
           }
         >
@@ -83,7 +81,8 @@ function FileTriggerPage() {
           {
             name: "onSelect",
             type: "(files: FileList | null) => void",
-            description: "Handler called with the chosen files, or null if the dialog was cancelled",
+            description:
+              "Handler called with the chosen files, or null if the dialog was cancelled",
           },
           {
             name: "acceptedFileTypes",

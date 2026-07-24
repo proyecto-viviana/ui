@@ -58,7 +58,10 @@ describe("showcase registry coverage", () => {
 
   it("claims no name the package does not export", () => {
     const phantom = claimed.filter((c) => !exported.has(c.name));
-    expect(phantom, `registry claims non-exported names: ${phantom.map((c) => `${c.name} (${c.panel})`).join(", ")}`).toEqual([]);
+    expect(
+      phantom,
+      `registry claims non-exported names: ${phantom.map((c) => `${c.name} (${c.panel})`).join(", ")}`,
+    ).toEqual([]);
   });
 
   it("claims every component-like export exactly once", () => {
@@ -67,6 +70,8 @@ describe("showcase registry coverage", () => {
     const missing = [...exported].filter((n) => !counts.has(n) && !EXEMPT.includes(n)).sort();
     const duplicated = [...counts].filter(([, n]) => n > 1).map(([name]) => name);
     expect(missing, `exports without a panel home: ${missing.join(", ")}`).toEqual([]);
-    expect(duplicated, `exports claimed by more than one panel: ${duplicated.join(", ")}`).toEqual([]);
+    expect(duplicated, `exports claimed by more than one panel: ${duplicated.join(", ")}`).toEqual(
+      [],
+    );
   });
 });

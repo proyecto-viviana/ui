@@ -97,14 +97,12 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  */
 
 /** The styled breadcrumb `<ol role="list">` in THIS panel's canvas, by name. */
-const list: TargetResolver = ({ canvas }) =>
-  canvas.getByRole("list", { name: "Project location" });
+const list: TargetResolver = ({ canvas }) => canvas.getByRole("list", { name: "Project location" });
 
 /** The first (non-current) breadcrumb link — the D5 walk's entry tab stop.
  *  Resolves uniquely: Playwright's role engine excludes the React panel's
  *  `inert` responsive-measurement copies (verified count === 1 on both stacks). */
-const homeLink: TargetResolver = ({ canvas }) =>
-  canvas.getByRole("link", { name: "Home" });
+const homeLink: TargetResolver = ({ canvas }) => canvas.getByRole("link", { name: "Home" });
 
 const scenario: DriverScenario = {
   slug: "breadcrumbs",
