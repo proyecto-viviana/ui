@@ -1,6 +1,6 @@
-/* /showcase layout route: loads the Geist trio + the Glasselated host layer,
-   then wraps every panel route in the shell (scene, veil, portal host) and the
-   sticky top bar. Panel content arrives through the Outlet. */
+/* /showcase layout route: loads the Glasselated host layer, then wraps every
+   panel route in the shell (scene, veil, portal host) and the sticky top bar.
+   Panel content arrives through the Outlet. */
 import { createFileRoute, Outlet } from "@tanstack/solid-router";
 import glasselatedStyles from "@/styles/glasselated.css?url";
 import { GlasselatedShell } from "@/components/showcase/GlasselatedShell";
@@ -16,13 +16,9 @@ export const Route = createFileRoute("/showcase")({
           "Every Viviana UI component on the Glasselated register: glass surfaces, Geist Pixel display type, terminal mono controls.",
       },
     ],
-    links: [
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Geist+Pixel:ELSH@1..80&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;700;800&display=swap",
-      },
-      { rel: "stylesheet", href: glasselatedStyles },
-    ],
+    /* The Geist trio itself is loaded site-wide from the root route now; this
+       layer only adds the Glasselated host styles on top. */
+    links: [{ rel: "stylesheet", href: glasselatedStyles }],
   }),
   component: ShowcaseLayout,
 });

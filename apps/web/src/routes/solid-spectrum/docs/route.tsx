@@ -3,8 +3,8 @@ import { For, createSignal, Show, onMount, onCleanup } from "solid-js";
 import { Header } from "@/components";
 import { useThemeColors, useTheme } from "@/utils/theme";
 
-const FONT_TITLE = "'Jost', system-ui, sans-serif";
-const FONT_BODY = "'Sen', system-ui, sans-serif";
+const FONT_TITLE = "var(--font-title)";
+const FONT_BODY = "var(--font-body)";
 
 export const Route = createFileRoute("/solid-spectrum/docs")({
   component: DocsLayout,

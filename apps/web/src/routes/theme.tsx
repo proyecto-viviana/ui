@@ -128,7 +128,7 @@ function ThemePage() {
                   color: "var(--docs-text-secondary)",
                   border: "1px solid var(--docs-border)",
                   "border-radius": "var(--pv-radius-md)",
-                  "font-family": "'JetBrains Mono', ui-monospace, monospace",
+                  "font-family": "var(--font-mono)",
                   "font-size": "11px",
                   "line-height": "1.65",
                 }}

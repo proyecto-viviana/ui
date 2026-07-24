@@ -19,7 +19,7 @@ function Landing() {
         background: colors().surface,
         display: "flex",
         "flex-direction": "column",
-        "font-family": "'Sen', system-ui, sans-serif",
+        "font-family": "var(--font-body)",
         color: colors().text,
         transition: "background 0.3s ease, color 0.3s ease",
       }}
@@ -51,7 +51,7 @@ function Landing() {
             "font-weight": "600",
             "letter-spacing": "0.5px",
             color: isDark() ? colors().surface : "#ffffff",
-            "font-family": "'Jost', system-ui, sans-serif",
+            "font-family": "var(--font-title)",
           }}
         >
           ACCESSIBLE UI LIBRARY FOR SOLIDJS
@@ -60,7 +60,7 @@ function Landing() {
         {/* Title */}
         <h1
           style={{
-            "font-family": "'Jost', system-ui, sans-serif",
+            "font-family": "var(--font-title)",
             "font-size": "clamp(2.5rem, 8vw, 5rem)",
             "font-weight": "700",
             "line-height": "1",
@@ -111,7 +111,7 @@ function Landing() {
               "text-decoration": "none",
               "font-weight": "600",
               "font-size": "13px",
-              "font-family": "'Jost', system-ui, sans-serif",
+              "font-family": "var(--font-title)",
               border: `2px solid ${colors().pink}`,
               transition: "filter 0.2s ease",
               filter: `drop-shadow(0 0 8px ${colors().pinkGlow})`,
@@ -150,7 +150,7 @@ function Landing() {
               "text-decoration": "none",
               "font-weight": "600",
               "font-size": "13px",
-              "font-family": "'Jost', system-ui, sans-serif",
+              "font-family": "var(--font-title)",
               border: `2px solid ${colors().blue}`,
               transition: "background 0.2s ease",
             }}
@@ -247,7 +247,7 @@ function FeatureBlock(props: { title: string; desc: string; color: string; bgCol
       <div>
         <div
           style={{
-            "font-family": "'Jost', system-ui, sans-serif",
+            "font-family": "var(--font-title)",
             "font-weight": "600",
             "font-size": "13px",
             "margin-bottom": "2px",

@@ -20,8 +20,10 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
+        /* The Geist trio the library's type tokens name: Geist Pixel for display
+           (--font-display), Geist for text (--font-ui), Geist Mono for code. */
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Jost:ital,wght@0,100..900;1,100..900&family=Sen:wght@400..800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Geist+Pixel:ELSH@1..80&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;700;800&display=swap",
       },
       { rel: "stylesheet", href: appStyles },
     ],

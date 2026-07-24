@@ -15,9 +15,10 @@ export interface DocPageProps {
   children?: JSX.Element;
 }
 
-const FONT_TITLE = "'Jost', system-ui, sans-serif";
-const FONT_BODY = "'Sen', system-ui, sans-serif";
-const FONT_MONO = "'JetBrains Mono', monospace";
+/* The site's faces, resolved from @proyecto-viviana/ui's type tokens rather than
+   named here: --font-title is Geist Pixel, --font-mono is Geist Mono. */
+const FONT_TITLE = "var(--font-title)";
+const FONT_MONO = "var(--font-mono)";
 
 export function DocPage(props: DocPageProps) {
   const getColors = useThemeColors();

@@ -6,8 +6,8 @@ export const Route = createFileRoute("/solid-spectrum/docs/")({
   component: GettingStartedPage,
 });
 
-const FONT_TITLE = "'Jost', system-ui, sans-serif";
-const FONT_MONO = "'JetBrains Mono', monospace";
+const FONT_TITLE = "var(--font-title)";
+const FONT_MONO = "var(--font-mono)";
 
 function GettingStartedPage() {
   const getColors = useThemeColors();

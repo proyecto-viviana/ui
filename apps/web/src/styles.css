@@ -32,6 +32,11 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    /* Geist Pixel — the --font-display face — is variable on one axis, ELSH,
+       which sets how coarse its pixel elements are. Left at the font's own
+       default it renders chunky at heading sizes; the register pins it to 1.
+       Inherited, and a no-op for every face without that axis. */
+    font-variation-settings: var(--type-pixel-vs);
   }
 
   body {
@@ -237,13 +242,11 @@
   --color-danger: #f85149;
   --color-danger-dim: #da3633;
 
-  /* Typography */
-  --font-sen: "Sen", sans-serif;
-  --font-jost: "Jost", sans-serif;
-  --font-sans: "Sen", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-title: "Jost", system-ui, sans-serif;
-  --font-body: "Sen", system-ui, sans-serif;
+  /* Typography lives in @proyecto-viviana/ui's viviana-tokens.css, imported
+     above: --font-display / --font-ui / --font-mono and the --font-sans,
+     --font-title, --font-body aliases are all the Geist trio. This block used
+     to redeclare them as Jost/Sen/JetBrains and, being later in the cascade,
+     shadowed the library's. Nothing to declare here. */
 
   /* Radius — Brutalist: zero */
   --radius-xs: 0px;

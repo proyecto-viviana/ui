@@ -51,7 +51,7 @@ const TAGS = [
 
 const CARDS = [
   { title: "Palette", desc: "Indigo · Slate", status: "positive" as const, label: "Synced" },
-  { title: "Typography", desc: "Jost · Sen", status: "notice" as const, label: "Review" },
+  { title: "Typography", desc: "Geist · Geist Mono", status: "notice" as const, label: "Review" },
   { title: "Spacing", desc: "8px scale", status: "neutral" as const, label: "Draft" },
 ];
 

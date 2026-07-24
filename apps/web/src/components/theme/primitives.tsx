@@ -21,8 +21,10 @@ export const PINK = ACCENT;
 /** @deprecated no glow in the Spectrum-2 look. */
 export const PINK_GLOW = "transparent";
 
-export const FONT_DISPLAY = "'Jost', system-ui, sans-serif";
-export const FONT_BODY = "'Sen', system-ui, sans-serif";
+/* Faces come from @proyecto-viviana/ui's type tokens, not from a stack named
+   here: --font-title is Geist Pixel, --font-body is Geist. */
+export const FONT_DISPLAY = "var(--font-title)";
+export const FONT_BODY = "var(--font-body)";
 
 /** A soft rounded blue marker — the subtle Spectrum accent tick. */
 export function AccentBar(props: { tone?: unknown; height?: string }) {

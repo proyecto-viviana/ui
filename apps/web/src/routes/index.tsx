@@ -37,7 +37,7 @@ function HoldingPage() {
           style={{
             margin: "0",
             color: "var(--color-grey-400)",
-            "font-family": "'Jost', system-ui, sans-serif",
+            "font-family": "var(--font-title)",
             "font-size": "clamp(1rem, 1.4vw, 1.125rem)",
             "font-weight": "500",
           }}

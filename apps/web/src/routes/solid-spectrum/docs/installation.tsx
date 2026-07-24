@@ -5,8 +5,8 @@ export const Route = createFileRoute("/solid-spectrum/docs/installation")({
   component: InstallationPage,
 });
 
-const FONT_TITLE = "'Jost', system-ui, sans-serif";
-const FONT_MONO = "'JetBrains Mono', monospace";
+const FONT_TITLE = "var(--font-title)";
+const FONT_MONO = "var(--font-mono)";
 
 function InstallationPage() {
   const getColors = useThemeColors();
@@ -152,8 +152,8 @@ function InstallationPage() {
   --color-accent-200: #ffc9e9;
   --color-accent-300: #f778ba;
 
-  --font-sans: 'Sen', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-ui: "Geist", sans-serif;
+  --font-mono: "Geist Mono", monospace;
 }`}</code>
       </pre>
 
@@ -205,7 +205,7 @@ function PkgRow(props: {
             background: `${props.colors.blue}15`,
             color: props.colors.blue,
             padding: "2px 6px",
-            "font-family": "'JetBrains Mono', monospace",
+            "font-family": "var(--font-mono)",
             "font-size": "12px",
             "font-weight": "500",
             border: `1px solid ${props.colors.blue}40`,
