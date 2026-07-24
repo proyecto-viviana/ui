@@ -9,8 +9,8 @@
 Give every package the metadata npm renders.
 
 None of the five set `homepage` or `bugs`, so the npm page had no link to
-documentation and no way to report a problem. Both now point at the package's
-own README and the shared issue tracker.
+documentation and no way to report a problem. `homepage` now points at the docs
+site — https://ui.proyectoviviana.org — and `bugs` at the shared issue tracker.
 
 `@proyecto-viviana/ui` also had no keywords at all — it could not be found by
 search — and a description written for a maintainer rather than a user ("a

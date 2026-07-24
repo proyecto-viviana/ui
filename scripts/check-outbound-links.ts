@@ -32,6 +32,13 @@ const REPO_SLUG = "proyecto-viviana/ui";
 const REPO_URL = `https://github.com/${REPO_SLUG}`;
 
 /**
+ * The deployed docs site. Must match `SITE_URL` in `apps/web/src/seo.ts` and the
+ * `routes` pattern in `apps/web/wrangler.jsonc` — those three are the only
+ * places the hostname is written down.
+ */
+const DOCS_SITE_URL = "https://ui.proyectoviviana.org";
+
+/**
  * Both patterns require a link delimiter — a quote, `(`, or `<` — immediately
  * before the scheme. That is what separates a link from prose: an `href="…"`, a
  * markdown `](…)`, and an autolink all match, while a backticked mention in a
@@ -138,10 +145,16 @@ for (const dir of await readdir(path.join(ROOT, "packages"), { withFileTypes: tr
 
   for (const [field, url] of [
     ["repository.url", manifest.repository?.url],
-    ["homepage", manifest.homepage],
     ["bugs", typeof manifest.bugs === "string" ? manifest.bugs : manifest.bugs?.url],
   ] as const) {
     if (typeof url !== "string" || !url.includes(REPO_SLUG)) at(field, url ?? "(missing)");
+  }
+  // `homepage` is the one npm renders as the package's own front door, so it
+  // points at the docs site rather than at GitHub — but only since the site got
+  // a hostname (2026-07-24). Until then it had to be a repo URL, which is why
+  // it used to be checked against REPO_SLUG with the other two.
+  if (typeof manifest.homepage !== "string" || !manifest.homepage.startsWith(DOCS_SITE_URL)) {
+    at("homepage", manifest.homepage ?? "(missing)");
   }
   if (!manifest.description) at("description", "(missing)");
   if (!Array.isArray(manifest.keywords) || manifest.keywords.length === 0) {
@@ -181,7 +194,7 @@ if (manifestErrors.length > 0) {
   console.error("guard:outbound-links — published packages are missing npm metadata:\n");
   for (const line of manifestErrors) console.error(line);
   console.error(
-    `\nEvery published package needs repository.url, homepage and bugs pointing at\n${REPO_SLUG}, plus a description and at least one keyword.\n`,
+    `\nEvery published package needs repository.url and bugs pointing at ${REPO_SLUG},\nhomepage pointing at ${DOCS_SITE_URL}, plus a description and at least one keyword.\n`,
   );
 }
 

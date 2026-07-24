@@ -43,10 +43,11 @@ and `archive/recertification-full.md` (full log).
 
 The 2026-07-24 audit established that **the packages are not the blocker**: they
 are published, in sync with `main`, and `ui:smoke` proves they install and render
-out-of-workspace. What is not ready is the **documentation surface and the
-deployed site** — last deployed 2026-06-30, predating every commit of the
-Glasselated work, with an installation page that never mentions the flagship
-package and six links to a 404.
+out-of-workspace. What was not ready was the **documentation surface and the
+deployed site** — an installation page that never mentioned the flagship package,
+six links to a 404, and a site that had never been deployed under a name of its
+own. The site went live on **2026-07-24** at `https://ui.proyectoviviana.org`;
+the docs surface is what remains.
 
 So the work is no longer "port and certify." It is: make the public surface true,
 make the gates that would have caught this actually fire, and ship. Parity work
@@ -68,19 +69,24 @@ the `launch` roadmap item.
   that cannot fire is not a gate_ — and neither is one promoted without being
   measured, which is why each was run locally first. Residual: main is not
   branch-protected, an owner call (`ci-gates-required`).
-- **Make the site truthful** (Phase 2) — the 6 broken GitHub links (B1), the
-  installation page that omits the flagship package and tells users to
-  hand-author CSS variables (B2), the two-product story in the nav, npm metadata
-  (B7).
-- **Make it safe to deploy** (Phase 3) — route-sweep smoke over all 75 routes
-  (e2e currently covers 5), per-page `head:`, robots.txt, sitemap.
-- **Deploy** (Phase 4).
+- **Make the site truthful** (Phase 2) — **done.** The 6 broken GitHub links
+  (B1), the installation page that omitted the flagship package and told users to
+  hand-author CSS variables (B2), and npm metadata (B7) are all closed;
+  `guard:outbound-links` holds them.
+- **Make it safe to deploy** (Phase 3) — **done.** Route-sweep smoke over all 72
+  routes (e2e covered 5), per-page `head:`, robots.txt and a generated sitemap;
+  both specs run from `ci:site`.
+- **Deploy** (Phase 4) — **done 2026-07-24.** Worker `viviana-ui-docs` on the
+  Custom Domain `ui.proyectoviviana.org`. The finding that made this a P0 was
+  that the config named the **live parent application's** Worker, so a deploy
+  would have replaced a running app with a D1 database; `guard:deploy-target`
+  now refuses that name as the first step of `deploy`.
 
 ## Next (P1 — coverage)
 
 - **API docs for `@proyecto-viviana/ui`** (B3) — 238 exports, zero reference
   pages. The package the README tells users to install has only a visual gallery.
-  Largest remaining gap once the site is live.
+  The largest remaining gap now that the site is live.
 - **The ~31–40 missing component docs pages** — 45 pages against 78 catalogue
   components, 7 of which are aliases.
 - **`macro-route-styled`** — 14 components still ship unstyled to installed

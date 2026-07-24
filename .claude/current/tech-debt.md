@@ -87,8 +87,9 @@ tasks:
       structure should be reusable rather than rebuilt.
   - id: launch-format-drift
     title: vp check is red on main with 174 files of format drift
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
@@ -98,6 +99,14 @@ tasks:
     exit: >-
       `vp check --fix`, then make the format gate blocking (see ci-gates-required
       and launch-gates-cannot-fire).
+    resolution: >-
+      Closed 2026-07-24. `vp check --fix` cleared all 174 files, and `vp check` is
+      now one of the 18 blocking gates in certification-gates.yml — it was
+      promoted on a measured green, not on optimism. `ci:release-readiness` also
+      gained a `vp run check` step, so the release path fails on format drift
+      instead of publishing through it. Green as of the deploy pass:
+      "Formatting completed for checked files", no warnings or lint errors in
+      2642 files.
   - id: launch-docs-check-red
     title: docs:check red — 9 tracking and header errors on the current spine
     state: done
@@ -123,8 +132,9 @@ tasks:
       Audit finding B5 (launch.md).
   - id: launch-site-deploy-stale
     title: The docs site has no deploy target of its own — its worker name belongs to the production app
-    state: blocked
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
@@ -166,6 +176,31 @@ tasks:
       **expected to be red** and is therefore deliberately not wired into
       certification-gates.yml — it guards the deploy path, not the branch.
       Choosing a name is what unblocks it; deleting the check is not.
+    resolution: >-
+      Closed 2026-07-24, same day it was filed — the owner took all four calls.
+      (1) Worker renamed to `viviana-ui-docs`, with the reason written into
+      wrangler.jsonc beside the name so the next reader cannot repeat it.
+      (2) Hostname `ui.proyectoviviana.org`, declared as
+      `routes: [{ pattern, custom_domain: true }]` so wrangler creates and owns
+      the DNS record and the zone cannot drift from the Worker; a subdomain
+      rather than the apex, because the apex is the parent app.
+      (3) `SITE_URL` repointed, which moved all 70 canonicals, the OG URLs and
+      the generated sitemap; public/robots.txt repeats the origin and test:seo
+      asserts the two agree. Note `vp run build` does **not** rebuild the web app
+      — that is `build:web`, and the first verification read a stale dist.
+      (4) The five packages' `homepage` now points at the docs site rather than
+      GitHub, and guard:outbound-links checks it against the new origin
+      separately from repository.url/bugs (which still have to name the repo).
+      Deployed version 61f0f535-b187-4da0-8968-38cee17eecbf, 354 files. Verified
+      live: `/`, `/showcase`, `/solid-spectrum/docs/components/picker`, `/theme`,
+      `/robots.txt`, `/sitemap.xml` all 200 (sitemap 500'd once on cold start,
+      then held), `/admin` 307, and a docs page's head carries its own title and
+      canonical. The parent app re-checked afterwards: still 302 → `/es`, `/es`
+      200, untouched. guard:deploy-target stays on the deploy path and is now
+      green — it prints the Worker it will deploy to before every deploy.
+      The lesson worth keeping: the audit's own note ("last deployed 2026-06-30")
+      was evidence about a different Worker, and only probing before deploying
+      caught it.
   - id: launch-npm-metadata
     title: Published packages carry no homepage and the flagship has no keywords
     state: done
@@ -191,9 +226,13 @@ tasks:
       now also checks repository.url + homepage + bugs all resolve to
       proyecto-viviana/ui and that every published package has a description and
       at least one keyword — verified it fires by stripping solidaria's homepage
-      and keywords (exit 1) before restoring. Follow-up: `homepage` points at
-      GitHub because the docs site has no stable public URL yet; repoint it at
-      the per-package docs page once `launch-site-deploy` lands one.
+      and keywords (exit 1) before restoring. Follow-up closed the same day:
+      `homepage` first pointed at GitHub because the docs site had no stable
+      public URL; once `launch-site-deploy-stale` landed one, all five moved to
+      https://ui.proyectoviviana.org — viviana-ui at the root, solid-spectrum at
+      /solid-spectrum, and the three headless packages at the ecosystem page,
+      which is where each is actually described. The changeset was amended rather
+      than doubled, since it had not been released.
   - id: launch-a11y-smoke-selector-drift
     title: a11y:smoke red — 12 tests still select <p> where the rebuild renders <Text>
     state: done

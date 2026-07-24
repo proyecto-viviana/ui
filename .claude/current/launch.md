@@ -29,10 +29,12 @@ already ship and they already work**. Verified, not assumed:
 - Unit suite green: 265 files, 5535 passed, 1 expected-fail, 10 skipped.
 - 11 of 12 static guards green; S2 catalogue parity 78/78, zero gap.
 
-What is _not_ ready is the **documentation surface and the deployed site**. The
-site has not been deployed since 2026-06-30, which predates every commit of the
-Glasselated work. So the launch problem is a docs problem, not a library
-problem, and this plan is ordered accordingly.
+What was _not_ ready is the **documentation surface and the deployed site**. The
+site had never been deployed under a name of its own — see B6 below, which is
+the finding that cost the most to get right. It now serves from
+`https://ui.proyectoviviana.org`. What remains is the docs surface: the launch
+problem is a docs problem, not a library problem, and this plan is ordered
+accordingly.
 
 ## The two-product problem
 
@@ -69,7 +71,7 @@ Each is tracked in `tech-debt.md`; IDs below are stable references.
 | B3  | No API docs for the flagship package — 238 exported names, zero reference pages                                                                                                                           | `packages/viviana-ui/src/index.ts`                                                                                            |
 | B4  | `vp check` RED on main — 174 files with format drift, invisible in CI because `ci:release-readiness` has no format step and `certification-gates.yml` runs everything `continue-on-error: true`           | `vp check` exit 1                                                                                                             |
 | B5  | `docs:check` RED — 9 errors (5 missing status headers, 1 bad roadmap ref, 2 done-without-finished-date, 1 invalid roadmap status)                                                                         | gate output                                                                                                                   |
-| B6  | ~~Site is 24 days stale~~ → **the docs site has no deploy target of its own**; its worker name is the live production app's                                                                               | `wrangler versions view`; see below                                                                                           |
+| B6  | ~~Site is 24 days stale~~ → **the docs site had no deploy target of its own**; its worker name was the live production app's. Resolved: Worker `viviana-ui-docs` on `ui.proyectoviviana.org`              | `wrangler versions view`; see below                                                                                           |
 | B7  | npm metadata gaps — no `homepage` on any of the 5 packages; `viviana-ui` has 0 keywords and an internal-jargon description                                                                                | `package.json` × 5                                                                                                            |
 | B8  | `a11y:smoke` RED (12 failed / 32 passed) — stale test selectors, not a product regression                                                                                                                 | see below                                                                                                                     |
 
@@ -94,7 +96,7 @@ The audit read "last Cloudflare deployment 2026-06-30" as _our_ site going
 stale. Checked before deploying, that turned out to be the wrong reading, and
 the correction is the more important finding.
 
-`apps/web/wrangler.jsonc` declares `name: "proyecto-viviana"`. The Worker by
+`apps/web/wrangler.jsonc` declared `name: "proyecto-viviana"`. The Worker by
 that name in this account is the **live parent application**. `wrangler versions
 view 7693d091-…` on the current deployment shows a D1 binding, a
 `WEB_CLIENT_SECRET`, and `APP_URL=https://proyectoviviana.org` /
@@ -109,17 +111,26 @@ running production application**. The 2026-06-30 date is that app's last deploy
 likely this site, which means the two have been sharing one worker name and the
 app won last.
 
-No host is reserved for the docs: `ui.proyectoviviana.org`,
-`docs.proyectoviviana.org` and `proyecto-viviana.workers.dev` all fail to
-resolve, and nothing in the repo documents a target. **Phase 4 is therefore
-blocked on an owner decision**, not on engineering — the build and both site
-gates are ready. Tracked as `tech-debt.md` → `launch-site-deploy-stale`, which
-carries the four things the decision has to settle.
+No host was reserved for the docs either: `ui.proyectoviviana.org`,
+`docs.proyectoviviana.org` and `proyecto-viviana.workers.dev` all failed to
+resolve, and nothing in the repo documented a target. That made Phase 4 an owner
+decision rather than an engineering task, and the owner took it the same day:
+**Worker `viviana-ui-docs`, custom domain `ui.proyectoviviana.org`** — a
+subdomain of the domain that already exists, so the apex stays with the parent
+app. `SITE_URL` moved with it, which moved all 70 canonicals, the OG URLs and
+the sitemap; `public/robots.txt` repeats the origin and `test:seo` asserts they
+agree.
+
+`guard:deploy-target` (`scripts/check-deploy-target.mjs`) is what keeps the near
+miss from recurring: it runs as the first step of `deploy` and refuses the
+production app's name outright. It guards the deploy path, not the branch — it
+is expected to exit 1 whenever the name is wrong — so it is deliberately not in
+`certification-gates.yml`.
 
 Same probe answered the other open question: **`https://proyecto-viviana.uy` has
-no DNS record at all** — the ecosystem tile's link to the parent project is dead,
-and the parent project actually lives at `https://proyectoviviana.org`. Left
-unchanged pending the same owner pass, since it is the same class of call.
+no DNS record at all** — the ecosystem tile's link to the parent project was
+dead. It now goes through `PARENT_APP_URL` in `@/lib/site`, pointing at
+`https://proyectoviviana.org`, where the parent app actually serves.
 
 ### Why B4, B5 and B8 were invisible
 
@@ -204,13 +215,17 @@ landing carry the two-product story. Add npm metadata (B7).
 per page `head:`; robots.txt and sitemap. Both gates (`test:routes`,
 `test:seo`) run from `ci:site`.
 
-**Phase 4 — deploy. BLOCKED on an owner decision** (see "B6 re-scoped" above).
-The build is ready and both site gates are green; what is missing is a worker
-name that is not the production app's and a hostname to serve from. Running
-`vp run deploy` today would overwrite the live application. Once the target is
-chosen, `SITE_URL` in `apps/web/src/seo.ts` moves with it — every canonical and
-the whole sitemap are derived from that one constant — as does `homepage` on the
-five published packages.
+**Phase 4 — deploy.** ☑ Done 2026-07-24. The owner decision that blocked it (see
+"B6 re-scoped" above) settled on Worker `viviana-ui-docs` served from
+`https://ui.proyectoviviana.org` as a Custom Domain, so wrangler owns the DNS
+record and the zone cannot drift from the Worker. `SITE_URL` moved with it —
+every canonical and the whole sitemap derive from that one constant — as did
+`homepage` on the five published packages. Deployed version
+`61f0f535-b187-4da0-8968-38cee17eecbf`, 354 files uploaded; `/`, `/showcase`,
+`/solid-spectrum/docs/components/picker`, `/theme`, `/robots.txt` and
+`/sitemap.xml` all verified 200 against the live origin, `/admin` 307 as
+designed, and the head of a docs page carries its own title and canonical. The
+parent application was re-checked afterwards and is untouched.
 
 **Phase 5 — close coverage.** viviana-ui API docs (B3); the ~31–40 missing
 component pages; then `dnd-subsystem-port` and `macro-route-styled`.
