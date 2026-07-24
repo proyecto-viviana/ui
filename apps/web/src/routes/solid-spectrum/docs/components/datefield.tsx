@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { DateField } from "@proyecto-viviana/solid-spectrum";
 import { CalendarDateClass as CalendarDate, type DateValue } from "@proyecto-viviana/solid-stately";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/datefield")({
@@ -31,12 +32,12 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
 
 <p>Selected: {date()?.toString() ?? "None"}</p>`}
       >
-        <div class="flex flex-col gap-4 max-w-xs">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <DateField label="Birth date" value={date()} onChange={setDate} />
-          <p class="text-sm text-bg-500">
+          <p class={typeRoles.meta}>
             Entered date: {date() ? `${date()!.month}/${date()!.day}/${date()!.year}` : "None"}
           </p>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -48,7 +49,7 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
   description="Enter the date of your event"
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <DateField
             label="Event date"
             placeholderValue={new CalendarDate(2026, 6, 15)}
@@ -66,7 +67,7 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
   value={new CalendarDate(2026, 2, 17)}
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <DateField label="Locked date" isDisabled value={new CalendarDate(2026, 2, 17)} />
         </div>
       </Example>
@@ -81,7 +82,7 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
   errorMessage="A start date is required"
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <DateField
             label="Start date"
             isRequired
@@ -161,24 +162,22 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Each date segment uses a <code>spinbutton</code> role with proper{" "}
-            <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>
-          </li>
-          <li>Arrow Up/Down increments or decrements the focused segment</li>
-          <li>Tab moves focus between segments (month, day, year)</li>
-          <li>Typing digits automatically advances to the next segment when complete</li>
-          <li>
-            Label is associated via <code>aria-labelledby</code> for screen reader announcement
-          </li>
-          <li>
-            Error messages are linked through <code>aria-describedby</code>
-          </li>
-          <li>
-            Required state is communicated through <code>aria-required</code>
-          </li>
-        </ul>
+        <li>
+          Each date segment uses a <code>spinbutton</code> role with proper{" "}
+          <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>
+        </li>
+        <li>Arrow Up/Down increments or decrements the focused segment</li>
+        <li>Tab moves focus between segments (month, day, year)</li>
+        <li>Typing digits automatically advances to the next segment when complete</li>
+        <li>
+          Label is associated via <code>aria-labelledby</code> for screen reader announcement
+        </li>
+        <li>
+          Error messages are linked through <code>aria-describedby</code>
+        </li>
+        <li>
+          Required state is communicated through <code>aria-required</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

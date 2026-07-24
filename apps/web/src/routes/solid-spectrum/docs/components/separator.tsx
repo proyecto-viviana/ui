@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Separator } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/separator")({
@@ -20,17 +21,17 @@ function SeparatorPage() {
 <Separator />
 <p>Content below</p>`}
       >
-        <div class="space-y-4 text-sm text-primary-300">
+        <Flex direction="column" gap={4} class={typeRoles.body}>
           <p>Content above the separator.</p>
           <Separator />
           <p>Content below the separator.</p>
-        </div>
+        </Flex>
       </Example>
 
       <Example
         title="Vertical"
         description="Use orientation='vertical' to divide content horizontally."
-        code={`<div class="flex items-center gap-4 h-8">
+        code={`<div class="separator-row">
   <span>Item 1</span>
   <Separator orientation="vertical" />
   <span>Item 2</span>
@@ -38,13 +39,13 @@ function SeparatorPage() {
   <span>Item 3</span>
 </div>`}
       >
-        <div class="flex items-center gap-4 h-8 text-sm text-primary-200">
+        <Flex alignItems="center" gap={4} class={typeRoles.body} style={{ height: "32px" }}>
           <span>Item 1</span>
           <Separator orientation="vertical" />
           <span>Item 2</span>
           <Separator orientation="vertical" />
           <span>Item 3</span>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -54,20 +55,20 @@ function SeparatorPage() {
 <Separator size="md" />
 <Separator size="lg" />`}
       >
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-primary-400 w-6">sm</span>
-            <Separator size="sm" class="flex-1" />
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-primary-400 w-6">md</span>
-            <Separator size="md" class="flex-1" />
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-primary-400 w-6">lg</span>
-            <Separator size="lg" class="flex-1" />
-          </div>
-        </div>
+        <Flex direction="column" gap={4}>
+          <Flex alignItems="center" gap={3}>
+            <span class={typeRoles.meta} style={{ width: "24px" }}>sm</span>
+            <div style={{ flex: "1" }}><Separator size="sm" /></div>
+          </Flex>
+          <Flex alignItems="center" gap={3}>
+            <span class={typeRoles.meta} style={{ width: "24px" }}>md</span>
+            <div style={{ flex: "1" }}><Separator size="md" /></div>
+          </Flex>
+          <Flex alignItems="center" gap={3}>
+            <span class={typeRoles.meta} style={{ width: "24px" }}>lg</span>
+            <div style={{ flex: "1" }}><Separator size="lg" /></div>
+          </Flex>
+        </Flex>
       </Example>
 
       <Example
@@ -77,20 +78,20 @@ function SeparatorPage() {
 <Separator variant="subtle" />
 <Separator variant="strong" />`}
       >
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-primary-400 w-16">default</span>
-            <Separator variant="default" class="flex-1" />
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-primary-400 w-16">subtle</span>
-            <Separator variant="subtle" class="flex-1" />
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-primary-400 w-16">strong</span>
-            <Separator variant="strong" class="flex-1" />
-          </div>
-        </div>
+        <Flex direction="column" gap={4}>
+          <Flex alignItems="center" gap={3}>
+            <span class={typeRoles.meta} style={{ width: "64px" }}>default</span>
+            <div style={{ flex: "1" }}><Separator variant="default" /></div>
+          </Flex>
+          <Flex alignItems="center" gap={3}>
+            <span class={typeRoles.meta} style={{ width: "64px" }}>subtle</span>
+            <div style={{ flex: "1" }}><Separator variant="subtle" /></div>
+          </Flex>
+          <Flex alignItems="center" gap={3}>
+            <span class={typeRoles.meta} style={{ width: "64px" }}>strong</span>
+            <div style={{ flex: "1" }}><Separator variant="strong" /></div>
+          </Flex>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -118,17 +119,15 @@ function SeparatorPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="separator"</code> for proper semantics
-          </li>
-          <li>
-            Vertical separators include <code>aria-orientation="vertical"</code>
-          </li>
-          <li>
-            Decorative separators can use <code>aria-hidden="true"</code>
-          </li>
-        </ul>
+        <li>
+          Uses <code>role="separator"</code> for proper semantics
+        </li>
+        <li>
+          Vertical separators include <code>aria-orientation="vertical"</code>
+        </li>
+        <li>
+          Decorative separators can use <code>aria-hidden="true"</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

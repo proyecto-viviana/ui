@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import type { JSX } from "solid-js";
 import { createPress } from "@proyecto-viviana/solidaria";
+import { Flex, Well, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/hooks/create-press")({
@@ -66,9 +67,9 @@ return (
               : "border-bg-200 bg-white hover:border-bg-300"
           }`}
         >
-          <p class="text-lg font-medium">Press count: {pressCount()}</p>
-          <p class="text-sm text-bg-500">Last input: {lastPointerType()}</p>
-          <p class="mt-2 text-xs text-bg-400">Try clicking, touching, or pressing Enter/Space</p>
+          <p class={typeRoles.headline}>Press count: {pressCount()}</p>
+          <p class={typeRoles.meta}>Last input: {lastPointerType()}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Try clicking, touching, or pressing Enter/Space</p>
         </div>
       </Example>
 
@@ -203,7 +204,16 @@ return (
 
       <h2>Pointer Type Handling</h2>
       <p>The hook normalizes interactions across different input methods:</p>
-      <ul class="list-disc pl-6 space-y-2 my-4">
+      <ul
+        style={{
+          margin: "16px 0",
+          "padding-left": "1.5rem",
+          "list-style": "disc",
+          display: "flex",
+          "flex-direction": "column",
+          gap: "0.5rem",
+        }}
+      >
         <li>
           <strong>mouse</strong> - Desktop mouse clicks
         </li>
@@ -222,20 +232,29 @@ return (
       </ul>
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>Supports keyboard activation via Enter and Space keys</li>
-          <li>Works with screen reader virtual clicks</li>
-          <li>
-            Remember to add <code>role="button"</code> and <code>tabIndex={0}</code> for non-button
-            elements
-          </li>
-          <li>Press is cancelled if pointer exits element (prevents accidental activation)</li>
-          <li>Prevents text selection during press for better UX</li>
-        </ul>
+        <li>Supports keyboard activation via Enter and Space keys</li>
+        <li>Works with screen reader virtual clicks</li>
+        <li>
+          Remember to add <code>role="button"</code> and <code>tabIndex={0}</code> for non-button
+          elements
+        </li>
+        <li>Press is cancelled if pointer exits element (prevents accidental activation)</li>
+        <li>Prevents text selection during press for better UX</li>
       </AccessibilitySection>
     </DocPage>
   );
 }
+
+/** The press target: a plain box whose whole job is to show the pressed state. */
+const target = {
+  padding: "16px",
+  "border-radius": "var(--radius-lg)",
+  "border-width": "2px",
+  "border-style": "solid",
+  cursor: "pointer",
+  "user-select": "none",
+  transition: "background-color 150ms ease, border-color 150ms ease, transform 150ms ease",
+} as const;
 
 function PressStateDemo() {
   const [events, setEvents] = createSignal<string[]>([]);
@@ -251,28 +270,29 @@ function PressStateDemo() {
   });
 
   return (
-    <div class="flex gap-6 items-start">
+    <Flex alignItems="start" gap={6}>
       <div
         {...(pressProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
         tabIndex={0}
         role="button"
-        class={`cursor-pointer select-none rounded-lg border-2 p-4 transition-all ${
-          isPressed()
-            ? "border-accent-500 bg-accent-50 scale-[0.98]"
-            : "border-bg-200 bg-white hover:border-bg-300"
-        }`}
+        style={{
+          ...target,
+          "border-color": isPressed() ? "var(--color-accent)" : "var(--color-bg-400)",
+          background: isPressed() ? "var(--color-accent-dim)" : "transparent",
+          transform: isPressed() ? "scale(0.98)" : "none",
+        }}
       >
-        <p class="font-medium">Press and hold me</p>
-        <p class="text-xs text-bg-400 mt-1">Watch the events log →</p>
+        <p class={typeRoles.label}>Press and hold me</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "4px" }}>Watch the events log →</p>
       </div>
-      <div class="flex-1 rounded-lg bg-bg-100 p-4 font-mono text-xs">
-        <p class="text-bg-400 mb-2">Event Log:</p>
+      <Well class={typeRoles.terminal} style={{ flex: "1" }}>
+        <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>Event Log:</p>
         {events().length === 0 ? (
-          <p class="text-bg-300">No events yet...</p>
+          <p>No events yet...</p>
         ) : (
-          events().map((event, i) => <p class="text-bg-600">{event}</p>)
+          events().map((event) => <p>{event}</p>)
         )}
-      </div>
-    </div>
+      </Well>
+    </Flex>
   );
 }

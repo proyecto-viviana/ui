@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Provider, Button } from "@proyecto-viviana/solid-spectrum";
+import { Flex, Well, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/provider")({
@@ -28,12 +29,12 @@ function App() {
   );
 }`}
       >
-        <div class="rounded-lg bg-bg-300 p-4 text-sm text-primary-300">
+        <Well class={typeRoles.body}>
           <p>Provider is typically used at the root of your app — not rendered inline.</p>
-          <p class="mt-2">
+          <p style={{ "margin-top": "8px" }}>
             It establishes the theme context consumed by all Proyecto Viviana components.
           </p>
-        </div>
+        </Well>
       </Example>
 
       <Example
@@ -47,12 +48,12 @@ function App() {
   <Button variant="primary">Light Theme Button</Button>
 </Provider>`}
       >
-        <div class="space-y-4">
-          <div class="p-4 rounded-lg bg-bg-200">
-            <p class="text-xs text-primary-400 mb-2">Default (`light`)</p>
+        <Flex direction="column" gap={4}>
+          <Well>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>Default (`light`)</p>
             <Button variant="primary">Default Theme</Button>
-          </div>
-        </div>
+          </Well>
+        </Flex>
       </Example>
 
       <Example
@@ -66,20 +67,20 @@ function App() {
   <Button>Large Scale (mobile-friendly)</Button>
 </Provider>`}
       >
-        <div class="space-y-3">
-          <div class="p-3 rounded border border-primary-700/30">
-            <p class="text-xs text-primary-500 mb-2">scale: "medium" (default)</p>
+        <Flex direction="column" gap={3}>
+          <Well>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>scale: "medium" (default)</p>
             <Button variant="secondary" size="M">
               Medium Scale
             </Button>
-          </div>
-          <div class="p-3 rounded border border-primary-700/30">
-            <p class="text-xs text-primary-500 mb-2">scale: "large" (touch-optimized)</p>
+          </Well>
+          <Well>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "8px" }}>scale: "large" (touch-optimized)</p>
             <Button variant="secondary" size="L">
               Large Scale
             </Button>
-          </div>
-        </div>
+          </Well>
+        </Flex>
       </Example>
 
       <Example
@@ -92,7 +93,7 @@ function MyComponent() {
   return <p>Color scheme: {theme.colorScheme}</p>;
 }`}
       >
-        <div class="rounded-lg bg-bg-300 p-4 font-mono text-sm text-primary-300">
+        <Well class={typeRoles.terminal}>
           <p>{"// Import the hook"}</p>
           <p>{"import { useTheme } from '@proyecto-viviana/solid-spectrum';"}</p>
           <br />
@@ -100,7 +101,7 @@ function MyComponent() {
           <p>{"const theme = useTheme();"}</p>
           <p>{"// theme.colorScheme → 'light' | 'dark'"}</p>
           <p>{"// theme.scale → 'medium' | 'large'"}</p>
-        </div>
+        </Well>
       </Example>
 
       <PropsTable
@@ -131,16 +132,14 @@ function MyComponent() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Respects system color scheme preference via <code>prefers-color-scheme</code> when not
-            explicitly set
-          </li>
-          <li>
-            The <code>scale</code> prop increases touch target sizes for WCAG 2.5.5 compliance
-          </li>
-          <li>Locale affects date/number formatting and text direction for RTL languages</li>
-        </ul>
+        <li>
+          Respects system color scheme preference via <code>prefers-color-scheme</code> when not
+          explicitly set
+        </li>
+        <li>
+          The <code>scale</code> prop increases touch target sizes for WCAG 2.5.5 compliance
+        </li>
+        <li>Locale affects date/number formatting and text direction for RTL languages</li>
       </AccessibilitySection>
     </DocPage>
   );

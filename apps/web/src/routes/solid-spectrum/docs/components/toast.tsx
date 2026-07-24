@@ -8,6 +8,7 @@ import {
   toastWarning,
   toastInfo,
 } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/toast")({
@@ -53,7 +54,7 @@ toastWarning('Your session will expire soon');
 toastInfo('New update available');`}
       >
         <ToastProvider>
-          <div class="flex flex-wrap gap-3">
+          <Flex wrap gap={3}>
             <Button variant="primary" onPress={() => toastSuccess("Changes saved successfully!")}>
               Success Toast
             </Button>
@@ -69,7 +70,7 @@ toastInfo('New update available');`}
             <Button variant="accent" onPress={() => toastInfo("New update available")}>
               Info Toast
             </Button>
-          </div>
+          </Flex>
           <ToastRegion placement="bottom end" />
         </ToastProvider>
       </Example>
@@ -81,7 +82,7 @@ toastInfo('New update available');`}
 toastInfo('Stays longer', { timeout: 10000 });`}
       >
         <ToastProvider>
-          <div class="flex gap-3">
+          <Flex gap={3}>
             <Button
               variant="secondary"
               onPress={() => toastSuccess("Quick message (2s)", { timeout: 2000 })}
@@ -94,7 +95,7 @@ toastInfo('Stays longer', { timeout: 10000 });`}
             >
               Long Toast
             </Button>
-          </div>
+          </Flex>
           <ToastRegion placement="bottom end" />
         </ToastProvider>
       </Example>
@@ -106,7 +107,7 @@ toastInfo('Stays longer', { timeout: 10000 });`}
 <ToastRegion placement="top end" />
 <ToastRegion placement="bottom end" />`}
       >
-        <div class="text-sm text-bg-500">Placement options: top, top end, bottom, bottom end</div>
+        <div class={typeRoles.meta}>Placement options: top, top end, bottom, bottom end</div>
       </Example>
 
       <h2>ToastProvider Props</h2>
@@ -157,18 +158,16 @@ toastInfo('Stays longer', { timeout: 10000 });`}
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="region"</code> with <code>aria-label</code>
-          </li>
-          <li>
-            Individual toasts use <code>role="alert"</code> for screen reader announcements
-          </li>
-          <li>Focus pauses the auto-dismiss timer</li>
-          <li>Hover pauses the auto-dismiss timer</li>
-          <li>Escape key dismisses the focused toast</li>
-          <li>Toasts are announced to screen readers via live regions</li>
-        </ul>
+        <li>
+          Uses <code>role="region"</code> with <code>aria-label</code>
+        </li>
+        <li>
+          Individual toasts use <code>role="alert"</code> for screen reader announcements
+        </li>
+        <li>Focus pauses the auto-dismiss timer</li>
+        <li>Hover pauses the auto-dismiss timer</li>
+        <li>Escape key dismisses the focused toast</li>
+        <li>Toasts are announced to screen readers via live regions</li>
       </AccessibilitySection>
     </DocPage>
   );

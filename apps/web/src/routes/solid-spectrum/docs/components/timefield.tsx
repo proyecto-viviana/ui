@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { TimeField } from "@proyecto-viviana/solid-spectrum";
 import { type TimeValue } from "@proyecto-viviana/solid-stately";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/timefield")({
@@ -40,10 +41,10 @@ import { type TimeValue } from '@proyecto-viviana/solid-stately';`}
 
 <p>Selected: {formatTime(time())}</p>`}
       >
-        <div class="flex flex-col gap-4 max-w-xs">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <TimeField label="Meeting time" value={time()} onChange={setTime} />
-          <p class="text-sm text-bg-500">Entered time: {formatTime(time())}</p>
-        </div>
+          <p class={typeRoles.meta}>Entered time: {formatTime(time())}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -54,7 +55,7 @@ import { type TimeValue } from '@proyecto-viviana/solid-stately';`}
   description="Business hours: 9 AM - 5 PM"
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TimeField label="Start time" description="Business hours: 9 AM - 5 PM" />
         </div>
       </Example>
@@ -67,7 +68,7 @@ import { type TimeValue } from '@proyecto-viviana/solid-stately';`}
   isRequired
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TimeField label="Appointment time" isRequired />
         </div>
       </Example>
@@ -80,7 +81,7 @@ import { type TimeValue } from '@proyecto-viviana/solid-stately';`}
   isDisabled
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TimeField label="Fixed time" isDisabled />
         </div>
       </Example>
@@ -151,22 +152,20 @@ import { type TimeValue } from '@proyecto-viviana/solid-stately';`}
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Each time segment uses a <code>spinbutton</code> role with proper{" "}
-            <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>
-          </li>
-          <li>Arrow Up/Down increments or decrements the focused segment</li>
-          <li>Tab moves focus between segments (hour, minute, AM/PM)</li>
-          <li>Typing digits automatically advances to the next segment</li>
-          <li>AM/PM segment can be toggled by typing "a" or "p"</li>
-          <li>
-            Label is associated via <code>aria-labelledby</code> for screen reader announcement
-          </li>
-          <li>
-            Required state is communicated through <code>aria-required</code>
-          </li>
-        </ul>
+        <li>
+          Each time segment uses a <code>spinbutton</code> role with proper{" "}
+          <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>
+        </li>
+        <li>Arrow Up/Down increments or decrements the focused segment</li>
+        <li>Tab moves focus between segments (hour, minute, AM/PM)</li>
+        <li>Typing digits automatically advances to the next segment</li>
+        <li>AM/PM segment can be toggled by typing "a" or "p"</li>
+        <li>
+          Label is associated via <code>aria-labelledby</code> for screen reader announcement
+        </li>
+        <li>
+          Required state is communicated through <code>aria-required</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

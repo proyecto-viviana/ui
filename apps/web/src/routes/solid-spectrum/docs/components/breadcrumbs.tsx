@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Breadcrumbs, BreadcrumbItem } from "@proyecto-viviana/solid-spectrum";
+import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type BreadcrumbEntry = {
@@ -93,18 +94,19 @@ function BreadcrumbsPage() {
               </BreadcrumbItem>
             )}
           </Breadcrumbs>
-          <p class="mt-2 text-sm text-bg-500">
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
             Current page: <strong>{currentPage()}</strong>
           </p>
-          <button
-            class="mt-2 text-xs px-2 py-1 rounded bg-bg-100 text-bg-600 hover:bg-bg-200"
-            onClick={() => {
+          <ActionButton
+            size="S"
+            UNSAFE_style={{ "margin-top": "8px", "align-self": "start" }}
+            onPress={() => {
               setCrumbs(basicCrumbs);
               setCurrentPage("Laptops");
             }}
           >
             Reset
-          </button>
+          </ActionButton>
         </div>
       </Example>
 
@@ -119,9 +121,9 @@ function BreadcrumbsPage() {
   )}
 </Breadcrumbs>`}
       >
-        <div class="space-y-4">
+        <Flex direction="column" gap={4}>
           <div>
-            <p class="text-xs text-bg-400 mb-1">Small</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>Small</p>
             <Breadcrumbs size="sm" items={dashboardCrumbs}>
               {(crumb: BreadcrumbEntry) => (
                 <BreadcrumbItem id={crumb.id} href={crumb.href}>
@@ -131,7 +133,7 @@ function BreadcrumbsPage() {
             </Breadcrumbs>
           </div>
           <div>
-            <p class="text-xs text-bg-400 mb-1">Medium (default)</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>Medium (default)</p>
             <Breadcrumbs size="md" items={dashboardCrumbs}>
               {(crumb: BreadcrumbEntry) => (
                 <BreadcrumbItem id={crumb.id} href={crumb.href}>
@@ -141,7 +143,7 @@ function BreadcrumbsPage() {
             </Breadcrumbs>
           </div>
           <div>
-            <p class="text-xs text-bg-400 mb-1">Large</p>
+            <p class={typeRoles.meta} style={{ "margin-bottom": "4px" }}>Large</p>
             <Breadcrumbs size="lg" items={dashboardCrumbs}>
               {(crumb: BreadcrumbEntry) => (
                 <BreadcrumbItem id={crumb.id} href={crumb.href}>
@@ -150,7 +152,7 @@ function BreadcrumbsPage() {
               )}
             </Breadcrumbs>
           </div>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -234,20 +236,18 @@ function BreadcrumbsPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>nav</code> element with <code>aria-label="Breadcrumbs"</code>
-          </li>
-          <li>
-            Items use an <code>ol</code> list structure for proper semantics
-          </li>
-          <li>
-            Current page is marked with <code>aria-current="page"</code>
-          </li>
-          <li>Separator characters are hidden from screen readers</li>
-          <li>Links are focusable and activatable via keyboard</li>
-          <li>Screen readers announce the full trail context</li>
-        </ul>
+        <li>
+          Uses <code>nav</code> element with <code>aria-label="Breadcrumbs"</code>
+        </li>
+        <li>
+          Items use an <code>ol</code> list structure for proper semantics
+        </li>
+        <li>
+          Current page is marked with <code>aria-current="page"</code>
+        </li>
+        <li>Separator characters are hidden from screen readers</li>
+        <li>Links are focusable and activatable via keyboard</li>
+        <li>Screen readers announce the full trail context</li>
       </AccessibilitySection>
     </DocPage>
   );

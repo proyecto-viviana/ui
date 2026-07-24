@@ -6,6 +6,7 @@ import {
   DisclosureTrigger,
   DisclosurePanel,
 } from "@proyecto-viviana/solid-spectrum";
+import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type FaqEntry = {
@@ -97,13 +98,13 @@ function DisclosurePage() {
   </DisclosurePanel>
 </Disclosure>`}
       >
-        <div class="max-w-lg">
+        <div style={{ "max-width": "32rem" }}>
           <Disclosure id="details">
             <DisclosureTrigger>
-              <span class="font-medium">Show More Details</span>
+              <span class={typeRoles.label}>Show More Details</span>
             </DisclosureTrigger>
             <DisclosurePanel>
-              <div class="py-3 text-sm text-bg-600 leading-relaxed">
+              <div class={typeRoles.body} style={{ padding: "12px 0" }}>
                 This content is revealed when the disclosure is expanded. It can contain any content
                 including text, images, forms, or other components. Click the trigger again to
                 collapse this section.
@@ -127,7 +128,7 @@ function DisclosurePage() {
   </Disclosure>
 </DisclosureGroup>`}
       >
-        <div class="max-w-lg">
+        <div style={{ "max-width": "32rem" }}>
           <DisclosureGroup
             expandedKeys={singleKey()}
             onExpandedChange={(keys) => setSingleKey(new Set([...keys].map(String)))}
@@ -135,15 +136,15 @@ function DisclosurePage() {
             {faqItems.map((faq) => (
               <Disclosure id={faq.id}>
                 <DisclosureTrigger>
-                  <span class="font-medium">{faq.question}</span>
+                  <span class={typeRoles.label}>{faq.question}</span>
                 </DisclosureTrigger>
                 <DisclosurePanel>
-                  <div class="py-3 text-sm text-bg-600 leading-relaxed">{faq.answer}</div>
+                  <div class={typeRoles.body} style={{ padding: "12px 0" }}>{faq.answer}</div>
                 </DisclosurePanel>
               </Disclosure>
             ))}
           </DisclosureGroup>
-          <p class="mt-2 text-xs text-bg-400">
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
             Expanded: {singleKey().size > 0 ? [...singleKey()].join(", ") : "None"}
           </p>
         </div>
@@ -158,7 +159,7 @@ function DisclosurePage() {
   <Disclosure id="section-3">...</Disclosure>
 </DisclosureGroup>`}
       >
-        <div class="max-w-lg">
+        <div style={{ "max-width": "32rem" }}>
           <DisclosureGroup
             allowsMultipleExpanded
             expandedKeys={expandedKeys()}
@@ -167,28 +168,25 @@ function DisclosurePage() {
             {settingsSections.map((section) => (
               <Disclosure id={section.id}>
                 <DisclosureTrigger>
-                  <span class="font-medium">{section.title}</span>
+                  <span class={typeRoles.label}>{section.title}</span>
                 </DisclosureTrigger>
                 <DisclosurePanel>
-                  <div class="py-3 text-sm text-bg-600 leading-relaxed">{section.content}</div>
+                  <div class={typeRoles.body} style={{ padding: "12px 0" }}>{section.content}</div>
                 </DisclosurePanel>
               </Disclosure>
             ))}
           </DisclosureGroup>
-          <div class="mt-3 flex gap-2">
-            <button
-              class="text-xs px-2 py-1 rounded bg-bg-100 text-bg-600 hover:bg-bg-200"
-              onClick={() => setExpandedKeys(new Set(settingsSections.map((s) => s.id)))}
+          <Flex gap={2} style={{ "margin-top": "12px" }}>
+            <ActionButton
+              size="S"
+              onPress={() => setExpandedKeys(new Set(settingsSections.map((s) => s.id)))}
             >
               Expand All
-            </button>
-            <button
-              class="text-xs px-2 py-1 rounded bg-bg-100 text-bg-600 hover:bg-bg-200"
-              onClick={() => setExpandedKeys(new Set())}
-            >
+            </ActionButton>
+            <ActionButton size="S" onPress={() => setExpandedKeys(new Set())}>
               Collapse All
-            </button>
-          </div>
+            </ActionButton>
+          </Flex>
         </div>
       </Example>
 
@@ -200,13 +198,13 @@ function DisclosurePage() {
 <Disclosure variant="filled">...</Disclosure>
 <Disclosure variant="ghost">...</Disclosure>`}
       >
-        <div class="space-y-4 max-w-lg">
+        <Flex direction="column" gap={4} style={{ "max-width": "32rem" }}>
           <Disclosure id="var-default" variant="default">
             <DisclosureTrigger>
-              <span class="font-medium">Default Variant</span>
+              <span class={typeRoles.label}>Default Variant</span>
             </DisclosureTrigger>
             <DisclosurePanel>
-              <div class="py-2 text-sm text-bg-600">
+              <div class={typeRoles.body} style={{ padding: "8px 0" }}>
                 The default disclosure style with a subtle separator.
               </div>
             </DisclosurePanel>
@@ -214,10 +212,10 @@ function DisclosurePage() {
 
           <Disclosure id="var-bordered" variant="bordered">
             <DisclosureTrigger>
-              <span class="font-medium">Bordered Variant</span>
+              <span class={typeRoles.label}>Bordered Variant</span>
             </DisclosureTrigger>
             <DisclosurePanel>
-              <div class="py-2 text-sm text-bg-600">
+              <div class={typeRoles.body} style={{ padding: "8px 0" }}>
                 A bordered style with visible container edges.
               </div>
             </DisclosurePanel>
@@ -225,10 +223,10 @@ function DisclosurePage() {
 
           <Disclosure id="var-filled" variant="filled">
             <DisclosureTrigger>
-              <span class="font-medium">Filled Variant</span>
+              <span class={typeRoles.label}>Filled Variant</span>
             </DisclosureTrigger>
             <DisclosurePanel>
-              <div class="py-2 text-sm text-bg-600">
+              <div class={typeRoles.body} style={{ padding: "8px 0" }}>
                 A filled variant with a background color on the trigger.
               </div>
             </DisclosurePanel>
@@ -236,15 +234,15 @@ function DisclosurePage() {
 
           <Disclosure id="var-ghost" variant="ghost">
             <DisclosureTrigger>
-              <span class="font-medium">Ghost Variant</span>
+              <span class={typeRoles.label}>Ghost Variant</span>
             </DisclosureTrigger>
             <DisclosurePanel>
-              <div class="py-2 text-sm text-bg-600">
+              <div class={typeRoles.body} style={{ padding: "8px 0" }}>
                 A minimal ghost style with no visible border.
               </div>
             </DisclosurePanel>
           </Disclosure>
-        </div>
+        </Flex>
       </Example>
 
       <h2>Disclosure Props</h2>
@@ -353,21 +351,19 @@ function DisclosurePage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Trigger uses <code>button</code> element with <code>aria-expanded</code> state
-          </li>
-          <li>
-            Panel is linked to trigger via <code>aria-controls</code>
-          </li>
-          <li>Enter or Space toggles the disclosure open/closed</li>
-          <li>Focus is managed properly when content is shown/hidden</li>
-          <li>
-            In accordion mode, <code>aria-expanded</code> correctly reflects group coordination
-          </li>
-          <li>Disabled state prevents interaction and is communicated via ARIA</li>
-          <li>Content is hidden from screen readers when collapsed</li>
-        </ul>
+        <li>
+          Trigger uses <code>button</code> element with <code>aria-expanded</code> state
+        </li>
+        <li>
+          Panel is linked to trigger via <code>aria-controls</code>
+        </li>
+        <li>Enter or Space toggles the disclosure open/closed</li>
+        <li>Focus is managed properly when content is shown/hidden</li>
+        <li>
+          In accordion mode, <code>aria-expanded</code> correctly reflects group coordination
+        </li>
+        <li>Disabled state prevents interaction and is communicated via ARIA</li>
+        <li>Content is hidden from screen readers when collapsed</li>
       </AccessibilitySection>
     </DocPage>
   );

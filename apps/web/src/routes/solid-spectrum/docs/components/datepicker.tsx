@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { DatePicker } from "@proyecto-viviana/solid-spectrum";
 import { CalendarDateClass as CalendarDate, type DateValue } from "@proyecto-viviana/solid-stately";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/datepicker")({
@@ -35,15 +36,15 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
 
 <p>Selected: {selectedDate()?.toString() ?? "None"}</p>`}
       >
-        <div class="flex flex-col gap-4 max-w-xs">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <DatePicker label="Event date" value={selectedDate()} onChange={setSelectedDate} />
-          <p class="text-sm text-bg-500">
+          <p class={typeRoles.meta}>
             Selected:{" "}
             {selectedDate()
               ? `${selectedDate()!.month}/${selectedDate()!.day}/${selectedDate()!.year}`
               : "None"}
           </p>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -61,7 +62,7 @@ const maxDate = new CalendarDate(2026, 6, 30);
   description="Select a date between Jan 1 and Jun 30, 2026"
 />`}
       >
-        <div class="flex flex-col gap-4 max-w-xs">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <DatePicker
             label="First half of 2026"
             minValue={minDate}
@@ -70,13 +71,13 @@ const maxDate = new CalendarDate(2026, 6, 30);
             onChange={setConstrainedDate}
             description="Select a date between Jan 1 and Jun 30, 2026"
           />
-          <p class="text-sm text-bg-500">
+          <p class={typeRoles.meta}>
             Selected:{" "}
             {constrainedDate()
               ? `${constrainedDate()!.month}/${constrainedDate()!.day}/${constrainedDate()!.year}`
               : "None"}
           </p>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -88,7 +89,7 @@ const maxDate = new CalendarDate(2026, 6, 30);
   placeholderValue={new CalendarDate(2026, 3, 15)}
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <DatePicker
             label="Disabled date"
             isDisabled
@@ -107,7 +108,7 @@ const maxDate = new CalendarDate(2026, 6, 30);
   errorMessage="Please select your birth date"
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <DatePicker
             label="Birth date"
             isRequired
@@ -187,25 +188,23 @@ const maxDate = new CalendarDate(2026, 6, 30);
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Date segments are individually focusable with <code>spinbutton</code> role for screen
-            readers
-          </li>
-          <li>Arrow Up/Down increments or decrements the focused segment value</li>
-          <li>Tab moves between date segments (month, day, year)</li>
-          <li>
-            The calendar popup button has an <code>aria-label</code> describing its purpose
-          </li>
-          <li>
-            Error messages are associated via <code>aria-describedby</code> for screen reader
-            announcement
-          </li>
-          <li>
-            Required state is communicated through <code>aria-required</code>
-          </li>
-          <li>Calendar popup traps focus and can be dismissed with Escape</li>
-        </ul>
+        <li>
+          Date segments are individually focusable with <code>spinbutton</code> role for screen
+          readers
+        </li>
+        <li>Arrow Up/Down increments or decrements the focused segment value</li>
+        <li>Tab moves between date segments (month, day, year)</li>
+        <li>
+          The calendar popup button has an <code>aria-label</code> describing its purpose
+        </li>
+        <li>
+          Error messages are associated via <code>aria-describedby</code> for screen reader
+          announcement
+        </li>
+        <li>
+          Required state is communicated through <code>aria-required</code>
+        </li>
+        <li>Calendar popup traps focus and can be dismissed with Escape</li>
       </AccessibilitySection>
     </DocPage>
   );

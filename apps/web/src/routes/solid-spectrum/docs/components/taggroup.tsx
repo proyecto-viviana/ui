@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { TagGroup } from "@proyecto-viviana/solid-spectrum";
 import type { Key } from "@proyecto-viviana/solid-stately";
+import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type TagItem = {
@@ -71,27 +72,24 @@ function TagGroupPage() {
   {(item) => item.name}
 </TagGroup>`}
       >
-        <div class="max-w-md space-y-3">
+        <Flex direction="column" gap={3} style={{ "max-width": "28rem" }}>
           <TagGroup label="Frameworks" items={removableTags()} onRemove={handleRemove}>
             {(item) => item.name}
           </TagGroup>
           {removableTags().length === 0 && (
-            <p class="text-sm text-bg-400 italic">All tags removed</p>
+            <p class={typeRoles.meta} style={{ "font-style": "italic" }}>All tags removed</p>
           )}
-          <div class="flex items-center gap-2">
-            <p class="text-sm text-bg-500">
+          <Flex alignItems="center" gap={2}>
+            <p class={typeRoles.meta}>
               {removableTags().length} tag{removableTags().length !== 1 ? "s" : ""} remaining
             </p>
             {removableTags().length < initialTags.length && (
-              <button
-                class="text-xs px-2 py-1 rounded bg-bg-100 text-bg-600 hover:bg-bg-200"
-                onClick={resetTags}
-              >
+              <ActionButton size="S" onPress={resetTags}>
                 Reset
-              </button>
+              </ActionButton>
             )}
-          </div>
-        </div>
+          </Flex>
+        </Flex>
       </Example>
 
       <Example
@@ -107,7 +105,7 @@ function TagGroupPage() {
   {(item) => item.name}
 </TagGroup>`}
       >
-        <div class="max-w-md">
+        <div style={{ "max-width": "28rem" }}>
           <TagGroup
             label="Category"
             items={categoryTags}
@@ -123,7 +121,7 @@ function TagGroupPage() {
           >
             {(item) => item.name}
           </TagGroup>
-          <p class="mt-2 text-sm text-bg-500">
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
             Selected: {selectedKeys().size > 0 ? [...selectedKeys()].join(", ") : "None"}
           </p>
         </div>
@@ -142,7 +140,7 @@ function TagGroupPage() {
   {(item) => item.name}
 </TagGroup>`}
       >
-        <div class="max-w-md">
+        <div style={{ "max-width": "28rem" }}>
           <TagGroup
             label="Status Filter"
             items={statusTags}
@@ -158,7 +156,7 @@ function TagGroupPage() {
           >
             {(item) => item.name}
           </TagGroup>
-          <p class="mt-2 text-sm text-bg-500">
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
             Filtering by: {multiSelected().size > 0 ? [...multiSelected()].join(", ") : "All"}
           </p>
         </div>
@@ -171,7 +169,7 @@ function TagGroupPage() {
 <TagGroup label="Outline" items={tags} variant="outline">{(item) => item.name}</TagGroup>
 <TagGroup label="Solid" items={tags} variant="solid">{(item) => item.name}</TagGroup>`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <TagGroup label="Default" items={statusTags.slice(0, 3)} variant="default">
             {(item) => item.name}
           </TagGroup>
@@ -181,7 +179,7 @@ function TagGroupPage() {
           <TagGroup label="Solid" items={statusTags.slice(0, 3)} variant="solid">
             {(item) => item.name}
           </TagGroup>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -191,7 +189,7 @@ function TagGroupPage() {
 <TagGroup label="Medium" items={tags} size="md">{(item) => item.name}</TagGroup>
 <TagGroup label="Large" items={tags} size="lg">{(item) => item.name}</TagGroup>`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <TagGroup label="Small" items={categoryTags.slice(0, 4)} size="sm">
             {(item) => item.name}
           </TagGroup>
@@ -201,7 +199,7 @@ function TagGroupPage() {
           <TagGroup label="Large" items={categoryTags.slice(0, 4)} size="lg">
             {(item) => item.name}
           </TagGroup>
-        </div>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -269,20 +267,18 @@ function TagGroupPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="listbox"</code> with <code>role="option"</code> for each tag
-          </li>
-          <li>Arrow keys navigate between tags</li>
-          <li>Delete or Backspace removes focused tag when removable</li>
-          <li>Space or Enter toggles selection on focused tag</li>
-          <li>Remove buttons have accessible labels like "Remove [tag name]"</li>
-          <li>
-            Group label is linked via <code>aria-labelledby</code>
-          </li>
-          <li>Selection state is announced to screen readers</li>
-          <li>Focus moves to the next tag after removal</li>
-        </ul>
+        <li>
+          Uses <code>role="listbox"</code> with <code>role="option"</code> for each tag
+        </li>
+        <li>Arrow keys navigate between tags</li>
+        <li>Delete or Backspace removes focused tag when removable</li>
+        <li>Space or Enter toggles selection on focused tag</li>
+        <li>Remove buttons have accessible labels like "Remove [tag name]"</li>
+        <li>
+          Group label is linked via <code>aria-labelledby</code>
+        </li>
+        <li>Selection state is announced to screen readers</li>
+        <li>Focus moves to the next tag after removal</li>
       </AccessibilitySection>
     </DocPage>
   );

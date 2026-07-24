@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { NumberField } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/numberfield")({
@@ -22,7 +23,7 @@ function NumberFieldPage() {
         description="A simple number input with a label and stepper buttons."
         code={`<NumberField label="Quantity" defaultValue={1} />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <NumberField label="Quantity" defaultValue={1} />
         </div>
       </Example>
@@ -39,9 +40,9 @@ function NumberFieldPage() {
 />
 <p>Current quantity: {quantity()}</p>`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <NumberField label="Items" value={quantity()} onChange={setQuantity} />
-          <p class="mt-2 text-sm text-bg-500">Current quantity: {quantity()}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Current quantity: {quantity()}</p>
         </div>
       </Example>
 
@@ -61,10 +62,10 @@ function NumberFieldPage() {
   defaultValue={3}
 />`}
       >
-        <div class="max-w-xs space-y-4">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <NumberField label="Age" minValue={0} maxValue={120} defaultValue={25} />
           <NumberField label="Rating (1-5)" minValue={1} maxValue={5} defaultValue={3} />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -83,10 +84,10 @@ function NumberFieldPage() {
   defaultValue={10}
 />`}
       >
-        <div class="max-w-xs space-y-4">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <NumberField label="Opacity" minValue={0} maxValue={1} step={0.1} defaultValue={0.5} />
           <NumberField label="Quantity (step 5)" step={5} defaultValue={10} />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -104,7 +105,7 @@ function NumberFieldPage() {
   }}
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <NumberField
             label="Price"
             value={price()}
@@ -114,7 +115,7 @@ function NumberFieldPage() {
               currency: "USD",
             }}
           />
-          <p class="mt-2 text-sm text-bg-500">Raw value: {price()}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Raw value: {price()}</p>
         </div>
       </Example>
 
@@ -132,7 +133,7 @@ function NumberFieldPage() {
   }}
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <NumberField
             label="Discount"
             defaultValue={0.15}
@@ -154,12 +155,12 @@ function NumberFieldPage() {
 <NumberField label="Large" size="L" defaultValue={15} />
 <NumberField label="Extra large" size="XL" defaultValue={20} />`}
       >
-        <div class="max-w-xs space-y-4">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <NumberField label="Small" size="S" defaultValue={5} />
           <NumberField label="Medium" size="M" defaultValue={10} />
           <NumberField label="Large" size="L" defaultValue={15} />
           <NumberField label="Extra large" size="XL" defaultValue={20} />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -171,7 +172,7 @@ function NumberFieldPage() {
   defaultValue={85}
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <NumberField label="Score" hideStepper defaultValue={85} />
         </div>
       </Example>
@@ -188,7 +189,7 @@ function NumberFieldPage() {
   maxValue={100}
 />`}
       >
-        <div class="max-w-xs space-y-4">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <NumberField label="Disabled" isDisabled defaultValue={42} />
           <NumberField
             label="Invalid"
@@ -197,7 +198,7 @@ function NumberFieldPage() {
             defaultValue={150}
             maxValue={100}
           />
-        </div>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -293,29 +294,27 @@ function NumberFieldPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="spinbutton"</code> with <code>aria-valuenow</code>,{" "}
-            <code>aria-valuemin</code>, and <code>aria-valuemax</code> for screen readers
-          </li>
-          <li>
-            Label is associated with the input via <code>aria-labelledby</code>
-          </li>
-          <li>
-            Increment and decrement buttons have <code>aria-label</code> for screen readers
-          </li>
-          <li>
-            Supports keyboard interaction: Arrow Up/Down to increment/decrement, Home/End for
-            min/max
-          </li>
-          <li>Stepper buttons are automatically disabled at min/max boundaries</li>
-          <li>
-            Invalid state is communicated via <code>aria-invalid</code> and linked error message
-          </li>
-          <li>
-            Description text is linked via <code>aria-describedby</code>
-          </li>
-        </ul>
+        <li>
+          Uses <code>role="spinbutton"</code> with <code>aria-valuenow</code>,{" "}
+          <code>aria-valuemin</code>, and <code>aria-valuemax</code> for screen readers
+        </li>
+        <li>
+          Label is associated with the input via <code>aria-labelledby</code>
+        </li>
+        <li>
+          Increment and decrement buttons have <code>aria-label</code> for screen readers
+        </li>
+        <li>
+          Supports keyboard interaction: Arrow Up/Down to increment/decrement, Home/End for
+          min/max
+        </li>
+        <li>Stepper buttons are automatically disabled at min/max boundaries</li>
+        <li>
+          Invalid state is communicated via <code>aria-invalid</code> and linked error message
+        </li>
+        <li>
+          Description text is linked via <code>aria-describedby</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Slider } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/slider")({
@@ -23,10 +24,10 @@ function SliderPage() {
 
 <Slider label="Volume" value={volume()} onChange={setVolume} />`}
       >
-        <div class="max-w-sm space-y-2">
+        <Flex direction="column" gap={2} style={{ "max-width": "24rem" }}>
           <Slider label="Volume" value={volume()} onChange={setVolume} />
-          <p class="text-sm text-primary-400">Value: {volume()}</p>
-        </div>
+          <p class={typeRoles.meta}>Value: {volume()}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -36,11 +37,11 @@ function SliderPage() {
 <Slider label="Medium" defaultValue={60} size="md" />
 <Slider label="Large" defaultValue={80} size="lg" />`}
       >
-        <div class="space-y-6 max-w-sm">
+        <Flex direction="column" gap={6} style={{ "max-width": "24rem" }}>
           <Slider label="Small" defaultValue={40} size="sm" />
           <Slider label="Medium" defaultValue={60} size="md" />
           <Slider label="Large" defaultValue={80} size="lg" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -49,10 +50,10 @@ function SliderPage() {
         code={`<Slider label="Default" defaultValue={50} variant="default" />
 <Slider label="Accent" defaultValue={70} variant="accent" />`}
       >
-        <div class="space-y-6 max-w-sm">
+        <Flex direction="column" gap={6} style={{ "max-width": "24rem" }}>
           <Slider label="Default" defaultValue={50} variant="default" />
           <Slider label="Accent" defaultValue={70} variant="accent" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -67,7 +68,7 @@ function SliderPage() {
   showMinMax
 />`}
       >
-        <div class="space-y-6 max-w-sm">
+        <Flex direction="column" gap={6} style={{ "max-width": "24rem" }}>
           <Slider
             label="Temperature (°C)"
             defaultValue={22}
@@ -84,7 +85,7 @@ function SliderPage() {
             step={1}
             showMinMax
           />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -99,7 +100,7 @@ function SliderPage() {
   formatOptions={{ style: 'currency', currency: 'USD' }}
 />`}
       >
-        <div class="space-y-6 max-w-sm">
+        <Flex direction="column" gap={6} style={{ "max-width": "24rem" }}>
           <Slider
             label="Price"
             defaultValue={500}
@@ -115,7 +116,7 @@ function SliderPage() {
             maxValue={100}
             formatOptions={{ style: "percent", maximumFractionDigits: 0 }}
           />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -123,7 +124,7 @@ function SliderPage() {
         description="A disabled slider cannot be interacted with."
         code={`<Slider label="Disabled" defaultValue={50} isDisabled />`}
       >
-        <div class="max-w-sm">
+        <div style={{ "max-width": "24rem" }}>
           <Slider label="Disabled" defaultValue={50} isDisabled />
         </div>
       </Example>
@@ -185,18 +186,16 @@ function SliderPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Keyboard: Arrow keys adjust by one step, Page Up/Down by 10%, Home/End go to min/max
-          </li>
-          <li>
-            Value is announced to screen readers via <code>aria-valuetext</code>
-          </li>
-          <li>Formatted values (currency, percent) are properly announced</li>
-          <li>
-            Disabled state communicated via <code>aria-disabled</code>
-          </li>
-        </ul>
+        <li>
+          Keyboard: Arrow keys adjust by one step, Page Up/Down by 10%, Home/End go to min/max
+        </li>
+        <li>
+          Value is announced to screen readers via <code>aria-valuetext</code>
+        </li>
+        <li>Formatted values (currency, percent) are properly announced</li>
+        <li>
+          Disabled state communicated via <code>aria-disabled</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

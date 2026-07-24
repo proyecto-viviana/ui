@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Meter, Button } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/meter")({
@@ -43,29 +44,29 @@ function MeterPage() {
   valueLabel={\`\${storageUsed()}% used\`}
 />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <Meter
             label="Cloud Storage"
             value={storageUsed()}
             variant={storageVariant()}
             valueLabel={`${storageUsed()} GB of 100 GB`}
           />
-          <div class="flex gap-2">
+          <Flex gap={2}>
             <Button variant="secondary" onPress={addFile} isDisabled={storageUsed() >= 100}>
               Upload File
             </Button>
             <Button variant="secondary" onPress={deleteFiles} isDisabled={storageUsed() <= 0}>
               Delete Files
             </Button>
-          </div>
-          <p class="text-xs text-bg-400">
+          </Flex>
+          <p class={typeRoles.meta}>
             {storageUsed() >= 90
               ? "Warning: Storage is nearly full!"
               : storageUsed() >= 70
                 ? "Storage is getting low."
                 : "Storage levels are healthy."}
           </p>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -76,12 +77,12 @@ function MeterPage() {
 <Meter label="Bandwidth" value={78} variant="notice" />
 <Meter label="Error Rate" value={92} variant="negative" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <Meter label="CPU Usage" value={25} variant="positive" valueLabel="25%" />
           <Meter label="Memory" value={65} variant="informative" valueLabel="65%" />
           <Meter label="Bandwidth" value={78} variant="notice" valueLabel="78%" />
           <Meter label="Error Rate" value={92} variant="negative" valueLabel="92%" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -92,12 +93,12 @@ function MeterPage() {
 <Meter label="Large" value={75} size="L" />
 <Meter label="Extra Large" value={85} size="XL" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <Meter label="Small" value={40} size="S" />
           <Meter label="Medium" value={60} size="M" />
           <Meter label="Large" value={75} size="L" />
           <Meter label="Extra Large" value={85} size="XL" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -106,20 +107,20 @@ function MeterPage() {
         code={`<Meter aria-label="Password strength" value={60} variant="notice" />
 <Meter aria-label="Battery level" value={85} variant="positive" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <div>
-            <p class="text-sm text-bg-600 mb-1">Password strength:</p>
+            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>Password strength:</p>
             <Meter aria-label="Password strength" value={60} variant="notice" />
           </div>
           <div>
-            <p class="text-sm text-bg-600 mb-1">Battery level:</p>
+            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>Battery level:</p>
             <Meter aria-label="Battery level" value={85} variant="positive" />
           </div>
           <div>
-            <p class="text-sm text-bg-600 mb-1">Signal strength:</p>
+            <p class={typeRoles.body} style={{ "margin-bottom": "4px" }}>Signal strength:</p>
             <Meter aria-label="Signal strength" value={30} variant="negative" />
           </div>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -128,7 +129,7 @@ function MeterPage() {
         code={`<Meter label="Temperature" value={72} minValue={32} maxValue={100} valueLabel="72 F" />
 <Meter label="Satisfaction" value={4.2} minValue={1} maxValue={5} valueLabel="4.2 / 5" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <Meter
             label="Temperature"
             value={72}
@@ -153,7 +154,7 @@ function MeterPage() {
             valueLabel="850 / 1000"
             variant="informative"
           />
-        </div>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -206,25 +207,23 @@ function MeterPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="meter"</code>
-          </li>
-          <li>
-            Exposes <code>aria-valuenow</code>, <code>aria-valuemin</code>, and{" "}
-            <code>aria-valuemax</code>
-          </li>
-          <li>
-            Label is linked via <code>aria-labelledby</code> for screen reader association
-          </li>
-          <li>
-            Custom value labels are exposed as <code>aria-valuetext</code>
-          </li>
-          <li>
-            Distinct from progress bars: meters represent a static measurement, not ongoing progress
-          </li>
-          <li>Color is not the sole indicator of meaning; labels provide context</li>
-        </ul>
+        <li>
+          Uses <code>role="meter"</code>
+        </li>
+        <li>
+          Exposes <code>aria-valuenow</code>, <code>aria-valuemin</code>, and{" "}
+          <code>aria-valuemax</code>
+        </li>
+        <li>
+          Label is linked via <code>aria-labelledby</code> for screen reader association
+        </li>
+        <li>
+          Custom value labels are exposed as <code>aria-valuetext</code>
+        </li>
+        <li>
+          Distinct from progress bars: meters represent a static measurement, not ongoing progress
+        </li>
+        <li>Color is not the sole indicator of meaning; labels provide context</li>
       </AccessibilitySection>
     </DocPage>
   );

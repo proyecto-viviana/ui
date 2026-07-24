@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Checkbox, CheckboxGroup } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/checkbox")({
@@ -27,7 +28,7 @@ function CheckboxPage() {
         <Checkbox isSelected={selected()} onChange={setSelected}>
           Accept terms and conditions
         </Checkbox>
-        <p class="mt-2 text-sm text-bg-500">Selected: {selected() ? "Yes" : "No"}</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Selected: {selected() ? "Yes" : "No"}</p>
       </Example>
 
       <Example
@@ -44,12 +45,12 @@ function CheckboxPage() {
         code={`<Checkbox isDisabled>Disabled option</Checkbox>
 <Checkbox isDisabled isSelected>Disabled selected</Checkbox>`}
       >
-        <div class="space-y-2">
+        <Flex direction="column" gap={2}>
           <Checkbox isDisabled>Disabled option</Checkbox>
           <Checkbox isDisabled isSelected>
             Disabled selected
           </Checkbox>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -74,7 +75,7 @@ function CheckboxPage() {
           <Checkbox value="sms">SMS notifications</Checkbox>
           <Checkbox value="push">Push notifications</Checkbox>
         </CheckboxGroup>
-        <p class="mt-2 text-sm text-bg-500">Selected: {groupValues().join(", ") || "None"}</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Selected: {groupValues().join(", ") || "None"}</p>
       </Example>
 
       <Example
@@ -84,11 +85,11 @@ function CheckboxPage() {
 <Checkbox size="md">Medium</Checkbox>
 <Checkbox size="lg">Large</Checkbox>`}
       >
-        <div class="flex items-center gap-6">
+        <Flex alignItems="center" gap={6}>
           <Checkbox size="sm">Small</Checkbox>
           <Checkbox size="md">Medium</Checkbox>
           <Checkbox size="lg">Large</Checkbox>
-        </div>
+        </Flex>
       </Example>
 
       <h2>Checkbox Props</h2>
@@ -192,19 +193,17 @@ function CheckboxPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses native <code>&lt;input type="checkbox"&gt;</code> for proper semantics
-          </li>
-          <li>Supports keyboard toggle via Space key</li>
-          <li>
-            Indeterminate state communicated via <code>aria-checked="mixed"</code>
-          </li>
-          <li>
-            Groups use <code>role="group"</code> with <code>aria-labelledby</code>
-          </li>
-          <li>Focus ring visible only on keyboard navigation</li>
-        </ul>
+        <li>
+          Uses native <code>&lt;input type="checkbox"&gt;</code> for proper semantics
+        </li>
+        <li>Supports keyboard toggle via Space key</li>
+        <li>
+          Indeterminate state communicated via <code>aria-checked="mixed"</code>
+        </li>
+        <li>
+          Groups use <code>role="group"</code> with <code>aria-labelledby</code>
+        </li>
+        <li>Focus ring visible only on keyboard navigation</li>
       </AccessibilitySection>
     </DocPage>
   );

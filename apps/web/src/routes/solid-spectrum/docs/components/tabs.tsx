@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Tabs, TabList, Tab, TabPanel } from "@proyecto-viviana/solid-spectrum";
+import { ActionButton, Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type TabItem = {
@@ -66,17 +67,17 @@ function TabsPage() {
         >
           <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="account">
-            <div class="p-4 text-bg-600">
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
               Manage your account settings, profile information, and preferences.
             </div>
           </TabPanel>
           <TabPanel id="password">
-            <div class="p-4 text-bg-600">
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
               Change your password and configure two-factor authentication.
             </div>
           </TabPanel>
           <TabPanel id="notifications">
-            <div class="p-4 text-bg-600">
+            <div class={typeRoles.body} style={{ padding: "16px" }}>
               Choose which notifications you want to receive and how.
             </div>
           </TabPanel>
@@ -89,20 +90,14 @@ function TabsPage() {
         code={`<Tabs items={tabs} selectedKey={selectedKey()} onSelectionChange={setSelectedKey} aria-label="Controlled tabs">...</Tabs>`}
       >
         <div>
-          <div class="mb-4 flex gap-2">
-            <button
-              class="text-sm px-2 py-1 rounded bg-primary-100 text-primary-600"
-              onClick={() => setSelectedKey("tab1")}
-            >
+          <Flex gap={2} style={{ "margin-bottom": "16px" }}>
+            <ActionButton size="S" onPress={() => setSelectedKey("tab1")}>
               Select Tab 1
-            </button>
-            <button
-              class="text-sm px-2 py-1 rounded bg-primary-100 text-primary-600"
-              onClick={() => setSelectedKey("tab2")}
-            >
+            </ActionButton>
+            <ActionButton size="S" onPress={() => setSelectedKey("tab2")}>
               Select Tab 2
-            </button>
-          </div>
+            </ActionButton>
+          </Flex>
           <Tabs
             items={controlledTabs}
             getKey={(item) => item.id}
@@ -113,13 +108,13 @@ function TabsPage() {
           >
             <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
             <TabPanel id="tab1">
-              <div class="p-4 text-bg-600">Content for Tab 1</div>
+              <div class={typeRoles.body} style={{ padding: "16px" }}>Content for Tab 1</div>
             </TabPanel>
             <TabPanel id="tab2">
-              <div class="p-4 text-bg-600">Content for Tab 2</div>
+              <div class={typeRoles.body} style={{ padding: "16px" }}>Content for Tab 2</div>
             </TabPanel>
             <TabPanel id="tab3">
-              <div class="p-4 text-bg-600">Content for Tab 3</div>
+              <div class={typeRoles.body} style={{ padding: "16px" }}>Content for Tab 3</div>
             </TabPanel>
           </Tabs>
         </div>
@@ -139,13 +134,13 @@ function TabsPage() {
         >
           <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="free">
-            <div class="p-4 text-bg-600">Free tier features available to all users.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>Free tier features available to all users.</div>
           </TabPanel>
           <TabPanel id="pro">
-            <div class="p-4 text-bg-600">Premium features for Pro subscribers.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>Premium features for Pro subscribers.</div>
           </TabPanel>
           <TabPanel id="enterprise">
-            <div class="p-4 text-bg-600">Enterprise features.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>Enterprise features.</div>
           </TabPanel>
         </Tabs>
       </Example>
@@ -164,16 +159,16 @@ function TabsPage() {
         >
           <TabList<TabItem>>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
           <TabPanel id="general">
-            <div class="p-4 text-bg-600">General settings and preferences.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>General settings and preferences.</div>
           </TabPanel>
           <TabPanel id="security">
-            <div class="p-4 text-bg-600">Security and authentication settings.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>Security and authentication settings.</div>
           </TabPanel>
           <TabPanel id="privacy">
-            <div class="p-4 text-bg-600">Privacy and data sharing options.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>Privacy and data sharing options.</div>
           </TabPanel>
           <TabPanel id="advanced">
-            <div class="p-4 text-bg-600">Advanced configuration options.</div>
+            <div class={typeRoles.body} style={{ padding: "16px" }}>Advanced configuration options.</div>
           </TabPanel>
         </Tabs>
       </Example>
@@ -260,18 +255,16 @@ function TabsPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>tablist</code>, <code>tab</code>, and <code>tabpanel</code> ARIA roles
-          </li>
-          <li>Arrow keys navigate between tabs</li>
-          <li>Home/End keys jump to first/last tab</li>
-          <li>
-            Tab panels are linked via <code>aria-controls</code> and <code>aria-labelledby</code>
-          </li>
-          <li>Focus indicator clearly shows which tab is focused</li>
-          <li>Automatic activation on focus (follows ARIA best practices)</li>
-        </ul>
+        <li>
+          Uses <code>tablist</code>, <code>tab</code>, and <code>tabpanel</code> ARIA roles
+        </li>
+        <li>Arrow keys navigate between tabs</li>
+        <li>Home/End keys jump to first/last tab</li>
+        <li>
+          Tab panels are linked via <code>aria-controls</code> and <code>aria-labelledby</code>
+        </li>
+        <li>Focus indicator clearly shows which tab is focused</li>
+        <li>Automatic activation on focus (follows ARIA best practices)</li>
       </AccessibilitySection>
     </DocPage>
   );

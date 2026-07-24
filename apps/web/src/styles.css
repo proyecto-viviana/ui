@@ -723,61 +723,9 @@
   color: var(--color-primary-100);
 }
 
-/* ===== DOCS CONTENT — overrides for doc page chrome ===== */
-/* Kill rounded corners on doc page wrappers (not inside live PV component demos) */
-.docs-content .not-prose > div,
-.docs-content .not-prose > table {
-  border-radius: 0;
-}
-
-/* Override old shadow utilities inside doc pages */
-.docs-content [class*="shadow-"] {
-  box-shadow: none;
-}
-
-/* Fix old text color tokens to use legacy values */
-.docs-content .text-bg-300 {
-  color: var(--color-primary-600);
-}
-.docs-content .text-bg-400 {
-  color: var(--color-primary-500);
-}
-.docs-content .text-bg-500 {
-  color: var(--color-primary-400);
-}
-.docs-content .text-bg-600 {
-  color: var(--color-primary-300);
-}
-
-/* Fix old background tokens */
-.docs-content .bg-bg-100 {
-  background: var(--color-bg-200);
-}
-.docs-content .bg-bg-200 {
-  background: var(--color-bg-300);
-}
-.docs-content .bg-bg-300 {
-  background: var(--color-bg-400);
-}
-
-/* Fix old border tokens */
-.docs-content .border-bg-200 {
-  border-color: var(--color-bg-200);
-}
-.docs-content .border-bg-300 {
-  border-color: var(--color-bg-100);
-}
-
-/* Force angular corners on doc page rounded elements */
-.docs-content .rounded-lg,
-.docs-content .rounded-xl,
-.docs-content .rounded-md {
-  border-radius: 0;
-}
-
-/* Keep rounded-full for small indicators like dots */
-
-/* Doc page links */
+/* ===== DOCS CONTENT ===== */
+/* The doc pages take their paint from @proyecto-viviana/ui, so all that is left here
+   is the bare `<a>` — the one element the design system has no component for. */
 .docs-content a:not([class]) {
   color: var(--color-primary-300);
   text-decoration: none;

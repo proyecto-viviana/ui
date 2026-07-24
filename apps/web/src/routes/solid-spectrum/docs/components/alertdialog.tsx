@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { AlertDialog, Button } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/alertdialog")({
@@ -31,7 +32,7 @@ function AlertDialogPage() {
   Are you sure? This action cannot be undone.
 </AlertDialog>`}
       >
-        <div class="flex gap-4">
+        <Flex gap={4}>
           <AlertDialog
             title="Delete Item"
             variant="destructive"
@@ -43,8 +44,8 @@ function AlertDialogPage() {
           >
             Are you sure you want to delete this item? This action cannot be undone.
           </AlertDialog>
-          {lastAction() && <span class="text-sm text-primary-400 self-center">{lastAction()}</span>}
-        </div>
+          {lastAction() && <span class={typeRoles.meta} style={{ "align-self": "center" }}>{lastAction()}</span>}
+        </Flex>
       </Example>
 
       <Example
@@ -138,19 +139,17 @@ function AlertDialogPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="alertdialog"</code> — announced immediately when opened
-          </li>
-          <li>Focus is trapped inside the dialog until dismissed</li>
-          <li>Escape key cancels the dialog</li>
-          <li>
-            The title is linked via <code>aria-labelledby</code>
-          </li>
-          <li>
-            The body text is linked via <code>aria-describedby</code>
-          </li>
-        </ul>
+        <li>
+          Uses <code>role="alertdialog"</code> — announced immediately when opened
+        </li>
+        <li>Focus is trapped inside the dialog until dismissed</li>
+        <li>Escape key cancels the dialog</li>
+        <li>
+          The title is linked via <code>aria-labelledby</code>
+        </li>
+        <li>
+          The body text is linked via <code>aria-describedby</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

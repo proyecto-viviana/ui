@@ -7,6 +7,7 @@ import {
   Button,
   TextField,
 } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/dialog")({
@@ -38,7 +39,7 @@ function DialogPage() {
           trigger={<Button>Open Dialog</Button>}
           content={(close) => (
             <Dialog title="Welcome" onClose={close}>
-              <p class="text-bg-600">
+              <p class={typeRoles.body}>
                 This is a basic dialog with some content. Click outside or press Escape to close.
               </p>
             </Dialog>
@@ -66,7 +67,7 @@ function DialogPage() {
           trigger={<Button variant="negative">Delete Item</Button>}
           content={(close) => (
             <Dialog title="Confirm Delete" onClose={close}>
-              <p class="text-bg-600">
+              <p class={typeRoles.body}>
                 Are you sure you want to delete this item? This action cannot be undone.
               </p>
               <DialogFooter>
@@ -103,10 +104,10 @@ function DialogPage() {
           trigger={<Button>Edit Profile</Button>}
           content={(close) => (
             <Dialog title="Edit Profile" onClose={close}>
-              <div class="space-y-4">
+              <Flex direction="column" gap={4}>
                 <TextField label="Name" defaultValue="John Doe" />
                 <TextField label="Email" defaultValue="john@example.com" />
-              </div>
+              </Flex>
               <DialogFooter>
                 <Button variant="secondary" onPress={close}>
                   Cancel
@@ -134,7 +135,7 @@ function DialogPage() {
   )}
 />`}
       >
-        <div class="flex gap-3">
+        <Flex gap={3}>
           <Button onPress={() => setIsOpen(true)}>Open Controlled Dialog</Button>
           <DialogTrigger
             isOpen={isOpen()}
@@ -142,7 +143,7 @@ function DialogPage() {
             trigger={<span />}
             content={(close) => (
               <Dialog title="Controlled Dialog" onClose={close}>
-                <p class="text-bg-600">This dialog is controlled by state.</p>
+                <p class={typeRoles.body}>This dialog is controlled by state.</p>
                 <DialogFooter>
                   <Button variant="primary" onPress={close}>
                     Close
@@ -151,7 +152,7 @@ function DialogPage() {
               </Dialog>
             )}
           />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -161,12 +162,12 @@ function DialogPage() {
 <Dialog title="Medium Dialog" size="md">...</Dialog>
 <Dialog title="Large Dialog" size="lg">...</Dialog>`}
       >
-        <div class="flex gap-3">
+        <Flex gap={3}>
           <DialogTrigger
             trigger={<Button variant="secondary">Small</Button>}
             content={(close) => (
               <Dialog title="Small Dialog" size="sm" onClose={close}>
-                <p class="text-bg-600">A compact dialog for simple messages.</p>
+                <p class={typeRoles.body}>A compact dialog for simple messages.</p>
               </Dialog>
             )}
           />
@@ -174,7 +175,7 @@ function DialogPage() {
             trigger={<Button variant="secondary">Medium</Button>}
             content={(close) => (
               <Dialog title="Medium Dialog" size="md" onClose={close}>
-                <p class="text-bg-600">The default size for most use cases.</p>
+                <p class={typeRoles.body}>The default size for most use cases.</p>
               </Dialog>
             )}
           />
@@ -182,11 +183,11 @@ function DialogPage() {
             trigger={<Button variant="secondary">Large</Button>}
             content={(close) => (
               <Dialog title="Large Dialog" size="lg" onClose={close}>
-                <p class="text-bg-600">A larger dialog for complex content or forms.</p>
+                <p class={typeRoles.body}>A larger dialog for complex content or forms.</p>
               </Dialog>
             )}
           />
-        </div>
+        </Flex>
       </Example>
 
       <h2>DialogTrigger Props</h2>
@@ -249,13 +250,11 @@ function DialogPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>Uses modal dialog semantics with keyboard dismissal (Escape)</li>
-          <li>Focus remains contained while the dialog is open</li>
-          <li>Focus is restored to the trigger when closed</li>
-          <li>Includes outside-click dismissal support (configurable)</li>
-          <li>Document scrolling is prevented while open</li>
-        </ul>
+        <li>Uses modal dialog semantics with keyboard dismissal (Escape)</li>
+        <li>Focus remains contained while the dialog is open</li>
+        <li>Focus is restored to the trigger when closed</li>
+        <li>Includes outside-click dismissal support (configurable)</li>
+        <li>Document scrolling is prevented while open</li>
       </AccessibilitySection>
     </DocPage>
   );

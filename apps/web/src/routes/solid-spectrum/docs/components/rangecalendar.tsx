@@ -6,6 +6,7 @@ import {
   type DateValue,
   type RangeValue,
 } from "@proyecto-viviana/solid-stately";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/rangecalendar")({
@@ -59,10 +60,10 @@ import {
 
 <p>Selected: {formatRange(range())}</p>`}
       >
-        <div class="flex flex-col items-start gap-4">
+        <Flex direction="column" alignItems="start" gap={4}>
           <RangeCalendar aria-label="Trip dates" value={range()} onChange={setRange} />
-          <p class="text-sm text-bg-500">Selected range: {formatRange(range())}</p>
-        </div>
+          <p class={typeRoles.meta}>Selected range: {formatRange(range())}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -77,10 +78,10 @@ const maxDate = new CalendarDate(2026, 12, 31);
   maxValue={maxDate}
 />`}
       >
-        <div class="flex flex-col items-start gap-4">
+        <Flex direction="column" alignItems="start" gap={4}>
           <RangeCalendar aria-label="2026 date range" minValue={minDate} maxValue={maxDate} />
-          <p class="text-xs text-bg-400">Only dates in 2026 are selectable</p>
-        </div>
+          <p class={typeRoles.meta}>Only dates in 2026 are selectable</p>
+        </Flex>
       </Example>
 
       <Example
@@ -97,7 +98,7 @@ const maxDate = new CalendarDate(2026, 12, 31);
   defaultValue={{ start: new CalendarDate(2026, 3, 1), end: new CalendarDate(2026, 3, 5) }}
 />`}
       >
-        <div class="flex flex-col items-start gap-4">
+        <Flex direction="column" alignItems="start" gap={4}>
           <RangeCalendar
             aria-label="Booking dates"
             isDateUnavailable={isDateUnavailable}
@@ -106,8 +107,8 @@ const maxDate = new CalendarDate(2026, 12, 31);
               end: new CalendarDate(2026, 3, 5),
             }}
           />
-          <p class="text-xs text-bg-400">Mar 25-27 are unavailable</p>
-        </div>
+          <p class={typeRoles.meta}>Mar 25-27 are unavailable</p>
+        </Flex>
       </Example>
 
       <Example
@@ -182,26 +183,24 @@ const maxDate = new CalendarDate(2026, 12, 31);
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses a <code>grid</code> role with <code>gridcell</code> elements for each day
-          </li>
-          <li>
-            Full keyboard navigation: Arrow keys move between days, Page Up/Down change months
-          </li>
-          <li>Range start and end are visually distinct with rounded corners at the endpoints</li>
-          <li>
-            Days within the range use <code>aria-selected="true"</code> for screen reader
-            announcement
-          </li>
-          <li>
-            Unavailable dates are announced as disabled via <code>aria-disabled</code>
-          </li>
-          <li>
-            Previous/next month buttons include descriptive <code>aria-label</code> attributes
-          </li>
-          <li>Today's date is visually indicated with a ring highlight</li>
-        </ul>
+        <li>
+          Uses a <code>grid</code> role with <code>gridcell</code> elements for each day
+        </li>
+        <li>
+          Full keyboard navigation: Arrow keys move between days, Page Up/Down change months
+        </li>
+        <li>Range start and end are visually distinct with rounded corners at the endpoints</li>
+        <li>
+          Days within the range use <code>aria-selected="true"</code> for screen reader
+          announcement
+        </li>
+        <li>
+          Unavailable dates are announced as disabled via <code>aria-disabled</code>
+        </li>
+        <li>
+          Previous/next month buttons include descriptive <code>aria-label</code> attributes
+        </li>
+        <li>Today's date is visually indicated with a ring highlight</li>
       </AccessibilitySection>
     </DocPage>
   );

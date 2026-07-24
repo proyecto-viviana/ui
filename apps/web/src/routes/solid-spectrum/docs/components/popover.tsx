@@ -12,7 +12,7 @@ function PopoverPage() {
       description="Popovers display contextual content relative to a trigger without navigating away from the current view."
       importCode={`import { Popover, PopoverTrigger, PopoverHeader, PopoverFooter } from '@proyecto-viviana/solid-spectrum';`}
     >
-      <p class="text-sm text-bg-500" style={{ "max-width": "60ch" }}>
+      <p style={{ "max-width": "60ch" }}>
         This route keeps the exported popover API visible in the docs while the richer overlay
         examples continue to evolve.
       </p>

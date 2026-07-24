@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { Badge, Button } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+
+/** Nudges a count badge onto the top-right corner of whatever it is anchored to. */
+const corner = { position: "absolute", top: "-8px", right: "-8px" } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/badge")({
   component: BadgePage,
@@ -22,52 +26,52 @@ function BadgePage() {
 <Badge count={99} variant="warning" />
 <Badge count={1} variant="danger" />`}
       >
-        <div class="flex flex-wrap items-center gap-6">
-          <div class="flex flex-col items-center gap-2">
+        <Flex wrap alignItems="center" gap={6}>
+          <Flex direction="column" alignItems="center" gap={2}>
             <Badge count={5} variant="primary" />
-            <span class="text-xs text-primary-400">primary</span>
-          </div>
-          <div class="flex flex-col items-center gap-2">
+            <span class={typeRoles.meta}>primary</span>
+          </Flex>
+          <Flex direction="column" alignItems="center" gap={2}>
             <Badge count={12} variant="accent" />
-            <span class="text-xs text-primary-400">accent</span>
-          </div>
-          <div class="flex flex-col items-center gap-2">
+            <span class={typeRoles.meta}>accent</span>
+          </Flex>
+          <Flex direction="column" alignItems="center" gap={2}>
             <Badge count={3} variant="success" />
-            <span class="text-xs text-primary-400">success</span>
-          </div>
-          <div class="flex flex-col items-center gap-2">
+            <span class={typeRoles.meta}>success</span>
+          </Flex>
+          <Flex direction="column" alignItems="center" gap={2}>
             <Badge count={99} variant="warning" />
-            <span class="text-xs text-primary-400">warning</span>
-          </div>
-          <div class="flex flex-col items-center gap-2">
+            <span class={typeRoles.meta}>warning</span>
+          </Flex>
+          <Flex direction="column" alignItems="center" gap={2}>
             <Badge count={1} variant="danger" />
-            <span class="text-xs text-primary-400">danger</span>
-          </div>
-        </div>
+            <span class={typeRoles.meta}>danger</span>
+          </Flex>
+        </Flex>
       </Example>
 
       <Example
         title="Typical Usage"
         description="Badges are typically positioned relative to another element."
-        code={`<div class="relative inline-block">
+        code={`<div class="badge-anchor">
   <Button variant="secondary">Notifications</Button>
-  <Badge count={7} variant="danger" class="absolute -top-2 -right-2" />
+  <Badge count={7} variant="danger" class="badge-corner" />
 </div>`}
       >
-        <div class="flex flex-wrap gap-8 items-center">
-          <div class="relative inline-block">
+        <Flex wrap alignItems="center" gap={8}>
+          <div style={{ position: "relative", display: "inline-block" }}>
             <Button variant="secondary">Messages</Button>
-            <span class="absolute -top-2 -right-2">
+            <span style={corner}>
               <Badge count={7} variant="danger" />
             </span>
           </div>
-          <div class="relative inline-block">
+          <div style={{ position: "relative", display: "inline-block" }}>
             <Button variant="secondary">Updates</Button>
-            <span class="absolute -top-2 -right-2">
+            <span style={corner}>
               <Badge count={24} variant="accent" />
             </span>
           </div>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -76,10 +80,10 @@ function BadgePage() {
         code={`<Badge count={100} variant="primary" />
 <Badge count={999} variant="danger" />`}
       >
-        <div class="flex gap-6">
+        <Flex gap={6}>
           <Badge count={100} variant="primary" />
           <Badge count={999} variant="danger" />
-        </div>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -96,17 +100,15 @@ function BadgePage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Use <code>aria-label</code> on the parent container to describe the badge count
-          </li>
-          <li>
-            Combine with <code>aria-live</code> regions for dynamic count updates
-          </li>
-          <li>
-            Example: <code>&lt;button aria-label="Notifications, 7 unread"&gt;</code>
-          </li>
-        </ul>
+        <li>
+          Use <code>aria-label</code> on the parent container to describe the badge count
+        </li>
+        <li>
+          Combine with <code>aria-live</code> regions for dynamic count updates
+        </li>
+        <li>
+          Example: <code>&lt;button aria-label="Notifications, 7 unread"&gt;</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

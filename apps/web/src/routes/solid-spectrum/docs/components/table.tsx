@@ -12,6 +12,7 @@ import {
   TableSelectionCheckbox,
   TableSelectAllCheckbox,
 } from "@proyecto-viviana/solid-spectrum";
+import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 /** Renders children only on the client after hydration. Same component tree on server/client for hydration compat. */
@@ -93,7 +94,7 @@ function TablePage() {
   </TableBody>
 </Table>`}
       >
-        <ClientOnly fallback={<p class="text-sm text-bg-400">Loading table...</p>}>
+        <ClientOnly fallback={<p class={typeRoles.meta}>Loading table...</p>}>
           <Table
             items={sampleData}
             columns={baseColumns}
@@ -142,7 +143,7 @@ function TablePage() {
   </TableBody>
 </Table>`}
       >
-        <ClientOnly fallback={<p class="text-sm text-bg-400">Loading table...</p>}>
+        <ClientOnly fallback={<p class={typeRoles.meta}>Loading table...</p>}>
           <div>
             <Table
               items={sampleData}
@@ -178,7 +179,7 @@ function TablePage() {
                 )}
               </TableBody>
             </Table>
-            <p class="mt-2 text-sm text-bg-500">
+            <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
               Selected: {selectedKeys().size > 0 ? [...selectedKeys()].join(", ") : "None"}
             </p>
           </div>
@@ -197,7 +198,7 @@ function TablePage() {
   ...
 </Table>`}
       >
-        <ClientOnly fallback={<p class="text-sm text-bg-400">Loading table...</p>}>
+        <ClientOnly fallback={<p class={typeRoles.meta}>Loading table...</p>}>
           <Table
             items={sampleData}
             columns={sortableColumns}
@@ -319,16 +320,14 @@ function TablePage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses native <code>&lt;table&gt;</code> elements with proper ARIA roles
-          </li>
-          <li>Keyboard navigation: Arrow keys to move between cells</li>
-          <li>Row selection announced to screen readers</li>
-          <li>Sort state announced when columns are sorted</li>
-          <li>Focus indicator clearly shows current cell</li>
-          <li>Supports both single and multiple selection modes</li>
-        </ul>
+        <li>
+          Uses native <code>&lt;table&gt;</code> elements with proper ARIA roles
+        </li>
+        <li>Keyboard navigation: Arrow keys to move between cells</li>
+        <li>Row selection announced to screen readers</li>
+        <li>Sort state announced when columns are sorted</li>
+        <li>Focus indicator clearly shows current cell</li>
+        <li>Supports both single and multiple selection modes</li>
       </AccessibilitySection>
     </DocPage>
   );

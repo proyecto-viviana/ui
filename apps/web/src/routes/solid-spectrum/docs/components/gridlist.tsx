@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { GridList, GridListItem } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
+import { Badge, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type PhotoItem = {
@@ -46,11 +47,11 @@ function GridListPage() {
   const [singleSelected, setSingleSelected] = createSignal<Set<Key>>(new Set());
   const [multiSelected, setMultiSelected] = createSignal<Set<Key>>(new Set());
 
-  const priorityColor: Record<string, string> = {
-    High: "bg-red-100 text-red-700",
-    Medium: "bg-yellow-100 text-yellow-700",
-    Low: "bg-green-100 text-green-700",
-  };
+  const priorityVariant = {
+    High: "negative",
+    Medium: "notice",
+    Low: "positive",
+  } as const;
 
   const statusIcon: Record<string, string> = {
     Todo: "[ ]",
@@ -82,7 +83,7 @@ function GridListPage() {
   )}
 </GridList>`}
       >
-        <div class="max-w-lg">
+        <div style={{ "max-width": "32rem" }}>
           <GridList
             aria-label="Photo gallery"
             items={photoItems}
@@ -101,19 +102,13 @@ function GridListPage() {
             {(item) => (
               <GridListItem id={item.id} textValue={item.title}>
                 {(renderProps) => (
-                  <div
-                    class="flex items-center justify-between px-3 py-2 rounded-md border cursor-default select-none transition-colors"
-                    classList={{
-                      "border-primary-400 bg-primary-50": renderProps.isSelected,
-                      "border-bg-200 hover:border-bg-300 hover:bg-bg-50": !renderProps.isSelected,
-                    }}
-                  >
+                  <div class="hd-row hd-row--split" classList={{ "hd-row--selected": renderProps.isSelected }}>
                     <div>
-                      <div class="text-sm font-medium">{item.title}</div>
-                      <div class="text-xs text-bg-500">{item.category}</div>
+                      <div class={typeRoles.label}>{item.title}</div>
+                      <div class={typeRoles.meta}>{item.category}</div>
                     </div>
                     {renderProps.isSelected && (
-                      <svg class="w-4 h-4 text-primary-500" viewBox="0 0 20 20" fill="currentColor">
+                      <svg class="hd-check-icon" viewBox="0 0 20 20" fill="currentColor">
                         <path
                           fill-rule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -126,7 +121,7 @@ function GridListPage() {
               </GridListItem>
             )}
           </GridList>
-          <p class="mt-2 text-sm text-bg-500">
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
             Selected: {singleSelected().size > 0 ? [...singleSelected()].join(", ") : "None"}
           </p>
         </div>
@@ -151,7 +146,7 @@ function GridListPage() {
   )}
 </GridList>`}
       >
-        <div class="max-w-lg">
+        <div style={{ "max-width": "32rem" }}>
           <GridList
             aria-label="Task list"
             items={taskItems}
@@ -170,29 +165,23 @@ function GridListPage() {
             {(item) => (
               <GridListItem id={item.id} textValue={item.title}>
                 {(renderProps) => (
-                  <div
-                    class="flex items-center gap-3 px-3 py-2 rounded-md border cursor-default select-none transition-colors"
-                    classList={{
-                      "border-primary-400 bg-primary-50": renderProps.isSelected,
-                      "border-bg-200 hover:border-bg-300 hover:bg-bg-50": !renderProps.isSelected,
-                    }}
-                  >
-                    <span class="font-mono text-xs text-bg-400 w-6">{statusIcon[item.status]}</span>
-                    <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium truncate">{item.title}</div>
-                      <div class="text-xs text-bg-500">{item.status}</div>
-                    </div>
-                    <span
-                      class={`text-xs px-2 py-0.5 rounded-full font-medium ${priorityColor[item.priority]}`}
-                    >
-                      {item.priority}
+                  <div class="hd-row" classList={{ "hd-row--selected": renderProps.isSelected }}>
+                    <span class={`${typeRoles.terminal} hd-row__gutter`}>
+                      {statusIcon[item.status]}
                     </span>
+                    <div class="hd-row__grow">
+                      <div class={`${typeRoles.label} hd-row__title`}>{item.title}</div>
+                      <div class={typeRoles.meta}>{item.status}</div>
+                    </div>
+                    <Badge variant={priorityVariant[item.priority as keyof typeof priorityVariant]}>
+                      {item.priority}
+                    </Badge>
                   </div>
                 )}
               </GridListItem>
             )}
           </GridList>
-          <p class="mt-2 text-sm text-bg-500">
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>
             Selected ({multiSelected().size}):{" "}
             {multiSelected().size > 0 ? [...multiSelected()].join(", ") : "None"}
           </p>
@@ -274,21 +263,19 @@ function GridListPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="grid"</code> and <code>role="row"</code> ARIA patterns
-          </li>
-          <li>Arrow keys navigate between items in the grid</li>
-          <li>Space or Enter toggles selection on the focused item</li>
-          <li>Home/End keys jump to first/last item</li>
-          <li>Shift+Arrow extends selection in multi-select mode</li>
-          <li>Ctrl+A selects all items in multi-select mode</li>
-          <li>
-            <code>aria-selected</code> communicates selection state to screen readers
-          </li>
-          <li>Type-ahead search for quick navigation by text content</li>
-          <li>Focus management follows the roving tabindex pattern</li>
-        </ul>
+        <li>
+          Uses <code>role="grid"</code> and <code>role="row"</code> ARIA patterns
+        </li>
+        <li>Arrow keys navigate between items in the grid</li>
+        <li>Space or Enter toggles selection on the focused item</li>
+        <li>Home/End keys jump to first/last item</li>
+        <li>Shift+Arrow extends selection in multi-select mode</li>
+        <li>Ctrl+A selects all items in multi-select mode</li>
+        <li>
+          <code>aria-selected</code> communicates selection state to screen readers
+        </li>
+        <li>Type-ahead search for quick navigation by text content</li>
+        <li>Focus management follows the roving tabindex pattern</li>
       </AccessibilitySection>
     </DocPage>
   );

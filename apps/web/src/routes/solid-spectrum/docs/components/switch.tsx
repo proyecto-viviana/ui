@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { ToggleSwitch } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/switch")({
@@ -25,23 +26,23 @@ function SwitchPage() {
 <ToggleSwitch isSelected={isOn()} onChange={setIsOn} />
 <span>{isOn() ? 'On' : 'Off'}</span>`}
       >
-        <div class="flex items-center gap-3">
+        <Flex alignItems="center" gap={3}>
           <ToggleSwitch isSelected={isOn()} onChange={setIsOn} />
-          <span class="text-sm text-primary-200">{isOn() ? "On" : "Off"}</span>
-        </div>
+          <span class={typeRoles.body}>{isOn() ? "On" : "Off"}</span>
+        </Flex>
       </Example>
 
       <Example
         title="With Label"
         description="Provide an accessible label for the switch."
-        code={`<label class="flex items-center gap-3">
+        code={`<label class="switch-row">
   <ToggleSwitch isSelected={notifications()} onChange={setNotifications} />
   <span>Enable notifications</span>
 </label>`}
       >
-        <label class="flex items-center gap-3 cursor-pointer">
+        <label style={{ display: "flex", "align-items": "center", gap: "0.75rem", cursor: "pointer" }}>
           <ToggleSwitch isSelected={notifications()} onChange={setNotifications} />
-          <span class="text-sm text-primary-200">Enable notifications</span>
+          <span class={typeRoles.body}>Enable notifications</span>
         </label>
       </Example>
 
@@ -59,16 +60,16 @@ function SwitchPage() {
         code={`<ToggleSwitch isDisabled />
 <ToggleSwitch isDisabled defaultSelected />`}
       >
-        <div class="flex items-center gap-6">
-          <div class="flex items-center gap-2">
+        <Flex alignItems="center" gap={6}>
+          <Flex alignItems="center" gap={2}>
             <ToggleSwitch isDisabled />
-            <span class="text-sm text-primary-400">Disabled off</span>
-          </div>
-          <div class="flex items-center gap-2">
+            <span class={typeRoles.meta}>Disabled off</span>
+          </Flex>
+          <Flex alignItems="center" gap={2}>
             <ToggleSwitch isDisabled defaultSelected />
-            <span class="text-sm text-primary-400">Disabled on</span>
-          </div>
-        </div>
+            <span class={typeRoles.meta}>Disabled on</span>
+          </Flex>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -100,16 +101,14 @@ function SwitchPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="switch"</code> with <code>aria-checked</code>
-          </li>
-          <li>Space key toggles the switch when focused</li>
-          <li>Communicates state to screen readers as "on" or "off"</li>
-          <li>
-            Always provide a visible or <code>aria-label</code> label
-          </li>
-        </ul>
+        <li>
+          Uses <code>role="switch"</code> with <code>aria-checked</code>
+        </li>
+        <li>Space key toggles the switch when focused</li>
+        <li>Communicates state to screen readers as "on" or "off"</li>
+        <li>
+          Always provide a visible or <code>aria-label</code> label
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { TextField } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/textfield")({
@@ -21,7 +22,7 @@ function TextFieldPage() {
         description="A simple text input with a label."
         code={`<TextField label="Name" placeholder="Enter your name" />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField label="Name" placeholder="Enter your name" />
         </div>
       </Example>
@@ -37,14 +38,14 @@ function TextFieldPage() {
   onChange={setValue}
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField
             label="Email"
             value={value()}
             onChange={setValue}
             placeholder="you@example.com"
           />
-          <p class="mt-2 text-sm text-bg-500">Value: {value() || "(empty)"}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Value: {value() || "(empty)"}</p>
         </div>
       </Example>
 
@@ -56,7 +57,7 @@ function TextFieldPage() {
   description="Must be 3-20 characters, letters and numbers only"
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField
             label="Username"
             description="Must be 3-20 characters, letters and numbers only"
@@ -74,7 +75,7 @@ function TextFieldPage() {
   isInvalid
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField
             label="Email"
             errorMessage="Please enter a valid email address"
@@ -89,7 +90,7 @@ function TextFieldPage() {
         description="Mark fields as required with visual indicator."
         code={`<TextField label="Email" isRequired />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField label="Email" isRequired placeholder="Required field" />
         </div>
       </Example>
@@ -99,7 +100,7 @@ function TextFieldPage() {
         description="Disabled fields cannot be edited."
         code={`<TextField label="Read-only field" isDisabled defaultValue="Cannot edit" />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField label="Disabled field" isDisabled defaultValue="Cannot edit this" />
         </div>
       </Example>
@@ -111,11 +112,11 @@ function TextFieldPage() {
 <TextField label="Password" type="password" />
 <TextField label="Phone" type="tel" />`}
       >
-        <div class="max-w-xs space-y-4">
+        <Flex direction="column" gap={4} style={{ "max-width": "20rem" }}>
           <TextField label="Email" type="email" placeholder="you@example.com" />
           <TextField label="Password" type="password" placeholder="••••••••" />
           <TextField label="Phone" type="tel" placeholder="+1 (555) 000-0000" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -127,7 +128,7 @@ function TextFieldPage() {
   placeholder="Enter your display name"
 />`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <TextField label="Display name" variant="filled" placeholder="Enter your display name" />
         </div>
       </Example>
@@ -219,24 +220,22 @@ function TextFieldPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Label is properly associated with input via <code>id</code> and <code>for</code>
-          </li>
-          <li>
-            Description linked via <code>aria-describedby</code>
-          </li>
-          <li>
-            Error message linked via <code>aria-describedby</code>
-          </li>
-          <li>
-            Required state indicated via <code>aria-required</code>
-          </li>
-          <li>
-            Invalid state indicated via <code>aria-invalid</code>
-          </li>
-          <li>Focus ring visible on keyboard navigation</li>
-        </ul>
+        <li>
+          Label is properly associated with input via <code>id</code> and <code>for</code>
+        </li>
+        <li>
+          Description linked via <code>aria-describedby</code>
+        </li>
+        <li>
+          Error message linked via <code>aria-describedby</code>
+        </li>
+        <li>
+          Required state indicated via <code>aria-required</code>
+        </li>
+        <li>
+          Invalid state indicated via <code>aria-invalid</code>
+        </li>
+        <li>Focus ring visible on keyboard navigation</li>
       </AccessibilitySection>
     </DocPage>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Button, Link } from "@proyecto-viviana/solid-spectrum";
+import { Flex } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/button")({
@@ -24,12 +25,12 @@ function ButtonPage() {
 <Button variant="accent">Accent</Button>
 <Button variant="negative">Negative</Button>`}
       >
-        <div class="flex flex-wrap gap-3">
+        <Flex wrap gap={3}>
           <Button variant="primary">Primary</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="accent">Accent</Button>
           <Button variant="negative">Negative</Button>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -38,7 +39,7 @@ function ButtonPage() {
         code={`<Button variant="primary" fillStyle="fill">Fill</Button>
 <Button variant="primary" fillStyle="outline">Outline</Button>`}
       >
-        <div class="flex flex-wrap gap-3">
+        <Flex wrap gap={3}>
           <Button variant="primary" fillStyle="fill">
             Fill
           </Button>
@@ -51,7 +52,7 @@ function ButtonPage() {
           <Button variant="secondary" fillStyle="outline">
             Outline
           </Button>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -59,14 +60,14 @@ function ButtonPage() {
         description="Disabled buttons cannot be interacted with and appear visually muted."
         code={`<Button isDisabled>Disabled</Button>`}
       >
-        <div class="flex flex-wrap gap-3">
+        <Flex wrap gap={3}>
           <Button variant="primary" isDisabled>
             Disabled
           </Button>
           <Button variant="secondary" isDisabled>
             Disabled
           </Button>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -154,17 +155,15 @@ function ButtonPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses native <code>&lt;button&gt;</code> element for proper semantics
-          </li>
-          <li>Supports keyboard activation via Enter and Space keys</li>
-          <li>Focus ring visible only on keyboard navigation (not mouse clicks)</li>
-          <li>
-            Disabled state communicated via native <code>disabled</code> semantics
-          </li>
-          <li>Press events normalize mouse, touch, and keyboard interactions</li>
-        </ul>
+        <li>
+          Uses native <code>&lt;button&gt;</code> element for proper semantics
+        </li>
+        <li>Supports keyboard activation via Enter and Space keys</li>
+        <li>Focus ring visible only on keyboard navigation (not mouse clicks)</li>
+        <li>
+          Disabled state communicated via native <code>disabled</code> semantics
+        </li>
+        <li>Press events normalize mouse, touch, and keyboard interactions</li>
       </AccessibilitySection>
     </DocPage>
   );

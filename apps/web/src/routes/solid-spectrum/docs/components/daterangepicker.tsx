@@ -6,6 +6,7 @@ import {
   type DateValue,
   type RangeValue,
 } from "@proyecto-viviana/solid-stately";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/daterangepicker")({
@@ -47,10 +48,10 @@ import {
 
 <p>Selected: {formatRange(range())}</p>`}
       >
-        <div class="flex flex-col gap-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <DateRangePicker label="Trip dates" value={range()} onChange={setRange} />
-          <p class="text-sm text-bg-500">Selected range: {formatRange(range())}</p>
-        </div>
+          <p class={typeRoles.meta}>Selected range: {formatRange(range())}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -66,14 +67,14 @@ const maxDate = new CalendarDate(2026, 12, 31);
   description="Select dates within 2026"
 />`}
       >
-        <div class="flex flex-col gap-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <DateRangePicker
             label="2026 date range"
             minValue={minDate}
             maxValue={maxDate}
             description="Select dates within 2026"
           />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -84,7 +85,7 @@ const maxDate = new CalendarDate(2026, 12, 31);
   isDisabled
 />`}
       >
-        <div class="max-w-sm">
+        <div style={{ "max-width": "24rem" }}>
           <DateRangePicker label="Unavailable range" isDisabled />
         </div>
       </Example>
@@ -97,7 +98,7 @@ const maxDate = new CalendarDate(2026, 12, 31);
   isRequired
 />`}
       >
-        <div class="max-w-sm">
+        <div style={{ "max-width": "24rem" }}>
           <DateRangePicker label="Booking dates" isRequired />
         </div>
       </Example>
@@ -161,23 +162,21 @@ const maxDate = new CalendarDate(2026, 12, 31);
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Start and end date fields are grouped with a <code>group</code> role
-          </li>
-          <li>
-            Each date display is labelled with <code>aria-label</code> for screen readers
-          </li>
-          <li>
-            The calendar popup uses a range selection mode with <code>aria-selected</code> on range
-            cells
-          </li>
-          <li>Range endpoints are visually and programmatically distinct (start and end)</li>
-          <li>Calendar popup traps focus and can be dismissed with Escape</li>
-          <li>
-            Required state is communicated through <code>aria-required</code>
-          </li>
-        </ul>
+        <li>
+          Start and end date fields are grouped with a <code>group</code> role
+        </li>
+        <li>
+          Each date display is labelled with <code>aria-label</code> for screen readers
+        </li>
+        <li>
+          The calendar popup uses a range selection mode with <code>aria-selected</code> on range
+          cells
+        </li>
+        <li>Range endpoints are visually and programmatically distinct (start and end)</li>
+        <li>Calendar popup traps focus and can be dismissed with Escape</li>
+        <li>
+          Required state is communicated through <code>aria-required</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

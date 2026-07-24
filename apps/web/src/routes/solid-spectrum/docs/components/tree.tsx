@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Tree, TreeItem } from "@proyecto-viviana/solid-spectrum";
 import type { Key, TreeItemData } from "@proyecto-viviana/solid-stately";
+import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type FileNode = {
@@ -85,7 +86,7 @@ function TreePage() {
   )}
 </Tree>`}
       >
-        <div class="max-w-md">
+        <div style={{ "max-width": "28rem" }}>
           <Tree
             aria-label="File system"
             items={fileSystemData}
@@ -118,7 +119,7 @@ function TreePage() {
   )}
 </Tree>`}
       >
-        <div class="max-w-md">
+        <div style={{ "max-width": "28rem" }}>
           <Tree
             aria-label="Organization chart"
             items={orgChartData}
@@ -147,7 +148,7 @@ function TreePage() {
               </TreeItem>
             )}
           </Tree>
-          <p class="mt-3 text-sm text-bg-500">
+          <p class={typeRoles.meta} style={{ "margin-top": "12px" }}>
             Selected: {selectedKeys().size > 0 ? [...selectedKeys()].join(", ") : "None"}
           </p>
         </div>
@@ -232,25 +233,23 @@ function TreePage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="tree"</code> and <code>role="treeitem"</code> ARIA patterns
-          </li>
-          <li>Arrow keys navigate between visible tree items</li>
-          <li>Left arrow collapses an expanded node or moves to parent</li>
-          <li>Right arrow expands a collapsed node or moves to first child</li>
-          <li>Home/End keys jump to first/last visible item</li>
-          <li>Type-ahead search to quickly find items by text</li>
-          <li>
-            <code>aria-expanded</code> state is announced for expandable items
-          </li>
-          <li>
-            Selection state is communicated via <code>aria-selected</code>
-          </li>
-          <li>
-            Nested level is exposed via <code>aria-level</code>
-          </li>
-        </ul>
+        <li>
+          Uses <code>role="tree"</code> and <code>role="treeitem"</code> ARIA patterns
+        </li>
+        <li>Arrow keys navigate between visible tree items</li>
+        <li>Left arrow collapses an expanded node or moves to parent</li>
+        <li>Right arrow expands a collapsed node or moves to first child</li>
+        <li>Home/End keys jump to first/last visible item</li>
+        <li>Type-ahead search to quickly find items by text</li>
+        <li>
+          <code>aria-expanded</code> state is announced for expandable items
+        </li>
+        <li>
+          Selection state is communicated via <code>aria-selected</code>
+        </li>
+        <li>
+          Nested level is exposed via <code>aria-level</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

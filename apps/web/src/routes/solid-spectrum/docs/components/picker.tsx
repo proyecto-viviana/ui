@@ -12,7 +12,7 @@ function PickerPage() {
       description="Pickers combine a trigger, selected value, and listbox into a styled single-selection control."
       importCode={`import { Picker, PickerItem, PickerSection } from '@proyecto-viviana/solid-spectrum';`}
     >
-      <p class="text-sm text-bg-500" style={{ "max-width": "60ch" }}>
+      <p style={{ "max-width": "60ch" }}>
         Picker builds on the collection stack and is now listed explicitly so the styled export
         surface matches the docs navigation.
       </p>

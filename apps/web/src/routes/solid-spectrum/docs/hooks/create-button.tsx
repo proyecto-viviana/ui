@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { createButton } from "@proyecto-viviana/solidaria";
+import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/hooks/create-button")({
@@ -60,7 +61,7 @@ function CreateButtonPage() {
         >
           Custom Gradient Button
         </GradientButton>
-        <p class="mt-3 text-sm text-bg-500">Status: {status()}</p>
+        <p class={typeRoles.meta} style={{ "margin-top": "12px" }}>Status: {status()}</p>
       </Example>
 
       <Example
@@ -163,20 +164,18 @@ function CreateButtonPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Handles <code>role="button"</code> when using non-button elements
-          </li>
-          <li>
-            Manages <code>tabIndex</code> for keyboard accessibility
-          </li>
-          <li>Handles Enter and Space key presses</li>
-          <li>
-            Sets <code>aria-disabled</code> for disabled state
-          </li>
-          <li>Normalizes press events across mouse, touch, and keyboard</li>
-          <li>Prevents default behavior for non-native buttons</li>
-        </ul>
+        <li>
+          Handles <code>role="button"</code> when using non-button elements
+        </li>
+        <li>
+          Manages <code>tabIndex</code> for keyboard accessibility
+        </li>
+        <li>Handles Enter and Space key presses</li>
+        <li>
+          Sets <code>aria-disabled</code> for disabled state
+        </li>
+        <li>Normalizes press events across mouse, touch, and keyboard</li>
+        <li>Prevents default behavior for non-native buttons</li>
       </AccessibilitySection>
     </DocPage>
   );
@@ -210,7 +209,17 @@ function ButtonLink(props: { href: string; children: string }) {
       href={props.href}
       target="_blank"
       rel="noopener noreferrer"
-      class="inline-flex items-center gap-2 rounded-lg bg-bg-800 px-5 py-2.5 font-medium text-white transition-colors hover:bg-bg-700"
+      class={typeRoles.label}
+      style={{
+        display: "inline-flex",
+        "align-items": "center",
+        gap: "8px",
+        padding: "10px 20px",
+        "border-radius": "var(--radius-lg)",
+        background: "var(--color-accent)",
+        color: "var(--color-grey-900)",
+        "text-decoration": "none",
+      }}
     >
       {props.children}
     </a>

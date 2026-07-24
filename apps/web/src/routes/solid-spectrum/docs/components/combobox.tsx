@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { ComboBox, ComboBoxOption, defaultContainsFilter } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/combobox")({
@@ -51,7 +52,7 @@ function ComboBoxPage() {
   {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
 </ComboBox>`}
       >
-        <div class="max-w-sm space-y-2">
+        <Flex direction="column" gap={2} style={{ "max-width": "24rem" }}>
           <ComboBox<FoodItem>
             items={foods}
             getKey={(item) => item.id}
@@ -64,13 +65,13 @@ function ComboBoxPage() {
           >
             {(item: FoodItem) => (
               <ComboBoxOption id={item.id}>
-                <span class="font-medium">{item.name}</span>
-                <span class="ml-2 text-xs text-primary-400">{item.category}</span>
+                <span class={typeRoles.label}>{item.name}</span>
+                <span class={typeRoles.meta} style={{ "margin-left": "8px" }}>{item.category}</span>
               </ComboBoxOption>
             )}
           </ComboBox>
-          <p class="text-sm text-primary-400">Selected: {selected() || "none"}</p>
-        </div>
+          <p class={typeRoles.meta}>Selected: {selected() || "none"}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -80,7 +81,7 @@ function ComboBoxPage() {
 <ComboBox items={foods} size="md" label="Medium" placeholder="Filter..." ...>
 <ComboBox items={foods} size="lg" label="Large" placeholder="Filter..." ...>`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           {(["sm", "md", "lg"] as const).map((size) => (
             <ComboBox<FoodItem>
               items={foods}
@@ -94,7 +95,7 @@ function ComboBoxPage() {
               {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
             </ComboBox>
           ))}
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -107,7 +108,7 @@ function ComboBoxPage() {
   ...
 />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <ComboBox<FoodItem>
             items={foods}
             getKey={(item) => item.id}
@@ -131,7 +132,7 @@ function ComboBoxPage() {
           >
             {(item: FoodItem) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
           </ComboBox>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -139,7 +140,7 @@ function ComboBoxPage() {
         description="A disabled ComboBox cannot be opened or typed in."
         code={`<ComboBox isDisabled defaultSelectedKey="apple" label="Disabled" ...>`}
       >
-        <div class="max-w-sm">
+        <div style={{ "max-width": "24rem" }}>
           <ComboBox<FoodItem>
             items={foods}
             getKey={(item) => item.id}
@@ -212,19 +213,17 @@ function ComboBoxPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>combobox</code> ARIA role with <code>aria-expanded</code> and{" "}
-            <code>aria-haspopup</code>
-          </li>
-          <li>Arrow keys navigate the list; Enter/Space select; Escape closes</li>
-          <li>
-            Active option communicated via <code>aria-activedescendant</code>
-          </li>
-          <li>
-            Supports type-ahead filtering natively via <code>defaultFilter</code>
-          </li>
-        </ul>
+        <li>
+          Uses <code>combobox</code> ARIA role with <code>aria-expanded</code> and{" "}
+          <code>aria-haspopup</code>
+        </li>
+        <li>Arrow keys navigate the list; Enter/Space select; Escape closes</li>
+        <li>
+          Active option communicated via <code>aria-activedescendant</code>
+        </li>
+        <li>
+          Supports type-ahead filtering natively via <code>defaultFilter</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

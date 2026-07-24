@@ -248,6 +248,12 @@ export function PropsTable(props: PropsTableProps) {
   );
 }
 
+/**
+ * The accessibility notes at the foot of every component page. It renders the `<ul>`
+ * itself and takes the `<li>`s as children: the list needs descendant styling (bullets,
+ * row gap) that an inline style cannot express, and doing it here means the ~45 pages
+ * below carry no styling of their own.
+ */
 export function AccessibilitySection(props: { children: JSX.Element }) {
   const getColors = useThemeColors();
   const colors = () => getColors();
@@ -279,7 +285,18 @@ export function AccessibilitySection(props: { children: JSX.Element }) {
           color: colors().textSecondary,
         }}
       >
-        {props.children}
+        <ul
+          style={{
+            margin: "0",
+            "padding-left": "1.25rem",
+            "list-style": "disc",
+            display: "flex",
+            "flex-direction": "column",
+            gap: "0.25rem",
+          }}
+        >
+          {props.children}
+        </ul>
       </div>
     </section>
   );

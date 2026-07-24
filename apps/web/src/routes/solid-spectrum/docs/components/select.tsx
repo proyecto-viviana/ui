@@ -7,6 +7,7 @@ import {
   SelectListBox,
   SelectOption,
 } from "@proyecto-viviana/solid-spectrum";
+import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type SelectItem = {
@@ -68,7 +69,7 @@ function SelectPage() {
   </SelectListBox>
 </Select>`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <Select
             label="Favorite fruit"
             items={fruitOptions}
@@ -84,7 +85,7 @@ function SelectPage() {
               {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
             </SelectListBox>
           </Select>
-          <p class="mt-2 text-sm text-bg-500">Selected: {selected() || "None"}</p>
+          <p class={typeRoles.meta} style={{ "margin-top": "8px" }}>Selected: {selected() || "None"}</p>
         </div>
       </Example>
 
@@ -93,7 +94,7 @@ function SelectPage() {
         description="Add a description to provide additional context."
         code={`<Select label="Country" description="Select your country of residence" items={items}>...</Select>`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <Select
             label="Country"
             description="Select your country of residence"
@@ -116,7 +117,7 @@ function SelectPage() {
         description="Individual options can be disabled."
         code={`<Select items={items} getDisabled={(item) => item.isDisabled ?? false}>...</Select>`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <Select
             label="Plan"
             items={planOptions}
@@ -143,7 +144,7 @@ function SelectPage() {
         description="The entire select can be disabled."
         code={`<Select label="Disabled select" isDisabled items={items}>...</Select>`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <Select
             label="Disabled select"
             isDisabled
@@ -166,7 +167,7 @@ function SelectPage() {
         description="Mark the select as required for form validation."
         code={`<Select label="Required field" isRequired items={items}>...</Select>`}
       >
-        <div class="max-w-xs">
+        <div style={{ "max-width": "20rem" }}>
           <Select
             label="Required field"
             isRequired
@@ -273,15 +274,13 @@ function SelectPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>listbox</code> pattern with proper ARIA roles
-          </li>
-          <li>Full keyboard navigation: Arrow keys, Home, End, Page Up/Down</li>
-          <li>Type-ahead search to quickly find options</li>
-          <li>Announces selection changes to screen readers</li>
-          <li>Focus trapped within popover when open</li>
-        </ul>
+        <li>
+          Uses <code>listbox</code> pattern with proper ARIA roles
+        </li>
+        <li>Full keyboard navigation: Arrow keys, Home, End, Page Up/Down</li>
+        <li>Type-ahead search to quickly find options</li>
+        <li>Announces selection changes to screen readers</li>
+        <li>Focus trapped within popover when open</li>
       </AccessibilitySection>
     </DocPage>
   );

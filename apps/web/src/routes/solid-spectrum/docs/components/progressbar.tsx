@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, onCleanup } from "solid-js";
 import { ProgressBar, Button } from "@proyecto-viviana/solid-spectrum";
+import { Flex, StatusLight } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+
+/** The two staticColor demos need real light/dark grounds, so they keep explicit colours. */
+const backdrop = { padding: "16px", "border-radius": "var(--radius-md)" } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/progressbar")({
   component: ProgressBarPage,
@@ -41,17 +45,15 @@ function ProgressBarPage() {
 <ProgressBar label="Uploading..." value={progress()} />
 <Button onPress={simulateUpload}>Start Upload</Button>`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <ProgressBar label="Uploading files..." value={Math.min(uploadProgress(), 100)} />
-          <div class="flex items-center gap-3">
+          <Flex alignItems="center" gap={3}>
             <Button variant="primary" onPress={simulateUpload} isDisabled={isUploading()}>
               {isUploading() ? "Uploading..." : "Start Upload"}
             </Button>
-            {uploadProgress() >= 100 && (
-              <span class="text-sm text-green-600 font-medium">Complete!</span>
-            )}
-          </div>
-        </div>
+            {uploadProgress() >= 100 && <StatusLight variant="positive">Complete!</StatusLight>}
+          </Flex>
+        </Flex>
       </Example>
 
       <Example
@@ -62,12 +64,12 @@ function ProgressBarPage() {
 <ProgressBar label="Large" value={75} size="L" />
 <ProgressBar label="Extra Large" value={90} size="XL" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <ProgressBar label="Small" value={40} size="S" />
           <ProgressBar label="Medium" value={60} size="M" />
           <ProgressBar label="Large" value={75} size="L" />
           <ProgressBar label="Extra Large" value={90} size="XL" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -76,10 +78,10 @@ function ProgressBarPage() {
         code={`<ProgressBar label="Top label" value={60} labelPosition="top" />
 <ProgressBar label="Side label" value={60} labelPosition="side" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <ProgressBar label="Top label" value={60} labelPosition="top" />
           <ProgressBar label="Side label" value={60} labelPosition="side" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -88,10 +90,10 @@ function ProgressBarPage() {
         code={`<ProgressBar label="Loading data..." isIndeterminate />
 <ProgressBar label="Processing..." isIndeterminate size="L" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <ProgressBar label="Loading data..." isIndeterminate />
           <ProgressBar label="Processing..." isIndeterminate size="L" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -100,10 +102,10 @@ function ProgressBarPage() {
         code={`<ProgressBar label="Storage" value={75} valueLabel="750 MB of 1 GB" />
 <ProgressBar label="Disk usage" value={90} valueLabel="9 / 10 TB" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <ProgressBar label="Storage" value={75} valueLabel="750 MB of 1 GB" />
           <ProgressBar label="Disk usage" value={90} valueLabel="9 / 10 TB" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -112,7 +114,7 @@ function ProgressBarPage() {
         code={`<ProgressBar label="Temperature" value={72} minValue={32} maxValue={212} valueLabel="72 F" />
 <ProgressBar label="Volume" value={7} minValue={0} maxValue={11} valueLabel="7 / 11" />`}
       >
-        <div class="space-y-4 max-w-md">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
           <ProgressBar
             label="Temperature"
             value={72}
@@ -121,7 +123,7 @@ function ProgressBarPage() {
             valueLabel="72 F"
           />
           <ProgressBar label="Volume" value={7} minValue={0} maxValue={11} valueLabel="7 / 11" />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -130,14 +132,14 @@ function ProgressBarPage() {
         code={`<ProgressBar label="On dark" value={56} staticColor="white" />
 <ProgressBar label="On light" value={56} staticColor="black" />`}
       >
-        <div class="space-y-4 max-w-md">
-          <div class="rounded-md bg-slate-900 p-4">
+        <Flex direction="column" gap={4} style={{ "max-width": "28rem" }}>
+          <div style={{ ...backdrop, background: "var(--color-grey-800)" }}>
             <ProgressBar label="On dark" value={56} staticColor="white" />
           </div>
-          <div class="rounded-md bg-slate-100 p-4">
+          <div style={{ ...backdrop, background: "var(--color-grey-100)" }}>
             <ProgressBar label="On light" value={56} staticColor="black" />
           </div>
-        </div>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -221,21 +223,19 @@ function ProgressBarPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="progressbar"</code> with <code>aria-valuenow</code>,{" "}
-            <code>aria-valuemin</code>, and <code>aria-valuemax</code>
-          </li>
-          <li>
-            Label is linked via <code>aria-labelledby</code> for screen readers
-          </li>
-          <li>
-            Indeterminate state omits <code>aria-valuenow</code> per ARIA spec
-          </li>
-          <li>Custom value labels are announced to screen readers</li>
-          <li>Value changes are announced as the progress updates</li>
-          <li>High contrast mode support for visibility in all themes</li>
-        </ul>
+        <li>
+          Uses <code>role="progressbar"</code> with <code>aria-valuenow</code>,{" "}
+          <code>aria-valuemin</code>, and <code>aria-valuemax</code>
+        </li>
+        <li>
+          Label is linked via <code>aria-labelledby</code> for screen readers
+        </li>
+        <li>
+          Indeterminate state omits <code>aria-valuenow</code> per ARIA spec
+        </li>
+        <li>Custom value labels are announced to screen readers</li>
+        <li>Value changes are announced as the progress updates</li>
+        <li>High contrast mode support for visibility in all themes</li>
       </AccessibilitySection>
     </DocPage>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { SearchField } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/searchfield")({
@@ -27,7 +28,7 @@ function SearchFieldPage() {
   onClear={() => console.log('Cleared')}
 />`}
       >
-        <div class="max-w-sm space-y-2">
+        <Flex direction="column" gap={2} style={{ "max-width": "24rem" }}>
           <SearchField
             label="Search"
             placeholder="Search for items..."
@@ -39,8 +40,8 @@ function SearchFieldPage() {
               setLastSearch("");
             }}
           />
-          <p class="text-sm text-primary-400">Last search: {lastSearch() || "none"}</p>
-        </div>
+          <p class={typeRoles.meta}>Last search: {lastSearch() || "none"}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -50,11 +51,11 @@ function SearchFieldPage() {
 <SearchField label="Medium" size="md" placeholder="Search..." />
 <SearchField label="Large" size="lg" placeholder="Search..." />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <SearchField label="Small" size="sm" placeholder="Search..." />
           <SearchField label="Medium" size="md" placeholder="Search..." />
           <SearchField label="Large" size="lg" placeholder="Search..." />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -63,10 +64,10 @@ function SearchFieldPage() {
         code={`<SearchField label="Outline" variant="outline" placeholder="Search..." />
 <SearchField label="Filled" variant="filled" placeholder="Search..." />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <SearchField label="Outline (default)" variant="outline" placeholder="Search..." />
           <SearchField label="Filled" variant="filled" placeholder="Search..." />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -78,7 +79,7 @@ function SearchFieldPage() {
   description="Press Enter to search, Escape to clear"
 />`}
       >
-        <div class="max-w-sm">
+        <div style={{ "max-width": "24rem" }}>
           <SearchField
             label="Product Search"
             placeholder="Enter product name or SKU..."
@@ -93,7 +94,7 @@ function SearchFieldPage() {
         code={`<SearchField label="Disabled" defaultValue="can't change" isDisabled />
 <SearchField label="Invalid" defaultValue="bad query" isInvalid errorMessage="Invalid search" />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <SearchField label="Disabled" defaultValue="can't change" isDisabled />
           <SearchField
             label="Invalid"
@@ -101,7 +102,7 @@ function SearchFieldPage() {
             isInvalid
             errorMessage="Invalid search query"
           />
-        </div>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -155,19 +156,17 @@ function SearchFieldPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses <code>role="searchbox"</code> for proper semantics
-          </li>
-          <li>Clear button has an accessible label ("Clear search")</li>
-          <li>Escape key clears the field and refocuses it</li>
-          <li>
-            Enter key triggers the <code>onSubmit</code> callback
-          </li>
-          <li>
-            Works with <code>aria-label</code> if no visible label is provided
-          </li>
-        </ul>
+        <li>
+          Uses <code>role="searchbox"</code> for proper semantics
+        </li>
+        <li>Clear button has an accessible label ("Clear search")</li>
+        <li>Escape key clears the field and refocuses it</li>
+        <li>
+          Enter key triggers the <code>onSubmit</code> callback
+        </li>
+        <li>
+          Works with <code>aria-label</code> if no visible label is provided
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

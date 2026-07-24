@@ -8,6 +8,7 @@ import {
   MenuSeparator,
   Button,
 } from "@proyecto-viviana/solid-spectrum";
+import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 type MenuDocItem = {
@@ -166,7 +167,7 @@ function MenuPage() {
         </MenuTrigger>
       </Example>
 
-      <p class="text-sm text-bg-500 mb-6">Last action: {lastAction()}</p>
+      <p class={typeRoles.meta} style={{ "margin-bottom": "24px" }}>Last action: {lastAction()}</p>
 
       <h2>MenuTrigger Props</h2>
       <PropsTable
@@ -259,16 +260,14 @@ function MenuPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses ARIA menu pattern with <code>menu</code> and <code>menuitem</code> roles
-          </li>
-          <li>Arrow keys navigate between items</li>
-          <li>Home/End keys jump to first/last item</li>
-          <li>Escape closes the menu and returns focus to trigger</li>
-          <li>Type-ahead search jumps to matching items</li>
-          <li>Disabled items are focusable but not actionable (for context)</li>
-        </ul>
+        <li>
+          Uses ARIA menu pattern with <code>menu</code> and <code>menuitem</code> roles
+        </li>
+        <li>Arrow keys navigate between items</li>
+        <li>Home/End keys jump to first/last item</li>
+        <li>Escape closes the menu and returns focus to trigger</li>
+        <li>Type-ahead search jumps to matching items</li>
+        <li>Disabled items are focusable but not actionable (for context)</li>
       </AccessibilitySection>
     </DocPage>
   );

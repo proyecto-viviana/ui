@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { TextArea } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/textarea")({
@@ -29,7 +30,7 @@ function TextAreaPage() {
   description="Tell us about yourself"
 />`}
       >
-        <div class="max-w-sm space-y-2">
+        <Flex direction="column" gap={2} style={{ "max-width": "24rem" }}>
           <TextArea
             label="Description"
             value={value()}
@@ -37,8 +38,8 @@ function TextAreaPage() {
             placeholder="Enter a description..."
             description="Tell us about yourself"
           />
-          <p class="text-sm text-primary-400">Characters: {value().length}</p>
-        </div>
+          <p class={typeRoles.meta}>Characters: {value().length}</p>
+        </Flex>
       </Example>
 
       <Example
@@ -48,11 +49,11 @@ function TextAreaPage() {
 <TextArea label="Medium" size="md" placeholder="Medium..." />
 <TextArea label="Large" size="lg" placeholder="Large..." />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <TextArea label="Small" size="sm" placeholder="Small textarea..." />
           <TextArea label="Medium" size="md" placeholder="Medium textarea..." />
           <TextArea label="Large" size="lg" placeholder="Large textarea..." />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -65,7 +66,7 @@ function TextAreaPage() {
   errorMessage="This field is required"
 />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <TextArea label="Required Field" isRequired placeholder="This field is required" />
           <TextArea
             label="With Error"
@@ -73,7 +74,7 @@ function TextAreaPage() {
             isInvalid
             errorMessage="Please enter a valid description (min 20 chars)"
           />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -82,10 +83,10 @@ function TextAreaPage() {
         code={`<TextArea label="Outline" variant="outline" placeholder="Outline style" />
 <TextArea label="Filled" variant="filled" placeholder="Filled style" />`}
       >
-        <div class="space-y-4 max-w-sm">
+        <Flex direction="column" gap={4} style={{ "max-width": "24rem" }}>
           <TextArea label="Outline (default)" variant="outline" placeholder="Outline style..." />
           <TextArea label="Filled" variant="filled" placeholder="Filled style..." />
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -93,7 +94,7 @@ function TextAreaPage() {
         description="A disabled TextArea cannot be edited."
         code={`<TextArea label="Disabled" value="Cannot edit this" isDisabled />`}
       >
-        <div class="max-w-sm">
+        <div style={{ "max-width": "24rem" }}>
           <TextArea
             label="Disabled"
             value="This content cannot be modified by the user."
@@ -150,23 +151,21 @@ function TextAreaPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses native <code>&lt;textarea&gt;</code> for proper semantics
-          </li>
-          <li>
-            Label is associated via <code>htmlFor</code> / <code>id</code>
-          </li>
-          <li>
-            Error messages linked with <code>aria-describedby</code>
-          </li>
-          <li>
-            Required state communicated via <code>aria-required</code>
-          </li>
-          <li>
-            Invalid state communicated via <code>aria-invalid</code>
-          </li>
-        </ul>
+        <li>
+          Uses native <code>&lt;textarea&gt;</code> for proper semantics
+        </li>
+        <li>
+          Label is associated via <code>htmlFor</code> / <code>id</code>
+        </li>
+        <li>
+          Error messages linked with <code>aria-describedby</code>
+        </li>
+        <li>
+          Required state communicated via <code>aria-required</code>
+        </li>
+        <li>
+          Invalid state communicated via <code>aria-invalid</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );

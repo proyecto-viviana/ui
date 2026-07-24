@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Link } from "@proyecto-viviana/solid-spectrum";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/link")({
@@ -21,11 +22,11 @@ function LinkPage() {
         description="Standard navigation link."
         code={`<Link href="https://example.com" target="_blank">External Link</Link>`}
       >
-        <div class="flex flex-wrap gap-4">
+        <Flex wrap gap={4}>
           <Link href="https://github.com/proyecto-viviana" target="_blank">
             GitHub Repository
           </Link>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -34,21 +35,15 @@ function LinkPage() {
         code={`<Link variant="primary">Primary</Link>
 <Link variant="secondary">Secondary</Link>`}
       >
-        <div
-          class="flex flex-wrap gap-4"
-          onClick={(e) => {
-            const t = (e.target as HTMLElement).textContent;
-            if (t) setLastAction(t.trim() + " pressed");
-          }}
-        >
-          <Link variant="primary" onPress={() => setLastAction("Default pressed")}>
+        <Flex wrap gap={4}>
+          <Link variant="primary" onPress={() => setLastAction("Primary pressed")}>
             Primary
           </Link>
           <Link variant="secondary" onPress={() => setLastAction("Secondary pressed")}>
             Secondary
           </Link>
-          {lastAction() && <span class="text-sm text-primary-400">{lastAction()}</span>}
-        </div>
+          {lastAction() && <span class={typeRoles.meta}>{lastAction()}</span>}
+        </Flex>
       </Example>
 
       <Example
@@ -66,7 +61,7 @@ function LinkPage() {
         description="Mark the current page link for navigation landmarks."
         code={`<Link href="/current" aria-current="page">Current Page</Link>`}
       >
-        <nav class="flex gap-4">
+        <nav style={{ display: "flex", gap: "1rem" }}>
           <Link onPress={() => {}}>Home</Link>
           <Link onPress={() => {}} aria-current="page">
             Components
@@ -113,13 +108,11 @@ function LinkPage() {
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Renders as native <code>&lt;a&gt;</code> when href is provided
-          </li>
-          <li>Enter key activates links in all cases</li>
-          <li>Press events normalized across mouse, touch, and keyboard interactions</li>
-        </ul>
+        <li>
+          Renders as native <code>&lt;a&gt;</code> when href is provided
+        </li>
+        <li>Enter key activates links in all cases</li>
+        <li>Press events normalized across mouse, touch, and keyboard interactions</li>
       </AccessibilitySection>
     </DocPage>
   );

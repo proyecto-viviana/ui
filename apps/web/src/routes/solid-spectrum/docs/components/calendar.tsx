@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { Calendar } from "@proyecto-viviana/solid-spectrum";
 import { CalendarDateClass as CalendarDate, type DateValue } from "@proyecto-viviana/solid-stately";
+import { Flex, typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/calendar")({
@@ -46,15 +47,15 @@ import { CalendarDateClass as CalendarDate } from '@proyecto-viviana/solid-state
 
 <p>Selected: {selectedDate()?.toString() ?? "None"}</p>`}
       >
-        <div class="flex flex-col items-start gap-4">
+        <Flex direction="column" alignItems="start" gap={4}>
           <Calendar aria-label="Event date" value={selectedDate()} onChange={setSelectedDate} />
-          <p class="text-sm text-bg-500">
+          <p class={typeRoles.meta}>
             Selected date:{" "}
             {selectedDate()
               ? `${selectedDate()!.month}/${selectedDate()!.day}/${selectedDate()!.year}`
               : "None"}
           </p>
-        </div>
+        </Flex>
       </Example>
 
       <Example
@@ -77,14 +78,14 @@ const isDateUnavailable = (date: DateValue) =>
   defaultValue={new CalendarDate(2026, 2, 1)}
 />`}
       >
-        <div class="flex flex-col items-start gap-4">
+        <Flex direction="column" alignItems="start" gap={4}>
           <Calendar
             aria-label="Appointment date"
             isDateUnavailable={isDateUnavailable}
             defaultValue={new CalendarDate(2026, 2, 1)}
           />
-          <p class="text-xs text-bg-400">Feb 14-16 are unavailable</p>
-        </div>
+          <p class={typeRoles.meta}>Feb 14-16 are unavailable</p>
+        </Flex>
       </Example>
 
       <Example
@@ -99,10 +100,10 @@ const maxDate = new CalendarDate(2026, 12, 31);
   maxValue={maxDate}
 />`}
       >
-        <div class="flex flex-col items-start gap-4">
+        <Flex direction="column" alignItems="start" gap={4}>
           <Calendar aria-label="Date within 2026" minValue={minDate} maxValue={maxDate} />
-          <p class="text-xs text-bg-400">Only dates in 2026 are selectable</p>
-        </div>
+          <p class={typeRoles.meta}>Only dates in 2026 are selectable</p>
+        </Flex>
       </Example>
 
       <PropsTable
@@ -163,24 +164,22 @@ const maxDate = new CalendarDate(2026, 12, 31);
       />
 
       <AccessibilitySection>
-        <ul class="list-disc pl-5 space-y-1 text-sm">
-          <li>
-            Uses a <code>grid</code> role with proper <code>gridcell</code> roles for each day
-          </li>
-          <li>
-            Full keyboard navigation: Arrow keys move between days, Page Up/Down change months
-          </li>
-          <li>Today's date is visually indicated and announced to screen readers</li>
-          <li>
-            Disabled and unavailable dates are announced as such via <code>aria-disabled</code>
-          </li>
-          <li>
-            Previous/next month buttons include descriptive <code>aria-label</code> attributes
-          </li>
-          <li>
-            Selected date is communicated via <code>aria-selected</code>
-          </li>
-        </ul>
+        <li>
+          Uses a <code>grid</code> role with proper <code>gridcell</code> roles for each day
+        </li>
+        <li>
+          Full keyboard navigation: Arrow keys move between days, Page Up/Down change months
+        </li>
+        <li>Today's date is visually indicated and announced to screen readers</li>
+        <li>
+          Disabled and unavailable dates are announced as such via <code>aria-disabled</code>
+        </li>
+        <li>
+          Previous/next month buttons include descriptive <code>aria-label</code> attributes
+        </li>
+        <li>
+          Selected date is communicated via <code>aria-selected</code>
+        </li>
       </AccessibilitySection>
     </DocPage>
   );
