@@ -27,7 +27,9 @@ function ShowcaseLayout() {
   return (
     <GlasselatedShell>
       <ShowcaseTopbar />
-      <main class="gls-main">
+      {/* The id is the shared Header's skip-link target. Without it, "Skip to
+          main content" did nothing on any of the seventeen showcase panels. */}
+      <main id="main-content" class="gls-main">
         <Outlet />
       </main>
     </GlasselatedShell>

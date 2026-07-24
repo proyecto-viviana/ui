@@ -217,8 +217,9 @@ tasks:
       push to main as well as on PRs.
   - id: launch-route-coverage
     title: E2E covers 5 of 75 routes, so a crashing docs page would ship silently
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P1
     roadmap: launch
     note: >-
@@ -229,6 +230,60 @@ tasks:
     exit: >-
       A route-sweep spec that enumerates routes from the router tree (not a
       hand-maintained list) and asserts 200 + no console/page error on each.
+    resolution: >-
+      Closed 2026-07-24. apps/web/e2e/route-sweep.spec.ts visits all 72 URLs, with
+      the list parsed out of the generated FileRoutesByFullPath in
+      routeTree.gen.ts by e2e/helpers/all-routes.ts, so a new route file joins the
+      sweep with no second edit; a MINIMUM_EXPECTED_ROUTES floor makes a parser
+      break fail loudly rather than sweep an empty list and report green.
+      Prediction confirmed on the first run: /solid-spectrum/docs/components/tree
+      was already shipping broken in production builds — see
+      tree-multi-root-hydration.
+      The finding that mattered more than the spec: the first version passed 72/72
+      and was wrong. Injecting `onMount(() => { throw })` into a route did not
+      turn it red, because the root ErrorBoundary catches the throw and answers
+      200 with a full page of text and no console output — so status, length and
+      console checks all read a dead page as a live one. __root.tsx's fallback now
+      carries data-testid="route-error-boundary" and console.errors what it
+      caught, and the sweep asserts the boundary is absent. Re-run with the canary
+      still in place, it failed correctly. Also fixed en route: the shared
+      Header's "Skip to main content" link had no target on any of the seventeen
+      /showcase routes, because the layout's <main> carried no id.
+  - id: tree-multi-root-hydration
+    title: Tree beside a static sibling breaks hydration in production builds
+    state: open
+    filed: 2026-07-24
+    priority: P1
+    roadmap: consumer-delivery
+    note: >-
+      Found by the new route sweep. `<div><Tree/><p>…</p></div>` renders in dev
+      and dies on hydration in a production build with "Cannot read properties of
+      null (reading 'nextSibling')", taking the whole page into the error
+      boundary. Deterministic (--repeat-each=2, both failed). The minified frame
+      lands in the page's own compiled template walk —
+      `a=i.firstChild,[o,s]=f(a.nextSibling),c=o.nextSibling,…` — i.e. the sibling
+      chain the Solid compiler emits for the static parent, not in library code.
+      Hypothesis, not yet proven: Tree returns TWO top-level nodes from one
+      component — the hidden `<div hidden inert aria-hidden>` registration
+      collection plus the HeadlessTree treegrid (packages/solid-spectrum/src/
+      tree/index.tsx around 853-882) — and the extra node desynchronises the
+      compiled hydration walk over its siblings. Consistent with all three
+      observations: the same page's first Tree, alone in its parent with no
+      sibling, hydrates fine; the playground's Tree-plus-readout hydrates fine
+      because its parent is a <Flex> component (dynamic insert) rather than a
+      static element; and adding a wrapper element around the Tree fixes it.
+      This is a consumer-facing hazard, not a docs-page quirk: any user putting a
+      Tree next to anything inside a plain element hits it, in production only,
+      after their dev server looked fine.
+    exit: >-
+      Confirm the mechanism, then make Tree emit a single top-level node (or
+      otherwise render the registration collection so it does not enter the
+      sibling chain). Then revert the wrapper <div> in
+      apps/web/src/routes/solid-spectrum/docs/components/tree.tsx and confirm the
+      sweep stays green. The hidden-registration pattern appears in exactly two
+      places — solid-spectrum/src/tree/index.tsx:855 and
+      viviana-ui/src/tree/index.tsx:866 — so both registers need the same fix, and
+      no other collection component is exposed.
   - id: launch-seo-surface
     title: The site has no SEO surface — 5 of 75 routes set head metadata
     state: open

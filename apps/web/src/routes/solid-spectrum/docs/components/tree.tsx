@@ -120,34 +120,42 @@ function TreePage() {
 </Tree>`}
       >
         <div style={{ "max-width": "28rem" }}>
-          <Tree
-            aria-label="Organization chart"
-            items={orgChartData}
-            selectionMode="multiple"
-            selectedKeys={selectedKeys()}
-            onSelectionChange={(keys) => {
-              if (keys === "all") {
-                const allKeys = new Set<Key>();
-                function collectKeys(nodes: TreeItemData<FileNode>[]) {
-                  for (const node of nodes) {
-                    allKeys.add(node.key!);
-                    if (node.children) collectKeys(node.children);
+          {/* Tree renders two top-level nodes — a hidden registration collection
+              plus the treegrid — so it gets its own host element rather than
+              sharing a static parent with the readout below. Sharing one sent
+              the compiled hydration walk off the end of the sibling chain and
+              dropped the whole page into the error boundary, in production
+              builds only. Tracked as `tree-multi-root-hydration`. */}
+          <div>
+            <Tree
+              aria-label="Organization chart"
+              items={orgChartData}
+              selectionMode="multiple"
+              selectedKeys={selectedKeys()}
+              onSelectionChange={(keys) => {
+                if (keys === "all") {
+                  const allKeys = new Set<Key>();
+                  function collectKeys(nodes: TreeItemData<FileNode>[]) {
+                    for (const node of nodes) {
+                      allKeys.add(node.key!);
+                      if (node.children) collectKeys(node.children);
+                    }
                   }
+                  collectKeys(orgChartData);
+                  setSelectedKeys(allKeys);
+                } else {
+                  setSelectedKeys(new Set(keys));
                 }
-                collectKeys(orgChartData);
-                setSelectedKeys(allKeys);
-              } else {
-                setSelectedKeys(new Set(keys));
-              }
-            }}
-            defaultExpandedKeys={new Set(["ceo", "cto", "cfo", "cmo"])}
-          >
-            {(item) => (
-              <TreeItem id={item.key!} textValue={item.textValue}>
-                {item.value!.name}
-              </TreeItem>
-            )}
-          </Tree>
+              }}
+              defaultExpandedKeys={new Set(["ceo", "cto", "cfo", "cmo"])}
+            >
+              {(item) => (
+                <TreeItem id={item.key!} textValue={item.textValue}>
+                  {item.value!.name}
+                </TreeItem>
+              )}
+            </Tree>
+          </div>
           <p class={typeRoles.meta} style={{ "margin-top": "12px" }}>
             Selected: {selectedKeys().size > 0 ? [...selectedKeys()].join(", ") : "None"}
           </p>

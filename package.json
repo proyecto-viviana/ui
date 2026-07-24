@@ -60,6 +60,7 @@
     "test:web": "vp test run --config apps/web/vitest.config.ts",
     "test:watch": "vp test packages",
     "test:e2e": "vp exec --filter @proyecto-viviana/web -- playwright test",
+    "test:routes": "vp exec --filter @proyecto-viviana/web -- playwright test e2e/route-sweep.spec.ts --reporter=line",
     "a11y:axe:aa": "RUN_AXE=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/playground-axe.spec.ts -g \"WCAG 2.2 AA\" --reporter=line",
     "a11y:axe:comparison": "vp run comparison:test:a11y",
     "a11y:axe:playground": "RUN_AXE=1 AXE_INCLUDE_CONTRAST=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/playground-axe.spec.ts --reporter=line",

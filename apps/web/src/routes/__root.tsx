@@ -54,9 +54,17 @@ function RootComponent() {
   );
 }
 
+/**
+ * The boundary is deliberately loud. A route that throws still answers 200 and
+ * still renders a page full of text, so every cheap health check — a curl, an
+ * uptime probe, the e2e route sweep — read a broken page as a working one until
+ * this reported itself. The testid is what `e2e/route-sweep.spec.ts` asserts is
+ * absent; the console.error is what a person watching a browser sees.
+ */
 function ErrorFallback(props: { error: Error; reset: () => void }) {
+  console.error("Route error boundary caught:", props.error);
   return (
-    <div style={{ padding: "2rem", "text-align": "center" }}>
+    <div data-testid="route-error-boundary" style={{ padding: "2rem", "text-align": "center" }}>
       <h2 style={{ color: "#ef4444", "margin-bottom": "1rem" }}>Something went wrong</h2>
       <p style={{ color: "#9ca3af", "margin-bottom": "1rem" }}>{props.error.message}</p>
       <button

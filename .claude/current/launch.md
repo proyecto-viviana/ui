@@ -106,9 +106,14 @@ existing gates actually block is itself a launch item, not a nice-to-have.
   `Color*`, Divider, Form, InlineAlert, LabeledValue, ListBox, ListView,
   ProgressCircle, RadioGroup, RangeSlider, SegmentedControl, StatusLight,
   StepList, TableView, ToggleButton, TreeView.
-- **E2E covers 5 of 75 routes** (`apps/web/e2e/helpers/routes.ts` knows only
-  `docs`, `docsComponent`, `docsHook`, `playground`). A docs page that crashes on
-  render would ship silently. Axe scans only the playground.
+- ~~**E2E covers 5 of 75 routes**~~ — **closed 2026-07-24.** `vp run test:routes`
+  sweeps all 72 URLs, derived from the generated route tree. It immediately found
+  a docs page that was already shipping broken (`tree-multi-root-hydration`),
+  which is what "would ship silently" meant in practice. Axe still scans only the
+  playground. Note for anyone writing a smoke check here: the root ErrorBoundary
+  answers **200 with a full page of text**, so a page that throws looks healthy to
+  status, byte-length and console checks alike — the sweep asserts the boundary is
+  absent, and that assertion is the whole test.
 - **SEO surface essentially absent** — 5 of 75 routes define `head:`; no
   robots.txt, sitemap, OG/Twitter cards, or canonical URLs. One global title and
   description for the whole site.
