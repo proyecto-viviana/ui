@@ -5,7 +5,7 @@ status: current
 
 # Glasselated → viviana-ui port + Viviana showcase (opened 2026-07-22)
 
-Status: plan of record for the owner's 2026-07-22 pivot.
+Status: live plan of record for the owner's 2026-07-22 pivot.
 Update when: the design branch lands, a register gap closes, the showcase route
 ships, or the external spec moves.
 

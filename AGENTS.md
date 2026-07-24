@@ -121,7 +121,7 @@ enforced.
 
 ## Operating
 
-- Work in `/home/emoporemilio/projects/viviana-ui`. Default to `main`.
+- Work in `/home/emoporemilio/projects/viviana-hub/ui`. Default to `main`.
 - Check `git status --short --branch` before edits and before handoff. Preserve
   user work — do not reset, restore, or overwrite unrelated changes. Leave no
   stray temp files or dev servers.

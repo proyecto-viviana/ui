@@ -1,6 +1,7 @@
 ---
 kind: reference
-status: current
+status: done
+completed: 2026-07-22
 ---
 
 # Claude visual-system design lane (opened 2026-07-18, closed 2026-07-22)

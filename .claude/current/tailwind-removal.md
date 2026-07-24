@@ -5,6 +5,10 @@ status: current
 
 # Tailwind removal — retire invented utility styling repo-wide
 
+Status: live plan of record.
+Update when: a phase lands, a surface is converted off invented utilities, or the
+grep-gate scope changes.
+
 Plan of record for removing every invented Tailwind-vocabulary utility class from
 the repo and returning each surface to its faithful styling mechanism: the **S2
 style macro** for library components, real component CSS for apps. Runs alongside

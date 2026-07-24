@@ -2,12 +2,225 @@
 kind: reference
 status: current
 tasks:
+  - id: launch-broken-github-links
+    title: Six site links point at a 404 GitHub repo
+    state: open
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    note: >-
+      Every GitHub link on the site targets
+      github.com/proyecto-viviana/proyecto-viviana, which 404s. The repository is
+      github.com/proyecto-viviana/ui. Sites: apps/web Header.tsx:181,
+      routes/solid-spectrum/index.tsx:130, routes/ecosystem.tsx:165,170,175,180.
+      Audit finding B1 (launch.md).
+    exit: >-
+      Repoint all six to proyecto-viviana/ui. Consider a single shared constant so
+      the URL has one definition rather than six.
+  - id: launch-installation-page-wrong
+    title: The installation page omits the flagship package and teaches hand-authored CSS variables
+    state: open
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    note: >-
+      apps/web/src/routes/solid-spectrum/docs/installation.tsx never mentions
+      @proyecto-viviana/ui — the package the root README tells users to install.
+      It instructs users to hand-author `:root { --color-primary-100: #ddf4ff; …
+      --font-ui: "Geist" … }` instead of importing the stylesheets we already
+      ship, and never mentions the vivianaMacros() Vite helper. It is directly
+      contradicted by packages/viviana-ui/README.md, which is accurate and
+      thorough (styling subpath table, Tailwind cascade-layer order, and the
+      explicit "using the published components does not require a macro plugin").
+      Audit finding B2 (launch.md).
+    exit: >-
+      Rewrite the page to lead with @proyecto-viviana/ui and the real shipped-CSS
+      import story, with solid-spectrum documented as the parity alternative.
+      Source of truth is packages/viviana-ui/README.md — the site should not
+      restate it divergently.
+  - id: launch-viviana-ui-api-docs
+    title: The flagship package has 238 exports and zero API documentation
+    state: open
+    filed: 2026-07-24
+    priority: P1
+    roadmap: launch
+    note: >-
+      The root README tells users to install @proyecto-viviana/ui. The site's
+      /showcase route is a visual gallery of the Glasselated register — nine type
+      roles and a panel directory — not reference documentation. There is no "how
+      do I use Button" for the package we point users at. Meanwhile the fully
+      documented package (solid-spectrum, 45 pages) is the parity substrate.
+      Audit finding B3 (launch.md); see also the two-product problem there.
+    exit: >-
+      Reference pages for the viviana-ui surface. The registers share the exact
+      component + variant API (only typeRoles differs), so the solid-spectrum docs
+      structure should be reusable rather than rebuilt.
+  - id: launch-format-drift
+    title: vp check is red on main with 174 files of format drift
+    state: open
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    note: >-
+      `vp check` exits 1 — "Found formatting issues in 174 files". It went unseen
+      because ci:release-readiness has no format step and certification-gates.yml
+      runs every gate with continue-on-error: true. Audit finding B4 (launch.md).
+    exit: >-
+      `vp check --fix`, then make the format gate blocking (see ci-gates-required
+      and launch-gates-cannot-fire).
+  - id: launch-docs-check-red
+    title: docs:check red — 9 tracking and header errors on the current spine
+    state: done
+    finished: 2026-07-24
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    resolution: >-
+      Cleared 2026-07-24. Five "missing status header" errors were the validator
+      demanding "Status: live" from docs the frontmatter already marks archived or
+      done — stamping those would have made the header lie, so the validator now
+      exempts frontmatter status archived/done/superseded and the genuinely-live
+      docs (glasselated-port.md, tailwind-removal.md) got real headers;
+      visual-system-lane.md was retyped status: done, which is what it says it is.
+      The four tracking errors: release-oidc-trusted-publisher-unregistered
+      repointed from the non-existent "release-train" item to ui-release-promotion;
+      finished dates added to menu-actionmenu-d5-d6-backfill (2026-07-06) and
+      d4-microtask-defer (2026-07-15); roadmap item "recertification" status
+      complete -> done. Marking it done then correctly exposed four tasks still
+      open beneath a closed item, rehomed to consumer-delivery and
+      component-certification.
+    note: >-
+      Audit finding B5 (launch.md).
+  - id: launch-site-deploy-stale
+    title: The site has not been deployed since before the Glasselated work
+    state: open
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    note: >-
+      Last Cloudflare deployment 2026-06-30 — 24 days stale, predating every
+      commit of the Glasselated register port and the whole-site cohesion pass.
+      What is publicly visible is not what the repo builds. `vp run build:web`
+      is verified working (12.69s). Audit finding B6 (launch.md).
+    exit: >-
+      Deploy once the truth phase (links, installation page, metadata) and the
+      safety phase (route sweep, head metadata) have landed.
+  - id: launch-npm-metadata
+    title: Published packages carry no homepage and the flagship has no keywords
+    state: open
+    filed: 2026-07-24
+    priority: P1
+    roadmap: launch
+    note: >-
+      None of the five packages set `homepage`, so npm has nothing to link to.
+      @proyecto-viviana/ui has zero keywords and an internal-jargon description
+      ("Viviana design system. A reskinned fork of @proyecto-viviana/solid-spectrum:
+      the styled top layer is duplicated and remapped to the Viviana v2
+      (Glasselated) register, over the shared solidaria headless stack") — accurate
+      to a maintainer, meaningless to someone browsing npm. Audit finding B7.
+    exit: >-
+      homepage + repository.directory + keywords on all five; a user-facing
+      description on viviana-ui that says what it is rather than how it was built.
+  - id: launch-a11y-smoke-selector-drift
+    title: a11y:smoke red — 12 tests still select <p> where the rebuild renders <Text>
+    state: open
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    note: >-
+      12 failed / 32 passed. One root cause, and it is stale tests rather than a
+      product regression: the Glasselated rebuild (8a8db7d4, 88c07da4) replaced
+      the playground's <p> readouts with solid-spectrum <Text>, and TextProps
+      extends BaseContentProps<HTMLSpanElement> — Text renders a <span>. Five
+      selectors still pin the tag: e2e/calendar-regression.spec.ts:35
+      (locator("p").filter({hasText: /\d+ of \d+ visible/}), against
+      components/playground/sections.tsx:66) and
+      e2e/playground-components.spec.ts:318,340,362,415 (locator("p", {hasText:
+      "Selected:"}), against the DemoReadout helper in
+      components/playground/advanced-data-color-sections.tsx:196). The 8 calendar
+      failures die in setup at the first expectVisibleCount(page, 0), before any
+      interaction, polling a <p> that no longer exists until the 15s timeout.
+      Confirmed NOT the stale-preview trap — no listener on the test ports and
+      apps/web/dist was rebuilt during the run; reproduces on a clean rebuild.
+      Audit finding B8 (launch.md).
+    exit: >-
+      Replace the five with tag-agnostic selectors so a restyle cannot break them
+      again, and re-run to 44/44.
+  - id: launch-gates-cannot-fire
+    title: The gates that would have caught the red main cannot fire on main
+    state: open
+    filed: 2026-07-24
+    priority: P0
+    roadmap: launch
+    note: >-
+      accessibility-playground.yml is correctly blocking (zero continue-on-error)
+      but triggers only on pull_request — and work lands straight on main, so it
+      has never run on the Glasselated work. release-readiness.yml includes
+      neither a11y nor a format check. certification-gates.yml runs all 19 gates
+      report-only. That is why the format drift (B4), the docs errors (B5) and the
+      12 a11y failures (B8) all accumulated unseen on a green-looking main.
+      Narrower restatement of ci-gates-required, scoped to launch.
+    exit: >-
+      Promote `vp check` and `docs:check` to blocking, and fire the a11y gate on
+      push to main as well as on PRs.
+  - id: launch-route-coverage
+    title: E2E covers 5 of 75 routes, so a crashing docs page would ship silently
+    state: open
+    filed: 2026-07-24
+    priority: P1
+    roadmap: launch
+    note: >-
+      apps/web/e2e/helpers/routes.ts is the entire route surface known to the
+      suite: docs, docsComponent(slug), docsHook(slug), playground. Axe scans only
+      the playground. Nothing asserts that the other ~70 routes render at all.
+      Audit finding (launch.md, coverage gaps).
+    exit: >-
+      A route-sweep spec that enumerates routes from the router tree (not a
+      hand-maintained list) and asserts 200 + no console/page error on each.
+  - id: launch-seo-surface
+    title: The site has no SEO surface — 5 of 75 routes set head metadata
+    state: open
+    filed: 2026-07-24
+    priority: P1
+    roadmap: launch
+    note: >-
+      Only 5 of 75 routes define `head:`; everything else inherits the single
+      global title "Proyecto Viviana" and one description from __root.tsx. No
+      robots.txt, no sitemap, no OG/Twitter cards, no canonical URLs. For a
+      documentation site whose purpose is to be found, this is a launch gap rather
+      than a polish item. Audit finding (launch.md, coverage gaps).
+    exit: >-
+      Per-page title/description on the docs and showcase routes, plus robots.txt,
+      sitemap, and OG cards.
+  - id: launch-docs-coverage
+    title: 45 docs pages against 78 catalogue components
+    state: open
+    filed: 2026-07-24
+    priority: P1
+    roadmap: launch
+    note: >-
+      45 pages exist, 7 of which are aliases covering multiple components
+      (alertdialog, color, filetrigger, select, separator, table, tree), leaving
+      roughly 31-40 catalogue components undocumented: actionbutton,
+      actionbuttongroup, actionmenu, autocomplete, avatar, avatargroup,
+      buttongroup, card, cardview, checkboxgroup, colorarea, colorfield,
+      colorslider, colorswatch, colorswatchpicker, colorwheel, divider, form,
+      icons, illustratedmessage, illustrations, image, inlinealert, labeledvalue,
+      linkbutton, listbox, dnd-listbox, listview, progresscircle, radiogroup,
+      rangeslider, segmentedcontrol, selectboxgroup, skeleton, statuslight,
+      steplist, tableview, togglebutton, togglebuttongroup, treeview.
+      Explicitly NOT a deploy blocker (steering.md, resolved 2026-07-24): a
+      truthful site with 45 documented components beats an undeployed site with
+      78. Audit finding (launch.md, coverage gaps).
+    exit: >-
+      Close the list. Rank by what a new user reaches for first rather than
+      alphabetically.
   - id: invented-tailwind-utility-styling
     title: Invented Tailwind-vocabulary utility styling leaks a styling dependency on apps/web's local-utilities.css
     state: in-progress
     filed: 2026-07-09
     priority: P2
-    roadmap: recertification
+    roadmap: consumer-delivery
     note: >-
       No Tailwind build exists in the repo (no tailwindcss dep, no config, no
       @tailwind/@apply). Instead, apps/web/src/local-utilities.css (1878 lines)
@@ -33,7 +246,7 @@ tasks:
     finished: 2026-07-06
     priority: P0
     filed: 2026-07-06
-    roadmap: release-train
+    roadmap: ui-release-promotion
     resolution: >-
       RESOLVED via OIDC (path a). Two fixes: (1) owner registered a GitHub Actions
       trusted publisher on all 5 packages (org proyecto-viviana, repo ui, workflow
@@ -824,6 +1037,7 @@ tasks:
   - id: menu-actionmenu-d5-d6-backfill
     title: Backfill D5 focus-trail + D6 AX-tree evidence on the Menu and ActionMenu certifications
     state: done
+    finished: 2026-07-06
     roadmap: recertification
     note: >-
       DONE 2026-07-06 (CP9.37 ul→div, CP9.38 D5, CP9.39 D6). Menu (CP9.32) and
@@ -842,7 +1056,7 @@ tasks:
   - id: recert-drivers-d9-d12
     title: Land the remaining pair-oracle drivers — D9 forced-colors, D10 RTL, D11 timing, D12 SSR
     state: next
-    roadmap: recertification
+    roadmap: component-certification
     note: >-
       D1–D8 are landed and calibrated; D9–D12 exist only as plan text, so
       forced-colors and RTL have zero coverage repo-wide. SEQUENCING RESOLVED
@@ -875,6 +1089,7 @@ tasks:
   - id: d4-microtask-defer
     title: Clear the deferred D4 event-ordering reds
     state: done
+    finished: 2026-07-15
     roadmap: recertification
     note: >-
       CLOSED 2026-07-15. Triage first (parity rule) collapsed the historically
@@ -895,7 +1110,7 @@ tasks:
   - id: d6-announcement-calibration
     title: Live-transcript announcement oracle over a body-portaled toast (structural live-region done)
     state: open
-    roadmap: recertification
+    roadmap: component-certification
     note: >-
       PARTIALLY CLOSED by Toast CP9.35 (2026-07-06). The structural half is done:
       the D6 AX driver certifies the `role="alert"` live region appearing in the
@@ -910,7 +1125,7 @@ tasks:
     title: ComboBox filter live-region transcript (CP9.45b — structural combobox paint/focus cert done)
     state: open
     depends: [d6-announcement-calibration]
-    roadmap: recertification
+    roadmap: component-certification
     note: >-
       ComboBox certified 2026-07-08 (CP9.45a) across D1/D3/D5/D6/D7/D8/D9/D10 — the
       paint, the virtual-focus `aria-activedescendant` walk, and the `role=listbox`

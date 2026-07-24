@@ -22,31 +22,33 @@ public reach.
 
 1. `../../README.md`
 2. `status.md`
-3. `architecture.md`
-4. `steering.md`
-5. `certification.md`
-6. `recertification.md`
-7. `glossary.md`
-8. `work-queue.md`
-9. `tooling.md`
-10. `../reference/patterns.md` when adapting React patterns to Solid idioms
-11. `upstream-sync.md`
-12. `upstream-release-audit.md`
-13. `ui-client-contract.md`
-14. `release-policy.md`
-15. `tech-debt.md`
-16. `tailwind-removal.md` when removing invented utility styling or converting a component's styled layer to the S2 macro
-17. `glasselated-port.md` when working the Glasselated register port onto viviana-ui or the Viviana showcase
-18. `visual-system-lane.md` for the provenance record of the landed `design/visual-system-claude-v2` visual-system lane
-17. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
-17. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
-18. `../../AGENTS.md` when handing work to coding agents
+3. `steering.md`
+4. `launch.md` — the current focus: what blocks the docs deploy and the public launch
+5. `architecture.md`
+6. `certification.md`
+7. `recertification.md`
+8. `glossary.md`
+9. `work-queue.md`
+10. `tooling.md`
+11. `../reference/patterns.md` when adapting React patterns to Solid idioms
+12. `upstream-sync.md`
+13. `upstream-release-audit.md`
+14. `ui-client-contract.md`
+15. `release-policy.md`
+16. `tech-debt.md`
+17. `tailwind-removal.md` when removing invented utility styling or converting a component's styled layer to the S2 macro
+18. `glasselated-port.md` when working the Glasselated register port onto viviana-ui or the Viviana showcase
+19. `visual-system-lane.md` for the provenance record of the landed `design/visual-system-claude-v2` visual-system lane
+20. `press-path-epic.md` when scoping or implementing the item-hook press-path migration (T-34/T-51/T-52/T-56)
+21. `../../apps/comparison/COMPONENT_PLAYBOOK.md` when porting or re-baselining a component
+22. `../../AGENTS.md` when handing work to coding agents
 
 ## Files
 
 | File                        | Purpose                                                                                                                                                                                                                                  |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `steering.md`               | Direction, current focus, now/next/later, open decisions, non-goals, checks.                                                                                                                                                             |
+| `launch.md`                 | **Plan of record for the current focus.** The 2026-07-24 launch audit: the two-product framing (`solid-spectrum` = S2 parity, `@proyecto-viviana/ui` = the Viviana register), the launch-blocking findings B1–B8, why three of them were invisible, coverage gaps, and phases 0–5 to the public docs deploy. |
 | `certification.md`          | Evidence required before a component can be accepted as ported: dimensions, floors, checks, acceptance gates.                                                                                                                            |
 | `recertification.md`        | **Completed march (2026-07-15)** — outcome summary of the pair-oracle red→green program that enforced the certification bar (all six tiers + 12/12 drivers + Phase-3 closers). The full component-by-component log is archived at `archive/recertification-full.md`.  |
 | `architecture.md`           | The five-layer chain, what each package owns, the behavior-vs-styling boundary, and the comparison harness as verifier.                                                                                                                  |

@@ -2,10 +2,15 @@
 kind: roadmap
 status: current
 items:
+  - id: launch
+    title: Deploy the docs site and make the packages usable by external users
+    status: in-progress
+    window: { start: 2026-07-24, target: null }
+    docs: [launch.md, steering.md, status.md, tech-debt.md]
   - id: recertification
     title: Pair-oracle recertification march (COMPLETE 2026-07-15)
-    status: complete
-    window: { start: 2026-07-03, target: 2026-07-15 }
+    status: done
+    window: { start: 2026-07-03, target: 2026-07-15, finished: 2026-07-15 }
     docs: [recertification.md, archive/recertification-full.md, tech-debt.md]
   - id: component-certification
     title: Per-component acceptance
@@ -113,8 +118,8 @@ sequence** at the foot of this page.
   stable once evidence thresholds hold. See `release-policy.md`.
 
 The next four are the actionable initiatives distilled from the 2026-06-15 harsh
-review (archived under `docs/_review-2026-06-15/`); their tasks live in
-`tech-debt.md`. Slugs are provisional (Rule #3) — owner to confirm names.
+review (deleted from `main` 2026-07-24; recover from the commit that removed
+`docs/_review-2026-06-15/`); their tasks live in `tech-debt.md`. Slugs are provisional (Rule #3) — owner to confirm names.
 
 - **certification-enforcement** — wire the evidence checks into CI: report-only
   first (`certification-gates.yml`), then required once the styled layer

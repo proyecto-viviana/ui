@@ -26,117 +26,97 @@ component should not be described as ported until the evidence bar in
 (`recertification.md`) is the mechanism that enforces that bar, component by
 component, against the live upstream oracle.
 
+Two products ship on that stack. `@proyecto-viviana/ui` is the flagship: the
+Viviana register (Glasselated), the package users install, the one the site
+leads with. `@proyecto-viviana/solid-spectrum` is the S2-parity substrate
+underneath it, and remains the right choice for anyone who wants Adobe
+Spectrum's look rather than Viviana's.
+
 ## Current Focus
 
+**Launch.** Plan of record: `launch.md`.
+
 Name/surface parity is closed (all pin guards green). Depth parity was the
-recertification march, now **COMPLETE 2026-07-15** — all six Phase-2 tiers
-certified, 12/12 drivers, Phase-3 closers landed; shelved to `recertification.md`
-(summary) and `archive/recertification-full.md` (full log). _The dated
-stabilization snapshot below is historical (2026-07-06)._ The 2026-07-06
-validation pass confirmed the
-certified tiers are genuinely strong — and found that the biggest current risk
-is **process, not code**: CI has been dark on main since 2026-06-24, the
-release train is jammed, and live rot (7 unit failures, 2 a11y smoke failures,
-format drift) has already accumulated unseen. Stabilize the pipeline first,
-then keep marching.
+recertification march, **COMPLETE 2026-07-15** — all six Phase-2 tiers certified,
+12/12 drivers, Phase-3 closers landed; shelved to `recertification.md` (summary)
+and `archive/recertification-full.md` (full log).
 
-## Now (P0 — stabilization)
+The 2026-07-24 audit established that **the packages are not the blocker**: they
+are published, in sync with `main`, and `ui:smoke` proves they install and render
+out-of-workspace. What is not ready is the **documentation surface and the
+deployed site** — last deployed 2026-06-30, predating every commit of the
+Glasselated work, with an installation page that never mentions the flagship
+package and six links to a 404.
 
-- ~~**Push main and wire CI to run on it**~~ (`tech-debt.md` →
-  `ci-main-gate-wiring`) — DONE 2026-07-06. Both `release-readiness.yml` and
-  `certification-gates.yml` now trigger on push-to-main, with the three orphaned
-  checks (certified suite, jsx-deopt-size, upstream-test-parity) wired in.
-  Validated end-to-end: the first main pushes caught 5 latent `typecheck:apps`
-  errors that had rotted in while CI was dark; fixed (`73903a5b`), re-run green.
-  Certified suite stays report-only until `ci-gates-required` (D4 policy).
-- **Unjam the release train** (`release-train-unjam`): version PR #7, 101
-  pending changesets, npm one patch behind on 3 packages — the SSR hydration
-  fix has never reached installed consumers.
-- ~~**Burn down live rot** (`main-rot-burndown-2026-07`)~~ — DONE 2026-07-06.
-  All three were stale tests, not source bugs: the ContextualHelp/Menu/ActionMenu
-  cluster asserted the pre-CP9.34 heading-slot divergence; the Toolbar `End` /
-  ActionBar `Home` tests asserted Home/End that CP9.3 removed as invented. Tests
-  realigned to upstream + format drift fixed. check / test:run / a11y:check green.
-- ~~**Finish Toast**~~ (recertification CP9.35) — DONE 2026-07-06, **37/37 green**.
-  Landed the first D6 live-region evidence (`role="alert"` in the AX tree), a D7
-  `<span>` wrapper fix, and — root-causing the D6 dismiss-cross miss — a **global**
-  bare-ui-icon fix in `createUIIcon` (no forced `role="img"`/auto-`aria-hidden`,
-  matching upstream's raw svg assets), which retired the `ui-icon-decorative-ax-node`
-  cross-cutting divergence and kept axe green. `info` glyph D3 sub-pixel waiver only.
-- ~~**Certify DropZone/FileTrigger**~~ (recertification CP9.36) — DONE 2026-07-06,
-  **31/31 first-run green, zero port fixes** (fully faithful). Closes Tier 3. Drove
-  the non-gesture states (focus-visible, drop-target) via `beforePanel`; confirmed the
-  `id`/`aria-describedby`/`aria-details` drop matches upstream's `delete DOMProps.id` +
-  `filterDOMProps` filtering. No sub-pixel waiver (no ui-icon glyph in the box).
+So the work is no longer "port and certify." It is: make the public surface true,
+make the gates that would have caught this actually fire, and ship. Parity work
+resumes after launch.
 
-## Next (P1 — the Tier 4-enabling tracks, run in parallel)
+## Now (P0 — launch)
 
-Decisions resolved 2026-07-06 (see Open Decisions). All three certified-march
-prerequisites are now execution tracks, run concurrently where they don't touch
-the same files. Dependency edges noted; the full task graph mirrors these.
+Phases and findings are detailed in `launch.md`; tasks in `tech-debt.md` under
+the `launch` roadmap item.
 
-- ~~**Backfill D5/D6 on Menu and ActionMenu**~~ (`menu-actionmenu-d5-d6-backfill`)
-  — DONE 2026-07-06 (CP9.37–9.39). Was the test case for the keyboard-composite
-  bar, now adopted into `certification.md`.
-- **Track A — D9/D10 drivers** (`recert-drivers-d9-d12`): land forced-colors
-  (D9) + RTL/i18n (D10) as re-run modes over the existing D1/D5 oracles,
-  calibrate on a pilot (ToggleButton), then re-run the certified Tiers 1–3.
-  *Independent of the port source — parallelizable with Track B.* Blocks Picker
-  (Picker certifies against the full applicable driver set including D9/D10).
-- **Track B — D4 event-ordering reds** (`d4-microtask-defer`): **DONE
-  2026-07-15.** Triage collapsed the "5 reds" to one real port bug (`Tabs
-  touch-tap`); the rest were already green/reclassified. The fix was NOT a
-  microtask-defer (probes proved the microtask queue drains before `focusin`) —
-  it was binding the roving-tabindex commit to `focusin`, mirroring React's
-  focusin-delegated `onFocus`. No D4 reds remain. See tech-debt `d4-microtask-defer`
-  + recertification.md 2026-07-15.
-- **Track C — Picker/Select cert** (`picker-popover-anchor`,
-  `picker-item-checkmark`): the highest-value single certification —
-  production-broken for installed consumers (popover at 0,0; checkmark on every
-  row). *Blocked by Track A (driver set) and Track B (D4 on a collection).*
-  Certify against the full applicable driver set once A + B land.
-- **`macro-route-styled`** (`tech-debt.md`): 14 components ship unstyled to
-  installed consumers; app CSS masks it in-repo. Consumer-delivery priority,
-  independent — can slot alongside any track.
+- **Record and clean** (Phase 0) — `launch.md` landed; `status.md` refreshed from
+  the scripts; every finding filed; the 9 `docs:check` errors cleared; stale docs
+  trees deleted; the 174-file format drift and tracked strays cleaned.
+- **Make the gates real** (Phase 1) — fix the 5 stale e2e selectors that turned
+  `a11y:smoke` red (B8), then promote `vp check` + `docs:check` to blocking and
+  fire the a11y gate on push to main. _A gate that cannot fire is not a gate:_
+  `accessibility-playground.yml` blocks correctly but triggers only on
+  `pull_request`, and work lands straight on main, so it has never run.
+- **Make the site truthful** (Phase 2) — the 6 broken GitHub links (B1), the
+  installation page that omits the flagship package and tells users to
+  hand-author CSS variables (B2), the two-product story in the nav, npm metadata
+  (B7).
+- **Make it safe to deploy** (Phase 3) — route-sweep smoke over all 75 routes
+  (e2e currently covers 5), per-page `head:`, robots.txt, sitemap.
+- **Deploy** (Phase 4).
+
+## Next (P1 — coverage)
+
+- **API docs for `@proyecto-viviana/ui`** (B3) — 238 exports, zero reference
+  pages. The package the README tells users to install has only a visual gallery.
+  Largest remaining gap once the site is live.
+- **The ~31–40 missing component docs pages** — 45 pages against 78 catalogue
+  components, 7 of which are aliases.
+- **`macro-route-styled`** — 14 components still ship unstyled to installed
+  consumers; app CSS masks it in-repo.
+- **Strict-parity gaps** — `comparison:report:parity:strict` now reports 9
+  entries missing modeled control groups, wider than the single `LabeledValue`
+  the previous snapshot recorded.
 
 ## Later
 
-- Tier 4–6 of the march (collections, overlays, date/time; then the long tail).
 - The DnD subsystem port (`dnd-subsystem-port`) — the one un-ported surface;
-  blocks TableView/TreeView DnD rows and the last 6 S2 support exports.
+  blocks TableView/TreeView DnD rows and the last 7 S2 support exports.
 - Headless-spine consumption: Menu/ListBox/ComboBox still run pre-spine
-  selection wiring; migrate as their march slots come up, not before.
+  selection wiring; migrate as their slots come up, not before.
 - Package-build migration; release-bar tightening per package
   (`release-policy.md`).
+- Resuming the upstream parity loop against a newer S2/RAC pin.
 
 ## Open Decisions
 
-None currently open — the three that gated the Tier 4 start were resolved
-2026-07-06 (owner call). The march now runs four active tracks (release unjam
-under "Now" + the three Tier-4-enabling tracks under "Next") in parallel where
-they don't touch the same files; the dependency edges are in "Next".
+None currently open.
 
-**Resolved 2026-07-06:**
+**Resolved 2026-07-24:**
 
-- **D4 event-ordering policy → (a) match React's ordering in the ports (not the
-  oracle).** Fix ordering divergences in the port source so installed consumers
-  see the faithful upstream event order, rather than normalizing them away in the
-  D4 oracle (diverge only where React→Solid makes it genuinely impossible, then a
-  documented per-case waiver — not a standing oracle-normalized divergence that
-  compounds across collections). *Note (2026-07-15):* the assumed primitive was a
-  post-event microtask-defer, but the one red this policy had to clear (`Tabs
-  touch-tap`) turned out to be a wrong-event binding, not a batching gap — the
-  faithful fix bound the roving commit to `focusin` (React's delegation model),
-  and probes showed a microtask-defer could not have worked (queue drains before
-  `focusin`). Tracked + CLOSED as `d4-microtask-defer` in `tech-debt.md`. No D4
-  reds remain; nothing gates Picker's D4 driver here.
-- **D9/D10 sequencing → before Tier 4.** Forced-colors (D9) + RTL/i18n (D10)
-  drivers land and the certified Tiers 1–3 re-run against them first, so we don't
-  re-march the certified set later. Tracked as `recert-drivers-d9-d12`.
-- **Certification bar for keyboard composites → adopted.** "D5+D6 mandatory for
-  keyboard-heavy composites" is now in `certification.md` ("Driver
-  applicability"); the Menu/ActionMenu backfill (`menu-actionmenu-d5-d6-backfill`,
-  CP9.37–9.39) was the test case and is complete.
+- **Two-product positioning → `@proyecto-viviana/ui` is the flagship.** The site
+  leads with it and documents `solid-spectrum` as the parity substrate beneath.
+  This matches what the root README already told users; the site is what has to
+  catch up. Recorded in `launch.md` rather than silently encoded, because it is a
+  naming-and-positioning call with public reach (AGENTS.md rule #3).
+- **Docs coverage does not gate the deploy.** A truthful site with 45 documented
+  components beats an undeployed site with 78. Coverage moves to P1.
+
+**Resolved 2026-07-15:**
+
+- **D4 event-ordering policy → match React's ordering in the ports (not the
+  oracle).** The one red this had to clear (`Tabs touch-tap`) turned out to be a
+  wrong-event binding, not a batching gap: the faithful fix bound the roving
+  commit to `focusin` (React's delegation model), and probes showed a
+  microtask-defer could not have worked. Closed as `d4-microtask-defer`.
 
 ## Non-Goals
 
@@ -148,6 +128,10 @@ they don't touch the same files; the dependency edges are in "Next".
   export.
 - Relaunching fleet-census audits — the march supersedes them
   (`recertification.md`).
+- Reopening certification for launch. The march is complete and shelved.
+- Publishing new package versions as part of launch. The packages on npm are
+  current and pass the out-of-workspace smoke; launch makes them findable and
+  documented, not newer.
 
 ## Gates
 
@@ -155,6 +139,10 @@ The evidence bar and its commands live in `certification.md`; the march harness
 in `recertification.md`. `comparison:report:parity:strict` and the certified
 suite are expected to pass. Status is refreshed from scripts (`status.md`),
 never from memory.
+
+Piping a gate into `tail` masks its exit code — the 2026-07-24 audit initially
+read `a11y:check` as passing for exactly that reason. Capture the status
+explicitly when running gates non-interactively.
 
 ## Before A Task
 

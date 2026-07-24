@@ -33,10 +33,28 @@ function fail(message: string): void {
 
 // Spine docs carry a visible status header ("Status: live ...") and a colon
 // update header ("Update when: ..."), so match by prefix, not exact line.
+//
+// Docs that frontmatter already marks as finished are exempt: an archived log or
+// a completed plan has nothing to say about when to update it, and stamping one
+// "Status: live" to satisfy the gate would make the header lie. The frontmatter
+// `status:` is the authority on whether a doc is still live.
+const FINISHED_STATUSES = new Set(["archived", "done", "superseded"]);
+
+function frontmatterStatus(contents: string): string | null {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---/.exec(contents);
+  if (!match) return null;
+  const status = /^status:\s*(\S+)\s*$/m.exec(match[1]);
+  return status ? status[1] : null;
+}
+
 const currentMarkdown = walk(currentDir).filter((file) => file.endsWith(".md"));
 for (const file of currentMarkdown) {
   const relative = toRepoPath(file);
-  const lines = readFileSync(file, "utf8").split(/\r?\n/);
+  const contents = readFileSync(file, "utf8");
+  const status = frontmatterStatus(contents);
+  if (status && FINISHED_STATUSES.has(status)) continue;
+
+  const lines = contents.split(/\r?\n/);
   const hasHeader =
     lines.some((line) => line.startsWith("Status: live ")) &&
     lines.some((line) => line.startsWith("Update when:"));
