@@ -1,0 +1,69 @@
+name: Site Gate
+
+# Blocking. Everything that needs a built, served site: the accessibility gate
+# and the all-routes render sweep. Mirrors `vp run ci:site`.
+#
+# Runs on PRs AND on push-to-main: work on this repo lands direct to main, so a
+# PR-only trigger meant this gate had never once run on the branch it was
+# protecting. The 2026-07-24 audit found 12 a11y failures sitting on a green
+# main for exactly that reason (`launch.md` → B8).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site-gate:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/web -- playwright install --with-deps chromium
+
+      # Build once, then the a11y gate and the route sweep against it.
+      - name: Run blocking site checks
+        run: pnpm run ci:site
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-site-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            apps/web/playwright-report
+            test-results
+
+      - name: Publish summary
+        if: always()
+        run: |
+          echo "## Site Gate Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Blocking, on pull requests and on push to \`main\`. Mirrors \`vp run ci:site\`:" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **\`a11y:check\`** — the blocking AA + smoke gate, with axe \`color-contrast\` temporarily excluded. Stricter contrast, best-practice, AAA and experimental scans remain available via \`vp run a11y:full\` (reported by _Certification Gates_)." >> "$GITHUB_STEP_SUMMARY"
+          echo "- **\`test:routes\`** — every route in \`routeTree.gen.ts\` renders without hitting the error boundary. The boundary answers 200 with a full page of text, so status and byte-length checks cannot see a thrown route; asserting the boundary is absent is the whole test." >> "$GITHUB_STEP_SUMMARY"

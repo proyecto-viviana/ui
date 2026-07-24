@@ -200,8 +200,9 @@ tasks:
       (axe:aa 2, axe:comparison 80, smoke 44 — exit 0).
   - id: launch-gates-cannot-fire
     title: The gates that would have caught the red main cannot fire on main
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P0
     roadmap: launch
     note: >-
@@ -215,6 +216,43 @@ tasks:
     exit: >-
       Promote `vp check` and `docs:check` to blocking, and fire the a11y gate on
       push to main as well as on PRs.
+    resolution: >-
+      Done 2026-07-24. Every gate was run locally first and promoted only on a
+      measured green — the point of this ticket is that an unproven gate is what
+      created the problem, so promoting on optimism would have repeated it.
+
+      certification-gates.yml: 17 gates are now BLOCKING, including the two named
+      in the exit criteria (`vp check`, `docs:check`) plus `typecheck`, the ten
+      static guards, `comparison:test:contract` (93) and `comparison:test:pair`
+      (6). Two guards that existed in package.json but were wired into no
+      workflow at all — `guard:invented-utilities` and `guard:outbound-links` —
+      were added while promoting. Four stay advisory and each carries the
+      condition for its promotion inline: `guard:upstream-freshness` (goes red
+      when Adobe ships past our pin — a pin bump, not a branch defect),
+      `comparison:report:parity:strict` (genuinely failing on 9 entries →
+      labeledvalue-strict-parity), `comparison:test:certified` (2176 tests, not
+      observed green end-to-end; D4 policy open), and `a11y:full` (its extra axe
+      rules have never been measured clean). The workflow name lost
+      "(report-only)" and the summary now has separate Blocking / Advisory
+      tables.
+
+      accessibility-playground.yml → site-gate.yml, renamed `Site Gate` because
+      it is no longer only a11y: it runs the new `ci:site` (build + a11y:check +
+      test:routes), which puts the 72-route sweep from launch-route-coverage
+      behind a blocking job instead of leaving it a script nobody runs. It now
+      triggers on push to main as well as on PRs.
+
+      `ci:release-readiness` gained `vp run check` as its first step, so the
+      release path itself fails on format/lint drift — it previously ran build +
+      typecheck:apps + test:run and would have shipped all 174 drifted files.
+
+      guard:publish-drift deliberately stays in release.yml only: it simulates a
+      publish and dirties the tree, which is fine on a fresh release checkout and
+      hostile anywhere a contributor runs it.
+
+      Residual: nothing here is a *required* check in GitHub branch protection —
+      these workflows now fail, and a failing workflow on main is visible, but
+      main is not protected. That is the remaining half of ci-gates-required.
   - id: launch-route-coverage
     title: E2E covers 5 of 75 routes, so a crashing docs page would ship silently
     state: done
@@ -471,6 +509,19 @@ tasks:
     state: open
     depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
     roadmap: certification-enforcement
+    note: >-
+      Mostly closed 2026-07-24 by launch-gates-cannot-fire: 17 of the 21 gates in
+      certification-gates.yml are blocking, and the Site Gate fires on main. What
+      is left is the word "required" in the literal GitHub sense — main has no
+      branch protection, so a red workflow is loud but not preventive. Owner
+      decision (Rule #3): turning on protection changes how the sole maintainer
+      commits. The three remaining advisory gates each name their own promotion
+      condition in the workflow; ts-nocheck-components and lint-rules-reenable
+      remain real dependencies for the strength of `typecheck` and `vp check`,
+      not for whether they block.
+    exit: >-
+      Either enable branch protection on main requiring Certification Gates +
+      Site Gate + Release Readiness, or record the decision not to and close.
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
     state: open

@@ -45,8 +45,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Blocking, and deliberately placed here rather than in the report-only
-      # certification gates: a package whose source moved without a changeset
+      # Deliberately placed here rather than in the certification gates: it
+      # simulates a publish and dirties the tree, which is safe on a fresh
+      # release checkout and not somewhere a contributor wants it. A package
+      # whose source moved without a changeset
       # keeps its published version, so npm serves a stale tarball under a
       # version consumers already resolve. That is invisible in-repo and only
       # breaks off-workspace, which is how ui@0.6.0 shipped importing a symbol

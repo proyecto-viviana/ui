@@ -44,17 +44,23 @@ smoke) is tracked as **UC-00** in `ui-client-contract.md`.
 
 ```bash
 vp run pr:check:fast      # ci:changesets + ci:release-readiness
-vp run pr:check           # pr:check:fast + ci:a11y (web/a11y/CI changes)
+vp run pr:check           # pr:check:fast + ci:site (web/a11y/CI changes)
 vp run release:prepare    # changeset:version + ci:release-readiness
 vp run release:publish    # publish via Changesets
 vp run release            # release:prepare + release:publish
 ```
 
-PR enforcement mirrors these locally: `Changesets Check` = `ci:changesets`,
-`Release Readiness` = `ci:release-readiness`, `Accessibility Gate` = `ci:a11y`;
-together they match `vp run pr:check`. `ci:a11y` is the blocking accessibility bar
-(WCAG 2.2 AA + smoke, axe `color-contrast` temporarily excluded — `tech-debt.md`);
-`a11y:full` runs stricter contrast/AAA/experimental audits without blocking.
+CI enforcement mirrors these: `Changesets Check` = `ci:changesets`,
+`Release Readiness` = `ci:release-readiness`, `Site Gate` = `ci:site`; together
+they match `vp run pr:check`. `ci:site` is the blocking accessibility bar (WCAG
+2.2 AA + smoke, axe `color-contrast` temporarily excluded — `tech-debt.md`) plus
+the all-routes render sweep; `a11y:full` runs stricter contrast/AAA/experimental
+audits without blocking.
+
+A fourth workflow, `Certification Gates`, runs the guard/parity ladder. Since
+2026-07-24 most of it is **blocking**; four checks stay advisory and say why in
+the workflow itself. All four workflows trigger on pull requests **and on push to
+`main`** — work here lands direct to main, so a PR-only gate never fires.
 
 ## GitHub automation
 

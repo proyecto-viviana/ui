@@ -98,6 +98,24 @@ a format check. `certification-gates.yml` runs all 19 gates report-only.
 The lesson generalizes: **a gate that cannot fire is not a gate.** Making the
 existing gates actually block is itself a launch item, not a nice-to-have.
 
+**Closed 2026-07-24** (`tech-debt.md` → `launch-gates-cannot-fire`, which carries
+the full inventory). 17 gates in `certification-gates.yml` are now blocking;
+4 stay advisory and each states inline what would promote it. The a11y workflow
+became `site-gate.yml` running `ci:site` (a11y + the 72-route sweep), and
+`ci:release-readiness` gained `vp run check`. Two guards that lived in
+`package.json` but in no workflow at all — `guard:invented-utilities` and
+`guard:outbound-links` — were wired in while promoting.
+
+The method mattered as much as the result: **every gate was run locally and
+observed green before its `continue-on-error` came off.** Promoting a gate you
+have not measured is the same mistake as writing one that cannot fire — it just
+fails later and louder. The four that are still advisory are advisory precisely
+because they were measured and were not green.
+
+One thing this does **not** do: `main` has no branch protection, so a red
+workflow is visible but not preventive. That is an owner decision (Rule #3) and
+is the remainder of `ci-gates-required`.
+
 ## Coverage gaps (not launch-blocking, but next)
 
 - **~31–40 of 78 catalogue components have no docs page.** 45 pages exist, 7 of

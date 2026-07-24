@@ -1,15 +1,25 @@
-name: Certification Gates (report-only)
+name: Certification Gates
 
-# Non-blocking projection of the full certification gate ladder
-# (.claude/current/certification.md). These gates exist in package.json but no
-# other workflow invokes them, so drift they would catch can merge green. This
-# job runs each and posts a status table WITHOUT failing the build, making the
-# real state visible before the ladder is made required (see the
-# `ci-gates-required` task in .claude/current/tech-debt.md).
+# The certification gate ladder (.claude/current/certification.md).
+#
+# This job used to run every gate with `continue-on-error: true` and post a
+# table. A gate that cannot fail is not a gate: the 2026-07-24 audit found
+# format drift across 174 files, 9 docs errors and 12 a11y failures all sitting
+# on a green-looking main, every one of them caught by a gate that ran here and
+# was ignored.
+#
+# So the ladder is now split by evidence, not by ambition:
+#
+#   BLOCKING  — verified green locally on 2026-07-24 before promotion, and
+#               expected to stay green. If one of these goes red, main is red,
+#               which is the entire point.
+#   ADVISORY  — legitimately red today (tracked), or designed to go red on
+#               someone else's schedule. `continue-on-error` stays, and the
+#               reason is written next to each one. Promoting one of these
+#               means closing its ticket first, not deleting its comment.
 #
 # Trigger: PRs AND push-to-main. Work on this repo lands direct-to-main, so a
-# PR-only ladder structurally never fires (`ci-main-gate-wiring`) — the main
-# push is what keeps the projection honest on the branch people commit to.
+# PR-only ladder structurally never fires (`ci-main-gate-wiring`).
 
 on:
   push:
@@ -48,57 +58,48 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
 
+      # ---------------------------------------------------------------------
+      # BLOCKING. Each verified green locally on 2026-07-24 before promotion.
+      # ---------------------------------------------------------------------
+
       # Keystone gate: passes today only because 35 solid-spectrum files carry
       # @ts-nocheck (tsc skips them). It begins surfacing real breakage as the
       # ts-nocheck-style / ts-nocheck-components tasks land.
       - name: typecheck
         id: typecheck
-        continue-on-error: true
         run: pnpm run typecheck
 
+      # 174 files had drifted out of format by the time anyone looked, because
+      # this ran here with continue-on-error and nowhere else (`launch.md` → B4).
       - name: lint (vp check)
         id: lint
-        continue-on-error: true
         run: pnpm exec vp check
 
       - name: guard rac-parity
         id: guard_rac_parity
-        continue-on-error: true
         run: pnpm run guard:rac-parity
 
       - name: guard rac-export-gap
         id: guard_rac_export_gap
-        continue-on-error: true
         run: pnpm run guard:rac-export-gap
 
       - name: guard dnd-keyboard-parity
         id: guard_dnd_keyboard
-        continue-on-error: true
         run: pnpm run guard:dnd-keyboard-parity
 
       - name: guard virtualizer-keyboard-parity
         id: guard_virtualizer_keyboard
-        continue-on-error: true
         run: pnpm run guard:virtualizer-keyboard-parity
-
-      # Warns (❌ cell) when Adobe has shipped a RAC/S2 release newer than our
-      # pin, so a stale oracle is visible instead of silently sitting for weeks.
-      - name: guard upstream-freshness
-        id: guard_upstream_freshness
-        continue-on-error: true
-        run: pnpm run guard:upstream-freshness
 
       # Keeps solid-spectrum's @adobe/spectrum-tokens on the exact version the
       # pinned S2 builds against (the vendored-oracle leg skips here — the
       # ./react-spectrum tree is not materialized in CI).
       - name: guard spectrum-tokens-pin
         id: guard_tokens_pin
-        continue-on-error: true
         run: pnpm run guard:spectrum-tokens-pin
 
       - name: guard style-macro-parity
         id: guard_style_macro_parity
-        continue-on-error: true
         run: pnpm run guard:style-macro-parity
 
       # Flags the Solid reactivity anti-pattern that has bitten this port
@@ -106,59 +107,74 @@ jobs:
       # the value, since the body runs once). Excludes the generated icon set.
       - name: guard idiomatic-solid
         id: guard_idiomatic_solid
-        continue-on-error: true
         run: pnpm run guard:idiomatic-solid
+
+      - name: guard invented-utilities
+        id: guard_invented_utilities
+        run: pnpm run guard:invented-utilities
 
       - name: guard docs-routes
         id: guard_docs_routes
-        continue-on-error: true
         run: pnpm run guard:docs-routes
 
-      # Orphaned guards (`ci-main-gate-wiring`): both exist in package.json but
-      # were wired into no workflow, so the deopt-size budget and the upstream
-      # test-vocab parity could drift green. Projected here alongside the rest.
+      # Keeps the repository slug from rotting in site links again and holds
+      # every published package to full npm metadata (`launch.md` → B1, B7).
+      - name: guard outbound-links
+        id: guard_outbound_links
+        run: pnpm run guard:outbound-links
+
       - name: guard jsx-deopt-size
         id: guard_jsx_deopt_size
-        continue-on-error: true
         run: pnpm run guard:jsx-deopt-size
 
       - name: guard upstream-test-parity
         id: guard_upstream_test_parity
-        continue-on-error: true
         run: pnpm run guard:upstream-test-parity
 
       - name: docs:check
         id: docs_check
-        continue-on-error: true
         run: pnpm run docs:check
 
+      - name: comparison contract suite
+        id: contract
+        run: pnpm run comparison:test:contract
+
+      - name: comparison pair-diff suite
+        id: pair
+        run: pnpm run comparison:test:pair
+
+      # ---------------------------------------------------------------------
+      # ADVISORY. Red today, or red on someone else's schedule. Each one names
+      # the condition under which it becomes blocking — that condition is the
+      # ticket, not this comment.
+      # ---------------------------------------------------------------------
+
+      # Goes red when Adobe ships a RAC/S2 release newer than our pin. That is
+      # information about upstream, not a defect in this branch, so it must not
+      # block main; the response is a pin bump, not a revert.
+      - name: guard upstream-freshness
+        id: guard_upstream_freshness
+        continue-on-error: true
+        run: pnpm run guard:upstream-freshness
+
+      # Genuinely FAILing: 9 official entries have no modeled control group
+      # (tech-debt.md → `labeledvalue-strict-parity`). Promote when that closes.
       - name: comparison parity (strict)
         id: parity_strict
         continue-on-error: true
         run: pnpm run comparison:report:parity:strict
 
-      - name: comparison contract suite
-        id: contract
-        continue-on-error: true
-        run: pnpm run comparison:test:contract
-
-      - name: comparison pair-diff suite
-        id: pair
-        continue-on-error: true
-        run: pnpm run comparison:test:pair
-
-      # The recertification bar itself (`ci-main-gate-wiring`): wired into no
-      # workflow until now. Expected ❌ while the deferred D4 event-ordering reds
-      # stand (recertification.md Open decisions) — report-only keeps that
-      # honest without blocking; a filtered/required invocation lands with
-      # `ci-gates-required` once the D4 policy is decided.
+      # 2176 tests. Not promoted because it has not been observed green
+      # end-to-end on this branch, and the deferred D4 event-ordering policy is
+      # still open (recertification.md). Promote on a confirmed clean run.
       - name: comparison certified suite
         id: certified
         continue-on-error: true
         run: pnpm run comparison:test:certified
 
-      # Ungated axe: the blocking gate excludes color-contrast and the stricter
-      # scans; a11y:full runs them all (non-blocking here).
+      # Superset of the blocking a11y gate (site-gate.yml), which
+      # excludes axe color-contrast and the stricter scans. The excluded rules
+      # have never been measured clean, so this stays a report until they are.
       - name: axe (full / ungated)
         id: axe_full
         continue-on-error: true
@@ -188,7 +204,9 @@ jobs:
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_STYLE_MACRO_PARITY: ${{ steps.guard_style_macro_parity.outcome }}
           O_GUARD_IDIOMATIC_SOLID: ${{ steps.guard_idiomatic_solid.outcome }}
+          O_GUARD_INVENTED_UTILITIES: ${{ steps.guard_invented_utilities.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
+          O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
@@ -208,9 +226,11 @@ jobs:
             esac
           }
           {
-            echo "## Certification Gates (report-only)"
+            echo "## Certification Gates"
             echo ""
-            echo "**Non-blocking.** Projects the certification gate ladder so each gate's real status is visible on every PR. None of these gates run in any other workflow today; this job exists to make that gap measurable before flipping the ladder to required (\`ci-gates-required\` in \`tech-debt.md\`)."
+            echo "Runs on pull requests and on push to \`main\`. **Blocking gates fail the build.** A blocking gate that fails stops the job, so anything below it reports ⏭️ skip — fix the first ❌ and the rest will run."
+            echo ""
+            echo "### Blocking"
             echo ""
             echo "| Gate | Result |"
             echo "| --- | --- |"
@@ -220,20 +240,28 @@ jobs:
             echo "| \`guard:rac-export-gap\` | $(icon "$O_GUARD_RAC_EXPORT_GAP") |"
             echo "| \`guard:dnd-keyboard-parity\` | $(icon "$O_GUARD_DND") |"
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
-            echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") |"
             echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
             echo "| \`guard:style-macro-parity\` | $(icon "$O_GUARD_STYLE_MACRO_PARITY") |"
             echo "| \`guard:idiomatic-solid\` | $(icon "$O_GUARD_IDIOMATIC_SOLID") |"
+            echo "| \`guard:invented-utilities\` | $(icon "$O_GUARD_INVENTED_UTILITIES") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
+            echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
-            echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
             echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
             echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
-            echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
-            echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") |"
             echo ""
             echo "_\`typecheck\` passes today only because 35 \`solid-spectrum\` files carry \`@ts-nocheck\`; it starts surfacing breakage as those are removed._"
-            echo "_\`comparison:test:certified\` is expected ❌ while the deferred D4 event-ordering reds stand (\`recertification.md\` Open decisions); report-only keeps it visible without blocking._"
+            echo ""
+            echo "### Advisory (does not fail the build)"
+            echo ""
+            echo "| Gate | Result | Why it is not blocking |"
+            echo "| --- | --- | --- |"
+            echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") | ❌ means Adobe shipped past our pin — a pin bump, not a branch defect |"
+            echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") | Genuinely failing: 9 entries lack modeled control groups (\`labeledvalue-strict-parity\`) |"
+            echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") | 2176 tests, never observed green end-to-end; deferred D4 policy still open |"
+            echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") | Superset of the blocking a11y gate; its extra rules are unmeasured |"
+            echo ""
+            echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -60,11 +60,13 @@ the `launch` roadmap item.
 - **Record and clean** (Phase 0) — `launch.md` landed; `status.md` refreshed from
   the scripts; every finding filed; the 9 `docs:check` errors cleared; stale docs
   trees deleted; the 174-file format drift and tracked strays cleaned.
-- **Make the gates real** (Phase 1) — fix the 5 stale e2e selectors that turned
-  `a11y:smoke` red (B8), then promote `vp check` + `docs:check` to blocking and
-  fire the a11y gate on push to main. _A gate that cannot fire is not a gate:_
-  `accessibility-playground.yml` blocks correctly but triggers only on
-  `pull_request`, and work lands straight on main, so it has never run.
+- **Make the gates real** (Phase 1) — **done.** The 5 stale e2e selectors that
+  turned `a11y:smoke` red (B8) are fixed; 17 certification gates are blocking
+  (including `vp check` and `docs:check`), 4 stay advisory with their promotion
+  condition written inline, and every workflow now fires on push to main. _A gate
+  that cannot fire is not a gate_ — and neither is one promoted without being
+  measured, which is why each was run locally first. Residual: main is not
+  branch-protected, an owner call (`ci-gates-required`).
 - **Make the site truthful** (Phase 2) — the 6 broken GitHub links (B1), the
   installation page that omits the flagship package and tells users to
   hand-author CSS variables (B2), the two-product story in the nav, npm metadata
