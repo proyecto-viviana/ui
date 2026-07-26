@@ -1,0 +1,84 @@
+{
+  "slug": "toolbar",
+  "title": "Toolbar",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ToolbarProps",
+      "component": "Toolbar",
+      "source": "packages/viviana-ui/src/toolbar/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string | ((renderProps: ToolbarRenderProps) => string)",
+          "required": false,
+          "description": "The CSS className for the element. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties | ((renderProps: ToolbarRenderProps) => JSX.CSSProperties)",
+          "required": false,
+          "description": "The inline style for the element. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null; }",
+          "required": false,
+          "description": "Ref for the toolbar element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "orientation",
+          "type": "MaybeAccessor<Orientation>",
+          "required": false,
+          "default": "'horizontal'",
+          "description": "The orientation of the toolbar.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "MaybeAccessor<string>",
+          "required": false,
+          "description": "An accessibility label for the toolbar.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "MaybeAccessor<string>",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the toolbar.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ToolbarRenderProps",
+      "component": "ToolbarRender",
+      "source": "packages/solidaria-components/src/Toolbar.tsx",
+      "props": [
+        {
+          "name": "orientation",
+          "type": "Orientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": true,
+          "description": "The orientation of the toolbar.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

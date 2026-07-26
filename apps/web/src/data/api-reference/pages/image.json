@@ -1,0 +1,192 @@
+{
+  "slug": "image",
+  "title": "Image",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ImageProps",
+      "component": "Image",
+      "source": "packages/viviana-ui/src/image/index.tsx",
+      "props": [
+        {
+          "name": "src",
+          "type": "string | ImageSource[]",
+          "required": false,
+          "description": "The URL of the image or a list of conditional sources.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "alt",
+          "type": "string",
+          "required": false,
+          "description": "Accessible alt text for the image.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "crossOrigin",
+          "type": "\"anonymous\" | \"use-credentials\"",
+          "values": [
+            "'anonymous'",
+            "'use-credentials'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "decoding",
+          "type": "\"auto\" | \"async\" | \"sync\"",
+          "values": [
+            "'auto'",
+            "'async'",
+            "'sync'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "fetchPriority",
+          "type": "\"auto\" | \"high\" | \"low\"",
+          "values": [
+            "'auto'",
+            "'high'",
+            "'low'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loading",
+          "type": "\"eager\" | \"lazy\"",
+          "values": [
+            "'eager'",
+            "'lazy'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "JSX.HTMLReferrerPolicy",
+          "values": [
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "height",
+          "type": "number",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "renderError",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "group",
+          "type": "ImageGroup",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "itemProp",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "ImageCoordinatorProps",
+      "component": "ImageCoordinator",
+      "source": "packages/viviana-ui/src/image/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "timeout",
+          "type": "number",
+          "required": false,
+          "default": "5000",
+          "description": "Time in milliseconds after which images are always displayed.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "group",
+          "type": "ImageGroup",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

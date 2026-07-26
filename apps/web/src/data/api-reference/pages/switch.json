@@ -1,0 +1,694 @@
+{
+  "slug": "switch",
+  "title": "Switch",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SwitchProps",
+      "component": "Switch",
+      "source": "packages/viviana-ui/src/switch/ToggleSwitch.tsx",
+      "props": [
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name, used to inject props from a parent slotted context (mirrors upstream's `SlotProps`; our headless `ToggleSwitchProps` already extends it).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "SwitchSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the Switch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the Switch should be displayed with an emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "A description for the Switch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An error message for the Switch (rendered when invalid).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label text for the Switch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(isSelected: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's selection state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onClick",
+          "type": "(e: MouseEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element is clicked.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is released.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-controls",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) whose contents or presence are controlled by the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-errormessage",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide an error message for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPress",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressStart",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressEnd",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction ends, either over the target or when the pointer leaves the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressUp",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press is released over the target, regardless of whether it started on the target or not.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressChange",
+          "type": "(isPressed: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the press state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to autofocus the element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The form to associate the input with.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the input element, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The value of the input element, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "excludeFromTabOrder",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to exclude the element from the tab order.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should be selected (controlled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "defaultSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should be selected by default (uncontrolled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is read only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is invalid.",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "TabSwitchProps",
+      "component": "TabSwitch",
+      "source": "packages/viviana-ui/src/switch/index.tsx",
+      "props": [
+        {
+          "name": "options",
+          "type": "SwitchOption[]",
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "ToggleSwitchProps",
+      "component": "ToggleSwitch",
+      "source": "packages/viviana-ui/src/switch/ToggleSwitch.tsx",
+      "props": [
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name, used to inject props from a parent slotted context (mirrors upstream's `SlotProps`; our headless `ToggleSwitchProps` already extends it).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "SwitchSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the Switch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the Switch should be displayed with an emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "A description for the Switch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An error message for the Switch (rendered when invalid).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label text for the Switch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(isSelected: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's selection state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onClick",
+          "type": "(e: MouseEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element is clicked.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is released.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-controls",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) whose contents or presence are controlled by the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-errormessage",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide an error message for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPress",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressStart",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressEnd",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction ends, either over the target or when the pointer leaves the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressUp",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press is released over the target, regardless of whether it started on the target or not.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressChange",
+          "type": "(isPressed: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the press state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to autofocus the element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The form to associate the input with.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the input element, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The value of the input element, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "excludeFromTabOrder",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to exclude the element from the tab order.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should be selected (controlled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "defaultSelected",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should be selected by default (uncontrolled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is read only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element is invalid.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

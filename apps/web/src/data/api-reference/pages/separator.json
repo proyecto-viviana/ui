@@ -1,0 +1,118 @@
+{
+  "slug": "separator",
+  "title": "Separator",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SeparatorProps",
+      "component": "Separator",
+      "source": "packages/viviana-ui/src/separator/index.tsx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "SeparatorVariant",
+          "values": [
+            "'default'",
+            "'subtle'",
+            "'strong'"
+          ],
+          "required": false,
+          "default": "'default'",
+          "description": "The visual style variant. Note that `strong` currently renders as `default` — see {@link SeparatorVariant}.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "SeparatorSize",
+          "values": [
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "'md'",
+          "description": "The size/thickness of the separator.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying separator element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element(s) that describes the separator.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element(s) that provide a detailed description.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessibility label for the separator.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element(s) that labels the separator.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "elementType",
+          "type": "string",
+          "required": false,
+          "default": "'hr'",
+          "description": "The HTML element type that will be used to render the separator.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "orientation",
+          "type": "Orientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "'horizontal'",
+          "description": "The orientation of the separator.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

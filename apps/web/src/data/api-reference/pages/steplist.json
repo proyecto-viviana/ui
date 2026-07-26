@@ -1,0 +1,169 @@
+{
+  "slug": "steplist",
+  "title": "StepList",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "StepListProps",
+      "component": "StepList",
+      "source": "packages/viviana-ui/src/steplist/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "StepListSize",
+          "values": [
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the step list.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "(item: T, state: StepListItemRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Render function for step content, or omit to use default rendering.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Called when the selected step changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the step list.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the step list.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether all steps are disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": true,
+          "description": "The step items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of individually disabled steps.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether all steps are read-only.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The currently selected step key (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The default selected step key (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "lastCompletedStep",
+          "type": "Key",
+          "required": false,
+          "description": "The last completed step key (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultLastCompletedStep",
+          "type": "Key",
+          "required": false,
+          "description": "The default last completed step key (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onLastCompletedStepChange",
+          "type": "(key: Key | null) => void",
+          "required": false,
+          "description": "Called when last completed step changes.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "StepProps",
+      "component": "Step",
+      "source": "packages/viviana-ui/src/steplist/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The children to render inside the step.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "{ key: Key; label: string; }",
+          "required": true,
+          "description": "The step item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "stepNumber",
+          "type": "number",
+          "required": true,
+          "description": "The 1-based step number.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

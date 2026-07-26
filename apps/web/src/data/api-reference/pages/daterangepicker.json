@@ -1,0 +1,438 @@
+{
+  "slug": "daterangepicker",
+  "title": "DateRangePicker",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "DateRangePickerProps",
+      "component": "DateRangePicker",
+      "source": "packages/viviana-ui/src/calendar/DateRangePicker.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "DateRangePickerSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the picker.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Label for the field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "Description text.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "string",
+          "required": false,
+          "description": "Error message.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "maxVisibleMonths",
+          "type": "number",
+          "required": false,
+          "description": "The maximum number of months to display in the range calendar popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "firstDayOfWeek",
+          "type": "0 | 5 | 1 | 2 | 3 | 4 | 6 | DateRangePickerFirstDayOfWeek",
+          "values": [
+            "0",
+            "5",
+            "'sun'",
+            "'mon'",
+            "'tue'",
+            "'wed'",
+            "'thu'",
+            "'fri'",
+            "'sat'",
+            "1",
+            "2",
+            "3",
+            "4",
+            "6"
+          ],
+          "required": false,
+          "description": "The day that starts the week.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: RangeValue<T> | null) => void",
+          "required": false,
+          "description": "Handler called when the value changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Callback for key down (forwarded when the popover is closed).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Callback for key up (forwarded when the popover is closed).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "MaybeAccessor<boolean>",
+          "required": false,
+          "description": "Whether the calendar is disabled.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Auto focus the start field.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The associated form id for the hidden start/end date inputs.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "value",
+          "type": "RangeValue<T> | Accessor<RangeValue<T> | null>",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(date: CalendarDate) => void",
+          "required": false,
+          "description": "Handler called when the focused date changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "shouldCloseOnSelect",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open by default (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Callback when the overlay open state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "validationState",
+          "type": "ValidationState | Accessor<ValidationState | undefined>",
+          "required": false,
+          "description": "Validation state.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultValue",
+          "type": "RangeValue<T>",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "minValue",
+          "type": "DateValue | Accessor<DateValue | undefined>",
+          "required": false,
+          "description": "The minimum allowed date.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "maxValue",
+          "type": "DateValue | Accessor<DateValue | undefined>",
+          "required": false,
+          "description": "The maximum allowed date.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "MaybeAccessor<boolean>",
+          "required": false,
+          "description": "Whether the calendar is read-only.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "focusedValue",
+          "type": "DateValue | Accessor<DateValue | null | undefined>",
+          "required": false,
+          "description": "The date that is focused when the calendar first mounts.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultFocusedValue",
+          "type": "DateValue",
+          "required": false,
+          "description": "The default focused date (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "createCalendar",
+          "type": "(identifier: CalendarIdentifier) => InternationalizedCalendar",
+          "required": false,
+          "description": "Creates a calendar object for a locale calendar identifier.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isDateUnavailable",
+          "type": "(date: DateValue, anchorDate: CalendarDate | null) => boolean",
+          "required": false,
+          "description": "Callback that determines if a date is unavailable. The second argument is the current selection anchor (the first selected date), so availability can be derived from it. Mirrors",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "visibleMonths",
+          "type": "number | Accessor<number | undefined>",
+          "required": false,
+          "description": "The number of months to display at once.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "pageBehavior",
+          "type": "RangeCalendarPageBehavior | Accessor<RangeCalendarPageBehavior | undefined>",
+          "required": false,
+          "description": "Controls whether pagination moves by one month or the visible month count.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "selectionAlignment",
+          "type": "RangeCalendarSelectionAlignment | Accessor<RangeCalendarSelectionAlignment | undefined>",
+          "required": false,
+          "description": "Controls how the initial visible months are aligned around the current value.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isDateDisabled",
+          "type": "(date: DateValue) => boolean",
+          "required": false,
+          "description": "Controls which days are disabled.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "description": "Controls whether native or ARIA validation should be used.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "granularity",
+          "type": "\"day\" | \"hour\" | \"minute\" | \"second\"",
+          "values": [
+            "'day'",
+            "'hour'",
+            "'minute'",
+            "'second'"
+          ],
+          "required": false,
+          "description": "The granularity of the date/time fields.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "hourCycle",
+          "type": "24 | 12",
+          "values": [
+            "24",
+            "12"
+          ],
+          "required": false,
+          "description": "Whether to show the hour in 12 or 24 hour format.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "hideTimeZone",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to hide the time zone in date/time fields.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "placeholderValue",
+          "type": "DateValue",
+          "required": false,
+          "description": "The placeholder date used to determine segment structure.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsNonContiguousRanges",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow selecting the same date for start and end.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "buttonAriaLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the calendar trigger button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "dialogAriaLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the calendar dialog.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "calendarAriaLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the calendar grid region.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "startName",
+          "type": "string",
+          "required": false,
+          "description": "The name for the start date input used in HTML form submission.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "endName",
+          "type": "string",
+          "required": false,
+          "description": "The name for the end date input used in HTML form submission.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,221 @@
+{
+  "slug": "layout",
+  "title": "Flex",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "FlexProps",
+      "component": "Flex",
+      "source": "packages/viviana-ui/src/layout/Flex.tsx",
+      "props": [
+        {
+          "name": "direction",
+          "type": "\"row\" | \"column\" | \"row-reverse\" | \"column-reverse\"",
+          "values": [
+            "'row'",
+            "'column'",
+            "'row-reverse'",
+            "'column-reverse'"
+          ],
+          "required": false,
+          "default": "'row'",
+          "description": "The flex direction.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "gap",
+          "type": "string | number",
+          "required": false,
+          "default": "'0'",
+          "description": "The gap between items. Accepts a t-shirt size, a number (spacing scale), or a raw CSS length.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "wrap",
+          "type": "boolean | \"wrap\" | \"nowrap\" | \"wrap-reverse\"",
+          "values": [
+            "false",
+            "true",
+            "'wrap'",
+            "'nowrap'",
+            "'wrap-reverse'"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether items should wrap.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "alignItems",
+          "type": "\"start\" | \"end\" | \"center\" | \"stretch\" | \"baseline\"",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'stretch'",
+            "'baseline'"
+          ],
+          "required": false,
+          "description": "The alignment of items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "justifyContent",
+          "type": "\"start\" | \"end\" | \"center\" | \"between\" | \"around\" | \"evenly\"",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'between'",
+            "'around'",
+            "'evenly'"
+          ],
+          "required": false,
+          "description": "The justification of items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "inline",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the flex container is inline.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "GridProps",
+      "component": "Grid",
+      "source": "packages/viviana-ui/src/layout/Grid.tsx",
+      "props": [
+        {
+          "name": "columns",
+          "type": "string | number",
+          "required": false,
+          "description": "The number of columns, or a grid-template-columns value.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rows",
+          "type": "string | number",
+          "required": false,
+          "description": "The number of rows, or a grid-template-rows value.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "gap",
+          "type": "string | number",
+          "required": false,
+          "description": "The gap between items. Accepts a t-shirt size, a number (spacing scale), or a raw CSS length.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "columnGap",
+          "type": "string | number",
+          "required": false,
+          "description": "The column gap.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rowGap",
+          "type": "string | number",
+          "required": false,
+          "description": "The row gap.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "areas",
+          "type": "string[]",
+          "required": false,
+          "description": "Named grid areas (grid-template-areas).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "alignItems",
+          "type": "\"start\" | \"end\" | \"center\" | \"stretch\"",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'stretch'"
+          ],
+          "required": false,
+          "description": "The alignment of items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "justifyItems",
+          "type": "\"start\" | \"end\" | \"center\" | \"stretch\"",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'stretch'"
+          ],
+          "required": false,
+          "description": "The justification of items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "inline",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the grid is inline.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

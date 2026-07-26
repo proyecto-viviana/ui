@@ -1,0 +1,310 @@
+{
+  "slug": "slider",
+  "title": "Slider",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SliderProps",
+      "component": "Slider",
+      "source": "packages/viviana-ui/src/slider/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "SliderSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "SliderVariant",
+          "values": [
+            "'default'",
+            "'accent'"
+          ],
+          "required": false,
+          "description": "Legacy alias. Prefer S2 `isEmphasized`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "trackStyle",
+          "type": "SliderTrackStyle",
+          "values": [
+            "'thin'",
+            "'thick'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "thumbStyle",
+          "type": "SliderThumbStyle",
+          "values": [
+            "'default'",
+            "'precise'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "fillOffset",
+          "type": "number",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "contextualHelp",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showOutput",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showMinMax",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "SliderLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "SliderLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "An ID for the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: number) => void",
+          "required": false,
+          "description": "Handler called when the value changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that describes the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the slider when no visible label is provided.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that labels the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the slider is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The form element this input belongs to.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name for the form input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "description": "The step value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "orientation",
+          "type": "SliderOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "description": "The orientation of the slider.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "required": false,
+          "description": "The locale for number formatting.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "number",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "minValue",
+          "type": "number",
+          "required": false,
+          "description": "The minimum value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "maxValue",
+          "type": "number",
+          "required": false,
+          "description": "The maximum value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChangeEnd",
+          "type": "(value: number) => void",
+          "required": false,
+          "description": "Handler called when dragging ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "formatOptions",
+          "type": "Intl.NumberFormatOptions",
+          "required": false,
+          "description": "Number format options.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

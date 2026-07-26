@@ -1,0 +1,439 @@
+{
+  "slug": "tag-group",
+  "title": "TagGroup",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "TagGroupProps",
+      "component": "TagGroup",
+      "source": "packages/viviana-ui/src/tag-group/index.tsx",
+      "props": [
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The label for the tag group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "(item: T) => JSX.Element",
+          "required": true,
+          "description": "Function to render each tag or each tag's content.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "TagGroupSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "S2 tag size. Legacy sm/md/lg aliases map to S/M/L.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TagGroupVariant",
+          "values": [
+            "'default'",
+            "'outline'",
+            "'solid'"
+          ],
+          "required": false,
+          "description": "Legacy visual variant. Prefer `isEmphasized` for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selected tags use the emphasized accent fill.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description text shown below the tag list.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Error message shown when invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the group is invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "TagGroupLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "Position of the label relative to the tag list.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "TagGroupLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "Text alignment for side labels.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "groupActionLabel",
+          "type": "string",
+          "required": false,
+          "description": "Label for the optional group action button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onGroupAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler for the optional group action button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "maxRows",
+          "type": "number",
+          "required": false,
+          "description": "Maximum visible rows. This is approximated with overflow clipping in Solid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible inline style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler called when a tag is activated.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when selection changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Reference to description element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Custom aria-label.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Reference to external label element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tag list is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "SelectionMode",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode for the tag list.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "The currently selected keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "The default selected keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": true,
+          "description": "The items to display in the tag list.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "SelectionBehavior",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": false,
+          "description": "How selection behaves in the collection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get a unique key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys that are disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Content to render when the list is empty.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onRemove",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when tags are removed.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TagProps",
+      "component": "Tag",
+      "source": "packages/viviana-ui/src/tag-group/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content of the tag.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selected tags use the emphasized accent fill. Inherited from TagGroup.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "TagGroupSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "S2 tag size. Inherited from TagGroup.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "Href retained for API parity; rendered as a tag action in the current Solid primitive.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "Link target retained for API parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "Link relationship retained for API parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler called when this tag is activated.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "A ref to the tag's DOM element (merged with the internal collection ref).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "A unique key for this tag.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tag is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "A text value for accessibility.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,1235 @@
+{
+  "slug": "tree",
+  "title": "Tree",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "TreeProps",
+      "component": "Tree",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element | ((item: TreeItemData<T>, state: TreeRenderItemState) => JSX.Element)",
+          "required": true,
+          "description": "TreeView content. Use a render function with `items` for S2 dynamic collections.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "items",
+          "type": "TreeItemData<T>[]",
+          "required": false,
+          "description": "Dynamic hierarchical items. Supports either `id` or `key`, matching React Spectrum examples.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionStyle",
+          "type": "TreeSelectionStyle",
+          "values": [
+            "'checkbox'",
+            "'highlight'"
+          ],
+          "required": false,
+          "default": "'checkbox'",
+          "description": "Whether selection is shown with checkboxes or highlighted rows.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loadingState",
+          "type": "TreeLoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "Loading state forwarded to load-more behavior.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "renderActionBar",
+          "type": "(selectedKeys: \"all\" | Set<Key>) => JSX.Element",
+          "required": false,
+          "description": "Provides an action bar when items are selected.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the tree root element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy label helper. Prefer aria-label or aria-labelledby.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy description helper.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The unique id for the tree.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when selection changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that describes the tree.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Label for accessibility.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that labels the tree.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tree is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when expansion changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "expandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Currently expanded keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultExpandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Default expanded keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler called when an item action is triggered.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "\"all\" | \"selection\"",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "Whether disabled items can still receive focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "A function to render when the tree is empty.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dragAndDropHooks",
+          "type": "DragAndDropHooks<T>",
+          "required": false,
+          "description": "Drag and drop hooks from `useDragAndDrop`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tree is virtualized.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "keyboardNavigationBehavior",
+          "type": "\"arrow\" | \"tab\"",
+          "values": [
+            "'arrow'",
+            "'tab'"
+          ],
+          "required": false,
+          "default": "\"arrow\"",
+          "description": "How keyboard navigation should behave within rows. `\"arrow\"` treats the tree as a single tab stop and uses arrow keys to move through row children. `\"tab\"` lets tabbable row children participate in normal tab order and stops child key events before tree navigation.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "direction",
+          "type": "\"ltr\" | \"rtl\"",
+          "values": [
+            "'ltr'",
+            "'rtl'"
+          ],
+          "required": false,
+          "description": "The writing direction for the tree. Determines expand/collapse key mapping.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "hasMore",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether there are more items to load.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "Called when the load more sentinel becomes visible.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "loadMoreClass",
+          "type": "ClassNameOrFunction<{ isLoading: boolean; }>",
+          "required": false,
+          "description": "CSS className for the load-more sentinel.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderLoadMoreItem",
+          "type": "(state: { isLoading: boolean; }) => JSX.Element",
+          "required": false,
+          "description": "Renders the load-more sentinel content.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "loadMoreStyle",
+          "type": "StyleOrFunction<{ isLoading: boolean; }>",
+          "required": false,
+          "description": "Inline style for the load-more sentinel.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeExpandButtonProps",
+      "component": "TreeExpandButton",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((props: { isExpanded: boolean; }) => JSX.Element)",
+          "required": false,
+          "description": "Children to render inside the button.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeItemProps",
+      "component": "TreeItem",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique id of the TreeViewItem.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "TreeViewItem content. Text-only children are wrapped in the S2 label slot.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this item is disabled. Dynamic collections should prefer item data `isDisabled`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hasChildItems",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this item has children that may not be loaded yet.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "Link target metadata.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hrefLang",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ping",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "\"\" | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
+          "values": [
+            "''",
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "routerOptions",
+          "type": "import(\"@proyecto-viviana/solidaria-components\").RouterOptions",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Optional description text. Prefer `<Text slot=\"description\">`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "icon",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Optional icon helper retained from the older Tree API. Prefer an icon child.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the rendered row element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the item is activated.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "TreeItemData<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the item (for accessibility).",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeItemContentProps",
+      "component": "TreeItemContent",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeLoadMoreItemProps",
+      "component": "TreeLoadMoreItem",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loadingState",
+          "type": "TreeLoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "level",
+          "type": "number",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "TreeViewProps",
+      "component": "TreeView",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element | ((item: TreeItemData<T>, state: TreeRenderItemState) => JSX.Element)",
+          "required": true,
+          "description": "TreeView content. Use a render function with `items` for S2 dynamic collections.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "items",
+          "type": "TreeItemData<T>[]",
+          "required": false,
+          "description": "Dynamic hierarchical items. Supports either `id` or `key`, matching React Spectrum examples.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionStyle",
+          "type": "TreeSelectionStyle",
+          "values": [
+            "'checkbox'",
+            "'highlight'"
+          ],
+          "required": false,
+          "default": "'checkbox'",
+          "description": "Whether selection is shown with checkboxes or highlighted rows.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loadingState",
+          "type": "TreeLoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "Loading state forwarded to load-more behavior.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "renderActionBar",
+          "type": "(selectedKeys: \"all\" | Set<Key>) => JSX.Element",
+          "required": false,
+          "description": "Provides an action bar when items are selected.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the tree root element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy label helper. Prefer aria-label or aria-labelledby.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy description helper.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The unique id for the tree.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when selection changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that describes the tree.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Label for accessibility.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that labels the tree.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tree is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when expansion changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "expandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Currently expanded keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultExpandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Default expanded keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler called when an item action is triggered.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "\"all\" | \"selection\"",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "Whether disabled items can still receive focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "A function to render when the tree is empty.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dragAndDropHooks",
+          "type": "DragAndDropHooks<T>",
+          "required": false,
+          "description": "Drag and drop hooks from `useDragAndDrop`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tree is virtualized.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "keyboardNavigationBehavior",
+          "type": "\"arrow\" | \"tab\"",
+          "values": [
+            "'arrow'",
+            "'tab'"
+          ],
+          "required": false,
+          "default": "\"arrow\"",
+          "description": "How keyboard navigation should behave within rows. `\"arrow\"` treats the tree as a single tab stop and uses arrow keys to move through row children. `\"tab\"` lets tabbable row children participate in normal tab order and stops child key events before tree navigation.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "direction",
+          "type": "\"ltr\" | \"rtl\"",
+          "values": [
+            "'ltr'",
+            "'rtl'"
+          ],
+          "required": false,
+          "description": "The writing direction for the tree. Determines expand/collapse key mapping.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "hasMore",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether there are more items to load.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "Called when the load more sentinel becomes visible.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "loadMoreClass",
+          "type": "ClassNameOrFunction<{ isLoading: boolean; }>",
+          "required": false,
+          "description": "CSS className for the load-more sentinel.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderLoadMoreItem",
+          "type": "(state: { isLoading: boolean; }) => JSX.Element",
+          "required": false,
+          "description": "Renders the load-more sentinel content.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "loadMoreStyle",
+          "type": "StyleOrFunction<{ isLoading: boolean; }>",
+          "required": false,
+          "description": "Inline style for the load-more sentinel.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeViewItemProps",
+      "component": "TreeViewItem",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique id of the TreeViewItem.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "TreeViewItem content. Text-only children are wrapped in the S2 label slot.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this item is disabled. Dynamic collections should prefer item data `isDisabled`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hasChildItems",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this item has children that may not be loaded yet.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "Link target metadata.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hrefLang",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ping",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "\"\" | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
+          "values": [
+            "''",
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "routerOptions",
+          "type": "import(\"@proyecto-viviana/solidaria-components\").RouterOptions",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Optional description text. Prefer `<Text slot=\"description\">`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "icon",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Optional icon helper retained from the older Tree API. Prefer an icon child.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the rendered row element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the item is activated.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "TreeItemData<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the item (for accessibility).",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeViewItemContentProps",
+      "component": "TreeViewItemContent",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TreeItemRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TreeViewLoadMoreItemProps",
+      "component": "TreeViewLoadMoreItem",
+      "source": "packages/viviana-ui/src/tree/index.tsx",
+      "props": [
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loadingState",
+          "type": "TreeLoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "level",
+          "type": "number",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,598 @@
+{
+  "slug": "radio",
+  "title": "Radio",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "RadioProps",
+      "component": "Radio",
+      "source": "packages/viviana-ui/src/radio/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "RadioGroupSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the radio. Usually inherited from the RadioGroup or Form.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio should be displayed with an emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label text for the element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLLabelElement | ((el: HTMLLabelElement) => void) | { current?: HTMLLabelElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying label element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "inputRef",
+          "type": "HTMLInputElement | ((el: HTMLInputElement) => void) | { current?: HTMLInputElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying input element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onClick",
+          "type": "(e: MouseEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element is clicked.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is released.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio button is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverStart",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when hover starts.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverEnd",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when hover ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverChange",
+          "type": "(isHovered: boolean) => void",
+          "required": false,
+          "description": "Handler called when hover state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onPress",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressStart",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressEnd",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction ends, either over the target or when the pointer leaves the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressUp",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press is released over the target, regardless of whether it started on the target or not.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressChange",
+          "type": "(isPressed: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the press state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to autofocus the element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "The value of the radio button, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An error message for the radio.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "A description for the radio.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "RadioGroupProps",
+      "component": "RadioGroup",
+      "source": "packages/viviana-ui/src/radio/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "RadioGroupSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the RadioGroup.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "orientation",
+          "type": "RadioGroupOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "description": "The axis the radio elements should align with.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "RadioGroupLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "The label's overall position relative to the radio items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "RadioGroupLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "The label's horizontal alignment relative to the radio items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "RadioGroupNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "description": "Whether the required state should be shown as an icon or text label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "contextualHelp",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "A contextual help element to place next to the label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the RadioGroup should be displayed with an emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label for the group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description for the group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Error message when invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Children radios.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the radio group root element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the radio group loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Handler that is called when the value changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the radio group receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-errormessage",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide an error message for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio group is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: RadioGroupRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the outer radio group element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The form to associate the radio group with.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the radio group, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The current selected value (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the radio group's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Backward-compatible controlled validation state.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The default selected value (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio group is read only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio group is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the radio group is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "description": "Validation behavior for the radio group.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "ValidationFunction<string | null>",
+          "required": false,
+          "description": "Custom validation function.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "renderHelpText",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this component renders the visible description/error help-text nodes. Defaults to `true`. A styled layer (e.g. solid-spectrum) passes `false` to keep the id-minting and `aria-describedby` wiring here (so child radios inherit the group's shared description via `radioGroupData`) while owning the visible node itself — mirroring RAC, where the group exposes a `TextContext`/`FieldError` slot rather than rendering its own help text.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

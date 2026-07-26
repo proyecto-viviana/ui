@@ -1,0 +1,345 @@
+{
+  "slug": "numberfield",
+  "title": "NumberField",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "NumberFieldProps",
+      "component": "NumberField",
+      "source": "packages/viviana-ui/src/numberfield/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "NumberFieldSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "description": "The size of the number field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label text for the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description text shown below the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Error message shown when invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hideStepper",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to hide the stepper buttons.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "NumberFieldLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "Position of the label relative to the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "NumberFieldLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "Text alignment for side labels.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "NumberFieldNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "description": "Whether required fields show an icon or text label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "prefix",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An icon or text rendered before the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The ID of the number field.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "JSX.EventHandler<HTMLInputElement, FocusEvent>",
+          "required": false,
+          "description": "Handler for blur events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: number) => void",
+          "required": false,
+          "description": "Handler called when the value changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onCopy",
+          "type": "JSX.EventHandler<HTMLInputElement, ClipboardEvent>",
+          "required": false,
+          "description": "Handler for copy events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCut",
+          "type": "JSX.EventHandler<HTMLInputElement, ClipboardEvent>",
+          "required": false,
+          "description": "Handler for cut events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "JSX.EventHandler<HTMLInputElement, FocusEvent>",
+          "required": false,
+          "description": "Handler for focus events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "JSX.EventHandler<HTMLInputElement, KeyboardEvent>",
+          "required": false,
+          "description": "Handler for key down events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "JSX.EventHandler<HTMLInputElement, KeyboardEvent>",
+          "required": false,
+          "description": "Handler for key up events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPaste",
+          "type": "JSX.EventHandler<HTMLInputElement, ClipboardEvent>",
+          "required": false,
+          "description": "Handler for paste events.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "The element ID that describes the number field.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the number field.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "The element ID that labels the number field.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the number field is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to auto-focus the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The form element this input belongs to.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name for the form input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "required": false,
+          "description": "The step value for increment/decrement.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler called when focus state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "required": false,
+          "description": "The locale for number formatting.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "number",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "minValue",
+          "type": "number",
+          "required": false,
+          "description": "The minimum value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "maxValue",
+          "type": "number",
+          "required": false,
+          "description": "The maximum value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the number field is read-only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the number field is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the number field is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formatOptions",
+          "type": "Intl.NumberFormatOptions",
+          "required": false,
+          "description": "Number format options.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

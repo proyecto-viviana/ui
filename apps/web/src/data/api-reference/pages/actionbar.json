@@ -1,0 +1,147 @@
+{
+  "slug": "actionbar",
+  "title": "ActionBar",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ActionBarProps",
+      "component": "ActionBar",
+      "source": "packages/viviana-ui/src/actionbar/index.tsx",
+      "props": [
+        {
+          "name": "selectedItemCount",
+          "type": "number | \"all\"",
+          "required": false,
+          "description": "The number of selected items. ActionBar is hidden when 0.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the ActionBar should be displayed with an emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onClearSelection",
+          "type": "() => void",
+          "required": false,
+          "description": "Callback when the clear button is pressed.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Callback when an action is triggered.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The action buttons to display.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "scrollRef",
+          "type": "HTMLElement | { current?: HTMLElement | null; }",
+          "required": false,
+          "description": "A ref to the scrollable element the ActionBar appears above.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "default": "'Actions'",
+          "description": "Accessible label for the action bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the action bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "JSX.EventHandlerUnion<HTMLDivElement, KeyboardEvent, JSX.EventHandler<HTMLDivElement, KeyboardEvent>>",
+          "required": false,
+          "description": "Optional keydown handler for the action bar root.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "ActionBarContainerProps",
+      "component": "ActionBarContainer",
+      "source": "packages/viviana-ui/src/actionbar/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

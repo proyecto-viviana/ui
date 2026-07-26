@@ -1,0 +1,174 @@
+{
+  "slug": "colorwheel",
+  "title": "ColorWheel",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ColorWheelProps",
+      "component": "ColorWheel",
+      "source": "packages/viviana-ui/src/color/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "number",
+          "required": false,
+          "description": "Diameter of the authored Spectrum control in pixels.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StylesProp",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ColorWheelRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Element id for the hidden hue range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when the color changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the wheel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides detailed information about the wheel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-errormessage",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides the error message.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the wheel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the wheel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the wheel is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Associated form owner for the hidden hue range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Name for the hidden hue range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string | Color",
+          "required": false,
+          "description": "The current color value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | Color",
+          "required": false,
+          "description": "The default color value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChangeEnd",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when dragging ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "outerRadius",
+          "type": "number",
+          "required": false,
+          "description": "Outer radius of the circular track in pixels.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "innerRadius",
+          "type": "number",
+          "required": false,
+          "description": "Inner radius of the circular track in pixels.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

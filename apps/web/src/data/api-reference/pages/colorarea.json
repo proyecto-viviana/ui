@@ -1,0 +1,185 @@
+{
+  "slug": "colorarea",
+  "title": "ColorArea",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ColorAreaProps",
+      "component": "ColorArea",
+      "source": "packages/viviana-ui/src/color/index.tsx",
+      "props": [
+        {
+          "name": "styles",
+          "type": "StylesPropWithHeight",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Element id for the color area.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when the color changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the area.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides detailed information about the area.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the area.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the area.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the area is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Associated form owner for the hidden range inputs.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string | Color",
+          "required": false,
+          "description": "The current color value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | Color",
+          "required": false,
+          "description": "The default color value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChangeEnd",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when dragging ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "xChannel",
+          "type": "ColorChannel",
+          "values": [
+            "'red'",
+            "'green'",
+            "'blue'",
+            "'hue'",
+            "'saturation'",
+            "'brightness'",
+            "'lightness'",
+            "'alpha'"
+          ],
+          "required": false,
+          "description": "The X channel to control.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "yChannel",
+          "type": "ColorChannel",
+          "values": [
+            "'red'",
+            "'green'",
+            "'blue'",
+            "'hue'",
+            "'saturation'",
+            "'brightness'",
+            "'lightness'",
+            "'alpha'"
+          ],
+          "required": false,
+          "description": "The Y channel to control.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colorSpace",
+          "type": "ColorSpace",
+          "values": [
+            "'rgb'",
+            "'hsl'",
+            "'hsb'"
+          ],
+          "required": false,
+          "description": "Color space to use for channel axes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "xName",
+          "type": "string",
+          "required": false,
+          "description": "Name for the hidden X-axis range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "yName",
+          "type": "string",
+          "required": false,
+          "description": "Name for the hidden Y-axis range input.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

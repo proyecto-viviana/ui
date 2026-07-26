@@ -1,0 +1,118 @@
+{
+  "slug": "illustratedmessage",
+  "title": "IllustratedMessage",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "IllustratedMessageProps",
+      "component": "IllustratedMessage",
+      "source": "packages/viviana-ui/src/illustratedmessage/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content to display in the IllustratedMessage.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "IllustratedMessageSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the IllustratedMessage.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "orientation",
+          "type": "IllustratedMessageOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "'vertical'",
+          "description": "The direction that the IllustratedMessage should be laid out in.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StylesPropWithHeight | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined styles, returned by the `style()` macro.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "illustration",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy shortcut. Prefer passing an Illustration child.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "heading",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy shortcut. Prefer passing a Heading child.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Legacy shortcut. Prefer passing Content children.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "itemID",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

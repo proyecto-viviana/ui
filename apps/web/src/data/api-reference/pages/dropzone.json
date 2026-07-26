@@ -1,0 +1,139 @@
+{
+  "slug": "dropzone",
+  "title": "DropZone",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "DropZoneProps",
+      "component": "DropZone",
+      "source": "packages/viviana-ui/src/dropzone/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The content to display in the DropZone.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isFilled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the DropZone already contains a file. Shows the replace message while dragging.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "replaceMessage",
+          "type": "string",
+          "required": false,
+          "default": "'Drop file to replace'",
+          "description": "The message shown while dragging over a filled DropZone.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "DropZoneSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The DropZone size.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StylesPropWithHeight | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined styles, returned by the `style()` macro.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onDrop",
+          "type": "(e: DropEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a valid drag is dropped on the drop target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "getDropOperation",
+          "type": "(types: DragTypes, allowedOperations: DropOperation[]) => DropOperation",
+          "required": false,
+          "description": "A function returning the drop operation to be performed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "getDropOperationForPoint",
+          "type": "(types: DragTypes, allowedOperations: DropOperation[], x: number, y: number) => DropOperation",
+          "required": false,
+          "description": "A function returning the drop operation for a specific point.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onDropEnter",
+          "type": "(e: DropEnterEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a valid drag enters the drop target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onDropMove",
+          "type": "(e: DropMoveEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a valid drag is moved within the drop target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onDropActivate",
+          "type": "(e: DropActivateEvent) => void",
+          "required": false,
+          "description": "Handler that is called after a valid drag is held over the drop target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onDropExit",
+          "type": "(e: DropExitEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a valid drag exits the drop target.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

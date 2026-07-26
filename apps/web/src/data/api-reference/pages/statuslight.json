@@ -1,0 +1,159 @@
+{
+  "slug": "statuslight",
+  "title": "StatusLight",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "StatusLightProps",
+      "component": "StatusLight",
+      "source": "packages/viviana-ui/src/statuslight/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content to display as the label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "StatusLightVariant",
+          "values": [
+            "'negative'",
+            "'warning'",
+            "'success'",
+            "'informative'",
+            "'neutral'",
+            "'positive'",
+            "'notice'",
+            "'metric'",
+            "'yellow'",
+            "'chartreuse'",
+            "'celery'",
+            "'seafoam'",
+            "'cyan'",
+            "'indigo'",
+            "'purple'",
+            "'fuchsia'",
+            "'magenta'",
+            "'pink'",
+            "'turquoise'",
+            "'brown'",
+            "'cinnamon'",
+            "'silver'"
+          ],
+          "required": false,
+          "default": "'neutral'",
+          "description": "The variant changes the color of the status light.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "StatusLightSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the status light.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "role",
+          "type": "\"status\"",
+          "required": false,
+          "description": "An accessibility role for the status light. Should be set when the status can change at runtime.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "StatusLightProps": [
+      {
+        "prop": "variant",
+        "kind": "values",
+        "here": [
+          "'warning'",
+          "'success'",
+          "'metric'"
+        ],
+        "there": []
+      }
+    ]
+  }
+}

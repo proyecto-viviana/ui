@@ -8,3 +8,5 @@ export {
   FONT_DISPLAY,
 } from "./DocPage";
 export type { DocPageProps, ExampleProps, PropsTableProps, PropDefinition } from "./DocPage";
+export { ApiReference } from "./ApiReference";
+export type { ApiReferenceProps } from "./ApiReference";

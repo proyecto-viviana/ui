@@ -1,0 +1,178 @@
+{
+  "slug": "productcard",
+  "title": "ProductCard",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ProductCardProps",
+      "component": "ProductCard",
+      "source": "packages/viviana-ui/src/card/index.tsx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "\"primary\" | \"secondary\" | \"tertiary\"",
+          "values": [
+            "'primary'",
+            "'secondary'",
+            "'tertiary'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: CardRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the Card.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the rendered card element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "Link target for standalone navigable cards.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the item is activated.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "object",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the item (for accessibility).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "size",
+          "type": "CardSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'XS'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the Card.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "mesh",
+          "type": "CardMeshVariant",
+          "values": [
+            "'ambient'",
+            "'signal'"
+          ],
+          "required": false,
+          "description": "The register's woven hex-mesh weave, painted behind the glass fill — `ambient` is the quiet mixed gray/blue/orange weave, `signal` the warm single-hue amber one. Only the filled variants take it; `tertiary` and `quiet` have no fill for a weave to sit under.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "meshSeed",
+          "type": "number",
+          "required": false,
+          "default": "42",
+          "description": "Seed for the mesh weave, so neighboring cards don't repeat the same pattern.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "ProductCardProps": [
+      {
+        "prop": "mesh",
+        "kind": "only-here"
+      },
+      {
+        "prop": "meshSeed",
+        "kind": "only-here"
+      }
+    ]
+  }
+}

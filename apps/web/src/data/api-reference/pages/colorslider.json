@@ -1,0 +1,223 @@
+{
+  "slug": "colorslider",
+  "title": "ColorSlider",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ColorSliderProps",
+      "component": "ColorSlider",
+      "source": "packages/viviana-ui/src/color/index.tsx",
+      "props": [
+        {
+          "name": "styles",
+          "type": "StylesProp",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "ColorSize",
+          "values": [
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "Deprecated legacy size prop. ColorSlider uses the Spectrum 2 fixed track size.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showValue",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Deprecated legacy value visibility prop. Spectrum 2 shows horizontal output.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "contextualHelp",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Contextual help shown next to the visible label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Element id for the slider track group.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when the color changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides detailed information about the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the slider.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the slider is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Associated form owner for the hidden range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Name for the hidden range input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string | Color",
+          "required": false,
+          "description": "The current color value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "description": "The slider orientation.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "A visible label for the slider.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | Color",
+          "required": false,
+          "description": "The default color value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChangeEnd",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when dragging ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colorSpace",
+          "type": "ColorSpace",
+          "values": [
+            "'rgb'",
+            "'hsl'",
+            "'hsb'"
+          ],
+          "required": false,
+          "description": "Color space used for channel values.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "channel",
+          "type": "ColorChannel",
+          "values": [
+            "'red'",
+            "'green'",
+            "'blue'",
+            "'hue'",
+            "'saturation'",
+            "'brightness'",
+            "'lightness'",
+            "'alpha'"
+          ],
+          "required": true,
+          "description": "The color channel to control.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "channelName",
+          "type": "string",
+          "required": false,
+          "description": "Localized channel name.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

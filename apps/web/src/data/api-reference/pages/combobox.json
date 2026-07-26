@@ -1,0 +1,990 @@
+{
+  "slug": "combobox",
+  "title": "ComboBox",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ComboBoxProps",
+      "component": "ComboBox",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "ComboBoxSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The label for the combobox.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description text for assistive technology and form help.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Error message text for assistive technology and validation feedback.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the current value is invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "ComboBoxLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "ComboBoxLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "ComboBoxNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "contextualHelp",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "prefix",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An icon or text rendered before the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "direction",
+          "type": "\"top\" | \"bottom\"",
+          "values": [
+            "'top'",
+            "'bottom'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "align",
+          "type": "\"start\" | \"end\"",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "menuWidth",
+          "type": "number",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "An ID for the combobox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves away from the combobox input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves to the combobox input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(key: Key | null) => void",
+          "required": false,
+          "description": "Handler called when selection changes (single mode).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that describes the combobox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the combobox when no visible label is provided.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that labels the combobox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the combobox is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the combobox should be auto-focused.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "The form owner for the combobox input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the combobox, used when submitting an HTML form.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler called when the focus state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"single\" | \"multiple\"",
+          "values": [
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode for the combobox.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "The currently selected keys (controlled, multiple mode).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "The default selected keys (uncontrolled, multiple mode).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": false,
+          "description": "The items to render in the combobox.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFocusWrap",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether focus should wrap from the last item to the first.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T) => string",
+          "required": false,
+          "description": "Function to get the text value from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getDisabled",
+          "type": "(item: T) => boolean",
+          "required": false,
+          "description": "Function to check if an item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the combobox is open by default (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the combobox is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean, trigger?: MenuTriggerAction) => void",
+          "required": false,
+          "description": "Handler called when the open state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the combobox is read-only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the combobox is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Placeholder text for the input when no value is entered.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoComplete",
+          "type": "\"none\" | \"list\" | \"inline\" | \"both\"",
+          "values": [
+            "'none'",
+            "'list'",
+            "'inline'",
+            "'both'"
+          ],
+          "required": false,
+          "default": "'list'",
+          "description": "Describes the type of autocomplete functionality the input should provide.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "defaultItems",
+          "type": "T[]",
+          "required": false,
+          "description": "The default items to render in the combobox when uncontrolled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The currently selected key (controlled, single mode).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The default selected key (uncontrolled, single mode).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onSelectionChangeMultiple",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when selection changes (multiple mode).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "inputValue",
+          "type": "string",
+          "required": false,
+          "description": "The current input value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultInputValue",
+          "type": "string",
+          "required": false,
+          "description": "The default input value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onInputChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Handler called when input value changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultFilter",
+          "type": "FilterFn",
+          "required": false,
+          "description": "The filter function to use for filtering items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsCustomValue",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow custom values that don't match any item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsEmptyCollection",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow an empty collection (show listbox even with no matches).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "menuTrigger",
+          "type": "\"focus\" | \"input\" | \"manual\"",
+          "values": [
+            "'focus'",
+            "'input'",
+            "'manual'"
+          ],
+          "required": false,
+          "description": "The trigger mechanism for the combobox menu.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "formValue",
+          "type": "\"key\" | \"text\"",
+          "values": [
+            "'key'",
+            "'text'"
+          ],
+          "required": false,
+          "description": "Controls what value is submitted in forms. - 'key': submit the selected key via hidden input (default) - 'text': submit the text input value When allowsCustomValue is true, formValue is forced to 'text'.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slots",
+          "type": "Record<string, Partial<ComboBoxProps<T>>>",
+          "required": false,
+          "description": "Slot definitions provided through ComboBoxContext.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ComboBoxButtonProps",
+      "component": "ComboBoxButton",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxButtonRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the button.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLButtonElement) => void) | { current?: HTMLButtonElement | null | undefined; }",
+          "required": false,
+          "description": "A ref to the underlying button element.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ComboBoxInputProps",
+      "component": "ComboBoxInput",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxInputRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the input.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ComboBoxItemProps",
+      "component": "ComboBoxItem",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxOptionRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the option. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "A ref to the underlying option element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the option.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the option.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverStart",
+          "type": "(e: import(\"..\").HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverEnd",
+          "type": "(e: import(\"..\").HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover ends.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverChange",
+          "type": "(isHovering: boolean) => void",
+          "required": false,
+          "description": "Handler called when hover state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the option is activated.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "NonNullable<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the option (for typeahead).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldSelectOnPressUp",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selection should occur on press up.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "optionId",
+          "type": "string",
+          "required": false,
+          "description": "Optional DOM id for the option element. Defaults to the key.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldFocusOnHover",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to focus the option on hover.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldUseVirtualFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option should use virtual focus instead of receiving DOM focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "allowsDifferentPressOrigin",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether press-up may occur without the press starting on this option.",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "ComboBoxListBoxProps",
+      "component": "ComboBoxListBox",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "(item: T) => JSX.Element",
+          "required": false,
+          "description": "The children of the listbox. A function may be provided to render each item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ComboBoxOptionProps",
+      "component": "ComboBoxOption",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ComboBoxOptionRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the option. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "A ref to the underlying option element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the option.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the option.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverStart",
+          "type": "(e: import(\"..\").HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverEnd",
+          "type": "(e: import(\"..\").HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover ends.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverChange",
+          "type": "(isHovering: boolean) => void",
+          "required": false,
+          "description": "Handler called when hover state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the option is activated.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "NonNullable<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the option (for typeahead).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldSelectOnPressUp",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selection should occur on press up.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "optionId",
+          "type": "string",
+          "required": false,
+          "description": "Optional DOM id for the option element. Defaults to the key.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldFocusOnHover",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to focus the option on hover.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldUseVirtualFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option should use virtual focus instead of receiving DOM focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "allowsDifferentPressOrigin",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether press-up may occur without the press starting on this option.",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "ComboBoxSectionProps",
+      "component": "ComboBoxSection",
+      "source": "packages/viviana-ui/src/combobox/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Section contents, usually Header + Group/items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the section element.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

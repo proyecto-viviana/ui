@@ -1,0 +1,634 @@
+{
+  "slug": "disclosure",
+  "title": "Disclosure",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "DisclosureProps",
+      "component": "Disclosure",
+      "source": "packages/viviana-ui/src/disclosure/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The contents of the disclosure, consisting of a DisclosureTitle and DisclosurePanel.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "CompatibleDisclosureSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "\"M\"",
+          "description": "The size of the disclosure.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "DisclosureDensity",
+          "values": [
+            "'compact'",
+            "'regular'",
+            "'spacious'"
+          ],
+          "required": false,
+          "default": "\"regular\"",
+          "description": "The amount of space between the disclosure title and panel.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the disclosure should be displayed with a quiet style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "DisclosureVariant",
+          "values": [
+            "'default'",
+            "'bordered'",
+            "'filled'",
+            "'ghost'"
+          ],
+          "required": false,
+          "description": "Legacy visual variant. Prefer isQuiet for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "An id for the disclosure item, matching the id used in expandedKeys.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "A ref for the disclosure root element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the disclosure is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isExpanded",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the disclosure is expanded (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultExpanded",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the disclosure is expanded by default (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(isExpanded: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the disclosure expanded state changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name for contextual props.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "DisclosureGroupProps",
+      "component": "DisclosureGroup",
+      "source": "packages/viviana-ui/src/disclosure/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The disclosure item elements in the group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "CompatibleDisclosureSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "\"M\"",
+          "description": "The size of all disclosures in the group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "DisclosureDensity",
+          "values": [
+            "'compact'",
+            "'regular'",
+            "'spacious'"
+          ],
+          "required": false,
+          "default": "\"regular\"",
+          "description": "The amount of space between disclosure items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether disclosures should be displayed with a quiet style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "DisclosureVariant",
+          "values": [
+            "'default'",
+            "'bordered'",
+            "'filled'",
+            "'ghost'"
+          ],
+          "required": false,
+          "description": "Legacy visual variant. Prefer isQuiet for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "A ref for the disclosure group root element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether all items are disabled.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler that is called when items are expanded or collapsed.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "allowsMultipleExpanded",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether multiple items can be expanded at the same time.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "expandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "The currently expanded keys in the group (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultExpandedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "The initial expanded keys in the group (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name for contextual props.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "DisclosureHeaderProps",
+      "component": "DisclosureHeader",
+      "source": "packages/viviana-ui/src/disclosure/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The contents of the disclosure header.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name for contextual props.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "DisclosurePanelProps",
+      "component": "DisclosurePanel",
+      "source": "packages/viviana-ui/src/disclosure/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The contents of the disclosure panel.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "role",
+          "type": "\"group\" | \"region\"",
+          "values": [
+            "'group'",
+            "'region'"
+          ],
+          "required": false,
+          "description": "The accessibility role for the disclosure panel.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name for contextual props.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "DisclosureTitleProps",
+      "component": "DisclosureTitle",
+      "source": "packages/viviana-ui/src/disclosure/index.tsx",
+      "props": [
+        {
+          "name": "styles",
+          "type": "StylesPropWithFont",
+          "required": false,
+          "description": "Spectrum-defined styles, returned by the `style()` macro. Only allows overriding `font`, `fontFamily`, `fontWeight`, `fontSize`, and `lineHeight`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "level",
+          "type": "number",
+          "required": false,
+          "default": "3",
+          "description": "The heading level of the disclosure header.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The contents of the disclosure header.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hideIcon",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Backward-compatible option for the legacy DisclosureTrigger alias.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLHeadingElement | ((el: HTMLHeadingElement) => void) | { current?: HTMLHeadingElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name for contextual props.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "DisclosureTriggerProps",
+      "component": "DisclosureTrigger",
+      "source": "packages/viviana-ui/src/disclosure/index.tsx",
+      "props": [
+        {
+          "name": "styles",
+          "type": "StylesPropWithFont",
+          "required": false,
+          "description": "Spectrum-defined styles, returned by the `style()` macro. Only allows overriding `font`, `fontFamily`, `fontWeight`, `fontSize`, and `lineHeight`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "level",
+          "type": "number",
+          "required": false,
+          "default": "3",
+          "description": "The heading level of the disclosure header.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The contents of the disclosure header.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hideIcon",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Backward-compatible option for the legacy DisclosureTrigger alias.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLHeadingElement | ((el: HTMLHeadingElement) => void) | { current?: HTMLHeadingElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible style alias. Prefer UNSAFE_style for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name for contextual props.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,23 @@
+{
+  "slug": "well",
+  "title": "Well",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "WellProps",
+      "component": "Well",
+      "source": "packages/viviana-ui/src/well/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

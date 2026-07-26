@@ -1,0 +1,201 @@
+{
+  "slug": "avatar",
+  "title": "Avatar",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "AvatarProps",
+      "component": "Avatar",
+      "source": "packages/viviana-ui/src/avatar/index.tsx",
+      "props": [
+        {
+          "name": "src",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "alt",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "AvatarSize",
+          "required": false,
+          "default": "24",
+          "description": "The size of the avatar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isOverBackground",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the avatar is over a color background.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "online",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "fallback",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "AvatarGroupProps",
+      "component": "AvatarGroup",
+      "source": "packages/viviana-ui/src/avatar/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Avatar children of the avatar group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "The label for the avatar group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "AvatarGroupSize",
+          "values": [
+            "16",
+            "20",
+            "24",
+            "28",
+            "30",
+            "32",
+            "36",
+            "40"
+          ],
+          "required": false,
+          "default": "24",
+          "description": "The size of the avatar group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "AvatarGroupProps": [
+      {
+        "prop": "size",
+        "kind": "values",
+        "here": [
+          "30"
+        ],
+        "there": []
+      }
+    ]
+  }
+}

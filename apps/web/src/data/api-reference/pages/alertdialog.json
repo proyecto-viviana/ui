@@ -1,0 +1,198 @@
+{
+  "slug": "alertdialog",
+  "title": "AlertDialog",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "AlertDialogProps",
+      "component": "AlertDialog",
+      "source": "packages/viviana-ui/src/dialog/AlertDialog.tsx",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "The title of the alert dialog.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The content/message of the alert dialog.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "trigger",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The trigger element that opens the dialog.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "AlertDialogVariant",
+          "values": [
+            "'warning'",
+            "'confirmation'",
+            "'information'",
+            "'destructive'",
+            "'error'"
+          ],
+          "required": false,
+          "default": "'confirmation'",
+          "description": "The variant of the alert dialog.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "primaryActionLabel",
+          "type": "string",
+          "required": false,
+          "description": "Label for the primary action button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "secondaryActionLabel",
+          "type": "string",
+          "required": false,
+          "description": "Label for the secondary action button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "cancelLabel",
+          "type": "string",
+          "required": false,
+          "description": "Label for the cancel button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onPrimaryAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the primary action is triggered.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSecondaryAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the secondary action is triggered.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when canceled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isPrimaryActionDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the primary action button is disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isSecondaryActionDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the secondary action button is disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "autoFocusButton",
+          "type": "\"primary\" | \"secondary\" | \"cancel\"",
+          "values": [
+            "'primary'",
+            "'secondary'",
+            "'cancel'"
+          ],
+          "required": false,
+          "description": "Which action button should receive initial focus.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "\"S\" | \"M\" | \"L\"",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'"
+          ],
+          "required": false,
+          "description": "The size of the alert dialog.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the dialog is open.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the dialog is open by default.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when open state changes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDismissible",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the dialog is dismissible. Alert dialogs default to false.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDismissable",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Alias for isDismissible, retained for older Solid Spectrum examples.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,118 @@
+{
+  "slug": "colorswatch",
+  "title": "ColorSwatch",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ColorSwatchProps",
+      "component": "ColorSwatch",
+      "source": "packages/viviana-ui/src/color/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "InternalColorSwatchSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XS'"
+          ],
+          "required": false,
+          "description": "The size of the color swatch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rounding",
+          "type": "InternalColorSwatchRounding",
+          "values": [
+            "'default'",
+            "'none'",
+            "'full'"
+          ],
+          "required": false,
+          "description": "Corner rounding for the color swatch.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StylesPropWithHeight",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the swatch.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides detailed information about the swatch.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the swatch.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the swatch.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "color",
+          "type": "string | Color",
+          "required": false,
+          "description": "The color to display.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colorName",
+          "type": "string",
+          "required": false,
+          "description": "Localized color name override.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

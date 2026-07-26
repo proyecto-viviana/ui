@@ -1,0 +1,169 @@
+{
+  "slug": "badge",
+  "title": "Badge",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "BadgeProps",
+      "component": "Badge",
+      "source": "packages/viviana-ui/src/badge/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content to display in the badge.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "count",
+          "type": "number",
+          "required": false,
+          "description": "Backward-compatible count content. Prefer children for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "BadgeSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "'S'",
+          "description": "The size of the badge.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "BadgeVariant",
+          "values": [
+            "'primary'",
+            "'secondary'",
+            "'accent'",
+            "'negative'",
+            "'warning'",
+            "'success'",
+            "'informative'",
+            "'neutral'",
+            "'positive'",
+            "'notice'",
+            "'live'",
+            "'metric'",
+            "'gray'",
+            "'red'",
+            "'orange'",
+            "'yellow'",
+            "'chartreuse'",
+            "'celery'",
+            "'green'",
+            "'seafoam'",
+            "'cyan'",
+            "'blue'",
+            "'indigo'",
+            "'purple'",
+            "'fuchsia'",
+            "'magenta'",
+            "'pink'",
+            "'turquoise'",
+            "'brown'",
+            "'cinnamon'",
+            "'silver'",
+            "'danger'",
+            "'info'"
+          ],
+          "required": false,
+          "default": "'neutral'",
+          "description": "The variant changes the background color of the badge.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "fillStyle",
+          "type": "BadgeFillStyle",
+          "values": [
+            "'outline'",
+            "'bold'",
+            "'subtle'"
+          ],
+          "required": false,
+          "default": "'bold'",
+          "description": "The fill of the badge.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "overflowMode",
+          "type": "BadgeOverflowMode",
+          "values": [
+            "'wrap'",
+            "'truncate'"
+          ],
+          "required": false,
+          "default": "'wrap'",
+          "description": "Sets the text behavior for the contents.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLSpanElement | ((el: HTMLSpanElement) => void) | { current?: HTMLSpanElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "BadgeProps": [
+      {
+        "prop": "variant",
+        "kind": "values",
+        "here": [
+          "'live'",
+          "'metric'"
+        ],
+        "there": []
+      }
+    ]
+  }
+}

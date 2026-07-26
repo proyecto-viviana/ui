@@ -1,0 +1,94 @@
+{
+  "slug": "coloreditor",
+  "title": "ColorEditor",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ColorEditorProps",
+      "component": "ColorEditor",
+      "source": "packages/viviana-ui/src/color/ColorEditor.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Children override. If provided, replaces the default layout.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChange",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when the color changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the editor is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "value",
+          "type": "string | Color",
+          "required": false,
+          "description": "The current color value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | Color",
+          "required": false,
+          "description": "The default color value (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colorSpace",
+          "type": "ColorEditorColorSpace | \"hex\"",
+          "values": [
+            "'rgb'",
+            "'hsl'",
+            "'hsb'",
+            "'hex'"
+          ],
+          "required": false,
+          "default": "'hex'",
+          "description": "The initial color space.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "hideAlphaChannel",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to hide the alpha channel.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onColorSpaceChange",
+          "type": "(colorSpace: ColorEditorColorSpace | \"hex\") => void",
+          "required": false,
+          "description": "Handler called when the color space changes.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

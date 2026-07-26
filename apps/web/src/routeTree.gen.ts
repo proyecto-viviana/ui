@@ -13,9 +13,11 @@ import { Route as ThemeRouteImport } from './routes/theme'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as SolidSpectrumRouteRouteImport } from './routes/solid-spectrum/route'
 import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
+import { Route as DocsRouteRouteImport } from './routes/docs/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
 import { Route as ShowcaseIndexRouteImport } from './routes/showcase/index'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as SolidSpectrumPlaygroundRouteImport } from './routes/solid-spectrum/playground'
 import { Route as SolidSpectrumEcosystemRouteImport } from './routes/solid-spectrum/ecosystem'
 import { Route as ShowcaseTypeRouteImport } from './routes/showcase/type'
@@ -36,6 +38,88 @@ import { Route as ShowcaseButtonsRouteImport } from './routes/showcase/buttons'
 import { Route as SolidSpectrumDocsRouteRouteImport } from './routes/solid-spectrum/docs/route'
 import { Route as SolidSpectrumDocsIndexRouteImport } from './routes/solid-spectrum/docs/index'
 import { Route as SolidSpectrumDocsInstallationRouteImport } from './routes/solid-spectrum/docs/installation'
+import { Route as DocsComponentsWellRouteImport } from './routes/docs/components/well'
+import { Route as DocsComponentsUsercardRouteImport } from './routes/docs/components/usercard'
+import { Route as DocsComponentsTreeRouteImport } from './routes/docs/components/tree'
+import { Route as DocsComponentsTooltipRouteImport } from './routes/docs/components/tooltip'
+import { Route as DocsComponentsToolbarRouteImport } from './routes/docs/components/toolbar'
+import { Route as DocsComponentsTogglebuttongroupRouteImport } from './routes/docs/components/togglebuttongroup'
+import { Route as DocsComponentsTogglebuttonRouteImport } from './routes/docs/components/togglebutton'
+import { Route as DocsComponentsToastRouteImport } from './routes/docs/components/toast'
+import { Route as DocsComponentsTimefieldRouteImport } from './routes/docs/components/timefield'
+import { Route as DocsComponentsTextfieldRouteImport } from './routes/docs/components/textfield'
+import { Route as DocsComponentsTextRouteImport } from './routes/docs/components/text'
+import { Route as DocsComponentsTagGroupRouteImport } from './routes/docs/components/tag-group'
+import { Route as DocsComponentsTabsRouteImport } from './routes/docs/components/tabs'
+import { Route as DocsComponentsTableRouteImport } from './routes/docs/components/table'
+import { Route as DocsComponentsSwitchRouteImport } from './routes/docs/components/switch'
+import { Route as DocsComponentsSteplistRouteImport } from './routes/docs/components/steplist'
+import { Route as DocsComponentsStatuslightRouteImport } from './routes/docs/components/statuslight'
+import { Route as DocsComponentsSliderRouteImport } from './routes/docs/components/slider'
+import { Route as DocsComponentsSkeletonRouteImport } from './routes/docs/components/skeleton'
+import { Route as DocsComponentsSeparatorRouteImport } from './routes/docs/components/separator'
+import { Route as DocsComponentsSelectboxgroupRouteImport } from './routes/docs/components/selectboxgroup'
+import { Route as DocsComponentsSelectRouteImport } from './routes/docs/components/select'
+import { Route as DocsComponentsSegmentedcontrolRouteImport } from './routes/docs/components/segmentedcontrol'
+import { Route as DocsComponentsSearchfieldRouteImport } from './routes/docs/components/searchfield'
+import { Route as DocsComponentsRangesliderRouteImport } from './routes/docs/components/rangeslider'
+import { Route as DocsComponentsRangecalendarRouteImport } from './routes/docs/components/rangecalendar'
+import { Route as DocsComponentsRadioRouteImport } from './routes/docs/components/radio'
+import { Route as DocsComponentsProviderRouteImport } from './routes/docs/components/provider'
+import { Route as DocsComponentsProgressBarRouteImport } from './routes/docs/components/progress-bar'
+import { Route as DocsComponentsProgressRouteImport } from './routes/docs/components/progress'
+import { Route as DocsComponentsProductcardRouteImport } from './routes/docs/components/productcard'
+import { Route as DocsComponentsPopoverRouteImport } from './routes/docs/components/popover'
+import { Route as DocsComponentsPickerRouteImport } from './routes/docs/components/picker'
+import { Route as DocsComponentsNumberfieldRouteImport } from './routes/docs/components/numberfield'
+import { Route as DocsComponentsNotificationbadgeRouteImport } from './routes/docs/components/notificationbadge'
+import { Route as DocsComponentsMeterRouteImport } from './routes/docs/components/meter'
+import { Route as DocsComponentsMenuRouteImport } from './routes/docs/components/menu'
+import { Route as DocsComponentsListboxRouteImport } from './routes/docs/components/listbox'
+import { Route as DocsComponentsLinkbuttonRouteImport } from './routes/docs/components/linkbutton'
+import { Route as DocsComponentsLinkRouteImport } from './routes/docs/components/link'
+import { Route as DocsComponentsLayoutRouteImport } from './routes/docs/components/layout'
+import { Route as DocsComponentsLabeledvalueRouteImport } from './routes/docs/components/labeledvalue'
+import { Route as DocsComponentsInlinealertRouteImport } from './routes/docs/components/inlinealert'
+import { Route as DocsComponentsImageRouteImport } from './routes/docs/components/image'
+import { Route as DocsComponentsIllustratedmessageRouteImport } from './routes/docs/components/illustratedmessage'
+import { Route as DocsComponentsIconRouteImport } from './routes/docs/components/icon'
+import { Route as DocsComponentsGridlistRouteImport } from './routes/docs/components/gridlist'
+import { Route as DocsComponentsFormRouteImport } from './routes/docs/components/form'
+import { Route as DocsComponentsFiletriggerRouteImport } from './routes/docs/components/filetrigger'
+import { Route as DocsComponentsDropzoneRouteImport } from './routes/docs/components/dropzone'
+import { Route as DocsComponentsDividerRouteImport } from './routes/docs/components/divider'
+import { Route as DocsComponentsDisclosureRouteImport } from './routes/docs/components/disclosure'
+import { Route as DocsComponentsDialogRouteImport } from './routes/docs/components/dialog'
+import { Route as DocsComponentsDaterangepickerRouteImport } from './routes/docs/components/daterangepicker'
+import { Route as DocsComponentsDatepickerRouteImport } from './routes/docs/components/datepicker'
+import { Route as DocsComponentsDatefieldRouteImport } from './routes/docs/components/datefield'
+import { Route as DocsComponentsContextualhelpRouteImport } from './routes/docs/components/contextualhelp'
+import { Route as DocsComponentsComboboxRouteImport } from './routes/docs/components/combobox'
+import { Route as DocsComponentsColorwheelRouteImport } from './routes/docs/components/colorwheel'
+import { Route as DocsComponentsColorswatchpickerRouteImport } from './routes/docs/components/colorswatchpicker'
+import { Route as DocsComponentsColorswatchRouteImport } from './routes/docs/components/colorswatch'
+import { Route as DocsComponentsColorsliderRouteImport } from './routes/docs/components/colorslider'
+import { Route as DocsComponentsColorfieldRouteImport } from './routes/docs/components/colorfield'
+import { Route as DocsComponentsColoreditorRouteImport } from './routes/docs/components/coloreditor'
+import { Route as DocsComponentsColorareaRouteImport } from './routes/docs/components/colorarea'
+import { Route as DocsComponentsCheckboxRouteImport } from './routes/docs/components/checkbox'
+import { Route as DocsComponentsCardviewRouteImport } from './routes/docs/components/cardview'
+import { Route as DocsComponentsCardRouteImport } from './routes/docs/components/card'
+import { Route as DocsComponentsCalendarRouteImport } from './routes/docs/components/calendar'
+import { Route as DocsComponentsButtongroupRouteImport } from './routes/docs/components/buttongroup'
+import { Route as DocsComponentsButtonRouteImport } from './routes/docs/components/button'
+import { Route as DocsComponentsBreadcrumbsRouteImport } from './routes/docs/components/breadcrumbs'
+import { Route as DocsComponentsBadgeRouteImport } from './routes/docs/components/badge'
+import { Route as DocsComponentsAvatarRouteImport } from './routes/docs/components/avatar'
+import { Route as DocsComponentsAssetcardRouteImport } from './routes/docs/components/assetcard'
+import { Route as DocsComponentsAlertdialogRouteImport } from './routes/docs/components/alertdialog'
+import { Route as DocsComponentsActionmenuRouteImport } from './routes/docs/components/actionmenu'
+import { Route as DocsComponentsActiongroupRouteImport } from './routes/docs/components/actiongroup'
+import { Route as DocsComponentsActionbuttongroupRouteImport } from './routes/docs/components/actionbuttongroup'
+import { Route as DocsComponentsActionbuttonRouteImport } from './routes/docs/components/actionbutton'
+import { Route as DocsComponentsActionbarRouteImport } from './routes/docs/components/actionbar'
+import { Route as DocsComponentsAccordionRouteImport } from './routes/docs/components/accordion'
 import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from './routes/solid-spectrum/docs/hooks/create-press'
 import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from './routes/solid-spectrum/docs/hooks/create-button'
 import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from './routes/solid-spectrum/docs/components/virtualizer'
@@ -104,6 +188,11 @@ const ShowcaseRouteRoute = ShowcaseRouteRouteImport.update({
   path: '/showcase',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsRouteRoute = DocsRouteRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -118,6 +207,11 @@ const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DocsRouteRoute,
 } as any)
 const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
   id: '/playground',
@@ -220,6 +314,450 @@ const SolidSpectrumDocsInstallationRoute =
     path: '/installation',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
+const DocsComponentsWellRoute = DocsComponentsWellRouteImport.update({
+  id: '/components/well',
+  path: '/components/well',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsUsercardRoute = DocsComponentsUsercardRouteImport.update({
+  id: '/components/usercard',
+  path: '/components/usercard',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTreeRoute = DocsComponentsTreeRouteImport.update({
+  id: '/components/tree',
+  path: '/components/tree',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTooltipRoute = DocsComponentsTooltipRouteImport.update({
+  id: '/components/tooltip',
+  path: '/components/tooltip',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsToolbarRoute = DocsComponentsToolbarRouteImport.update({
+  id: '/components/toolbar',
+  path: '/components/toolbar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTogglebuttongroupRoute =
+  DocsComponentsTogglebuttongroupRouteImport.update({
+    id: '/components/togglebuttongroup',
+    path: '/components/togglebuttongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsTogglebuttonRoute =
+  DocsComponentsTogglebuttonRouteImport.update({
+    id: '/components/togglebutton',
+    path: '/components/togglebutton',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsToastRoute = DocsComponentsToastRouteImport.update({
+  id: '/components/toast',
+  path: '/components/toast',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTimefieldRoute = DocsComponentsTimefieldRouteImport.update({
+  id: '/components/timefield',
+  path: '/components/timefield',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTextfieldRoute = DocsComponentsTextfieldRouteImport.update({
+  id: '/components/textfield',
+  path: '/components/textfield',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTextRoute = DocsComponentsTextRouteImport.update({
+  id: '/components/text',
+  path: '/components/text',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTagGroupRoute = DocsComponentsTagGroupRouteImport.update({
+  id: '/components/tag-group',
+  path: '/components/tag-group',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTabsRoute = DocsComponentsTabsRouteImport.update({
+  id: '/components/tabs',
+  path: '/components/tabs',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTableRoute = DocsComponentsTableRouteImport.update({
+  id: '/components/table',
+  path: '/components/table',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSwitchRoute = DocsComponentsSwitchRouteImport.update({
+  id: '/components/switch',
+  path: '/components/switch',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSteplistRoute = DocsComponentsSteplistRouteImport.update({
+  id: '/components/steplist',
+  path: '/components/steplist',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsStatuslightRoute =
+  DocsComponentsStatuslightRouteImport.update({
+    id: '/components/statuslight',
+    path: '/components/statuslight',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSliderRoute = DocsComponentsSliderRouteImport.update({
+  id: '/components/slider',
+  path: '/components/slider',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSkeletonRoute = DocsComponentsSkeletonRouteImport.update({
+  id: '/components/skeleton',
+  path: '/components/skeleton',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSeparatorRoute = DocsComponentsSeparatorRouteImport.update({
+  id: '/components/separator',
+  path: '/components/separator',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSelectboxgroupRoute =
+  DocsComponentsSelectboxgroupRouteImport.update({
+    id: '/components/selectboxgroup',
+    path: '/components/selectboxgroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSelectRoute = DocsComponentsSelectRouteImport.update({
+  id: '/components/select',
+  path: '/components/select',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSegmentedcontrolRoute =
+  DocsComponentsSegmentedcontrolRouteImport.update({
+    id: '/components/segmentedcontrol',
+    path: '/components/segmentedcontrol',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSearchfieldRoute =
+  DocsComponentsSearchfieldRouteImport.update({
+    id: '/components/searchfield',
+    path: '/components/searchfield',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsRangesliderRoute =
+  DocsComponentsRangesliderRouteImport.update({
+    id: '/components/rangeslider',
+    path: '/components/rangeslider',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsRangecalendarRoute =
+  DocsComponentsRangecalendarRouteImport.update({
+    id: '/components/rangecalendar',
+    path: '/components/rangecalendar',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsRadioRoute = DocsComponentsRadioRouteImport.update({
+  id: '/components/radio',
+  path: '/components/radio',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsProviderRoute = DocsComponentsProviderRouteImport.update({
+  id: '/components/provider',
+  path: '/components/provider',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsProgressBarRoute =
+  DocsComponentsProgressBarRouteImport.update({
+    id: '/components/progress-bar',
+    path: '/components/progress-bar',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsProgressRoute = DocsComponentsProgressRouteImport.update({
+  id: '/components/progress',
+  path: '/components/progress',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsProductcardRoute =
+  DocsComponentsProductcardRouteImport.update({
+    id: '/components/productcard',
+    path: '/components/productcard',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsPopoverRoute = DocsComponentsPopoverRouteImport.update({
+  id: '/components/popover',
+  path: '/components/popover',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsPickerRoute = DocsComponentsPickerRouteImport.update({
+  id: '/components/picker',
+  path: '/components/picker',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsNumberfieldRoute =
+  DocsComponentsNumberfieldRouteImport.update({
+    id: '/components/numberfield',
+    path: '/components/numberfield',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsNotificationbadgeRoute =
+  DocsComponentsNotificationbadgeRouteImport.update({
+    id: '/components/notificationbadge',
+    path: '/components/notificationbadge',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsMeterRoute = DocsComponentsMeterRouteImport.update({
+  id: '/components/meter',
+  path: '/components/meter',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsMenuRoute = DocsComponentsMenuRouteImport.update({
+  id: '/components/menu',
+  path: '/components/menu',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsListboxRoute = DocsComponentsListboxRouteImport.update({
+  id: '/components/listbox',
+  path: '/components/listbox',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsLinkbuttonRoute =
+  DocsComponentsLinkbuttonRouteImport.update({
+    id: '/components/linkbutton',
+    path: '/components/linkbutton',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsLinkRoute = DocsComponentsLinkRouteImport.update({
+  id: '/components/link',
+  path: '/components/link',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsLayoutRoute = DocsComponentsLayoutRouteImport.update({
+  id: '/components/layout',
+  path: '/components/layout',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsLabeledvalueRoute =
+  DocsComponentsLabeledvalueRouteImport.update({
+    id: '/components/labeledvalue',
+    path: '/components/labeledvalue',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsInlinealertRoute =
+  DocsComponentsInlinealertRouteImport.update({
+    id: '/components/inlinealert',
+    path: '/components/inlinealert',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsImageRoute = DocsComponentsImageRouteImport.update({
+  id: '/components/image',
+  path: '/components/image',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsIllustratedmessageRoute =
+  DocsComponentsIllustratedmessageRouteImport.update({
+    id: '/components/illustratedmessage',
+    path: '/components/illustratedmessage',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsIconRoute = DocsComponentsIconRouteImport.update({
+  id: '/components/icon',
+  path: '/components/icon',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsGridlistRoute = DocsComponentsGridlistRouteImport.update({
+  id: '/components/gridlist',
+  path: '/components/gridlist',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsFormRoute = DocsComponentsFormRouteImport.update({
+  id: '/components/form',
+  path: '/components/form',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsFiletriggerRoute =
+  DocsComponentsFiletriggerRouteImport.update({
+    id: '/components/filetrigger',
+    path: '/components/filetrigger',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDropzoneRoute = DocsComponentsDropzoneRouteImport.update({
+  id: '/components/dropzone',
+  path: '/components/dropzone',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsDividerRoute = DocsComponentsDividerRouteImport.update({
+  id: '/components/divider',
+  path: '/components/divider',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsDisclosureRoute =
+  DocsComponentsDisclosureRouteImport.update({
+    id: '/components/disclosure',
+    path: '/components/disclosure',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDialogRoute = DocsComponentsDialogRouteImport.update({
+  id: '/components/dialog',
+  path: '/components/dialog',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsDaterangepickerRoute =
+  DocsComponentsDaterangepickerRouteImport.update({
+    id: '/components/daterangepicker',
+    path: '/components/daterangepicker',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDatepickerRoute =
+  DocsComponentsDatepickerRouteImport.update({
+    id: '/components/datepicker',
+    path: '/components/datepicker',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDatefieldRoute = DocsComponentsDatefieldRouteImport.update({
+  id: '/components/datefield',
+  path: '/components/datefield',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsContextualhelpRoute =
+  DocsComponentsContextualhelpRouteImport.update({
+    id: '/components/contextualhelp',
+    path: '/components/contextualhelp',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsComboboxRoute = DocsComponentsComboboxRouteImport.update({
+  id: '/components/combobox',
+  path: '/components/combobox',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsColorwheelRoute =
+  DocsComponentsColorwheelRouteImport.update({
+    id: '/components/colorwheel',
+    path: '/components/colorwheel',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorswatchpickerRoute =
+  DocsComponentsColorswatchpickerRouteImport.update({
+    id: '/components/colorswatchpicker',
+    path: '/components/colorswatchpicker',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorswatchRoute =
+  DocsComponentsColorswatchRouteImport.update({
+    id: '/components/colorswatch',
+    path: '/components/colorswatch',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorsliderRoute =
+  DocsComponentsColorsliderRouteImport.update({
+    id: '/components/colorslider',
+    path: '/components/colorslider',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorfieldRoute =
+  DocsComponentsColorfieldRouteImport.update({
+    id: '/components/colorfield',
+    path: '/components/colorfield',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColoreditorRoute =
+  DocsComponentsColoreditorRouteImport.update({
+    id: '/components/coloreditor',
+    path: '/components/coloreditor',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorareaRoute = DocsComponentsColorareaRouteImport.update({
+  id: '/components/colorarea',
+  path: '/components/colorarea',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCheckboxRoute = DocsComponentsCheckboxRouteImport.update({
+  id: '/components/checkbox',
+  path: '/components/checkbox',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCardviewRoute = DocsComponentsCardviewRouteImport.update({
+  id: '/components/cardview',
+  path: '/components/cardview',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCardRoute = DocsComponentsCardRouteImport.update({
+  id: '/components/card',
+  path: '/components/card',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCalendarRoute = DocsComponentsCalendarRouteImport.update({
+  id: '/components/calendar',
+  path: '/components/calendar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsButtongroupRoute =
+  DocsComponentsButtongroupRouteImport.update({
+    id: '/components/buttongroup',
+    path: '/components/buttongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsButtonRoute = DocsComponentsButtonRouteImport.update({
+  id: '/components/button',
+  path: '/components/button',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsBreadcrumbsRoute =
+  DocsComponentsBreadcrumbsRouteImport.update({
+    id: '/components/breadcrumbs',
+    path: '/components/breadcrumbs',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsBadgeRoute = DocsComponentsBadgeRouteImport.update({
+  id: '/components/badge',
+  path: '/components/badge',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsAvatarRoute = DocsComponentsAvatarRouteImport.update({
+  id: '/components/avatar',
+  path: '/components/avatar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsAssetcardRoute = DocsComponentsAssetcardRouteImport.update({
+  id: '/components/assetcard',
+  path: '/components/assetcard',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsAlertdialogRoute =
+  DocsComponentsAlertdialogRouteImport.update({
+    id: '/components/alertdialog',
+    path: '/components/alertdialog',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActionmenuRoute =
+  DocsComponentsActionmenuRouteImport.update({
+    id: '/components/actionmenu',
+    path: '/components/actionmenu',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActiongroupRoute =
+  DocsComponentsActiongroupRouteImport.update({
+    id: '/components/actiongroup',
+    path: '/components/actiongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActionbuttongroupRoute =
+  DocsComponentsActionbuttongroupRouteImport.update({
+    id: '/components/actionbuttongroup',
+    path: '/components/actionbuttongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActionbuttonRoute =
+  DocsComponentsActionbuttonRouteImport.update({
+    id: '/components/actionbutton',
+    path: '/components/actionbutton',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActionbarRoute = DocsComponentsActionbarRouteImport.update({
+  id: '/components/actionbar',
+  path: '/components/actionbar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsAccordionRoute = DocsComponentsAccordionRouteImport.update({
+  id: '/components/accordion',
+  path: '/components/accordion',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
 const SolidSpectrumDocsHooksCreatePressRoute =
   SolidSpectrumDocsHooksCreatePressRouteImport.update({
     id: '/hooks/create-press',
@@ -505,6 +1043,7 @@ const SolidSpectrumDocsComponentsAccordionRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/docs': typeof DocsRouteRouteWithChildren
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
   '/admin': typeof AdminRoute
@@ -527,8 +1066,91 @@ export interface FileRoutesByFullPath {
   '/showcase/type': typeof ShowcaseTypeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/docs/': typeof DocsIndexRoute
   '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
+  '/docs/components/accordion': typeof DocsComponentsAccordionRoute
+  '/docs/components/actionbar': typeof DocsComponentsActionbarRoute
+  '/docs/components/actionbutton': typeof DocsComponentsActionbuttonRoute
+  '/docs/components/actionbuttongroup': typeof DocsComponentsActionbuttongroupRoute
+  '/docs/components/actiongroup': typeof DocsComponentsActiongroupRoute
+  '/docs/components/actionmenu': typeof DocsComponentsActionmenuRoute
+  '/docs/components/alertdialog': typeof DocsComponentsAlertdialogRoute
+  '/docs/components/assetcard': typeof DocsComponentsAssetcardRoute
+  '/docs/components/avatar': typeof DocsComponentsAvatarRoute
+  '/docs/components/badge': typeof DocsComponentsBadgeRoute
+  '/docs/components/breadcrumbs': typeof DocsComponentsBreadcrumbsRoute
+  '/docs/components/button': typeof DocsComponentsButtonRoute
+  '/docs/components/buttongroup': typeof DocsComponentsButtongroupRoute
+  '/docs/components/calendar': typeof DocsComponentsCalendarRoute
+  '/docs/components/card': typeof DocsComponentsCardRoute
+  '/docs/components/cardview': typeof DocsComponentsCardviewRoute
+  '/docs/components/checkbox': typeof DocsComponentsCheckboxRoute
+  '/docs/components/colorarea': typeof DocsComponentsColorareaRoute
+  '/docs/components/coloreditor': typeof DocsComponentsColoreditorRoute
+  '/docs/components/colorfield': typeof DocsComponentsColorfieldRoute
+  '/docs/components/colorslider': typeof DocsComponentsColorsliderRoute
+  '/docs/components/colorswatch': typeof DocsComponentsColorswatchRoute
+  '/docs/components/colorswatchpicker': typeof DocsComponentsColorswatchpickerRoute
+  '/docs/components/colorwheel': typeof DocsComponentsColorwheelRoute
+  '/docs/components/combobox': typeof DocsComponentsComboboxRoute
+  '/docs/components/contextualhelp': typeof DocsComponentsContextualhelpRoute
+  '/docs/components/datefield': typeof DocsComponentsDatefieldRoute
+  '/docs/components/datepicker': typeof DocsComponentsDatepickerRoute
+  '/docs/components/daterangepicker': typeof DocsComponentsDaterangepickerRoute
+  '/docs/components/dialog': typeof DocsComponentsDialogRoute
+  '/docs/components/disclosure': typeof DocsComponentsDisclosureRoute
+  '/docs/components/divider': typeof DocsComponentsDividerRoute
+  '/docs/components/dropzone': typeof DocsComponentsDropzoneRoute
+  '/docs/components/filetrigger': typeof DocsComponentsFiletriggerRoute
+  '/docs/components/form': typeof DocsComponentsFormRoute
+  '/docs/components/gridlist': typeof DocsComponentsGridlistRoute
+  '/docs/components/icon': typeof DocsComponentsIconRoute
+  '/docs/components/illustratedmessage': typeof DocsComponentsIllustratedmessageRoute
+  '/docs/components/image': typeof DocsComponentsImageRoute
+  '/docs/components/inlinealert': typeof DocsComponentsInlinealertRoute
+  '/docs/components/labeledvalue': typeof DocsComponentsLabeledvalueRoute
+  '/docs/components/layout': typeof DocsComponentsLayoutRoute
+  '/docs/components/link': typeof DocsComponentsLinkRoute
+  '/docs/components/linkbutton': typeof DocsComponentsLinkbuttonRoute
+  '/docs/components/listbox': typeof DocsComponentsListboxRoute
+  '/docs/components/menu': typeof DocsComponentsMenuRoute
+  '/docs/components/meter': typeof DocsComponentsMeterRoute
+  '/docs/components/notificationbadge': typeof DocsComponentsNotificationbadgeRoute
+  '/docs/components/numberfield': typeof DocsComponentsNumberfieldRoute
+  '/docs/components/picker': typeof DocsComponentsPickerRoute
+  '/docs/components/popover': typeof DocsComponentsPopoverRoute
+  '/docs/components/productcard': typeof DocsComponentsProductcardRoute
+  '/docs/components/progress': typeof DocsComponentsProgressRoute
+  '/docs/components/progress-bar': typeof DocsComponentsProgressBarRoute
+  '/docs/components/provider': typeof DocsComponentsProviderRoute
+  '/docs/components/radio': typeof DocsComponentsRadioRoute
+  '/docs/components/rangecalendar': typeof DocsComponentsRangecalendarRoute
+  '/docs/components/rangeslider': typeof DocsComponentsRangesliderRoute
+  '/docs/components/searchfield': typeof DocsComponentsSearchfieldRoute
+  '/docs/components/segmentedcontrol': typeof DocsComponentsSegmentedcontrolRoute
+  '/docs/components/select': typeof DocsComponentsSelectRoute
+  '/docs/components/selectboxgroup': typeof DocsComponentsSelectboxgroupRoute
+  '/docs/components/separator': typeof DocsComponentsSeparatorRoute
+  '/docs/components/skeleton': typeof DocsComponentsSkeletonRoute
+  '/docs/components/slider': typeof DocsComponentsSliderRoute
+  '/docs/components/statuslight': typeof DocsComponentsStatuslightRoute
+  '/docs/components/steplist': typeof DocsComponentsSteplistRoute
+  '/docs/components/switch': typeof DocsComponentsSwitchRoute
+  '/docs/components/table': typeof DocsComponentsTableRoute
+  '/docs/components/tabs': typeof DocsComponentsTabsRoute
+  '/docs/components/tag-group': typeof DocsComponentsTagGroupRoute
+  '/docs/components/text': typeof DocsComponentsTextRoute
+  '/docs/components/textfield': typeof DocsComponentsTextfieldRoute
+  '/docs/components/timefield': typeof DocsComponentsTimefieldRoute
+  '/docs/components/toast': typeof DocsComponentsToastRoute
+  '/docs/components/togglebutton': typeof DocsComponentsTogglebuttonRoute
+  '/docs/components/togglebuttongroup': typeof DocsComponentsTogglebuttongroupRoute
+  '/docs/components/toolbar': typeof DocsComponentsToolbarRoute
+  '/docs/components/tooltip': typeof DocsComponentsTooltipRoute
+  '/docs/components/tree': typeof DocsComponentsTreeRoute
+  '/docs/components/usercard': typeof DocsComponentsUsercardRoute
+  '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
   '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
@@ -600,8 +1222,91 @@ export interface FileRoutesByTo {
   '/showcase/type': typeof ShowcaseTypeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/docs': typeof DocsIndexRoute
   '/showcase': typeof ShowcaseIndexRoute
   '/solid-spectrum': typeof SolidSpectrumIndexRoute
+  '/docs/components/accordion': typeof DocsComponentsAccordionRoute
+  '/docs/components/actionbar': typeof DocsComponentsActionbarRoute
+  '/docs/components/actionbutton': typeof DocsComponentsActionbuttonRoute
+  '/docs/components/actionbuttongroup': typeof DocsComponentsActionbuttongroupRoute
+  '/docs/components/actiongroup': typeof DocsComponentsActiongroupRoute
+  '/docs/components/actionmenu': typeof DocsComponentsActionmenuRoute
+  '/docs/components/alertdialog': typeof DocsComponentsAlertdialogRoute
+  '/docs/components/assetcard': typeof DocsComponentsAssetcardRoute
+  '/docs/components/avatar': typeof DocsComponentsAvatarRoute
+  '/docs/components/badge': typeof DocsComponentsBadgeRoute
+  '/docs/components/breadcrumbs': typeof DocsComponentsBreadcrumbsRoute
+  '/docs/components/button': typeof DocsComponentsButtonRoute
+  '/docs/components/buttongroup': typeof DocsComponentsButtongroupRoute
+  '/docs/components/calendar': typeof DocsComponentsCalendarRoute
+  '/docs/components/card': typeof DocsComponentsCardRoute
+  '/docs/components/cardview': typeof DocsComponentsCardviewRoute
+  '/docs/components/checkbox': typeof DocsComponentsCheckboxRoute
+  '/docs/components/colorarea': typeof DocsComponentsColorareaRoute
+  '/docs/components/coloreditor': typeof DocsComponentsColoreditorRoute
+  '/docs/components/colorfield': typeof DocsComponentsColorfieldRoute
+  '/docs/components/colorslider': typeof DocsComponentsColorsliderRoute
+  '/docs/components/colorswatch': typeof DocsComponentsColorswatchRoute
+  '/docs/components/colorswatchpicker': typeof DocsComponentsColorswatchpickerRoute
+  '/docs/components/colorwheel': typeof DocsComponentsColorwheelRoute
+  '/docs/components/combobox': typeof DocsComponentsComboboxRoute
+  '/docs/components/contextualhelp': typeof DocsComponentsContextualhelpRoute
+  '/docs/components/datefield': typeof DocsComponentsDatefieldRoute
+  '/docs/components/datepicker': typeof DocsComponentsDatepickerRoute
+  '/docs/components/daterangepicker': typeof DocsComponentsDaterangepickerRoute
+  '/docs/components/dialog': typeof DocsComponentsDialogRoute
+  '/docs/components/disclosure': typeof DocsComponentsDisclosureRoute
+  '/docs/components/divider': typeof DocsComponentsDividerRoute
+  '/docs/components/dropzone': typeof DocsComponentsDropzoneRoute
+  '/docs/components/filetrigger': typeof DocsComponentsFiletriggerRoute
+  '/docs/components/form': typeof DocsComponentsFormRoute
+  '/docs/components/gridlist': typeof DocsComponentsGridlistRoute
+  '/docs/components/icon': typeof DocsComponentsIconRoute
+  '/docs/components/illustratedmessage': typeof DocsComponentsIllustratedmessageRoute
+  '/docs/components/image': typeof DocsComponentsImageRoute
+  '/docs/components/inlinealert': typeof DocsComponentsInlinealertRoute
+  '/docs/components/labeledvalue': typeof DocsComponentsLabeledvalueRoute
+  '/docs/components/layout': typeof DocsComponentsLayoutRoute
+  '/docs/components/link': typeof DocsComponentsLinkRoute
+  '/docs/components/linkbutton': typeof DocsComponentsLinkbuttonRoute
+  '/docs/components/listbox': typeof DocsComponentsListboxRoute
+  '/docs/components/menu': typeof DocsComponentsMenuRoute
+  '/docs/components/meter': typeof DocsComponentsMeterRoute
+  '/docs/components/notificationbadge': typeof DocsComponentsNotificationbadgeRoute
+  '/docs/components/numberfield': typeof DocsComponentsNumberfieldRoute
+  '/docs/components/picker': typeof DocsComponentsPickerRoute
+  '/docs/components/popover': typeof DocsComponentsPopoverRoute
+  '/docs/components/productcard': typeof DocsComponentsProductcardRoute
+  '/docs/components/progress': typeof DocsComponentsProgressRoute
+  '/docs/components/progress-bar': typeof DocsComponentsProgressBarRoute
+  '/docs/components/provider': typeof DocsComponentsProviderRoute
+  '/docs/components/radio': typeof DocsComponentsRadioRoute
+  '/docs/components/rangecalendar': typeof DocsComponentsRangecalendarRoute
+  '/docs/components/rangeslider': typeof DocsComponentsRangesliderRoute
+  '/docs/components/searchfield': typeof DocsComponentsSearchfieldRoute
+  '/docs/components/segmentedcontrol': typeof DocsComponentsSegmentedcontrolRoute
+  '/docs/components/select': typeof DocsComponentsSelectRoute
+  '/docs/components/selectboxgroup': typeof DocsComponentsSelectboxgroupRoute
+  '/docs/components/separator': typeof DocsComponentsSeparatorRoute
+  '/docs/components/skeleton': typeof DocsComponentsSkeletonRoute
+  '/docs/components/slider': typeof DocsComponentsSliderRoute
+  '/docs/components/statuslight': typeof DocsComponentsStatuslightRoute
+  '/docs/components/steplist': typeof DocsComponentsSteplistRoute
+  '/docs/components/switch': typeof DocsComponentsSwitchRoute
+  '/docs/components/table': typeof DocsComponentsTableRoute
+  '/docs/components/tabs': typeof DocsComponentsTabsRoute
+  '/docs/components/tag-group': typeof DocsComponentsTagGroupRoute
+  '/docs/components/text': typeof DocsComponentsTextRoute
+  '/docs/components/textfield': typeof DocsComponentsTextfieldRoute
+  '/docs/components/timefield': typeof DocsComponentsTimefieldRoute
+  '/docs/components/toast': typeof DocsComponentsToastRoute
+  '/docs/components/togglebutton': typeof DocsComponentsTogglebuttonRoute
+  '/docs/components/togglebuttongroup': typeof DocsComponentsTogglebuttongroupRoute
+  '/docs/components/toolbar': typeof DocsComponentsToolbarRoute
+  '/docs/components/tooltip': typeof DocsComponentsTooltipRoute
+  '/docs/components/tree': typeof DocsComponentsTreeRoute
+  '/docs/components/usercard': typeof DocsComponentsUsercardRoute
+  '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsIndexRoute
   '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
@@ -655,6 +1360,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/docs': typeof DocsRouteRouteWithChildren
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
   '/admin': typeof AdminRoute
@@ -677,8 +1383,91 @@ export interface FileRoutesById {
   '/showcase/type': typeof ShowcaseTypeRoute
   '/solid-spectrum/ecosystem': typeof SolidSpectrumEcosystemRoute
   '/solid-spectrum/playground': typeof SolidSpectrumPlaygroundRoute
+  '/docs/': typeof DocsIndexRoute
   '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
+  '/docs/components/accordion': typeof DocsComponentsAccordionRoute
+  '/docs/components/actionbar': typeof DocsComponentsActionbarRoute
+  '/docs/components/actionbutton': typeof DocsComponentsActionbuttonRoute
+  '/docs/components/actionbuttongroup': typeof DocsComponentsActionbuttongroupRoute
+  '/docs/components/actiongroup': typeof DocsComponentsActiongroupRoute
+  '/docs/components/actionmenu': typeof DocsComponentsActionmenuRoute
+  '/docs/components/alertdialog': typeof DocsComponentsAlertdialogRoute
+  '/docs/components/assetcard': typeof DocsComponentsAssetcardRoute
+  '/docs/components/avatar': typeof DocsComponentsAvatarRoute
+  '/docs/components/badge': typeof DocsComponentsBadgeRoute
+  '/docs/components/breadcrumbs': typeof DocsComponentsBreadcrumbsRoute
+  '/docs/components/button': typeof DocsComponentsButtonRoute
+  '/docs/components/buttongroup': typeof DocsComponentsButtongroupRoute
+  '/docs/components/calendar': typeof DocsComponentsCalendarRoute
+  '/docs/components/card': typeof DocsComponentsCardRoute
+  '/docs/components/cardview': typeof DocsComponentsCardviewRoute
+  '/docs/components/checkbox': typeof DocsComponentsCheckboxRoute
+  '/docs/components/colorarea': typeof DocsComponentsColorareaRoute
+  '/docs/components/coloreditor': typeof DocsComponentsColoreditorRoute
+  '/docs/components/colorfield': typeof DocsComponentsColorfieldRoute
+  '/docs/components/colorslider': typeof DocsComponentsColorsliderRoute
+  '/docs/components/colorswatch': typeof DocsComponentsColorswatchRoute
+  '/docs/components/colorswatchpicker': typeof DocsComponentsColorswatchpickerRoute
+  '/docs/components/colorwheel': typeof DocsComponentsColorwheelRoute
+  '/docs/components/combobox': typeof DocsComponentsComboboxRoute
+  '/docs/components/contextualhelp': typeof DocsComponentsContextualhelpRoute
+  '/docs/components/datefield': typeof DocsComponentsDatefieldRoute
+  '/docs/components/datepicker': typeof DocsComponentsDatepickerRoute
+  '/docs/components/daterangepicker': typeof DocsComponentsDaterangepickerRoute
+  '/docs/components/dialog': typeof DocsComponentsDialogRoute
+  '/docs/components/disclosure': typeof DocsComponentsDisclosureRoute
+  '/docs/components/divider': typeof DocsComponentsDividerRoute
+  '/docs/components/dropzone': typeof DocsComponentsDropzoneRoute
+  '/docs/components/filetrigger': typeof DocsComponentsFiletriggerRoute
+  '/docs/components/form': typeof DocsComponentsFormRoute
+  '/docs/components/gridlist': typeof DocsComponentsGridlistRoute
+  '/docs/components/icon': typeof DocsComponentsIconRoute
+  '/docs/components/illustratedmessage': typeof DocsComponentsIllustratedmessageRoute
+  '/docs/components/image': typeof DocsComponentsImageRoute
+  '/docs/components/inlinealert': typeof DocsComponentsInlinealertRoute
+  '/docs/components/labeledvalue': typeof DocsComponentsLabeledvalueRoute
+  '/docs/components/layout': typeof DocsComponentsLayoutRoute
+  '/docs/components/link': typeof DocsComponentsLinkRoute
+  '/docs/components/linkbutton': typeof DocsComponentsLinkbuttonRoute
+  '/docs/components/listbox': typeof DocsComponentsListboxRoute
+  '/docs/components/menu': typeof DocsComponentsMenuRoute
+  '/docs/components/meter': typeof DocsComponentsMeterRoute
+  '/docs/components/notificationbadge': typeof DocsComponentsNotificationbadgeRoute
+  '/docs/components/numberfield': typeof DocsComponentsNumberfieldRoute
+  '/docs/components/picker': typeof DocsComponentsPickerRoute
+  '/docs/components/popover': typeof DocsComponentsPopoverRoute
+  '/docs/components/productcard': typeof DocsComponentsProductcardRoute
+  '/docs/components/progress': typeof DocsComponentsProgressRoute
+  '/docs/components/progress-bar': typeof DocsComponentsProgressBarRoute
+  '/docs/components/provider': typeof DocsComponentsProviderRoute
+  '/docs/components/radio': typeof DocsComponentsRadioRoute
+  '/docs/components/rangecalendar': typeof DocsComponentsRangecalendarRoute
+  '/docs/components/rangeslider': typeof DocsComponentsRangesliderRoute
+  '/docs/components/searchfield': typeof DocsComponentsSearchfieldRoute
+  '/docs/components/segmentedcontrol': typeof DocsComponentsSegmentedcontrolRoute
+  '/docs/components/select': typeof DocsComponentsSelectRoute
+  '/docs/components/selectboxgroup': typeof DocsComponentsSelectboxgroupRoute
+  '/docs/components/separator': typeof DocsComponentsSeparatorRoute
+  '/docs/components/skeleton': typeof DocsComponentsSkeletonRoute
+  '/docs/components/slider': typeof DocsComponentsSliderRoute
+  '/docs/components/statuslight': typeof DocsComponentsStatuslightRoute
+  '/docs/components/steplist': typeof DocsComponentsSteplistRoute
+  '/docs/components/switch': typeof DocsComponentsSwitchRoute
+  '/docs/components/table': typeof DocsComponentsTableRoute
+  '/docs/components/tabs': typeof DocsComponentsTabsRoute
+  '/docs/components/tag-group': typeof DocsComponentsTagGroupRoute
+  '/docs/components/text': typeof DocsComponentsTextRoute
+  '/docs/components/textfield': typeof DocsComponentsTextfieldRoute
+  '/docs/components/timefield': typeof DocsComponentsTimefieldRoute
+  '/docs/components/toast': typeof DocsComponentsToastRoute
+  '/docs/components/togglebutton': typeof DocsComponentsTogglebuttonRoute
+  '/docs/components/togglebuttongroup': typeof DocsComponentsTogglebuttongroupRoute
+  '/docs/components/toolbar': typeof DocsComponentsToolbarRoute
+  '/docs/components/tooltip': typeof DocsComponentsTooltipRoute
+  '/docs/components/tree': typeof DocsComponentsTreeRoute
+  '/docs/components/usercard': typeof DocsComponentsUsercardRoute
+  '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
   '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
   '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
@@ -733,6 +1522,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/docs'
     | '/showcase'
     | '/solid-spectrum'
     | '/admin'
@@ -755,8 +1545,91 @@ export interface FileRouteTypes {
     | '/showcase/type'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
+    | '/docs/'
     | '/showcase/'
     | '/solid-spectrum/'
+    | '/docs/components/accordion'
+    | '/docs/components/actionbar'
+    | '/docs/components/actionbutton'
+    | '/docs/components/actionbuttongroup'
+    | '/docs/components/actiongroup'
+    | '/docs/components/actionmenu'
+    | '/docs/components/alertdialog'
+    | '/docs/components/assetcard'
+    | '/docs/components/avatar'
+    | '/docs/components/badge'
+    | '/docs/components/breadcrumbs'
+    | '/docs/components/button'
+    | '/docs/components/buttongroup'
+    | '/docs/components/calendar'
+    | '/docs/components/card'
+    | '/docs/components/cardview'
+    | '/docs/components/checkbox'
+    | '/docs/components/colorarea'
+    | '/docs/components/coloreditor'
+    | '/docs/components/colorfield'
+    | '/docs/components/colorslider'
+    | '/docs/components/colorswatch'
+    | '/docs/components/colorswatchpicker'
+    | '/docs/components/colorwheel'
+    | '/docs/components/combobox'
+    | '/docs/components/contextualhelp'
+    | '/docs/components/datefield'
+    | '/docs/components/datepicker'
+    | '/docs/components/daterangepicker'
+    | '/docs/components/dialog'
+    | '/docs/components/disclosure'
+    | '/docs/components/divider'
+    | '/docs/components/dropzone'
+    | '/docs/components/filetrigger'
+    | '/docs/components/form'
+    | '/docs/components/gridlist'
+    | '/docs/components/icon'
+    | '/docs/components/illustratedmessage'
+    | '/docs/components/image'
+    | '/docs/components/inlinealert'
+    | '/docs/components/labeledvalue'
+    | '/docs/components/layout'
+    | '/docs/components/link'
+    | '/docs/components/linkbutton'
+    | '/docs/components/listbox'
+    | '/docs/components/menu'
+    | '/docs/components/meter'
+    | '/docs/components/notificationbadge'
+    | '/docs/components/numberfield'
+    | '/docs/components/picker'
+    | '/docs/components/popover'
+    | '/docs/components/productcard'
+    | '/docs/components/progress'
+    | '/docs/components/progress-bar'
+    | '/docs/components/provider'
+    | '/docs/components/radio'
+    | '/docs/components/rangecalendar'
+    | '/docs/components/rangeslider'
+    | '/docs/components/searchfield'
+    | '/docs/components/segmentedcontrol'
+    | '/docs/components/select'
+    | '/docs/components/selectboxgroup'
+    | '/docs/components/separator'
+    | '/docs/components/skeleton'
+    | '/docs/components/slider'
+    | '/docs/components/statuslight'
+    | '/docs/components/steplist'
+    | '/docs/components/switch'
+    | '/docs/components/table'
+    | '/docs/components/tabs'
+    | '/docs/components/tag-group'
+    | '/docs/components/text'
+    | '/docs/components/textfield'
+    | '/docs/components/timefield'
+    | '/docs/components/toast'
+    | '/docs/components/togglebutton'
+    | '/docs/components/togglebuttongroup'
+    | '/docs/components/toolbar'
+    | '/docs/components/tooltip'
+    | '/docs/components/tree'
+    | '/docs/components/usercard'
+    | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
     | '/solid-spectrum/docs/'
     | '/solid-spectrum/docs/components/accordion'
@@ -828,8 +1701,91 @@ export interface FileRouteTypes {
     | '/showcase/type'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
+    | '/docs'
     | '/showcase'
     | '/solid-spectrum'
+    | '/docs/components/accordion'
+    | '/docs/components/actionbar'
+    | '/docs/components/actionbutton'
+    | '/docs/components/actionbuttongroup'
+    | '/docs/components/actiongroup'
+    | '/docs/components/actionmenu'
+    | '/docs/components/alertdialog'
+    | '/docs/components/assetcard'
+    | '/docs/components/avatar'
+    | '/docs/components/badge'
+    | '/docs/components/breadcrumbs'
+    | '/docs/components/button'
+    | '/docs/components/buttongroup'
+    | '/docs/components/calendar'
+    | '/docs/components/card'
+    | '/docs/components/cardview'
+    | '/docs/components/checkbox'
+    | '/docs/components/colorarea'
+    | '/docs/components/coloreditor'
+    | '/docs/components/colorfield'
+    | '/docs/components/colorslider'
+    | '/docs/components/colorswatch'
+    | '/docs/components/colorswatchpicker'
+    | '/docs/components/colorwheel'
+    | '/docs/components/combobox'
+    | '/docs/components/contextualhelp'
+    | '/docs/components/datefield'
+    | '/docs/components/datepicker'
+    | '/docs/components/daterangepicker'
+    | '/docs/components/dialog'
+    | '/docs/components/disclosure'
+    | '/docs/components/divider'
+    | '/docs/components/dropzone'
+    | '/docs/components/filetrigger'
+    | '/docs/components/form'
+    | '/docs/components/gridlist'
+    | '/docs/components/icon'
+    | '/docs/components/illustratedmessage'
+    | '/docs/components/image'
+    | '/docs/components/inlinealert'
+    | '/docs/components/labeledvalue'
+    | '/docs/components/layout'
+    | '/docs/components/link'
+    | '/docs/components/linkbutton'
+    | '/docs/components/listbox'
+    | '/docs/components/menu'
+    | '/docs/components/meter'
+    | '/docs/components/notificationbadge'
+    | '/docs/components/numberfield'
+    | '/docs/components/picker'
+    | '/docs/components/popover'
+    | '/docs/components/productcard'
+    | '/docs/components/progress'
+    | '/docs/components/progress-bar'
+    | '/docs/components/provider'
+    | '/docs/components/radio'
+    | '/docs/components/rangecalendar'
+    | '/docs/components/rangeslider'
+    | '/docs/components/searchfield'
+    | '/docs/components/segmentedcontrol'
+    | '/docs/components/select'
+    | '/docs/components/selectboxgroup'
+    | '/docs/components/separator'
+    | '/docs/components/skeleton'
+    | '/docs/components/slider'
+    | '/docs/components/statuslight'
+    | '/docs/components/steplist'
+    | '/docs/components/switch'
+    | '/docs/components/table'
+    | '/docs/components/tabs'
+    | '/docs/components/tag-group'
+    | '/docs/components/text'
+    | '/docs/components/textfield'
+    | '/docs/components/timefield'
+    | '/docs/components/toast'
+    | '/docs/components/togglebutton'
+    | '/docs/components/togglebuttongroup'
+    | '/docs/components/toolbar'
+    | '/docs/components/tooltip'
+    | '/docs/components/tree'
+    | '/docs/components/usercard'
+    | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
     | '/solid-spectrum/docs'
     | '/solid-spectrum/docs/components/accordion'
@@ -882,6 +1838,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/docs'
     | '/showcase'
     | '/solid-spectrum'
     | '/admin'
@@ -904,8 +1861,91 @@ export interface FileRouteTypes {
     | '/showcase/type'
     | '/solid-spectrum/ecosystem'
     | '/solid-spectrum/playground'
+    | '/docs/'
     | '/showcase/'
     | '/solid-spectrum/'
+    | '/docs/components/accordion'
+    | '/docs/components/actionbar'
+    | '/docs/components/actionbutton'
+    | '/docs/components/actionbuttongroup'
+    | '/docs/components/actiongroup'
+    | '/docs/components/actionmenu'
+    | '/docs/components/alertdialog'
+    | '/docs/components/assetcard'
+    | '/docs/components/avatar'
+    | '/docs/components/badge'
+    | '/docs/components/breadcrumbs'
+    | '/docs/components/button'
+    | '/docs/components/buttongroup'
+    | '/docs/components/calendar'
+    | '/docs/components/card'
+    | '/docs/components/cardview'
+    | '/docs/components/checkbox'
+    | '/docs/components/colorarea'
+    | '/docs/components/coloreditor'
+    | '/docs/components/colorfield'
+    | '/docs/components/colorslider'
+    | '/docs/components/colorswatch'
+    | '/docs/components/colorswatchpicker'
+    | '/docs/components/colorwheel'
+    | '/docs/components/combobox'
+    | '/docs/components/contextualhelp'
+    | '/docs/components/datefield'
+    | '/docs/components/datepicker'
+    | '/docs/components/daterangepicker'
+    | '/docs/components/dialog'
+    | '/docs/components/disclosure'
+    | '/docs/components/divider'
+    | '/docs/components/dropzone'
+    | '/docs/components/filetrigger'
+    | '/docs/components/form'
+    | '/docs/components/gridlist'
+    | '/docs/components/icon'
+    | '/docs/components/illustratedmessage'
+    | '/docs/components/image'
+    | '/docs/components/inlinealert'
+    | '/docs/components/labeledvalue'
+    | '/docs/components/layout'
+    | '/docs/components/link'
+    | '/docs/components/linkbutton'
+    | '/docs/components/listbox'
+    | '/docs/components/menu'
+    | '/docs/components/meter'
+    | '/docs/components/notificationbadge'
+    | '/docs/components/numberfield'
+    | '/docs/components/picker'
+    | '/docs/components/popover'
+    | '/docs/components/productcard'
+    | '/docs/components/progress'
+    | '/docs/components/progress-bar'
+    | '/docs/components/provider'
+    | '/docs/components/radio'
+    | '/docs/components/rangecalendar'
+    | '/docs/components/rangeslider'
+    | '/docs/components/searchfield'
+    | '/docs/components/segmentedcontrol'
+    | '/docs/components/select'
+    | '/docs/components/selectboxgroup'
+    | '/docs/components/separator'
+    | '/docs/components/skeleton'
+    | '/docs/components/slider'
+    | '/docs/components/statuslight'
+    | '/docs/components/steplist'
+    | '/docs/components/switch'
+    | '/docs/components/table'
+    | '/docs/components/tabs'
+    | '/docs/components/tag-group'
+    | '/docs/components/text'
+    | '/docs/components/textfield'
+    | '/docs/components/timefield'
+    | '/docs/components/toast'
+    | '/docs/components/togglebutton'
+    | '/docs/components/togglebuttongroup'
+    | '/docs/components/toolbar'
+    | '/docs/components/tooltip'
+    | '/docs/components/tree'
+    | '/docs/components/usercard'
+    | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
     | '/solid-spectrum/docs/'
     | '/solid-spectrum/docs/components/accordion'
@@ -959,6 +1999,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DocsRouteRoute: typeof DocsRouteRouteWithChildren
   ShowcaseRouteRoute: typeof ShowcaseRouteRouteWithChildren
   SolidSpectrumRouteRoute: typeof SolidSpectrumRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
@@ -995,6 +2036,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ShowcaseRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -1015,6 +2063,13 @@ declare module '@tanstack/solid-router' {
       fullPath: '/showcase/'
       preLoaderRoute: typeof ShowcaseIndexRouteImport
       parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof DocsRouteRoute
     }
     '/solid-spectrum/playground': {
       id: '/solid-spectrum/playground'
@@ -1155,6 +2210,580 @@ declare module '@tanstack/solid-router' {
       fullPath: '/solid-spectrum/docs/installation'
       preLoaderRoute: typeof SolidSpectrumDocsInstallationRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/docs/components/well': {
+      id: '/docs/components/well'
+      path: '/components/well'
+      fullPath: '/docs/components/well'
+      preLoaderRoute: typeof DocsComponentsWellRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/usercard': {
+      id: '/docs/components/usercard'
+      path: '/components/usercard'
+      fullPath: '/docs/components/usercard'
+      preLoaderRoute: typeof DocsComponentsUsercardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tree': {
+      id: '/docs/components/tree'
+      path: '/components/tree'
+      fullPath: '/docs/components/tree'
+      preLoaderRoute: typeof DocsComponentsTreeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tooltip': {
+      id: '/docs/components/tooltip'
+      path: '/components/tooltip'
+      fullPath: '/docs/components/tooltip'
+      preLoaderRoute: typeof DocsComponentsTooltipRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/toolbar': {
+      id: '/docs/components/toolbar'
+      path: '/components/toolbar'
+      fullPath: '/docs/components/toolbar'
+      preLoaderRoute: typeof DocsComponentsToolbarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/togglebuttongroup': {
+      id: '/docs/components/togglebuttongroup'
+      path: '/components/togglebuttongroup'
+      fullPath: '/docs/components/togglebuttongroup'
+      preLoaderRoute: typeof DocsComponentsTogglebuttongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/togglebutton': {
+      id: '/docs/components/togglebutton'
+      path: '/components/togglebutton'
+      fullPath: '/docs/components/togglebutton'
+      preLoaderRoute: typeof DocsComponentsTogglebuttonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/toast': {
+      id: '/docs/components/toast'
+      path: '/components/toast'
+      fullPath: '/docs/components/toast'
+      preLoaderRoute: typeof DocsComponentsToastRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/timefield': {
+      id: '/docs/components/timefield'
+      path: '/components/timefield'
+      fullPath: '/docs/components/timefield'
+      preLoaderRoute: typeof DocsComponentsTimefieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/textfield': {
+      id: '/docs/components/textfield'
+      path: '/components/textfield'
+      fullPath: '/docs/components/textfield'
+      preLoaderRoute: typeof DocsComponentsTextfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/text': {
+      id: '/docs/components/text'
+      path: '/components/text'
+      fullPath: '/docs/components/text'
+      preLoaderRoute: typeof DocsComponentsTextRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tag-group': {
+      id: '/docs/components/tag-group'
+      path: '/components/tag-group'
+      fullPath: '/docs/components/tag-group'
+      preLoaderRoute: typeof DocsComponentsTagGroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tabs': {
+      id: '/docs/components/tabs'
+      path: '/components/tabs'
+      fullPath: '/docs/components/tabs'
+      preLoaderRoute: typeof DocsComponentsTabsRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/table': {
+      id: '/docs/components/table'
+      path: '/components/table'
+      fullPath: '/docs/components/table'
+      preLoaderRoute: typeof DocsComponentsTableRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/switch': {
+      id: '/docs/components/switch'
+      path: '/components/switch'
+      fullPath: '/docs/components/switch'
+      preLoaderRoute: typeof DocsComponentsSwitchRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/steplist': {
+      id: '/docs/components/steplist'
+      path: '/components/steplist'
+      fullPath: '/docs/components/steplist'
+      preLoaderRoute: typeof DocsComponentsSteplistRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/statuslight': {
+      id: '/docs/components/statuslight'
+      path: '/components/statuslight'
+      fullPath: '/docs/components/statuslight'
+      preLoaderRoute: typeof DocsComponentsStatuslightRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/slider': {
+      id: '/docs/components/slider'
+      path: '/components/slider'
+      fullPath: '/docs/components/slider'
+      preLoaderRoute: typeof DocsComponentsSliderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/skeleton': {
+      id: '/docs/components/skeleton'
+      path: '/components/skeleton'
+      fullPath: '/docs/components/skeleton'
+      preLoaderRoute: typeof DocsComponentsSkeletonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/separator': {
+      id: '/docs/components/separator'
+      path: '/components/separator'
+      fullPath: '/docs/components/separator'
+      preLoaderRoute: typeof DocsComponentsSeparatorRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/selectboxgroup': {
+      id: '/docs/components/selectboxgroup'
+      path: '/components/selectboxgroup'
+      fullPath: '/docs/components/selectboxgroup'
+      preLoaderRoute: typeof DocsComponentsSelectboxgroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/select': {
+      id: '/docs/components/select'
+      path: '/components/select'
+      fullPath: '/docs/components/select'
+      preLoaderRoute: typeof DocsComponentsSelectRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/segmentedcontrol': {
+      id: '/docs/components/segmentedcontrol'
+      path: '/components/segmentedcontrol'
+      fullPath: '/docs/components/segmentedcontrol'
+      preLoaderRoute: typeof DocsComponentsSegmentedcontrolRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/searchfield': {
+      id: '/docs/components/searchfield'
+      path: '/components/searchfield'
+      fullPath: '/docs/components/searchfield'
+      preLoaderRoute: typeof DocsComponentsSearchfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/rangeslider': {
+      id: '/docs/components/rangeslider'
+      path: '/components/rangeslider'
+      fullPath: '/docs/components/rangeslider'
+      preLoaderRoute: typeof DocsComponentsRangesliderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/rangecalendar': {
+      id: '/docs/components/rangecalendar'
+      path: '/components/rangecalendar'
+      fullPath: '/docs/components/rangecalendar'
+      preLoaderRoute: typeof DocsComponentsRangecalendarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/radio': {
+      id: '/docs/components/radio'
+      path: '/components/radio'
+      fullPath: '/docs/components/radio'
+      preLoaderRoute: typeof DocsComponentsRadioRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/provider': {
+      id: '/docs/components/provider'
+      path: '/components/provider'
+      fullPath: '/docs/components/provider'
+      preLoaderRoute: typeof DocsComponentsProviderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/progress-bar': {
+      id: '/docs/components/progress-bar'
+      path: '/components/progress-bar'
+      fullPath: '/docs/components/progress-bar'
+      preLoaderRoute: typeof DocsComponentsProgressBarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/progress': {
+      id: '/docs/components/progress'
+      path: '/components/progress'
+      fullPath: '/docs/components/progress'
+      preLoaderRoute: typeof DocsComponentsProgressRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/productcard': {
+      id: '/docs/components/productcard'
+      path: '/components/productcard'
+      fullPath: '/docs/components/productcard'
+      preLoaderRoute: typeof DocsComponentsProductcardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/popover': {
+      id: '/docs/components/popover'
+      path: '/components/popover'
+      fullPath: '/docs/components/popover'
+      preLoaderRoute: typeof DocsComponentsPopoverRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/picker': {
+      id: '/docs/components/picker'
+      path: '/components/picker'
+      fullPath: '/docs/components/picker'
+      preLoaderRoute: typeof DocsComponentsPickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/numberfield': {
+      id: '/docs/components/numberfield'
+      path: '/components/numberfield'
+      fullPath: '/docs/components/numberfield'
+      preLoaderRoute: typeof DocsComponentsNumberfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/notificationbadge': {
+      id: '/docs/components/notificationbadge'
+      path: '/components/notificationbadge'
+      fullPath: '/docs/components/notificationbadge'
+      preLoaderRoute: typeof DocsComponentsNotificationbadgeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/meter': {
+      id: '/docs/components/meter'
+      path: '/components/meter'
+      fullPath: '/docs/components/meter'
+      preLoaderRoute: typeof DocsComponentsMeterRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/menu': {
+      id: '/docs/components/menu'
+      path: '/components/menu'
+      fullPath: '/docs/components/menu'
+      preLoaderRoute: typeof DocsComponentsMenuRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/listbox': {
+      id: '/docs/components/listbox'
+      path: '/components/listbox'
+      fullPath: '/docs/components/listbox'
+      preLoaderRoute: typeof DocsComponentsListboxRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/linkbutton': {
+      id: '/docs/components/linkbutton'
+      path: '/components/linkbutton'
+      fullPath: '/docs/components/linkbutton'
+      preLoaderRoute: typeof DocsComponentsLinkbuttonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/link': {
+      id: '/docs/components/link'
+      path: '/components/link'
+      fullPath: '/docs/components/link'
+      preLoaderRoute: typeof DocsComponentsLinkRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/layout': {
+      id: '/docs/components/layout'
+      path: '/components/layout'
+      fullPath: '/docs/components/layout'
+      preLoaderRoute: typeof DocsComponentsLayoutRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/labeledvalue': {
+      id: '/docs/components/labeledvalue'
+      path: '/components/labeledvalue'
+      fullPath: '/docs/components/labeledvalue'
+      preLoaderRoute: typeof DocsComponentsLabeledvalueRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/inlinealert': {
+      id: '/docs/components/inlinealert'
+      path: '/components/inlinealert'
+      fullPath: '/docs/components/inlinealert'
+      preLoaderRoute: typeof DocsComponentsInlinealertRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/image': {
+      id: '/docs/components/image'
+      path: '/components/image'
+      fullPath: '/docs/components/image'
+      preLoaderRoute: typeof DocsComponentsImageRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/illustratedmessage': {
+      id: '/docs/components/illustratedmessage'
+      path: '/components/illustratedmessage'
+      fullPath: '/docs/components/illustratedmessage'
+      preLoaderRoute: typeof DocsComponentsIllustratedmessageRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/icon': {
+      id: '/docs/components/icon'
+      path: '/components/icon'
+      fullPath: '/docs/components/icon'
+      preLoaderRoute: typeof DocsComponentsIconRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/gridlist': {
+      id: '/docs/components/gridlist'
+      path: '/components/gridlist'
+      fullPath: '/docs/components/gridlist'
+      preLoaderRoute: typeof DocsComponentsGridlistRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/form': {
+      id: '/docs/components/form'
+      path: '/components/form'
+      fullPath: '/docs/components/form'
+      preLoaderRoute: typeof DocsComponentsFormRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/filetrigger': {
+      id: '/docs/components/filetrigger'
+      path: '/components/filetrigger'
+      fullPath: '/docs/components/filetrigger'
+      preLoaderRoute: typeof DocsComponentsFiletriggerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/dropzone': {
+      id: '/docs/components/dropzone'
+      path: '/components/dropzone'
+      fullPath: '/docs/components/dropzone'
+      preLoaderRoute: typeof DocsComponentsDropzoneRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/divider': {
+      id: '/docs/components/divider'
+      path: '/components/divider'
+      fullPath: '/docs/components/divider'
+      preLoaderRoute: typeof DocsComponentsDividerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/disclosure': {
+      id: '/docs/components/disclosure'
+      path: '/components/disclosure'
+      fullPath: '/docs/components/disclosure'
+      preLoaderRoute: typeof DocsComponentsDisclosureRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/dialog': {
+      id: '/docs/components/dialog'
+      path: '/components/dialog'
+      fullPath: '/docs/components/dialog'
+      preLoaderRoute: typeof DocsComponentsDialogRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/daterangepicker': {
+      id: '/docs/components/daterangepicker'
+      path: '/components/daterangepicker'
+      fullPath: '/docs/components/daterangepicker'
+      preLoaderRoute: typeof DocsComponentsDaterangepickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/datepicker': {
+      id: '/docs/components/datepicker'
+      path: '/components/datepicker'
+      fullPath: '/docs/components/datepicker'
+      preLoaderRoute: typeof DocsComponentsDatepickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/datefield': {
+      id: '/docs/components/datefield'
+      path: '/components/datefield'
+      fullPath: '/docs/components/datefield'
+      preLoaderRoute: typeof DocsComponentsDatefieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/contextualhelp': {
+      id: '/docs/components/contextualhelp'
+      path: '/components/contextualhelp'
+      fullPath: '/docs/components/contextualhelp'
+      preLoaderRoute: typeof DocsComponentsContextualhelpRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/combobox': {
+      id: '/docs/components/combobox'
+      path: '/components/combobox'
+      fullPath: '/docs/components/combobox'
+      preLoaderRoute: typeof DocsComponentsComboboxRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorwheel': {
+      id: '/docs/components/colorwheel'
+      path: '/components/colorwheel'
+      fullPath: '/docs/components/colorwheel'
+      preLoaderRoute: typeof DocsComponentsColorwheelRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorswatchpicker': {
+      id: '/docs/components/colorswatchpicker'
+      path: '/components/colorswatchpicker'
+      fullPath: '/docs/components/colorswatchpicker'
+      preLoaderRoute: typeof DocsComponentsColorswatchpickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorswatch': {
+      id: '/docs/components/colorswatch'
+      path: '/components/colorswatch'
+      fullPath: '/docs/components/colorswatch'
+      preLoaderRoute: typeof DocsComponentsColorswatchRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorslider': {
+      id: '/docs/components/colorslider'
+      path: '/components/colorslider'
+      fullPath: '/docs/components/colorslider'
+      preLoaderRoute: typeof DocsComponentsColorsliderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorfield': {
+      id: '/docs/components/colorfield'
+      path: '/components/colorfield'
+      fullPath: '/docs/components/colorfield'
+      preLoaderRoute: typeof DocsComponentsColorfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/coloreditor': {
+      id: '/docs/components/coloreditor'
+      path: '/components/coloreditor'
+      fullPath: '/docs/components/coloreditor'
+      preLoaderRoute: typeof DocsComponentsColoreditorRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorarea': {
+      id: '/docs/components/colorarea'
+      path: '/components/colorarea'
+      fullPath: '/docs/components/colorarea'
+      preLoaderRoute: typeof DocsComponentsColorareaRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/checkbox': {
+      id: '/docs/components/checkbox'
+      path: '/components/checkbox'
+      fullPath: '/docs/components/checkbox'
+      preLoaderRoute: typeof DocsComponentsCheckboxRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/cardview': {
+      id: '/docs/components/cardview'
+      path: '/components/cardview'
+      fullPath: '/docs/components/cardview'
+      preLoaderRoute: typeof DocsComponentsCardviewRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/card': {
+      id: '/docs/components/card'
+      path: '/components/card'
+      fullPath: '/docs/components/card'
+      preLoaderRoute: typeof DocsComponentsCardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/calendar': {
+      id: '/docs/components/calendar'
+      path: '/components/calendar'
+      fullPath: '/docs/components/calendar'
+      preLoaderRoute: typeof DocsComponentsCalendarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/buttongroup': {
+      id: '/docs/components/buttongroup'
+      path: '/components/buttongroup'
+      fullPath: '/docs/components/buttongroup'
+      preLoaderRoute: typeof DocsComponentsButtongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/button': {
+      id: '/docs/components/button'
+      path: '/components/button'
+      fullPath: '/docs/components/button'
+      preLoaderRoute: typeof DocsComponentsButtonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/breadcrumbs': {
+      id: '/docs/components/breadcrumbs'
+      path: '/components/breadcrumbs'
+      fullPath: '/docs/components/breadcrumbs'
+      preLoaderRoute: typeof DocsComponentsBreadcrumbsRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/badge': {
+      id: '/docs/components/badge'
+      path: '/components/badge'
+      fullPath: '/docs/components/badge'
+      preLoaderRoute: typeof DocsComponentsBadgeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/avatar': {
+      id: '/docs/components/avatar'
+      path: '/components/avatar'
+      fullPath: '/docs/components/avatar'
+      preLoaderRoute: typeof DocsComponentsAvatarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/assetcard': {
+      id: '/docs/components/assetcard'
+      path: '/components/assetcard'
+      fullPath: '/docs/components/assetcard'
+      preLoaderRoute: typeof DocsComponentsAssetcardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/alertdialog': {
+      id: '/docs/components/alertdialog'
+      path: '/components/alertdialog'
+      fullPath: '/docs/components/alertdialog'
+      preLoaderRoute: typeof DocsComponentsAlertdialogRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionmenu': {
+      id: '/docs/components/actionmenu'
+      path: '/components/actionmenu'
+      fullPath: '/docs/components/actionmenu'
+      preLoaderRoute: typeof DocsComponentsActionmenuRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actiongroup': {
+      id: '/docs/components/actiongroup'
+      path: '/components/actiongroup'
+      fullPath: '/docs/components/actiongroup'
+      preLoaderRoute: typeof DocsComponentsActiongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionbuttongroup': {
+      id: '/docs/components/actionbuttongroup'
+      path: '/components/actionbuttongroup'
+      fullPath: '/docs/components/actionbuttongroup'
+      preLoaderRoute: typeof DocsComponentsActionbuttongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionbutton': {
+      id: '/docs/components/actionbutton'
+      path: '/components/actionbutton'
+      fullPath: '/docs/components/actionbutton'
+      preLoaderRoute: typeof DocsComponentsActionbuttonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionbar': {
+      id: '/docs/components/actionbar'
+      path: '/components/actionbar'
+      fullPath: '/docs/components/actionbar'
+      preLoaderRoute: typeof DocsComponentsActionbarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/accordion': {
+      id: '/docs/components/accordion'
+      path: '/components/accordion'
+      fullPath: '/docs/components/accordion'
+      preLoaderRoute: typeof DocsComponentsAccordionRouteImport
+      parentRoute: typeof DocsRouteRoute
     }
     '/solid-spectrum/docs/hooks/create-press': {
       id: '/solid-spectrum/docs/hooks/create-press'
@@ -1488,6 +3117,182 @@ declare module '@tanstack/solid-router' {
   }
 }
 
+interface DocsRouteRouteChildren {
+  DocsIndexRoute: typeof DocsIndexRoute
+  DocsComponentsAccordionRoute: typeof DocsComponentsAccordionRoute
+  DocsComponentsActionbarRoute: typeof DocsComponentsActionbarRoute
+  DocsComponentsActionbuttonRoute: typeof DocsComponentsActionbuttonRoute
+  DocsComponentsActionbuttongroupRoute: typeof DocsComponentsActionbuttongroupRoute
+  DocsComponentsActiongroupRoute: typeof DocsComponentsActiongroupRoute
+  DocsComponentsActionmenuRoute: typeof DocsComponentsActionmenuRoute
+  DocsComponentsAlertdialogRoute: typeof DocsComponentsAlertdialogRoute
+  DocsComponentsAssetcardRoute: typeof DocsComponentsAssetcardRoute
+  DocsComponentsAvatarRoute: typeof DocsComponentsAvatarRoute
+  DocsComponentsBadgeRoute: typeof DocsComponentsBadgeRoute
+  DocsComponentsBreadcrumbsRoute: typeof DocsComponentsBreadcrumbsRoute
+  DocsComponentsButtonRoute: typeof DocsComponentsButtonRoute
+  DocsComponentsButtongroupRoute: typeof DocsComponentsButtongroupRoute
+  DocsComponentsCalendarRoute: typeof DocsComponentsCalendarRoute
+  DocsComponentsCardRoute: typeof DocsComponentsCardRoute
+  DocsComponentsCardviewRoute: typeof DocsComponentsCardviewRoute
+  DocsComponentsCheckboxRoute: typeof DocsComponentsCheckboxRoute
+  DocsComponentsColorareaRoute: typeof DocsComponentsColorareaRoute
+  DocsComponentsColoreditorRoute: typeof DocsComponentsColoreditorRoute
+  DocsComponentsColorfieldRoute: typeof DocsComponentsColorfieldRoute
+  DocsComponentsColorsliderRoute: typeof DocsComponentsColorsliderRoute
+  DocsComponentsColorswatchRoute: typeof DocsComponentsColorswatchRoute
+  DocsComponentsColorswatchpickerRoute: typeof DocsComponentsColorswatchpickerRoute
+  DocsComponentsColorwheelRoute: typeof DocsComponentsColorwheelRoute
+  DocsComponentsComboboxRoute: typeof DocsComponentsComboboxRoute
+  DocsComponentsContextualhelpRoute: typeof DocsComponentsContextualhelpRoute
+  DocsComponentsDatefieldRoute: typeof DocsComponentsDatefieldRoute
+  DocsComponentsDatepickerRoute: typeof DocsComponentsDatepickerRoute
+  DocsComponentsDaterangepickerRoute: typeof DocsComponentsDaterangepickerRoute
+  DocsComponentsDialogRoute: typeof DocsComponentsDialogRoute
+  DocsComponentsDisclosureRoute: typeof DocsComponentsDisclosureRoute
+  DocsComponentsDividerRoute: typeof DocsComponentsDividerRoute
+  DocsComponentsDropzoneRoute: typeof DocsComponentsDropzoneRoute
+  DocsComponentsFiletriggerRoute: typeof DocsComponentsFiletriggerRoute
+  DocsComponentsFormRoute: typeof DocsComponentsFormRoute
+  DocsComponentsGridlistRoute: typeof DocsComponentsGridlistRoute
+  DocsComponentsIconRoute: typeof DocsComponentsIconRoute
+  DocsComponentsIllustratedmessageRoute: typeof DocsComponentsIllustratedmessageRoute
+  DocsComponentsImageRoute: typeof DocsComponentsImageRoute
+  DocsComponentsInlinealertRoute: typeof DocsComponentsInlinealertRoute
+  DocsComponentsLabeledvalueRoute: typeof DocsComponentsLabeledvalueRoute
+  DocsComponentsLayoutRoute: typeof DocsComponentsLayoutRoute
+  DocsComponentsLinkRoute: typeof DocsComponentsLinkRoute
+  DocsComponentsLinkbuttonRoute: typeof DocsComponentsLinkbuttonRoute
+  DocsComponentsListboxRoute: typeof DocsComponentsListboxRoute
+  DocsComponentsMenuRoute: typeof DocsComponentsMenuRoute
+  DocsComponentsMeterRoute: typeof DocsComponentsMeterRoute
+  DocsComponentsNotificationbadgeRoute: typeof DocsComponentsNotificationbadgeRoute
+  DocsComponentsNumberfieldRoute: typeof DocsComponentsNumberfieldRoute
+  DocsComponentsPickerRoute: typeof DocsComponentsPickerRoute
+  DocsComponentsPopoverRoute: typeof DocsComponentsPopoverRoute
+  DocsComponentsProductcardRoute: typeof DocsComponentsProductcardRoute
+  DocsComponentsProgressRoute: typeof DocsComponentsProgressRoute
+  DocsComponentsProgressBarRoute: typeof DocsComponentsProgressBarRoute
+  DocsComponentsProviderRoute: typeof DocsComponentsProviderRoute
+  DocsComponentsRadioRoute: typeof DocsComponentsRadioRoute
+  DocsComponentsRangecalendarRoute: typeof DocsComponentsRangecalendarRoute
+  DocsComponentsRangesliderRoute: typeof DocsComponentsRangesliderRoute
+  DocsComponentsSearchfieldRoute: typeof DocsComponentsSearchfieldRoute
+  DocsComponentsSegmentedcontrolRoute: typeof DocsComponentsSegmentedcontrolRoute
+  DocsComponentsSelectRoute: typeof DocsComponentsSelectRoute
+  DocsComponentsSelectboxgroupRoute: typeof DocsComponentsSelectboxgroupRoute
+  DocsComponentsSeparatorRoute: typeof DocsComponentsSeparatorRoute
+  DocsComponentsSkeletonRoute: typeof DocsComponentsSkeletonRoute
+  DocsComponentsSliderRoute: typeof DocsComponentsSliderRoute
+  DocsComponentsStatuslightRoute: typeof DocsComponentsStatuslightRoute
+  DocsComponentsSteplistRoute: typeof DocsComponentsSteplistRoute
+  DocsComponentsSwitchRoute: typeof DocsComponentsSwitchRoute
+  DocsComponentsTableRoute: typeof DocsComponentsTableRoute
+  DocsComponentsTabsRoute: typeof DocsComponentsTabsRoute
+  DocsComponentsTagGroupRoute: typeof DocsComponentsTagGroupRoute
+  DocsComponentsTextRoute: typeof DocsComponentsTextRoute
+  DocsComponentsTextfieldRoute: typeof DocsComponentsTextfieldRoute
+  DocsComponentsTimefieldRoute: typeof DocsComponentsTimefieldRoute
+  DocsComponentsToastRoute: typeof DocsComponentsToastRoute
+  DocsComponentsTogglebuttonRoute: typeof DocsComponentsTogglebuttonRoute
+  DocsComponentsTogglebuttongroupRoute: typeof DocsComponentsTogglebuttongroupRoute
+  DocsComponentsToolbarRoute: typeof DocsComponentsToolbarRoute
+  DocsComponentsTooltipRoute: typeof DocsComponentsTooltipRoute
+  DocsComponentsTreeRoute: typeof DocsComponentsTreeRoute
+  DocsComponentsUsercardRoute: typeof DocsComponentsUsercardRoute
+  DocsComponentsWellRoute: typeof DocsComponentsWellRoute
+}
+
+const DocsRouteRouteChildren: DocsRouteRouteChildren = {
+  DocsIndexRoute: DocsIndexRoute,
+  DocsComponentsAccordionRoute: DocsComponentsAccordionRoute,
+  DocsComponentsActionbarRoute: DocsComponentsActionbarRoute,
+  DocsComponentsActionbuttonRoute: DocsComponentsActionbuttonRoute,
+  DocsComponentsActionbuttongroupRoute: DocsComponentsActionbuttongroupRoute,
+  DocsComponentsActiongroupRoute: DocsComponentsActiongroupRoute,
+  DocsComponentsActionmenuRoute: DocsComponentsActionmenuRoute,
+  DocsComponentsAlertdialogRoute: DocsComponentsAlertdialogRoute,
+  DocsComponentsAssetcardRoute: DocsComponentsAssetcardRoute,
+  DocsComponentsAvatarRoute: DocsComponentsAvatarRoute,
+  DocsComponentsBadgeRoute: DocsComponentsBadgeRoute,
+  DocsComponentsBreadcrumbsRoute: DocsComponentsBreadcrumbsRoute,
+  DocsComponentsButtonRoute: DocsComponentsButtonRoute,
+  DocsComponentsButtongroupRoute: DocsComponentsButtongroupRoute,
+  DocsComponentsCalendarRoute: DocsComponentsCalendarRoute,
+  DocsComponentsCardRoute: DocsComponentsCardRoute,
+  DocsComponentsCardviewRoute: DocsComponentsCardviewRoute,
+  DocsComponentsCheckboxRoute: DocsComponentsCheckboxRoute,
+  DocsComponentsColorareaRoute: DocsComponentsColorareaRoute,
+  DocsComponentsColoreditorRoute: DocsComponentsColoreditorRoute,
+  DocsComponentsColorfieldRoute: DocsComponentsColorfieldRoute,
+  DocsComponentsColorsliderRoute: DocsComponentsColorsliderRoute,
+  DocsComponentsColorswatchRoute: DocsComponentsColorswatchRoute,
+  DocsComponentsColorswatchpickerRoute: DocsComponentsColorswatchpickerRoute,
+  DocsComponentsColorwheelRoute: DocsComponentsColorwheelRoute,
+  DocsComponentsComboboxRoute: DocsComponentsComboboxRoute,
+  DocsComponentsContextualhelpRoute: DocsComponentsContextualhelpRoute,
+  DocsComponentsDatefieldRoute: DocsComponentsDatefieldRoute,
+  DocsComponentsDatepickerRoute: DocsComponentsDatepickerRoute,
+  DocsComponentsDaterangepickerRoute: DocsComponentsDaterangepickerRoute,
+  DocsComponentsDialogRoute: DocsComponentsDialogRoute,
+  DocsComponentsDisclosureRoute: DocsComponentsDisclosureRoute,
+  DocsComponentsDividerRoute: DocsComponentsDividerRoute,
+  DocsComponentsDropzoneRoute: DocsComponentsDropzoneRoute,
+  DocsComponentsFiletriggerRoute: DocsComponentsFiletriggerRoute,
+  DocsComponentsFormRoute: DocsComponentsFormRoute,
+  DocsComponentsGridlistRoute: DocsComponentsGridlistRoute,
+  DocsComponentsIconRoute: DocsComponentsIconRoute,
+  DocsComponentsIllustratedmessageRoute: DocsComponentsIllustratedmessageRoute,
+  DocsComponentsImageRoute: DocsComponentsImageRoute,
+  DocsComponentsInlinealertRoute: DocsComponentsInlinealertRoute,
+  DocsComponentsLabeledvalueRoute: DocsComponentsLabeledvalueRoute,
+  DocsComponentsLayoutRoute: DocsComponentsLayoutRoute,
+  DocsComponentsLinkRoute: DocsComponentsLinkRoute,
+  DocsComponentsLinkbuttonRoute: DocsComponentsLinkbuttonRoute,
+  DocsComponentsListboxRoute: DocsComponentsListboxRoute,
+  DocsComponentsMenuRoute: DocsComponentsMenuRoute,
+  DocsComponentsMeterRoute: DocsComponentsMeterRoute,
+  DocsComponentsNotificationbadgeRoute: DocsComponentsNotificationbadgeRoute,
+  DocsComponentsNumberfieldRoute: DocsComponentsNumberfieldRoute,
+  DocsComponentsPickerRoute: DocsComponentsPickerRoute,
+  DocsComponentsPopoverRoute: DocsComponentsPopoverRoute,
+  DocsComponentsProductcardRoute: DocsComponentsProductcardRoute,
+  DocsComponentsProgressRoute: DocsComponentsProgressRoute,
+  DocsComponentsProgressBarRoute: DocsComponentsProgressBarRoute,
+  DocsComponentsProviderRoute: DocsComponentsProviderRoute,
+  DocsComponentsRadioRoute: DocsComponentsRadioRoute,
+  DocsComponentsRangecalendarRoute: DocsComponentsRangecalendarRoute,
+  DocsComponentsRangesliderRoute: DocsComponentsRangesliderRoute,
+  DocsComponentsSearchfieldRoute: DocsComponentsSearchfieldRoute,
+  DocsComponentsSegmentedcontrolRoute: DocsComponentsSegmentedcontrolRoute,
+  DocsComponentsSelectRoute: DocsComponentsSelectRoute,
+  DocsComponentsSelectboxgroupRoute: DocsComponentsSelectboxgroupRoute,
+  DocsComponentsSeparatorRoute: DocsComponentsSeparatorRoute,
+  DocsComponentsSkeletonRoute: DocsComponentsSkeletonRoute,
+  DocsComponentsSliderRoute: DocsComponentsSliderRoute,
+  DocsComponentsStatuslightRoute: DocsComponentsStatuslightRoute,
+  DocsComponentsSteplistRoute: DocsComponentsSteplistRoute,
+  DocsComponentsSwitchRoute: DocsComponentsSwitchRoute,
+  DocsComponentsTableRoute: DocsComponentsTableRoute,
+  DocsComponentsTabsRoute: DocsComponentsTabsRoute,
+  DocsComponentsTagGroupRoute: DocsComponentsTagGroupRoute,
+  DocsComponentsTextRoute: DocsComponentsTextRoute,
+  DocsComponentsTextfieldRoute: DocsComponentsTextfieldRoute,
+  DocsComponentsTimefieldRoute: DocsComponentsTimefieldRoute,
+  DocsComponentsToastRoute: DocsComponentsToastRoute,
+  DocsComponentsTogglebuttonRoute: DocsComponentsTogglebuttonRoute,
+  DocsComponentsTogglebuttongroupRoute: DocsComponentsTogglebuttongroupRoute,
+  DocsComponentsToolbarRoute: DocsComponentsToolbarRoute,
+  DocsComponentsTooltipRoute: DocsComponentsTooltipRoute,
+  DocsComponentsTreeRoute: DocsComponentsTreeRoute,
+  DocsComponentsUsercardRoute: DocsComponentsUsercardRoute,
+  DocsComponentsWellRoute: DocsComponentsWellRoute,
+}
+
+const DocsRouteRouteWithChildren = DocsRouteRoute._addFileChildren(
+  DocsRouteRouteChildren,
+)
+
 interface ShowcaseRouteRouteChildren {
   ShowcaseButtonsRoute: typeof ShowcaseButtonsRoute
   ShowcaseCardsRoute: typeof ShowcaseCardsRoute
@@ -1702,6 +3507,7 @@ const SolidSpectrumRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DocsRouteRoute: DocsRouteRouteWithChildren,
   ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
   SolidSpectrumRouteRoute: SolidSpectrumRouteRouteWithChildren,
   AdminRoute: AdminRoute,

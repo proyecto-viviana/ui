@@ -70,8 +70,9 @@ tasks:
       78 / 78 / 0 / 7.
   - id: launch-viviana-ui-api-docs
     title: The flagship package has 238 exports and zero API documentation
-    state: open
+    state: done
     filed: 2026-07-24
+    finished: 2026-07-24
     priority: P1
     roadmap: launch
     note: >-
@@ -85,6 +86,26 @@ tasks:
       Reference pages for the viviana-ui surface. The registers share the exact
       component + variant API (only typeRoles differs), so the solid-spectrum docs
       structure should be reusable rather than rebuilt.
+    resolution: >-
+      Generated, not written. `vp run api:extract` (scripts/extract-api-reference.ts)
+      builds a ts.createProgram over the package barrel and walks
+      getApparentType(...).getProperties() for each exported component's props type,
+      emitting one JSON payload and one TSX route per page: 82 pages, 3,367 props,
+      183 interfaces, 87.7% JSDoc coverage. The decisive design call was filtering
+      members by *declaring file* — keep /packages/, drop the solid-js JSX namespace
+      — which cuts 40,966 members to 3,367 (BadgeProps 456 to 12) with zero
+      hand-maintained allowlist. Payloads are per page, not per register: a
+      register-wide import folded every table into one 136.31 kB gz chunk; per-page
+      JSON took the shared chunk to 908 B gz. Each page carries its own precomputed
+      divergence against the other register (24 site-wide) because the two share
+      prop names but not prop values. `vp run guard:api-reference` re-runs the
+      extractor with --check and blocks in certification-gates.yml, so a prop
+      renamed in the package fails CI instead of turning a page into a lie.
+      Route-level plumbing: check-doc-routes.ts generalized to a list of trees
+      (129 routes), MINIMUM_EXPECTED_ROUTES 60 -> 140, generated head titles
+      suffixed " props" to clear a real /docs vs /solid-spectrum/docs title
+      collision that test:seo caught, and e2e/api-reference.spec.ts asserts the
+      rendered tables against the same JSON the pages import.
   - id: launch-format-drift
     title: vp check is red on main with 174 files of format drift
     state: done
@@ -2032,7 +2053,28 @@ re-enable `typeCheck` in the lint block and drop the separate step from `check`.
 `color-contrast`. `a11y:full` still runs contrast and stricter audits, but they do
 not block PRs.
 
-**Exit:** resolve the outstanding contrast findings, then remove the exclusion so
+The findings were measured on 2026-07-24 while landing the generated API
+reference, and they are **token-level, not page-level**. An axe probe restricted
+to `color-contrast` returns the same failures with the same computed colours on
+the brand-new `/docs/components/button` and on the long-standing
+`/solid-spectrum/docs/components/badge`, which rules out any one page as the
+cause. Light theme is where they live; dark returns 6 nodes to light's 167.
+
+| Where                                                                             | Computed | Ratio | Needs                                                               |
+| --------------------------------------------------------------------------------- | -------- | ----- | ------------------------------------------------------------------- |
+| Body/`<th>`/table prose — `--text-secondary` `#64748b` on `#e9eff6`               | 4.11     | 4.5   | darken the light-mode `--text-secondary` (today `var(--slate-500)`) |
+| Inline `<code>` chip — `--accent-primary` `#2e90fa` on its own 12% tint `#d3e4f6` | 2.49     | 4.5   | a text-safe accent for the chip's foreground, or drop the tint      |
+| Active sidebar link — `#ffffff` on `--accent-primary` `#2e90fa`                   | 3.23     | 4.5   | darken the active fill, or take the ink to `--color-grey-900`       |
+
+All three are the docs chrome shared by `DocPage` and `ApiReference`; a fix in
+`viviana-tokens.css` plus the `DocPage` chip style clears every page at once, so
+this should not be attempted per page. The recert playbook already has the recipe
+(memory: Tier-6 WCAG — muted text flips `--color-text`, light ink on a non-flip
+accent fill goes `--color-grey-900`, accent-as-large-text flips
+`--color-accent-500`); this is the same problem one layer up, in the site's own
+tokens rather than a component's.
+
+**Exit:** resolve the three rows above, then remove the exclusion so
 `color-contrast` blocks in `ci:a11y`.
 
 ## Visual-state coverage debt

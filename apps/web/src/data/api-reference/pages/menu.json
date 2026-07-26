@@ -1,0 +1,1000 @@
+{
+  "slug": "menu",
+  "title": "Menu",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "MenuProps",
+      "component": "Menu",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hideLinkOutIcon",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Hides the default link out icons on menu items that open links in a new tab.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "MenuSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the menu.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the menu element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "required": false,
+          "description": "The children of the component. A function may be provided to render each item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "An ID for the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves out of the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the menu should close.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves into the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler for selection changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that describes the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the menu when no visible label is provided.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that labels the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: MenuRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the menu element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean | \"first\" | \"last\"",
+          "values": [
+            "false",
+            "true",
+            "'first'",
+            "'last'"
+          ],
+          "required": false,
+          "description": "Whether to auto-focus the first item when the menu opens.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler called when the focus state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "selectionMode",
+          "type": "SelectionMode",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "disallowEmptySelection",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether empty selection is disallowed.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "items",
+          "type": "CollectionEntry<T>[]",
+          "required": false,
+          "description": "The items to render in the menu.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The label for the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key, value: T) => void",
+          "required": false,
+          "description": "Handler called when an item is activated, with the activated item's value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldCloseOnSelect",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu should close when an item is selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFocusWrap",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether focus should automatically wrap around.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "disallowTypeAhead",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether type-to-select is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "SelectionBehavior",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": false,
+          "description": "How selection behaves on interaction.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "allowDuplicateSelectionEvents",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow duplicate selection events.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T) => string",
+          "required": false,
+          "description": "Function to get the text value from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getDisabled",
+          "type": "(item: T) => boolean",
+          "required": false,
+          "description": "Function to check if an item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "\"all\" | \"selection\"",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "Whether disabled items can still receive focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "staticChildren",
+          "type": "() => JSX.Element | undefined",
+          "required": false,
+          "description": "Internal lazy static children accessor used when collection children need menu context.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Content to display when the menu has no items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dragAndDropHooks",
+          "type": "DragAndDropHooks<T>",
+          "required": false,
+          "description": "Drag and drop hooks from `useDragAndDrop`.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "MenuButtonProps",
+      "component": "MenuButton",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "\"primary\" | \"secondary\" | \"quiet\"",
+          "values": [
+            "'primary'",
+            "'secondary'",
+            "'quiet'"
+          ],
+          "required": false,
+          "description": "Visual variant of the button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: MenuTriggerRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the button. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the button is disabled.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "MenuItemProps",
+      "component": "MenuItem",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the menu item element (a `<div>`, or an `<a>` for link items).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "icon",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Optional icon to display before the label. Use a function returning JSX for SSR compatibility: `icon={() => <MyIcon />}`",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "shortcut",
+          "type": "string",
+          "required": false,
+          "description": "Optional keyboard shortcut to display.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDestructive",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this is a destructive action.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: MenuItemRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the item. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-controls",
+          "type": "string",
+          "required": false,
+          "description": "Element controlled by this menu item, for submenu triggers.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-expanded",
+          "type": "boolean | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Whether the submenu or subdialog is expanded.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-haspopup",
+          "type": "string | boolean",
+          "required": false,
+          "description": "Whether this menu item opens a submenu or subdialog.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the menu item.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu item is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLElement>, renderProps: MenuItemRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the menu item element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverStart",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when hover starts.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverEnd",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when hover ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverChange",
+          "type": "(isHovered: boolean) => void",
+          "required": false,
+          "description": "Handler called when hover state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "A URL to link to. Turns the menu item into a link.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "The target window for the link.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "The relationship between the linked resource and the current page.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "Causes the browser to download the linked URL.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the item is activated.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "closeOnSelect",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to close the menu when this item is selected.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "item",
+          "type": "NonNullable<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the item (for typeahead).",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "MenuSectionProps",
+      "component": "MenuSection",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Section contents, usually Header + Group/items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the section element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: Selection) => void",
+          "required": false,
+          "description": "Handler for selection changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "selectionMode",
+          "type": "SelectionMode",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "disallowEmptySelection",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether empty selection is disallowed.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "shouldCloseOnSelect",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether menu items in this section should close the menu when selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "SelectionBehavior",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": false,
+          "description": "How selection behaves on interaction.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "allowDuplicateSelectionEvents",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow duplicate selection events.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "DisabledBehavior",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "How disabled keys behave.",
+          "origin": "solid-stately"
+        }
+      ]
+    },
+    {
+      "name": "MenuSeparatorProps",
+      "component": "MenuSeparator",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "MenuTriggerProps",
+      "component": "MenuTrigger",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "MenuSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the menu.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "align",
+          "type": "MenuAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "default": "'start'",
+          "description": "Alignment of the menu relative to the trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "direction",
+          "type": "MenuDirection",
+          "values": [
+            "'start'",
+            "'end'",
+            "'top'",
+            "'bottom'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "default": "'bottom'",
+          "description": "Where the Menu opens relative to its trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu should automatically flip direction when space is limited.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The children of the trigger (typically a Button and Menu).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "An ID for the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu trigger is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "type",
+          "type": "\"menu\" | \"listbox\"",
+          "values": [
+            "'menu'",
+            "'listbox'"
+          ],
+          "required": false,
+          "description": "The type of menu that the menu trigger opens.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu is open by default.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when the open state changes.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SubmenuTriggerProps",
+      "component": "SubmenuTrigger",
+      "source": "packages/viviana-ui/src/menu/SubmenuTrigger.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The trigger item followed by submenu content.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "delay",
+          "type": "number",
+          "required": false,
+          "description": "Delay before opening the submenu on hover.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the submenu is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the submenu is open by default.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when the submenu open state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "UnavailableMenuItemTriggerProps",
+      "component": "UnavailableMenuItemTrigger",
+      "source": "packages/viviana-ui/src/menu/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element | JSX.Element[]",
+          "required": true,
+          "description": "The menu item followed by contextual help popover content.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isUnavailable",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu item should expose unavailable contextual help.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,128 @@
+{
+  "slug": "actionbuttongroup",
+  "title": "ActionButtonGroup",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ActionButtonGroupProps",
+      "component": "ActionButtonGroup",
+      "source": "packages/viviana-ui/src/actionbuttongroup/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The children of the group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "ActionButtonSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'XS'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "Size of the buttons.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "ActionButtonDensity",
+          "values": [
+            "'compact'",
+            "'regular'"
+          ],
+          "required": false,
+          "default": "'regular'",
+          "description": "Spacing between the buttons.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the buttons should be displayed with a quiet style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isJustified",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the buttons should divide the container width equally.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "staticColor",
+          "type": "StaticColor",
+          "values": [
+            "'white'",
+            "'black'",
+            "'auto'"
+          ],
+          "required": false,
+          "description": "The static color style to apply. Useful when the group appears over a color background.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "orientation",
+          "type": "ActionButtonOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "'horizontal'",
+          "description": "The axis the group should align with.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the group is disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

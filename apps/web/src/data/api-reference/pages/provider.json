@@ -1,0 +1,217 @@
+{
+  "slug": "provider",
+  "title": "Provider",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ProviderProps",
+      "component": "Provider",
+      "source": "packages/viviana-ui/src/provider/index.tsx",
+      "props": [
+        {
+          "name": "locale",
+          "type": "string",
+          "required": false,
+          "description": "The locale for i18n. If not provided, inherits the nearest locale.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "colorScheme",
+          "type": "\"light\" | \"dark\"",
+          "values": [
+            "'light'",
+            "'dark'"
+          ],
+          "required": false,
+          "description": "The color scheme. Inherits from the nearest provider when omitted.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "background",
+          "type": "\"base\" | \"layer-1\" | \"layer-2\"",
+          "values": [
+            "'base'",
+            "'layer-1'",
+            "'layer-2'"
+          ],
+          "required": false,
+          "description": "The background for this provider. If not provided, the background is transparent.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "scale",
+          "type": "Scale",
+          "values": [
+            "'medium'",
+            "'large'"
+          ],
+          "required": false,
+          "description": "The UI scale. Inherits from the nearest provider when omitted.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name for the provider wrapper.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should render in their quiet/subtle style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should render in their emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should be disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should be required.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should be read only.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "validationState",
+          "type": "ValidationState",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Shared validation state for descendant form fields.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "ProviderInheritedProps",
+      "component": "ProviderInherited",
+      "source": "packages/viviana-ui/src/provider/index.tsx",
+      "props": [
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should render in their quiet/subtle style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should render in their emphasized style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should be disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should be required.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether controls should be read only.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "validationState",
+          "type": "ValidationState",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Shared validation state for descendant form fields.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

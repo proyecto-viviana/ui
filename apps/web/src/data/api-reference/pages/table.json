@@ -1,0 +1,2157 @@
+{
+  "slug": "table",
+  "title": "Table",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "TableProps",
+      "component": "Table",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | (() => JSX.Element)",
+          "required": false,
+          "description": "Children components (TableHeader, TableBody).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "TableDensity",
+          "values": [
+            "'compact'",
+            "'regular'",
+            "'spacious'"
+          ],
+          "required": false,
+          "description": "Density of rows and headers.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the TableView should draw without the default container chrome.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "overflowMode",
+          "type": "TableOverflowMode",
+          "values": [
+            "'wrap'",
+            "'truncate'"
+          ],
+          "required": false,
+          "description": "Whether labels and cell content truncate or wrap.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "renderActionBar",
+          "type": "(selectedKeys: \"all\" | Set<Key>) => JSX.Element",
+          "required": false,
+          "description": "Provides an action bar when rows are selected.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible inline style alias. Prefer styles or UNSAFE_style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "title",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Title for the table. Prefer aria-label/aria-labelledby for new code.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description for the table.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "TableSize",
+          "values": [
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "Legacy size alias retained for compatibility.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TableVariant",
+          "values": [
+            "'default'",
+            "'bordered'",
+            "'striped'"
+          ],
+          "required": false,
+          "description": "Legacy variant alias retained for compatibility.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showSelectionCheckboxes",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Overrides the default S2 selection checkbox behavior.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionStyle",
+          "type": "TableSelectionStyle",
+          "values": [
+            "'checkbox'",
+            "'highlight'"
+          ],
+          "required": false,
+          "default": "'checkbox'",
+          "description": "How selection is displayed: `checkbox` shows selection checkboxes (toggle behavior), `highlight` selects whole rows with no checkboxes (replace behavior).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "S2 row action alias.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loadingState",
+          "type": "LoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "S2 asynchronous loading state.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "S2 asynchronous load-more callback.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onResizeStart",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called when a column resize starts.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onResize",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called during column resize.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onResizeEnd",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called when a column resize ends.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "\"toggle\" | \"replace\"",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": false,
+          "description": "Selection behavior forwarded to the headless table. S2 defaults to toggle.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Selection callback mirrored for the optional action bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableElement) => void) | { current?: HTMLTableElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "ID for the table element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ARIA describedby for the table.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "ARIA label for the table.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ARIA labelledby for the table.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLTableElement>, renderProps: TableRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": true,
+          "description": "The data items to render in the table.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T, column: TableColumnDefinition<T>) => string",
+          "required": false,
+          "description": "Function to get the text value from an item for a column.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "\"all\" | \"selection\"",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "Whether disabled rows remain focusable.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "A function to render when the table is empty.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dragAndDropHooks",
+          "type": "DragAndDropHooks<T>",
+          "required": false,
+          "description": "Drag and drop hooks from `useDragAndDrop`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the table uses virtual scrolling.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldSelectOnPressUp",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selection should occur on press up.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "escapeKeyBehavior",
+          "type": "\"none\" | \"clearSelection\"",
+          "values": [
+            "'none'",
+            "'clearSelection'"
+          ],
+          "required": false,
+          "description": "Whether Escape clears selection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "columns",
+          "type": "TableColumnDefinition<T>[]",
+          "required": true,
+          "description": "The column definitions.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onRowAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler for row actions.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCellAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler for cell actions.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "focusMode",
+          "type": "\"row\" | \"cell\"",
+          "values": [
+            "'row'",
+            "'cell'"
+          ],
+          "required": false,
+          "description": "Focus mode: 'row' or 'cell'.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "sortDescriptor",
+          "type": "SortDescriptor",
+          "required": false,
+          "description": "The current sort descriptor.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onSortChange",
+          "type": "(descriptor: SortDescriptor) => void",
+          "required": false,
+          "description": "Handler called when sort changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_childItems",
+          "type": "(item: T) => Iterable<T> | undefined",
+          "required": false,
+          "description": "Derives the child rows of an item, turning the flat `items` into a tree grid (expandable rows). Providing this — or any `UNSTABLE_*expandedKeys` prop — switches the table into tree-grid mode. Mirrors `@react-aria/table`'s `UNSTABLE_` tree-grid feature.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_expandedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "The currently expanded row keys (controlled). Tree grid only.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_defaultExpandedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "The initial expanded row keys (uncontrolled). Tree grid only.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_onExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when rows are expanded or collapsed. Tree grid only.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "CellProps",
+      "component": "Cell",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "align",
+          "type": "TableAlign",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "Text alignment for the cell.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showDivider",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to draw an end divider.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableCellRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the cell.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableCellElement) => void) | { current?: HTMLTableCellElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table cell element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "The unique key for the cell.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.TdHTMLAttributes<HTMLTableCellElement>, renderProps: TableCellRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table cell element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colSpan",
+          "type": "number",
+          "required": false,
+          "description": "Number of columns spanned by the cell.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ColumnProps",
+      "component": "Column",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "align",
+          "type": "TableAlign",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "Text alignment for the column.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showDivider",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to draw an end divider.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableColumnRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the column.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableCellElement) => void) | { current?: HTMLTableCellElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the column header element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the column.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.ThHTMLAttributes<HTMLTableCellElement>, renderProps: TableColumnRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the column header element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "width",
+          "type": "ColumnSize",
+          "required": false,
+          "description": "Column width (number for px, string for 'Xfr', 'X%', 'Xpx').",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "minWidth",
+          "type": "number",
+          "required": false,
+          "description": "Minimum column width in px.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "maxWidth",
+          "type": "number",
+          "required": false,
+          "description": "Maximum column width in px.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsSorting",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the column allows sorting.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsResizing",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the column allows resizing.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultWidth",
+          "type": "ColumnSize",
+          "required": false,
+          "description": "Default width for uncontrolled mode.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "EditableCellProps",
+      "component": "EditableCell",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "renderEditing",
+          "type": "() => JSX.Element",
+          "required": true,
+          "description": "Renders the editing form fields shown in the popover (desktop) or dialog (mobile).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isSaving",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether a submitted edit is currently saving. Dims the cell and shows a pending trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSubmit",
+          "type": "(event: SubmitEvent) => void",
+          "required": false,
+          "description": "Handler called when the editing form is submitted. The native submit is already prevented.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onCancel",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when editing is cancelled (Cancel button, Escape, or interact-outside without save).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "required": false,
+          "description": "A native form `action` for the editing form.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "align",
+          "type": "TableAlign",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "Text alignment for the cell.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showDivider",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to draw an end divider.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableCellRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the cell.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableCellElement) => void) | { current?: HTMLTableCellElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table cell element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "The unique key for the cell.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.TdHTMLAttributes<HTMLTableCellElement>, renderProps: TableCellRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table cell element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colSpan",
+          "type": "number",
+          "required": false,
+          "description": "Number of columns spanned by the cell.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ResizableTableContainerProps",
+      "component": "ResizableTableContainer",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Children (should contain a Table).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onResize",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called during column resize.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "columns",
+          "type": "{ key: Key; width?: ColumnSize; minWidth?: number; maxWidth?: number; }[]",
+          "required": false,
+          "description": "Column resize definitions. If not provided, columns from child ColumnResizers are auto-detected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onResizeStart",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called when column resize starts.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onResizeEnd",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called when column resize ends.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "RowProps",
+      "component": "Row",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element)",
+          "required": false,
+          "description": "The children of the row (usually TableCell components).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableRowElement) => void) | { current?: HTMLTableRowElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table row element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "The unique key for the row.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the row is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLTableRowElement>, renderProps: TableRowRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table row element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "The URL this row links to.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "Link target for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "Link relationship for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "routerOptions",
+          "type": "RouterOptions",
+          "required": false,
+          "description": "Router options for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "Download attribute for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ping",
+          "type": "string",
+          "required": false,
+          "description": "Ping attribute for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "\"\" | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
+          "values": [
+            "''",
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "Referrer policy for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the row is activated (double-click or Enter).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "NonNullable<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "columns",
+          "type": "TableColumnDefinition<T>[]",
+          "required": false,
+          "description": "Columns to render when children is a column render function.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableBodyProps",
+      "component": "TableBody",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "(item: T) => JSX.Element",
+          "required": false,
+          "description": "The children (usually a render function for TableRow).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableSectionElement) => void) | { current?: HTMLTableSectionElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table body element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLTableSectionElement>, renderProps: TableBodyRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table body element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": false,
+          "description": "The items to render. If not provided, uses items from Table.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "A function to render when the body is empty.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether additional rows are currently loading.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "hasMore",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether there are more rows to load.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "Called when the load more sentinel becomes visible.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableCellProps",
+      "component": "TableCell",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "align",
+          "type": "TableAlign",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "Text alignment for the cell.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showDivider",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to draw an end divider.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableCellRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the cell.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableCellElement) => void) | { current?: HTMLTableCellElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table cell element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "The unique key for the cell.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.TdHTMLAttributes<HTMLTableCellElement>, renderProps: TableCellRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table cell element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "colSpan",
+          "type": "number",
+          "required": false,
+          "description": "Number of columns spanned by the cell.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableColumnProps",
+      "component": "TableColumn",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "align",
+          "type": "TableAlign",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "Text alignment for the column.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showDivider",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to draw an end divider.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableColumnRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the column.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableCellElement) => void) | { current?: HTMLTableCellElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the column header element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the column.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.ThHTMLAttributes<HTMLTableCellElement>, renderProps: TableColumnRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the column header element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "width",
+          "type": "ColumnSize",
+          "required": false,
+          "description": "Column width (number for px, string for 'Xfr', 'X%', 'Xpx').",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "minWidth",
+          "type": "number",
+          "required": false,
+          "description": "Minimum column width in px.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "maxWidth",
+          "type": "number",
+          "required": false,
+          "description": "Maximum column width in px.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsSorting",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the column allows sorting.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsResizing",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the column allows resizing.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultWidth",
+          "type": "ColumnSize",
+          "required": false,
+          "description": "Default width for uncontrolled mode.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableFooterProps",
+      "component": "TableFooter",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "required": false,
+          "description": "The children, or a render function when `items` is provided.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": false,
+          "description": "The footer items to render.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableHeaderProps",
+      "component": "TableHeader",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The children (usually TableColumn components).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableSectionElement) => void) | { current?: HTMLTableSectionElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table header element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLTableSectionElement>, renderProps: TableHeaderRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table header element.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableRowProps",
+      "component": "TableRow",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TableRowRenderProps) => JSX.Element) | ((column: TableColumnDefinition<T>) => JSX.Element)",
+          "required": false,
+          "description": "The children of the row (usually TableCell components).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableRowElement) => void) | { current?: HTMLTableRowElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table row element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "The unique key for the row.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the row is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLTableRowElement>, renderProps: TableRowRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table row element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "The URL this row links to.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "Link target for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "Link relationship for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "routerOptions",
+          "type": "RouterOptions",
+          "required": false,
+          "description": "Router options for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "Download attribute for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ping",
+          "type": "string",
+          "required": false,
+          "description": "Ping attribute for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "\"\" | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
+          "values": [
+            "''",
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "Referrer policy for linked rows.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the row is activated (double-click or Enter).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "item",
+          "type": "NonNullable<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "columns",
+          "type": "TableColumnDefinition<T>[]",
+          "required": false,
+          "description": "Columns to render when children is a column render function.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TableViewProps",
+      "component": "TableView",
+      "source": "packages/viviana-ui/src/table/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | (() => JSX.Element)",
+          "required": false,
+          "description": "Children components (TableHeader, TableBody).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "TableDensity",
+          "values": [
+            "'compact'",
+            "'regular'",
+            "'spacious'"
+          ],
+          "required": false,
+          "description": "Density of rows and headers.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the TableView should draw without the default container chrome.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "overflowMode",
+          "type": "TableOverflowMode",
+          "values": [
+            "'wrap'",
+            "'truncate'"
+          ],
+          "required": false,
+          "description": "Whether labels and cell content truncate or wrap.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "renderActionBar",
+          "type": "(selectedKeys: \"all\" | Set<Key>) => JSX.Element",
+          "required": false,
+          "description": "Provides an action bar when rows are selected.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Backward-compatible inline style alias. Prefer styles or UNSAFE_style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "title",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Title for the table. Prefer aria-label/aria-labelledby for new code.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description for the table.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "TableSize",
+          "values": [
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "Legacy size alias retained for compatibility.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TableVariant",
+          "values": [
+            "'default'",
+            "'bordered'",
+            "'striped'"
+          ],
+          "required": false,
+          "description": "Legacy variant alias retained for compatibility.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showSelectionCheckboxes",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Overrides the default S2 selection checkbox behavior.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionStyle",
+          "type": "TableSelectionStyle",
+          "values": [
+            "'checkbox'",
+            "'highlight'"
+          ],
+          "required": false,
+          "default": "'checkbox'",
+          "description": "How selection is displayed: `checkbox` shows selection checkboxes (toggle behavior), `highlight` selects whole rows with no checkboxes (replace behavior).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "S2 row action alias.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "loadingState",
+          "type": "LoadingState",
+          "values": [
+            "'idle'",
+            "'loading'",
+            "'loadingMore'",
+            "'sorting'",
+            "'filtering'",
+            "'error'"
+          ],
+          "required": false,
+          "description": "S2 asynchronous loading state.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "S2 asynchronous load-more callback.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onResizeStart",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called when a column resize starts.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onResize",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called during column resize.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onResizeEnd",
+          "type": "(widths: Map<Key, number>) => void",
+          "required": false,
+          "description": "Called when a column resize ends.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "\"toggle\" | \"replace\"",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": false,
+          "description": "Selection behavior forwarded to the headless table. S2 defaults to toggle.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Selection callback mirrored for the optional action bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLTableElement) => void) | { current?: HTMLTableElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the table element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "ID for the table element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ARIA describedby for the table.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "ARIA label for the table.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ARIA labelledby for the table.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLTableElement>, renderProps: TableRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the table element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"none\" | \"single\" | \"multiple\"",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": true,
+          "description": "The data items to render in the table.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T, column: TableColumnDefinition<T>) => string",
+          "required": false,
+          "description": "Function to get the text value from an item for a column.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "\"all\" | \"selection\"",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "Whether disabled rows remain focusable.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "A function to render when the table is empty.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dragAndDropHooks",
+          "type": "DragAndDropHooks<T>",
+          "required": false,
+          "description": "Drag and drop hooks from `useDragAndDrop`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the table uses virtual scrolling.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldSelectOnPressUp",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selection should occur on press up.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "escapeKeyBehavior",
+          "type": "\"none\" | \"clearSelection\"",
+          "values": [
+            "'none'",
+            "'clearSelection'"
+          ],
+          "required": false,
+          "description": "Whether Escape clears selection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "columns",
+          "type": "TableColumnDefinition<T>[]",
+          "required": true,
+          "description": "The column definitions.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onRowAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler for row actions.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCellAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler for cell actions.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "focusMode",
+          "type": "\"row\" | \"cell\"",
+          "values": [
+            "'row'",
+            "'cell'"
+          ],
+          "required": false,
+          "description": "Focus mode: 'row' or 'cell'.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "sortDescriptor",
+          "type": "SortDescriptor",
+          "required": false,
+          "description": "The current sort descriptor.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onSortChange",
+          "type": "(descriptor: SortDescriptor) => void",
+          "required": false,
+          "description": "Handler called when sort changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_childItems",
+          "type": "(item: T) => Iterable<T> | undefined",
+          "required": false,
+          "description": "Derives the child rows of an item, turning the flat `items` into a tree grid (expandable rows). Providing this — or any `UNSTABLE_*expandedKeys` prop — switches the table into tree-grid mode. Mirrors `@react-aria/table`'s `UNSTABLE_` tree-grid feature.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_expandedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "The currently expanded row keys (controlled). Tree grid only.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_defaultExpandedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "The initial expanded row keys (uncontrolled). Tree grid only.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "UNSTABLE_onExpandedChange",
+          "type": "(keys: Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when rows are expanded or collapsed. Tree grid only.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

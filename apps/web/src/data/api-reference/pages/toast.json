@@ -1,0 +1,254 @@
+{
+  "slug": "toast",
+  "title": "Toast",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ToastProps",
+      "component": "Toast",
+      "source": "packages/viviana-ui/src/toast/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "index",
+          "type": "Accessor<number>",
+          "required": false,
+          "description": "Internal index accessor used by ToastRegion for S2 stack rendering.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "visibleToasts",
+          "type": "Accessor<QueuedToast<ToastContent>[]>",
+          "required": false,
+          "description": "Internal visible toasts accessor used by ToastRegion for S2 stack rendering.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isExpanded",
+          "type": "Accessor<boolean>",
+          "required": false,
+          "description": "Internal expanded stack state accessor used by ToastContainer.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onToggleExpanded",
+          "type": "() => void",
+          "required": false,
+          "description": "Internal stack expansion handler used by ToastContainer.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "canExpand",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether a ToastContainer is present to drive stack expansion. When false (a bare ToastRegion, which has no expand/collapse context), the collapsed-stack \"Show all\" affordance is hidden because it cannot be honored — mirroring the upstream split where ToastContainer, not the low-level region, owns expansion.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "placementEdge",
+          "type": "ToastEdge",
+          "values": [
+            "'top'",
+            "'bottom'"
+          ],
+          "required": false,
+          "description": "Internal placement edge used for collapsed background stack positioning.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "placementAlign",
+          "type": "ToastAlign",
+          "values": [
+            "'end'",
+            "'center'"
+          ],
+          "required": false,
+          "description": "Internal placement alignment used for the toast's view-transition-class.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ToastRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the component - can be JSX or render function.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "DOM id for the toast root.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "toast",
+          "type": "QueuedToast<ToastContent>",
+          "required": true,
+          "description": "The toast data.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ToastContainerProps",
+      "component": "ToastContainer",
+      "source": "packages/viviana-ui/src/toast/index.tsx",
+      "props": [
+        {
+          "name": "PRIVATE_forceReducedMotion",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Forces reduced-motion toast animations regardless of the user's `prefers-reduced-motion` setting. Mirrors",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "placement",
+          "type": "ToastPlacement",
+          "values": [
+            "'top'",
+            "'bottom'",
+            "'bottom end'",
+            "'top end'"
+          ],
+          "required": false,
+          "default": "\"bottom\"",
+          "description": "Placement of the toast container on the page.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the region.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "state",
+          "type": "ToastState<ToastContent>",
+          "required": false,
+          "description": "The toast state to display. If not provided, uses ToastContext.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "portal",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to render in a portal.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ToastProviderProps",
+      "component": "ToastProvider",
+      "source": "packages/viviana-ui/src/toast/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The children of the provider.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "queueOptions",
+          "type": "ToastQueueOptions",
+          "required": false,
+          "description": "Custom toast queue options.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "useGlobalQueue",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Use global queue instead of creating a new one.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ToastRegionProps",
+      "component": "ToastRegion",
+      "source": "packages/viviana-ui/src/toast/index.tsx",
+      "props": [
+        {
+          "name": "placement",
+          "type": "ToastPlacement",
+          "values": [
+            "'top'",
+            "'bottom'",
+            "'bottom end'",
+            "'top end'"
+          ],
+          "required": false,
+          "default": "\"bottom\"",
+          "description": "Placement of the toast container on the page.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the region.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "state",
+          "type": "ToastState<ToastContent>",
+          "required": false,
+          "description": "The toast state to display. If not provided, uses ToastContext.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "portal",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to render in a portal.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

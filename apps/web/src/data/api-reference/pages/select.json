@@ -1,0 +1,662 @@
+{
+  "slug": "select",
+  "title": "Select",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SelectProps",
+      "component": "Select",
+      "source": "packages/viviana-ui/src/select/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "SelectSize",
+          "values": [
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the select.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Label for the select.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "Description for the select.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "string",
+          "required": false,
+          "description": "Error message when invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the select is invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "RenderChildren<SelectRenderProps>",
+          "required": true,
+          "description": "The children of the component (compound components: SelectTrigger, SelectListBox).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the outer select element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "An ID for the select.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves away from the select.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves to the select.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(key: Key | null) => void",
+          "required": false,
+          "description": "Handler called when selection changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that describes the select.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the select when no visible label is provided.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "The ID of an element that labels the select.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the select is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: SelectRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the outer select element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the select should be auto-focused.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Associates the hidden native select with a form element by id.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the select, used when submitting an HTML form.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler called when the focus state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "selectionMode",
+          "type": "\"single\" | \"multiple\"",
+          "values": [
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "Selection mode.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled, for multiple selection).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled, for multiple selection).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": true,
+          "description": "The items to render in the select.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disallowTypeAhead",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether type-to-select is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T) => string",
+          "required": false,
+          "description": "Function to get the text value from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getDisabled",
+          "type": "(item: T) => boolean",
+          "required": false,
+          "description": "Function to check if an item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the select is open by default (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the select is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when the open state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the select is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "description": "Whether validation should use ARIA attributes or native browser validation.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Placeholder text when no option is selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The currently selected key (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The default selected key (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsEmptyCollection",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether the select can open when its collection is empty.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChangeKeys",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when selected keys change.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SelectListBoxProps",
+      "component": "SelectListBox",
+      "source": "packages/viviana-ui/src/select/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "(item: T) => JSX.Element",
+          "required": false,
+          "description": "The children of the listbox. A function may be provided to render each item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Content to display when the listbox has no items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether additional items are currently loading.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onLoadMore",
+          "type": "() => void | Promise<void>",
+          "required": false,
+          "description": "Called when the load more sentinel becomes visible.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderLoadMore",
+          "type": "() => JSX.Element | undefined",
+          "required": false,
+          "description": "Content to display in the load more sentinel row.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "loadMoreClass",
+          "type": "ClassNameOrFunction<{ isLoading: boolean; }>",
+          "required": false,
+          "description": "CSS class for the load more sentinel row.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isInPopover",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the listbox is rendered inside an overlay popover.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SelectOptionProps",
+      "component": "SelectOption",
+      "source": "packages/viviana-ui/src/select/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: SelectOptionRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the option. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "A ref callback/object for the underlying option element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the option.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessible label for the option.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverStart",
+          "type": "(e: import(\"..\").HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverEnd",
+          "type": "(e: import(\"..\").HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover ends.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onHoverChange",
+          "type": "(isHovering: boolean) => void",
+          "required": false,
+          "description": "Handler called when hover state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onAction",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the option is activated.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "item",
+          "type": "NonNullable<T>",
+          "required": false,
+          "description": "The item value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "textValue",
+          "type": "string",
+          "required": false,
+          "description": "The text value of the option (for typeahead).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isVirtualized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option is contained in a virtual scrolling listbox.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldSelectOnPressUp",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether selection should occur on press up.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "optionId",
+          "type": "string",
+          "required": false,
+          "description": "Optional DOM id for the option element. Defaults to the key.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldFocusOnHover",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to focus the option on hover.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldUseVirtualFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the option should use virtual focus instead of receiving DOM focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "allowsDifferentPressOrigin",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether press-up may occur without the press starting on this option.",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "SelectTriggerProps",
+      "component": "SelectTrigger",
+      "source": "packages/viviana-ui/src/select/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: SelectTriggerRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the trigger. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLButtonElement) => void) | { current?: HTMLButtonElement | null | undefined; }",
+          "required": false,
+          "description": "A ref callback/object for the underlying trigger button element.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "SelectValueProps",
+      "component": "SelectValue",
+      "source": "packages/viviana-ui/src/select/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: SelectValueRenderProps<T>) => JSX.Element)",
+          "required": false,
+          "description": "The children of the value. A function may be provided to receive render props.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Placeholder text when no option is selected. Overrides the placeholder from Select.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

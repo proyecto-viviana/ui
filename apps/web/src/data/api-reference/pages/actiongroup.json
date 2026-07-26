@@ -1,0 +1,136 @@
+{
+  "slug": "actiongroup",
+  "title": "ActionGroup",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ActionGroupProps",
+      "component": "ActionGroup",
+      "source": "packages/viviana-ui/src/actiongroup/index.tsx",
+      "props": [
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": true,
+          "description": "The items in the action group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectionMode",
+          "type": "SelectionMode",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "default": "'none'",
+          "description": "The selection mode.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "'horizontal'",
+          "description": "Orientation of the group.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the entire group is disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Labelled-by id.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler called when selection changes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler called when an item action is triggered.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "(item: T, renderProps: ActionGroupItemRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Optional render function for action items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "renderItem",
+          "type": "(item: T, renderProps: ActionGroupItemRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom render function for items. If not provided, uses item.label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

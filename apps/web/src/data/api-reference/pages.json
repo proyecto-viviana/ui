@@ -1,0 +1,334 @@
+{
+  "packageName": "@proyecto-viviana/ui",
+  "pages": [
+    {
+      "slug": "accordion",
+      "title": "Accordion"
+    },
+    {
+      "slug": "actionbar",
+      "title": "ActionBar"
+    },
+    {
+      "slug": "actionbutton",
+      "title": "ActionButton"
+    },
+    {
+      "slug": "actionbuttongroup",
+      "title": "ActionButtonGroup"
+    },
+    {
+      "slug": "actiongroup",
+      "title": "ActionGroup"
+    },
+    {
+      "slug": "actionmenu",
+      "title": "ActionMenu"
+    },
+    {
+      "slug": "alertdialog",
+      "title": "AlertDialog"
+    },
+    {
+      "slug": "assetcard",
+      "title": "AssetCard"
+    },
+    {
+      "slug": "avatar",
+      "title": "Avatar"
+    },
+    {
+      "slug": "badge",
+      "title": "Badge"
+    },
+    {
+      "slug": "breadcrumbs",
+      "title": "Breadcrumbs"
+    },
+    {
+      "slug": "button",
+      "title": "Button"
+    },
+    {
+      "slug": "buttongroup",
+      "title": "ButtonGroup"
+    },
+    {
+      "slug": "calendar",
+      "title": "Calendar"
+    },
+    {
+      "slug": "card",
+      "title": "Card"
+    },
+    {
+      "slug": "cardview",
+      "title": "CardView"
+    },
+    {
+      "slug": "checkbox",
+      "title": "Checkbox"
+    },
+    {
+      "slug": "colorarea",
+      "title": "ColorArea"
+    },
+    {
+      "slug": "coloreditor",
+      "title": "ColorEditor"
+    },
+    {
+      "slug": "colorfield",
+      "title": "ColorField"
+    },
+    {
+      "slug": "colorslider",
+      "title": "ColorSlider"
+    },
+    {
+      "slug": "colorswatch",
+      "title": "ColorSwatch"
+    },
+    {
+      "slug": "colorswatchpicker",
+      "title": "ColorSwatchPicker"
+    },
+    {
+      "slug": "colorwheel",
+      "title": "ColorWheel"
+    },
+    {
+      "slug": "combobox",
+      "title": "ComboBox"
+    },
+    {
+      "slug": "contextualhelp",
+      "title": "ContextualHelp"
+    },
+    {
+      "slug": "datefield",
+      "title": "DateField"
+    },
+    {
+      "slug": "datepicker",
+      "title": "DatePicker"
+    },
+    {
+      "slug": "daterangepicker",
+      "title": "DateRangePicker"
+    },
+    {
+      "slug": "dialog",
+      "title": "Dialog"
+    },
+    {
+      "slug": "disclosure",
+      "title": "Disclosure"
+    },
+    {
+      "slug": "divider",
+      "title": "Divider"
+    },
+    {
+      "slug": "dropzone",
+      "title": "DropZone"
+    },
+    {
+      "slug": "filetrigger",
+      "title": "FileTrigger"
+    },
+    {
+      "slug": "form",
+      "title": "Form"
+    },
+    {
+      "slug": "gridlist",
+      "title": "ListView"
+    },
+    {
+      "slug": "icon",
+      "title": "SpectrumIcon"
+    },
+    {
+      "slug": "illustratedmessage",
+      "title": "IllustratedMessage"
+    },
+    {
+      "slug": "image",
+      "title": "Image"
+    },
+    {
+      "slug": "inlinealert",
+      "title": "InlineAlert"
+    },
+    {
+      "slug": "labeledvalue",
+      "title": "LabeledValue"
+    },
+    {
+      "slug": "layout",
+      "title": "Flex"
+    },
+    {
+      "slug": "link",
+      "title": "Link"
+    },
+    {
+      "slug": "linkbutton",
+      "title": "LinkButton"
+    },
+    {
+      "slug": "listbox",
+      "title": "ListBox"
+    },
+    {
+      "slug": "menu",
+      "title": "Menu"
+    },
+    {
+      "slug": "meter",
+      "title": "Meter"
+    },
+    {
+      "slug": "notificationbadge",
+      "title": "NotificationBadge"
+    },
+    {
+      "slug": "numberfield",
+      "title": "NumberField"
+    },
+    {
+      "slug": "picker",
+      "title": "Picker"
+    },
+    {
+      "slug": "popover",
+      "title": "Popover"
+    },
+    {
+      "slug": "productcard",
+      "title": "ProductCard"
+    },
+    {
+      "slug": "progress",
+      "title": "ProgressCircle"
+    },
+    {
+      "slug": "progress-bar",
+      "title": "ProgressBar"
+    },
+    {
+      "slug": "provider",
+      "title": "Provider"
+    },
+    {
+      "slug": "radio",
+      "title": "Radio"
+    },
+    {
+      "slug": "rangecalendar",
+      "title": "RangeCalendar"
+    },
+    {
+      "slug": "rangeslider",
+      "title": "RangeSlider"
+    },
+    {
+      "slug": "searchfield",
+      "title": "SearchField"
+    },
+    {
+      "slug": "segmentedcontrol",
+      "title": "SegmentedControl"
+    },
+    {
+      "slug": "select",
+      "title": "Select"
+    },
+    {
+      "slug": "selectboxgroup",
+      "title": "SelectBoxGroup"
+    },
+    {
+      "slug": "separator",
+      "title": "Separator"
+    },
+    {
+      "slug": "skeleton",
+      "title": "Skeleton"
+    },
+    {
+      "slug": "slider",
+      "title": "Slider"
+    },
+    {
+      "slug": "statuslight",
+      "title": "StatusLight"
+    },
+    {
+      "slug": "steplist",
+      "title": "StepList"
+    },
+    {
+      "slug": "switch",
+      "title": "Switch"
+    },
+    {
+      "slug": "table",
+      "title": "Table"
+    },
+    {
+      "slug": "tabs",
+      "title": "Tabs"
+    },
+    {
+      "slug": "tag-group",
+      "title": "TagGroup"
+    },
+    {
+      "slug": "text",
+      "title": "Text"
+    },
+    {
+      "slug": "textfield",
+      "title": "TextField"
+    },
+    {
+      "slug": "timefield",
+      "title": "TimeField"
+    },
+    {
+      "slug": "toast",
+      "title": "Toast"
+    },
+    {
+      "slug": "togglebutton",
+      "title": "ToggleButton"
+    },
+    {
+      "slug": "togglebuttongroup",
+      "title": "ToggleButtonGroup"
+    },
+    {
+      "slug": "toolbar",
+      "title": "Toolbar"
+    },
+    {
+      "slug": "tooltip",
+      "title": "Tooltip"
+    },
+    {
+      "slug": "tree",
+      "title": "Tree"
+    },
+    {
+      "slug": "usercard",
+      "title": "UserCard"
+    },
+    {
+      "slug": "well",
+      "title": "Well"
+    }
+  ],
+  "propCount": 3367
+}

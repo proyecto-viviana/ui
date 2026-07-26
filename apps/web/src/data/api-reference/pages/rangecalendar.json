@@ -1,0 +1,261 @@
+{
+  "slug": "rangecalendar",
+  "title": "RangeCalendar",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "RangeCalendarProps",
+      "component": "RangeCalendar",
+      "source": "packages/viviana-ui/src/calendar/RangeCalendar.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "RangeCalendarSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'",
+            "'xl'"
+          ],
+          "required": false,
+          "default": "'md'",
+          "description": "The size of the calendar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "locale",
+          "type": "string",
+          "required": false,
+          "description": "The locale to use for formatting.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "firstDayOfWeek",
+          "type": "0 | 5 | 1 | 2 | 3 | 4 | 6 | RangeCalendarFirstDayOfWeek",
+          "values": [
+            "0",
+            "5",
+            "'sun'",
+            "'mon'",
+            "'tue'",
+            "'wed'",
+            "'thu'",
+            "'fri'",
+            "'sat'",
+            "1",
+            "2",
+            "3",
+            "4",
+            "6"
+          ],
+          "required": false,
+          "description": "The day that starts the week.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the current selection is invalid according to application logic.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "validationState",
+          "type": "import(\"@proyecto-viviana/solid-stately\").ValidationState | import(\"solid-js\").Accessor<import(\"@proyecto-viviana/solid-stately\").ValidationState | undefined>",
+          "required": false,
+          "description": "Validation state for backward-compatible Solid Stately callers.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The error message to display when the range calendar is invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Custom aria label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: RangeValue<T> | null) => void",
+          "required": false,
+          "description": "Handler called when the value changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isDisabled",
+          "type": "MaybeAccessor<boolean>",
+          "required": false,
+          "description": "Whether the calendar is disabled.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "value",
+          "type": "RangeValue<T> | Accessor<RangeValue<T> | null>",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(date: CalendarDate) => void",
+          "required": false,
+          "description": "Handler called when the focused date changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultValue",
+          "type": "RangeValue<T>",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "minValue",
+          "type": "DateValue | Accessor<DateValue | undefined>",
+          "required": false,
+          "description": "The minimum allowed date.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "maxValue",
+          "type": "DateValue | Accessor<DateValue | undefined>",
+          "required": false,
+          "description": "The maximum allowed date.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "MaybeAccessor<boolean>",
+          "required": false,
+          "description": "Whether the calendar is read-only.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "focusedValue",
+          "type": "DateValue | Accessor<DateValue | null | undefined>",
+          "required": false,
+          "description": "The date that is focused when the calendar first mounts.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultFocusedValue",
+          "type": "DateValue",
+          "required": false,
+          "description": "The default focused date (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "createCalendar",
+          "type": "(identifier: CalendarIdentifier) => InternationalizedCalendar",
+          "required": false,
+          "description": "Creates a calendar object for a locale calendar identifier.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isDateUnavailable",
+          "type": "(date: DateValue, anchorDate: CalendarDate | null) => boolean",
+          "required": false,
+          "description": "Callback that determines if a date is unavailable. The second argument is the current selection anchor (the first selected date), so availability can be derived from it. Mirrors",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "visibleMonths",
+          "type": "number | Accessor<number | undefined>",
+          "required": false,
+          "description": "The number of months to display at once.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "pageBehavior",
+          "type": "RangeCalendarPageBehavior | Accessor<RangeCalendarPageBehavior | undefined>",
+          "required": false,
+          "description": "Controls whether pagination moves by one month or the visible month count.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "selectionAlignment",
+          "type": "RangeCalendarSelectionAlignment | Accessor<RangeCalendarSelectionAlignment | undefined>",
+          "required": false,
+          "description": "Controls how the initial visible months are aligned around the current value.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isDateDisabled",
+          "type": "(date: DateValue) => boolean",
+          "required": false,
+          "description": "Controls which days are disabled.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "allowsNonContiguousRanges",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow selecting the same date for start and end.",
+          "origin": "solid-stately"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

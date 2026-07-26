@@ -1,0 +1,118 @@
+{
+  "slug": "inlinealert",
+  "title": "InlineAlert",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "InlineAlertProps",
+      "component": "InlineAlert",
+      "source": "packages/viviana-ui/src/inlinealert/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The contents of the InlineAlert.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to automatically focus the InlineAlert when it first renders.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "InlineAlertVariantProp",
+          "values": [
+            "'negative'",
+            "'warning'",
+            "'success'",
+            "'informative'",
+            "'neutral'",
+            "'positive'",
+            "'notice'"
+          ],
+          "required": false,
+          "default": "'neutral'",
+          "description": "The semantic tone of an InlineAlert. `success`/`warning` alias `positive`/`notice`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "fillStyle",
+          "type": "InlineAlertFillStyle",
+          "values": [
+            "'border'",
+            "'subtleFill'",
+            "'boldFill'"
+          ],
+          "required": false,
+          "default": "'border'",
+          "description": "The visual style of the InlineAlert.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "import(\"../s2-internal/style-utils\").StylesProp | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined styles, returned by the `style()` macro.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slotted context key.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the root alert element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "InlineAlertProps": [
+      {
+        "prop": "variant",
+        "kind": "values",
+        "here": [
+          "'warning'",
+          "'success'"
+        ],
+        "there": []
+      }
+    ]
+  }
+}

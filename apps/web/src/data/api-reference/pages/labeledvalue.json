@@ -1,0 +1,96 @@
+{
+  "slug": "labeledvalue",
+  "title": "LabeledValue",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "LabeledValueProps",
+      "component": "LabeledValue",
+      "source": "packages/viviana-ui/src/labeledvalue/index.tsx",
+      "props": [
+        {
+          "name": "label",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The content to display as the label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "value",
+          "type": "string | number | boolean | Node | JSX.ArrayElement | (string & {}) | readonly string[]",
+          "required": false,
+          "description": "The value to display. Numbers and string lists are formatted for the current locale.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "formatOptions",
+          "type": "Intl.NumberFormatOptions | Intl.ListFormatOptions",
+          "required": false,
+          "description": "Formatting options for the value (Intl.NumberFormat / Intl.ListFormat).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "LabeledValueSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the component.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "LabeledValueLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "default": "'top'",
+          "description": "The label's position relative to the value.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "LabeledValueLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "default": "'start'",
+          "description": "The label's horizontal alignment relative to the element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Inline style overrides for the root.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Class name concatenated onto the root.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum style-macro overrides (width/height allowed).",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

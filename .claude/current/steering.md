@@ -84,11 +84,13 @@ the `launch` roadmap item.
 
 ## Next (P1 — coverage)
 
-- **API docs for `@proyecto-viviana/ui`** (B3) — 238 exports, zero reference
-  pages. The package the README tells users to install has only a visual gallery.
-  The largest remaining gap now that the site is live.
-- **The ~31–40 missing component docs pages** — 45 pages against 78 catalogue
-  components, 7 of which are aliases.
+- ~~**API docs for `@proyecto-viviana/ui`** (B3)~~ — **done 2026-07-24.** `/docs`
+  serves 82 generated pages covering 3,367 props, extracted from the package's
+  own types and held to them by the blocking `guard:api-reference`. The package
+  the README tells users to install now has a reference, not just a gallery.
+- **The ~31–40 missing component docs pages** — solid-spectrum's hand-written
+  tree: 45 pages against 78 catalogue components, 7 of which are aliases. Now the
+  largest remaining coverage gap.
 - **`macro-route-styled`** — 14 components still ship unstyled to installed
   consumers; app CSS masks it in-repo.
 - **Strict-parity gaps** — `comparison:report:parity:strict` now reports 9

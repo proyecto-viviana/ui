@@ -1,0 +1,207 @@
+{
+  "slug": "colorswatchpicker",
+  "title": "ColorSwatchPicker",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ColorSwatchPickerProps",
+      "component": "ColorSwatchPicker",
+      "source": "packages/viviana-ui/src/color/ColorSwatchPicker.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The ColorSwatches within the ColorSwatchPicker.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "ColorSwatchPickerDensity",
+          "values": [
+            "'compact'",
+            "'regular'",
+            "'spacious'"
+          ],
+          "required": false,
+          "default": "'regular'",
+          "description": "The amount of padding between the swatches.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "InternalColorSwatchSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XS'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the color swatches.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "rounding",
+          "type": "ColorSwatchPickerRounding",
+          "values": [
+            "'default'",
+            "'none'",
+            "'full'"
+          ],
+          "required": false,
+          "default": "'none'",
+          "description": "The corner rounding of the color swatches.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StylesProp",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onChange",
+          "type": "(color: Color) => void",
+          "required": false,
+          "description": "Handler called when the selected color changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the swatch picker.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that provides detailed information about the swatch picker.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the swatch picker.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the swatch picker.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "value",
+          "type": "string | Color",
+          "required": false,
+          "description": "The current color value (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string | Color",
+          "required": false,
+          "description": "The default color value (uncontrolled).",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ColorSwatchPickerItemProps",
+      "component": "ColorSwatchPickerItem",
+      "source": "packages/viviana-ui/src/color/ColorSwatchPicker.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ColorSwatchPickerItemRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the swatch item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for this item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "color",
+          "type": "string | Color",
+          "required": true,
+          "description": "The color represented by this swatch item.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

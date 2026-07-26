@@ -1,0 +1,1060 @@
+{
+  "slug": "textfield",
+  "title": "TextField",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "TextFieldProps",
+      "component": "TextField",
+      "source": "packages/viviana-ui/src/textfield/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "TextFieldSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the text field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TextFieldVariant",
+          "values": [
+            "'filled'",
+            "'outline'"
+          ],
+          "required": false,
+          "description": "Legacy visual variant. S2 TextFields do not expose visual variants.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label text for the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description text shown below the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Error message shown when invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "TextFieldLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "Position of the label relative to the input.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "TextFieldLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "Text alignment for side labels.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "TextFieldNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "description": "Whether required fields show an icon or text label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "prefix",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An icon or text rendered before the input, e.g. a unit or protocol.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "suffix",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "An icon or text rendered after the input, e.g. a unit or key hint.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "surface",
+          "type": "TextFieldSurface",
+          "values": [
+            "'well'",
+            "'tutor'"
+          ],
+          "required": false,
+          "default": "\"well\"",
+          "description": "The matte surface family the field sits on.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoCapitalize",
+          "type": "\"none\" | \"off\" | \"on\" | \"sentences\" | \"words\" | \"characters\"",
+          "values": [
+            "'none'",
+            "'off'",
+            "'on'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
+          "required": false,
+          "description": "Controls whether and how text input is automatically capitalized.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "inputMode",
+          "type": "\"none\" | \"text\" | \"tel\" | \"url\" | \"email\" | \"numeric\" | \"decimal\" | \"search\"",
+          "values": [
+            "'none'",
+            "'text'",
+            "'tel'",
+            "'url'",
+            "'email'",
+            "'numeric'",
+            "'decimal'",
+            "'search'"
+          ],
+          "required": false,
+          "description": "The input mode hint for virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBeforeInput",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Handler that is called when the value changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCompositionEnd",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, CompositionEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCompositionStart",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, CompositionEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCompositionUpdate",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, CompositionEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCopy",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCut",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onInput",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is released.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPaste",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelect",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, Event>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide a detailed, extended description for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: TextFieldRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the outer text field element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should receive focus on mount.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "The type of input to render.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Associates the input with a form element by id.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the input element, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "excludeFromTabOrder",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to exclude the element from the sequential tab order.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is read only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input value is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "description": "Whether to use native HTML form validation or ARIA validation semantics.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "(value: any) => string | string[] | true | null | undefined",
+          "required": false,
+          "description": "A function that returns an error message if a given value is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Placeholder text for the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoComplete",
+          "type": "string",
+          "required": false,
+          "description": "Whether to enable auto complete.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": false,
+          "description": "Regex pattern to validate the input value.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "The maximum number of characters supported by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "minLength",
+          "type": "number",
+          "required": false,
+          "description": "The minimum number of characters required by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "enterKeyHint",
+          "type": "\"search\" | \"enter\" | \"done\" | \"go\" | \"next\" | \"previous\" | \"send\"",
+          "values": [
+            "'search'",
+            "'enter'",
+            "'done'",
+            "'go'",
+            "'next'",
+            "'previous'",
+            "'send'"
+          ],
+          "required": false,
+          "description": "Hint for the enter key action on virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoCorrect",
+          "type": "string",
+          "required": false,
+          "description": "Whether to enable auto correct.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "spellCheck",
+          "type": "\"true\" | \"false\"",
+          "values": [
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Whether to enable spell check.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "inputElementType",
+          "type": "\"input\" | \"textarea\"",
+          "values": [
+            "'input'",
+            "'textarea'"
+          ],
+          "required": false,
+          "description": "The element type to use for the input. Defaults to 'input'.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "labelElementType",
+          "type": "\"label\" | \"span\" | \"div\"",
+          "values": [
+            "'label'",
+            "'span'",
+            "'div'"
+          ],
+          "required": false,
+          "default": "'label'",
+          "description": "The HTML element used to render the label, e.g. 'label', or 'span'.",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "TextAreaProps",
+      "component": "TextArea",
+      "source": "packages/viviana-ui/src/textfield/TextArea.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "TextAreaSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'sm'",
+            "'md'",
+            "'lg'"
+          ],
+          "required": false,
+          "description": "The size of the text area.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TextAreaVariant",
+          "values": [
+            "'filled'",
+            "'outline'"
+          ],
+          "required": false,
+          "description": "Legacy visual variant. S2 TextAreas do not expose visual variants.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Label text for the textarea.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "description",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Description text shown below the textarea.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "errorMessage",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Error message shown when invalid.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "TextAreaLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "description": "Position of the label relative to the textarea.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "TextAreaLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "description": "Text alignment for side labels.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "TextAreaNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "description": "Whether required fields show an icon or text label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoCapitalize",
+          "type": "\"none\" | \"off\" | \"on\" | \"sentences\" | \"words\" | \"characters\"",
+          "values": [
+            "'none'",
+            "'off'",
+            "'on'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
+          "required": false,
+          "description": "Controls whether and how text input is automatically capitalized.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "inputMode",
+          "type": "\"none\" | \"text\" | \"tel\" | \"url\" | \"email\" | \"numeric\" | \"decimal\" | \"search\"",
+          "values": [
+            "'none'",
+            "'text'",
+            "'tel'",
+            "'url'",
+            "'email'",
+            "'numeric'",
+            "'decimal'",
+            "'search'"
+          ],
+          "required": false,
+          "description": "The input mode hint for virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBeforeInput",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onChange",
+          "type": "(value: string) => void",
+          "required": false,
+          "description": "Handler that is called when the value changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCompositionEnd",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, CompositionEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCompositionStart",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, CompositionEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCompositionUpdate",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, CompositionEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCopy",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onCut",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onInput",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, InputEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is released.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPaste",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, ClipboardEvent>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelect",
+          "type": "JSX.EventHandler<HTMLInputElement | HTMLTextAreaElement, Event>",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide a detailed, extended description for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: TextFieldRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the outer text field element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should receive focus on mount.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Associates the input with a form element by id.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name of the input element, used when submitting an HTML form.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The current value (controlled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "excludeFromTabOrder",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to exclude the element from the sequential tab order.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "defaultValue",
+          "type": "string",
+          "required": false,
+          "description": "The default value (uncontrolled).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isReadOnly",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is read only.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input is required.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isInvalid",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the input value is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "description": "Whether to use native HTML form validation or ARIA validation semantics.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "(value: any) => string | string[] | true | null | undefined",
+          "required": false,
+          "description": "A function that returns an error message if a given value is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "Placeholder text for the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoComplete",
+          "type": "string",
+          "required": false,
+          "description": "Whether to enable auto complete.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "maxLength",
+          "type": "number",
+          "required": false,
+          "description": "The maximum number of characters supported by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "minLength",
+          "type": "number",
+          "required": false,
+          "description": "The minimum number of characters required by the input.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "enterKeyHint",
+          "type": "\"search\" | \"enter\" | \"done\" | \"go\" | \"next\" | \"previous\" | \"send\"",
+          "values": [
+            "'search'",
+            "'enter'",
+            "'done'",
+            "'go'",
+            "'next'",
+            "'previous'",
+            "'send'"
+          ],
+          "required": false,
+          "description": "Hint for the enter key action on virtual keyboards.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoCorrect",
+          "type": "string",
+          "required": false,
+          "description": "Whether to enable auto correct.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "spellCheck",
+          "type": "\"true\" | \"false\"",
+          "values": [
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Whether to enable spell check.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "inputElementType",
+          "type": "\"input\" | \"textarea\"",
+          "values": [
+            "'input'",
+            "'textarea'"
+          ],
+          "required": false,
+          "description": "The element type to use for the input. Defaults to 'input'.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "labelElementType",
+          "type": "\"label\" | \"span\" | \"div\"",
+          "values": [
+            "'label'",
+            "'span'",
+            "'div'"
+          ],
+          "required": false,
+          "default": "'label'",
+          "description": "The HTML element used to render the label, e.g. 'label', or 'span'.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "TextFieldProps": [
+      {
+        "prop": "suffix",
+        "kind": "only-here"
+      },
+      {
+        "prop": "surface",
+        "kind": "only-here"
+      }
+    ]
+  }
+}

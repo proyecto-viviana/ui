@@ -1,0 +1,105 @@
+{
+  "slug": "buttongroup",
+  "title": "ButtonGroup",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ButtonGroupProps",
+      "component": "ButtonGroup",
+      "source": "packages/viviana-ui/src/buttongroup/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The Buttons contained within the ButtonGroup.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "orientation",
+          "type": "\"horizontal\" | \"vertical\"",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "'horizontal'",
+          "description": "The axis the ButtonGroup should align with.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "align",
+          "type": "\"start\" | \"end\" | \"center\"",
+          "values": [
+            "'start'",
+            "'end'",
+            "'center'"
+          ],
+          "required": false,
+          "default": "'start'",
+          "description": "The alignment of the Buttons within the ButtonGroup.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "ButtonSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the Buttons within the ButtonGroup.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the Buttons in the ButtonGroup are all disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isHidden",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

@@ -1,0 +1,457 @@
+{
+  "slug": "actionmenu",
+  "title": "ActionMenu",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ActionMenuProps",
+      "component": "ActionMenu",
+      "source": "packages/viviana-ui/src/menu/ActionMenu.tsx",
+      "props": [
+        {
+          "name": "items",
+          "type": "import(\"@proyecto-viviana/solidaria-components\").CollectionEntry<T>[]",
+          "required": false,
+          "description": "Item objects in the collection.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "required": false,
+          "description": "The contents of the collection.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name for the menu. Legacy alias.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the trigger button. Legacy alias.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the button should be displayed with a quiet style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the trigger is disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "ActionButtonSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'",
+            "'XS'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the ActionButton.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "menuSize",
+          "type": "ActionMenuMenuSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the Menu.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "hideLinkOutIcon",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Hides the default link out icons on menu items that open links in a new tab.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "align",
+          "type": "ActionMenuAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "default": "'start'",
+          "description": "Alignment of the menu relative to the trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "direction",
+          "type": "ActionMenuDirection",
+          "values": [
+            "'start'",
+            "'end'",
+            "'top'",
+            "'bottom'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "default": "'bottom'",
+          "description": "Where the Menu opens relative to its trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu should automatically flip direction when space is limited.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open by default.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open, controlled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when the overlay open state changes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the trigger should receive focus on render.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes for the trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name for the trigger button. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles for the trigger button. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the trigger element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element that labels the trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element that describes the trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element that provides details for the trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLButtonElement | ((el: HTMLButtonElement) => void) | { current?: HTMLButtonElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves out of the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onClose",
+          "type": "() => void",
+          "required": false,
+          "description": "Handler called when the menu should close.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler called when focus moves into the menu.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(keys: \"all\" | Set<Key>) => void",
+          "required": false,
+          "description": "Handler for selection changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.HTMLAttributes<HTMLDivElement>, renderProps: MenuRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the menu element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler called when the focus state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "selectionMode",
+          "type": "SelectionMode",
+          "values": [
+            "'none'",
+            "'single'",
+            "'multiple'"
+          ],
+          "required": false,
+          "description": "The selection mode.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "disallowEmptySelection",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether empty selection is disallowed.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "selectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Currently selected keys (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultSelectedKeys",
+          "type": "\"all\" | Iterable<Key>",
+          "required": false,
+          "description": "Default selected keys (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onAction",
+          "type": "(key: Key, value: T) => void",
+          "required": false,
+          "description": "Handler called when an item is activated, with the activated item's value.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldCloseOnSelect",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the menu should close when an item is selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFocusWrap",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether focus should automatically wrap around.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "disallowTypeAhead",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "false",
+          "description": "Whether type-to-select is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "selectionBehavior",
+          "type": "SelectionBehavior",
+          "values": [
+            "'toggle'",
+            "'replace'"
+          ],
+          "required": false,
+          "description": "How selection behaves on interaction.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "allowDuplicateSelectionEvents",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow duplicate selection events.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T) => string",
+          "required": false,
+          "description": "Function to get the text value from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getDisabled",
+          "type": "(item: T) => boolean",
+          "required": false,
+          "description": "Function to check if an item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledBehavior",
+          "type": "\"all\" | \"selection\"",
+          "values": [
+            "'all'",
+            "'selection'"
+          ],
+          "required": false,
+          "description": "Whether disabled items can still receive focus.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "staticChildren",
+          "type": "() => JSX.Element | undefined",
+          "required": false,
+          "description": "Internal lazy static children accessor used when collection children need menu context.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "renderEmptyState",
+          "type": "() => JSX.Element",
+          "required": false,
+          "description": "Content to display when the menu has no items.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dragAndDropHooks",
+          "type": "DragAndDropHooks<T>",
+          "required": false,
+          "description": "Drag and drop hooks from `useDragAndDrop`.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

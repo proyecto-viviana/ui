@@ -1,0 +1,77 @@
+{
+  "slug": "filetrigger",
+  "title": "FileTrigger",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "FileTriggerProps",
+      "component": "FileTrigger",
+      "source": "packages/viviana-ui/src/filetrigger/index.tsx",
+      "props": [
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class for the trigger wrapper.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "acceptedFileTypes",
+          "type": "readonly string[]",
+          "required": false,
+          "description": "Mime types accepted by the file picker.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "allowsMultiple",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether multiple files can be selected.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultCamera",
+          "type": "\"user\" | \"environment\"",
+          "values": [
+            "'user'",
+            "'environment'"
+          ],
+          "required": false,
+          "description": "Default camera capture mode for mobile devices.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "acceptDirectory",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Enables directory selection in supported browsers.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onSelect",
+          "type": "(files: FileList | null) => void",
+          "required": false,
+          "description": "Called when user selection changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Trigger content (typically a button).",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

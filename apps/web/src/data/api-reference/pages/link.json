@@ -1,0 +1,298 @@
+{
+  "slug": "link",
+  "title": "Link",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "LinkProps",
+      "component": "Link",
+      "source": "packages/viviana-ui/src/link/index.tsx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "LinkVariant",
+          "values": [
+            "'primary'",
+            "'secondary'"
+          ],
+          "required": false,
+          "default": "'primary'",
+          "description": "The visual style of the link.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "staticColor",
+          "type": "LinkStaticColor",
+          "values": [
+            "'white'",
+            "'black'",
+            "'auto'"
+          ],
+          "required": false,
+          "description": "The static color style to apply when the link appears over a color background.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isStandalone",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the link is on its own vs inside a longer string of text.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isQuiet",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the link should be displayed with a quiet style.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content of the link.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying link element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onBlur",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element loses focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocus",
+          "type": "(e: FocusEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the element receives focus.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyDown",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onKeyUp",
+          "type": "(e: KeyboardEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a key is released.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-current",
+          "type": "boolean | \"page\" | \"step\" | \"location\" | \"date\" | \"time\" | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'page'",
+            "'step'",
+            "'location'",
+            "'date'",
+            "'time'",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Indicates the current \"page\" or state within a set of related elements.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that describes the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide a detailed description.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that labels the current element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "The URL to link to.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "The target window for the link.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "The relationship between the linked resource and the current page.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPress",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when the press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressStart",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressEnd",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press interaction ends.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressUp",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler that is called when a press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressChange",
+          "type": "(isPressed: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the press state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to autofocus the element.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "routerOptions",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "description": "Additional options forwarded to client-side router navigation handlers.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "hrefLang",
+          "type": "string",
+          "required": false,
+          "description": "Hints the language of the linked resource.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "download",
+          "type": "string | boolean",
+          "required": false,
+          "description": "Instructs the browser to download the URL instead of navigating to it.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "ping",
+          "type": "string",
+          "required": false,
+          "description": "Space-separated list of URLs to ping when following the link.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "referrerPolicy",
+          "type": "\"\" | \"no-referrer\" | \"no-referrer-when-downgrade\" | \"origin\" | \"origin-when-cross-origin\" | \"same-origin\" | \"strict-origin\" | \"strict-origin-when-cross-origin\" | \"unsafe-url\"",
+          "values": [
+            "''",
+            "'no-referrer'",
+            "'no-referrer-when-downgrade'",
+            "'origin'",
+            "'origin-when-cross-origin'",
+            "'same-origin'",
+            "'strict-origin'",
+            "'strict-origin-when-cross-origin'",
+            "'unsafe-url'"
+          ],
+          "required": false,
+          "description": "Referrer policy for fetches initiated by this link.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onFocusChange",
+          "type": "(isFocused: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

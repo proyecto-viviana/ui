@@ -117,6 +117,14 @@ jobs:
         id: guard_docs_routes
         run: pnpm run guard:docs-routes
 
+      # Re-derives every reference page from the packages' TypeScript types and
+      # fails if the committed JSON or routes disagree. This is what makes the
+      # `/docs` tree unable to advertise a prop the package does not ship —
+      # the failure the hand-written solid-spectrum tables had no way to catch.
+      - name: guard api-reference
+        id: guard_api_reference
+        run: pnpm run guard:api-reference
+
       # Keeps the repository slug from rotting in site links again and holds
       # every published package to full npm metadata (`launch.md` → B1, B7).
       - name: guard outbound-links
@@ -206,6 +214,7 @@ jobs:
           O_GUARD_IDIOMATIC_SOLID: ${{ steps.guard_idiomatic_solid.outcome }}
           O_GUARD_INVENTED_UTILITIES: ${{ steps.guard_invented_utilities.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
+          O_GUARD_API_REFERENCE: ${{ steps.guard_api_reference.outcome }}
           O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
@@ -245,6 +254,7 @@ jobs:
             echo "| \`guard:idiomatic-solid\` | $(icon "$O_GUARD_IDIOMATIC_SOLID") |"
             echo "| \`guard:invented-utilities\` | $(icon "$O_GUARD_INVENTED_UTILITIES") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
+            echo "| \`guard:api-reference\` | $(icon "$O_GUARD_API_REFERENCE") |"
             echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"

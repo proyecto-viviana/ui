@@ -42,12 +42,12 @@ The single most important structural gap, because it misleads every new user.
 
 The repo ships two products on one stack:
 
-|                                             | `@proyecto-viviana/solid-spectrum`       | `@proyecto-viviana/ui`                              |
-| ------------------------------------------- | ---------------------------------------- | --------------------------------------------------- |
-| What it is                                  | S2-parity port, pinned to Spectrum 1.5.1 | The Viviana register (Glasselated)                  |
-| Visual identity                             | Adobe Spectrum, parity-locked            | Geist trio, glass + pixel                           |
-| Docs-site coverage                          | 45 doc pages, playground, ecosystem      | **zero API docs** — `/showcase` is a visual gallery |
-| What the root README tells users to install | —                                        | **this one**                                        |
+|                                             | `@proyecto-viviana/solid-spectrum`                                  | `@proyecto-viviana/ui`                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| What it is                                  | S2-parity port, pinned to Spectrum 1.5.1                            | The Viviana register (Glasselated)                                                   |
+| Visual identity                             | Adobe Spectrum, parity-locked                                       | Geist trio, glass + pixel                                                            |
+| Docs-site coverage                          | 45 hand-written doc pages with live examples, playground, ecosystem | 82 **generated** API pages under `/docs` (3,367 props), plus the `/showcase` gallery |
+| What the root README tells users to install | —                                                                   | **this one**                                                                         |
 
 So the package we point users at has no reference documentation, and the fully
 documented package is the one framed as the parity substrate.
@@ -68,12 +68,67 @@ Each is tracked in `tech-debt.md`; IDs below are stable references.
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | B1  | 6 broken GitHub links — `github.com/proyecto-viviana/proyecto-viviana` 404s; the repo is `proyecto-viviana/ui`                                                                                            | `Header.tsx:181`, `solid-spectrum/index.tsx:130`, `ecosystem.tsx:165,170,175,180`                                             |
 | B2  | Installation page is materially wrong — never mentions `@proyecto-viviana/ui`, tells users to hand-author `:root` custom properties instead of importing the shipped stylesheets, omits `vivianaMacros()` | `apps/web/src/routes/solid-spectrum/docs/installation.tsx`; contradicted by `packages/viviana-ui/README.md`, which is correct |
-| B3  | No API docs for the flagship package — 238 exported names, zero reference pages                                                                                                                           | `packages/viviana-ui/src/index.ts`                                                                                            |
+| B3  | ~~No API docs for the flagship package — 238 exported names, zero reference pages~~ **Resolved 2026-07-24**: `/docs` serves 82 generated pages / 3,367 props, guarded by `guard:api-reference`; see below | `packages/viviana-ui/src/index.ts`; `scripts/extract-api-reference.ts`                                                        |
 | B4  | `vp check` RED on main — 174 files with format drift, invisible in CI because `ci:release-readiness` has no format step and `certification-gates.yml` runs everything `continue-on-error: true`           | `vp check` exit 1                                                                                                             |
 | B5  | `docs:check` RED — 9 errors (5 missing status headers, 1 bad roadmap ref, 2 done-without-finished-date, 1 invalid roadmap status)                                                                         | gate output                                                                                                                   |
 | B6  | ~~Site is 24 days stale~~ → **the docs site had no deploy target of its own**; its worker name was the live production app's. Resolved: Worker `viviana-ui-docs` on `ui.proyectoviviana.org`              | `wrangler versions view`; see below                                                                                           |
 | B7  | npm metadata gaps — no `homepage` on any of the 5 packages; `viviana-ui` has 0 keywords and an internal-jargon description                                                                                | `package.json` × 5                                                                                                            |
 | B8  | `a11y:smoke` RED (12 failed / 32 passed) — stale test selectors, not a product regression                                                                                                                 | see below                                                                                                                     |
+
+### B3 resolution — the reference is generated, not written
+
+`/docs` now serves **82 component pages covering 3,367 props** across 183
+interfaces of `@proyecto-viviana/ui`, and **not one line of it is
+hand-authored**. `vp run api:extract` builds a `ts.createProgram` over the
+package barrel, walks `getApparentType(...).getProperties()` for every exported
+component's props type, and writes one JSON payload per page plus one TSX route
+per page. `vp run guard:api-reference` re-runs the extractor with `--check` and
+fails if the committed output no longer matches the types — so a prop renamed in
+the package breaks CI rather than quietly turning a docs page into a lie. It is a
+blocking step in `certification-gates.yml`.
+
+Three decisions did the real work:
+
+**The member filter is structural, not a list.** The naive walk returns **40,966
+members** — `BadgeProps` alone reports 456, because `HTMLAttributes` drags in
+every DOM event handler `solid-js` declares. A member's _declaring file_ answers
+the question cleanly: keep what is declared under `/packages/`, drop what comes
+from the JSX namespace. That single rule cuts 40,966 → **3,367** and lifts JSDoc
+coverage from 24% to **87.7%**, with **zero hand-maintained allowlist**
+(`BadgeProps`: 456 → 12). The only hand-kept input in the whole generator is
+`OWN_PAGE`, a 21-name set that promotes a few sub-components to their own page,
+and it fails safe — a name missing from it means a slightly busier page, not a
+wrong one.
+
+**One JSON per page, never one per register.** The first cut imported a single
+register-wide module from the layout, which folded every prop table into one
+shared chunk: **136.31 kB gz**. Per-page payloads plus a small `pages.json` index
+for the sidebar took the shared chunk to **908 B gz**, the renderer to 2.5 kB gz,
+and the worst per-page route (`table`) to 11 kB gz.
+
+**Divergence is precomputed per page, in the direction the reader is standing.**
+The two registers share prop _names_ but not prop _values_: viviana-ui's `Button`
+adds `'warning' | 'success' | 'create'` and lacks solid-spectrum's `'premium' |
+'genai'`. A shared table would print a lie to whichever package the reader
+installed, so each page carries its own diff (24 divergences site-wide) and
+renders it as a callout above the table.
+
+The head titles are suffixed ` props` because `/docs/components/accordion` and
+`/solid-spectrum/docs/components/accordion` otherwise collide on one title —
+caught by `test:seo`, which is exactly what it is for. `check-doc-routes.ts` was
+generalized from a single hardcoded base path to a list of trees and now covers
+**129 docs routes**; `MINIMUM_EXPECTED_ROUTES` went 60 → 140 (the site parses
+154). `e2e/api-reference.spec.ts` reads the same JSON the pages import and
+requires it on screen, because a page whose data loaded but whose table rendered
+nothing would still clear the route sweep's text floor on its intro prose alone.
+
+One accessibility note, recorded so it is not rediscovered: an axe probe of the
+new pages returns real `color-contrast` failures, but **the same probe returns
+the same failures with the same computed colours on the pre-existing
+`/solid-spectrum/docs/components/badge`**. They are token-level, they are filed
+with measurements in `tech-debt.md`, and they are not this feature's to fix. The
+one failure that _was_ this feature's — an `opacity: 0.55` on the "Not yet
+documented" placeholder, 2.0:1 and the worst ratio on the page — is fixed here.
 
 ### B8 root cause
 
@@ -227,7 +282,8 @@ every canonical and the whole sitemap derive from that one constant — as did
 designed, and the head of a docs page carries its own title and canonical. The
 parent application was re-checked afterwards and is untouched.
 
-**Phase 5 — close coverage.** viviana-ui API docs (B3); the ~31–40 missing
+**Phase 5 — close coverage.** viviana-ui API docs (B3) — **done 2026-07-24**, 82
+generated pages under `/docs`. Remaining: the ~31–40 missing solid-spectrum
 component pages; then `dnd-subsystem-port` and `macro-route-styled`.
 
 ## Non-goals for launch

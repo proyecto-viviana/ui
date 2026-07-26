@@ -1,0 +1,195 @@
+{
+  "slug": "icon",
+  "title": "SpectrumIcon",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SpectrumIconProps",
+      "component": "SpectrumIcon",
+      "source": "packages/viviana-ui/src/icon/spectrum-icon.tsx",
+      "props": [
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "string | JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-hidden",
+          "type": "boolean | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Indicates whether the element is exposed to an accessibility API.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_suppressDataSlot",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "CenterBaselineProps",
+      "component": "CenterBaseline",
+      "source": "packages/viviana-ui/src/icon/center-baseline.tsx",
+      "props": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "SpectrumIllustrationProps",
+      "component": "SpectrumIllustration",
+      "source": "packages/viviana-ui/src/icon/spectrum-icon.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "\"S\" | \"M\" | \"L\"",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "style",
+          "type": "string | JSX.CSSProperties",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Defines a string value that labels the current element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-hidden",
+          "type": "boolean | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Indicates whether the element is exposed to an accessibility API.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_suppressDataSlot",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

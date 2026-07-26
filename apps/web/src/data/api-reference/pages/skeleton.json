@@ -1,0 +1,48 @@
+{
+  "slug": "skeleton",
+  "title": "Skeleton",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "SkeletonProps",
+      "component": "Skeleton",
+      "source": "packages/viviana-ui/src/skeleton/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isLoading",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "SkeletonCollectionProps",
+      "component": "SkeletonCollection",
+      "source": "packages/viviana-ui/src/skeleton/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "() => JSX.Element",
+          "required": true,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

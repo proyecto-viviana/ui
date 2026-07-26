@@ -1,0 +1,652 @@
+{
+  "slug": "contextualhelp",
+  "title": "ContextualHelp",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ContextualHelpProps",
+      "component": "ContextualHelp",
+      "source": "packages/viviana-ui/src/contextualhelp/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Contextual help popover content.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "content",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "Backward-compatible content alias. Prefer children for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "triggerLabel",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the icon trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "ContextualHelpVariant",
+          "values": [
+            "'info'",
+            "'help'"
+          ],
+          "required": false,
+          "default": "'help'",
+          "description": "Indicates whether contents are informative or provide help.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "ContextualHelpSize",
+          "values": [
+            "'S'",
+            "'XS'"
+          ],
+          "required": false,
+          "default": "'XS'",
+          "description": "Size of the trigger ActionButton.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open by default (uncontrolled).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open (controlled).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when the overlay's open state changes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes for the trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name for the trigger. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles for the trigger. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible trigger class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element that provides detailed information.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slotted context key.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLButtonElement | ((el: HTMLButtonElement) => void) | { current?: HTMLButtonElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the icon trigger button.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "DOM id for the popover element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element that describes the popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element that labels the popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "true",
+          "description": "Whether focus should move to the popover container on open.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "maxHeight",
+          "type": "number",
+          "required": false,
+          "description": "The max height of the popover.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "triggerRef",
+          "type": "() => Element | null",
+          "required": false,
+          "description": "The ref for the element which the popover positions itself with respect to. Required when used standalone (not within a trigger component).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "placement",
+          "type": "PopoverPlacement",
+          "values": [
+            "'start'",
+            "'end'",
+            "'top'",
+            "'bottom'",
+            "'left'",
+            "'right'",
+            "'bottom left'",
+            "'bottom right'",
+            "'bottom start'",
+            "'bottom end'",
+            "'top left'",
+            "'top right'",
+            "'top start'",
+            "'top end'",
+            "'left top'",
+            "'left bottom'",
+            "'right top'",
+            "'right bottom'",
+            "'start top'",
+            "'start bottom'",
+            "'end top'",
+            "'end bottom'"
+          ],
+          "required": false,
+          "description": "The position of the popover relative to the trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "containerPadding",
+          "type": "number",
+          "required": false,
+          "default": "12",
+          "description": "The placement padding that should be applied between the element and its surrounding container.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "default": "8",
+          "description": "The additional offset applied along the main axis between the element and its anchor element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "crossOffset",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The additional offset applied along the cross axis between the element and its anchor element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "true",
+          "description": "Whether the element should flip its orientation when there is insufficient room.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "boundaryElement",
+          "type": "Element",
+          "required": false,
+          "description": "A boundary element for placement calculations.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTargetRect",
+          "type": "(target: Element) => DOMRect | null | undefined",
+          "required": false,
+          "default": "target.getBoundingClientRect()",
+          "description": "Overrides the target element's bounding rectangle. Useful for positioning relative to a specific point such as the mouse cursor (e.g. context menus) or text selection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "arrowRef",
+          "type": "() => Element | null",
+          "required": false,
+          "description": "A ref for the popover arrow element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "scrollRef",
+          "type": "() => Element | null",
+          "required": false,
+          "description": "A ref for the scrollable popover element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isNonModal",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is non-modal (allows interaction outside).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isKeyboardDismissDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether pressing Escape to close should be disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldCloseOnInteractOutside",
+          "type": "(element: Element) => boolean",
+          "required": false,
+          "description": "Filter for which outside interactions should close the popover.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isEntering",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is entering (for animations).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isExiting",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is exiting (for animations).",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ContextualHelpPopoverProps",
+      "component": "ContextualHelpPopover",
+      "source": "packages/viviana-ui/src/contextualhelp/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "Contextual help popover content.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "DOM id for the popover element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element that describes the popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) that provide a detailed, extended description for the object.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element that labels the popover.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "true",
+          "description": "Whether focus should move to the popover container on open.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover opens by default (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler called when the popover's open state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "maxHeight",
+          "type": "number",
+          "required": false,
+          "description": "The max height of the popover.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "trigger",
+          "type": "string",
+          "required": false,
+          "description": "The name of the component that triggered the popover.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "triggerRef",
+          "type": "() => Element | null",
+          "required": false,
+          "description": "The ref for the element which the popover positions itself with respect to. Required when used standalone (not within a trigger component).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "placement",
+          "type": "PopoverPlacement",
+          "values": [
+            "'start'",
+            "'end'",
+            "'top'",
+            "'bottom'",
+            "'left'",
+            "'right'",
+            "'bottom left'",
+            "'bottom right'",
+            "'bottom start'",
+            "'bottom end'",
+            "'top left'",
+            "'top right'",
+            "'top start'",
+            "'top end'",
+            "'left top'",
+            "'left bottom'",
+            "'right top'",
+            "'right bottom'",
+            "'start top'",
+            "'start bottom'",
+            "'end top'",
+            "'end bottom'"
+          ],
+          "required": false,
+          "description": "The position of the popover relative to the trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "containerPadding",
+          "type": "number",
+          "required": false,
+          "default": "12",
+          "description": "The placement padding that should be applied between the element and its surrounding container.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "default": "8",
+          "description": "The additional offset applied along the main axis between the element and its anchor element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "crossOffset",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The additional offset applied along the cross axis between the element and its anchor element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "true",
+          "description": "Whether the element should flip its orientation when there is insufficient room.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "boundaryElement",
+          "type": "Element",
+          "required": false,
+          "description": "A boundary element for placement calculations.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTargetRect",
+          "type": "(target: Element) => DOMRect | null | undefined",
+          "required": false,
+          "default": "target.getBoundingClientRect()",
+          "description": "Overrides the target element's bounding rectangle. Useful for positioning relative to a specific point such as the mouse cursor (e.g. context menus) or text selection.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "arrowRef",
+          "type": "() => Element | null",
+          "required": false,
+          "description": "A ref for the popover arrow element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "scrollRef",
+          "type": "() => Element | null",
+          "required": false,
+          "description": "A ref for the scrollable popover element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isNonModal",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is non-modal (allows interaction outside).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isKeyboardDismissDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether pressing Escape to close should be disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldCloseOnInteractOutside",
+          "type": "(element: Element) => boolean",
+          "required": false,
+          "description": "Filter for which outside interactions should close the popover.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isEntering",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is entering (for animations).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isExiting",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover is exiting (for animations).",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "ContextualHelpStyleProps",
+      "component": "ContextualHelpStyle",
+      "source": "packages/viviana-ui/src/contextualhelp/index.tsx",
+      "props": [
+        {
+          "name": "variant",
+          "type": "ContextualHelpVariant",
+          "values": [
+            "'info'",
+            "'help'"
+          ],
+          "required": false,
+          "default": "'help'",
+          "description": "Indicates whether contents are informative or provide help.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

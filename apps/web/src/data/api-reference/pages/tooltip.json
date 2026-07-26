@@ -1,0 +1,403 @@
+{
+  "slug": "tooltip",
+  "title": "Tooltip",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "TooltipProps",
+      "component": "Tooltip",
+      "source": "packages/viviana-ui/src/tooltip/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The content of the tooltip.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "placement",
+          "type": "TooltipPlacement",
+          "values": [
+            "'start'",
+            "'end'",
+            "'top'",
+            "'bottom'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "The position of the tooltip relative to the trigger.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TooltipVariant",
+          "values": [
+            "'default'",
+            "'neutral'",
+            "'info'"
+          ],
+          "required": false,
+          "description": "Deprecated legacy visual variant. Spectrum 2 tooltips use a single neutral treatment.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "showArrow",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Backward-compatible arrow toggle. Spectrum 2 tooltips render an arrow by default.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "A slot name for the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "dir",
+          "type": "\"ltr\" | \"rtl\"",
+          "values": [
+            "'ltr'",
+            "'rtl'"
+          ],
+          "required": false,
+          "description": "The text direction.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "lang",
+          "type": "string",
+          "required": false,
+          "description": "The element language.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element id.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that describes the tooltip.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that provides details for the tooltip.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Custom aria-label for the tooltip.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of an element that labels the tooltip.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip should be disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip is open by default (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip is open (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "containerPadding",
+          "type": "number",
+          "required": false,
+          "description": "The placement padding between the tooltip and viewport edge.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "required": false,
+          "description": "The offset between the tooltip and trigger.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "crossOffset",
+          "type": "number",
+          "required": false,
+          "description": "The additional offset along the cross axis.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip should flip when there is insufficient room.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "arrowSize",
+          "type": "number",
+          "required": false,
+          "description": "The arrow size used to keep the arrow overlapping the trigger.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "arrowBoundaryOffset",
+          "type": "number",
+          "required": false,
+          "description": "The padding between the arrow and tooltip edge.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TooltipRenderProps",
+      "component": "TooltipRender",
+      "source": "packages/solidaria-components/src/Tooltip.tsx",
+      "props": [
+        {
+          "name": "isEntering",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tooltip is currently entering (for animations).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isExiting",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": true,
+          "description": "Whether the tooltip is currently exiting (for animations).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "placement",
+          "type": "TooltipResolvedPlacement | null",
+          "required": true,
+          "description": "The placement of the tooltip relative to the trigger.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TooltipTriggerProps",
+      "component": "TooltipTrigger",
+      "source": "packages/viviana-ui/src/tooltip/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "JSX.Element",
+          "required": true,
+          "description": "The children of the tooltip trigger (trigger element and tooltip).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "placement",
+          "type": "TooltipPlacement",
+          "values": [
+            "'start'",
+            "'end'",
+            "'top'",
+            "'bottom'",
+            "'left'",
+            "'right'"
+          ],
+          "required": false,
+          "description": "The placement of the tooltip relative to the trigger.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "containerPadding",
+          "type": "number",
+          "required": false,
+          "description": "The placement padding between the tooltip and viewport edge.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "crossOffset",
+          "type": "number",
+          "required": false,
+          "description": "The additional offset along the cross axis.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldFlip",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip should flip when there is insufficient room.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "delay",
+          "type": "number",
+          "required": false,
+          "description": "The delay time in milliseconds for the tooltip to show up.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "closeDelay",
+          "type": "number",
+          "required": false,
+          "description": "The delay time in milliseconds for the tooltip to close.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "defaultOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open by default (uncontrolled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isOpen",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the overlay is open (controlled).",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "onOpenChange",
+          "type": "(isOpen: boolean) => void",
+          "required": false,
+          "description": "Handler that is called when the overlay's open state changes.",
+          "origin": "solid-stately"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip should be disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "trigger",
+          "type": "\"focus\" | \"hover\"",
+          "values": [
+            "'focus'",
+            "'hover'"
+          ],
+          "required": false,
+          "default": "'hover'",
+          "description": "The trigger mechanism for the tooltip.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldCloseOnPress",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "default": "true",
+          "description": "Whether the tooltip should close when the trigger is pressed.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "tooltipId",
+          "type": "string",
+          "required": false,
+          "description": "ID of the tooltip element.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

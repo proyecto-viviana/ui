@@ -1,0 +1,287 @@
+{
+  "slug": "form",
+  "title": "Form",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "FormProps",
+      "component": "Form",
+      "source": "packages/viviana-ui/src/form/index.tsx",
+      "props": [
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "((el: HTMLFormElement) => void) | { current?: HTMLFormElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: FormRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The children of the component.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoCapitalize",
+          "type": "JSX.HTMLAutocapitalize",
+          "values": [
+            "'none'",
+            "'off'",
+            "'on'",
+            "'sentences'",
+            "'words'",
+            "'characters'"
+          ],
+          "required": false,
+          "description": "Browser auto-capitalization hint. React-style alias for Solid's `autocapitalize`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "ValidationBehavior",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "description": "Validation behavior mode.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "autoComplete",
+          "type": "\"off\" | \"on\"",
+          "values": [
+            "'off'",
+            "'on'"
+          ],
+          "required": false,
+          "description": "Browser autocomplete behavior. React-style alias for Solid's `autocomplete`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "validationErrors",
+          "type": "ValidationErrors",
+          "required": false,
+          "description": "Server-side validation errors keyed by field name.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "acceptCharset",
+          "type": "string",
+          "required": false,
+          "description": "Character encodings accepted by the server. React-style alias for Solid's `accept-charset`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "encType",
+          "type": "JSX.HTMLFormEncType",
+          "values": [
+            "'application/x-www-form-urlencoded'",
+            "'multipart/form-data'",
+            "'text/plain'"
+          ],
+          "required": false,
+          "description": "Form encoding type. React-style alias for Solid's `enctype`.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "size",
+          "type": "FormSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of descendant Form elements.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "FormLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "default": "'top'",
+          "description": "The label's overall position relative to each field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "FormLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "default": "'start'",
+          "description": "The label's horizontal alignment relative to each field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "FormNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "default": "'icon'",
+          "description": "Whether required fields show an icon or text label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether descendant Form elements are required.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether descendant Form elements are disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether descendant Form elements are rendered with emphasized styling.",
+          "origin": "viviana-ui"
+        }
+      ]
+    },
+    {
+      "name": "FormStyleProps",
+      "component": "FormStyle",
+      "source": "packages/viviana-ui/src/form/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "FormSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of descendant Form elements.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "FormLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "default": "'top'",
+          "description": "The label's overall position relative to each field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelAlign",
+          "type": "FormLabelAlign",
+          "values": [
+            "'start'",
+            "'end'"
+          ],
+          "required": false,
+          "default": "'start'",
+          "description": "The label's horizontal alignment relative to each field.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "necessityIndicator",
+          "type": "FormNecessityIndicator",
+          "values": [
+            "'label'",
+            "'icon'"
+          ],
+          "required": false,
+          "default": "'icon'",
+          "description": "Whether required fields show an icon or text label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether descendant Form elements are required.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether descendant Form elements are disabled.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isEmphasized",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether descendant Form elements are rendered with emphasized styling.",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

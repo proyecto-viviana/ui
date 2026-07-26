@@ -1,0 +1,194 @@
+{
+  "slug": "progress-bar",
+  "title": "ProgressBar",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "ProgressBarProps",
+      "component": "ProgressBar",
+      "source": "packages/viviana-ui/src/progress-bar/index.tsx",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The current value.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "pendingValue",
+          "type": "number",
+          "required": false,
+          "description": "A second value beyond `value` rendered as a dithered extension of the fill — the register's \"in flight\" segment (the XP bar's 6% checker after the 84% solid, TerminalGlassLab.tsx:773-780). Purely visual; the accessible value stays `value`. Ignored while indeterminate.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "minValue",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The smallest value allowed.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "maxValue",
+          "type": "number",
+          "required": false,
+          "default": "100",
+          "description": "The largest value allowed.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "valueLabel",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content to display as the value's label, e.g. \"1 of 4\".",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "isIndeterminate",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether presentation is indeterminate when progress isn't known.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "formatOptions",
+          "type": "Intl.NumberFormatOptions",
+          "required": false,
+          "description": "The display format of the value label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "ProgressBarSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the progress bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The label to display above or beside the progress bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "staticColor",
+          "type": "ProgressBarStaticColor",
+          "values": [
+            "'white'",
+            "'black'",
+            "'auto'"
+          ],
+          "required": false,
+          "description": "The static color style to apply over a color background.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "ProgressBarLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "default": "'top'",
+          "description": "The label's overall position relative to the progress bar.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "ProgressBarProps": [
+      {
+        "prop": "pendingValue",
+        "kind": "only-here"
+      }
+    ]
+  }
+}

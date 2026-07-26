@@ -1,0 +1,123 @@
+{
+  "slug": "divider",
+  "title": "Divider",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "DividerProps",
+      "component": "Divider",
+      "source": "packages/viviana-ui/src/divider/index.tsx",
+      "props": [
+        {
+          "name": "size",
+          "type": "DividerSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "How thick the Divider should be.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "orientation",
+          "type": "DividerOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "default": "'horizontal'",
+          "description": "The orientation of the Divider.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "staticColor",
+          "type": "DividerStaticColor",
+          "values": [
+            "'white'",
+            "'black'",
+            "'auto'"
+          ],
+          "required": false,
+          "description": "The static color style to apply when the Divider appears over a color background.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLElement | ((el: HTMLElement) => void) | { current?: HTMLElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element(s) that describes the separator.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element(s) that provide a detailed description.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "An accessibility label for the separator.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element(s) that labels the separator.",
+          "origin": "solidaria"
+        }
+      ]
+    }
+  ],
+  "divergence": {}
+}

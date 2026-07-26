@@ -1,0 +1,536 @@
+{
+  "slug": "tabs",
+  "title": "Tabs",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "TabsProps",
+      "component": "Tabs",
+      "source": "packages/viviana-ui/src/tabs/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The tabs and panels to render.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "density",
+          "type": "TabsDensity",
+          "values": [
+            "'compact'",
+            "'regular'"
+          ],
+          "required": false,
+          "description": "Compact reduces tab height and inter-item spacing.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelBehavior",
+          "type": "TabsLabelBehavior",
+          "values": [
+            "'show'",
+            "'hide'"
+          ],
+          "required": false,
+          "description": "Whether text labels are visually shown.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "TabsVariant",
+          "values": [
+            "'line'",
+            "'pill'"
+          ],
+          "required": false,
+          "description": "Visual form of the tab strip. `line` is the default underlined strip; `pill` is the register's glass tab bar — stacked icon-over-label slots in a full-radius glass capsule. `pill` is horizontal-only and never collapses into the overflow picker.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Accessible label for the tab list. Required when aria-labelledby is not provided.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "Id of the element labeling the tab list. Required when aria-label is not provided.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the root tabs element.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "onSelectionChange",
+          "type": "(key: Key) => void",
+          "required": false,
+          "description": "Handler for tab selection changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tabs are disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "orientation",
+          "type": "TabOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "description": "The orientation of the tabs.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": false,
+          "description": "The items to render in the tab list.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getKey",
+          "type": "(item: T) => Key",
+          "required": false,
+          "description": "Function to get the key from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getTextValue",
+          "type": "(item: T) => string",
+          "required": false,
+          "description": "Function to get the text value from an item.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "getDisabled",
+          "type": "(item: T) => boolean",
+          "required": false,
+          "description": "Function to check if an item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "disabledKeys",
+          "type": "Iterable<Key>",
+          "required": false,
+          "description": "Keys of disabled tabs.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "selectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The currently selected tab key (controlled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "defaultSelectedKey",
+          "type": "Key",
+          "required": false,
+          "description": "The default selected tab key (uncontrolled).",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "keyboardActivation",
+          "type": "KeyboardActivation",
+          "values": [
+            "'manual'",
+            "'automatic'"
+          ],
+          "required": false,
+          "description": "The keyboard activation mode.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TabProps",
+      "component": "Tab",
+      "source": "packages/viviana-ui/src/tabs/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TabRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The tab contents.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": true,
+          "description": "The unique key for the tab.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Label for the tab.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID reference for the tab label.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tab is disabled.",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "TabListProps",
+      "component": "TabList",
+      "source": "packages/viviana-ui/src/tabs/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((item: T) => JSX.Element)",
+          "required": false,
+          "description": "Static tabs or a render function for collection items.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the tab list.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Label for the tab list.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the tab list.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tab list is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "orientation",
+          "type": "TabOrientation",
+          "values": [
+            "'horizontal'",
+            "'vertical'"
+          ],
+          "required": false,
+          "description": "The orientation of the tab list.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "items",
+          "type": "T[]",
+          "required": false,
+          "description": "Items to render in the tab list.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "keyboardActivation",
+          "type": "KeyboardActivation",
+          "values": [
+            "'manual'",
+            "'automatic'"
+          ],
+          "required": false,
+          "description": "How tabs are activated (on focus or on click).",
+          "origin": "solidaria"
+        }
+      ]
+    },
+    {
+      "name": "TabPanelProps",
+      "component": "TabPanel",
+      "source": "packages/viviana-ui/src/tabs/index.tsx",
+      "props": [
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: TabPanelRenderProps) => JSX.Element)",
+          "required": false,
+          "description": "The panel contents.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "Key",
+          "required": false,
+          "description": "The key of the associated tab.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that describes the tab panel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "Label for the tab panel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "ID of element that labels the tab panel.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "shouldForceMount",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to keep the panel mounted when not selected.",
+          "origin": "solidaria-components"
+        }
+      ]
+    },
+    {
+      "name": "TabPanelsProps",
+      "component": "TabPanels",
+      "source": "packages/viviana-ui/src/tabs/index.tsx",
+      "props": [
+        {
+          "name": "styles",
+          "type": "StyleString",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "class",
+          "type": "string",
+          "required": false,
+          "description": "Backward-compatible class alias. Prefer UNSAFE_className for S2 parity.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "Slot name when used in a Spectrum context.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "children",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The grouped tab panels.",
+          "origin": "solidaria-components"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "TabsProps": [
+      {
+        "prop": "variant",
+        "kind": "only-here"
+      }
+    ]
+  }
+}

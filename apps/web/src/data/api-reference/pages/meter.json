@@ -1,0 +1,208 @@
+{
+  "slug": "meter",
+  "title": "Meter",
+  "packageName": "@proyecto-viviana/ui",
+  "comparedWith": "@proyecto-viviana/solid-spectrum",
+  "entries": [
+    {
+      "name": "MeterProps",
+      "component": "Meter",
+      "source": "packages/viviana-ui/src/meter/index.tsx",
+      "props": [
+        {
+          "name": "value",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The current value (controlled).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "minValue",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "The smallest value allowed.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "maxValue",
+          "type": "number",
+          "required": false,
+          "default": "100",
+          "description": "The largest value allowed.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "valueLabel",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The content to display as the value's label (e.g. \"75 GB\").",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "formatOptions",
+          "type": "Intl.NumberFormatOptions",
+          "required": false,
+          "description": "The display format of the value label.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "size",
+          "type": "MeterSize",
+          "values": [
+            "'S'",
+            "'M'",
+            "'L'",
+            "'XL'"
+          ],
+          "required": false,
+          "default": "'M'",
+          "description": "The size of the meter.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "segments",
+          "type": "number",
+          "required": false,
+          "description": "Render the meter as this many discrete blocks instead of a continuous bar — the register's `[▮▮▮▯▯]` capacity form (Panel07's focus/streak/xp/memory rows, TerminalGlassLab.tsx:914-931). The value quantizes to `round(fraction × segments)` filled blocks; the accessible value stays continuous.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "variant",
+          "type": "MeterVariantProp",
+          "values": [
+            "'negative'",
+            "'warning'",
+            "'success'",
+            "'informative'",
+            "'positive'",
+            "'notice'"
+          ],
+          "required": false,
+          "default": "'informative'",
+          "description": "The visual style variant. `success`/`warning` alias `positive`/`notice`.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "label",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
+          "required": false,
+          "description": "The label to display above the meter.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "staticColor",
+          "type": "MeterStaticColor",
+          "values": [
+            "'white'",
+            "'black'",
+            "'auto'"
+          ],
+          "required": false,
+          "description": "The static color style to apply over a color background.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "labelPosition",
+          "type": "MeterLabelPosition",
+          "values": [
+            "'top'",
+            "'side'"
+          ],
+          "required": false,
+          "default": "'top'",
+          "description": "The label's overall position relative to the meter.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "styles",
+          "type": "StyleString | (() => StyleString | undefined)",
+          "required": false,
+          "description": "Spectrum-defined generated classes.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_className",
+          "type": "string | UnsafeClassName",
+          "required": false,
+          "description": "Additional CSS class name. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "UNSAFE_style",
+          "type": "JSX.CSSProperties",
+          "required": false,
+          "description": "Additional inline styles. Use only as a last resort.",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "slot",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "ref",
+          "type": "HTMLDivElement | ((el: HTMLDivElement) => void) | { current?: HTMLDivElement | null | undefined; }",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "viviana-ui"
+        }
+      ]
+    }
+  ],
+  "divergence": {
+    "MeterProps": [
+      {
+        "prop": "segments",
+        "kind": "only-here"
+      },
+      {
+        "prop": "variant",
+        "kind": "values",
+        "here": [
+          "'warning'",
+          "'success'"
+        ],
+        "there": []
+      }
+    ]
+  }
+}
