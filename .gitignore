@@ -60,4 +60,5 @@ output/
 .claude/*
 !.claude/current/
 !.claude/reference/
+!.claude/tickets/
 !.claude/README.md
