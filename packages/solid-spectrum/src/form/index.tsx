@@ -158,6 +158,16 @@ const formStyles = style<{ labelPosition: FormLabelPosition; size: FormSize }>(
 );
 
 export function Form(props: FormProps): JSX.Element {
+  // Leave `children` on the headless rest props so they flow through as a
+  // lazy Solid getter — do not split them off and re-wrap. A forced
+  // `(rp) => children` render-prop wrapper desyncs createUniqueId between SSR
+  // and client (Form+Button: "Hydration Mismatch … <button></button>", which
+  // surfaces in apps as a blank route / "template is not a function").
+  //
+  // FormContext still wraps HeadlessForm so useFormProps / useIsInForm work
+  // for descendants (Solid context follows the component owner tree, not the
+  // DOM). Upstream S2 puts the provider inside the <form>; both work for
+  // context consumers.
   const [local, headlessProps] = splitProps(props, [
     "size",
     "labelPosition",
@@ -170,7 +180,6 @@ export function Form(props: FormProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "ref",
-    "children",
   ]);
 
   const size = () => local.size ?? "M";
@@ -214,11 +223,7 @@ export function Form(props: FormProps): JSX.Element {
           .filter(Boolean)
           .join(" ")}
         style={local.UNSAFE_style}
-      >
-        {(renderProps) =>
-          typeof local.children === "function" ? local.children(renderProps) : local.children
-        }
-      </HeadlessForm>
+      />
     </FormContext.Provider>
   );
 }

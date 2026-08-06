@@ -121,6 +121,23 @@ export function Form(props: FormProps): JSX.Element {
 
   const filteredDomProps = filterFormDOMProps(domProps);
 
+  // FormContext is only consumed for `validationBehavior` (TextField, Checkbox,
+  // DateField, …). Never spread `props` into the context value: in Solid,
+  // `props.children` is a getter that *creates* the child tree when read. Eager
+  // `{...props}` therefore builds every child once for the discarded context
+  // object and again for `renderChildren()`, double-advancing createUniqueId
+  // and desyncing SSR hydration keys. RAC can spread props because React
+  // elements are already-built descriptors; Solid cannot.
+  //
+  // Surface symptom (effect-latam /perfil, /foros): Form+sole Spectrum Button
+  // → "Hydration Mismatch" / "template is not a function" and a blank route.
+  // Form+TextField (multiple children) often still hydrates because array/
+  // fragment child paths mask the slot drift — the double-create is still
+  // wrong either way.
+  const formContextValue: FormProps = {
+    validationBehavior,
+  };
+
   return (
     <form
       {...filteredDomProps}
@@ -130,7 +147,7 @@ export function Form(props: FormProps): JSX.Element {
       style={renderProps.style()}
       slot={local.slot}
     >
-      <FormContext.Provider value={{ ...props, validationBehavior }}>
+      <FormContext.Provider value={formContextValue}>
         <FormValidationContext.Provider value={errors}>
           {renderProps.renderChildren()}
         </FormValidationContext.Provider>
