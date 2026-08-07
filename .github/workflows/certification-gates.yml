@@ -102,6 +102,12 @@ jobs:
         id: guard_style_macro_parity
         run: pnpm run guard:style-macro-parity
 
+      # solid-spectrum ↔ viviana-ui dual-tree edge (ticket #2). Baselined
+      # identical-copy backlog stays frozen; new Spectrum forks into ui fail.
+      - name: guard layer-boundary
+        id: guard_layer_boundary
+        run: pnpm run guard:layer-boundary
+
       # Flags the Solid reactivity anti-pattern that has bitten this port
       # repeatedly: destructuring a component/hook's reactive `props` (freezes
       # the value, since the body runs once). Excludes the generated icon set.
@@ -143,6 +149,14 @@ jobs:
         id: docs_check
         run: pnpm run docs:check
 
+      # Promoted 2026-08-07 (ticket #2): baselined the 9 known catalogue-depth
+      # gaps (tech-debt.md → labeledvalue-strict-parity). New gaps outside
+      # apps/comparison/scripts/parity-strict-baseline.json fail the job.
+      # Use report:parity:strict --strict-full locally to see the full backlog.
+      - name: comparison parity (strict)
+        id: parity_strict
+        run: pnpm run comparison:report:parity:strict
+
       - name: comparison contract suite
         id: contract
         run: pnpm run comparison:test:contract
@@ -172,13 +186,6 @@ jobs:
         id: guard_upstream_freshness
         continue-on-error: true
         run: pnpm run guard:upstream-freshness
-
-      # Genuinely FAILing: 9 official entries have no modeled control group
-      # (tech-debt.md → `labeledvalue-strict-parity`). Promote when that closes.
-      - name: comparison parity (strict)
-        id: parity_strict
-        continue-on-error: true
-        run: pnpm run comparison:report:parity:strict
 
       # Superset of the blocking a11y gate (site-gate.yml), which
       # excludes axe color-contrast and the stricter scans. The excluded rules
@@ -211,6 +218,7 @@ jobs:
           O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_STYLE_MACRO_PARITY: ${{ steps.guard_style_macro_parity.outcome }}
+          O_GUARD_LAYER_BOUNDARY: ${{ steps.guard_layer_boundary.outcome }}
           O_GUARD_IDIOMATIC_SOLID: ${{ steps.guard_idiomatic_solid.outcome }}
           O_GUARD_INVENTED_UTILITIES: ${{ steps.guard_invented_utilities.outcome }}
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
@@ -251,6 +259,7 @@ jobs:
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
             echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
             echo "| \`guard:style-macro-parity\` | $(icon "$O_GUARD_STYLE_MACRO_PARITY") |"
+            echo "| \`guard:layer-boundary\` | $(icon "$O_GUARD_LAYER_BOUNDARY") |"
             echo "| \`guard:idiomatic-solid\` | $(icon "$O_GUARD_IDIOMATIC_SOLID") |"
             echo "| \`guard:invented-utilities\` | $(icon "$O_GUARD_INVENTED_UTILITIES") |"
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
@@ -259,18 +268,20 @@ jobs:
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
+            echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
             echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
             echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
             echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
             echo ""
             echo "_\`typecheck\` passes today only because 35 \`solid-spectrum\` files carry \`@ts-nocheck\`; it starts surfacing breakage as those are removed._"
             echo ""
+            echo "_\`comparison:report:parity:strict\` is baselined (ticket #2): the known 9 catalogue-depth gaps are frozen; new gaps fail. Full backlog: \`--strict-full\`._"
+            echo ""
             echo "### Advisory (does not fail the build)"
             echo ""
             echo "| Gate | Result | Why it is not blocking |"
             echo "| --- | --- | --- |"
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") | ❌ means Adobe shipped past our pin — a pin bump, not a branch defect |"
-            echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") | Genuinely failing: 9 entries lack modeled control groups (\`labeledvalue-strict-parity\`) |"
             echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") | Superset of the blocking a11y gate; its extra rules are unmeasured |"
             echo ""
             echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"

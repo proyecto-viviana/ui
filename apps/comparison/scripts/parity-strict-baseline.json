@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "generated": "2026-08-07",
+  "description": "Allowed blocking gaps for comparison:report:parity:strict. New catalogue gaps outside this set fail the gate. tech-debt labeledvalue-strict-parity / ticket #2.",
+  "allowedBlockingGapSlugs": {
+    "missingControlGroups": [
+      "actiongroup",
+      "autocomplete",
+      "gridlist",
+      "labeledvalue",
+      "listbox",
+      "dnd-listbox",
+      "steplist",
+      "toolbar",
+      "virtualizer"
+    ],
+    "missingValidationNotes": [
+      "actiongroup",
+      "autocomplete",
+      "gridlist",
+      "labeledvalue",
+      "listbox",
+      "dnd-listbox",
+      "steplist",
+      "toolbar",
+      "virtualizer"
+    ],
+    "noCurrentVisualEvidence": [
+      "actiongroup",
+      "autocomplete",
+      "gridlist",
+      "labeledvalue",
+      "listbox",
+      "dnd-listbox",
+      "steplist",
+      "toolbar",
+      "virtualizer"
+    ]
+  }
+}

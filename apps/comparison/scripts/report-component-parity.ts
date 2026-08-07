@@ -14,6 +14,10 @@ interface Gap {
 }
 
 const strict = process.argv.includes("--strict");
+// `--strict-full` ignores the frozen backlog baseline and fails on every gap
+// (useful when working down the known 9). Default `--strict` fails only on
+// *new* gaps outside `parity-strict-baseline.json` (ticket #2).
+const strictFull = process.argv.includes("--strict-full");
 
 // Optional per-component scope for the dev loop: `--slug=button` narrows every
 // gap section (and the strict exit code) to a single component, so porting one
@@ -22,6 +26,31 @@ const slugFilter = (() => {
   const arg = process.argv.find((value) => value.startsWith("--slug="));
   return arg ? arg.slice("--slug=".length).trim().toLowerCase() : undefined;
 })();
+
+interface StrictBaseline {
+  version: number;
+  allowedBlockingGapSlugs: {
+    missingControlGroups: string[];
+    missingValidationNotes: string[];
+    noCurrentVisualEvidence: string[];
+  };
+}
+
+function loadStrictBaseline(): StrictBaseline | null {
+  if (strictFull) return null;
+  const baselineUrl = new URL("./parity-strict-baseline.json", import.meta.url);
+  if (!existsSync(baselineUrl)) return null;
+  return JSON.parse(readFileSync(fileURLToPath(baselineUrl), "utf8")) as StrictBaseline;
+}
+
+function unbaselined(
+  gaps: readonly Gap[],
+  allowed: readonly string[] | undefined,
+): readonly Gap[] {
+  if (allowed == null) return gaps;
+  const allow = new Set(allowed);
+  return gaps.filter((gap) => !allow.has(gap.slug));
+}
 
 function scope<T extends { slug: string }>(gaps: readonly T[]): readonly T[] {
   return slugFilter ? gaps.filter((gap) => gap.slug === slugFilter) : gaps;
@@ -388,24 +417,51 @@ for (const entry of reactSpectrumCatalogue) {
   }
 }
 
-const blockingGaps = [
+const strictBaseline = strict ? loadStrictBaseline() : null;
+const allowed = strictBaseline?.allowedBlockingGapSlugs;
+
+// Structural / integrity gaps always block under --strict. The three known
+// catalogue-depth backlogs are baselined so the gate can be CI-blocking without
+// waiting for the 9-entry labeledvalue-strict-parity work to finish.
+const alwaysBlockingSections = [
   missingManifestEntries,
   extraManifestEntries,
   missingSidebarEntries,
   duplicateSidebarEntries,
   unknownSidebarEntries,
-  missingControlGroups,
   gapControlGroups,
   emptyModeledControlGroups,
   missingReactStyledFixtures,
   missingSolidStyledFixtures,
-  missingValidationNotes,
   // Ported docs pages must stay faithful + internally sound. (Not-yet-ported
   // pages live in docsPagesMissing, which is tracked but non-blocking.)
   docsSectionDrift,
   docsIntegrityGaps,
-].reduce((count, gaps) => count + scope(gaps).length, 0);
+] as const;
+
+const baselinedControlGaps = unbaselined(scope(missingControlGroups), allowed?.missingControlGroups);
+const baselinedValidationGaps = unbaselined(
+  scope(missingValidationNotes),
+  allowed?.missingValidationNotes,
+);
+const baselinedDepthGaps = unbaselined(
+  scope(noCurrentVisualEvidence),
+  allowed?.noCurrentVisualEvidence,
+);
+
+const structuralBlockingGaps = alwaysBlockingSections.reduce(
+  (count, gaps) => count + scope(gaps).length,
+  0,
+);
+const baselinedNewGaps =
+  baselinedControlGaps.length + baselinedValidationGaps.length + baselinedDepthGaps.length;
+// Full gap counts (including baselined backlog) for the report summary.
+const blockingGaps =
+  structuralBlockingGaps +
+  scope(missingControlGroups).length +
+  scope(missingValidationNotes).length;
 const depthGaps = scope(noCurrentVisualEvidence).length;
+const strictFailCount = structuralBlockingGaps + baselinedNewGaps;
 
 console.log("Comparison component parity audit");
 console.log(`Official S2 catalogue entries: ${reactSpectrumCatalogue.length}`);
@@ -465,6 +521,29 @@ printGapSection("Docs pages not yet ported (upstream MDX vendored)", docsPagesMi
 printGapSection("Docs pages drifting from upstream section structure", docsSectionDrift);
 printGapSection("Docs pages with ToC / anchor / parity integrity problems", docsIntegrityGaps);
 
-if (strict && (blockingGaps > 0 || depthGaps > 0)) {
-  process.exitCode = 1;
+if (strict) {
+  if (strictBaseline != null && !strictFull) {
+    console.log("");
+    console.log(
+      `Strict baseline active (${strictBaseline.version}): frozen backlog gaps do not fail; new gaps do.`,
+    );
+    if (baselinedNewGaps > 0) {
+      console.log(`[gap] New gaps outside baseline: ${baselinedNewGaps}`);
+      for (const gap of baselinedControlGaps) {
+        console.log(formatGap({ ...gap, detail: "new missing control group" }));
+      }
+      for (const gap of baselinedValidationGaps) {
+        console.log(formatGap({ ...gap, detail: "new missing validation note" }));
+      }
+      for (const gap of baselinedDepthGaps) {
+        console.log(formatGap({ ...gap, detail: "new missing visual evidence" }));
+      }
+    } else {
+      console.log("[pass] No new catalogue gaps outside the frozen baseline");
+    }
+  }
+
+  if (strictFailCount > 0) {
+    process.exitCode = 1;
+  }
 }

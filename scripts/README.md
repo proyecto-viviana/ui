@@ -16,6 +16,10 @@ comparison app.
 - `check-virtualizer-keyboard-parity.ts` guards virtualizer keyboard navigation
   invariants.
 - `check-changeset-required.mjs` enforces changesets for releasable packages.
+- `check-layer-boundary.ts` freezes the solid-spectrum ↔ viviana-ui dual-tree
+  inventory (ticket #2). New forks of baselined-identical Spectrum files into
+  viviana-ui, or new unbaselined dual paths, exit 1. Rewrite the inventory with
+  `--write-baseline` only after intentional dual-path review.
 
 ## Comparison App
 
