@@ -646,18 +646,19 @@ tasks:
       successful Certification and waits for same-SHA Release Readiness + Site
       Gate, so an unprotected red main can no longer publish. What
       is left is the word "required" in the literal GitHub sense — main has no
-      branch protection, so a red workflow is loud but not preventive. Owner
-      decision (Rule #3): turning on protection changes how the sole maintainer
-      commits. The two remaining advisory gates each name their own promotion
+      branch protection, so a red workflow is loud but not preventive. The owner
+      authorized protected-PR enforcement on 2026-08-08; apply it only after
+      draft PR #21 proves the exact hosted check contexts on its latest SHA. The
+      two remaining advisory gates each name their own promotion
       condition in the workflow; ts-nocheck-components and lint-rules-reenable
       remain real dependencies for the strength of `typecheck` and `vp check`,
       not for whether they block.
     exit: >-
-      Decide whether to replace direct-to-main with protected pull requests, or
-      define an explicit bypass policy; then enable required Certification
-      Gates + Site Gate + Release Readiness, or record the decision not to and
-      close. Do not enable protection before the repaired workflows have passed
-      on GitHub, because the current origin Certification run is red.
+      After draft PR #21 passes on its latest SHA, enable strict required status
+      checks for certification-gates, changesets-check, release-readiness, and
+      site-gate. Preserve no-force-push/no-deletion defaults and do not add an
+      implicit administrator bypass or review-count policy. Close only after the
+      resulting main protection reads back with those exact contexts.
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
     state: open

@@ -11,6 +11,11 @@ history:
       at: 2026-08-08,
       note: "release now starts after certification and requires all release gates on the exact SHA",
     }
+  - {
+      state: done,
+      at: 2026-08-08,
+      note: "draft PR #21 opened for hosted exact-SHA qualification; the first head's fail-closed publish-drift guard exposed and drove removal of a depth-limited Changesets fetch",
+    }
 ---
 
 The Release workflow ran independently on every push to `main`. On 2026-08-08,
@@ -35,6 +40,9 @@ publish simulation, `scripts/check-release-evidence.mjs` queries all three
 required workflow files for the exact candidate SHA and waits for complete green
 results. Any non-success blocks publication. `test:ci-guard-contracts` holds
 failed, absent, and complete same-SHA API responses as discriminating fixtures.
+The same contract suite now asserts that Changesets Check preserves complete
+release history: `fetch-depth: 0` must remain, and no later depth-limited fetch
+may silently turn the checkout shallow before `guard:publish-drift` runs.
 
 Branch protection remains a separate owner-steered decision in
 `tech-debt.md` (`ci-gates-required`): enforcing required checks before `main`

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -56,6 +56,20 @@ async function listen(server) {
 }
 
 try {
+  const changesetsWorkflow = readFileSync(
+    path.join(ROOT, ".github", "workflows", "changesets-check.yml"),
+    "utf8",
+  );
+  assert(
+    /fetch-depth:\s*0/.test(changesetsWorkflow),
+    "Changesets Check must acquire complete release history",
+  );
+  assert(
+    !/git fetch[^\n]*--depth(?:=|\s)/.test(changesetsWorkflow),
+    "Changesets Check must not truncate the full checkout with a later shallow fetch",
+  );
+  console.log("PASS: Changesets Check preserves complete release history.");
+
   const oracleFixture = path.join(fixtureRoot, "missing-oracle");
   json(path.join(oracleFixture, "scripts", "upstream-pin.json"), {
     commit: "1111111111111111111111111111111111111111",

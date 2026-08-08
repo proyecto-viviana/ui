@@ -66,7 +66,11 @@ next task and which workstreams are live.
    three green release gates for the exact revision (tickets #2, #3, #7). The
    same repair closes ticket #8 with a blocking 154-route, two-theme contrast
    sweep and a fully classified expanded playground audit. Land this repair and
-   watch all workflows complete before calling main green.
+   watch all workflows complete before calling main green. Draft PR #21 is the
+   qualification vehicle. Its first hosted head caught a depth-limited fetch
+   re-shallowing the Changesets checkout; the current candidate removes that
+   fetch and adds a control-plane regression assertion instead of weakening the
+   fail-closed publish-drift guard.
 1. **Absorb the newly available Adobe train after P0 lands.** The current oracle
    is internally exact at S2 `1.5.1` / RAC `1.19.0`, but freshness now reports
    S2 `1.6.0` / RAC `1.20.0`. Follow `upstream-sync.md`: read release notes,
@@ -98,9 +102,10 @@ next task and which workstreams are live.
   certified + 12/12 drivers + Phase-3 closers. Summary in `recertification.md`,
   full log in `archive/recertification-full.md`. No longer an active workstream.
 - **Pipeline stabilization** _(opened 2026-07-06, active again 2026-08-08)_ —
-  land and validate the pinned-oracle + exact-revision-release repair; then
-  resolve the owner-steered branch-protection policy. Tickets in `tech-debt.md`,
-  direction in `steering.md` Now.
+  qualify draft PR #21's pinned-oracle + exact-revision-release repair on its
+  latest SHA; then apply the owner-approved required-check policy using only the
+  check names proven by that run. Tickets in `tech-debt.md`, direction in
+  `steering.md` Now.
 - **Client-readiness for `@proyecto-viviana/ui`** _(largely landed 2026-06-20)_ —
   UC-00…UC-05 + UC-07 are ✔; only UC-02 Part B (deferred) and UC-06
   (downstream) remain. The consumer-delivery debt (`macro-route-styled`,
