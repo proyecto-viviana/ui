@@ -65,13 +65,12 @@ next task and which workstreams are live.
    drift, freezes the 59-file `@ts-nocheck` surface, and binds Release to all
    three green release gates for the exact revision (tickets #2, #3, #7). The
    same repair closes ticket #8 with a blocking 154-route, two-theme contrast
-   sweep and a fully classified expanded playground audit. Land this repair and
-   watch all workflows complete before calling main green. Draft PR #21 is the
-   qualification vehicle. Its first two hosted heads caught a depth-limited
-   fetch re-shallowing the Changesets checkout and the JSX size guard running
-   before its package artifacts existed. The current candidate removes the
-   shallow fetch, builds package evidence explicitly, and adds control-plane
-   regression assertions instead of weakening either fail-closed guard.
+   sweep and a fully classified expanded playground audit. Draft PR #21 hosted
+   head `98670653651fc4bd11d6e2338a05212bef019f1a` passed all four intended
+   contexts after its first two heads exposed a shallow Changesets checkout and
+   a built-artifact guard without its producer. Strict `main` protection now
+   requires exactly those proven contexts. Land the repair and watch the new
+   main workflows complete before calling main green.
 1. **Absorb the newly available Adobe train after P0 lands.** The current oracle
    is internally exact at S2 `1.5.1` / RAC `1.19.0`, but freshness now reports
    S2 `1.6.0` / RAC `1.20.0`. Follow `upstream-sync.md`: read release notes,
@@ -103,10 +102,11 @@ next task and which workstreams are live.
   certified + 12/12 drivers + Phase-3 closers. Summary in `recertification.md`,
   full log in `archive/recertification-full.md`. No longer an active workstream.
 - **Pipeline stabilization** _(opened 2026-07-06, active again 2026-08-08)_ —
-  qualify draft PR #21's pinned-oracle + exact-revision-release repair on its
-  latest SHA; then apply the owner-approved required-check policy using only the
-  check names proven by that run. Tickets in `tech-debt.md`, direction in
-  `steering.md` Now.
+  draft PR #21's pinned-oracle + exact-revision-release repair is qualified on
+  hosted SHA `98670653651fc4bd11d6e2338a05212bef019f1a`, and strict `main`
+  protection requires its four proven contexts. Land the draft and watch the
+  post-merge main runs. Tickets in `tech-debt.md`, direction in `steering.md`
+  Now.
 - **Client-readiness for `@proyecto-viviana/ui`** _(largely landed 2026-06-20)_ —
   UC-00…UC-05 + UC-07 are ✔; only UC-02 Part B (deferred) and UC-06
   (downstream) remain. The consumer-delivery debt (`macro-route-styled`,

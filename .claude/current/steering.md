@@ -70,10 +70,10 @@ the `launch` roadmap item.
   Certification. The local repair makes 26 Certification steps blocking, leaves
   upstream freshness as the sole advisory, materializes the pinned oracle, adds
   watched negative fixtures, and binds publication to complete same-SHA
-  evidence. \_A gate
-  that cannot fire is not a gate — and neither is one promoted without being
-  measured. Residual after the repair lands: main is not branch-protected, an
-  owner call (`ci-gates-required`).
+  evidence. Hosted PR head `98670653651fc4bd11d6e2338a05212bef019f1a`
+  passed all four intended contexts; strict `main` protection now requires those
+  exact contexts with administrator enforcement. \_A gate that cannot fire is
+  not a gate — and neither is one promoted without being measured.
 - **Prepare the next upstream absorption, but do not mix it into the incident
   repair.** Freshness correctly reports S2 `1.6.0` / RAC `1.20.0` beyond the
   exact current S2 `1.5.1` / RAC `1.19.0` oracle. After P0 lands green, work the

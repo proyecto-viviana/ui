@@ -351,9 +351,9 @@ tasks:
       publish and dirties the tree, which is fine on a fresh release checkout and
       hostile anywhere a contributor runs it.
 
-      Residual: nothing here is a *required* check in GitHub branch protection —
-      these workflows now fail, and a failing workflow on main is visible, but
-      main is not protected. That is the remaining half of ci-gates-required.
+      The branch-policy residual closed 2026-08-08 through ci-gates-required:
+      strict main protection now requires the four contexts proven green on
+      hosted PR head 98670653651fc4bd11d6e2338a05212bef019f1a.
   - id: launch-route-coverage
     title: E2E covers 5 of 75 routes, so a crashing docs page would ship silently
     state: done
@@ -635,24 +635,21 @@ tasks:
     note: Landed in proof-batch PR #4
   - id: ci-gates-required
     title: Flip the evidence checks from report-only to required
-    state: open
-    depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
+    state: done
+    finished: 2026-08-08
+    depends: [ci-gates-report-only, ts-nocheck-style]
     roadmap: certification-enforcement
     note: >-
-      Mostly closed by launch-gates-cannot-fire and the 2026-08-08 incident
-      repair: 26 steps in certification-gates.yml are blocking, and the Site
-      Gate fires on main. The ignored Adobe oracle is now materialized and
-      verified before upstream-backed gates; Release is triggered only after
-      successful Certification and waits for same-SHA Release Readiness + Site
-      Gate, so an unprotected red main can no longer publish. What
-      is left is the word "required" in the literal GitHub sense — main has no
-      branch protection, so a red workflow is loud but not preventive. The owner
-      authorized protected-PR enforcement on 2026-08-08; apply it only after
-      draft PR #21 proves the exact hosted check contexts on its latest SHA. The
-      two remaining advisory gates each name their own promotion
-      condition in the workflow; ts-nocheck-components and lint-rules-reenable
-      remain real dependencies for the strength of `typecheck` and `vp check`,
-      not for whether they block.
+      Closed after hosted PR head 98670653651fc4bd11d6e2338a05212bef019f1a
+      passed certification-gates, changesets-check, release-readiness, and
+      site-gate. Main protection was enabled and read back with those exact
+      strict contexts, administrator enforcement on, force pushes/deletions off,
+      and no review-count policy. The incident repair also leaves 26
+      Certification steps blocking, materializes the ignored Adobe oracle, and
+      binds Release to successful Certification plus same-SHA Release Readiness
+      and Site Gate evidence. ts-nocheck-components and lint-rules-reenable
+      remain real independent debt affecting the strength of typecheck/lint, not
+      whether the current checks are required.
     exit: >-
       After draft PR #21 passes on its latest SHA, enable strict required status
       checks for certification-gates, changesets-check, release-readiness, and

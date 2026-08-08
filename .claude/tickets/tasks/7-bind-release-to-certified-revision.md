@@ -16,6 +16,11 @@ history:
       at: 2026-08-08,
       note: "draft PR #21 opened for hosted exact-SHA qualification; its first two heads exposed a depth-limited Changesets fetch and a built-artifact guard without its producer, both now held by ordering contracts",
     }
+  - {
+      state: done,
+      at: 2026-08-08,
+      note: "hosted head 98670653651fc4bd11d6e2338a05212bef019f1a passed all four intended contexts; strict main protection now requires those exact contexts",
+    }
 ---
 
 The Release workflow ran independently on every push to `main`. On 2026-08-08,
@@ -47,6 +52,8 @@ It also requires Certification Gates to build the published package artifacts
 before `guard:jsx-deopt-size` measures `dist/*.jsx`, so a dirty local checkout
 cannot supply evidence that a clean runner never produced.
 
-Branch protection remains a separate owner-steered decision in
-`tech-debt.md` (`ci-gates-required`): enforcing required checks before `main`
-moves would replace or bypass the repository's current direct-to-main workflow.
+The separate owner-steered branch-policy task (`tech-debt.md` →
+`ci-gates-required`) is also closed: after the exact hosted head passed,
+`main` protection was enabled and read back with strict required checks for
+`certification-gates`, `changesets-check`, `release-readiness`, and `site-gate`,
+administrator enforcement on, and force pushes/deletions off.
