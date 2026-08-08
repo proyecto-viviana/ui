@@ -1,5 +1,28 @@
 # @proyecto-viviana/solidaria
 
+## 0.4.3
+
+### Patch Changes
+
+- a0f3cc8: Give every package the metadata npm renders.
+
+  None of the five set `homepage` or `bugs`, so the npm page had no link to
+  documentation and no way to report a problem. `homepage` now points at the docs
+  site — https://ui.proyectoviviana.org — and `bugs` at the shared issue tracker.
+
+  `@proyecto-viviana/ui` also had no keywords at all — it could not be found by
+  search — and a description written for a maintainer rather than a user ("a
+  reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is
+  duplicated and remapped to the Viviana v2 register"). It now says what the
+  package is: the Viviana design system for SolidJS, accessible and themeable, on
+  a headless ARIA foundation.
+
+  `guard:outbound-links` checks all of it, so a new package cannot publish
+  anonymously.
+
+- Updated dependencies a0f3cc8:
+  - @proyecto-viviana/solid-stately@0.5.1
+
 ## 0.4.2
 
 ### Patch Changes
