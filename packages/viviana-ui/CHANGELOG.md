@@ -1,5 +1,50 @@
 # @proyecto-viviana/ui
 
+## 0.6.3
+
+### Patch Changes
+
+- 82965fe: Fix Form SSR hydration: do not reify `props.children` into FormContext.
+
+  Solid's `props.children` is a create-on-read getter. Spreading full Form props into FormContext (safe in React Aria Components) double-created the child tree and desynced `createUniqueId` hydration keys — Form + sole Spectrum Button blanked consumer routes (effect-latam /perfil, /foros). Context now carries only `validationBehavior`. Spectrum / viviana-ui Form leave children as lazy headless props (no forced render-prop wrapper). Guarded by Form SSR + hydrate fixtures.
+
+- a0f3cc8: Give every package the metadata npm renders.
+
+  None of the five set `homepage` or `bugs`, so the npm page had no link to
+  documentation and no way to report a problem. `homepage` now points at the docs
+  site — https://ui.proyectoviviana.org — and `bugs` at the shared issue tracker.
+
+  `@proyecto-viviana/ui` also had no keywords at all — it could not be found by
+  search — and a description written for a maintainer rather than a user ("a
+  reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is
+  duplicated and remapped to the Viviana v2 register"). It now says what the
+  package is: the Viviana design system for SolidJS, accessible and themeable, on
+  a headless ARIA foundation.
+
+  `guard:outbound-links` checks all of it, so a new package cannot publish
+  anonymously.
+
+- f028624: Let `Flex` take an inline `style`, the way `Grid` already does.
+
+  `Grid` splits `style` out of its props and merges it into the declarations it
+  generates, so a consumer can add a margin or a min-width without giving up the
+  primitive. `Flex` declared no such prop: anything passed landed in `rest` and
+  was then overwritten by the `style={flexStyle()}` assignment on the container,
+  so it vanished with no type error and no warning. The two primitives are meant
+  to be interchangeable, and the gap forced every decorated row back onto a bare
+  `div`.
+
+  `style` is now merged first and the derived flex declarations are applied after
+  it — mirroring `Grid`'s ordering — so `direction`, `gap`, `wrap`, `alignItems`,
+  and `justifyContent` still win over a hand-written override of the same
+  property.
+
+- Updated dependencies 82965fe:
+- Updated dependencies a0f3cc8:
+  - @proyecto-viviana/solidaria-components@0.5.1
+  - @proyecto-viviana/solid-stately@0.5.1
+  - @proyecto-viviana/solidaria@0.4.3
+
 ## 0.6.2
 
 ### Patch Changes
