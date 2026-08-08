@@ -1,37 +1,53 @@
 ---
 id: 1
 type: task
-title: "Reconcile viviana-ui and solid-spectrum"
+title: "Govern the solid-spectrum to viviana-ui derivative boundary"
 created: 2026-08-01
 status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
+  - {
+      state: open,
+      at: 2026-08-02,
+      note: "premise corrected to match the repository's explicit layered architecture",
+    }
 ---
 
 `viviana-ui` and `solid-spectrum` share **533 identical files, 28,092 lines**. Not similar —
 identical. The remainder has diverged in both directions, so neither is a clean superset of the
 other any more.
 
-This is the single largest duplication in the hub, in the layer every product depends on. Every
-fix has to be applied twice, and the parity gates that were supposed to catch the divergence do
-not fail (#2).
+This repository defines a deliberate layer chain:
+`solid-stately` → `solidaria` → `solidaria-components` → `solid-spectrum` →
+`@proyecto-viviana/ui`. Shared content between the upper layers is therefore not, by itself,
+proof that one package should disappear. The risk is ungoverned copying: S2 behavior can fork
+below its authority and Viviana branding can leak downward.
+
+`solid-spectrum` owns Spectrum S2 styling and behavior. `@proyecto-viviana/ui` may wrap,
+compose, theme, and add Viviana-native components, but must not fork ARIA/state behavior or
+silently take ownership of Spectrum fixes.
 
 ## Scope
 
-**Do not attempt a big-bang merge.** Order that works:
-
-1. Freeze divergence: #2 first, so the gates fail loudly on new drift.
-2. Establish which package is the home. `@proyecto-viviana/ui` is what products import, so it
-   is the answer unless there is a reason recorded somewhere.
-3. Move the 533 identical files to a single source and have the other re-export.
-4. Then, file by file, resolve the diverged remainder.
+- Classify the shared surface as re-export, composition, generated derivative, intentional
+  branding fork, or accidental copy.
+- Make #2 enforce the architectural direction, not byte identity.
+- Keep S2 fixes and styling authority in `solid-spectrum`; keep Viviana tokens, themes, and
+  native components in `@proyecto-viviana/ui`.
+- Replace accidental copies with imports, re-exports, composition, or generation where the
+  semantic contract is actually shared.
+- Record release and compatibility policy for the derivative boundary. Do not attempt a
+  big-bang merge.
 
 ## Done when
 
-No file content is duplicated between the two packages, and one of them is a thin surface over
-the other or gone.
+No ARIA/state behavior or Spectrum fix has two authorities; intentional generated or branded
+derivatives are documented and validated; and both independently releasable package contracts
+remain coherent.
 
 ## Relationship
 
 Findings `L1-ui-is-a-fork-not-a-layer` (CONFIRMED),
-`L8-design-system-forked-inside-its-own-repo`. Consolidation row R2.6. Blocked in practice by #2.
+`L8-design-system-forked-inside-its-own-repo`. Those names preserve the
+2026-08-01 audit record; this ticket corrects their implied collapse boundary.
+Consolidation row R2.6. Blocked in practice by #2.

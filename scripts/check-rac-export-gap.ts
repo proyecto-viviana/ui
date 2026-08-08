@@ -1,8 +1,10 @@
 /**
  * Full react-aria-components export-gap report.
  *
- * This is report-only and intentionally broader than guard:rac-parity.
- * It compares named value exports re-exported from local module files.
+ * This is intentionally broader than guard:rac-parity. It compares named
+ * value exports re-exported from local module files and fails when upstream has
+ * an export the port lacks. Solid-specific additions remain a reported surface
+ * for explicit documentation, but do not fail this upstream-completeness gate.
  */
 
 import { readFile } from "node:fs/promises";
@@ -67,7 +69,7 @@ const solidariaExports = parseNamedValueExports(solidariaSource);
 const missingInSolidaria = [...racExports].filter((name) => !solidariaExports.has(name)).sort();
 const extraInSolidaria = [...solidariaExports].filter((name) => !racExports.has(name)).sort();
 
-console.log("RAC full export-gap report (report-only)");
+console.log("RAC full export-gap guard");
 console.log(`- RAC index: ${RAC_INDEX}`);
 console.log(`- solidaria index: ${SOLIDARIA_INDEX}`);
 console.log("");
@@ -81,3 +83,13 @@ console.log(formatList(missingInSolidaria));
 console.log("");
 console.log("Extra in solidaria-components:");
 console.log(formatList(extraInSolidaria));
+
+if (missingInSolidaria.length > 0) {
+  console.error("");
+  console.error(
+    `FAIL: ${missingInSolidaria.length} upstream RAC value export(s) are missing from solidaria-components.`,
+  );
+  process.exit(1);
+}
+
+console.log("\nPASS: solidaria-components covers every upstream RAC value export.");

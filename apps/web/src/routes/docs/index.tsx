@@ -53,11 +53,11 @@ function ApiReferenceIndex() {
 
       <p style={{ "max-width": "62ch" }}>
         Looking for live, editable examples instead? The{" "}
-        <Link to="/showcase" style={{ color: "var(--accent-primary)" }}>
+        <Link to="/showcase" style={{ color: "var(--text-link)" }}>
           showcase
         </Link>{" "}
         renders the register in context, and the{" "}
-        <Link to="/solid-spectrum/docs" style={{ color: "var(--accent-primary)" }}>
+        <Link to="/solid-spectrum/docs" style={{ color: "var(--text-link)" }}>
           solid-spectrum docs
         </Link>{" "}
         cover the Spectrum-parity register underneath.

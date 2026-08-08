@@ -135,10 +135,10 @@ export const s2Button = style<S2ButtonStyleProps>(
             secondary: "border-subtle",
             create: "create-border",
             accent: {
-              default: lightDark("accent-900", "accent-700"),
-              isHovered: lightDark("accent-1000", "accent-800"),
-              isPressed: lightDark("accent-1000", "accent-800"),
-              isFocusVisible: lightDark("accent-1000", "accent-800"),
+              default: "interactive-fill",
+              isHovered: lightDark("accent-1000", "accent-600"),
+              isPressed: lightDark("accent-1000", "accent-600"),
+              isFocusVisible: lightDark("accent-1000", "accent-600"),
             },
             negative: {
               default: lightDark("negative-900", "negative-700"),
@@ -208,10 +208,10 @@ export const s2Button = style<S2ButtonStyleProps>(
               isFocusVisible: "gray-200",
             },
             accent: {
-              default: lightDark("accent-900", "accent-700"),
-              isHovered: lightDark("accent-1000", "accent-800"),
-              isPressed: lightDark("accent-1000", "accent-800"),
-              isFocusVisible: lightDark("accent-1000", "accent-800"),
+              default: "interactive-fill",
+              isHovered: lightDark("accent-1000", "accent-600"),
+              isPressed: lightDark("accent-1000", "accent-600"),
+              isFocusVisible: lightDark("accent-1000", "accent-600"),
             },
             negative: {
               default: lightDark("negative-900", "negative-700"),

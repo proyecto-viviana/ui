@@ -89,7 +89,9 @@ const linkStyles = style<
     },
     color: {
       variant: {
-        primary: baseColor("accent"),
+        // Accent-as-ink has its own AA-safe role. `accent` remains the brighter
+        // brand blue used by decorative marks, rings, and indicators.
+        primary: "[var(--text-link)]",
         secondary: baseColor("neutral"),
       },
       isStaticColor: "transparent-overlay-1000",

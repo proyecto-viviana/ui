@@ -10,7 +10,7 @@ name: Certification Gates
 #
 # So the ladder is now split by evidence, not by ambition:
 #
-#   BLOCKING  — verified green locally on 2026-07-24 before promotion, and
+#   BLOCKING  — verified green locally before promotion, and
 #               expected to stay green. If one of these goes red, main is red,
 #               which is the entire point.
 #   ADVISORY  — legitimately red today (tracked), or designed to go red on
@@ -52,6 +52,13 @@ jobs:
           node-version: 22
           cache: "pnpm"
 
+      # The Adobe source/test tree is gitignored, so a normal checkout cannot
+      # supply any upstream-backed evidence. Materialize the exact tracked SHA
+      # and verify both package versions before a gate is allowed to run.
+      - name: materialize pinned upstream oracle
+        id: upstream_oracle
+        run: node scripts/check-upstream-oracle.mjs --acquire
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -59,15 +66,26 @@ jobs:
         run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
 
       # ---------------------------------------------------------------------
-      # BLOCKING. Each verified green locally on 2026-07-24 before promotion.
+      # BLOCKING. Each verified green locally before promotion.
       # ---------------------------------------------------------------------
 
-      # Keystone gate: passes today only because 35 solid-spectrum files carry
-      # @ts-nocheck (tsc skips them). It begins surfacing real breakage as the
-      # ts-nocheck-style / ts-nocheck-components tasks land.
+      # Keystone gate: passes today with a tracked @ts-nocheck backlog. The
+      # budget immediately below prevents that blind spot from growing while
+      # the burn-down ticket removes it.
       - name: typecheck
         id: typecheck
         run: pnpm run typecheck
+
+      - name: guard ts-nocheck budget
+        id: guard_ts_nocheck_budget
+        run: pnpm run guard:ts-nocheck-budget
+
+      # Negative fixtures for the control-plane guards added after the
+      # 2026-08-08 incident: unavailable oracle, suppression-budget growth, and
+      # failed/absent same-SHA release evidence must all produce non-zero exits.
+      - name: CI guard failure contracts
+        id: ci_guard_contracts
+        run: pnpm run test:ci-guard-contracts
 
       # 174 files had drifted out of format by the time anyone looked, because
       # this ran here with continue-on-error and nowhere else (`launch.md` → B4).
@@ -92,8 +110,7 @@ jobs:
         run: pnpm run guard:virtualizer-keyboard-parity
 
       # Keeps solid-spectrum's @adobe/spectrum-tokens on the exact version the
-      # pinned S2 builds against (the vendored-oracle leg skips here — the
-      # ./react-spectrum tree is not materialized in CI).
+      # pinned, materialized S2 oracle builds against.
       - name: guard spectrum-tokens-pin
         id: guard_tokens_pin
         run: pnpm run guard:spectrum-tokens-pin
@@ -137,6 +154,13 @@ jobs:
         id: guard_outbound_links
         run: pnpm run guard:outbound-links
 
+      # guard:jsx-deopt-size measures the published package artifacts. Build
+      # them explicitly so a clean runner proves the same evidence as a local
+      # checkout with existing dist/ directories.
+      - name: build package evidence
+        id: build_package_evidence
+        run: pnpm run build
+
       - name: guard jsx-deopt-size
         id: guard_jsx_deopt_size
         run: pnpm run guard:jsx-deopt-size
@@ -165,13 +189,21 @@ jobs:
         id: pair
         run: pnpm run comparison:test:pair
 
-      # The recertification bar itself: 2176 tests, ~17 min. Promoted 2026-07-24
-      # on a confirmed clean local run (2169 passed, 7 skipped, exit 0), which
+      # The recertification bar itself: 2176 tests, ~18 min. Re-verified
+      # 2026-08-08 (2170 passed, 6 skipped, exit 0), which
       # also settles the deferred D4 event-ordering worry empirically — whatever
       # is deferred is not producing reds.
       - name: comparison certified suite
         id: certified
         run: pnpm run comparison:test:certified
+
+      # Promoted 2026-08-08 after a complete clean run. AA and best-practice
+      # findings are strict. The only attached report classes are AAA enhanced
+      # contrast (beyond the WCAG 2.2 AA floor) and the exact-upstream Tag
+      # focus-order semantic; every other AAA/experimental result fails.
+      - name: axe full audit
+        id: axe_full
+        run: pnpm run a11y:full
 
       # ---------------------------------------------------------------------
       # ADVISORY. Red today, or red on someone else's schedule. Each one names
@@ -187,14 +219,6 @@ jobs:
         continue-on-error: true
         run: pnpm run guard:upstream-freshness
 
-      # Superset of the blocking a11y gate (site-gate.yml), which
-      # excludes axe color-contrast and the stricter scans. The excluded rules
-      # have never been measured clean, so this stays a report until they are.
-      - name: axe (full / ungated)
-        id: axe_full
-        continue-on-error: true
-        run: pnpm run a11y:full
-
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -203,13 +227,18 @@ jobs:
           if-no-files-found: ignore
           path: |
             apps/comparison/playwright-report
+            apps/comparison/test-results
             apps/web/playwright-report
+            apps/web/test-results
             test-results
 
       - name: Publish summary
         if: always()
         env:
           O_TYPECHECK: ${{ steps.typecheck.outcome }}
+          O_UPSTREAM_ORACLE: ${{ steps.upstream_oracle.outcome }}
+          O_GUARD_TS_NOCHECK_BUDGET: ${{ steps.guard_ts_nocheck_budget.outcome }}
+          O_CI_GUARD_CONTRACTS: ${{ steps.ci_guard_contracts.outcome }}
           O_LINT: ${{ steps.lint.outcome }}
           O_GUARD_RAC_PARITY: ${{ steps.guard_rac_parity.outcome }}
           O_GUARD_RAC_EXPORT_GAP: ${{ steps.guard_rac_export_gap.outcome }}
@@ -224,6 +253,7 @@ jobs:
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
           O_GUARD_API_REFERENCE: ${{ steps.guard_api_reference.outcome }}
           O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
+          O_BUILD_PACKAGE_EVIDENCE: ${{ steps.build_package_evidence.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
@@ -251,7 +281,10 @@ jobs:
             echo ""
             echo "| Gate | Result |"
             echo "| --- | --- |"
+            echo "| pinned upstream oracle | $(icon "$O_UPSTREAM_ORACLE") |"
             echo "| \`typecheck\` | $(icon "$O_TYPECHECK") |"
+            echo "| \`guard:ts-nocheck-budget\` | $(icon "$O_GUARD_TS_NOCHECK_BUDGET") |"
+            echo "| CI guard negative fixtures | $(icon "$O_CI_GUARD_CONTRACTS") |"
             echo "| \`vp check\` (lint) | $(icon "$O_LINT") |"
             echo "| \`guard:rac-parity\` | $(icon "$O_GUARD_RAC_PARITY") |"
             echo "| \`guard:rac-export-gap\` | $(icon "$O_GUARD_RAC_EXPORT_GAP") |"
@@ -265,6 +298,7 @@ jobs:
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
             echo "| \`guard:api-reference\` | $(icon "$O_GUARD_API_REFERENCE") |"
             echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
+            echo "| \`build\` (package evidence) | $(icon "$O_BUILD_PACKAGE_EVIDENCE") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
@@ -272,8 +306,9 @@ jobs:
             echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
             echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
             echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
+            echo "| \`a11y:full\` | $(icon "$O_AXE_FULL") |"
             echo ""
-            echo "_\`typecheck\` passes today only because 35 \`solid-spectrum\` files carry \`@ts-nocheck\`; it starts surfacing breakage as those are removed._"
+            echo "_\`typecheck\` still has a baselined 59-file \`@ts-nocheck\` blind spot across the public packages; the budget forbids additions and the burn-down ticket owns removals._"
             echo ""
             echo "_\`comparison:report:parity:strict\` is baselined (ticket #2): the known 9 catalogue-depth gaps are frozen; new gaps fail. Full backlog: \`--strict-full\`._"
             echo ""
@@ -282,7 +317,6 @@ jobs:
             echo "| Gate | Result | Why it is not blocking |"
             echo "| --- | --- | --- |"
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") | ❌ means Adobe shipped past our pin — a pin bump, not a branch defect |"
-            echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") | Superset of the blocking a11y gate; its extra rules are unmeasured |"
             echo ""
             echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"
           } >> "$GITHUB_STEP_SUMMARY"

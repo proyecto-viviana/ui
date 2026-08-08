@@ -196,7 +196,9 @@ function PropRow(props: { prop: ApiProp }) {
         <code
           style={{
             background: "color-mix(in srgb, var(--accent-primary) 12%, transparent)",
-            color: "var(--accent-primary)",
+            // Ink reads `--text-link`, not `--accent-primary`: the tint behind it is the
+            // accent at 12%, and the accent on its own 12% tint is 2.50:1.
+            color: "var(--text-link)",
             padding: "2px 6px",
             "border-radius": "var(--radius-sm)",
             "font-family": FONT_MONO,
@@ -211,7 +213,7 @@ function PropRow(props: { prop: ApiProp }) {
           <span
             title="Required"
             aria-label="Required"
-            style={{ color: "var(--accent-primary)", "margin-left": "4px", "font-weight": "700" }}
+            style={{ color: "var(--text-link)", "margin-left": "4px", "font-weight": "700" }}
           >
             *
           </span>

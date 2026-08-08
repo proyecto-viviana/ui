@@ -197,7 +197,7 @@
   font: var(--type-micro);
   letter-spacing: var(--type-micro-track);
   font-family: var(--font-mono);
-  color: var(--accent-primary);
+  color: var(--text-link);
 }
 
 [data-glasselated] .gls-panel-title {
@@ -467,7 +467,7 @@
   color: var(--nav-fg, var(--text-secondary));
 }
 [data-glasselated] .tgl-nav:hover .tgl-label {
-  color: color-mix(in srgb, var(--accent-primary) 55%, var(--text-tertiary));
+  color: var(--text-link);
 }
 
 /* ── Caret blink used by wells/prompts ── */

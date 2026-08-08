@@ -271,11 +271,15 @@
   --slate-100: rgba(255, 255, 255, 0.06);
   --white: #ffffff;
 
-  /* Text */
+  /* Text — see the light block for why the two ink roles below are pinned to
+     WCAG AA rather than to a ramp rung. Dark's binding surface is the opaque
+     `--surface-raised` #333a44, not the near-black app background: #9aa0a8 read
+     7.4:1 on the app and 4.36:1 there, and #55a6f6 4.47:1. Both now clear 4.5:1
+     on the raised panel and sit comfortably above 6:1 everywhere else. */
   --text-primary: #f2f3f5;
-  --text-secondary: #9aa0a8;
+  --text-secondary: #a0a6ae;
   --text-tertiary: #6e747c;
-  --text-link: #55a6f6;
+  --text-link: #5faaf7;
   --text-on-accent: #ffffff;
 
   /* Terminal wells — matte / opaque, NEVER glass */
@@ -294,9 +298,15 @@
   --well-tutor-ink: #eaf2fb;
   --btn-secondary-bg: var(--surface-raised);
 
-  /* Accents (app) — live pulse · create CTA · interactive fill */
+  /* Accents (app) — live pulse · create CTA · interactive fill
+     The fill is damped in dark (a filled accent button is a large area of
+     colour) but it still carries white label text: #407fc1 gave 4.18:1, just
+     under AA, so it steps down to #3670ae for 5.14:1 while staying above the
+     3:1 non-text floor against the app, panel and card surfaces it sits on.
+     Kept in lockstep with blue-700's dark column in style/glasselated-ramps.ts,
+     which is the same fill for macro-styled components. */
   --accent-live: #ff6b35;
-  --interactive-fill: #407fc1;
+  --interactive-fill: #3670ae;
   --accent-create-bg: rgb(255 222 129);
   --accent-create-border: rgb(255 222 129);
   --accent-create-ink: #3a2e00;
@@ -572,11 +582,22 @@
   --slate-100: #eaeff6;
   --white: #ffffff;
 
-  /* Text */
+  /* Text
+     `--text-secondary` and `--text-link` are pinned to WCAG AA (4.5:1), not to
+     the nearest ramp rung, and that is why neither is an alias any more:
+       - `--slate-500` #64748b reads 3.67-4.38:1 across our light surfaces, so
+         the secondary ink steps one notch darker than the slate ramp. The rung
+         itself is unchanged — it is a palette entry, this is an ink role.
+       - `--text-link` was `var(--blue-500)`, i.e. the same #2e90fa as
+         `--accent-primary` (2.50-3.24:1). Accent-as-ink and accent-as-decoration
+         cannot share one value at AA, so the ink takes `--blue-700` and
+         `--accent-primary` keeps #2e90fa for glows, rings, borders and dots.
+     Worst case measured over every surface a docs page composites: secondary
+     4.65:1 on the accent-tinted chip, link 4.73:1 on the same. */
   --text-primary: var(--slate-900);
-  --text-secondary: var(--slate-500);
+  --text-secondary: #556478;
   --text-tertiary: var(--slate-400);
-  --text-link: var(--blue-500);
+  --text-link: var(--blue-700);
   --text-on-accent: var(--white);
 
   /* Terminal wells — matte, darker channel ink for daylight legibility */
@@ -595,9 +616,13 @@
   --well-tutor-ink: var(--text-primary);
   --btn-secondary-bg: #e9eff6;
 
-  /* Accents (app) */
+  /* Accents (app)
+     `--interactive-fill` is the accent used as a FILL under `--text-on-accent`,
+     so it answers to 4.5:1 with white the way `--accent-primary` never has to.
+     It was `var(--accent-primary)`; white on #2e90fa is 3.24:1, the graphical
+     floor only, which is fine for an icon mask and wrong for a button label. */
   --accent-live: #ff6b35;
-  --interactive-fill: var(--accent-primary);
+  --interactive-fill: var(--blue-700);
   --accent-create-bg: #ffedb0;
   --accent-create-border: #f5d88a;
   --accent-create-ink: #7a5600;

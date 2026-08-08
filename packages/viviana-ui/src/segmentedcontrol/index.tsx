@@ -119,14 +119,14 @@ const segmentedControlItem = style<ToggleButtonRenderProps & { isJustified?: boo
   borderStyle: "none",
   backgroundColor: "transparent",
   /* With the plate gone, ink is the ONLY selection signal — which is how the register
-     does it: the selected segment is `var(--accent-primary)` and its siblings are
-     `var(--text-tertiary)` (TerminalGlassLab.tsx:21-25). neutral-subdued vs neutral was
-     too small a step to carry selection on its own. `accent` is the semantic ink stop,
-     the same one link/picker/combobox use; it refs accent-color-900, which this library
-     re-points at the brand blue ramp (glasselated-ramps.ts). */
+     does it: the selected segment is accent ink and its siblings are secondary ink
+     (TerminalGlassLab.tsx:21-25). The decorative `--accent-primary` is only 2.98:1 on
+     the daylight panel, so text consumes the scheme-specific `--text-link` role instead:
+     it preserves the blue selection signal while meeting AA on every published surface.
+     `viviana-tokens.css` owns the actual register values for both schemes. */
   color: {
     default: baseColor("neutral-subdued"),
-    isSelected: baseColor("accent"),
+    isSelected: "[var(--text-link)]",
     isDisabled: "disabled",
   },
   cursor: {

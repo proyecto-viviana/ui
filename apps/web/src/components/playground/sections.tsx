@@ -5,11 +5,12 @@ import { SECTION_IDS, SECTION_NAMES, type SectionId } from "./section-data";
 export { SECTION_IDS, SECTION_NAMES };
 export type { SectionId };
 
-// Surfaces are described with the design system's own tokens rather than a local utility
-// vocabulary, so they track the register instead of a frozen copy of it.
+// Page chrome follows the app register. Component demos below use the Spectrum
+// Provider's container surface so upstream foreground tokens retain their intended
+// contrast relationship instead of being composited over the app's tinted glass.
 const panel: JSX.CSSProperties = {
   "margin-bottom": "32px",
-  background: "var(--color-bg-300)",
+  background: "var(--surface-panel)",
   border: "1px solid var(--border-subtle)",
   "border-radius": "var(--radius-xl)",
   overflow: "hidden",
@@ -61,7 +62,7 @@ export function SectionControlPanel(props: SectionControlPanelProps) {
       <div style={panelHeader}>
         <Flex alignItems="center" justifyContent="between" gap={3}>
           <div>
-            <Heading level={3}>Component Sections</Heading>
+            <Heading level={2}>Component Sections</Heading>
             <Text styles={typeRoles.meta} data-testid="visible-section-count">
               {props.visibleSections().size} of {SECTION_IDS.length} visible
             </Text>
@@ -118,7 +119,7 @@ export function Section(props: SectionProps) {
       <section
         id={props.id}
         style={{
-          background: "var(--color-bg-300)",
+          background: "var(--s2-container-bg)",
           border: "1px solid var(--border-subtle)",
           "border-radius": "var(--radius-xl)",
           padding: "20px",

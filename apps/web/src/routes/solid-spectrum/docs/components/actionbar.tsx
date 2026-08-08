@@ -59,7 +59,16 @@ function ActionBarPage() {
           <button
             type="button"
             class={typeRoles.meta}
-            style={{ "margin-top": "8px", cursor: "pointer" }}
+            style={{
+              "margin-top": "8px",
+              padding: "0",
+              border: "0",
+              background: "transparent",
+              color: "var(--text-link)",
+              "font-family": "inherit",
+              "text-decoration": "underline",
+              cursor: "pointer",
+            }}
             onClick={() => setCount((c) => (c > 0 ? 0 : 2))}
           >
             Toggle selection ({count()} selected)

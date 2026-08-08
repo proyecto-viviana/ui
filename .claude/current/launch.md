@@ -215,9 +215,12 @@ then run to completion (2169 passed, 7 skipped, exit 0, 17.2 min) and promoted o
 the evidence — which also retires the long-standing assumption that the deferred
 D4 event-ordering policy was keeping it red.
 
-One thing this does **not** do: `main` has no branch protection, so a red
-workflow is visible but not preventive. That is an owner decision (Rule #3) and
-is the remainder of `ci-gates-required`.
+**Closed 2026-08-08:** the later incident repair expanded Certification to 26
+blocking steps with one freshness advisory. After hosted PR head
+`98670653651fc4bd11d6e2338a05212bef019f1a` passed all four intended contexts,
+strict `main` protection was enabled for exactly `certification-gates`,
+`changesets-check`, `release-readiness`, and `site-gate`, with administrator
+enforcement and no force pushes or deletions. That closes `ci-gates-required`.
 
 ## Coverage gaps (not launch-blocking, but next)
 

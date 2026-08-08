@@ -6,9 +6,14 @@ created: 2026-08-01
 status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
+  - {
+      state: open,
+      at: 2026-08-08,
+      note: "froze the exact 59-file inventory; blocking CI budget now permits only removals",
+    }
 ---
 
-**58 files carrying `@ts-nocheck`, covering 37,456 lines** — in the design system every product
+**59 files carrying `@ts-nocheck`, covering 38,091 lines** — in the design system every product
 in the hub imports. Type errors in those files are not errors; they are invisible, including in
 the public API surface consumers rely on.
 
@@ -18,6 +23,11 @@ This is a burn-down, not a sprint. Order by consumer exposure: **public API surf
 internals last. Track the count so it can only go down — add a check that fails when a new
 `@ts-nocheck` appears (which is cheap, and stops the number growing while the backlog is
 worked).
+
+The current inventory is tracked path-by-path in
+`scripts/ts-nocheck-baseline.json`. `guard:ts-nocheck-budget` runs blocking in
+Certification Gates: deleting a pragma is allowed; adding or moving one fails.
+This is containment, not resolution — the 59 baselined files remain unchecked.
 
 ## Done when
 

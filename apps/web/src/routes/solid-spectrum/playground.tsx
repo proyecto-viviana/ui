@@ -356,7 +356,7 @@ function Playground() {
                     background: "var(--color-accent)",
                   }}
                 />
-                <span class={typeRoles.micro} style={{ color: "var(--color-accent)" }}>
+                <span class={typeRoles.micro} style={{ color: "var(--text-primary)" }}>
                   Interactive Demo
                 </span>
               </div>
@@ -425,7 +425,7 @@ function Playground() {
                   </svg>
                 </div>
                 <div>
-                  <PageHeading level={3}>Theme Creator</PageHeading>
+                  <PageHeading level={2}>Theme Creator</PageHeading>
                   <Text styles={typeRoles.meta}>Customize colors in real-time</Text>
                 </div>
               </Flex>
@@ -441,7 +441,7 @@ function Playground() {
               label ended up dark-on-dark; the frame stays on the page's palette so it
               remains readable whatever theme is being previewed. */}
           <div style={{ ...cardSurface, padding: "24px", "margin-bottom": "32px" }}>
-            <PageHeading level={3} UNSAFE_style={{ "margin-bottom": "16px" }}>
+            <PageHeading level={2} UNSAFE_style={{ "margin-bottom": "16px" }}>
               Theme Preview
             </PageHeading>
             <div

@@ -56,6 +56,7 @@ jobs:
           if-no-files-found: ignore
           path: |
             apps/web/playwright-report
+            apps/web/test-results
             test-results
 
       - name: Publish summary
@@ -65,7 +66,7 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Blocking, on pull requests and on push to \`main\`. Mirrors \`vp run ci:site\`:" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **\`a11y:check\`** — the blocking AA + smoke gate, with axe \`color-contrast\` temporarily excluded. Stricter contrast, best-practice, AAA and experimental scans remain available via \`vp run a11y:full\` (reported by _Certification Gates_)." >> "$GITHUB_STEP_SUMMARY"
+          echo "- **\`a11y:check\`** — the blocking AA + smoke gate. Its dedicated \`a11y:contrast\` pass checks every generated route in both themes; stricter best-practice, AAA and experimental scans remain available via \`vp run a11y:full\` (reported by _Certification Gates_)." >> "$GITHUB_STEP_SUMMARY"
           echo "- **\`test:routes\`** — every route in \`routeTree.gen.ts\` renders without hitting the error boundary. The boundary answers 200 with a full page of text, so status and byte-length checks cannot see a thrown route; asserting the boundary is absent is the whole test." >> "$GITHUB_STEP_SUMMARY"
           echo "- **\`test:seo\`** — every page carries a distinct title, description and canonical URL." >> "$GITHUB_STEP_SUMMARY"
           echo "- **\`test:api-reference\`** — the generated \`/docs\` tables render the props they generated. \`guard:api-reference\` proves the JSON matches the packages' types and \`test:routes\` proves the pages answer 200; neither can see a page that loaded its data and rendered an empty table." >> "$GITHUB_STEP_SUMMARY"

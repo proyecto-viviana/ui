@@ -1,11 +1,11 @@
 import { expect } from "@playwright/test";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
-import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
+import { registerEventSequenceDriver } from "../drivers/events";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerMotionDriver } from "../drivers/motion";
 import { registerPixelDriver } from "../drivers/pixel";
-import type { DriverScenario, PanelContext } from "../drivers/scenario";
+import type { DriverScenario, EventGesture, PanelContext } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 import { registerTargetSizeDriver } from "../drivers/target-size";
 
@@ -35,7 +35,17 @@ const openDialogWithPointer = async ({ canvas, page }: PanelContext) => {
 const openDialogWithKeyboard = async ({ canvas, page }: PanelContext) => {
   await canvas.getByRole("button", { name: "Open Dialog" }).first().focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
+  const dialog = page.getByRole("dialog", { name: dialogTitle });
+  await expect(dialog).toBeVisible();
+  // `useDialog` focuses the dialog surface when no descendant owns autofocus,
+  // then deliberately blurs + refocuses it after 500ms for iOS VoiceOver
+  // (upstream useDialog.ts and the port both implement that exact timer).
+  // Visibility/focus alone can therefore win the race with the refocus under
+  // full-suite load, leaking setup events into the close gesture's recording.
+  // Drain the specified timer and hold the setup contract at its final focus
+  // destination before D4 starts recording.
+  await page.waitForTimeout(600);
+  await expect(dialog).toBeFocused();
 };
 
 const closeDialog = async ({ page }: PanelContext) => {
@@ -67,29 +77,13 @@ const surfaceScenario: DriverScenario = {
   // buttons; the modal's `aria-modal`/focus semantics land in the D5 focus
   // trap. No live-region announcement fires on dialog open, so no `announce`.
   //
-  // Tracked port gap keeps the exact AX-tree assertion red (recertification.md
-  // D6 finding T-C): the CloseButton's Cross ui-icon is absent from the port's
-  // AX tree (`button "Dismiss"` exposes no child) while upstream exposes it as
-  // an unnamed `img`. Root cause is the port's `createUIIcon` forcing
-  // `role="img"` + auto `aria-hidden` on unlabeled ui-icons (upstream ships
-  // ui-icons as raw bare `<svg>` that Chromium surfaces as an unnamed `img`),
-  // compounded by `Dialog.tsx` passing an explicit `aria-hidden` to CrossIcon.
-  // The faithful fix is a global `createUIIcon` change whose blast radius spans
-  // the accordion/disclosure/statuslight/inline-alert chevron specs that assert
-  // the port's current `aria-hidden` — a Tier-1 Icon-surface unit, deferred to
-  // CP9.
+  // The CloseButton cross is a bare ui-icon in both stacks, so Chromium exposes
+  // the same unnamed `img` child beneath the labelled dismiss button. This was
+  // previously waived, but the global bare-ui-icon fix landed in CP9.35 and the
+  // waiver would now hide a regression in that completed parity work.
   ax: {
     roots: {
       dialog: ({ page }) => page.getByRole("dialog", { name: dialogTitle }),
-    },
-    knownDivergences: {
-      "modal-open":
-        "Dialog CloseButton's Cross ui-icon missing from the AX tree vs " +
-        "upstream's unnamed img — createUIIcon over-hides unlabeled ui-icons " +
-        "(role=img + auto aria-hidden) where upstream ships raw bare <svg>; " +
-        "compounded by Dialog.tsx's explicit CrossIcon aria-hidden. Tracked " +
-        "in recertification.md D6 finding T-C; global fix deferred to CP9 " +
-        "(Tier-1 Icon surfaces).",
     },
   },
   // D7: contrast of every text node inside the open dialog — the heading, the
@@ -109,6 +103,39 @@ const surfaceScenario: DriverScenario = {
   // mirrored faithfully in Modal.tsx, so the sentinel measures identically.
   targetSize: {
     root: ({ page }) => page.getByRole("dialog", { name: dialogTitle }).locator(".."),
+  },
+};
+
+const closeButtonMouseClick: EventGesture = {
+  id: "mouse-click",
+  run: async ({ page, target }) => {
+    await target.scrollIntoViewIfNeeded();
+    const box = await target.boundingBox();
+    if (!box) {
+      throw new Error("Dialog close button has no bounding box");
+    }
+
+    // The visual center is occupied by CrossIcon. React and Solid faithfully
+    // use different runtimes for the same svg, and a center coordinate can land
+    // on button/svg/path depending on subpixel placement. Exercise the real
+    // button hit area just inside its left edge and prove the browser resolves
+    // that coordinate to the button itself before emitting trusted events. The
+    // event log remains exact; no target normalization hides DOM differences.
+    const point = {
+      x: box.x + Math.min(6, box.width / 4),
+      y: box.y + box.height / 2,
+    };
+    expect(
+      await target.evaluate(
+        (element, position) => document.elementFromPoint(position.x, position.y) === element,
+        point,
+      ),
+    ).toBe(true);
+
+    await page.mouse.move(point.x, point.y);
+    await page.mouse.down();
+    await page.waitForTimeout(60);
+    await page.mouse.up();
   },
 };
 
@@ -135,7 +162,7 @@ const closeButtonScenario: DriverScenario = {
   // restoration to the trigger.
   events: {
     gestures: [
-      { ...mouseClickGesture, settleMs: 700 },
+      { ...closeButtonMouseClick, settleMs: 700 },
       {
         id: "escape-close",
         run: async ({ page }) => {

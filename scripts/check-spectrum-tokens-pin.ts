@@ -12,9 +12,7 @@
  *   - the version actually installed for solid-spectrum (skipped with a note
  *     when node_modules is absent — an install gap, not drift);
  *   - the vendored oracle's devDependency in
- *     react-spectrum/packages/@react-spectrum/s2/package.json (skipped with a
- *     note when the vendored tree is not materialized — never cry wolf on an
- *     environmental gap).
+ *     react-spectrum/packages/@react-spectrum/s2/package.json.
  * Exit 1 on any mismatch or a non-exact spec; exit 0 otherwise. Run it
  * standalone anytime: `vp run guard:spectrum-tokens-pin`.
  */
@@ -82,7 +80,8 @@ const vendoredManifest = path.join(
   "package.json",
 );
 if (!existsSync(vendoredManifest)) {
-  console.log("- vendored ./react-spectrum tree not materialized — oracle comparison skipped.");
+  console.log("- vendored ./react-spectrum tree not materialized — oracle comparison cannot run.");
+  failed = true;
 } else {
   const vendored: string | undefined = readJson(vendoredManifest).devDependencies?.[PKG];
   if (!vendored) {
@@ -102,7 +101,9 @@ if (!existsSync(vendoredManifest)) {
 
 if (failed) {
   console.log("");
-  console.log("Token versions must match the pinned oracle exactly; token values feed the");
+  console.log(
+    "Token versions and evidence must match the pinned oracle exactly; token values feed the",
+  );
   console.log("style macro at build time, so drift here diverges rendered colors from S2.");
   process.exit(1);
 }

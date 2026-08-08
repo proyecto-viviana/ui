@@ -60,8 +60,12 @@ export function useTheme() {
 // style while we live on solid-spectrum tokens.
 export function useThemeColors() {
   return () => ({
-    blue: "var(--docs-accent)",
-    pink: "var(--docs-accent)",
+    // `--text-link`, not `--docs-accent`: almost every consumer of these two spends
+    // them on `color:` (section headings, links, prose emphasis), and the accent as
+    // ink is 2.80:1 on the docs background. The handful that draw a rule or an SVG
+    // stroke with them only gain contrast from the darker blue.
+    blue: "var(--text-link)",
+    pink: "var(--text-link)",
     blueDim: "var(--docs-bg-elevated)",
     pinkDim: "var(--docs-bg-elevated)",
     surface: "var(--docs-bg)",

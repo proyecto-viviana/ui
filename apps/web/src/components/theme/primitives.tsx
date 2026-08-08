@@ -16,6 +16,13 @@ import { type JSX } from "solid-js";
  */
 
 export const ACCENT = "var(--docs-accent)";
+/**
+ * The accent as TEXT. `--accent-primary` is tuned for marks, rims and glows, and
+ * on our light surfaces it reads 2.50-3.24:1 — fine for a 4px bar, under AA for a
+ * word. The register splits the two roles; `ACCENT` stays the decoration and this
+ * is the ink. Use it wherever the accent lands on `color:`.
+ */
+export const ACCENT_INK = "var(--text-link)";
 export const BLUE = ACCENT;
 /** @deprecated palette is blue-only now — kept as an alias so imports compile. */
 export const PINK = ACCENT;
@@ -71,7 +78,7 @@ export function PillTag(props: { tone?: unknown; children: JSX.Element }) {
         display: "inline-flex",
         "align-items": "center",
         background: "var(--pv-accent-tint)",
-        color: ACCENT,
+        color: ACCENT_INK,
         padding: "6px 14px",
         "border-radius": "999px",
         "font-family": FONT_DISPLAY,

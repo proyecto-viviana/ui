@@ -52,7 +52,7 @@ function ProjectTile(props: {
             height: "40px",
             "border-radius": "10px",
             background: "var(--pv-accent-tint)",
-            color: "var(--docs-accent)",
+            color: "var(--text-link)",
             "font-family": FONT_DISPLAY,
             "font-size": "15px",
             "font-weight": "700",
@@ -85,7 +85,6 @@ function ProjectTile(props: {
     gap: "14px",
     padding: "24px 18px",
     "text-decoration": "none",
-    opacity: props.inactive ? "0.55" : "1",
   };
 
   if (props.inactive || !props.href) {

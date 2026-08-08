@@ -312,24 +312,27 @@ tasks:
       measured green — the point of this ticket is that an unproven gate is what
       created the problem, so promoting on optimism would have repeated it.
 
-      certification-gates.yml: 18 gates are now BLOCKING, including the two named
+      certification-gates.yml: 25 gates are now BLOCKING, including the two named
       in the exit criteria (`vp check`, `docs:check`) plus `typecheck`, the ten
       static guards, `comparison:test:contract` (93), `comparison:test:pair` (6)
       and `comparison:test:certified`. Two guards that existed in package.json
       but were wired into no workflow at all — `guard:invented-utilities` and
-      `guard:outbound-links` — were added while promoting. Three stay advisory
-      and each carries the condition for its promotion inline:
-      `guard:upstream-freshness` (goes red when Adobe ships past our pin — a pin
-      bump, not a branch defect), `comparison:report:parity:strict` (genuinely
-      failing on 9 entries → labeledvalue-strict-parity), and `a11y:full` (its
-      extra axe rules have never been measured clean). The workflow name lost
+      `guard:outbound-links` — were added while promoting. The sole remaining
+      advisory carries its response inline: `guard:upstream-freshness` goes red
+      when Adobe ships past our pin — a pin bump, not a branch defect.
+      `comparison:report:parity:strict` is now a baselined hard edge: the known
+      9 entries remain visible and new drift fails. `a11y:full` was measured
+      clean on 2026-08-08 and promoted: AA and best-practice findings are strict;
+      only enhanced contrast and exact-upstream Tag focus semantics are attached
+      as bounded reports. The workflow name lost
       "(report-only)" and the summary now has separate Blocking / Advisory
       tables.
 
       `comparison:test:certified` was held back at first for exactly the reason
       this ticket exists — it had never been watched to completion, so promoting
-      it would have been a guess. It was then run to the end: **2169 passed, 7
-      skipped, exit 0, 17.2 min**, which promoted it and also settles the
+      it would have been a guess. It was re-run to the end on 2026-08-08:
+      **2170 passed, 6 skipped, exit 0, 17.6 min**, which keeps it promoted and
+      also settles the
       deferred D4 event-ordering worry empirically. Whatever is deferred is not
       producing reds. `ci-main-gate-wiring`'s note that flipping the certified
       suite was blocked on the D4 policy is superseded.
@@ -348,9 +351,9 @@ tasks:
       publish and dirties the tree, which is fine on a fresh release checkout and
       hostile anywhere a contributor runs it.
 
-      Residual: nothing here is a *required* check in GitHub branch protection —
-      these workflows now fail, and a failing workflow on main is visible, but
-      main is not protected. That is the remaining half of ci-gates-required.
+      The branch-policy residual closed 2026-08-08 through ci-gates-required:
+      strict main protection now requires the four contexts proven green on
+      hosted PR head 98670653651fc4bd11d6e2338a05212bef019f1a.
   - id: launch-route-coverage
     title: E2E covers 5 of 75 routes, so a crashing docs page would ship silently
     state: done
@@ -632,22 +635,27 @@ tasks:
     note: Landed in proof-batch PR #4
   - id: ci-gates-required
     title: Flip the evidence checks from report-only to required
-    state: open
-    depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
+    state: done
+    finished: 2026-08-08
+    depends: [ci-gates-report-only, ts-nocheck-style]
     roadmap: certification-enforcement
     note: >-
-      Mostly closed 2026-07-24 by launch-gates-cannot-fire: 17 of the 21 gates in
-      certification-gates.yml are blocking, and the Site Gate fires on main. What
-      is left is the word "required" in the literal GitHub sense — main has no
-      branch protection, so a red workflow is loud but not preventive. Owner
-      decision (Rule #3): turning on protection changes how the sole maintainer
-      commits. The three remaining advisory gates each name their own promotion
-      condition in the workflow; ts-nocheck-components and lint-rules-reenable
-      remain real dependencies for the strength of `typecheck` and `vp check`,
-      not for whether they block.
+      Closed after hosted PR head 98670653651fc4bd11d6e2338a05212bef019f1a
+      passed certification-gates, changesets-check, release-readiness, and
+      site-gate. Main protection was enabled and read back with those exact
+      strict contexts, administrator enforcement on, force pushes/deletions off,
+      and no review-count policy. The incident repair also leaves 26
+      Certification steps blocking, materializes the ignored Adobe oracle, and
+      binds Release to successful Certification plus same-SHA Release Readiness
+      and Site Gate evidence. ts-nocheck-components and lint-rules-reenable
+      remain real independent debt affecting the strength of typecheck/lint, not
+      whether the current checks are required.
     exit: >-
-      Either enable branch protection on main requiring Certification Gates +
-      Site Gate + Release Readiness, or record the decision not to and close.
+      After draft PR #21 passes on its latest SHA, enable strict required status
+      checks for certification-gates, changesets-check, release-readiness, and
+      site-gate. Preserve no-force-push/no-deletion defaults and do not add an
+      implicit administrator bypass or review-count policy. Close only after the
+      resulting main protection reads back with those exact contexts.
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
     state: open
@@ -1724,14 +1732,16 @@ package, not in-repo source.
 
 ## Styled layer ships type-unchecked
 
-`solid-spectrum` carries `@ts-nocheck` on ~`29` source files (the components;
-`0` such files in the three lower packages, and the `style/` subsystem cleared
-2026-06-21 — `ts-nocheck-style`, with its 21 strict-mode errors reconciled by
-minimal null-checked loose-lookup casts mirroring upstream's
-`noImplicitAny:false` semantics). `vite.config.ts:36-48` still sets `13` lint
+The five public package source trees carry `@ts-nocheck` on **59 files / 38,091
+lines**: 29 in `solid-spectrum`, 29 in `viviana-ui`, and one generated locale
+file in `solidaria`. The older style-subsystem cleanup did not cover the copied
+component/style-helper surface now inventoried path-by-path in
+`scripts/ts-nocheck-baseline.json`. `guard:ts-nocheck-budget` is blocking in CI:
+removals pass; additions, moves, or count growth fail. `vite.config.ts:36-48`
+still sets `13` lint
 rules to `"off"` (incl. `typescript/no-floating-promises`,
-`eslint/no-unused-vars`). With typecheck also absent from CI (above),
-prop/generic/variant drift in the remaining unchecked components is invisible.
+`eslint/no-unused-vars`). Typecheck runs in CI, but these baselined files remain
+invisible to it, so prop/generic/variant drift inside them is still unchecked.
 `TableView` and `Menu` compile clean without the pragma, so it is removable, not
 load-bearing. Distinct from "Lint type-checking runs separately" below, which is
 about the `tsgolint` contract, not blanket suppression.
@@ -2047,11 +2057,13 @@ not inside the lint pass.
 **Exit:** the `tsgolint` path honors the `tsconfig.typecheck.json` contract;
 re-enable `typeCheck` in the lint block and drop the separate step from `check`.
 
-## axe color-contrast excluded from the blocking gate
+## ~~axe color-contrast excluded from the blocking gate~~ — RESOLVED 2026-08-08
 
-`ci:a11y` (the blocking accessibility bar) temporarily excludes axe
-`color-contrast`. `a11y:full` still runs contrast and stricter audits, but they do
-not block PRs.
+The former `a11y:axe:aa` playground check excluded axe `color-contrast`, and no
+test applied that rule to the rest of the site. The dedicated
+`apps/web/e2e/contrast.spec.ts` now derives all `154` routes from the generated
+router tree, checks light and dark, and runs blocking as `a11y:contrast` inside
+`a11y:check` / `ci:site`.
 
 The findings were measured on 2026-07-24 while landing the generated API
 reference, and they are **token-level, not page-level**. An axe probe restricted
@@ -2066,16 +2078,17 @@ cause. Light theme is where they live; dark returns 6 nodes to light's 167.
 | Inline `<code>` chip — `--accent-primary` `#2e90fa` on its own 12% tint `#d3e4f6` | 2.49     | 4.5   | a text-safe accent for the chip's foreground, or drop the tint      |
 | Active sidebar link — `#ffffff` on `--accent-primary` `#2e90fa`                   | 3.23     | 4.5   | darken the active fill, or take the ink to `--color-grey-900`       |
 
-All three are the docs chrome shared by `DocPage` and `ApiReference`; a fix in
-`viviana-tokens.css` plus the `DocPage` chip style clears every page at once, so
-this should not be attempted per page. The recert playbook already has the recipe
-(memory: Tier-6 WCAG — muted text flips `--color-text`, light ink on a non-flip
-accent fill goes `--color-grey-900`, accent-as-large-text flips
-`--color-accent-500`); this is the same problem one layer up, in the site's own
-tokens rather than a component's.
+The first route-wide run proved the problem was larger but still structural:
+`80` routes passed and `74` failed. Repairs were made at their authorities —
+semantic text/fill tokens for shared Glasselated chrome, the S2 style macro for
+component paint, and demo-local CSS only for demo chrome. No per-page axe
+suppression was added. The sole selector exclusion is `[data-disabled]`: WCAG
+2.2 SC 1.4.3 explicitly excludes text in inactive UI controls, and Solid Aria
+stamps that state on the component root.
 
-**Exit:** resolve the three rows above, then remove the exclusion so
-`color-contrast` blocks in `ci:a11y`.
+**Exit evidence:** final sweep `154/154` routes green in both themes. The gate is
+route-level coverage of rendered states; the component playbook still owns
+hover, press, focus, validation, and every other user-observable branch.
 
 ## Visual-state coverage debt
 

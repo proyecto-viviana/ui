@@ -11,6 +11,11 @@ history:
       at: 2026-08-07,
       note: "baselined layer-boundary + strict parity; both blocking in certification-gates",
     }
+  - {
+      state: done,
+      at: 2026-08-08,
+      note: "closed remaining report-only and missing-oracle paths with baselines plus fail-closed preflight",
+    }
 ---
 
 The parity gates that compare the two design-system packages **log their findings and exit 0**.
@@ -43,8 +48,18 @@ Baselines + hard edges, not a big-bang cleanup of #1:
    `apps/comparison/scripts/parity-strict-baseline.json` for the known 9
    catalogue-depth gaps; new gaps fail. Promoted from advisory
    (`continue-on-error`) to blocking. Full backlog via `--strict-full`.
+3. **`guard:rac-export-gap`** — missing upstream RAC exports now exit non-zero;
+   documented Solid-local additions remain report-only.
+4. **`guard:upstream-test-parity`** — the current suspect and coverage-gap
+   facts are frozen in `scripts/upstream-test-parity-baseline.json`; resolved
+   facts may disappear, but any new fact or upstream-only contract fails.
+5. **Pinned-oracle preflight** — CI materializes the exact commit in
+   `scripts/upstream-pin.json` before the ladder runs. Missing/wrong source,
+   package identities, or required evidence paths fail. The token and style
+   macro guards also fail rather than silently skip when their oracle is absent.
 
-#1 remains open for reconciling the frozen identical-copy backlog.
+#1 remains open for reconciling the frozen identical-copy backlog. The new
+baselines freeze debt; they do not certify the baselined divergences as correct.
 
 ## Relationship
 

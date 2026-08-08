@@ -128,10 +128,10 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
       isSelected: {
         default: baseColor("neutral"),
         isEmphasized: {
-          default: lightDark("accent-900", "accent-700"),
-          isHovered: lightDark("accent-1000", "accent-800"),
-          isPressed: lightDark("accent-1000", "accent-800"),
-          isFocusVisible: lightDark("accent-1000", "accent-800"),
+          default: "interactive-fill",
+          isHovered: lightDark("accent-1000", "accent-600"),
+          isPressed: lightDark("accent-1000", "accent-600"),
+          isFocusVisible: lightDark("accent-1000", "accent-600"),
         },
         isDisabled: {
           default: "gray-100",
@@ -205,10 +205,10 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
       isSelected: {
         default: baseColor("gray-800"),
         isEmphasized: {
-          default: lightDark("accent-900", "accent-700"),
-          isHovered: lightDark("accent-1000", "accent-800"),
-          isPressed: lightDark("accent-1000", "accent-800"),
-          isFocusVisible: lightDark("accent-1000", "accent-800"),
+          default: "interactive-fill",
+          isHovered: lightDark("accent-1000", "accent-600"),
+          isPressed: lightDark("accent-1000", "accent-600"),
+          isFocusVisible: lightDark("accent-1000", "accent-600"),
         },
       },
       isDisabled: {
