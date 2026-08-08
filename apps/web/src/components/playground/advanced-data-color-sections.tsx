@@ -283,7 +283,11 @@ function TableDemo() {
                         {/* Badge lays out as a block, so it needs a row of its own to size
                             to its label instead of stretching across the cell. */}
                         <Flex alignItems="center">
-                          <Badge size="S" variant={statusVariant[row.status]}>
+                          <Badge
+                            size="S"
+                            variant={statusVariant[row.status]}
+                            fillStyle={row.status === "Offline" ? "outline" : "bold"}
+                          >
                             {row.status}
                           </Badge>
                         </Flex>

@@ -12,7 +12,9 @@
 .hd-listbox {
   border: 1px solid var(--color-primary-600);
   border-radius: var(--radius-lg);
-  background: var(--color-bg-300);
+  /* `typeRoles.meta` is held against the register's opaque raised surface in
+     both schemes; the palette's decorative bg-300 rung is not a text surface. */
+  background: var(--surface-raised);
   max-height: 16rem;
   overflow: hidden auto;
 }

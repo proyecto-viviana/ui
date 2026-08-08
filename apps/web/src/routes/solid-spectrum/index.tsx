@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { GitHubIcon } from "@proyecto-viviana/solid-spectrum/GitHubIcon";
 import { Header, SiteBackdrop } from "@/components";
 import {
-  ACCENT,
+  ACCENT_INK,
   CtaButton,
   FONT_BODY,
   FONT_DISPLAY,
@@ -106,7 +106,7 @@ function Landing() {
             "max-width": "16ch",
           }}
         >
-          Accessibility at <span style={{ color: ACCENT }}>Solid speed</span>.
+          Accessibility at <span style={{ color: ACCENT_INK }}>Solid speed</span>.
         </h1>
 
         <p

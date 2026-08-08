@@ -8,7 +8,7 @@ import { SpectrumPreviewGallery } from "@/components/theme/SpectrumPreviewGaller
 import spectrumStyles from "@proyecto-viviana/solid-spectrum/styles.css?url";
 import { seo } from "@/seo";
 import {
-  ACCENT,
+  ACCENT_INK,
   FONT_BODY,
   FONT_DISPLAY,
   Panel,
@@ -109,7 +109,7 @@ function ThemePage() {
               "letter-spacing": "-0.02em",
             }}
           >
-            Tune it. <span style={{ color: ACCENT }}>Preview it.</span> Ship it.
+            Tune it. <span style={{ color: ACCENT_INK }}>Preview it.</span> Ship it.
           </h1>
           <p
             style={{

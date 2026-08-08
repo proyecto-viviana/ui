@@ -38,7 +38,10 @@ export interface TabSwitchProps {
 
 const trackStyles = style({
   position: "relative",
-  backgroundColor: "gray-100",
+  // Match the current S2 SegmentedControl track exactly. The generic gray-100
+  // semantic resolved much lighter in dark mode and left the unselected label
+  // below WCAG AA.
+  backgroundColor: "[light-dark(rgb(233, 233, 233), rgb(44, 44, 44))]",
   borderRadius: "full",
   width: "[250px]",
 });
@@ -64,6 +67,11 @@ const buttonStyles = style<{ isSelected?: boolean }>({
   position: "relative",
   zIndex: 10,
   display: "flex",
+  // ToggleButton renders a native button. Reset its UA ButtonFace so the S2
+  // track remains the actual text background, as SegmentedControl does.
+  backgroundColor: "transparent",
+  borderStyle: "none",
+  forcedColorAdjust: "none",
   justifyContent: "center",
   alignItems: "center",
   borderRadius: "full",

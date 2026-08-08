@@ -8,7 +8,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { Key, SelectionMode } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import { baseColor, focusRing, style } from "../style" with { type: "macro" };
+import { baseColor, css, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
 
@@ -65,9 +65,25 @@ const actionGroupContainer = style<{ orientation: "horizontal" | "vertical" }>({
   borderWidth: 1,
   borderStyle: "solid",
   borderColor: "gray-300",
-  backgroundColor: "gray-25",
+  backgroundColor: "base",
   padding: 4,
 });
+
+// The headless collection owns the native buttons and exposes only a root
+// class hook. Reset their user-agent paint through the style macro's
+// descendant escape hatch so the item spans below remain the sole S2 paint
+// source. Without this, Chromium's dark ButtonFace sits behind the item text.
+const actionGroupNativeButtons = css(`
+  & > button {
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+`) as StyleString;
 
 const actionGroupItem = style<ActionGroupItemRenderProps>({
   ...focusRing(),
@@ -112,6 +128,7 @@ export function ActionGroup<T extends ActionGroupItem = ActionGroupItem>(
       local.class,
       mergeStyles(
         actionGroupContainer({ orientation: rp.orientation }) as StyleString,
+        actionGroupNativeButtons,
         local.styles,
       ),
     ]

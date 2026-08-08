@@ -636,18 +636,25 @@ tasks:
     depends: [ci-gates-report-only, ts-nocheck-style, ts-nocheck-components, lint-rules-reenable]
     roadmap: certification-enforcement
     note: >-
-      Mostly closed 2026-07-24 by launch-gates-cannot-fire: 17 of the 21 gates in
-      certification-gates.yml are blocking, and the Site Gate fires on main. What
+      Mostly closed by launch-gates-cannot-fire and the 2026-08-08 incident
+      repair: 24 steps in certification-gates.yml are blocking, and the Site
+      Gate fires on main. The ignored Adobe oracle is now materialized and
+      verified before upstream-backed gates; Release is triggered only after
+      successful Certification and waits for same-SHA Release Readiness + Site
+      Gate, so an unprotected red main can no longer publish. What
       is left is the word "required" in the literal GitHub sense — main has no
       branch protection, so a red workflow is loud but not preventive. Owner
       decision (Rule #3): turning on protection changes how the sole maintainer
-      commits. The three remaining advisory gates each name their own promotion
+      commits. The two remaining advisory gates each name their own promotion
       condition in the workflow; ts-nocheck-components and lint-rules-reenable
       remain real dependencies for the strength of `typecheck` and `vp check`,
       not for whether they block.
     exit: >-
-      Either enable branch protection on main requiring Certification Gates +
-      Site Gate + Release Readiness, or record the decision not to and close.
+      Decide whether to replace direct-to-main with protected pull requests, or
+      define an explicit bypass policy; then enable required Certification
+      Gates + Site Gate + Release Readiness, or record the decision not to and
+      close. Do not enable protection before the repaired workflows have passed
+      on GitHub, because the current origin Certification run is red.
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
     state: open
@@ -1724,14 +1731,16 @@ package, not in-repo source.
 
 ## Styled layer ships type-unchecked
 
-`solid-spectrum` carries `@ts-nocheck` on ~`29` source files (the components;
-`0` such files in the three lower packages, and the `style/` subsystem cleared
-2026-06-21 — `ts-nocheck-style`, with its 21 strict-mode errors reconciled by
-minimal null-checked loose-lookup casts mirroring upstream's
-`noImplicitAny:false` semantics). `vite.config.ts:36-48` still sets `13` lint
+The five public package source trees carry `@ts-nocheck` on **59 files / 38,091
+lines**: 29 in `solid-spectrum`, 29 in `viviana-ui`, and one generated locale
+file in `solidaria`. The older style-subsystem cleanup did not cover the copied
+component/style-helper surface now inventoried path-by-path in
+`scripts/ts-nocheck-baseline.json`. `guard:ts-nocheck-budget` is blocking in CI:
+removals pass; additions, moves, or count growth fail. `vite.config.ts:36-48`
+still sets `13` lint
 rules to `"off"` (incl. `typescript/no-floating-promises`,
-`eslint/no-unused-vars`). With typecheck also absent from CI (above),
-prop/generic/variant drift in the remaining unchecked components is invisible.
+`eslint/no-unused-vars`). Typecheck runs in CI, but these baselined files remain
+invisible to it, so prop/generic/variant drift inside them is still unchecked.
 `TableView` and `Menu` compile clean without the pragma, so it is removable, not
 load-bearing. Distinct from "Lint type-checking runs separately" below, which is
 about the `tsgolint` contract, not blanket suppression.
@@ -2047,11 +2056,13 @@ not inside the lint pass.
 **Exit:** the `tsgolint` path honors the `tsconfig.typecheck.json` contract;
 re-enable `typeCheck` in the lint block and drop the separate step from `check`.
 
-## axe color-contrast excluded from the blocking gate
+## ~~axe color-contrast excluded from the blocking gate~~ — RESOLVED 2026-08-08
 
-`ci:a11y` (the blocking accessibility bar) temporarily excludes axe
-`color-contrast`. `a11y:full` still runs contrast and stricter audits, but they do
-not block PRs.
+The former `a11y:axe:aa` playground check excluded axe `color-contrast`, and no
+test applied that rule to the rest of the site. The dedicated
+`apps/web/e2e/contrast.spec.ts` now derives all `154` routes from the generated
+router tree, checks light and dark, and runs blocking as `a11y:contrast` inside
+`a11y:check` / `ci:site`.
 
 The findings were measured on 2026-07-24 while landing the generated API
 reference, and they are **token-level, not page-level**. An axe probe restricted
@@ -2066,16 +2077,17 @@ cause. Light theme is where they live; dark returns 6 nodes to light's 167.
 | Inline `<code>` chip — `--accent-primary` `#2e90fa` on its own 12% tint `#d3e4f6` | 2.49     | 4.5   | a text-safe accent for the chip's foreground, or drop the tint      |
 | Active sidebar link — `#ffffff` on `--accent-primary` `#2e90fa`                   | 3.23     | 4.5   | darken the active fill, or take the ink to `--color-grey-900`       |
 
-All three are the docs chrome shared by `DocPage` and `ApiReference`; a fix in
-`viviana-tokens.css` plus the `DocPage` chip style clears every page at once, so
-this should not be attempted per page. The recert playbook already has the recipe
-(memory: Tier-6 WCAG — muted text flips `--color-text`, light ink on a non-flip
-accent fill goes `--color-grey-900`, accent-as-large-text flips
-`--color-accent-500`); this is the same problem one layer up, in the site's own
-tokens rather than a component's.
+The first route-wide run proved the problem was larger but still structural:
+`80` routes passed and `74` failed. Repairs were made at their authorities —
+semantic text/fill tokens for shared Glasselated chrome, the S2 style macro for
+component paint, and demo-local CSS only for demo chrome. No per-page axe
+suppression was added. The sole selector exclusion is `[data-disabled]`: WCAG
+2.2 SC 1.4.3 explicitly excludes text in inactive UI controls, and Solid Aria
+stamps that state on the component root.
 
-**Exit:** resolve the three rows above, then remove the exclusion so
-`color-contrast` blocks in `ci:a11y`.
+**Exit evidence:** final sweep `154/154` routes green in both themes. The gate is
+route-level coverage of rendered states; the component playbook still owns
+hover, press, focus, validation, and every other user-observable branch.
 
 ## Visual-state coverage debt
 

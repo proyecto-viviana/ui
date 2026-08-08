@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/solid-router";
 import { Button, Badge, Flex, TextField, ToggleSwitch, typeRoles } from "@proyecto-viviana/ui";
 import { Header, SiteBackdrop } from "@/components";
 import {
-  ACCENT,
+  ACCENT_INK,
   CtaButton,
   FeatureBlock,
   FONT_BODY,
@@ -66,7 +66,7 @@ function RegisterCard(props: {
             "font-weight": "600",
             "letter-spacing": "0.04em",
             "text-transform": "uppercase",
-            color: ACCENT,
+            color: ACCENT_INK,
           }}
         >
           {props.tagline}
@@ -145,7 +145,7 @@ function LandingPage() {
             }}
           >
             Two styled component systems, one{" "}
-            <span style={{ color: ACCENT }}>Solid foundation</span>.
+            <span style={{ color: ACCENT_INK }}>Solid foundation</span>.
           </h1>
 
           <p

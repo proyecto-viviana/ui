@@ -27,10 +27,12 @@ Current pin (2026-07-03): `@react-spectrum/s2@1.5.1`, commit `c4de1e22`,
 Absorb backlog: **Train 6 (T-34…T-50)** and **Train 7 (T-60, closed on
 arrival)** in [upstream-release-audit.md](./upstream-release-audit.md).
 
-The tree is materialized as a **shallow checkout at the tag** (nested `.git`),
-which makes release-to-release diffing first-class. `guard:upstream-test-parity`
-prints a **DRIFT** banner when the actual vendored versions don't match the pin —
-so "I don't think the vendored copy is the latest" is now a one-command check.
+The tree is materialized as a **shallow checkout at the pinned commit** (nested
+`.git`), which makes release-to-release diffing first-class.
+`guard:upstream-oracle` verifies the exact HEAD, both pinned package versions,
+and the source/test paths consumed by blocking gates. CI runs it with `--acquire`
+before installing dependencies, so a normal checkout's ignored tree is
+materialized rather than assumed. Missing evidence is a failure, never a skip.
 
 Four distinct staleness axes, don't conflate them:
 
@@ -70,12 +72,14 @@ Four distinct staleness axes, don't conflate them:
 
 ### Materialize / re-materialize the tree
 
-For a fresh clone, or after the pin moves and the tree is stale:
+For a fresh clone with no oracle checkout:
 
 ```bash
-git clone --depth 1 --branch '@react-spectrum/s2@1.5.1' \
-  https://github.com/adobe/react-spectrum react-spectrum
+node scripts/check-upstream-oracle.mjs --acquire
 ```
+
+If a checkout already exists at the wrong revision, refresh it deliberately
+with the absorption flow below; the preflight refuses to overwrite it.
 
 ## Absorbing a new upstream release
 
@@ -184,8 +188,10 @@ coverage gap), ranked with **roles weighted ×10** because a diverging role is
 almost always a genuine semantic error, while a diverging aria-\*/key is usually
 just broader coverage on our side.
 
-It is a **triage aid, not an oracle of truth** — always confirm a flag against
-the authoritative source before changing a test. Known limits:
+It is a **baselined hard edge and triage aid, not an oracle of truth** — known
+facts are frozen in `scripts/upstream-test-parity-baseline.json`, improvements
+may disappear, and new facts fail. Always confirm a flag against authoritative
+source before changing a test. Known limits:
 
 - **File-level vocabulary.** A test that renders auxiliary widgets contributes
   their roles. Example: `Switch` is flagged we-only `{button}`, but the Switch

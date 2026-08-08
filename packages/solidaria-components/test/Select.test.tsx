@@ -86,7 +86,7 @@ describe("Select", () => {
     it("should render trigger with default class", () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("button", { name: "Test Select" });
+      const trigger = screen.getByRole("button", { name: "Select an option Test Select" });
       expect(trigger).toHaveClass("solidaria-Select-trigger");
     });
 
@@ -162,10 +162,12 @@ describe("Select", () => {
       render(() => <TestSelect />);
 
       const root = document.querySelector(".solidaria-Select");
-      const trigger = screen.getByRole("button", { name: "Test Select" });
+      const trigger = screen.getByRole("button", { name: "Select an option Test Select" });
+      const value = screen.getByText("Select an option");
       expect(root).not.toHaveAttribute("aria-label");
       expect(root).not.toHaveAttribute("aria-labelledby");
       expect(trigger).toHaveAttribute("aria-label", "Test Select");
+      expect(trigger).toHaveAttribute("aria-labelledby", `${value.id} ${trigger.id}`);
     });
 
     it("provides slots", async () => {
@@ -429,12 +431,12 @@ describe("Select", () => {
 
       render(() => h(HSelectValueDemo, {})());
 
-      const trigger = screen.getByRole("button", { name: "Test Select" });
+      const trigger = screen.getByRole("button", { name: "Dog Test Select" });
       expect(trigger).toHaveTextContent("Dog");
 
       await user.click(screen.getByRole("button", { name: "Set Cat" }));
 
-      expect(screen.getByRole("button", { name: "Test Select" })).toHaveTextContent("Cat");
+      expect(screen.getByRole("button", { name: "Cat Test Select" })).toHaveTextContent("Cat");
     });
 
     it("updates SelectValue for uncontrolled option selection when composed with solid-js/h", async () => {
@@ -572,7 +574,7 @@ describe("Select", () => {
         </form>
       ));
 
-      const trigger = screen.getByRole("button", { name: "Select" });
+      const trigger = screen.getByRole("button", { name: "Select an item Select" });
       expect(trigger).toHaveTextContent("Select an item");
 
       await user.click(screen.getByTestId("submit"));
@@ -755,7 +757,7 @@ describe("Select", () => {
 
       await user.tab();
       await user.tab();
-      const trigger = screen.getByRole("button", { name: "Test Select" });
+      const trigger = screen.getByRole("button", { name: /Test Select$/ });
       expect(document.activeElement).toBe(trigger);
       await user.tab();
       expect(document.activeElement).toBe(screen.getByTestId("clear"));
@@ -819,7 +821,7 @@ describe("Select", () => {
     it("select can select an option via keyboard", async () => {
       render(() => <TestSelect />);
 
-      const trigger = screen.getByRole("button", { name: "Test Select" });
+      const trigger = screen.getByRole("button", { name: "Select an option Test Select" });
       expect(trigger).toHaveTextContent("Select an option");
 
       await user.tab();
@@ -1092,7 +1094,7 @@ describe("Select", () => {
 
       render(() => <Test />);
 
-      const trigger = screen.getByRole("button", { name: "Test Select" });
+      const trigger = screen.getByRole("button", { name: /Test Select$/ });
       const submit = screen.getByTestId("submit");
       const form = submit.closest("form") as HTMLFormElement;
       expect(trigger).toHaveTextContent("Select an option");

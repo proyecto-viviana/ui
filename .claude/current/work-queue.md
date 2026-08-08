@@ -58,12 +58,15 @@ next task and which workstreams are live.
 
 ## Current priorities
 
-0. **P0 stabilization first** (steering.md Now): `release-train-unjam`
-   (`tech-debt.md`) is the sole remaining P0 — owner-gated on merging version
-   PR #7 + npm publish. `ci-main-gate-wiring` (done 2026-07-06, validated green —
-   it caught 5 latent typecheck errors on the first main pushes),
-   `main-rot-burndown-2026-07`, Toast CP9.35, and DropZone CP9.36 are all
-   cleared. Main is now green and CI-covered on every push.
+0. **P0 pipeline repair before new parity work.** The 2026-08-08 main run exposed
+   two structural defects: ignored upstream evidence made Certification Gates
+   crash, and Release still succeeded for that same red SHA. The local repair
+   materializes/verifies the pin, makes report-only parity checks reject new
+   drift, freezes the 59-file `@ts-nocheck` surface, and binds Release to all
+   three green release gates for the exact revision (tickets #2, #3, #7). The
+   same repair closes ticket #8 with a blocking 154-route, two-theme contrast
+   sweep. Land this repair and watch all workflows complete before calling main
+   green.
 1. The recertification program is **COMPLETE (2026-07-15)** — the per-component
    red→green march ran all six tiers to green with 12/12 drivers and the
    Phase-3 closers. It is shelved: `recertification.md` (summary),
@@ -85,9 +88,10 @@ next task and which workstreams are live.
 - **Recertification march** — **COMPLETE 2026-07-15**, shelved. All six tiers
   certified + 12/12 drivers + Phase-3 closers. Summary in `recertification.md`,
   full log in `archive/recertification-full.md`. No longer an active workstream.
-- **Pipeline stabilization** _(opened 2026-07-06)_ — CI-on-main, release-train
-  unjam, live-rot burndown; tickets in `tech-debt.md`, direction in
-  `steering.md` Now.
+- **Pipeline stabilization** _(opened 2026-07-06, active again 2026-08-08)_ —
+  land and validate the pinned-oracle + exact-revision-release repair; then
+  resolve the owner-steered branch-protection policy. Tickets in `tech-debt.md`,
+  direction in `steering.md` Now.
 - **Client-readiness for `@proyecto-viviana/ui`** _(largely landed 2026-06-20)_ —
   UC-00…UC-05 + UC-07 are ✔; only UC-02 Part B (deferred) and UC-06
   (downstream) remain. The consumer-delivery debt (`macro-route-styled`,

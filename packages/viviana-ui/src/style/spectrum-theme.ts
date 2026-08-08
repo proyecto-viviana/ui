@@ -104,7 +104,12 @@ type ColorScale =
   | "amber"
   | "violet";
 /** Brand colours with no Spectrum equivalent and no ramp — see glasselatedCreateColors. */
-type VivianaColor = "create-bg" | "create-bg-deep" | "create-border" | "create-ink";
+type VivianaColor =
+  | "interactive-fill"
+  | "create-bg"
+  | "create-bg-deep"
+  | "create-border"
+  | "create-ink";
 type TransparentScale = "transparent-white" | "transparent-black" | "transparent-overlay";
 type HighContrastColor =
   | "Background"
@@ -877,29 +882,29 @@ export const style = createTheme({
     }),
     backgroundColor: new SpectrumColorProperty("backgroundColor", {
       ...baseColors,
-      /* Viviana UI v2 (Glasselated): the filled accent SURFACE, which the island names
-       * `--interactive-fill` — and it is the one accent value the register splits by
-       * scheme: `var(--accent-primary)` #2e90fa in light (design-handoff-v2.css:83) but
-       * the damped #407fc1 in dark (:200). A filled accent area is large; the island
-       * quiets it in dark and leaves the small accent marks (slider fills, checkmarks,
-       * tab indicators, links) at full strength on accent-900.
-       *
-       * That split is exactly the `lightDark("accent-900", "accent-700")` pair that
-       * Button, ActionButton and Tag already declare for their emphasized-selected
-       * fills. Repointed here so the components that reach for the SEMANTIC instead of
-       * the pair — Badge's bold fill, chiefly — land on the same value rather than on
-       * Adobe's accent-800 (5 elements adrift in dark). Adobe's own resolution stepped
-       * light and dark independently down its inverted ramp; ours doesn't invert. */
-      accent: { type: "ref", light: "accent-900", dark: "accent-700" },
+      /* Viviana UI v2 (Glasselated): text-bearing accent surfaces use the explicit
+       * `interactive-fill` semantic (#135fc0 / #3670ae), which clears 4.5:1 under white
+       * in both schemes. `accent-900` remains #2e90fa for decorative marks, rings, and
+       * indicators that answer to the 3:1 non-text floor. Keeping the roles separate
+       * also puts Badge's semantic bold fill on the same contract as Button, Calendar,
+       * and Tag rather than encoding the role as a cross-scheme ramp pair. */
+      accent: baseColors["interactive-fill"],
       "accent-subtle": weirdColorToken("accent-subtle-background-color-default"),
       neutral: colorToken("neutral-background-color-default"),
       "neutral-subdued": weirdColorToken("neutral-subdued-background-color-default"),
       "neutral-subtle": weirdColorToken("neutral-subtle-background-color-default"),
-      negative: weirdColorToken("negative-background-color-default"),
+      /* Same repoint as `accent` above, for the same reason and by the same pair. Adobe
+       * resolves these two semantics onto the -800 stop of their ramp, which in our
+       * register is #e0332a / #208e4d in dark — 4.49:1 and 4.17:1 under the white ink
+       * Badge, Toast and InlineAlert paint on their bold fills, i.e. a hair and a wide
+       * margin under AA respectively. The `lightDark(-900, -700)` pair clears it in both
+       * schemes (negative 4.74/5.52, positive 4.80/5.17) and keeps the three components
+       * on one value. */
+      negative: { type: "ref", light: "negative-900", dark: "negative-700" },
       "negative-subtle": weirdColorToken("negative-subtle-background-color-default"),
       informative: weirdColorToken("informative-background-color-default"),
       "informative-subtle": weirdColorToken("informative-subtle-background-color-default"),
-      positive: weirdColorToken("positive-background-color-default"),
+      positive: { type: "ref", light: "positive-900", dark: "positive-700" },
       "positive-subtle": weirdColorToken("positive-subtle-background-color-default"),
       notice: weirdColorToken("notice-background-color-default"),
       "notice-subtle": weirdColorToken("notice-subtle-background-color-default"),

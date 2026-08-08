@@ -53,21 +53,30 @@ vp run release            # release:prepare + release:publish
 CI enforcement mirrors these: `Changesets Check` = `ci:changesets`,
 `Release Readiness` = `ci:release-readiness`, `Site Gate` = `ci:site`; together
 they match `vp run pr:check`. `ci:site` is the blocking accessibility bar (WCAG
-2.2 AA + smoke, axe `color-contrast` temporarily excluded — `tech-debt.md`) plus
-the all-routes render sweep; `a11y:full` runs stricter contrast/AAA/experimental
-audits without blocking.
+2.2 AA + comparison/smoke + a dedicated `color-contrast` sweep over every route
+in both themes) plus the all-routes render sweep; `a11y:full` runs the broader
+best-practice/AAA/experimental playground audit without blocking.
 
-A fourth workflow, `Certification Gates`, runs the guard/parity ladder. Since
-2026-07-24 most of it is **blocking**; four checks stay advisory and say why in
-the workflow itself. All four workflows trigger on pull requests **and on push to
-`main`** — work here lands direct to main, so a PR-only gate never fires.
+A fourth workflow, `Certification Gates`, runs the guard/parity ladder. Its
+blocking steps include pinned-upstream preflight, the monotonic `@ts-nocheck`
+budget, baselined parity hard edges, and the certified suite. Two checks remain
+advisory and say why in the workflow itself. The three evidence workflows fire
+on pull requests **and on push to `main`** — work here lands direct to main, so a
+PR-only gate never fires.
 
 ## GitHub automation
 
-On push to `main`, the `Release` workflow runs in two stages: if unpublished
-changesets exist it creates/updates the Changesets version PR; when that version
-PR merges, it publishes the changed npm packages. So a feature merge triggers
-release automation, but the registry publish happens on the version-PR merge.
+`Release` no longer races the evidence workflows on every push. A successful
+`Certification Gates` run on `main` triggers it for that run's exact head SHA.
+Before Changesets can create/update a version PR or publish packages,
+`guard:release-evidence` requires successful `Certification Gates`, `Release
+Readiness`, and `Site Gate` runs for that same SHA. It waits for independently
+running siblings and fails closed on absent, cancelled, timed-out, or failed
+evidence. Manual dispatch remains available and has the same exact-SHA check.
+
+After that evidence barrier, the workflow still runs in two Changesets stages:
+if unpublished changesets exist it creates/updates the version PR; when that PR
+merges, it publishes the changed npm packages.
 
 The workflow publishes via **npm trusted publishing (OIDC)** — `id-token: write`,
 npm `>=11.5.1`, **no `NPM_TOKEN` secret** — and the release job runs on a

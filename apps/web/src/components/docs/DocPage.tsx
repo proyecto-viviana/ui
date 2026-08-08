@@ -117,13 +117,15 @@ export function Example(props: ExampleProps) {
         <p style={{ "margin-bottom": "0.75rem" }}>{props.description}</p>
       </Show>
 
-      {/* Live preview — a frosted-glass panel over the fixed backdrop. The
-          Spectrum component inside paints itself. */}
+      {/* Live preview. Spectrum docs inherit the pinned Provider's canonical
+          base surface through --s2-container-bg; the other docs keep the
+          frosted house surface. This keeps Spectrum foreground tokens on the
+          upstream background they were designed and tested against. */}
       <div
         style={{
           margin: "0.75rem 0",
           padding: "1.5rem",
-          background: "var(--surface-panel)",
+          background: "var(--s2-container-bg, var(--surface-panel))",
           "backdrop-filter": "var(--blur-panel)",
           "-webkit-backdrop-filter": "var(--blur-panel)",
           border: "1px solid var(--border-default)",
@@ -185,7 +187,7 @@ export function PropsTable(props: PropsTableProps) {
                     <code
                       style={{
                         background: "color-mix(in srgb, var(--accent-primary) 12%, transparent)",
-                        color: "var(--accent-primary)",
+                        color: "var(--text-link)",
                         padding: "2px 6px",
                         "border-radius": "var(--radius-sm)",
                         "font-family": FONT_MONO,

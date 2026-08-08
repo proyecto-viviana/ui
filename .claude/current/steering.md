@@ -61,14 +61,17 @@ the `launch` roadmap item.
 - **Record and clean** (Phase 0) — `launch.md` landed; `status.md` refreshed from
   the scripts; every finding filed; the 9 `docs:check` errors cleared; stale docs
   trees deleted; the 174-file format drift and tracked strays cleaned.
-- **Make the gates real** (Phase 1) — **done.** The 5 stale e2e selectors that
-  turned `a11y:smoke` red (B8) are fixed; 18 certification gates are blocking
-  (including `vp check`, `docs:check` and the full certified suite), 3 stay
-  advisory with their promotion condition written inline, and every workflow now
-  fires on push to main. _A gate
-  that cannot fire is not a gate_ — and neither is one promoted without being
-  measured, which is why each was run locally first. Residual: main is not
-  branch-protected, an owner call (`ci-gates-required`).
+- **Make the gates real** (Phase 1) — **repair pending landing 2026-08-08.** The 5 stale e2e selectors that
+  turned `a11y:smoke` red (B8) are fixed. A new route-derived contrast gate now
+  passes all 154 routes in both themes and blocks in `ci:site`. The latest main
+  run showed that the ignored Adobe oracle was never materialized and that
+  Release could succeed on the same SHA as red Certification. The local repair
+  makes 24 Certification steps blocking, leaves 2 advisory with their promotion
+  condition inline, materializes the pinned oracle, adds watched negative
+  fixtures, and binds publication to complete same-SHA evidence. \_A gate
+  that cannot fire is not a gate — and neither is one promoted without being
+  measured. Residual after the repair lands: main is not branch-protected, an
+  owner call (`ci-gates-required`).
 - **Make the site truthful** (Phase 2) — **done.** The 6 broken GitHub links
   (B1), the installation page that omitted the flagship package and told users to
   hand-author CSS variables (B2), and npm metadata (B7) are all closed;
