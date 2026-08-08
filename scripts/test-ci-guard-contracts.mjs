@@ -70,6 +70,18 @@ try {
   );
   console.log("PASS: Changesets Check preserves complete release history.");
 
+  const certificationWorkflow = readFileSync(
+    path.join(ROOT, ".github", "workflows", "certification-gates.yml"),
+    "utf8",
+  );
+  const packageBuild = certificationWorkflow.indexOf("run: pnpm run build\n");
+  const jsxDeoptGuard = certificationWorkflow.indexOf("run: pnpm run guard:jsx-deopt-size\n");
+  assert(
+    packageBuild >= 0 && jsxDeoptGuard >= 0 && packageBuild < jsxDeoptGuard,
+    "Certification Gates must build package artifacts before measuring JSX deopt size",
+  );
+  console.log("PASS: Certification builds package evidence before JSX size checks.");
+
   const oracleFixture = path.join(fixtureRoot, "missing-oracle");
   json(path.join(oracleFixture, "scripts", "upstream-pin.json"), {
     commit: "1111111111111111111111111111111111111111",

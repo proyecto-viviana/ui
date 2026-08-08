@@ -67,10 +67,11 @@ next task and which workstreams are live.
    same repair closes ticket #8 with a blocking 154-route, two-theme contrast
    sweep and a fully classified expanded playground audit. Land this repair and
    watch all workflows complete before calling main green. Draft PR #21 is the
-   qualification vehicle. Its first hosted head caught a depth-limited fetch
-   re-shallowing the Changesets checkout; the current candidate removes that
-   fetch and adds a control-plane regression assertion instead of weakening the
-   fail-closed publish-drift guard.
+   qualification vehicle. Its first two hosted heads caught a depth-limited
+   fetch re-shallowing the Changesets checkout and the JSX size guard running
+   before its package artifacts existed. The current candidate removes the
+   shallow fetch, builds package evidence explicitly, and adds control-plane
+   regression assertions instead of weakening either fail-closed guard.
 1. **Absorb the newly available Adobe train after P0 lands.** The current oracle
    is internally exact at S2 `1.5.1` / RAC `1.19.0`, but freshness now reports
    S2 `1.6.0` / RAC `1.20.0`. Follow `upstream-sync.md`: read release notes,

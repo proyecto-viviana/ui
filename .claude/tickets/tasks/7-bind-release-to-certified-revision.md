@@ -14,7 +14,7 @@ history:
   - {
       state: done,
       at: 2026-08-08,
-      note: "draft PR #21 opened for hosted exact-SHA qualification; the first head's fail-closed publish-drift guard exposed and drove removal of a depth-limited Changesets fetch",
+      note: "draft PR #21 opened for hosted exact-SHA qualification; its first two heads exposed a depth-limited Changesets fetch and a built-artifact guard without its producer, both now held by ordering contracts",
     }
 ---
 
@@ -43,6 +43,9 @@ failed, absent, and complete same-SHA API responses as discriminating fixtures.
 The same contract suite now asserts that Changesets Check preserves complete
 release history: `fetch-depth: 0` must remain, and no later depth-limited fetch
 may silently turn the checkout shallow before `guard:publish-drift` runs.
+It also requires Certification Gates to build the published package artifacts
+before `guard:jsx-deopt-size` measures `dist/*.jsx`, so a dirty local checkout
+cannot supply evidence that a clean runner never produced.
 
 Branch protection remains a separate owner-steered decision in
 `tech-debt.md` (`ci-gates-required`): enforcing required checks before `main`

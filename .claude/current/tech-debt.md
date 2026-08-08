@@ -640,7 +640,7 @@ tasks:
     roadmap: certification-enforcement
     note: >-
       Mostly closed by launch-gates-cannot-fire and the 2026-08-08 incident
-      repair: 24 steps in certification-gates.yml are blocking, and the Site
+      repair: 26 steps in certification-gates.yml are blocking, and the Site
       Gate fires on main. The ignored Adobe oracle is now materialized and
       verified before upstream-backed gates; Release is triggered only after
       successful Certification and waits for same-SHA Release Readiness + Site

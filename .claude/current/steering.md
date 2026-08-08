@@ -67,7 +67,7 @@ the `launch` roadmap item.
   `ci:site`; the expanded playground audit is also measured green and promoted.
   The latest main run showed that the ignored Adobe oracle was never
   materialized and that Release could succeed on the same SHA as red
-  Certification. The local repair makes 25 Certification steps blocking, leaves
+  Certification. The local repair makes 26 Certification steps blocking, leaves
   upstream freshness as the sole advisory, materializes the pinned oracle, adds
   watched negative fixtures, and binds publication to complete same-SHA
   evidence. \_A gate

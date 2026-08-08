@@ -154,6 +154,13 @@ jobs:
         id: guard_outbound_links
         run: pnpm run guard:outbound-links
 
+      # guard:jsx-deopt-size measures the published package artifacts. Build
+      # them explicitly so a clean runner proves the same evidence as a local
+      # checkout with existing dist/ directories.
+      - name: build package evidence
+        id: build_package_evidence
+        run: pnpm run build
+
       - name: guard jsx-deopt-size
         id: guard_jsx_deopt_size
         run: pnpm run guard:jsx-deopt-size
@@ -246,6 +253,7 @@ jobs:
           O_GUARD_DOCS_ROUTES: ${{ steps.guard_docs_routes.outcome }}
           O_GUARD_API_REFERENCE: ${{ steps.guard_api_reference.outcome }}
           O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
+          O_BUILD_PACKAGE_EVIDENCE: ${{ steps.build_package_evidence.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
@@ -290,6 +298,7 @@ jobs:
             echo "| \`guard:docs-routes\` | $(icon "$O_GUARD_DOCS_ROUTES") |"
             echo "| \`guard:api-reference\` | $(icon "$O_GUARD_API_REFERENCE") |"
             echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
+            echo "| \`build\` (package evidence) | $(icon "$O_BUILD_PACKAGE_EVIDENCE") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
