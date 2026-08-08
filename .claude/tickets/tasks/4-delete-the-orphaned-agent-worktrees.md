@@ -7,6 +7,7 @@ status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
 ---
+
 Orphaned agent worktrees are left in this repo. They inflate every hub-wide duplication and size
 census — the audit had to correct for them repeatedly — and they are the mechanism behind audit
 critical C3 in `akade.dev`, where three worktrees shared one live database.
@@ -24,4 +25,3 @@ the agent driver does on completion, so this does not recur.
 
 Findings `L1-orphaned-agent-worktrees`,
 `L8M-worktrees-are-the-hidden-duplication-and-they-poison-every-metric`. Related: akade #46.
-

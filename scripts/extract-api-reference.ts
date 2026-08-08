@@ -201,20 +201,16 @@ function stripUndefined(type: ts.Type, checker: ts.TypeChecker): ts.Type {
 }
 
 /** Closed literal unions are the useful part of a variant prop — list them. */
-function literalValues(type: ts.Type): string[] | undefined {
+function literalValues(type: ts.Type, checker: ts.TypeChecker): string[] | undefined {
   if (!type.isUnion()) return undefined;
   const values: string[] = [];
   for (const part of type.types) {
     if (part.isStringLiteral()) values.push(`'${part.value}'`);
     else if (part.isNumberLiteral()) values.push(String(part.value));
-    else if (part.flags & ts.TypeFlags.BooleanLiteral) values.push(checkerBoolean(part));
+    else if (part.flags & ts.TypeFlags.BooleanLiteral) values.push(checker.typeToString(part));
     else return undefined;
   }
   return values.length > 1 ? values : undefined;
-}
-
-function checkerBoolean(type: ts.Type): string {
-  return (type as ts.IntrinsicType).intrinsicName === "true" ? "true" : "false";
 }
 
 function extractRegister(register: (typeof REGISTERS)[number]): ApiRegister {
@@ -267,10 +263,11 @@ function extractRegister(register: (typeof REGISTERS)[number]): ApiRegister {
       const display = required ? memberType : stripUndefined(memberType, checker);
       const defaultTag = member.getJsDocTags().find((tag) => tag.name === "default");
 
+      const values = literalValues(display, checker);
       props.push({
         name: member.getName(),
         type: checker.typeToString(display, site, ts.TypeFormatFlags.NoTruncation),
-        ...(literalValues(display) ? { values: literalValues(display) } : {}),
+        ...(values ? { values } : {}),
         required,
         ...(defaultTag ? { default: ts.displayPartsToString(defaultTag.text).trim() } : {}),
         description: ts

@@ -7,6 +7,7 @@ status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
 ---
+
 `viviana-ui` and `solid-spectrum` share **533 identical files, 28,092 lines**. Not similar —
 identical. The remainder has diverged in both directions, so neither is a clean superset of the
 other any more.
@@ -34,4 +35,3 @@ the other or gone.
 
 Findings `L1-ui-is-a-fork-not-a-layer` (CONFIRMED),
 `L8-design-system-forked-inside-its-own-repo`. Consolidation row R2.6. Blocked in practice by #2.
-

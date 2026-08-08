@@ -15,11 +15,7 @@ import { Picker, PickerItem } from "../../src/picker";
 export function FormButtonFixture(): JSX.Element {
   return (
     <Provider background="base" colorScheme="dark">
-      <Form
-        aria-label="Smoke form"
-        onSubmit={(e) => e.preventDefault()}
-        UNSAFE_className="el-form"
-      >
+      <Form aria-label="Smoke form" onSubmit={(e) => e.preventDefault()} UNSAFE_className="el-form">
         <Button type="submit" variant="primary">
           Go
         </Button>
@@ -37,11 +33,7 @@ export function FormTextFieldFixture(): JSX.Element {
         UNSAFE_className="el-form"
       >
         <TextField label="Nombre" maxLength={80} />
-        <TextField
-          label="Username"
-          isRequired
-          description="3–20 caracteres"
-        />
+        <TextField label="Username" isRequired description="3–20 caracteres" />
         <Button type="submit" variant="primary">
           Guardar
         </Button>

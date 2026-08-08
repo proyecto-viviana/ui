@@ -6,8 +6,13 @@ created: 2026-08-01
 status: done
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
-  - { state: done, at: 2026-08-07, note: "baselined layer-boundary + strict parity; both blocking in certification-gates" }
+  - {
+      state: done,
+      at: 2026-08-07,
+      note: "baselined layer-boundary + strict parity; both blocking in certification-gates",
+    }
 ---
+
 The parity gates that compare the two design-system packages **log their findings and exit 0**.
 They have been reporting the divergence in #1 the entire time it was growing.
 
@@ -45,4 +50,3 @@ Baselines + hard edges, not a big-bang cleanup of #1:
 
 Findings `L1-broken-parity-gates`, pattern P4. Gates the sequencing of #1. Related:
 viviana-projects#45 (the CI question), cloud #105.
-

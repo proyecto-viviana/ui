@@ -43,10 +43,7 @@ function loadStrictBaseline(): StrictBaseline | null {
   return JSON.parse(readFileSync(fileURLToPath(baselineUrl), "utf8")) as StrictBaseline;
 }
 
-function unbaselined(
-  gaps: readonly Gap[],
-  allowed: readonly string[] | undefined,
-): readonly Gap[] {
+function unbaselined(gaps: readonly Gap[], allowed: readonly string[] | undefined): readonly Gap[] {
   if (allowed == null) return gaps;
   const allow = new Set(allowed);
   return gaps.filter((gap) => !allow.has(gap.slug));
@@ -439,7 +436,10 @@ const alwaysBlockingSections = [
   docsIntegrityGaps,
 ] as const;
 
-const baselinedControlGaps = unbaselined(scope(missingControlGroups), allowed?.missingControlGroups);
+const baselinedControlGaps = unbaselined(
+  scope(missingControlGroups),
+  allowed?.missingControlGroups,
+);
 const baselinedValidationGaps = unbaselined(
   scope(missingValidationNotes),
   allowed?.missingValidationNotes,

@@ -7,6 +7,7 @@ status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
 ---
+
 **58 files carrying `@ts-nocheck`, covering 37,456 lines** — in the design system every product
 in the hub imports. Type errors in those files are not errors; they are invisible, including in
 the public API surface consumers rely on.
@@ -25,4 +26,3 @@ The count only decreases, and no file in the public API surface carries the prag
 ## Relationship
 
 Finding `L1-M2-typecheck-gate-skips-37k-lines` (CONFIRMED). Related: #2 (same class of suppressed signal).
-

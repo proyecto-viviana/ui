@@ -7,6 +7,7 @@ status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
 ---
+
 This repo disagrees with the rest of the hub about the pnpm version, and it keeps pnpm settings
 in `package.json` where newer pnpm expects them in `pnpm-workspace.yaml` — so some settings
 are silently not applied.
@@ -27,4 +28,3 @@ Every repo in the hub declares the same `packageManager`, and pnpm reports no ig
 ## Relationship
 
 Findings `L7-pnpm-six-versions-and-dead-overrides`, `L7-node-pinning-and-engines-disagree`. Consolidation row R2.7.
-
