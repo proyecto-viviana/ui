@@ -312,24 +312,27 @@ tasks:
       measured green — the point of this ticket is that an unproven gate is what
       created the problem, so promoting on optimism would have repeated it.
 
-      certification-gates.yml: 18 gates are now BLOCKING, including the two named
+      certification-gates.yml: 25 gates are now BLOCKING, including the two named
       in the exit criteria (`vp check`, `docs:check`) plus `typecheck`, the ten
       static guards, `comparison:test:contract` (93), `comparison:test:pair` (6)
       and `comparison:test:certified`. Two guards that existed in package.json
       but were wired into no workflow at all — `guard:invented-utilities` and
-      `guard:outbound-links` — were added while promoting. Three stay advisory
-      and each carries the condition for its promotion inline:
-      `guard:upstream-freshness` (goes red when Adobe ships past our pin — a pin
-      bump, not a branch defect), `comparison:report:parity:strict` (genuinely
-      failing on 9 entries → labeledvalue-strict-parity), and `a11y:full` (its
-      extra axe rules have never been measured clean). The workflow name lost
+      `guard:outbound-links` — were added while promoting. The sole remaining
+      advisory carries its response inline: `guard:upstream-freshness` goes red
+      when Adobe ships past our pin — a pin bump, not a branch defect.
+      `comparison:report:parity:strict` is now a baselined hard edge: the known
+      9 entries remain visible and new drift fails. `a11y:full` was measured
+      clean on 2026-08-08 and promoted: AA and best-practice findings are strict;
+      only enhanced contrast and exact-upstream Tag focus semantics are attached
+      as bounded reports. The workflow name lost
       "(report-only)" and the summary now has separate Blocking / Advisory
       tables.
 
       `comparison:test:certified` was held back at first for exactly the reason
       this ticket exists — it had never been watched to completion, so promoting
-      it would have been a guess. It was then run to the end: **2169 passed, 7
-      skipped, exit 0, 17.2 min**, which promoted it and also settles the
+      it would have been a guess. It was re-run to the end on 2026-08-08:
+      **2170 passed, 6 skipped, exit 0, 17.6 min**, which keeps it promoted and
+      also settles the
       deferred D4 event-ordering worry empirically. Whatever is deferred is not
       producing reds. `ci-main-gate-wiring`'s note that flipping the certified
       suite was blocked on the D4 policy is superseded.

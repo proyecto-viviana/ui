@@ -54,8 +54,12 @@ CI enforcement mirrors these: `Changesets Check` = `ci:changesets`,
 `Release Readiness` = `ci:release-readiness`, `Site Gate` = `ci:site`; together
 they match `vp run pr:check`. `ci:site` is the blocking accessibility bar (WCAG
 2.2 AA + comparison/smoke + a dedicated `color-contrast` sweep over every route
-in both themes) plus the all-routes render sweep; `a11y:full` runs the broader
-best-practice/AAA/experimental playground audit without blocking.
+in both themes) plus the all-routes render sweep. `a11y:full` runs the broader
+playground audit: AA and best-practice rules stay strict; AAA attaches only
+`color-contrast-enhanced` as an informative report; experimental attaches only
+the exact-upstream Tag `focus-order-semantics` finding. Every other AAA or
+experimental finding fails. These attached reports are not a component-parity
+waiver and do not substitute for the certification playbook.
 
 A fourth workflow, `Certification Gates`, runs the guard/parity ladder. Its
 blocking steps include pinned-upstream preflight, the monotonic `@ts-nocheck`

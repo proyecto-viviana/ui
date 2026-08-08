@@ -11,6 +11,11 @@ history:
       at: 2026-08-08,
       note: "154 generated routes and all 61 live playground sections pass axe color-contrast in both themes; gate added to ci:site",
     }
+  - {
+      state: done,
+      at: 2026-08-08,
+      note: "expanded playground audit classified and promoted after 10/10 playground, 80/80 comparison, and 44/44 smoke",
+    }
 ---
 
 The blocking accessibility command scanned one playground and disabled axe
@@ -51,6 +56,28 @@ one suite without becoming visible to the other.
 `ci:site` / Site Gate, and `a11y:axe:aa` fails on playground contrast as part of
 that same chain. This is a site-level floor; component certification still
 requires interaction-state and upstream-parity evidence.
+
+## Adjacent full-audit closure
+
+The same pass made `a11y:full` honest rather than merely non-blocking. WCAG
+2.1/2.2 AA and best-practice rules are strict in both themes. The audit found
+and closed two non-contrast defects: the playground heading outline skipped a
+level, and the `aria-label`-only Select branch did not give its trigger the
+upstream accessible name. The Select repair lives in `solidaria`, mirrors
+React Aria's exact `aria-labelledby` construction, and is held by unit name
+assertions plus the real-browser experimental scan.
+
+Two classes are attached as reports instead of being hidden or allowed to mask
+other failures:
+
+- WCAG AAA permits only `color-contrast-enhanced` and records all nodes (`95`
+  dark / `225` light); every other AAA rule fails the test.
+- Experimental permits only the `22`-node-per-theme `focus-order-semantics`
+  report for Tag rows, whose focusable row/gridcell structure exactly mirrors
+  React Aria's `useTag` → `useGridListItem`; every other experimental rule fails.
+
+Final full-audit evidence: playground `10/10`, comparison `80/80`, and browser
+smoke `44/44`.
 
 ## Relationship
 

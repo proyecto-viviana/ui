@@ -10,7 +10,7 @@ name: Certification Gates
 #
 # So the ladder is now split by evidence, not by ambition:
 #
-#   BLOCKING  — verified green locally on 2026-07-24 before promotion, and
+#   BLOCKING  — verified green locally before promotion, and
 #               expected to stay green. If one of these goes red, main is red,
 #               which is the entire point.
 #   ADVISORY  — legitimately red today (tracked), or designed to go red on
@@ -66,7 +66,7 @@ jobs:
         run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
 
       # ---------------------------------------------------------------------
-      # BLOCKING. Each verified green locally on 2026-07-24 before promotion.
+      # BLOCKING. Each verified green locally before promotion.
       # ---------------------------------------------------------------------
 
       # Keystone gate: passes today with a tracked @ts-nocheck backlog. The
@@ -182,13 +182,21 @@ jobs:
         id: pair
         run: pnpm run comparison:test:pair
 
-      # The recertification bar itself: 2176 tests, ~17 min. Promoted 2026-07-24
-      # on a confirmed clean local run (2169 passed, 7 skipped, exit 0), which
+      # The recertification bar itself: 2176 tests, ~18 min. Re-verified
+      # 2026-08-08 (2170 passed, 6 skipped, exit 0), which
       # also settles the deferred D4 event-ordering worry empirically — whatever
       # is deferred is not producing reds.
       - name: comparison certified suite
         id: certified
         run: pnpm run comparison:test:certified
+
+      # Promoted 2026-08-08 after a complete clean run. AA and best-practice
+      # findings are strict. The only attached report classes are AAA enhanced
+      # contrast (beyond the WCAG 2.2 AA floor) and the exact-upstream Tag
+      # focus-order semantic; every other AAA/experimental result fails.
+      - name: axe full audit
+        id: axe_full
+        run: pnpm run a11y:full
 
       # ---------------------------------------------------------------------
       # ADVISORY. Red today, or red on someone else's schedule. Each one names
@@ -203,15 +211,6 @@ jobs:
         id: guard_upstream_freshness
         continue-on-error: true
         run: pnpm run guard:upstream-freshness
-
-      # The blocking Site Gate has AA/component smoke plus a dedicated
-      # route-wide, two-theme contrast pass. This broader playground scan also
-      # enables best-practice/AAA/experimental rules that have not yet been
-      # measured clean, so it remains advisory.
-      - name: axe (full / ungated)
-        id: axe_full
-        continue-on-error: true
-        run: pnpm run a11y:full
 
       - name: Upload Playwright artifacts
         if: always()
@@ -298,6 +297,7 @@ jobs:
             echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
             echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
             echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
+            echo "| \`a11y:full\` | $(icon "$O_AXE_FULL") |"
             echo ""
             echo "_\`typecheck\` still has a baselined 59-file \`@ts-nocheck\` blind spot across the public packages; the budget forbids additions and the burn-down ticket owns removals._"
             echo ""
@@ -308,7 +308,6 @@ jobs:
             echo "| Gate | Result | Why it is not blocking |"
             echo "| --- | --- | --- |"
             echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") | ❌ means Adobe shipped past our pin — a pin bump, not a branch defect |"
-            echo "| \`a11y:full\` (ungated axe) | $(icon "$O_AXE_FULL") | Superset of the blocking a11y gate; its extra rules are unmeasured |"
             echo ""
             echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"
           } >> "$GITHUB_STEP_SUMMARY"

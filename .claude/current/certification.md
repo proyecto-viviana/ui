@@ -64,7 +64,15 @@ vp run check              # format, lint (type-aware), typecheck
 vp run test:run           # package unit/integration suites (vitest)
 vp run a11y:check         # axe AA + comparison + every-route/two-theme contrast + smoke
 vp run a11y:contrast      # focused route-wide contrast gate (154 routes, light + dark)
+vp run a11y:full          # strict AA/best-practice + bounded AAA/experimental reports
 ```
+
+`a11y:full` fails every unexpected finding. Its two report-only classes are
+explicit and attached to the Playwright result: AAA
+`color-contrast-enhanced`, which exceeds the repository's WCAG 2.2 AA
+conformance floor, and Tag `focus-order-semantics`, whose focusable
+row/gridcell structure is verified against upstream React Aria. Neither report
+certifies a component or permits an unrelated rule to pass.
 
 Component-level evidence:
 
