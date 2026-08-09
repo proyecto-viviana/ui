@@ -4,34 +4,34 @@ status: current
 items:
   - id: launch
     title: Deploy the docs site and make the packages usable by external users
-    status: in-progress
-    window: { start: 2026-07-24, target: null }
-    docs: [launch.md, steering.md, status.md, tech-debt.md]
+    status: done
+    window: { start: 2026-07-24, target: 2026-07-24, finished: 2026-07-24 }
+    docs: [launch.md, status.md]
   - id: recertification
     title: Pair-oracle recertification march (COMPLETE 2026-07-15)
     status: done
     window: { start: 2026-07-03, target: 2026-07-15, finished: 2026-07-15 }
-    docs: [recertification.md, archive/recertification-full.md, tech-debt.md]
+    docs: [recertification.md, archive/recertification-full.md]
   - id: component-certification
     title: Per-component acceptance
     status: in-progress
     window: { start: 2026-05-20, target: null }
-    docs: [work-queue.md, certification.md]
+    docs: [repo-assessment.md, certification.md, tech-debt.md]
   - id: support-export-parity
     title: Support-export parity with React S2
-    status: done
-    window: { start: null, target: 2026-07-31, finished: 2026-06-21 }
-    docs: [tech-debt.md]
+    status: in-progress
+    window: { start: null, target: null }
+    docs: [repo-assessment.md, tech-debt.md]
   - id: comparison-docs-overhaul
     title: Comparison docs-site rollout
     status: in-progress
     window: { start: 2026-06-01, target: null }
-    docs: [work-queue.md]
+    docs: [repo-assessment.md, work-queue.md, tech-debt.md]
   - id: package-build-migration
     title: Native Vite Plus package builds
     status: in-progress
     window: { start: 2026-05-10, target: null }
-    docs: [tech-debt.md, tooling.md]
+    docs: [repo-assessment.md, tech-debt.md, tooling.md]
   - id: admin-dashboard
     title: Dev-only admin dashboard
     status: in-progress
@@ -41,32 +41,32 @@ items:
     title: Promote @proyecto-viviana/ui releases
     status: in-progress
     window: { start: 2026-07-06, target: null }
-    docs: [release-policy.md, steering.md, tech-debt.md]
+    docs: [repo-assessment.md, release-policy.md, tech-debt.md]
   - id: certification-enforcement
     title: Enforce the evidence checks in CI
-    status: in-progress
-    window: null
-    docs: [tech-debt.md, certification.md]
+    status: done
+    window: { start: 2026-06-16, target: 2026-08-08, finished: 2026-08-08 }
+    docs: [certification.md, tech-debt.md]
   - id: headless-spine-port
     title: Port the shared headless spine
     status: in-progress
     window: null
-    docs: [tech-debt.md]
+    docs: [repo-assessment.md, tech-debt.md]
   - id: consumer-delivery
     title: Ship correctly to installed consumers
     status: open
     window: null
-    docs: [tech-debt.md]
+    docs: [repo-assessment.md, tech-debt.md]
   - id: upstream-api-parity
     title: Prune component APIs to the upstream surface
     status: open
     window: null
-    docs: [tech-debt.md]
+    docs: [repo-assessment.md, tech-debt.md]
   - id: upstream-parity-loop
     title: Absorb upstream releases and hold behavioral parity
     status: in-progress
     window: null
-    docs: [upstream-release-audit.md, press-path-epic.md, upstream-sync.md]
+    docs: [repo-assessment.md, upstream-release-audit.md, upstream-sync.md]
   - id: license-compliance
     title: Per-file Apache-2.0 attribution headers
     status: open
@@ -76,314 +76,81 @@ items:
 
 # Roadmap
 
-Status: live roadmap.
-Update when: an initiative is added, changes status, or its window or docs shift.
+Status: live initiative map.
+Update when: an initiative changes state, its owning docs change, or the
+dependency order in `repo-assessment.md` changes.
 
-The initiative axis behind `/admin`. High-level items live here; the low-level
-tasks that deliver them live in the `tasks:` frontmatter of the doc each item
-points to (`work-queue.md`, `tech-debt.md`, `admin-dashboard.md`), linked back by
-`roadmap:` id. `vp run docs:check` enforces that every in-progress item has at
-least one task, every task points at a real item, and done state matches a
-recorded finish date.
+The roadmap is the initiative axis behind `/admin`; task-level truth lives in
+the `tasks:` frontmatter of the linked docs. The detailed whole-repository
+assessment, gate workflow, execution waves, risk register, and GitHub ticket
+links live in `repo-assessment.md`.
 
-These are live initiatives. Each one below names a real exit and a home doc
-carrying its tasks; the dependency-ordered program that sequences all
-of them — and names the single item in flight right now — is in **Execution
-sequence** at the foot of this page.
+## Current program
 
-## Initiatives
+The launch and recertification programs are complete. CI enforcement is also
+complete: protected `main` requires the four measured contexts and publication
+is bound to same-revision evidence. They remain here as completed outcomes, not
+as work selectors.
 
-- **recertification** — **COMPLETE 2026-07-15** (was the plan of record from
-  2026-07-03; now shelved — summary in `recertification.md`, full log in
-  `archive/recertification-full.md`): the pair-oracle driver harness (12/12
-  drivers D1–D12) and the strict per-component red→green march against live
-  upstream React S2 1.5.1 / RAC 1.19.0 / react-aria 3.50.0 — all six Phase-2
-  tiers certified plus the Phase-3 closers (CP9.82–86). It also carried the
-  2026-07-06 stabilization tickets in `tech-debt.md`. Superseded fleet-census
-  auditing; subsumed the depth half of `component-certification`.
-- **component-certification** — the standing per-component acceptance loop; the
-  depth work is executed by the recertification march, while this item keeps
-  the strict-parity report green (`labeledvalue-strict-parity`). Tasks in
-  `work-queue.md` and `tech-debt.md`.
-- **support-export-parity** — **DONE 2026-06-21.** Closed the missing React S2
-  support exports (`comparison:report:exports` reports 0 missing). Tracked in
-  `tech-debt.md`.
-- **comparison-docs-overhaul** — roll the comparison app onto the S2 docs site.
-  Tasks in `work-queue.md`.
-- **package-build-migration** — move every package onto native Vite Plus
-  packaging, one at a time. Tasks in `tech-debt.md`.
-- **admin-dashboard** — this dev-only dashboard: the `/admin` route plus the
-  `.claude/current` tracking model. Tasks in `admin-dashboard.md`.
-- **ui-release-promotion** — promote `@proyecto-viviana/ui` from prerelease to
-  stable once evidence thresholds hold. See `release-policy.md`.
+The active program has five dependency-ordered fronts:
 
-The next four are the actionable initiatives distilled from the 2026-06-15 harsh
-review (deleted from `main` 2026-07-24; recover from the commit that removed
-`docs/_review-2026-06-15/`); their tasks live in `tech-debt.md`. Slugs are provisional (Rule #3) — owner to confirm names.
+1. **Operational safety** — explicitly authorize and observe the qualified
+   version release; remediate the current dependency advisories; make local gate
+   preconditions deterministic.
+2. **Upstream absorption** — move the exact oracle from S2 1.5.1 / RAC 1.19.0 to
+   the available S2 1.6.0 / RAC 1.20.0 train, with source/test/release-note
+   classification before porting.
+3. **Parity closure** — remove the nine frozen strict-control gaps and port the
+   seven missing S2 exports, including the shared DnD subsystem.
+4. **Structural convergence** — consume the already-ported headless spine,
+   retire upper-layer duplication in bounded batches, finish consumer delivery,
+   and complete package-build migration.
+5. **Public completeness** — close the catalogue documentation map, finish the
+   admin projection, then work license and type/lint hygiene without displacing
+   user-visible correctness.
 
-- **certification-enforcement** — wire the evidence checks into CI: report-only
-  first (`certification-gates.yml`), then required once the styled layer
-  type-checks and the suites are green.
-- **headless-spine-port** — port `SelectionManager`, `ListKeyboardDelegate` /
-  `useSelectable*`, and `useContextProps` + slots to their lowest layer, then
-  migrate the per-widget copies onto them.
-- **consumer-delivery** — make "ships correctly" true on npm: route styled
-  components through the macro, add the missing sub-path exports, fix the boundary
-  skips.
-- **upstream-api-parity** — prune invented component props (Picker, TreeView) and
-  hardcoded i18n strings back to the upstream surface.
+These are not five independent backlogs. Upstream absorption precedes parity
+closure so evidence is not built against a pin that is immediately replaced;
+shared-spine and layer-convergence work precede per-widget cleanup so behavior is
+fixed once at the lowest owner; documentation follows proven behavior so prose
+does not become a second source of truth.
 
-These two carry the standing parity rule and the licensing chore:
+## Initiative exits
 
-- **upstream-parity-loop** — the #1 product rule in motion: absorb each upstream
-  RAC/S2 release and close the behavioral gaps it exposes. Tickets in
-  `upstream-release-audit.md`; the cross-hook press-path epic is scoped in
-  `press-path-epic.md`; pinning and absorption mechanics in `upstream-sync.md`.
-- **license-compliance** — add the per-file Apache-2.0 derivative-source headers
-  the ported packages still lack (`tech-debt.md`; full plan in
-  `docs/license-compliance-plan.md`).
+- **component-certification** exits when all 78 official entries have current,
+  applicable evidence and the strict modeled-control baseline is empty.
+- **support-export-parity** exits when the S2 value-export report has zero
+  missing names and the exported behavior is certified, not merely present.
+- **comparison-docs-overhaul** exits when every official catalogue entry maps to
+  an intentional, behavior-backed docs destination.
+- **package-build-migration** exits when every public package builds through the
+  chosen native pipeline and clean-checkout consumers no longer depend on stale
+  artifacts.
+- **admin-dashboard** exits when the dev-only dashboard faithfully projects the
+  live task/roadmap documents without a second state store.
+- **ui-release-promotion** exits for this train when PR #20 publishes all five
+  intended versions with provenance and the exact release SHA is observed green.
+- **headless-spine-port** exits when the shared upstream state, selection,
+  keyboard, focus, and slot machinery is consumed rather than copied per widget.
+- **consumer-delivery** exits when installed tarballs expose and style the same
+  supported surface proven in-repo, including SSR/hydration.
+- **upstream-api-parity** exits when local public differences are either removed
+  or explicitly documented owner-approved additions.
+- **upstream-parity-loop** is standing work: each upstream train is closed only
+  when every observable change is classified and the same-SHA gate ladder is
+  green.
+- **license-compliance** exits when derivative-source attribution is complete
+  and guarded.
 
-## Execution sequence
+## Completed outcomes
 
-The initiatives above are the _what_; this is the _order_. The program is
-dependency-ordered, not priority-ranked: bounded correctness work leads, the
-shared-spine port is the load-bearing middle most other tracks hang off, and the
-delivery/compliance/release chores trail because they gate on coverage, a product
-decision, or are pure housekeeping. Depth for every item already lives in the
-linked doc — this section sequences, it does not restate.
-
-**In flight right now (2026-07-06):** the `recertification` march (Toast,
-CP9.35) plus the P0 stabilization cluster it surfaced — `ci-main-gate-wiring`,
-`release-train-unjam`, `main-rot-burndown-2026-07`. The phases below are the
-longer program those interleave with.
-
-**Critical path.** `headless-spine-port` is the root enabler. Its three keystones
-(`SelectionManager`, `ListKeyboardDelegate` / `useSelectable*`, `useContextProps`
-\+ slots) delete the per-widget duplication behind the recurring
-selection / keyboard / `aria-describedby` bugs, and they gate
-`certification-enforcement`'s `contract-spec-burndown`, which in turn gates
-`ci-gates-required`. Everything else interleaves around that spine.
-
-### Phase 1 — bounded correctness, no dependencies (now)
-
-1. **GridList Space double-toggle** (`upstream-parity-loop` ▸
-   `gridlist-double-toggle`) — **DONE 2026-06-21 (commit d03dac43).** Twin of the
-   Table bug fixed 2026-06-19: the item hook and the grid hook both toggled on
-   Space and neither stopped propagation. Resolved evidence-first (see _The first
-   item_ below). Fixed per-widget now, subsumed by the spine port later — a
-   conscious triage, not an oversight: the latent bug shipped fixed today and the
-   fix mirrors one already landed.
-2. **`ts-nocheck-style`** (`certification-enforcement`) — **DONE 2026-06-21.**
-   Dropped `@ts-nocheck` from the 6 `style/` files. Removing it surfaced 21
-   strict-mode errors (20× `TS7053` string-index implicit-any, 1× `TS7006`
-   param) that upstream's `noImplicitAny:false` silently suppresses; reconciled
-   each faithfully with minimal null-checked loose-lookup casts (mirroring
-   upstream's effective `any`) plus a `tokens.ts` strip-default fix for the
-   synthetic `esModuleInterop` `default` key. `vp run typecheck` + 5384 package
-   tests green; type-only, no behavior change. The root type-hygiene enabler
-   beneath the evidence checks; the ~29 component files remain
-   (`ts-nocheck-components`, Phase 4).
-
-### Phase 2 — standalone parity absorption (interleavable)
-
-- **`table-focus-ring`** (T-59) — **DONE 2026-06-24.** Ported S2's TableView
-  focus-ring overlay model: rows now publish `--topFocusRing`/`--bottomPosition`
-  and the raw `::after` row focus indicator, while headers, body cells, selection
-  cells, and EditableCell render upstream's presentational `CellFocusRing` child
-  (`top: var(--topFocusRing, 0)`, `bottom: 0`). Unit coverage plus
-  comparison-app browser coverage exercise the current React fixture's shared
-  `CellFocusRing` structure and Solid's vendored-upstream asymmetric
-  non-first-row overlap.
-- **`rac-form-field-wrappers`** — **DONE 2026-06-21.** Absorbed the 9 unported RAC
-  Checkbox / Radio / Switch `Field` / `Button` / `FieldContext` names into
-  `solidaria-components`, mirroring upstream's 1.19 split (`*Field` owns state +
-  validation + help text; `*Button` is the clickable label + indicator). The
-  field→button handoff uses a native `Internal*Context` read inside the provider
-  (the `Show … keyed` owner pattern) because `<Provider>`/`TextContext` are inert
-  (`port-context-slots`); `description`/`errorMessage` bridged to `aria-describedby`
-  by hand. `guard:rac-export-gap` now reports 0 RAC names missing; 18 new tests +
-  typecheck + a11y green. The deprecated monolith wrappers stay the styled primaries
-  (we did **not** add hard `@deprecated` tags — see tech-debt).
-- **`autocomplete-collection-bridge`** — wire `SearchField` / `Menu` onto the
-  autocomplete contexts (Bucket D). **FLAGGED for the owner — blocked on
-  `headless-spine-port`.** Scoped 2026-06-21: this is not the additive,
-  decision-free wiring the sequence assumed. Our controller (`createAutocomplete`)
-  is a faithful port that already dispatches `AUTOCOMPLETE_FOCUS_EVENT` /
-  `AUTOCOMPLETE_CLEAR_FOCUS_EVENT` and emits `collectionProps` (`filter`,
-  `autoFocus`, `shouldUseVirtualFocus`), but **no collection consumer can receive
-  them yet** because the bridge depends on three `headless-spine-port` keystones
-  that are open/inert:
-  1. `port-list-keyboard-delegate` — **DONE 2026-06-21.** `createSelectableCollection`
-     now wires the FOCUS/CLEAR-FOCUS listeners (on `selection/constants.ts`'s
-     canonical `FOCUS_EVENT` / `CLEAR_FOCUS_EVENT` = `react-aria-focus` /
-     `react-aria-clear-focus`, matching upstream's shared `@react-aria/selection`
-     constants) + `autoFocus`-on-mount + the virtual-focus-first bookkeeping inside
-     `useSelectableCollection`. The shared hook now exists; what remains is the
-     per-widget migration (`createListBox.ts:226`, `createMenu.ts:201`) onto it
-     (`migrate-listbox-spine` / `migrate-menu-spine`). **Bridge follow-up:** the
-     controller dispatches `AUTOCOMPLETE_FOCUS_EVENT` / `AUTOCOMPLETE_CLEAR_FOCUS_EVENT`
-     today; realign it to dispatch the selection layer's `FOCUS_EVENT` /
-     `CLEAR_FOCUS_EVENT` (one canonical pair, dispatcher + listener) when wiring the
-     bridge — that is the faithful upstream shape. The remaining
-     `moveVirtualFocus` / `dispatchVirtualFocus` AT-cursor movement is still a
-     documented gap.
-  2. `port-context-slots` — **DONE 2026-06-21.** `useContextProps(props, ref, ctx)`
-     now resolves `props.slot` (via the faithful `useSlottedContext` slot-record
-     lookup), merges context props under the component's own (props win, handlers
-     chain via the reactive `mergeProps`) and merges the component ref with the
-     context ref; `Provider` nests the `[Context, value]` pairs (last outermost)
-     with lazy children so `useContext` binds inside the providers; `useSlot` +
-     `RefLike`/`SlottedValue`/`SlottedContextValue` + `assignRef`/`mergeRefs` added.
-     Still additive (zero functional consumers) — `SearchField`/`TextField`/
-     `ListBox`/`Menu` consume it in the `migrate-*-spine` tasks.
-  3. Filtered list state — `createListState.ts` has no `filter` support;
-     upstream's `UNSTABLE_useFilteredListState` (consumed by `ListBox`/`Menu` to
-     apply `collectionProps.filter`) has no analog.
-     Landing it tonight would mean either doing those spine ports first (a separate
-     phase, decision-laden) or faking it with bespoke per-widget consumers + inert-
-     context workarounds — which parity-is-the-rule and the Bucket D note forbid
-     ("don't fake it with bespoke consumers asserting searchbox/menu"). Tracked as a
-     `headless-spine-port` task (`depends: port-list-keyboard-delegate,
-port-context-slots`); resume it after the spine lands.
-- **`upstream-api-parity`** — `calendar-i18n-strings` **DONE 2026-06-21** (cell
-  today/selected suffix + grid accessible name routed through
-  `formatCalendarLabel`/the shared `CalendarHookData`, mirroring useCalendarCell /
-  useCalendarGrid; contract test added across en-US, fr-FR, RTL ar-AE). The
-  segment field-label remainder (`calendar-segment-i18n`) is **DONE 2026-07-15** —
-  the feared `SEGMENT_LABELS` table never materialized: the DateField cert
-  (CP9.60) already landed the faithful port (segment names via
-  `Intl.DisplayNames(type:"dateTimeField")`, field label threaded through
-  `hookData`), so only the segment contract test was owed and is now added.
-  `picker-api-upstream` /
-  `treeview-api-upstream` are **DONE 2026-06-21** — owner authorized the breaking
-  removal ("breaking doesn't matter, parity is priority"). The real invented
-  surface was narrower than the audit claimed: Picker dropped only
-  `value`/`defaultValue`/`onChange` (+ `PickerValue` + value⇄key helpers) and
-  **kept** the real S2 `renderValue`; TreeView dropped only `overflowMode` (+
-  `TreeOverflowMode` + `data-overflow-mode`) and **kept** the real S2
-  `onAction`/`renderActionBar`/`selectionStyle` (see tech-debt). Only the
-  `viviana-ui` public-names half of `upstream-api-parity` remains open.
-- **`support-export-parity`** — **DONE 2026-06-21.** The 21 missing S2 support
-  exports (`support-export-audit`): the slotted-props contexts, `PickerSection` /
-  `ComboBoxSection`, and the helper/hook re-exports are wired and
-  `comparison:report:exports` reports 0 missing support exports. The two
-  parity-restoring fixes (Skeleton force-disable merge order on the form fields;
-  `slot` restored on `ToggleSwitchProps`) landed with it.
-
-### Phase 3 — the shared-spine port (the load-bearing middle)
-
-Within `headless-spine-port`: `port-selection-manager` →
-`port-list-keyboard-delegate` → `port-context-slots`, then the migrations
-(`migrate-menu-spine`, `migrate-listbox-spine`, `migrate-combobox-nav`,
-`migrate-describedby-slots`) and `port-submenu-state`. **Keystone 1
-(`port-selection-manager`) DONE 2026-06-21 (commit 7c1708c4):** split the
-collapsed engine into upstream's two layers — `createMultipleSelectionState`
-(raw state) + the collection-aware `SelectionManager` class — backing
-`createListState`, with the manager exposed on `ListState`/`ComboBoxState`/
-`SelectState`; `onSelectionChange` now emits a faithful `Selection`. **Keystone 2
-(`port-list-keyboard-delegate`) DONE 2026-06-21:** ported `ListKeyboardDelegate`
-(first/last/next/prev + disabled skipping + collator typeahead + orientation/RTL
-horizontal nav), `DOMLayoutDelegate` (+ `LayoutDelegate`/`Rect`/`Size`),
-`createSelectableCollection` (arrow/Home/End/PageUp-Down/Ctrl-A/Escape/Tab +
-typeahead + select-on-focus + roving tabIndex + autofocus/scroll-into-view, with
-React effects → `createEffect`s and `onFocus`/`onBlur` → `onFocusIn`/`onFocusOut`)
-and `createSelectableList` (default delegate derived from the manager in a
-`createMemo`). A stable `data-collection` id is shared container↔items, keyed by
-the (stable) `SelectionManager` since a Solid collection is rebuilt on items
-change; unregistered items omit the attribute so unmigrated snapshots are
-unchanged. **Keystone 3 (`port-context-slots`) DONE 2026-06-21:** made the
-headless `solidaria-components/utils.tsx` context machinery faithful — `Provider`
-nests the `[Context, value]` pairs (last outermost) with lazy children so
-`useContext` binds inside them; `useSlottedContext(ctx, slot)` resolves a `slots`
-record (DEFAULT_SLOT fallback, throws on unknown, `null` opts out);
-`useContextProps(props, ref, ctx)` resolves `props.slot`, merges context props
-under the component's own via the reactive handler-chaining `mergeProps`, and
-merges the component+context refs; plus `useSlot`, `RefLike`/`WithRef`/
-`SlottedValue`/`SlottedContextValue`/re-typed `ContextValue<T,E>`, and
-`assignRef`/`mergeRefs`. Additive (zero functional consumers; 40 components keep
-native `.Provider`), so snapshots are unchanged; `DEFAULT_SLOT` stays the string
-`"default"` to match the styled-layer `SpectrumContextValue` record contract.
-**Next in flight: the migrations** (`migrate-menu-spine`, `migrate-listbox-spine`,
-`migrate-combobox-nav`, `migrate-describedby-slots`) + `port-submenu-state`, which
-wire the components onto the now-complete spine. The **press-path epic** is
-the item-hook half of this same move, folded into `upstream-parity-loop` because
-it is ticket-driven: Phases 0–1 landed (`onSelect` split + `createSelectableItem`);
-**`press-path-phase2`** migrates the three item hooks
-(`createGridListItem` / `createTreeItem` / `createTableRow`) onto the shared hook
-(carrying T-51 / T-56), then **`keyboard-nav-behavior`** (T-34) layers the
-`keyboardNavigationBehavior='tab'` model on top.
-
-### Phase 4 — enforcement capstone (gates on Phases 1–3)
-
-`certification-enforcement`, in order: `ts-nocheck-components` (~29 files,
-batched) → `lint-rules-reenable` (13 rules) → `contract-spec-burndown` (the 59
-visual-only components — gated on the spine keystones) → `ci-gates-required`
-(make the already-blocking workflows literal required checks in GitHub branch
-protection, with an owner-decided direct-to-main/bypass policy). Route-wide axe
-color contrast was retired as a dependency on 2026-08-08; folding the separate
-lint type-check back into the gated run still depends on the lint/type backlog.
-
-### Phase 5 — delivery, compliance, release (gated on coverage / a decision)
-
-- **`consumer-delivery`** — `macro-route-styled` (14), `viviana-ui-subpath-exports`
-  (19), `viviana-ui-button-passthrough`, `dead-natives`. Driven by real client
-  need (the UC track), not parity.
-- **`package-build-migration`** — finish `pkg-build-spectrum-dts`, then
-  `pkg-build-remaining`. Independent infra; interleave freely.
-- **`license-compliance`** — the per-file Apache-2.0 headers (12/989 done),
-  batched alongside other passes over each package.
-- **`ui-release-promotion`** — UC-02 Part B is **deferred** (needs a product/design
-  decision on the Viviana-owned macro token map — nothing upstream to mirror);
-  UC-06 is **downstream** (the `viviana-social` repo). The staged changesets are
-  ready to publish on the owner's call (`release-policy.md`). **2026-07-06: the
-  train is jammed** — version PR #7 stuck, 101 changesets pending, npm one patch
-  behind on 3 packages; `release-train-unjam` (tech-debt) is the P0 that moves
-  this item.
-
-### Continuous (always running, not a phase)
-
-- **`recertification`** — **COMPLETE 2026-07-15.** The march ran the standing
-  spine of component work to the end: all six tiers certified, 12/12 drivers,
-  Phase-3 closers landed. Shelved — see `recertification.md` (summary) and
-  `archive/recertification-full.md` (full log). The standing acceptance loop it
-  fed continues below.
-- **`component-certification`** — `cert-button`/`cert-checkbox` completed via
-  the march (2026-07-03/04); what remains here is keeping
-  `comparison:report:parity:strict` green (`labeledvalue-strict-parity`) and
-  the visual-state coverage debt.
-- **`comparison-docs-overhaul`** — port the remaining collection / overlay pages
-  to the docs site.
-- **`admin-dashboard`** — the `/admin` route and this tracking model itself.
-
-### Not backlog (recorded so they are not re-litigated)
-
-- The **8 skipped tests** are intentional and verified: 4 jsdom `contenteditable`
-  limits in `DateField.test.tsx`, 1 mirrored upstream skip in `Table.test.tsx`
-  (`scrollRef`), 3 React-Suspense-specific titles Solid covers elsewhere.
-- **Visual-state coverage** (349 tracked / 113 evidence / 56 pair-diff) is tracked
-  coverage debt under `component-certification`, not a separate initiative.
-
-### The first item — GridList Space double-toggle (DONE 2026-06-21)
-
-**Resolved in commit d03dac43.** Evidence before code, per the recorded caveat
-(`tech-debt.md` and the `gridlist-space-double-toggle-followup` memory). The open
-question was whether real DOM focus rests on the row or the grid container after
-keyboard entry — if the container, deleting the grid-level Space handler would
-break selection. The browser evidence settled it: GridList **auto-advances focus
-into the first row on container focus** (RAC parity), and a Table-style
-focus-following effect now carries real focus onto the focused row by a stable
-`data-key`, so the row owns Space/Enter exactly as upstream. What was done:
-
-1. Reproduced in a real browser with window-level focus tracing. Finding: a real
-   `Tab` lands focus on the first row and it sticks; the apparent "focus stays on
-   the container" was a Playwright `locator.focus()` artifact (it re-asserts the
-   grid when the focus-following effect moves focus synchronously inside
-   `grid.focus()`), not a component bug.
-2. Mirrored upstream `useSelectableCollection` (no Space/Enter case — the item
-   owns selection): removed the grid-level Space/Enter block, added the
-   focus-following effect + `data-key`, and gave `createGridListItem` an
-   `"all"`-gated interaction guard. Updated the unit tests to fire on the focused
-   item, not the grid.
-3. Re-ran the full package suite (5384 passed) and `a11y:check` (all three
-   sub-gates green); added `apps/web/e2e/gridlist-focus.spec.ts` as the
-   browser-evidence contract (roving focus + single-toggle, real-Tab entry).
+- **launch** — the docs site is live at `ui.proyectoviviana.org`; truthful
+  install/product positioning, route/SEO/contrast checks, safe deploy targeting,
+  and generated flagship API reference are in place. Remaining docs coverage is
+  continuing product work, not an unlaunched state.
+- **recertification** — six tiers, 12/12 drivers, and Phase-3 closers completed
+  2026-07-15. The suite is now a standing blocking gate.
+- **certification-enforcement** — completed 2026-08-08 with strict protected-main
+  contexts, administrator enforcement, and no force pushes/deletions. Open
+  type/lint/contract debt now belongs to component certification rather than
+  falsely keeping CI enforcement open.
