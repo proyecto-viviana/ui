@@ -355,10 +355,10 @@ const calendarCellInner = style<{
     isPressed: "gray-100",
     isDisabled: "transparent",
     isSelected: {
-      default: lightDark("accent-900", "accent-700"),
-      isHovered: lightDark("accent-1000", "accent-800"),
-      isPressed: lightDark("accent-1000", "accent-800"),
-      isFocusVisible: lightDark("accent-1000", "accent-800"),
+      default: "interactive-fill",
+      isHovered: lightDark("accent-1000", "accent-600"),
+      isPressed: lightDark("accent-1000", "accent-600"),
+      isFocusVisible: lightDark("accent-1000", "accent-600"),
       isDisabled: "transparent",
       isInvalid: {
         default: lightDark("negative-900", "negative-700"),

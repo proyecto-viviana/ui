@@ -16,11 +16,12 @@
  *   - UPSTREAM-ONLY             → coverage gaps: upstream asserts a shape our
  *     tests never touch.
  *
- * This is a discovery/triage aid, not (yet) a blocking floor: it always exits 0
- * and ranks suspects so a human can reconcile each against the authoritative
- * upstream source. Names are reported but never scored (they are example-
- * specific); roles dominate the suspect score because a role our test asserts
- * that upstream never does is almost always a genuine wrong-shape bug.
+ * This is a discovery/triage aid with a blocking regression floor. The current
+ * vocabulary debt is baselined as individual component/category/value facts;
+ * removing a fact is allowed, while a new suspect, coverage gap, or unmatched
+ * upstream suite exits non-zero. Names are reported but never scored (they are
+ * example-specific); roles dominate the suspect score because a role our test
+ * asserts that upstream never does is almost always a genuine wrong-shape bug.
  *
  * Upstream oracle = the gitignored ./react-spectrum tree, pinned via
  * scripts/upstream-pin.json. Re-materialize / bump it per the playbook at
@@ -28,10 +29,12 @@
  */
 
 import { readdir, readFile } from "node:fs/promises";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
+const BASELINE_PATH = path.join(ROOT, "scripts", "upstream-test-parity-baseline.json");
+const WRITE_BASELINE = process.argv.includes("--write-baseline");
 
 // ---------------------------------------------------------------------------
 // Sources
@@ -409,6 +412,10 @@ function fmt(values: string[]): string {
   return values.length ? values.join(", ") : "—";
 }
 
+function facts(key: string, category: string, values: string[]): string[] {
+  return values.map((value) => `${key}|${category}|${value}`);
+}
+
 // ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
@@ -528,6 +535,82 @@ console.log(
   `  upstream, no port-level test of ours:                    ${upstreamOnly.join(", ") || "—"}`,
 );
 
+const currentFloor = {
+  suspects: rows
+    .flatMap((r) => [
+      ...facts(r.key, "role", r.weRoles),
+      ...facts(r.key, "aria", r.weAria),
+      ...facts(r.key, "key", r.weKeys),
+    ])
+    .sort(),
+  coverageGaps: gaps
+    .flatMap((r) => [
+      ...facts(r.key, "role", r.upRoles),
+      ...facts(r.key, "aria", r.upAria),
+      ...facts(r.key, "key", r.upKeys),
+    ])
+    .sort(),
+  upstreamOnly: upstreamOnly.slice().sort(),
+};
+
+if (WRITE_BASELINE) {
+  writeFileSync(
+    BASELINE_PATH,
+    `${JSON.stringify(
+      {
+        description:
+          "Frozen vocabulary findings at the pinned upstream oracle. Removing facts is allowed; new suspect facts, coverage-gap facts, or unmatched upstream suites fail.",
+        ...currentFloor,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  console.log(`\nWrote regression floor → ${path.relative(ROOT, BASELINE_PATH)}`);
+  process.exit(0);
+}
+
+if (!existsSync(BASELINE_PATH)) {
+  console.error(
+    `\nFAIL: missing ${path.relative(ROOT, BASELINE_PATH)}. Create it intentionally with --write-baseline.`,
+  );
+  process.exit(1);
+}
+
+const baseline = JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as {
+  suspects: string[];
+  coverageGaps: string[];
+  upstreamOnly: string[];
+};
+const additions = {
+  suspects: currentFloor.suspects.filter((fact) => !baseline.suspects.includes(fact)),
+  coverageGaps: currentFloor.coverageGaps.filter((fact) => !baseline.coverageGaps.includes(fact)),
+  upstreamOnly: currentFloor.upstreamOnly.filter((key) => !baseline.upstreamOnly.includes(key)),
+};
+
+if (
+  drift ||
+  additions.suspects.length > 0 ||
+  additions.coverageGaps.length > 0 ||
+  additions.upstreamOnly.length > 0
+) {
+  console.error("");
+  if (drift) console.error("FAIL: the vendored oracle does not match scripts/upstream-pin.json.");
+  if (additions.suspects.length > 0) {
+    console.error("New suspect facts:");
+    for (const fact of additions.suspects) console.error(`  - ${fact}`);
+  }
+  if (additions.coverageGaps.length > 0) {
+    console.error("New coverage-gap facts:");
+    for (const fact of additions.coverageGaps) console.error(`  - ${fact}`);
+  }
+  if (additions.upstreamOnly.length > 0) {
+    console.error("New upstream suites without a port-level test:");
+    for (const key of additions.upstreamOnly) console.error(`  - ${key}`);
+  }
+  process.exit(1);
+}
+
 console.log(
-  `\nReport-only (exit 0). Reconcile each suspect against the authoritative upstream source before changing a test.`,
+  `\nPASS: no findings were added beyond ${path.relative(ROOT, BASELINE_PATH)}. Reconcile baselined suspects against authoritative source before changing behavior.`,
 );

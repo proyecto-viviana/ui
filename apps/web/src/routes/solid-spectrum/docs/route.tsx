@@ -205,7 +205,7 @@ function DocsLayout() {
     margin: "1px 8px",
     padding: "7px 12px",
     "text-align": "left" as const,
-    background: isActive(href) ? "var(--accent-primary)" : "transparent",
+    background: isActive(href) ? "var(--interactive-fill)" : "transparent",
     border: "none",
     "border-radius": "var(--radius-sm)",
     color: isActive(href) ? "var(--text-on-accent)" : colors().textSecondary,
@@ -265,7 +265,7 @@ function DocsLayout() {
             "z-index": "160",
             width: "44px",
             height: "44px",
-            background: "var(--accent-primary)",
+            background: "var(--interactive-fill)",
             color: "var(--text-on-accent)",
             border: "none",
             "border-radius": "var(--radius-md)",
@@ -363,7 +363,7 @@ function DocsLayout() {
                     style={{
                       width: "28px",
                       height: "28px",
-                      background: "var(--accent-primary)",
+                      background: "var(--interactive-fill)",
                       "border-radius": "var(--radius-sm)",
                       display: "flex",
                       "align-items": "center",
@@ -582,22 +582,23 @@ function DocsLayout() {
                 "justify-content": "center",
                 gap: "8px",
                 padding: "10px 14px",
-                background: "var(--accent-primary)",
+                background: "var(--interactive-fill)",
                 color: "var(--text-on-accent)",
                 "text-decoration": "none",
                 "font-weight": "600",
                 "font-size": "12px",
                 "font-family": FONT_BODY,
-                border: "1px solid var(--accent-primary)",
+                border: "1px solid var(--interactive-fill)",
                 "border-radius": "var(--radius-sm)",
                 "box-shadow": "var(--edge-glass)",
                 transition: "background 0.2s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--blue-600)";
+                e.currentTarget.style.background =
+                  "color-mix(in srgb, var(--interactive-fill) 88%, black)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--accent-primary)";
+                e.currentTarget.style.background = "var(--interactive-fill)";
               }}
             >
               Open Playground

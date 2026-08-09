@@ -30,7 +30,11 @@ export const Route = createFileRoute("/solid-spectrum")({
 function SolidSpectrumLayout() {
   const { isDark } = useTheme();
   return (
-    <Provider colorScheme={isDark() ? "dark" : "light"}>
+    <Provider
+      colorScheme={isDark() ? "dark" : "light"}
+      background="base"
+      style={{ background: "transparent" }}
+    >
       <Outlet />
     </Provider>
   );

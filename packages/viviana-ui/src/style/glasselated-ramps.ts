@@ -17,18 +17,13 @@
  * monotonicity and was still the wrong palette, because nothing had checked the anchors
  * against the island. The island is the source of truth.
  *
- * ACCESSIBILITY. Components fill semantic backgrounds via lightDark("<ramp>-900",
- * "<ramp>-700") with white ink (calendar/RangeCalendar.tsx:373, radio/index.tsx:284,
- * menu/s2-menu-styles.ts:257). Those two stops per ramp are pinned to >= 4.5:1 against
- * white — EXCEPT blue, where 900 is re-pinned to the brand `--accent-primary` #2e90fa
- * in BOTH columns (see the blue ramp note: the darkened #1474e4/#338cfe stops of an
- * earlier revision put the entire accent-coloured population one rung off register).
- * White ink on the light accent fill is therefore ~3.2:1, the 3:1 large-text/graphical
- * floor only — which is exactly how the island spends it (primary button, white 13px/600,
- * glasselated.css:1361-1370; white icon masks, :808-810). It never sets body-size white
- * text on the light accent fill; a component needing readable text on a selected surface
- * takes the raised-pill idiom instead (TabSwitch, switch/index.tsx) or the soft accent
- * pill (`--accent-primary-soft` + blue ink, `.glx-btn-soft` glasselated.css:1382-1392).
+ * ACCESSIBILITY. Semantic fills with white text are pinned to >= 4.5:1. Blue is the
+ * exception at the ramp level: accent-900 remains the brand `--accent-primary` #2e90fa
+ * in both columns for decorative marks, where it only needs the 3:1 non-text floor.
+ * Text-bearing accent surfaces use the standalone `interactive-fill` token below
+ * (#135fc0 / #3670ae), matching `--interactive-fill` in viviana-tokens.css. Keeping
+ * decoration and readable fill as separate semantic roles prevents a contrast repair
+ * from moving every focus ring, indicator, and glow off the published brand accent.
  *
  * Two invariants to hold when editing:
  *   - Emit EVERY stop of a ramp. A missing stop silently keeps the Adobe value.
@@ -77,18 +72,21 @@ const RAMPS: Record<string, Ramp> = {
    *   the island has no token beyond it in either direction.
    *
    *   500 IS THE SECONDARY INK STOP, by the same logic one rung quieter: it is pinned to
-   *   `--text-secondary`, `--slate-500` #64748b in light (:34,43) and the hardcoded neutral
-   *   #9aa0a8 in dark (:171). Note dark `--text-secondary` is NOT dark `--slate-500` (#97a1ab,
-   *   :218) — the island de-tints its dark ink away from the slate ramp exactly as it does at
-   *   800, so following slate here would miss by the same small margin it missed by at 800.
+   *   `--text-secondary` in viviana-tokens.css, in NEITHER column to `--slate-500`. Dark never
+   *   was — the island de-tints its dark ink away from the slate ramp (#97a1ab) exactly as it
+   *   does at 800 — and light no longer is either: `--slate-500` #64748b reads 3.67-4.38:1 on
+   *   our light surfaces, so both `--text-secondary` and this stop step one notch darker to
+   *   #556478 (4.65:1 at worst) and dark lifts #9aa0a8 -> #a0a6ae (4.36 -> 4.68:1 on
+   *   `--surface-raised`, the binding surface in dark). The palette rungs themselves are
+   *   untouched; what moved is an ink role, and the two files must move together.
    *   `neutral-subdued-content-color-default` is repointed onto this stop in spectrum-theme.ts;
    *   Adobe resolves it to gray-700, which paints field labels, unselected tab and segment
    *   labels, slider labels and breadcrumbs two rungs too heavy (61 elements, both schemes).
    *
-   *   Light 300/400/500 were #c5d0de/#93a3b8/#63748b — each exactly one off the island's
-   *   #c4d0de/#94a3b8/#64748b in the red channel. That is a round-trip through OKLCh, not a
-   *   transcription; the values are now copied from the declarations. Read these off the CSS,
-   *   never recompute them: a one-digit drift still fails an equality check against the token.
+   *   Light 300/400 were #c5d0de/#93a3b8 — each exactly one off the island's #c4d0de/#94a3b8
+   *   in the red channel. That is a round-trip through OKLCh, not a transcription; the values
+   *   are now copied from the declarations. Read every anchored stop off the CSS, never
+   *   recompute it: a one-digit drift still fails an equality check against the token.
    *
    *   The dark 800->900->1000 gaps are ~0.018 OKLCh L, just under the >= 0.02 this file asks
    *   for below. That is a ceiling, not a choice: the dark ink is already at L 0.964 and 1000
@@ -111,7 +109,7 @@ const RAMPS: Record<string, Ramp> = {
     200: ["#dbe3ed", "#555c64"],
     300: ["#c4d0de", "#67717d"],
     400: ["#94a3b8", "#7c8794"],
-    500: ["#64748b", "#9aa0a8"],
+    500: ["#556478", "#a0a6ae"],
     600: ["#465569", "#a8b2c0"],
     700: ["#33455c", "#b9c4d6"],
     800: ["#17212e", "#f2f3f5"],
@@ -132,13 +130,18 @@ const RAMPS: Record<string, Ramp> = {
    *   single largest off-register cluster in both schemes was accent-coloured (24 light
    *   elements, 15 dark).
    *
-   *   700's DARK column is the interactive FILL, which is the one accent value the island
-   *   does split by scheme: `--interactive-fill` is `var(--accent-primary)` in light (:83)
-   *   but the quieter #407fc1 in dark (:200). That split is exactly what Adobe's
-   *   `lightDark("accent-900", "accent-700")` idiom expresses — light takes the accent,
-   *   dark steps down — so the idiom stays and only the value it lands on moves. A filled
-   *   accent button in dark is a large area of colour; the island damps it and leaves the
-   *   small accent marks at full strength.
+   *   700's DARK column remains #3670ae because it was the historical landing point for
+   *   interactive fills. The actual semantic fill is now explicit below rather than
+   *   encoded as a cross-scheme ramp pair: #135fc0 in light and #3670ae in dark. A filled
+   *   accent button is a large area of colour; the island damps it and leaves the small
+   *   accent marks at full strength.
+   *
+   *   The damped fill carries white label text, so it answers to 4.5:1 with white. The
+   *   island's #407fc1 gave 4.18:1; this column is #3670ae (5.14:1), and viviana-tokens.css
+   *   moves `--interactive-fill` to the same hex — the two are one value in two files.
+   *   That also repairs a gap this ramp's own rule forbade: #407fc1 sat 0.009 OKLCh L below
+   *   800, so `nextColorStop`'s hover step off the dark fill was invisible; #3670ae restores
+   *   it to 0.051/0.058 either side.
    *
    *   Nothing else here is pinned. The island publishes no accent hover, so 800 (dark
    *   hover, one step brighter than the damped fill) and 1000 (light hover, one step
@@ -151,7 +154,7 @@ const RAMPS: Record<string, Ramp> = {
     400: ["#bfd9fe", "#2d415d"],
     500: ["#9cc4fc", "#2f507f"],
     600: ["#7bb0fa", "#2e5fa1"],
-    700: ["#5c9ff9", "#407fc1"],
+    700: ["#5c9ff9", "#3670ae"],
     800: ["#398dfa", "#267ce7"],
     900: ["#2e90fa", "#2e90fa"],
     1000: ["#0e64c8", "#569eff"],
@@ -294,15 +297,16 @@ const SEMANTIC_OVERRIDES: Record<string, Ramp> = {
   notice: RAMPS.amber,
 };
 
-/* The create-yellow CTA (`--accent-create-*`). Deliberately NOT a ramp: the island declares
- * exactly three values per scheme and they do not sit on the amber trajectory — this is a
- * pale wash with dark ink, where amber-900 is a saturated fill with white ink. Modelling it
- * as a 16-stop ramp would invent thirteen colours nobody asked for.
+/* Standalone semantic colours with no honest ramp. The create-yellow CTA
+ * (`--accent-create-*`) declares exactly three values per scheme and does not sit on the
+ * amber trajectory. `interactive-fill` is likewise a role rather than a blue stop: it is
+ * the AA-safe fill under white text, while accent-900 remains the decorative brand blue.
  *
  * Spread into `baseColors` alongside the ramps, so `backgroundColor: "create-bg"` resolves
  * like any other token. Hover/press cannot use `nextColorStop` here (no adjacent stop
  * exists), so the button styles name the border colour explicitly for those states. */
 export const glasselatedCreateColors: Record<string, ColorToken> = {
+  "interactive-fill": { type: "color", light: "#135fc0", dark: "#3670ae" },
   "create-bg": { type: "color", light: "#ffedb0", dark: "#ffde81" },
   "create-border": { type: "color", light: "#f5d88a", dark: "#ffde81" },
   "create-ink": { type: "color", light: "#7a5600", dark: "#3a2e00" },

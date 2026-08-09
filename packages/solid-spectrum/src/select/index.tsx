@@ -139,7 +139,10 @@ const valueStyles = style<{ isSelected?: boolean }>({
   overflow: "hidden",
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
-  color: { default: "gray-500", isSelected: "neutral" },
+  /* Mirrors pinned S2 Picker's `valueStyles`: `[data-placeholder]` resolves to
+   * `neutral-subdued`, not the raw gray-500 palette rung. The semantic token also
+   * keeps placeholder text above AA in Viviana's light and dark themes. */
+  color: { default: "neutral-subdued", isSelected: "neutral" },
 });
 
 const listBoxStyles = style({

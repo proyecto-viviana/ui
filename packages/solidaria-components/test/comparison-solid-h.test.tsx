@@ -173,13 +173,13 @@ describe("comparison Solid h helper", () => {
     const user = userEventSetup();
     render(() => hc(Demo, {})());
 
-    expect(screen.getByRole("button", { name: "Channel" })).toHaveTextContent("Bravo");
+    expect(screen.getByRole("button", { name: "Bravo Channel" })).toHaveTextContent("Bravo");
 
-    await user.click(screen.getByRole("button", { name: "Channel" }));
+    await user.click(screen.getByRole("button", { name: "Bravo Channel" }));
     await user.click(screen.getByRole("option", { name: "Alpha" }));
 
     expect(document.body.dataset.lastComparisonSelection).toBe("alpha");
-    expect(screen.getByRole("button", { name: "Channel" })).toHaveTextContent("Alpha");
+    expect(screen.getByRole("button", { name: "Alpha Channel" })).toHaveTextContent("Alpha");
   });
 
   it("keeps Checkbox state reactive through hc composition", async () => {

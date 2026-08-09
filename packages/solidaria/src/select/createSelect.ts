@@ -387,15 +387,17 @@ export function createSelect<T>(
           "aria-disabled": isDisabled || undefined,
           "aria-required": p.isRequired || undefined,
           "aria-describedby": p["aria-describedby"] || undefined,
-          // Mirror upstream `useSelect`: the trigger's accessible name folds the
-          // SELECTED VALUE ("Pro") ahead of the field label ("Plan") → "Pro Plan"
-          // via `aria-labelledby=[valueId, labelId]`. Only wire this when there is
-          // a real visible label; with an `aria-label` (no `labelledby`) the field
-          // props' `aria-label` stays the trigger name (label-less legacy path,
-          // keeps TabsPicker/label-less Select unchanged).
-          "aria-labelledby": fieldProps["aria-labelledby"]
-            ? [valueId, fieldProps["aria-labelledby"]].filter(Boolean).join(" ")
-            : undefined,
+          // Mirror upstream `useSelect` exactly: the trigger name starts with
+          // the selected value, then the visible label. When only `aria-label`
+          // is present, the trigger references itself so that label follows the
+          // value as well ("Pro Plan"), rather than masking visible text.
+          "aria-labelledby": [
+            valueId,
+            fieldProps["aria-labelledby"],
+            fieldProps["aria-label"] && !fieldProps["aria-labelledby"] ? fieldProps.id : undefined,
+          ]
+            .filter(Boolean)
+            .join(" "),
           onKeyDown,
           onFocus: handleFocus,
           onBlur: handleBlur,
@@ -428,13 +430,14 @@ export function createSelect<T>(
       return {
         id: listBoxId,
         role: "listbox",
-        // Mirror upstream `useSelect`: the listbox is labelled by the FIELD LABEL
-        // (`fieldProps['aria-labelledby']` → the visible "Plan" label), NOT the
-        // trigger button — the button's own accessible name folds in the selected
-        // value ("Pro Plan"), which must not leak onto the listbox. Only when
-        // there is no visible label (an `aria-label` on the field) does it fall
-        // back to the trigger id (unchanged legacy behavior for label-less use).
-        "aria-labelledby": fieldProps["aria-labelledby"] ?? buttonId,
+        // Mirror upstream `useSelect`: a visible field label names the listbox;
+        // the trigger is the fallback only for the `aria-label` branch.
+        "aria-labelledby": [
+          fieldProps["aria-labelledby"],
+          fieldProps["aria-label"] && !fieldProps["aria-labelledby"] ? fieldProps.id : undefined,
+        ]
+          .filter(Boolean)
+          .join(" "),
         "aria-multiselectable": state.selectionMode() === "multiple" ? true : undefined,
         tabIndex: -1,
         onBlur: (e: FocusEvent) => {

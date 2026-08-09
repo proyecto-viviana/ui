@@ -18,10 +18,11 @@
   --pv-radius-md: var(--radius-md);
   --pv-radius-lg: var(--radius-lg);
   --pv-radius-pill: 999px;
-  /* Primary-action fill: the register's blue accent, safe with --text-on-accent
-     in both schemes. */
-  --pv-accent-solid: var(--accent-primary);
-  --pv-accent-solid-hover: var(--blue-600);
+  /* Primary-action fill is deliberately separate from the decorative accent.
+     `--interactive-fill` is the register's AA-safe text-on-blue pairing in both
+     schemes; the brighter accent remains available for marks, rims and glows. */
+  --pv-accent-solid: var(--interactive-fill);
+  --pv-accent-solid-hover: color-mix(in srgb, var(--interactive-fill) 88%, black);
   --pv-accent-tint: color-mix(in srgb, var(--accent-primary) 12%, transparent);
   --pv-accent-tint-strong: color-mix(in srgb, var(--accent-primary) 20%, transparent);
   /* Repointed onto the register elevation so anything still reading these gets
@@ -65,12 +66,12 @@
     box-shadow 0.18s ease;
 }
 .pv-cta--primary {
-  background: var(--accent-primary);
+  background: var(--pv-accent-solid);
   color: var(--text-on-accent);
   box-shadow: var(--edge-glass);
 }
 .pv-cta--primary:hover {
-  background: var(--blue-600);
+  background: var(--pv-accent-solid-hover);
 }
 .pv-cta--secondary {
   background: var(--surface-raised);
@@ -158,7 +159,7 @@
   color: var(--text-primary);
 }
 .pv-wordmark > span:last-child {
-  color: var(--accent-primary);
+  color: var(--text-link);
 }
 
 /* Centered page column */
@@ -339,7 +340,7 @@
   color: var(--text-primary);
 }
 .pv-frame__seg > button[data-active="true"] {
-  background: var(--accent-primary);
+  background: var(--pv-accent-solid);
   color: var(--text-on-accent);
 }
 

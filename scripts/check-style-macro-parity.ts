@@ -31,9 +31,7 @@
  * this guard does NOT normalize it away, so it also catches POSTFIX drift when
  * the upstream pin is bumped without updating the port.
  *
- * Exit 1 on any mismatch; exit 0 otherwise. Skips cleanly (exit 0 + note) when
- * the gitignored ./react-spectrum oracle or the token host is not materialized —
- * never cry wolf on an environmental gap. Run standalone anytime:
+ * Exit 1 on any mismatch or missing evidence; exit 0 otherwise. Run standalone anytime:
  * `vp run guard:style-macro-parity`.
  */
 
@@ -69,18 +67,18 @@ const UP_THEME = path.join(
 const TOKEN_HOST = path.join(ROOT, "packages", "solid-spectrum", "node_modules");
 
 if (!existsSync(UP_THEME)) {
-  process.stdout.write(
-    `guard:style-macro-parity — SKIP: vendored upstream oracle not materialized ` +
+  process.stderr.write(
+    `guard:style-macro-parity — FAIL: vendored upstream oracle not materialized ` +
       `(${path.relative(ROOT, UP_THEME)} absent). Materialize ./react-spectrum at the pin to run this guard.\n`,
   );
-  process.exit(0);
+  process.exit(1);
 }
 if (!existsSync(path.join(TOKEN_HOST, "@adobe", "spectrum-tokens"))) {
-  process.stdout.write(
-    `guard:style-macro-parity — SKIP: @adobe/spectrum-tokens not installed under ` +
-      `${path.relative(ROOT, TOKEN_HOST)} (install gap, not drift).\n`,
+  process.stderr.write(
+    `guard:style-macro-parity — FAIL: @adobe/spectrum-tokens not installed under ` +
+      `${path.relative(ROOT, TOKEN_HOST)}. Run \`vp install\` before this evidence gate.\n`,
   );
-  process.exit(0);
+  process.exit(1);
 }
 
 process.env.NODE_PATH = [process.env.NODE_PATH, TOKEN_HOST].filter(Boolean).join(path.delimiter);

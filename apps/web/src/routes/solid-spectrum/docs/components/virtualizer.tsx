@@ -21,7 +21,7 @@ const tileFills = [
   "var(--color-bg-300)",
   "var(--color-accent-dim)",
   "var(--color-bg-400)",
-  "var(--color-primary-700)",
+  "var(--color-bg-200)",
 ];
 
 const gridItems = Array.from({ length: 200 }, (_, i) => ({
@@ -37,6 +37,7 @@ const tile = {
   "justify-content": "space-between",
   padding: "12px",
   "border-radius": "var(--radius-lg)",
+  color: "var(--text-primary)",
 } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/virtualizer")({
@@ -131,8 +132,12 @@ function VirtualizerPage() {
           <For each={gridItems}>
             {(item) => (
               <div style={{ ...tile, height: "112px", background: item.fill }}>
-                <span class={typeRoles.label}>{item.label}</span>
-                <span class={typeRoles.meta}>Grid item</span>
+                <span class={typeRoles.label} style={{ color: "var(--text-primary)" }}>
+                  {item.label}
+                </span>
+                <span class={typeRoles.meta} style={{ color: "var(--text-primary)" }}>
+                  Grid item
+                </span>
               </div>
             )}
           </For>
@@ -171,8 +176,12 @@ function VirtualizerPage() {
                   background: item.fill,
                 }}
               >
-                <span class={typeRoles.label}>{item.label}</span>
-                <span class={typeRoles.meta}>Waterfall item</span>
+                <span class={typeRoles.label} style={{ color: "var(--text-primary)" }}>
+                  {item.label}
+                </span>
+                <span class={typeRoles.meta} style={{ color: "var(--text-primary)" }}>
+                  Waterfall item
+                </span>
               </div>
             )}
           </For>

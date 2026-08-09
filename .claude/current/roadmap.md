@@ -318,9 +318,10 @@ it is ticket-driven: Phases 0–1 landed (`onSelect` split + `createSelectableIt
 `certification-enforcement`, in order: `ts-nocheck-components` (~29 files,
 batched) → `lint-rules-reenable` (13 rules) → `contract-spec-burndown` (the 59
 visual-only components — gated on the spine keystones) → `ci-gates-required`
-(flip the ladder from report-only to required — the capstone that makes "green"
-mean the documented bar passed; this also retires the axe color-contrast
-exclusion and folds the separate lint type-check back into the gated run).
+(make the already-blocking workflows literal required checks in GitHub branch
+protection, with an owner-decided direct-to-main/bypass policy). Route-wide axe
+color contrast was retired as a dependency on 2026-08-08; folding the separate
+lint type-check back into the gated run still depends on the lint/type backlog.
 
 ### Phase 5 — delivery, compliance, release (gated on coverage / a decision)
 

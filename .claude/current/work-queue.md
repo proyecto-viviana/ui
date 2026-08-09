@@ -58,24 +58,40 @@ next task and which workstreams are live.
 
 ## Current priorities
 
-0. **P0 stabilization first** (steering.md Now): `release-train-unjam`
-   (`tech-debt.md`) is the sole remaining P0 — owner-gated on merging version
-   PR #7 + npm publish. `ci-main-gate-wiring` (done 2026-07-06, validated green —
-   it caught 5 latent typecheck errors on the first main pushes),
-   `main-rot-burndown-2026-07`, Toast CP9.35, and DropZone CP9.36 are all
-   cleared. Main is now green and CI-covered on every push.
-1. The recertification program is **COMPLETE (2026-07-15)** — the per-component
+0. **P0 pipeline repair before new parity work.** The 2026-08-08 main run exposed
+   two structural defects: ignored upstream evidence made Certification Gates
+   crash, and Release still succeeded for that same red SHA. The local repair
+   materializes/verifies the pin, makes report-only parity checks reject new
+   drift, freezes the 59-file `@ts-nocheck` surface, and binds Release to all
+   three green release gates for the exact revision (tickets #2, #3, #7). The
+   same repair closes ticket #8 with a blocking 154-route, two-theme contrast
+   sweep and a fully classified expanded playground audit. Draft PR #21 hosted
+   head `98670653651fc4bd11d6e2338a05212bef019f1a` passed all four intended
+   contexts after its first two heads exposed a shallow Changesets checkout and
+   a built-artifact guard without its producer. Strict `main` protection now
+   requires exactly those proven contexts. Land the repair and watch the new
+   main workflows complete before calling main green.
+1. **Absorb the newly available Adobe train after P0 lands.** The current oracle
+   is internally exact at S2 `1.5.1` / RAC `1.19.0`, but freshness now reports
+   S2 `1.6.0` / RAC `1.20.0`. Follow `upstream-sync.md`: read release notes,
+   diff source and tests, move the oracle and comparison dependencies together,
+   then rerun the full evidence ladder.
+2. **Bring the TabSwitch / SegmentedControl boundary to the owner.** Ticket #9
+   records the overlap discovered by the contrast audit. This is a public API
+   architecture decision, so no alias, rename, or migration is implied by the
+   immediate style repair.
+3. The recertification program is **COMPLETE (2026-07-15)** — the per-component
    red→green march ran all six tiers to green with 12/12 drivers and the
    Phase-3 closers. It is shelved: `recertification.md` (summary),
    `archive/recertification-full.md` (full log). It no longer picks work; new
    ports are held to `certification.md` and gated by `comparison:test:certified`.
-2. Consumer-delivery cluster when a march slot allows: Picker fixes
+4. Consumer-delivery cluster when a march slot allows: Picker fixes
    (`picker-popover-anchor`, `picker-item-checkmark` — Picker is first in
    Tier 4) and `macro-route-styled`.
-3. Keep accessibility proof broader than axe: keyboard, focus, forms, computed
+5. Keep accessibility proof broader than axe: keyboard, focus, forms, computed
    name/description/value, validation, and announcements via the pair-oracle
    drivers (D5/D6) and Playwright.
-4. Keep component-internal S2 styling in `packages/solid-spectrum`. The
+6. Keep component-internal S2 styling in `packages/solid-spectrum`. The
    comparison app may consume `solid-spectrum` source and the S2 macro, but app
    CSS must not hand-author component colors, spacing, radius, or states
    (ADR 0001).
@@ -85,9 +101,12 @@ next task and which workstreams are live.
 - **Recertification march** — **COMPLETE 2026-07-15**, shelved. All six tiers
   certified + 12/12 drivers + Phase-3 closers. Summary in `recertification.md`,
   full log in `archive/recertification-full.md`. No longer an active workstream.
-- **Pipeline stabilization** _(opened 2026-07-06)_ — CI-on-main, release-train
-  unjam, live-rot burndown; tickets in `tech-debt.md`, direction in
-  `steering.md` Now.
+- **Pipeline stabilization** _(opened 2026-07-06, active again 2026-08-08)_ —
+  draft PR #21's pinned-oracle + exact-revision-release repair is qualified on
+  hosted SHA `98670653651fc4bd11d6e2338a05212bef019f1a`, and strict `main`
+  protection requires its four proven contexts. Land the draft and watch the
+  post-merge main runs. Tickets in `tech-debt.md`, direction in `steering.md`
+  Now.
 - **Client-readiness for `@proyecto-viviana/ui`** _(largely landed 2026-06-20)_ —
   UC-00…UC-05 + UC-07 are ✔; only UC-02 Part B (deferred) and UC-06
   (downstream) remain. The consumer-delivery debt (`macro-route-styled`,

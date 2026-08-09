@@ -62,8 +62,17 @@ Floors (fast, run constantly):
 ```bash
 vp run check              # format, lint (type-aware), typecheck
 vp run test:run           # package unit/integration suites (vitest)
-vp run a11y:check         # axe AA + comparison a11y + smoke
+vp run a11y:check         # axe AA + comparison + every-route/two-theme contrast + smoke
+vp run a11y:contrast      # focused route-wide contrast gate (154 routes, light + dark)
+vp run a11y:full          # strict AA/best-practice + bounded AAA/experimental reports
 ```
+
+`a11y:full` fails every unexpected finding. Its two report-only classes are
+explicit and attached to the Playwright result: AAA
+`color-contrast-enhanced`, which exceeds the repository's WCAG 2.2 AA
+conformance floor, and Tag `focus-order-semantics`, whose focusable
+row/gridcell structure is verified against upstream React Aria. Neither report
+certifies a component or permits an unrelated rule to pass.
 
 Component-level evidence:
 
@@ -80,12 +89,15 @@ Repo-level guards and reports:
 vp run comparison:report:parity:strict   # expected to pass; in-scope failure blocks
 vp run comparison:report:gaps
 vp run comparison:report:exports
+vp run guard:upstream-oracle     # commit, package identities, and required evidence paths
 vp run guard:rac-parity
 vp run guard:rac-export-gap
 vp run guard:dnd-keyboard-parity
 vp run guard:virtualizer-keyboard-parity
-vp run guard:upstream-test-parity   # contract-vocabulary diff vs the pinned upstream test suites
+vp run guard:upstream-test-parity   # baselined contract-vocabulary hard edge vs pinned tests
 vp run guard:spectrum-tokens-pin    # @adobe/spectrum-tokens matches the pinned S2's exact version
+vp run guard:style-macro-parity     # generated S2 styles match the pinned source corpus
+vp run guard:ts-nocheck-budget      # public-package suppression inventory may only decrease
 ```
 
 ## The acceptance gates
@@ -104,9 +116,11 @@ the evidence.
 `guard:upstream-test-parity` mechanizes a first-pass triage for **Gate 3 (Upstream
 React Source Parity)**: it diffs the ARIA-contract vocabulary our tests assert
 against the pinned upstream React Aria Components + S2 suites and ranks where we
-diverge. It is a discovery aid, not a floor. Every flag is reconciled against the
-authoritative source before a test changes (see `upstream-sync.md`, which also
-defines how new upstream releases are absorbed).
+diverge. Its known findings are baselined, so resolved facts may disappear and
+new suspect/coverage facts fail; the report still does not decide which side is
+correct. Every flag is reconciled against authoritative source before a test
+changes (see `upstream-sync.md`). `guard:upstream-oracle` is the prerequisite:
+missing or mismatched upstream inputs are a gate failure, never a green skip.
 
 ### Driver applicability (recertification march)
 

@@ -33,8 +33,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Fetch base branch
-        run: git fetch origin main --depth=1
-
       - name: Run changesets CI check
         run: pnpm run ci:changesets
