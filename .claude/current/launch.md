@@ -1,19 +1,18 @@
 ---
 kind: reference
-status: current
+status: done
 ---
 
 # Launch
 
-Status: live plan of record.
-Update when: a launch-blocking finding is opened, closed, or re-scoped, or the
-phase order changes.
+Status: completed program summary (2026-07-24).
+Update when: a factual correction changes the recorded launch outcome. Current
+execution lives in `repo-assessment.md`.
 
-The plan of record for taking Proyecto Viviana public: docs site deployed,
+The completed plan that took Proyecto Viviana public: docs site deployed,
 packages discoverable and documented for external users. Distilled from the
-repo-wide audit of **2026-07-24**. Findings are recorded here with the evidence
-that produced them; each one is tracked as a task in `tech-debt.md` under the
-`launch` roadmap item.
+repo-wide audit of **2026-07-24**. Remaining catalogue guidance moved to the
+comparison-docs program and GitHub issue #27; it is not an unlaunched state.
 
 ## The reframe
 
@@ -285,9 +284,10 @@ every canonical and the whole sitemap derive from that one constant — as did
 designed, and the head of a docs page carries its own title and canonical. The
 parent application was re-checked afterwards and is untouched.
 
-**Phase 5 — close coverage.** viviana-ui API docs (B3) — **done 2026-07-24**, 82
-generated pages under `/docs`. Remaining: the ~31–40 missing solid-spectrum
-component pages; then `dnd-subsystem-port` and `macro-route-styled`.
+**Phase 5 — continuing product work, outside launch.** viviana-ui API docs (B3)
+were done 2026-07-24 with 82 generated pages under `/docs`. Remaining authored
+Spectrum guidance, `dnd-subsystem-port`, and `macro-route-styled` now run through
+`repo-assessment.md`; they do not reopen the completed deployment.
 
 ## Non-goals for launch
 

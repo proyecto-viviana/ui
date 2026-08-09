@@ -501,7 +501,7 @@ tasks:
     state: open
     filed: 2026-07-24
     priority: P1
-    roadmap: launch
+    roadmap: comparison-docs-overhaul
     note: >-
       45 pages exist, 7 of which are aliases covering multiple components
       (alertdialog, color, filetrigger, select, separator, table, tree), leaving
@@ -515,7 +515,8 @@ tasks:
       steplist, tableview, togglebutton, togglebuttongroup, treeview.
       Explicitly NOT a deploy blocker (steering.md, resolved 2026-07-24): a
       truthful site with 45 documented components beats an undeployed site with
-      78. Audit finding (launch.md, coverage gaps).
+      78. Audit finding (launch.md, coverage gaps). External execution ticket:
+      https://github.com/proyecto-viviana/ui/issues/27.
     exit: >-
       Close the list. Rank by what a new user reaches for first rather than
       alphabetically.
@@ -622,11 +623,11 @@ tasks:
   - id: ts-nocheck-components
     title: Remove @ts-nocheck from the ~29 component files (batched)
     state: open
-    roadmap: certification-enforcement
+    roadmap: component-certification
   - id: lint-rules-reenable
     title: Re-enable the 13 disabled lint rules (or justify each inline)
     state: open
-    roadmap: certification-enforcement
+    roadmap: component-certification
   - id: replace-tautological-tests
     title: Replace the tautological live-region and private-component tests
     state: done
@@ -651,16 +652,14 @@ tasks:
       remain real independent debt affecting the strength of typecheck/lint, not
       whether the current checks are required.
     exit: >-
-      After draft PR #21 passes on its latest SHA, enable strict required status
-      checks for certification-gates, changesets-check, release-readiness, and
-      site-gate. Preserve no-force-push/no-deletion defaults and do not add an
-      implicit administrator bypass or review-count policy. Close only after the
-      resulting main protection reads back with those exact contexts.
+      Met 2026-08-08: certification-gates, changesets-check,
+      release-readiness, and site-gate are strict required contexts on main;
+      administrator enforcement is on and force pushes/deletions are off.
   - id: contract-spec-burndown
     title: Keyboard/focus/announcement contract specs for the 59 visual-only components
     state: open
     depends: [port-selection-manager, port-list-keyboard-delegate, port-context-slots]
-    roadmap: certification-enforcement
+    roadmap: component-certification
   - id: port-selection-manager
     title: Port SelectionManager/Selection to the upstream anchor+current model
     state: done
@@ -1244,7 +1243,7 @@ tasks:
   - id: slider-thumb-antialias-1lsb
     title: Slider D3 waives a single 8-bit LSB on the thumb's anti-aliased edge
     state: open
-    roadmap: certification-enforcement
+    roadmap: component-certification
     note: >-
       Surfaced by the Slider recertification (CP9.23): the only sub-exact pixels in the
       Slider D3 strict-pixel diff are on the thumb's curved, high-contrast circular
@@ -1286,7 +1285,7 @@ tasks:
   - id: form-side-label-halfpixel-baseline
     title: Form D3 waives a 1px side-label baseline translation on labelPosition=side
     state: open
-    roadmap: certification-enforcement
+    roadmap: component-certification
     note: >-
       Surfaced by the Form recertification (CP9.25), the first cert to pixel-test
       `labelPosition:"side"` (TextField's own cert only exercises `top`). In S2's side
@@ -1327,14 +1326,19 @@ tasks:
       separate ci-gates-required task, gated on the D4 event-ordering policy. Follow-on:
       release-train-unjam (still owner-gated).
   - id: release-train-unjam
-    title: Unjam the release train — version PR #7, 101 changesets, npm one patch behind
+    title: Unjam the release train — publish the qualified version commit
     state: next
+    priority: P0
     roadmap: ui-release-promotion
     note: >-
-      Director pass 2026-07-06: the changesets version PR #7 has been stuck ~20 days;
-      101 changesets pending; npm lags the repo one patch on solid-spectrum,
-      solidaria-components and viviana-ui — the SSR hydration fix has never been
-      published to installed consumers. Exit criteria in the prose section.
+      Refreshed 2026-08-09. Version PR #20 is open, mergeable, and exact-head
+      green for certification-gates, changesets-check, release-readiness, and
+      site-gate. Head c457fca96a671c6a75e4a944b424c20b948d195f would publish
+      solid-spectrum 0.6.4, solid-stately 0.5.1, solidaria 0.4.3,
+      solidaria-components 0.5.1, and ui 0.6.3. Merging automatically publishes
+      to npm, so execution waits for explicit publish approval; it is no longer a
+      CI or code blocker. Exit: merge PR #20, observe the same-SHA Release run,
+      verify all five npm versions and provenance, then close the task.
   - id: main-rot-burndown-2026-07
     title: Burn down live rot on main — 7 unit fails, 2 a11y-smoke fails, format drift
     state: done
@@ -1377,23 +1381,14 @@ tasks:
       composites" adopted into certification.md ("Driver applicability").
   - id: recert-drivers-d9-d12
     title: Land the remaining pair-oracle drivers — D9 forced-colors, D10 RTL, D11 timing, D12 SSR
-    state: next
+    state: done
+    finished: 2026-07-15
     roadmap: component-certification
     note: >-
-      D1–D8 are landed and calibrated; D9–D12 exist only as plan text, so
-      forced-colors and RTL have zero coverage repo-wide. SEQUENCING RESOLVED
-      2026-07-06 (owner call): land D9+D10 BEFORE the Tier 4 march and re-run the
-      certified set against them (certifying Tier 4 first means re-marching Tiers
-      1–3 later); D11/D12 can follow. D9 = D1 re-run under `forcedColors: 'active'`
-      comparing resolved system-color keywords; D10 = D1+D5 re-run under `dir=rtl`
-      + `ar-AE` (icon mirroring, arrow inversion, date/number formatting equality)
-      — both are re-run modes over the existing pixel/state-matrix/focus oracles,
-      not new oracles. This is Track A of the parallel Tier-4 program (steering.md
-      Next); independent of the port source, so it runs concurrently with Track B
-      (`d4-microtask-defer`). Blocks Track C (Picker certifies against the full
-      driver set incl. D9/D10). Exit: drivers land with the same calibration
-      discipline as D4/D5 (a pilot component red→green each — ToggleButton), and
-      the certified suite runs them across Tiers 1–3.
+      Closed by the completed recertification march. The live driver inventory is
+      12/12 and the certified suite exercises forced-colors, RTL, timing, and SSR.
+      The former note saying D9-D12 existed only as plan text contradicted
+      recertification.md, the archived execution log, and the running suite.
   - id: d4-event-ordering-decision
     title: Decide the D4 event-ordering policy before Tier 4 (microtask deferral vs oracle normalization)
     state: done
@@ -1459,25 +1454,80 @@ tasks:
       string, not just the live-region structure). The full upstream 32-locale
       announcement table is already ported, so this is harness-only. Deferred so a
       driver-calibration surprise can't block the shipped paint/focus cert.
+  - id: dependency-advisory-remediation
+    title: Remediate the current critical and high dependency advisories
+    state: next
+    filed: 2026-08-09
+    priority: P0
+    roadmap: consumer-delivery
+    note: >-
+      Audit evidence: 27 vulnerable dependency instances (1 critical, 17 high,
+      8 moderate, 1 low). The critical path is solid-js 1.9.12 to seroval 1.5.1;
+      the lockfile also contains patched seroval 1.5.4. Several root overrides
+      pin other affected transitive packages below their reported patched floor.
+      No dependency was changed during assessment because AGENTS.md requires
+      explicit approval. Full scope and acceptance:
+      https://github.com/proyecto-viviana/ui/issues/22.
+  - id: upstream-train-2026-08
+    title: Absorb Spectrum 2 1.6.0 and React Aria Components 1.20.0
+    state: next
+    filed: 2026-08-09
+    priority: P0
+    roadmap: upstream-parity-loop
+    note: >-
+      Freshness is advisory-red beyond the exact S2 1.5.1 / RAC 1.19.0 oracle.
+      Work the release-note, source, docs, and test diff as a separate parity
+      change after the qualified release train is resolved. Full scope and
+      acceptance: https://github.com/proyecto-viviana/ui/issues/23.
+  - id: upper-layer-convergence
+    title: Converge the duplicated solid-spectrum and viviana-ui upper layers
+    state: open
+    filed: 2026-08-09
+    priority: P1
+    roadmap: consumer-delivery
+    note: >-
+      The layer guard freezes 533 identical and 76 divergent shared files, plus
+      41 viviana-ui-only files. Classify and reduce that backlog in bounded
+      batches while preserving solid-spectrum as the only S2 styling source.
+      Public/register boundary decisions remain owner-steered. Full scope and
+      acceptance: https://github.com/proyecto-viviana/ui/issues/26.
+  - id: local-gate-preconditions
+    title: Make local gate preconditions deterministic from a clean checkout
+    state: open
+    filed: 2026-08-09
+    priority: P2
+    roadmap: package-build-migration
+    note: >-
+      Standalone typecheck:apps reports missing workspace packages when their
+      build artifacts do not exist, while the canonical aggregate builds first
+      and passes. Encode the dependency graph or fail immediately with an exact
+      remediation. Full scope and acceptance:
+      https://github.com/proyecto-viviana/ui/issues/28.
   - id: dnd-subsystem-port
     title: Port the drag-and-drop subsystem (6 missing S2 exports; TableView/TreeView/GridList DnD)
     state: open
-    roadmap: upstream-api-parity
+    priority: P1
+    roadmap: support-export-parity
     note: >-
       The last un-ported subsystem. useDragAndDrop, DragPreview, DIRECTORY_DRAG_TYPE
       and isTextDropItem/isFileDropItem/isDirectoryDropItem are 6 of the 7 remaining
       missing S2 exports (comparison:report:exports), and TableView/TreeView ship
       without DnD rows. Epic — scope against upstream @react-aria/dnd + RAC
       useDragAndDrop before the Tier 4/5 collection marches reach DnD states.
+      Full scope and acceptance: https://github.com/proyecto-viviana/ui/issues/25.
   - id: labeledvalue-strict-parity
-    title: Close the LabeledValue strict-parity gap (validation note + evidence + LabeledValueContext)
+    title: Close the nine strict modeled-control gaps, including LabeledValueContext
     state: open
+    priority: P1
     roadmap: component-certification
     note: >-
-      The single comparison:report:parity:strict failure: LabeledValue lacks
-      labeledvalue-validation-notes.md and current visual/asserted evidence; its
-      LabeledValueContext is also the one non-DnD missing S2 export. Exit: strict
-      report fully green, and the exports report shows only the 6 DnD names.
+      The regression guard passes against a frozen baseline, but nine entries
+      still lack modeled controls: ActionGroup, Autocomplete, GridList,
+      LabeledValue, ListBox, ListBox DnD, StepList, Toolbar, and Virtualizer.
+      LabeledValueContext is also the one non-DnD missing S2 export. Exit: 78/78
+      modeled controls with the baseline removed and export closure coordinated
+      with dnd-subsystem-port. Full scope and acceptance:
+      https://github.com/proyecto-viviana/ui/issues/24.
 ---
 
 # Tech Debt
@@ -1488,65 +1538,28 @@ Update when: a debt is added, paid down, or its exit changes.
 Known debt and temporary bridges. Each entry names its exit so it does not become
 permanent.
 
-## Evidence checks exist but nothing runs all of them
+## Evidence enforcement is closed; residual evidence debt is separate
 
-The check set (`vp run check`, `guard:*`, `comparison:report:parity:strict`,
-`comparison:test:pair`/`test:contract`, `docs:check`) is defined in `package.json`
-but no CI workflow invokes it, so any drift these guards and the pair/contract
-suites would catch can merge green. `vp run typecheck` _does_ run in CI (via
-`build` in `release-readiness`), but it passes only because the remaining
-`solid-spectrum` component files carry `@ts-nocheck` and `tsc` skips them — the
-`style/` subsystem is now checked (`ts-nocheck-style` paid down 2026-06-21), but
-the ~29 components still are not. This is the root enabler beneath the type-check, axe, and
-visual-coverage debts below (Rule #1/#7). A non-blocking `certification-gates.yml`
-workflow now projects the full check set's status on every PR as the first step
-toward enforcement.
+As of 2026-08-08, protected `main` requires `certification-gates`,
+`changesets-check`, `release-readiness`, and `site-gate`; administrator
+enforcement is on and force pushes/deletions are off. Certification includes the
+full certified suite and the upstream, layer, type-suppression, accessibility,
+contract, and docs guards. Release qualification is bound to the same revision.
 
-Sharpened by the 2026-07-06 director pass (`ci-main-gate-wiring`): "on every PR"
-is the wrong trigger for this repo. Work lands direct-to-main, so the PR-only
-ladder structurally never fires — CI had been dark since 2026-06-24 with main 67
-commits ahead of origin unpushed, and rot accumulated unseen
-(`main-rot-burndown-2026-07`). Additionally `comparison:test:certified` — the
-suite that actually enforces the recertification bar — is wired into no workflow
-at all, and `guard:jsx-deopt-size` / `guard:upstream-test-parity` are wired into
-no gate.
+This closes the enforcement debt, not the evidence backlog. The 59-file
+`@ts-nocheck` ceiling, nine-entry strict-control baseline, and component-specific
+contract/visual waivers remain tracked under component certification. A green
+baseline guard means no new drift; it does not certify the frozen gaps.
 
-**Exit:** main is pushed; a CI job runs the full check set (typecheck + `vp run
-check` + `comparison:test:contract` + `comparison:test:certified` + ungated axe +
-`guard:*` including jsx-deopt-size and upstream-test-parity + `docs:check`) **on
-push to main** as well as on PRs, so "green" means the documented bar passed on
-the branch people actually commit to. Validate by pushing a commit and watching
-the run fire.
+## Qualified release train awaits publication approval
 
-**DONE 2026-07-06.** `release-readiness.yml` (blocking: `build` +
-`typecheck:apps` + `test:run`) and `certification-gates.yml` (report-only, now
-carrying `comparison:test:certified`, `guard:jsx-deopt-size`,
-`guard:upstream-test-parity` alongside typecheck + `vp check` + contract +
-`a11y:full` + the rest of the guards + `docs:check`) both trigger on
-push-to-main. Between the two, the full check set fires on the branch people
-actually commit to. **Validated end-to-end:** the first main pushes fired the
-gates and immediately earned their keep — `release-readiness` failed on 5 latent
-`typecheck:apps` errors that had accumulated while CI was dark (a `createComponent`
-cast in `solid-h.ts` and the strict `Partial` input to
-`normalizeLabeledValueDemoProps`), they were fixed faithfully (commit `73903a5b`),
-and the re-run went green (run `28825943495`). It stays report-only until
-`ci-gates-required` (the D4 event-ordering policy gates flipping the certified
-suite to blocking). Remaining pipeline work is `release-train-unjam`, still
-owner-gated on a merge + npm publish.
+Version PR #20 head `c457fca96a671c6a75e4a944b424c20b948d195f` is mergeable and
+green for all four exact-head required contexts. Merging it automatically
+publishes solid-spectrum 0.6.4, solid-stately 0.5.1, solidaria 0.4.3,
+solidaria-components 0.5.1, and ui 0.6.3 through trusted OIDC publication.
 
-## Release train jammed — published packages lag the repo
-
-Found 2026-07-06 (`release-train-unjam`): the changesets version PR #7 has been
-stuck ~20 days, `101` changesets are pending, and npm is one patch behind the
-repo on `solid-spectrum`, `solidaria-components`, and `viviana-ui` — the SSR
-hydration fix has never reached installed consumers. The release pipeline exists
-(`release-policy.md`) but nothing moves it while commits bypass PRs.
-
-**Exit:** version PR merged (or the changesets flow re-run), pending changesets
-drained, npm versions match the repo's package versions, and a stated cadence in
-`release-policy.md` for when the train ships (e.g. on every certified-tier
-completion). Validate with `npm view <pkg> version` against the workspace
-manifests.
+**Exit:** after explicit publish approval, merge PR #20, observe Release against
+the exact merge revision, and verify all five npm versions and provenance.
 
 ## Shared headless spine is re-implemented per widget
 
@@ -1674,26 +1687,17 @@ applicability") states that keyboard-heavy composites do not certify on the pain
 drivers alone. Registering the drivers surfaced two real port bugs (D5 container
 roving tabindex; D6 stripped item `aria-describedby`), both fixed faithfully.
 
-## Pair-oracle drivers D9–D12 unlanded; D4 policy undecided; D6 announcements never green
+## Driver fleet is complete; announcement calibration remains
 
-The recertification harness runs D1–D8 only. Consequences, found 2026-07-06:
+The completed recertification march landed all 12 drivers, including
+forced-colors, RTL, timing, and SSR, and the full certified suite is blocking.
+The D4 event-ordering policy is also resolved. The remaining adjacent debt is
+the narrower `d6-announcement-calibration` task: Toast has structural AX-tree
+evidence, while the body-portaled add/remove spoken transcript still needs a
+real paired assertion.
 
-- **D9 forced-colors and D10 RTL have zero coverage repo-wide** — no test
-  anywhere renders a component under `forced-colors: active` or `dir="rtl"`.
-  Tracked as `recert-drivers-d9-d12`; the sequencing question (land before the
-  Tier 4 march and re-run the certified set, or after) is an owner decision in
-  `steering.md`. D11 timing / D12 SSR follow the same ticket.
-- **The D4 event-ordering epic needs a policy before Tier 4**
-  (`d4-event-ordering-decision`): 5 deferred reds on Tabs/Dialog trace to React
-  batched-effects vs Solid synchronous updates; collections multiply the
-  exposure, and per-component waivers would rot into noise.
-- **Live-region announcements — structure certified, transcript oracle deferred**
-  (`d6-announcement-calibration`): Toast CP9.35 (done 2026-07-06) certifies the
-  `role="alert"` live region in the AX tree (structural). The transcript oracle
-  (asserting the spoken string on add/remove over a body-portaled toast) remains.
-
-**Exit:** each per the task notes above; collectively, the certified suite runs
-D1–D10 and at least one announcement pair assertion is green.
+**Exit:** the announcement calibration task's transcript oracle is green and
+the applicable components consume it.
 
 ## DnD subsystem is un-ported
 
@@ -1707,14 +1711,17 @@ Tier 4/5 collection marches reach DnD-dependent states.
 **Exit:** the exports report shows 0 missing; TableView/TreeView/GridList DnD
 states have pair-oracle evidence in their certified specs.
 
-## LabeledValue is the last strict-parity gap
+## Nine strict-control gaps remain under a frozen baseline
 
-The single `comparison:report:parity:strict` failure: LabeledValue lacks a
-validation note and current evidence, and `LabeledValueContext` is the one
-non-DnD missing S2 export. Tracked as `labeledvalue-strict-parity`.
+`comparison:report:parity:strict` passes as a regression guard, with 69/78
+entries modeled. Its accepted baseline contains ActionGroup, Autocomplete,
+GridList, LabeledValue, ListBox, ListBox DnD, StepList, Toolbar, and Virtualizer.
+`LabeledValueContext` is also the one non-DnD missing S2 value export. Tracked as
+`labeledvalue-strict-parity` and GitHub issue #24; DnD/export closure coordinates
+with `dnd-subsystem-port` and issue #25.
 
-**Exit:** `comparison:report:parity:strict` fully green;
-`comparison:report:exports` shows only the 6 DnD names missing.
+**Exit:** 78/78 entries have strict modeled controls, the baseline is empty, and
+the related missing exports have behavior-backed evidence.
 
 ## Styled components bypass the style macro (ship unstyled)
 
