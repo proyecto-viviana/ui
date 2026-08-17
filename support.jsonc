@@ -1,0 +1,49 @@
+// Support policy for the @proyecto-viviana/ui npm package (drift floor).
+// Schema: viviana-cloud/src/recipes/support.ts (RecipeSupport, schemaVersion 1).
+// Consumed by the cloud fleet doctor's dependency-floor check; this file is the
+// producer-owned single home for "which ui versions are current, deprecated,
+// or below the safe floor". Versions 0.3.x and below predate the export-map/CSS
+// contract baseline and include registry ghosts (0.3.6 was never published).
+{
+  "schemaVersion": 1,
+  "recipeId": "viviana/ui",
+  "currentVersion": "0.6.2",
+  "supportedVersions": ["0.6.2"],
+  "deprecatedVersions": ["0.4.0", "0.4.1", "0.5.0", "0.6.0", "0.6.1"],
+  "minimumSafeVersion": "0.4.0",
+  "compatibility": [
+    {
+      "package": "solid-js",
+      "section": "dependencies",
+      "minimumVersion": "1.9.0",
+      "maximumMajor": 1,
+      "reason": "declared peer range of @proyecto-viviana/ui"
+    }
+  ],
+  "releases": [
+    {
+      "version": "0.4.0",
+      "kind": "composition",
+      "notes": "Baseline: full deep-subpath export surface, vivianaMacros() Vite preset, CSS subpaths resolve to built dist sheets. Below this, resolvers hitting the default condition silently received incomplete stylesheets.",
+      "upgrade": "Bump @proyecto-viviana/ui to >=0.4.0; if the app authors its own style() calls, adopt vivianaMacros() from @proyecto-viviana/ui/vite before vite-plugin-solid."
+    },
+    {
+      "version": "0.5.0",
+      "kind": "composition",
+      "notes": "Token layer retuned to the blue + amber frosted-glass system (accent pink -> amber; surface/blur/edge-glass/shadow token families added). Every consumed --color-* name preserved; visual change only, no API break.",
+      "upgrade": "Bump and re-verify brand-sensitive surfaces render as intended under the new token values."
+    },
+    {
+      "version": "0.6.0",
+      "kind": "composition",
+      "notes": "BREAKING: Button/LinkButton drop the premium and genai variants. Adds warning/success variants, the nine-role type ladder (typeRoles), pixel icon set, Tabs pill/rail variants, discrete progress family, Well export.",
+      "upgrade": "Replace premium/genai Button and LinkButton variant usages (accent, warning, or success), then bump."
+    },
+    {
+      "version": "0.6.2",
+      "kind": "composition",
+      "notes": "Geist font register fix: the @import sat after other rules, so browsers/bundlers dropped it and consumers silently rendered fallback sans-serif. Below 0.6.2 the Glasselated type register does not actually load.",
+      "upgrade": "Bump to 0.6.2; no code change required."
+    }
+  ]
+}
