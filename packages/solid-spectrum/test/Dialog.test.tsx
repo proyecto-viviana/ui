@@ -266,6 +266,41 @@ describe("Dialog (solid-spectrum)", () => {
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
   });
 
+  it("describes an AlertDialog from its Content children", () => {
+    render(() => (
+      <AlertDialog
+        defaultOpen
+        title="Delete project"
+        cancelLabel="Cancel"
+        primaryActionLabel="Delete"
+      >
+        This action cannot be undone.
+      </AlertDialog>
+    ));
+
+    const dialog = screen.getByRole("alertdialog", { name: "Delete project" });
+    expect(dialog).toHaveAccessibleDescription("This action cannot be undone.");
+    const describedBy = dialog.getAttribute("aria-describedby");
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy!)).toHaveTextContent("This action cannot be undone.");
+  });
+
+  it("does not auto-describe a composed Dialog from Content", () => {
+    render(() => (
+      <DialogTrigger defaultOpen>
+        <Button>Open dialog</Button>
+        <Dialog>
+          <Heading slot="title">Settings</Heading>
+          <Content>Body copy is not an accessible description.</Content>
+        </Dialog>
+      </DialogTrigger>
+    ));
+
+    const dialog = screen.getByRole("dialog", { name: "Settings" });
+    expect(dialog).not.toHaveAttribute("aria-describedby");
+    expect(dialog).not.toHaveAccessibleDescription();
+  });
+
   it("exports CustomDialog and CloseButton composition", async () => {
     const user = setupUser();
 

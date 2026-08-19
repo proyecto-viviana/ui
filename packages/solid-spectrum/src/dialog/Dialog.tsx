@@ -8,6 +8,7 @@ import {
   Heading as HeadlessDialogHeading,
   Modal as HeadlessModal,
   ModalOverlay as HeadlessModalOverlay,
+  TextContext as RACTextContext,
   useDialogTrigger,
   type ButtonRenderProps,
   type DialogProps as HeadlessDialogProps,
@@ -662,13 +663,34 @@ function DialogHeaderSlots(props: { children: JSX.Element }): JSX.Element {
   );
 }
 
+function descriptionIdFromRacText(
+  racText: unknown,
+): Pick<ContentProps, "id"> | Record<string, never> {
+  if (!racText || typeof racText !== "object" || !("slots" in racText)) {
+    return {};
+  }
+
+  const description = (racText as { slots?: { description?: unknown } }).slots?.description;
+  if (!description || typeof description !== "object") {
+    return {};
+  }
+
+  const id = "id" in description ? description.id : undefined;
+  return typeof id === "string" ? { id } : {};
+}
+
 function DialogContentSlots(props: { children: JSX.Element }): JSX.Element {
+  // Upstream S2 Dialog copies RAC TextContext `slots.description` onto
+  // ContentContext so AlertDialog's `<Content>` receives the generated
+  // aria-describedby target id.
+  const racText = useContext(RACTextContext);
+
   return (
     <SlotProviders
       image={{ hidden: true }}
       heading={{ slots: { title: { isHidden: true } } }}
       header={{ isHidden: true }}
-      content={{ styles: dialogContent }}
+      content={{ styles: dialogContent, ...descriptionIdFromRacText(racText) }}
       footer={{ isHidden: true }}
       buttonGroup={{ isHidden: true }}
     >
