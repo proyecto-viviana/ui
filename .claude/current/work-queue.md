@@ -11,12 +11,12 @@ tasks:
       Durable remaining-work goal: walk every leftover audit item to
       closed, owner-blocked, or dated evidence. First complete 2176
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
-      (knownDivergence fixme). TableView mixed, Tabs D4/D5, and Toast
-      D6 alert are closed. Current slice: TreeView tab-forward. Then
-      smoke/site, Kumo evidence, Train 8, evidence schema, owner
-      decisions, hygiene, lowest-layer ownership. Overlay/focus is a
-      separate commit from the pre-existing dirty audit/Kumo tree. Do
-      not skip ahead.
+      (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
+      alert, and TreeView D5 tab-forward are closed. Next slice:
+      packed-consumer smoke then site lane. Then Kumo evidence, Train
+      8, evidence schema, owner decisions, hygiene, lowest-layer
+      ownership. Overlay/focus is a separate commit from the
+      pre-existing dirty audit/Kumo tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -101,13 +101,17 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
 - Toast D6 `neutral` alert role — S2/Viviana render RAC
   `UNSTABLE_ToastContent` so the message is `role="alert"`;
   certified Toast 37/37.
+- TreeView D5 tab-forward / End — keyboard landing already matched;
+  End's extra `[tabindex]` nodes are S2 Virtualizer unmounting
+  offscreen rows (`treeview-div-grid-paint`). Collection tab-stop
+  census on the End walk. Do not excludeFromTabOrder row checkboxes.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
   A-015 Vite Plus configs, A-016 stale declarations) — still needs item 2
   (`ui:smoke` / `ci:site`) before A-001's measured `status.md` refresh.
 
 ### Census — every leftover item, in order
 
-#### 1. Certified reds (current slice, A-032 remainder)
+#### 1. Certified reds (closed this wave, A-032 remainder)
 
 Diagnose at the owning layer. Do not treat TableView mixed-checkbox as a
 silent ratification of A-006 (native-table vs `div[role=grid]`): both stacks
@@ -130,9 +134,15 @@ already expose `role=grid` in D6, and the only AX diff is Select All mixed.
    live region (`role="alert"`, `aria-atomic`, hidden until mounted).
    S2 and Viviana render that component instead of a raw div. Certified
    Toast: 37/37 including D6 `neutral`.
-5. **TreeView D5 `default · tab-forward`** — Solid extra tab stops:
-   per-row `input` Select (`tabindex=0`) and Collapse buttons, so Tab
-   walks the tree instead of one stop like React.
+5. **TreeView D5 `default · tab-forward` — closed.** Active trail
+   already matched on Tab / ArrowDown / ArrowUp / Home / End (Weekly
+   Report → Budget → Client Notes → Budget → Documents → Archive). The
+   only census miss was after End: S2 Virtualizer unmounts offscreen
+   rows (`treeview-div-grid-paint`); the port keeps document flow. Do
+   not `excludeFromTabOrder` row checkboxes — React Select is
+   `tabindex=0` at rest (tab-backward already pair-diffs that). End
+   now records the collection tab-stop (treegrid + focused row).
+   Certified TreeView D5: tab-forward, end-jump, tab-backward.
 
 Re-run remaining red families after each owning-layer fix. Keep
 ActionMenu list, Dialog close-button, TableView mixed, Tabs, and Toast
@@ -158,7 +168,7 @@ spec comments and are **not** Playwright skips. Item 5 (evidence schema)
 must inventory those as unregistered obligations; they block full
 component acceptance under Rule #1.
 
-#### 2. External qualification (A-001 remaining, A-015 remaining)
+#### 2. External qualification (current slice, A-001 remaining, A-015 remaining)
 
 `vp run ui:smoke` then `vp run ci:site` (share `dist`; run sequentially).
 Neither was rerun after the migration. Rebuild `status.md` measured rows

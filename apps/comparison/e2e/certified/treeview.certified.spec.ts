@@ -40,7 +40,16 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  * the AX tree AND the focus trail are BOTH structure-of-layout-agnostic (they read
  * role/name/state and the `activeElement` chain, never `position`/`transform`), so a
  * naturally-flowed treegrid still pair-diffs faithfully against S2's virtualized one
- * on D5 + D6.
+ * on D5 `active` / `activeDescendant` and on D6. The full mounted `[tabindex]`
+ * census does **not**: after End, S2's Virtualizer unmounts offscreen rows so
+ * React's roving list collapses to Archive, while the port still has every
+ * row, Select checkbox (`tabindex=0`, RAC `useFocusable`), and expand button
+ * (`tabindex=-1`). That is `treeview-div-grid-paint`, not a keyboard bug —
+ * Tab/Arrow/Home already match on the full census, and `active` after End is
+ * Archive on both stacks. Do **not** `excludeFromTabOrder` the row checkboxes
+ * to hide this: React's Select inputs are `tabindex=0` at rest (tab-backward
+ * already pair-diffs that). The End walk therefore records the collection
+ * tab-stop (treegrid + focused row) instead of every mounted `[tabindex]`.
  *
  * DRIVERS SCOPED OUT (documented, not silent):
  *   - D1 / D3 / D7 / D8 (paint) — the virtualization geometry split above.
@@ -126,13 +135,24 @@ const scenario: DriverScenario = {
     cases: ["default"],
     root: tree,
     walks: [
-      // Forward: Tab in from the preceding button → trampoline → FIRST row
-      // ("Documents"); ArrowDown steps into the expanded children ("Project",
-      // "Weekly Report"), ArrowUp roves back, Home/End jump the visible ends.
+      // Forward: Tab in from the preceding button → trampoline → selected row
+      // ("Weekly Report"); ArrowDown steps Budget then Client Notes, ArrowUp
+      // roves back, Home jumps to Documents. End is a separate walk: S2's
+      // Virtualizer unmounts offscreen rows, so the full `[tabindex]` census
+      // is not comparable after that jump.
       {
         id: "tab-forward",
         start: beforeButton,
-        keys: ["Tab", "ArrowDown", "ArrowDown", "ArrowUp", "Home", "End"],
+        keys: ["Tab", "ArrowDown", "ArrowDown", "ArrowUp", "Home"],
+      },
+      // End jumps to Archive on both stacks (`active` matches). The full
+      // `[tabindex]` census does not: S2 Virtualizer unmounts the rows above
+      // Archive (`treeview-div-grid-paint`). Record the collection tab-stop.
+      {
+        id: "end-jump",
+        start: beforeButton,
+        keys: ["Tab", "End"],
+        roving: "collection",
       },
       // Backward: Shift+Tab in from the following button → trampoline detects the
       // relatedTarget FOLLOWS the tree → LAST visible row ("Archive").

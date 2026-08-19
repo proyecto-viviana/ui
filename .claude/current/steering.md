@@ -55,12 +55,13 @@ The active facts that choose work are:
 ## Now
 
 1. Execute the remaining-work census in `work-queue.md` through every
-   leftover audit item. Current slice: TreeView D5 tab-forward.
-   TableView mixed, Tabs D4/D5, and Toast D6 alert are closed.
-   ActionMenu list, Dialog close-button, TableView mixed, Tabs, and
-   Toast stay green. Then smoke/site, Kumo evidence, Train 8, evidence
-   schema, owner decisions, hygiene, lowest-layer ownership — without
-   skipping ahead.
+   leftover audit item. Current slice: packed-consumer smoke then
+   site lane (`ui:smoke`, `ci:site`). TableView mixed, Tabs D4/D5,
+   Toast D6 alert, and TreeView D5 tab-forward are closed. ActionMenu
+   list, Dialog close-button, TableView mixed, Tabs, Toast, and
+   TreeView stay green. Then Kumo evidence, Train 8, evidence schema,
+   owner decisions, hygiene, lowest-layer ownership — without skipping
+   ahead.
 2. Qualify the dependency/toolchain migration with meaningful targeted tests,
    complete suites, actual package artifacts, an external consumer, and
    security/peer gates.

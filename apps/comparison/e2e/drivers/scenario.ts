@@ -253,6 +253,20 @@ export interface TimingConfig {
   knownDivergences?: Record<string, string>;
 }
 
+/**
+ * Which `[tabindex]` nodes a D5 walk records in `snapshot.roving`.
+ *
+ * - `"all"` (default) — every visible `[tabindex]` in `focus.root`. The
+ *   usual census: inner widgets, unfocused rows, and the collection root.
+ * - `"collection"` — the collection root (treegrid/grid/listbox/…) plus the
+ *   focused item (`tabindex="0"` with a collection-item role). That is the
+ *   `useSelectableCollection` tab-stop (container *or* focused row). Use it
+ *   when an S2 `Virtualizer` unmounts offscreen rows so the mounted
+ *   `[tabindex]` set is not comparable across stacks. `active` and
+ *   `activeDescendant` stay the full descriptors either way.
+ */
+export type FocusRovingCensus = "all" | "collection";
+
 /** A keyboard walk for the D5 focus-trail driver. */
 export interface FocusWalk {
   /** Stable id used in test titles. */
@@ -274,6 +288,8 @@ export interface FocusWalk {
   entry?: "focus" | "keyboard";
   /** Keys pressed in order (Playwright key names); focus is snapshot after each. */
   keys: readonly string[];
+  /** Roving census for this walk; defaults to `"all"`. */
+  roving?: FocusRovingCensus;
 }
 
 export interface DriverCase {
@@ -390,7 +406,13 @@ export interface DriverScenario {
    * Menu's hand-rolled popover `role="dialog"` + Dismiss button) does not leak into
    * the certified element's focus trail.
    */
-  focus?: { cases?: readonly string[]; walks: readonly FocusWalk[]; root?: TargetResolver };
+  focus?: {
+    cases?: readonly string[];
+    walks: readonly FocusWalk[];
+    root?: TargetResolver;
+    /** Default roving census for walks that do not set `FocusWalk.roving`. */
+    roving?: FocusRovingCensus;
+  };
   /** D2 motion driver config; same case/theme defaults as D4/D5. */
   motion?: MotionConfig;
   /** D6 AX-tree + announcements driver config; runs the first theme only. */

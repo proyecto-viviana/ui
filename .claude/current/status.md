@@ -8,9 +8,11 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after Toast D6 alert close. First
-complete 2176 certified run was 2164 pass / 6 fail / 6 skip; TableView
-mixed, Tabs 23/23, and Toast 37/37 are now closed. Substantial
+Last refreshed: **2026-08-19**, after TreeView D5 close. First
+complete 2176 certified run was 2164 pass / 6 fail / 6 skip; every
+product red from that run is now closed on focused reruns (TableView
+mixed, Tabs 23/23, Toast 37/37, TreeView D5). A full 2176 rerun is
+still owed before claiming the certified lane green. Substantial
 pre-existing owner work and audit changes remain uncommitted. Do not
 reset or split this tree without first identifying ownership of
 overlapping changes.
@@ -38,7 +40,8 @@ the 20-case macro corpus is byte-identical to upstream, and the sibling boundary
 remains 533 identical / 76 declared-divergent files. That does **not** establish
 component visual parity: the first complete 2176 certified run found four
 live AX/keyboard families still red. TableView mixed Select All, Tabs
-arrow, and Toast alert role are now closed; TreeView tab-forward remains.
+arrow, Toast alert role, and TreeView tab-forward are now closed on
+focused reruns.
 
 ## Completed in this worktree
 
@@ -74,8 +77,8 @@ arrow, and Toast alert role are now closed; TreeView tab-forward remains.
 | `vp test run`                                                               | 269 files; 5580 pass, 1 expected fail, 6 skip                                                                           | package behavior floor; three CSS parse warnings       |
 | app typecheck                                                               | 0 errors, 0 warnings, 3 hints                                                                                           | Astro integration type floor                           |
 | `vp run comparison:test:contract`                                           | 93/93 pass                                                                                                              | rendered catalogue + button-family contracts           |
-| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus); TableView mixed, Tabs 23/23, and Toast 37/37 closed on later focused reruns | do not claim certification while TreeView remains |
-| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs + Toast) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, Tabs 23/23, and Toast 37/37 all green** | overlay/focus, Select All mixed, Tabs keyboard-nav, and Toast alert closed; keep green while fixing TreeView |
+| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus); later focused reruns closed TableView mixed, Tabs 23/23, Toast 37/37, and TreeView D5 | do not claim the 2176 lane green until it is rerun |
+| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs + Toast + TreeView) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, Tabs 23/23, Toast 37/37, TreeView D5 3/3 + D6 5/5, GridList/ListBox D5/D6 still green** | overlay/focus, Select All mixed, Tabs keyboard-nav, Toast alert, and TreeView D5 closed |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -112,6 +115,13 @@ none`). Ported. Do not patch comparison CSS.
    `UNSTABLE_ToastContent` instead of a raw div. `createToast`
    matches RAC (`aria-atomic`, `aria-hidden` until mounted; no extra
    `aria-live`).
+8. **TreeView D5 tab-forward — green.** Active trail already matched
+   on Tab/Arrow/Home/End. After End, S2 Virtualizer unmounts
+   offscreen rows (`treeview-div-grid-paint`); the port keeps
+   document flow. Do not `excludeFromTabOrder` row checkboxes (React
+   Select is `tabindex=0` at rest). End walk records the collection
+   tab-stop. TreeView D5 3/3 + D6 5/5; GridList/ListBox D5 still
+   green on the default census.
 
 ## Known open work, in order
 
@@ -120,24 +130,23 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Remaining certified reds from the 2176 run (A-032 remainder):
-   TreeView D5 tab-forward extra stops. TableView mixed, Tabs D4/D5,
-   and Toast D6 are closed. Six Playwright skips are the registered
+1. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
+   Rebuild `status.md` measured rows after this (A-001). A full 2176
+   certified rerun is still owed; do not treat focused TreeView/Tabs/
+   Toast greens as that rerun. Six Playwright skips are the registered
    knownDivergences (Slider/RangeSlider thumb AX, TableView sorted
    textValue, Breadcrumbs overflow timing, DatePicker/DateRangePicker
    Escape event-order).
-2. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
-   Rebuild `status.md` measured rows after this (A-001).
-3. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
-4. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
+2. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
+3. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
-5. Machine-readable ten-gate evidence schema with validated pointers
+4. Machine-readable ten-gate evidence schema with validated pointers
    (A-002–A-005).
-6. Owner decisions: TableView native-table (A-006), Viviana fork/convergence
+5. Owner decisions: TableView native-table (A-006), Viviana fork/convergence
    (A-008), TabSwitch/SegmentedControl boundary. Ask; do not silently ratify.
-7. Hygiene: CSP/response headers (A-020), 59 `@ts-nocheck` (A-019), macro
+6. Hygiene: CSP/response headers (A-020), 59 `@ts-nocheck` (A-019), macro
    sourcemaps (A-017), stale `tech-debt.md` (A-009), leftover A-010 prose.
-8. Lowest-layer ownership inventory (A-018). Compatibility ceilings (A-023)
+7. Lowest-layer ownership inventory (A-018). Compatibility ceilings (A-023)
    stay documented.
 
 ## Exact next-agent start
@@ -145,8 +154,8 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-vp run comparison:build
-vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified/treeview.certified.spec.ts --reporter=line
+vp run ui:smoke
+vp run ci:site
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:

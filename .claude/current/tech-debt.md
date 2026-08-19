@@ -925,6 +925,23 @@ tasks:
       on ALL four placements with ZERO D3 waivers. So this entry's arrow scope is now
       TOOLTIP-ONLY (its headless `createTooltip` still exposes no `arrowProps`). The
       popover's remaining realignment gap is D2 motion only — see `popover-enter-motion`.
+  - id: treeview-div-grid-paint
+    title: Port TreeView row windowing onto S2's Virtualizer + S2ListLayout
+    state: open
+    roadmap: upstream-api-parity
+    note: >-
+      S2 TreeView is always wrapped in Virtualizer + S2ListLayout (absolutely
+      positioned rows on a visibleRect). The port renders the tree in natural
+      document flow. Paint (D1/D3/D7/D8) is already scoped out of
+      treeview.certified.spec.ts for that split. D5 `active` still pair-diffs
+      (Tab/Arrow/Home/End land on the same row). After End, S2 unmounts
+      offscreen rows so React's `[tabindex]` census collapses to Archive while
+      the port still lists every row, Select checkbox, and expand button.
+      The End walk records the collection tab-stop (treegrid + focused row)
+      instead of that mounted set. Closing this means adopting S2's
+      Virtualizer; do not excludeFromTabOrder the row checkboxes to hide it
+      (React Select is tabindex=0 at rest). Confirm against S2 TreeView.tsx
+      Virtualizer + S2ListLayout first (parity rule).
   - id: listview-virtualizer-subpixel
     title: Port the ListView row windowing onto S2's Virtualizer + S2ListLayout (row-wrapper stacking/positioning)
     state: open
