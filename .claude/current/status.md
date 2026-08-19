@@ -82,6 +82,8 @@ focused reruns.
 | focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs + Toast + TreeView) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, Tabs 23/23, Toast 37/37, TreeView D5 3/3 + D6 5/5, GridList/ListBox D5/D6 still green** | overlay/focus, Select All mixed, Tabs keyboard-nav, Toast alert, and TreeView D5 closed |
 | `vp run ui:smoke`                                                       | pass (packed six tarballs; consumer DOM+SSR; 159/159 export files; 38/38 JS subpaths; 68/68 CSS classes) | macro SOURCEMAP_BROKEN warnings remain (A-017)           |
 | comparison-axe (`a11y:axe:comparison`)                                  | **80/80** pass (2026-08-19)                                                                                         | `target-size` disabled (D8 authority); Provider caption chrome uses docs ink |
+| web contrast landing `/` and `/admin`                                   | pass                                                                                                                | landing shell `--text-primary`; admin redirects to `/` in prod |
+| web contrast showcase chrome                                            | labels on `--text-secondary`                                                                                        | 8 component-token routes still red |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -133,15 +135,13 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Finish `ci:site`: web contrast (landing `#000` on dark, showcase
-   `gls-demo-label` `--text-tertiary`), then a11y:smoke, routes, seo,
-   api-reference. `ui:smoke` and comparison-axe 80/80 are in. Rebuild
-   measured rows after this (A-001). A full 2176 certified rerun is
-   still owed; do not treat focused TreeView/Tabs/Toast greens as that
-   rerun. Six Playwright skips are the registered knownDivergences
-   (Slider/RangeSlider thumb AX, TableView sorted textValue,
-   Breadcrumbs overflow timing, DatePicker/DateRangePicker Escape
-   event-order).
+1. Finish `ci:site`: eight showcase contrast routes (Viviana chips
+   using `--accent-primary` as a fill under white instead of
+   `--interactive-fill`; error red 4.36:1; Provider islands). Landing
+   `/` and `/admin` pass. Showcase chrome labels pass. Then
+   a11y:smoke, routes, seo, api-reference. Rebuild measured rows after
+   this (A-001). A full 2176 certified rerun is still owed. Six
+   Playwright skips are the registered knownDivergences.
 2. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
 3. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.

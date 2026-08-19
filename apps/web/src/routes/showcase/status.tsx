@@ -166,7 +166,7 @@ function Page() {
         <Row>
           <ProgressCircle aria-label="Focus blocks: 3 of 5" value={60} size="L">
             <span class={typeRoles.headline}>3/5</span>
-            <span class={typeRoles.micro} style={{ color: "var(--text-tertiary)" }}>
+            <span class={typeRoles.micro} style={{ color: "var(--text-secondary)" }}>
               FOCUS
             </span>
           </ProgressCircle>

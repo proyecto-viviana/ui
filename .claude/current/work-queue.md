@@ -14,11 +14,14 @@ tasks:
       (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
       alert, and TreeView D5 tab-forward are closed. ui:smoke passed.
       comparison-axe 80/80 (target-size disabled; Provider caption
-      chrome). Next slice: web contrast on landing + showcase, then
-      the rest of ci:site. Then Kumo evidence, Train 8, evidence
-      schema, owner decisions, hygiene, lowest-layer ownership.
-      Overlay/focus is a separate commit from the pre-existing dirty
-      audit/Kumo tree. Do not skip ahead.
+      chrome). Landing and /admin contrast pass. Showcase chrome
+      labels use AA secondary ink. Next slice: remaining 8 showcase
+      contrast routes (Viviana filled chips still use accent-primary
+      fill under white; error red 4.36; Provider islands), then
+      a11y:smoke / routes / seo / api-reference. Then Kumo evidence,
+      Train 8, evidence schema, owner decisions, hygiene. Overlay/focus
+      is a separate commit from the pre-existing dirty audit/Kumo tree.
+      Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -182,12 +185,19 @@ the smoke scan (S2 compact ActionGroup is 21px; D8 pair-diff is the
 authority; playground WCAG 2.2 AA already did this). Provider captions
 use comparison docs ink keyed on the caption itself — `--cmp-pink` was
 3.27:1 on S2 dark base, and React's nested Provider has no
-`data-color-scheme` for a descendant override. Remaining `ci:site`:
-web `a11y:contrast` (landing shell has no text color so dark theme is
-`#000` on `#0c0d10`; showcase `gls-demo-label` uses `--text-tertiary`
-below AA), then a11y:smoke, routes, seo, api-reference. Rebuild
-`status.md` measured rows after those finish. Keep reporting contract
-93/93 separately from certified (A-031).
+`data-color-scheme` for a descendant override. Landing `/` and `/admin` contrast now pass (landing shell uses
+`--text-primary`; `/admin` redirects there in production). Showcase
+chrome labels (`gls-demo-label`, navcard meta, parity colheads) use
+`--text-secondary` (the AA-pinned ink). Remaining `a11y:contrast`:
+eight showcase routes whose failures are Viviana component tokens,
+not chrome — filled chips/badges paint `--text-on-accent` on
+`--accent-primary` #2e90fa (3.23:1; the register already has
+`--interactive-fill` for this pairing), error text `#db2e26` at
+4.36:1, slider/status tertiary ink, and the type-page Provider
+scheme-override islands. Then a11y:smoke, routes, seo,
+api-reference. Rebuild `status.md` measured rows after those
+finish. Keep reporting contract 93/93 separately from certified
+(A-031).
 
 #### 3. Kumo Button evidence (A-007)
 
