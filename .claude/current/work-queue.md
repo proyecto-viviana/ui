@@ -13,11 +13,10 @@ tasks:
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
       (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
       alert, TreeView D5, comparison-axe 80/80, ui:smoke, and
-      a11y:contrast 154/154 are closed. Next slice: a11y:smoke
-      (ContextualHelp outside-click is the remaining failure), then
-      routes / seo / api-reference. Then Kumo evidence, Train 8,
-      evidence schema, owner decisions, hygiene. Overlay/focus is a
-      separate commit from the pre-existing dirty audit/Kumo tree.
+      a11y:contrast 154/154, and a11y:smoke 44/44 are closed. Next
+      slice: routes / seo / api-reference. Then Kumo evidence, Train
+      8, evidence schema, owner decisions, hygiene. Overlay/focus is
+      a separate commit from the pre-existing dirty audit/Kumo tree.
       Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
@@ -109,9 +108,9 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   census on the End walk. Do not excludeFromTabOrder row checkboxes.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
   A-015 Vite Plus configs, A-016 stale declarations) — `ui:smoke`,
-  comparison-axe 80/80, and `a11y:contrast` 154/154 are in; `ci:site`
-  still needs a11y:smoke (ContextualHelp outside-click), routes, seo,
-  and api-reference before A-001's measured `status.md` refresh.
+  comparison-axe 80/80, `a11y:contrast` 154/154, and `a11y:smoke`
+  44/44 are in; `ci:site` still needs routes, seo, and api-reference
+  before A-001's measured `status.md` refresh.
 - Web contrast 154/154 — Viviana chips/status/list selection use the
   register's AA fill/ink (`--interactive-fill`, `--text-link`,
   `--text-secondary`, `negative-1000`); type-page Provider islands
@@ -119,6 +118,9 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   inactive label/output is WCAG 1.4.3 incidental (matching Slider).
   `apps/web` consumes `@proyecto-viviana/ui` from dist, so token
   edits need `vp run build:viviana-ui` before Playwright preview.
+- ContextualHelp outside-click — jsx-preserving DCE of `let` refs
+  had stripped `close()`; signal refs + `createInteractOutside`.
+  `a11y:smoke` 44/44.
 
 ### Census — every leftover item, in order
 
@@ -201,12 +203,13 @@ Disabled RangeSlider stamps `data-disabled="true"` on the group so
 axe's WCAG 1.4.3 incidental exemption matches Slider. S2 RangeSlider
 still lacks that stamp — sibling gap, not this slice.
 
-Remaining `ci:site`: `a11y:smoke` is **43/44** — ContextualHelp
-"closes on outside interaction" (`playground-components.spec.ts`)
-stays open after `body.click({x:1,y:1})`; Escape close and Popover
-outside-click pass. Then routes, seo, api-reference. Rebuild
-`status.md` measured rows after those finish. Keep reporting
-contract 93/93 separately from certified (A-031).
+`a11y:smoke` **44/44**. ContextualHelp outside-click was DCE in the
+jsx-preserving package build: `let` refs look unassigned, so the
+document `mousedown` handler's `close()` was dead. Headless
+ContextualHelpTrigger now uses signal refs and `createInteractOutside`
+(root wraps trigger + dialog). Remaining `ci:site`: routes, seo,
+api-reference. Rebuild `status.md` measured rows after those finish.
+Keep reporting contract 93/93 separately from certified (A-031).
 
 #### 3. Kumo Button evidence (A-007)
 
@@ -254,6 +257,9 @@ fixmes / unregistered-or-deferred obligations.
   Table `scrollRef` placeholder → explicit inventory.
 - Press-cleanup paired browser coverage (A-027).
 - Snapshot standard when generated-class tests fail (A-025, ongoing).
+- jsx-preserving package builds DCE `let` refs (JSX `ref={el}` is not
+  a JS write). ContextualHelpTrigger was the failing case; scan other
+  solid-export handlers that close over `let` refs.
 
 #### 8. Lowest-layer ownership (A-018)
 
@@ -264,8 +270,8 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, starting at `ci:site` (`a11y:smoke`
-   ContextualHelp outside-click, then routes / seo / api-reference).
+1. Remaining-work goal above, starting at `ci:site` (routes / seo /
+   api-reference).
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only

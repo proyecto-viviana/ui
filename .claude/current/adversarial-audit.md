@@ -72,8 +72,8 @@ Severity describes owner risk, not code aesthetics:
 | State/ARIA/component boundaries       | partial     | High-risk Dialog, overlay isolation, and Grid deletion paths were traced and fixed; a new import inventory exposes the much larger upper-layer ownership review still owed.                                                                                    |
 | S2 styling provenance                 | partial     | S2 1.6 tokens/macro foundation is source-aligned and focused tests pass; Viviana is a documented owner-ratified fork, while source-map warnings and long-term convergence remain open.                                                                         |
 | Kumo architecture and provenance      | partial     | Package/fixture target Kumo 2.11.0 and release now fails closed; paired browser behavior and visual evidence remain absent.                                                                                                                                    |
-| Test relevance and evidence integrity | partial     | First complete 2176 certified run: 2164 pass / 6 fail / 6 skip. All six product reds from that run are closed on focused reruns (TableView mixed, Tabs, Toast alert, TreeView D5). A full 2176 rerun is still owed. `ui:smoke` passed; comparison-axe 80/80; `a11y:contrast` 154/154; `ci:site` blocked on ContextualHelp outside-click smoke, then routes/seo/api-reference. |
-| Accessibility and i18n                | partial     | S2 AlertDialog description mapping, ActionMenu overlay focus, Dialog trap-cycle/hover ring, TableView Select All mixed, Tabs arrow, Toast alert role, and TreeView D5 tab-forward are closed. comparison-axe 80/80 (`target-size` is D8, not axe). Web contrast 154/154 (AA register pairings; Provider islands on `base`; RangeSlider `data-disabled`). `a11y:smoke` blocked on ContextualHelp outside-click.   |
+| Test relevance and evidence integrity | partial     | First complete 2176 certified run: 2164 pass / 6 fail / 6 skip. All six product reds from that run are closed on focused reruns (TableView mixed, Tabs, Toast alert, TreeView D5). A full 2176 rerun is still owed. `ui:smoke` passed; comparison-axe 80/80; `a11y:contrast` 154/154; `a11y:smoke` 44/44; `ci:site` blocked on routes/seo/api-reference. |
+| Accessibility and i18n                | partial     | S2 AlertDialog description mapping, ActionMenu overlay focus, Dialog trap-cycle/hover ring, TableView Select All mixed, Tabs arrow, Toast alert role, and TreeView D5 tab-forward are closed. comparison-axe 80/80 (`target-size` is D8, not axe). Web contrast 154/154. `a11y:smoke` 44/44 (ContextualHelp outside-click uses `createInteractOutside`; jsx-preserving DCE had stripped `let`-ref dismiss).   |
 | Security and dependencies             | partial     | Full and production audits now report zero known vulnerabilities and run in release readiness; response-header/CSP policy and app-boundary review remain open.                                                                                                 |
 | Release and supply chain              | partial     | SHA-pinned actions/same-SHA checks remain positive; Kumo's npm/trusted-publisher prerequisites are now executable and negative-tested, not prose-only.                                                                                                         |
 | Applications and deployment           | partial     | Web/comparison trust boundaries were inspected; prop-table HTML is hardened, but response security headers and browser-level Kumo proof remain open.                                                                                                           |
@@ -706,9 +706,8 @@ closed (certified 23/23). Toast D6 alert is closed (certified 37/37).
 TreeView D5 tab-forward/End is closed (collection tab-stop on End;
 `treeview-div-grid-paint`). The 2176 run is complete once (2164/6/6);
 product reds from that run are closed on focused reruns. `ui:smoke`
-passed. comparison-axe 80/80. `a11y:contrast` 154/154. Next `ci:site`:
-`a11y:smoke` (ContextualHelp outside-click), then routes / seo /
-api-reference.
+passed. comparison-axe 80/80. `a11y:contrast` 154/154. `a11y:smoke`
+44/44. Next `ci:site`: routes / seo / api-reference.
 
 After targeted red/green work, run the validation ladder in `status.md`
 sequentially because build lanes share `dist` trees. The packed-consumer smoke

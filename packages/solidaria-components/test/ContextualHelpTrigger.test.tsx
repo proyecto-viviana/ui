@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { ContextualHelpTrigger } from "../src/ContextualHelpTrigger";
 
@@ -46,6 +46,31 @@ describe("ContextualHelpTrigger (headless)", () => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
       fireEvent.click(trigger);
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("closes on outside pointer interaction", () => {
+      render(() => (
+        <div>
+          <ContextualHelpTrigger>{defaultChildren}</ContextualHelpTrigger>
+          <button type="button">outside</button>
+        </div>
+      ));
+      fireEvent.click(screen.getByRole("button", { name: "Help trigger" }));
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      const outside = screen.getByRole("button", { name: "outside" });
+      fireEvent.pointerDown(outside, { button: 0, isPrimary: true });
+      fireEvent.click(outside);
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("does not close when interacting inside the dialog", () => {
+      render(() => <ContextualHelpTrigger>{defaultChildren}</ContextualHelpTrigger>);
+      fireEvent.click(screen.getByRole("button"));
+      const dialog = screen.getByRole("dialog");
+      fireEvent.pointerDown(dialog, { button: 0, isPrimary: true });
+      fireEvent.click(dialog);
+      expect(dialog).toBeInTheDocument();
     });
   });
 

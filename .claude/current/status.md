@@ -8,17 +8,16 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after `a11y:contrast` 154/154. First
+Last refreshed: **2026-08-19**, after `a11y:smoke` 44/44. First
 complete 2176 certified run was 2164 pass / 6 fail / 6 skip; every
 product red from that run is now closed on focused reruns (TableView
 mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke` passed.
-comparison-axe is 80/80. Web contrast is 154/154. `ci:site` is still
-blocked on `a11y:smoke` (ContextualHelp outside-click), then routes,
-seo, and api-reference. A full 2176 rerun is still owed before
-claiming the certified lane green. Substantial pre-existing owner
-work and audit changes remain uncommitted. Do not reset or split
-this tree without first identifying ownership of overlapping
-changes.
+comparison-axe is 80/80. Web contrast is 154/154. `a11y:smoke` is
+44/44. `ci:site` is still blocked on routes, seo, and api-reference.
+A full 2176 rerun is still owed before claiming the certified lane
+green. Substantial pre-existing owner work and audit changes remain
+uncommitted. Do not reset or split this tree without first
+identifying ownership of overlapping changes.
 
 This is the short handoff. Read `adversarial-audit.md` for evidence and finding
 details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
@@ -85,7 +84,7 @@ focused reruns.
 | `vp run ui:smoke`                                                       | pass (packed six tarballs; consumer DOM+SSR; 159/159 export files; 38/38 JS subpaths; 68/68 CSS classes) | macro SOURCEMAP_BROKEN warnings remain (A-017)           |
 | comparison-axe (`a11y:axe:comparison`)                                  | **80/80** pass (2026-08-19)                                                                                         | `target-size` disabled (D8 authority); Provider caption chrome uses docs ink |
 | web contrast (`a11y:contrast`)                                      | **154/154** pass (2026-08-19)                                                                                   | AA register pairings; Provider islands on `base`; RangeSlider `data-disabled` |
-| `a11y:smoke`                                                        | 43 pass / 1 fail                                                                                                | ContextualHelp outside-click (`body.click` at 1,1) does not dismiss |
+| `a11y:smoke`                                                        | **44/44** pass (2026-08-19)                                                                                     | ContextualHelp outside-click: signal refs + `createInteractOutside` |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -137,13 +136,13 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Finish `ci:site`: contrast is 154/154. Next is `a11y:smoke`
-   (ContextualHelp outside-click stays open after `body.click` at
-   1,1; Escape close and Popover outside-click pass), then routes,
-   seo, api-reference. Rebuild measured rows after this (A-001). A
-   full 2176 certified rerun is still owed. Six Playwright skips are
-   the registered knownDivergences. S2 RangeSlider still lacks
-   `data-disabled` (Viviana-only stamp this slice).
+1. Finish `ci:site`: contrast 154/154 and `a11y:smoke` 44/44. Next
+   is routes, seo, api-reference. Rebuild measured rows after this
+   (A-001). A full 2176 certified rerun is still owed. Six Playwright
+   skips are the registered knownDivergences. S2 RangeSlider still
+   lacks `data-disabled` (Viviana-only stamp). jsx-preserving builds
+   DCE `let` refs — use signal/callback refs when the handler must
+   survive the solid export.
 2. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
 3. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
@@ -161,9 +160,8 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-# ui:smoke, comparison-axe 80/80, a11y:contrast 154/154 passed.
-# Remaining ci:site:
-vp run a11y:smoke
+# ui:smoke, comparison-axe 80/80, a11y:contrast 154/154,
+# a11y:smoke 44/44 passed. Remaining ci:site:
 vp run test:routes
 vp run test:seo
 vp run test:api-reference
