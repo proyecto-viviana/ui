@@ -19,10 +19,11 @@ import { registerTargetSizeDriver } from "../drivers/target-size";
  *    surface has no hover/press affordances).
  * 2. `dialog` close button — full gesture walk on a control inside the open
  *    overlay. The dialog is opened with the keyboard so the input modality
- *    stays non-pointer and focus-visible can be driven; note React Aria's
- *    contained FocusScope restores focus after the focus-visible reset blur,
- *    so hover captures include the restored focus ring — in both panels
- *    alike if the port is faithful.
+ *    stays non-pointer and focus-visible can be driven. Contain restores
+ *    after the focus-visible reset blur; hover then pointermoves, which
+ *    flips RAC modality to pointer without notifying listeners.
+ *    `useFocusRing` re-samples `isFocusVisible()` on the restore focus
+ *    change, so the hover capture does **not** keep the keyboard ring.
  */
 
 const dialogTitle = "Review Changes";

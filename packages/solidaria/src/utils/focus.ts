@@ -3,17 +3,37 @@
  * Based on @react-aria/utils focus utilities.
  */
 
-import { getEventTarget, getOwnerDocument, getOwnerWindow, isFocusable } from "./dom";
+import { getInteractionModality } from "../interactions/createInteractionModality";
+import {
+  getActiveElement,
+  getEventTarget,
+  getOwnerDocument,
+  getOwnerWindow,
+  isFocusable,
+} from "./dom";
+import { runAfterTransition } from "./runAfterTransition";
+
+/**
+ * Extra `element.focus()` options besides `preventScroll`, which this helper
+ * always sets. `focusVisible` is the HTML focus option that requests CSS
+ * `:focus-visible` (Chrome 131+); ignored by browsers that don't implement it.
+ */
+export type FocusWithoutScrollingOptions = Pick<FocusOptions, "focusVisible">;
 
 /**
  * Focuses an element without scrolling the page.
  * Uses preventScroll option with fallback for older browsers.
  */
-export function focusWithoutScrolling(element: HTMLElement | null): void {
+export function focusWithoutScrolling(
+  element: HTMLElement | null,
+  options?: FocusWithoutScrollingOptions,
+): void {
   if (!element) return;
 
+  const focusOptions: FocusOptions = { preventScroll: true, ...options };
+
   try {
-    element.focus({ preventScroll: true });
+    element.focus(focusOptions);
   } catch {
     // Fallback for browsers that don't support preventScroll
     const scrollableElements = getScrollableAncestors(element);
@@ -23,7 +43,7 @@ export function focusWithoutScrolling(element: HTMLElement | null): void {
       scrollLeft: el.scrollLeft,
     }));
 
-    element.focus();
+    element.focus(options);
 
     for (const { element: el, scrollTop, scrollLeft } of scrollPositions) {
       el.scrollTop = scrollTop;
@@ -61,6 +81,52 @@ function getScrollableAncestors(element: Element): Element[] {
   ancestors.push(doc.documentElement);
 
   return ancestors;
+}
+
+/**
+ * Run `fn` after paint. Mirrors React `useEffect` relative to `preventFocus`,
+ * which holds focus with capture listeners until the next animation frame.
+ * Overlay auto-focus that runs in the same flush as the opening click is yanked
+ * back onto the trigger; this delay is the Solid equivalent of upstream's
+ * `useEffect` auto-focus.
+ */
+export function runAfterPaint(fn: () => void, doc?: Document): () => void {
+  const ownerDoc = doc ?? (typeof document !== "undefined" ? document : undefined);
+  const win = ownerDoc?.defaultView ?? (typeof window !== "undefined" ? window : undefined);
+  if (!win) {
+    fn();
+    return () => {};
+  }
+
+  let timeoutId: ReturnType<typeof win.setTimeout> | undefined;
+  let cancelled = false;
+
+  const run = () => {
+    if (cancelled) return;
+    fn();
+  };
+
+  const scheduleTimeout = () => {
+    if (cancelled) return;
+    timeoutId = win.setTimeout(run, 0);
+  };
+
+  let frameId: number | undefined;
+  if (typeof win.requestAnimationFrame === "function") {
+    frameId = win.requestAnimationFrame(scheduleTimeout);
+  } else {
+    scheduleTimeout();
+  }
+
+  return () => {
+    cancelled = true;
+    if (frameId != null) {
+      win.cancelAnimationFrame(frameId);
+    }
+    if (timeoutId !== undefined) {
+      win.clearTimeout(timeoutId);
+    }
+  };
 }
 
 /**
@@ -137,7 +203,33 @@ export function preventFocus(target: Element | null): (() => void) | undefined {
 }
 
 /**
- * Safely focuses an element, alias for focusWithoutScrolling.
- * This matches the react-aria focusSafely function name.
+ * Focus an element while avoiding page scroll and VoiceOver/iOS transition
+ * side effects. Port of @react-aria/interactions focusSafely: virtual-modality
+ * focus waits until in-flight CSS transitions end so contain-restore after a
+ * programmatic focus (Playwright `.focus()`, screen readers) does not beat a
+ * following pointermove.
  */
-export const focusSafely = focusWithoutScrolling;
+export function focusSafely(
+  element: HTMLElement | null,
+  options?: FocusWithoutScrollingOptions,
+): void {
+  if (!element?.isConnected) {
+    return;
+  }
+
+  const ownerDocument = getOwnerDocument(element);
+  if (getInteractionModality() === "virtual") {
+    const lastFocusedElement = getActiveElement(ownerDocument);
+    runAfterTransition(() => {
+      const activeElement = getActiveElement(ownerDocument);
+      if (
+        (activeElement === lastFocusedElement || activeElement === ownerDocument.body) &&
+        element.isConnected
+      ) {
+        focusWithoutScrolling(element, options);
+      }
+    });
+  } else {
+    focusWithoutScrolling(element, options);
+  }
+}

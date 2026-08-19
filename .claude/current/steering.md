@@ -17,49 +17,67 @@ Aria, React Aria Components, and React Spectrum S2. A component is ported only
 when upstream-observable API, accessibility, keyboard/focus, forms/validation,
 timing, styling, visual, and i18n branches are held by evidence.
 
-Two products ship on the stack. `@proyecto-viviana/ui` is the flagship Viviana
-register. `@proyecto-viviana/solid-spectrum` is the S2-parity design-system
-layer and the only source of S2 macro/token styling.
+Two established styled products and one early experiment use the stack.
+`@proyecto-viviana/ui` is the flagship Viviana register.
+`@proyecto-viviana/solid-spectrum` is the S2-parity design-system layer and the
+only source of S2 macro/token styling. `@proyecto-viviana/kumo` is a standalone
+Kumo-shaped styled sibling with one experimental Button and incomplete parity
+evidence.
 
 ## Current focus
 
-**Operational safety, then upstream absorption.** The detailed plan of record is
-`repo-assessment.md`.
+**Adversarial integration audit, then evidence-backed upstream absorption.** The
+detailed finding register and resumption checkpoint are in
+`adversarial-audit.md`.
 
 Launch, the six-tier recertification march, and CI enforcement are complete.
-The assessed `main` revision is green under four strict required contexts and
-the consumer tarball smoke passes. That is the operating floor, not a claim of
-full parity.
+Those completed programs remain useful floors, not a claim that the current
+dirty integration tree is qualified or that every component is fully ported.
 
 The active facts that choose work are:
 
-- version PR #20 is fully qualified but its merge automatically publishes five
-  npm packages and therefore awaits explicit publish approval;
-- dependency audit reports 1 critical, 17 high, 8 moderate, and 1 low vulnerable
-  instances;
-- S2 1.6.0 and RAC 1.20.0 are available beyond the exact current 1.5.1/1.19.0
-  oracle;
-- strict controls are modeled for 69/78 entries under a nine-gap baseline;
-- seven S2 value exports remain missing;
-- the upper-layer guard freezes 533 identical and 76 divergent shared files;
-- 45 hand-written Spectrum docs routes cover a 78-entry catalogue, with aliases
-  requiring a mapping report before an exact missing count is claimed.
+- the dependency graph is upgraded and currently audits at zero known
+  vulnerabilities, but the full integration ladder must still qualify it;
+- package builds previously passed while Vite Plus ignored six legacy config
+  files and omitted declared artifacts; configs are migrated and an artifact
+  manifest guard now makes that class of false green executable;
+- the exact oracle is now S2 1.6.0 / RAC 1.20.0, but most T-61…T-99 behavioral
+  deltas remain open or unresolved in `upstream-release-audit.md`;
+- strict component reports still count modeled labels and frozen exceptions,
+  not full ten-gate acceptance;
+- the upper-register guard freezes source-fork growth but does not prove that
+  behavior is owned at the lowest layer;
+- Kumo is aligned to 2.11.0 and still experimental; paired browser evidence is
+  absent and its first publish is blocked by an executable prerequisite;
+- public styling explanations now state the actual sibling/fork model, while
+  stale internal plan prose is being retired.
 
 ## Now
 
-1. Obtain the explicit decision on publishing PR #20; if approved, merge,
-   observe the exact release SHA, and verify all five npm versions/provenance.
-2. Remediate the critical/high dependency graph under issue #22 after explicit
-   dependency-change approval.
-3. Make clean-checkout gate preconditions deterministic under issue #28.
-4. Keep the assessed branch green while the plan/ticket truth lands on `main`.
+1. Execute the remaining-work goal in `work-queue.md` through every leftover
+   audit item. Current slice: complete all 2176 certified cases with
+   separate pass/skip/fixme/divergence/deferred counts (ActionMenu list and
+   Dialog close-button D1/D3/D5 are green). Then smoke/site, Kumo evidence,
+   Train 8, evidence schema, owner decisions, hygiene, lowest-layer
+   ownership — without skipping ahead.
+2. Qualify the dependency/toolchain migration with meaningful targeted tests,
+   complete suites, actual package artifacts, an external consumer, and
+   security/peer gates.
+3. Keep Kumo's first publish closed until its external npm/trusted-publisher
+   prerequisite is verified; keep the package labeled experimental.
+4. Continue source-level classification of T-61…T-99. Do not equate updated
+   pins, exports, or passing broad suites with absorbed behavior.
+5. Repair the component evidence model so current gate outcomes and runnable
+   evidence, not labels and frozen baselines, determine acceptance.
 
 ## Next
 
-1. Absorb S2 1.6.0 / RAC 1.20.0 as the isolated upstream-sync unit in issue #23.
-2. Close the nine strict modeled-control gaps (#24) and the seven missing
-   exports/DnD subsystem (#25) against that new exact oracle.
-3. Consume the shared headless spine and reduce upper-layer duplication in
+1. Prove the Kumo Button behavior and visual branches in the paired fixture,
+   qualify the root site, and align the sibling proposal.
+2. Close the remaining classified 1.20/1.6 behavior gaps in dependency order.
+3. Close the frozen strict modeled-control gaps and missing exports/DnD surface
+   against the exact current oracle.
+4. Consume the shared headless spine and reduce upper-layer duplication in
    bounded, evidence-backed families (#26).
 
 ## Later
@@ -73,9 +91,9 @@ The active facts that choose work are:
 
 ## Open owner decisions
 
-1. **PR #20 publication.** Merge means immediate npm publication of
-   solid-spectrum 0.6.4, solid-stately 0.5.1, solidaria 0.4.3,
-   solidaria-components 0.5.1, and ui 0.6.3.
+1. **TableView architecture.** Ratify the native-table divergence and its
+   explicit acceptance contract, or converge on upstream's interactive-grid
+   structure before T-87 is called absorbed.
 2. **TabSwitch / SegmentedControl.** Describe the intended public/register
    boundary before any alias, rename, or composition contract is encoded.
 
@@ -84,12 +102,13 @@ The active facts that choose work are:
 - Treating export presence, route presence, axe, or a stable screenshot as
   component acceptance.
 - Weakening protected-main checks to make direct delivery convenient.
-- Mixing the available upstream train into the already-qualified version
-  release.
+- Calling an upstream train absorbed because dependencies and oracle pins moved.
 - Fixing shared behavior in both upper registers or styling components in the
   comparison app.
 - Relaunching a broad census when the reports already identify finite gaps.
 - Adding or changing dependencies without explicit approval.
+- Expanding Kumo beyond Button or publishing it before the pilot review and a
+  separate owner decision.
 
 ## Before a task
 

@@ -4,9 +4,10 @@
  * Tests for focus containment, restoration, and auto-focus behavior.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { FocusScope, useFocusManager } from "../src/focus/FocusScope";
+import { preventFocus } from "../src/utils/focus";
 import { createSignal, type Component, Show } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -207,6 +208,28 @@ describe("FocusScope", () => {
       expect(document.activeElement).toBe(input1);
     });
 
+    it("restores after blur() on the next animation frame, not synchronously", async () => {
+      switchToRealTimers();
+
+      render(() => (
+        <FocusScope contain>
+          <input data-testid="blur-input" />
+        </FocusScope>
+      ));
+
+      const input = screen.getByTestId("blur-input");
+      input.focus();
+      expect(document.activeElement).toBe(input);
+
+      input.blur();
+      expect(document.activeElement).toBe(document.body);
+
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+      expect(document.activeElement).toBe(input);
+    });
+
     it("should restore focus to the last focused element when focus escapes", () => {
       render(() => (
         <div>
@@ -259,7 +282,9 @@ describe("FocusScope", () => {
       const child2 = screen.getByTestId("nested-child2");
       const child3 = screen.getByTestId("nested-child3");
 
-      expect(document.activeElement).toBe(child1);
+      await waitFor(() => {
+        expect(document.activeElement).toBe(child1);
+      });
 
       await user.tab();
       expect(document.activeElement).toBe(child2);
@@ -324,6 +349,86 @@ describe("FocusScope", () => {
 
       const input2 = screen.getByTestId("disabled-input2");
       expect(document.activeElement).toBe(input2);
+    });
+
+    it("should auto-focus a focusable but not tabbable element when nothing is tabbable", () => {
+      render(() => (
+        <FocusScope autoFocus>
+          <div tabIndex={-1} data-testid="dialog-like" />
+        </FocusScope>
+      ));
+
+      vi.runAllTimers();
+
+      expect(document.activeElement).toBe(screen.getByTestId("dialog-like"));
+    });
+
+    it("should auto-focus children that appear after mount", async () => {
+      switchToRealTimers();
+
+      const Test: Component = () => {
+        const [show, setShow] = createSignal(false);
+
+        return (
+          <div>
+            <button data-testid="reveal" onClick={() => setShow(true)}>
+              Reveal
+            </button>
+            <FocusScope autoFocus>
+              <Show when={show()}>
+                <input data-testid="late" />
+              </Show>
+            </FocusScope>
+          </div>
+        );
+      };
+
+      render(() => <Test />);
+      fireEvent.click(screen.getByTestId("reveal"));
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByTestId("late"));
+      });
+    });
+
+    it("should auto-focus after preventFocus's capture window", () => {
+      const Test: Component = () => {
+        const [open, setOpen] = createSignal(false);
+
+        return (
+          <div>
+            <input data-testid="prior" />
+            <button
+              data-testid="trigger"
+              onMouseDown={(e) => {
+                preventFocus(e.currentTarget);
+              }}
+              onClick={() => setOpen(true)}
+            >
+              Open
+            </button>
+            <Show when={open()}>
+              <FocusScope autoFocus>
+                <input data-testid="inside" />
+              </FocusScope>
+            </Show>
+          </div>
+        );
+      };
+
+      render(() => <Test />);
+
+      const prior = screen.getByTestId("prior");
+      prior.focus();
+      expect(document.activeElement).toBe(prior);
+
+      const trigger = screen.getByTestId("trigger");
+      fireEvent.mouseDown(trigger);
+      fireEvent.click(trigger);
+
+      vi.runAllTimers();
+
+      expect(document.activeElement).toBe(screen.getByTestId("inside"));
     });
 
     it("should skip hidden elements for auto focus", () => {

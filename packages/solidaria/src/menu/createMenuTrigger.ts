@@ -17,6 +17,15 @@ export interface AriaMenuTriggerProps {
   id?: string;
 }
 
+export type MenuTriggerAutoFocus = boolean | "first" | "last";
+
+export interface MenuTriggerMenuProps extends JSX.HTMLAttributes<HTMLElement> {
+  /** Auto-focus strategy forwarded to `createMenu`. Mirrors `useMenuTrigger`. */
+  autoFocus?: MenuTriggerAutoFocus;
+  /** Close handler forwarded to `createMenu`. */
+  onClose?: () => void;
+}
+
 export interface MenuTriggerAria {
   /** Props for the menu trigger button. */
   menuTriggerProps: JSX.HTMLAttributes<HTMLElement> & {
@@ -24,7 +33,20 @@ export interface MenuTriggerAria {
     onKeyDown: (e: KeyboardEvent) => void;
   };
   /** Props for the menu element. */
-  menuProps: JSX.HTMLAttributes<HTMLElement>;
+  menuProps: MenuTriggerMenuProps;
+}
+
+type MenuTriggerOverlayState = OverlayTriggerState & {
+  focusStrategy?: () => "first" | "last" | null;
+  open: (focusStrategy?: "first" | "last" | null) => void;
+  toggle: (focusStrategy?: "first" | "last" | null) => void;
+};
+
+function openWithStrategy(
+  state: MenuTriggerOverlayState,
+  strategy: "first" | "last" | null,
+): void {
+  state.open(strategy);
 }
 
 /**
@@ -36,10 +58,11 @@ export function createMenuTrigger(
 ): MenuTriggerAria {
   const getProps = () => access(props);
   const menuId = createId(getProps().id);
+  const triggerState = state as MenuTriggerOverlayState;
 
   const onPress = () => {
     if (!getProps().isDisabled) {
-      state.toggle();
+      triggerState.toggle();
     }
   };
 
@@ -51,15 +74,15 @@ export function createMenuTrigger(
       case " ":
       case "ArrowDown": {
         e.preventDefault();
-        if (!state.isOpen()) {
-          state.open();
+        if (!triggerState.isOpen()) {
+          openWithStrategy(triggerState, "first");
         }
         break;
       }
       case "ArrowUp": {
         e.preventDefault();
-        if (!state.isOpen()) {
-          state.open();
+        if (!triggerState.isOpen()) {
+          openWithStrategy(triggerState, "last");
         }
         break;
       }
@@ -70,7 +93,7 @@ export function createMenuTrigger(
     get menuTriggerProps() {
       const p = getProps();
       const type = p.type ?? "menu";
-      const isOpen = state.isOpen();
+      const isOpen = triggerState.isOpen();
 
       return {
         "aria-haspopup": type,
@@ -81,8 +104,15 @@ export function createMenuTrigger(
         onKeyDown,
       };
     },
-    menuProps: {
-      id: menuId,
+    get menuProps() {
+      // `focusStrategy || true` matches useMenuTrigger: mouse/press leave the
+      // strategy null so the menu root is focused; keyboard open focuses first/last.
+      const strategy = triggerState.focusStrategy?.() ?? null;
+      return {
+        id: menuId,
+        autoFocus: strategy || true,
+        onClose: () => triggerState.close(),
+      };
     },
   };
 }

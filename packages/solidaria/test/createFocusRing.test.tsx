@@ -5,7 +5,7 @@
  * but hidden when using mouse/touch.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createFocusRing } from "../src/interactions/createFocusRing";
 import type { Component } from "solid-js";
@@ -146,6 +146,34 @@ describe("createFocusRing", () => {
       fireEvent.pointerDown(document.body, { pointerType: "mouse" });
       el.focus();
 
+      expect(el.dataset.focusVisible).toBe("false");
+    });
+
+    it("does not hide the ring on pointermove while focused", () => {
+      render(() => <Example />);
+
+      const el = screen.getByTestId("example");
+      fireEvent.keyDown(document.body, { key: "Tab" });
+      el.focus();
+      expect(el.dataset.focusVisible).toBe("true");
+
+      fireEvent.pointerMove(document.body, { pointerType: "mouse" });
+      expect(el.dataset.focusVisible).toBe("true");
+    });
+
+    it("re-samples global modality on focus so pointermove then restore does not keep a keyboard ring", () => {
+      render(() => <Example />);
+
+      const el = screen.getByTestId("example");
+      fireEvent.keyDown(document.body, { key: "Tab" });
+      el.focus();
+      expect(el.dataset.focusVisible).toBe("true");
+
+      el.blur();
+      expect(el.dataset.focusVisible).toBe("false");
+
+      fireEvent.pointerMove(document.body, { pointerType: "mouse" });
+      el.focus();
       expect(el.dataset.focusVisible).toBe("false");
     });
 

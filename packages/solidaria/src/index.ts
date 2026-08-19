@@ -238,6 +238,8 @@ export {
   type MenuItemAria,
   type AriaMenuTriggerProps,
   type MenuTriggerAria,
+  type MenuTriggerMenuProps,
+  type MenuTriggerAutoFocus,
 } from "./menu";
 
 export {

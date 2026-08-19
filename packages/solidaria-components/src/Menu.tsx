@@ -22,6 +22,7 @@ import {
   createMenu,
   createMenuItem,
   createMenuTrigger,
+  type MenuTriggerMenuProps,
   createFocusRing,
   createHover,
   createButton,
@@ -261,7 +262,7 @@ type MenuSelectionEvent = { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boo
 interface MenuTriggerContextValue {
   state: OverlayTriggerState;
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
-  menuProps: JSX.HTMLAttributes<HTMLElement>;
+  menuProps: MenuTriggerMenuProps;
   isPressed?: () => boolean;
   onPressStart?: (e: { pointerType?: string }) => void;
 }
@@ -861,11 +862,18 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       get label() {
         return ariaProps.label;
       },
+      get autoFocus() {
+        return ariaProps.autoFocus ?? triggerContext?.menuProps.autoFocus;
+      },
       get onAction() {
         return handleAction;
       },
       get onClose() {
-        return stateProps.onClose ?? (() => triggerContext?.state.close());
+        return (
+          stateProps.onClose ??
+          triggerContext?.menuProps.onClose ??
+          (() => triggerContext?.state.close())
+        );
       },
       get shouldCloseOnSelect() {
         return (
@@ -884,6 +892,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       },
     },
     state,
+    () => menuRef(),
   );
 
   // Reveal the activedescendant-focused item on keyboard navigation. The menu
@@ -930,7 +939,12 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   };
   const cleanTriggerMenuProps = () => {
     if (!triggerContext) return {};
-    const { ref: _ref2, ...rest } = triggerContext.menuProps as Record<string, unknown>;
+    const {
+      ref: _ref2,
+      autoFocus: _autoFocus,
+      onClose: _onClose,
+      ...rest
+    } = triggerContext.menuProps as Record<string, unknown>;
     return rest;
   };
   const cleanFocusProps = () => {
@@ -1318,7 +1332,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   return (
     <Show when={shouldRender()}>
       <Show when={triggerContext} fallback={menuContent()}>
-        <FocusScope restoreFocus autoFocus>
+        <FocusScope restoreFocus>
           {menuContent()}
         </FocusScope>
       </Show>

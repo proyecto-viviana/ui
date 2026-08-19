@@ -11,6 +11,7 @@ import { createTypeSelect } from "../selection/createTypeSelect";
 import { selectItem } from "../selection/selectItem";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
+import { focusSafely, runAfterPaint } from "../utils/focus";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
@@ -85,7 +86,7 @@ export interface AriaMenuProps<T = unknown> {
   shouldCloseOnSelect?: boolean;
   /** Whether focus should automatically wrap around. */
   shouldFocusWrap?: boolean;
-  /** Whether to auto-focus the first item when the menu opens. */
+  /** Whether to auto-focus the menu root (`true`) or the first/last item. */
   autoFocus?: boolean | "first" | "last";
   /** Whether type-to-select is disabled. @default false */
   disallowTypeAhead?: boolean;
@@ -200,6 +201,70 @@ export function createMenu<T>(
     get isDisabled() {
       return getProps().disallowTypeAhead ?? false;
     },
+  });
+
+  // Auto-focus the menu (or its first/last/selected item) when `autoFocus` is
+  // set. Mirrors useMenu → useSelectableCollection: mouse open passes `true`
+  // (focus the menu root); ArrowDown/ArrowUp pass `"first"`/`"last"`.
+  const isNavDisabled = (key: Key) =>
+    state.isDisabled(key) && state.disabledBehavior() === "all";
+
+  let autoFocusDone = false;
+  let cancelAutoFocus: (() => void) | undefined;
+  createEffect(() => {
+    const autoFocus = getProps().autoFocus ?? false;
+    if (autoFocusDone || autoFocus === false) {
+      return;
+    }
+
+    const collection = state.collection();
+    if (collection.size === 0) {
+      return;
+    }
+
+    let focusedKey: Key | null = null;
+    if (autoFocus === "first") {
+      focusedKey = findNextNonDisabledKey(collection, null, "next", isNavDisabled, false);
+    } else if (autoFocus === "last") {
+      focusedKey = findNextNonDisabledKey(collection, null, "prev", isNavDisabled, false);
+    }
+
+    const selectedKeys = state.selectionManager.rawSelection;
+    if (selectedKeys !== "all" && selectedKeys.size) {
+      for (const key of selectedKeys) {
+        if (state.selectionManager.canSelectItem(key)) {
+          focusedKey = key;
+          break;
+        }
+      }
+    }
+
+    const root = ref?.();
+    if (focusedKey == null && !root) {
+      return;
+    }
+
+    autoFocusDone = true;
+    cancelAutoFocus = runAfterPaint(() => {
+      cancelAutoFocus = undefined;
+      state.setFocused(true);
+      state.setFocusedKey(focusedKey);
+      if (focusedKey == null) {
+        const el = ref?.();
+        if (el) {
+          // Mouse-open (`autoFocus: true`) focuses the menu root. React's
+          // useEffect-timed `focusSafely` lands CSS `:focus-visible` on that
+          // tabindex=0 collection, so D1 `outline-width` is the UA 1px even
+          // though author CSS sets `outline-style: none`. Solid's after-paint
+          // focus otherwise stays outside `:focus-visible` (UA medium 3px).
+          // Request `focusVisible` so the collection root matches.
+          focusSafely(el, { focusVisible: true });
+        }
+      }
+    });
+  });
+  onCleanup(() => {
+    cancelAutoFocus?.();
   });
 
   // Keyboard navigation

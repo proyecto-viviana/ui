@@ -5,95 +5,146 @@ status: current
 
 # Status
 
-Status: live evidence snapshot.
-Update when: a refresh changes a measured fact. Refresh from commands and exact
-GitHub revisions, never memory.
+Status: live audit/migration handoff; **not release-ready**.
+Update when: audit findings, validation evidence, dependency ceilings, or the
+ordered continuation path changes.
+Last refreshed: **2026-08-19**, `main@a9bfb8db`, after closing AlertDialog AX
+by copying RAC `slots.description` onto S2 `ContentContext`. Substantial
+pre-existing owner work and audit changes remain uncommitted. Do not reset or
+split this tree without first identifying ownership of overlapping changes.
 
-Last refreshed: **2026-08-09** against
-`main@20fb6164191a0b4f96535991e25a58af00ab998d` with a clean worktree at the
-start of the run.
+This is the short handoff. Read `adversarial-audit.md` for evidence and finding
+details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
+ledger.
 
-## Snapshot
+## Mental model recovered
 
-| Area                      | Current evidence                                                                                                                                                                                                                                                                                                                                                                  | Interpretation                                                                    |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Protected `main`          | Latest assessed `main` workflows green: Certification Gates, Changesets, Release Readiness, Site Gate, and Release. Required strict contexts are `certification-gates`, `changesets-check`, `release-readiness`, and `site-gate`; administrator enforcement on; force push/delete off.                                                                                            | CI incident repair is landed. A neighboring green SHA never qualifies a new one.  |
-| Release train             | Version PR #20 head `c457fca96a671c6a75e4a944b424c20b948d195f` is open, mergeable, and exact-head green for all four required contexts. It would publish solid-spectrum 0.6.4, solid-stately 0.5.1, solidaria 0.4.3, solidaria-components 0.5.1, and ui 0.6.3.                                                                                                                    | Technically ready; automatic npm publication awaits explicit approval.            |
-| Consumer tarballs         | `vp run ui:smoke`: PASS — five packages installed outside the workspace; DOM + SSR built/rendered; 149/149 export files, 36/36 JS subpaths, 64/64 classes backed by CSS, no `src` leak.                                                                                                                                                                                           | Strongest installed-consumer floor.                                               |
-| Unit suite                | `vp run test:run`: PASS — 265 files; 5535 passed, 1 expected fail, 10 skipped.                                                                                                                                                                                                                                                                                                    | Green.                                                                            |
-| Contract suite            | `vp run comparison:test:contract`: PASS — 93/93.                                                                                                                                                                                                                                                                                                                                  | ARIA-vocabulary contracts hold.                                                   |
-| Certified suite           | Current exact-main hosted Certification is green. Most recent full local qualification: 2170 passed, 6 skipped, 0 failed; 12/12 drivers.                                                                                                                                                                                                                                          | Blocking parity floor; not a substitute for closing baseline gaps.                |
-| Format/lint/type          | `vp run check`: PASS — 2897 formatted files; 2740 linted; zero warnings; root typecheck clean.                                                                                                                                                                                                                                                                                    | Green.                                                                            |
-| Release readiness         | `vp run ci:release-readiness`: PASS after the plan refresh — all five public-package builds/declarations, comparison diagnostics (0 errors), and package tests (265 files; 5535 pass, 1 expected fail, 10 skip).                                                                                                                                                                  | Local aggregate qualification is green.                                           |
-| App typecheck workflow    | Standalone `vp run typecheck:apps` false-reds on a clean artifact tree because workspace packages are not built; partial UI-chain build still omits the web app's direct solid-spectrum artifact. Canonical aggregate lanes build prerequisites and pass.                                                                                                                         | Tooling/precondition defect, issue #28; do not report it as product type failure. |
-| Docs/task model           | `vp run docs:check`: PASS after the plan rewrite. 91 tasks — 44 done, 39 open, 5 in progress, 3 next, 0 blocked.                                                                                                                                                                                                                                                                  | Roadmap/task links and finished-state invariants are internally consistent.       |
-| RAC tracked/API surface   | `guard:rac-parity`: 0 missing tracked symbols. `guard:rac-export-gap`: upstream 247, local 414, missing 0, extra 167.                                                                                                                                                                                                                                                             | Required/name surface closed; extras remain documented-local-addition territory.  |
-| S2 catalogue              | `comparison:report:gaps`: 78/78 live on React and Solid, 0 implementation gaps; 359 visual states, 113 current evidence rows, 56 strict pair diffs, 0 blocked.                                                                                                                                                                                                                    | Catalogue/route presence complete.                                                |
-| Strict S2 model           | `comparison:report:parity:strict`: **PASS under baseline**; 69/78 modeled. Frozen gaps: ActionGroup, Autocomplete, GridList, LabeledValue, ListBox, ListBox DnD, StepList, Toolbar, Virtualizer.                                                                                                                                                                                  | Regression guard green; acceptance debt open under issue #24.                     |
-| S2 value exports          | `comparison:report:exports`: upstream 218, local 281, missing 7, extra 70; catalogue root exports missing 0.                                                                                                                                                                                                                                                                      | `LabeledValueContext` plus six DnD exports remain; issue #25.                     |
-| Upstream oracle/freshness | Oracle commit `c4de1e2235bce213d392477a2ebc1e575937051f` materialized; exact S2 1.5.1 / RAC 1.19.0. Freshness advisory reports S2 1.6.0 / RAC 1.20.0.                                                                                                                                                                                                                             | Current evidence reproducible; next absorption is issue #23.                      |
-| Layer boundary            | 609 shared upper-layer files: 533 identical, 76 divergent; 41 Viviana-only. No new fork/unbaselined divergence.                                                                                                                                                                                                                                                                   | Guard green against a large frozen backlog; issue #26.                            |
-| Type suppression          | `guard:ts-nocheck-budget`: 59 current / 59 ceiling; no new or moved suppressions.                                                                                                                                                                                                                                                                                                 | Guarded debt, not completion.                                                     |
-| Site/public docs          | Site live at `https://ui.proyectoviviana.org`. Current hosted Site Gate green. Local `vp run ci:site`: PASS — WCAG 2.2 AA axe 2/2, comparison axe 80/80, route contrast 154/154, route render 155/155, SEO 157/157, API reference 4/4. Generated flagship API: 82 pages / 3367 props / 183 interfaces. Spectrum authored routes: 45 files for 78 catalogue entries, with aliases. | Site floor healthy; catalogue guidance issue #27 remains.                         |
-| Dependency security       | `vp pm audit --json`: 964 dependencies; 27 vulnerable instances — 1 critical, 17 high, 8 moderate, 1 low. Critical path: `solid-js@1.9.12 -> seroval@1.5.1` (patched floor >=1.5.3); lockfile also carries 1.5.4.                                                                                                                                                                 | P0 issue #22. No dependency changed without approval.                             |
+- The five-layer architecture is broadly correct. State belongs in
+  `solid-stately`; ARIA/keyboard/focus in `solidaria`; composition in
+  `solidaria-components`; the three styled packages are siblings above it.
+- Spectrum S2 styling has one implementation source: generated macro/tokens in
+  `solid-spectrum`. The comparison app verifies it and must never patch it.
+- `@proyecto-viviana/ui` is an owner-authorized independent reskin/source fork,
+  not a runtime skin over `solid-spectrum`. Its permanent convergence/ownership
+  mechanism is still undecided.
+- Kumo is a Button-only experiment against Kumo 2.11.0, not a completed port.
+- A green unit suite, axe run, route, screenshot, or report label is only a
+  floor. Current component reports overstate what their evidence files prove.
 
-## Canonical refresh workflow
+Structural styling checks are healthy: the installed S2 token pin is exact,
+the 20-case macro corpus is byte-identical to upstream, and the sibling boundary
+remains 533 identical / 76 declared-divergent files. That does **not** establish
+component visual parity: the interrupted certified browser run found live
+computed-style and focus/AX divergences.
 
-### Report lane
+## Completed in this worktree
+
+- Upgraded every compatible dependency. Adobe is aligned to S2 1.6.0, React
+  Aria Components 1.20.0, React Aria 3.51.0, React Stately 3.49.0, and oracle
+  commit `5ecb3333001313e83898cd07644227897e3bae1f`; Kumo is 2.11.0.
+- Migrated all six public package builds to Vite Plus 0.2 packaging. A new guard
+  validates 802 manifest artifact targets; 142 stale declarations/maps were
+  removed from `solid-stately/src` and are now guarded.
+- Added dependency-security and Kumo first-publish fail-closed controls with
+  negative fixtures. Full and production audits currently report zero known
+  vulnerabilities.
+- Ported/fixed bounded Grid deletion, AlertDialog description wiring, shadow
+  tree isolation, DateField stale skips, multiple Select toggle behavior,
+  native click press-state cleanup evidence, and prop-description injection
+  hardening.
+- Replaced brittle generated-class assertions and normalized generated classes
+  in structural Spectrum snapshots while retaining semantic/state assertions.
+- Repaired Astro 7 comparison builds across SSR/DOM Solid artifacts. Playwright
+  now uses foreground `vp preview`, avoiding Astro's agent auto-backgrounding.
+- Updated public architecture/styling/release prose where direct contradictions
+  were found. The full finding register is durable in `adversarial-audit.md`.
+
+## Current validation evidence
+
+| Check                                                                       | Result on this worktree                                                                                                 | Meaning / qualification                                |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `vp install --frozen-lockfile`                                              | pass, pnpm 11.22                                                                                                        | lock is reproducible                                   |
+| `vp run check`                                                              | pass                                                                                                                    | format, lint, root types                               |
+| `vp run build`                                                              | pass; 802 artifact targets                                                                                              | package outputs exist; macro sourcemap warnings remain |
+| `vp run guard:dependency-security`                                          | pass                                                                                                                    | peer graph clean; zero known full/prod vulnerabilities |
+| `vp run docs:check`                                                         | pass before this final handoff edit                                                                                     | rerun after docs settle                                |
+| `vp test run`                                                               | 269 files; 5580 pass, 1 expected fail, 6 skip                                                                           | package behavior floor; three CSS parse warnings       |
+| app typecheck                                                               | 0 errors, 0 warnings, 3 hints                                                                                           | Astro integration type floor                           |
+| `vp run comparison:test:contract`                                           | 93/93 pass                                                                                                              | rendered catalogue + button-family contracts           |
+| `vp run comparison:test:certified`                                          | **interrupted at 951/2176; red**                                                                                        | do not claim certification                             |
+| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, and Dialog close D1/D3/D5 all green (23/23 ActionMenu+Dialog close)** | overlay/focus class closed; full 2176 not rerun        |
+
+Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
+
+1. **D12 Button — harness, now green.** `dist/d12/button/index.html` already
+   contained the server-rendered `Save` button. Vite preview SPA-falls back
+   slashless `/d12/button` to the marketing homepage (`200`). JS-disabled SSR
+   capture cannot recover. Driver now canonicalizes directory routes to a
+   trailing slash; all five D12 cases pass (`Button` + `Text entry callback`).
+2. **AlertDialog AX — product, now green.** Headless `contentProps` already
+   existed (T-65). Styled Dialog now copies RAC `TextContext.slots.description`
+   onto `ContentContext`, matching upstream S2, so AlertDialog `<Content>`
+   receives the generated description id. Package regressions cover AlertDialog
+   description and keep composed Dialog undescribed. Certified D6
+   `variant-error` passes after a fresh `comparison:build`.
+3. **ActionMenu list — all green (D1 + D5).** Overlay auto-focus now
+   matches React's start-of-walk menu focus. Mouse-open requests CSS
+   `:focus-visible` on the menu root (`focusSafely(el, { focusVisible: true })`)
+   so UA `outline-width` is 1px like React.
+4. **Dialog close-button — D1/D3/D5 green.** Contain/collection cycles Tab
+   like React. Playwright `.focus()` is virtual-modality; RAC `focusSafely`
+   waits for `runAfterTransition` before contain-restore, so hover's
+   `pointermove` wins and `createFocusRing` re-samples pointer (`outline:
+none`). Ported. Do not patch comparison CSS.
+
+## Known open work, in order
+
+The remaining-work goal is to go through **every leftover item** in
+`work-queue.md`, one slice at a time (diagnose, fix, verify, document,
+`git commit --only`). That ladder is the program until each item is closed,
+owner-blocked, or dated.
+
+1. Complete all 2176 certified cases with separate pass / skip/fixme /
+   divergence / deferred counts (A-005). Rebuild `status.md` measured rows
+   after this and item 2 (A-001).
+2. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
+3. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
+4. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
+   and `?`/`⛔` tickets.
+5. Machine-readable ten-gate evidence schema with validated pointers
+   (A-002–A-005).
+6. Owner decisions: TableView native-table (A-006), Viviana fork/convergence
+   (A-008), TabSwitch/SegmentedControl boundary. Ask; do not silently ratify.
+7. Hygiene: CSP/response headers (A-020), 59 `@ts-nocheck` (A-019), macro
+   sourcemaps (A-017), stale `tech-debt.md` (A-009), leftover A-010 prose.
+8. Lowest-layer ownership inventory (A-018). Compatibility ceilings (A-023)
+   stay documented.
+
+## Exact next-agent start
 
 ```bash
-vp run guard:upstream-oracle
-vp run guard:rac-parity
-vp run guard:rac-export-gap
-vp run comparison:report:gaps
-vp run comparison:report:exports
-vp run comparison:report:parity:strict
-vp run guard:ts-nocheck-budget
-vp run guard:layer-boundary
-vp run docs:check
+git status --short --branch
+vp install --frozen-lockfile
+vp run comparison:build
+vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified --reporter=line
 ```
 
-`guard:upstream-freshness` is advisory and currently exits non-zero because a
-new train exists. Run it separately so its expected signal is not confused with
-current-pin failure.
-
-### Behavior/evidence lane
-
-```bash
-vp run test:run
-vp run comparison:test:contract
-vp run comparison:test:certified
-```
-
-The full certified suite is required when the oracle, shared behavior, or a
-certified component changes. Targeted specs should red/green first.
-
-### Aggregate qualification lane
-
-Run sequentially; these tasks clean/rebuild shared package artifacts.
+After targeted red/green work, run sequentially because builds share `dist`:
 
 ```bash
 vp run check
-vp run docs:check
-vp run ci:release-readiness
-vp run ci:site
+vp test run
+vp run comparison:test:contract
+vp run comparison:test:certified
 vp run ui:smoke
+vp run ci:site
+vp run docs:check
 git diff --check
+git status --short --branch
 ```
 
-Until issue #28 closes, standalone `typecheck:apps` is not a clean-checkout
-authority unless all directly consumed workspace packages have been built.
-
-For dependency changes add `vp pm audit --json`. For upstream absorption add
-the report/guard ladder specified in issue #23. Never pipe a Playwright or `vp`
-gate through `tail`; that masks its exit code.
-
-## Sources of detail
-
-- `repo-assessment.md` — whole-repository assessment, waves, workflow, risks,
-  ticket dependency map, and owner decisions.
-- `certification.md` and `apps/comparison/COMPONENT_PLAYBOOK.md` — component
-  acceptance.
-- `upstream-sync.md` — pin absorption.
-- `release-policy.md` — Changesets and publication.
-- `tech-debt.md` — task state and exits.
+Three deliberate latest-version ceilings remain: jest-dom 6.9.1 (unplugin-solid
+peer range), jsdom 29.1.1 (jsdom 30.0.1 disconnected `getComputedStyle`
+regression), and TypeScript 6.0.3 (`@astrojs/check` peer range). Vite Plus's cold
+test dependency scan also traverses ignored/vendored HTML despite `noDiscovery`;
+it is noisy and non-hermetic but did not prevent the package suite from running.

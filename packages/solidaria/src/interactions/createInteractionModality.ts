@@ -8,7 +8,9 @@
 
 import { type Accessor, createSignal, createEffect, onCleanup } from "solid-js";
 import { isServer } from "solid-js/web";
-import { getOwnerDocument, getOwnerWindow, isMac, isVirtualClick, openLink } from "../utils";
+import { getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
+import { isVirtualClick } from "../utils/events";
+import { isMac } from "../utils/platform";
 
 export type Modality = "keyboard" | "pointer" | "virtual";
 export type PointerType = "mouse" | "pen" | "touch" | "keyboard" | "virtual";
@@ -338,9 +340,12 @@ function isKeyboardFocusEvent(isTextInput: boolean, modality: Modality, e: Handl
  */
 export function createFocusVisibleListener(
   handler: FocusVisibleHandler,
-  opts?: { isTextInput?: boolean },
+  opts?: { isTextInput?: boolean; enabled?: boolean },
 ): () => void {
   setupGlobalFocusEvents();
+  if (opts?.enabled === false) {
+    return () => {};
+  }
   const listener: Handler = (modality: Modality, e: HandlerEvent) => {
     if (!isKeyboardFocusEvent(!!opts?.isTextInput, modality, e)) {
       return;

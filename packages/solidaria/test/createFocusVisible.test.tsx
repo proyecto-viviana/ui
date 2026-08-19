@@ -2,7 +2,7 @@
  * createFocusVisible tests - Port of React Aria's useFocusVisible.test.js
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createFocusRing } from "../src/interactions/createFocusRing";
 import {
@@ -365,6 +365,17 @@ describe("createFocusVisibleListener", () => {
     expect(fnMock).toHaveBeenCalledTimes(3);
     expect(fnMock.mock.calls).toEqual([[true], [true], [false]]);
 
+    cleanupListener();
+  });
+
+  it("does not emit when enabled is false", () => {
+    const fnMock = vi.fn();
+    const cleanupListener = createFocusVisibleListener(fnMock, { enabled: false });
+
+    fireEvent.keyDown(document.body, { key: "Tab" });
+    fireEvent.pointerDown(document.body, { pointerType: "mouse" });
+
+    expect(fnMock).toHaveBeenCalledTimes(0);
     cleanupListener();
   });
 });

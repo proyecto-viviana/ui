@@ -3,7 +3,12 @@
  * Based on @react-stately/menu.
  */
 
+import { createSignal } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
+import {
+  createOverlayTriggerState,
+  type OverlayTriggerProps,
+} from "../overlays";
 import { createListState, type ListState, type ListStateProps } from "./createListState";
 import type { Key } from "./types";
 
@@ -96,12 +101,14 @@ export interface MenuTriggerStateProps {
 export interface MenuTriggerState {
   /** Whether the menu is open. */
   readonly isOpen: () => boolean;
+  /** Sets whether the menu is open. */
+  setOpen(isOpen: boolean): void;
   /** Open the menu. */
-  open(): void;
+  open(focusStrategy?: "first" | "last" | null): void;
   /** Close the menu. */
   close(): void;
   /** Toggle the menu. */
-  toggle(): void;
+  toggle(focusStrategy?: "first" | "last" | null): void;
   /** Focus strategy for when the menu opens. */
   readonly focusStrategy: () => "first" | "last" | null;
   /** Set the focus strategy. */
@@ -109,7 +116,26 @@ export interface MenuTriggerState {
 }
 
 /**
- * Creates state for a menu trigger (button that opens a menu).
- * This is essentially the same as overlay trigger state but with focus strategy.
+ * Creates state for a menu trigger. Mirrors `@react-stately/menu` `useMenuTriggerState`:
+ * overlay open state plus the focus strategy passed through to `createMenu`.
  */
-export { createOverlayTriggerState as createMenuTriggerState } from "../overlays";
+export function createMenuTriggerState(
+  props: MaybeAccessor<MenuTriggerStateProps> = {},
+): MenuTriggerState {
+  const overlay = createOverlayTriggerState(props as MaybeAccessor<OverlayTriggerProps>);
+  const [focusStrategy, setFocusStrategy] = createSignal<"first" | "last" | null>(null);
+
+  return {
+    ...overlay,
+    focusStrategy,
+    setFocusStrategy,
+    open(strategy: "first" | "last" | null = null) {
+      setFocusStrategy(strategy);
+      overlay.open();
+    },
+    toggle(strategy: "first" | "last" | null = null) {
+      setFocusStrategy(strategy);
+      overlay.toggle();
+    },
+  };
+}
