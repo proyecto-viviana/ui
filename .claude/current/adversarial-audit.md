@@ -72,8 +72,8 @@ Severity describes owner risk, not code aesthetics:
 | State/ARIA/component boundaries       | partial     | High-risk Dialog, overlay isolation, and Grid deletion paths were traced and fixed; a new import inventory exposes the much larger upper-layer ownership review still owed.                                                                                    |
 | S2 styling provenance                 | partial     | S2 1.6 tokens/macro foundation is source-aligned and focused tests pass; Viviana is a documented owner-ratified fork, while source-map warnings and long-term convergence remain open.                                                                         |
 | Kumo architecture and provenance      | partial     | Package/fixture target Kumo 2.11.0 and release now fails closed; paired browser behavior and visual evidence remain absent.                                                                                                                                    |
-| Test relevance and evidence integrity | partial     | D12, AlertDialog AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 are closed. Next: complete all 2176 certified cases (A-032 remainder). The remaining-work ladder in `work-queue.md` covers the rest of this register.                             |
-| Accessibility and i18n                | partial     | S2 AlertDialog description mapping, ActionMenu overlay focus, and Dialog trap-cycle/hover ring are closed. DateField keyboard editing remains if the full certified run surfaces it. Deleted-grid focus and Shadow DOM isolation were fixed earlier this wave. |
+| Test relevance and evidence integrity | partial     | First complete 2176 certified run: 2164 pass / 6 fail / 6 skip (knownDivergence fixme). D12, AlertDialog AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 stay closed. Next: the four red families in `work-queue.md` census item 1.                 |
+| Accessibility and i18n                | partial     | S2 AlertDialog description mapping, ActionMenu overlay focus, and Dialog trap-cycle/hover ring are closed. Remaining AX/keyboard: TableView Select All mixed, Tabs arrow, Toast alert role, TreeView tab-forward. DateField did not surface on the 2176 run.   |
 | Security and dependencies             | partial     | Full and production audits now report zero known vulnerabilities and run in release readiness; response-header/CSP policy and app-boundary review remain open.                                                                                                 |
 | Release and supply chain              | partial     | SHA-pinned actions/same-SHA checks remain positive; Kumo's npm/trusted-publisher prerequisites are now executable and negative-tested, not prose-only.                                                                                                         |
 | Applications and deployment           | partial     | Web/comparison trust boundaries were inspected; prop-table HTML is hardened, but response security headers and browser-level Kumo proof remain open.                                                                                                           |
@@ -168,16 +168,18 @@ Severity describes owner risk, not code aesthetics:
 
 - Severity: **P1** where the suite or a component is described as fully
   certified; otherwise the explicit divergences are useful backlog evidence.
-- Evidence state: **partially verified**; every registered divergence and
-  deferred driver dimension is being inventoried.
+- Evidence state: **partially verified**; the 2026-08-19 2176 run classifies
+  Playwright's 6 skipped as the six registered `knownDivergence` `test.fixme`
+  cases. Deferred dimensions in spec comments are still uninventoried.
 - Evidence: scenario drivers turn configured `knownDivergence` and
   `knownDivergences` cases into Playwright `test.fixme`, so they remain visible
-  but cannot fail the suite. Current examples include AX-value divergence for
-  Slider and RangeSlider, Breadcrumb overflow-tree divergence, TableView sorted
-  announcement divergence, and DatePicker/DateRangePicker dismissal event-order
-  divergence. Certified specs also explicitly defer observable dimensions such
-  as DnD pointer drag, Virtualizer horizontal behavior, Tooltip motion/focus,
-  and several i18n/RTL or forced-color branches.
+  but cannot fail the suite. The 2026-08-19 2176 run's **6 skipped** are exactly
+  those six: Slider D6 default, RangeSlider D6 default, TableView D6 sorted,
+  Breadcrumbs D6 overflow, DatePicker D4 `placeholder · open-escape-close`,
+  DateRangePicker D4 `placeholder · open-escape-close`. Certified specs also
+  explicitly defer observable dimensions such as DnD pointer drag, Virtualizer
+  horizontal behavior, Tooltip motion/focus, and several i18n/RTL or
+  forced-color branches — those are comments, not Playwright skips.
 - Consequence: “certified suite passed” means all non-excluded registered cases
   passed; it does not mean the component is a full port under Rule #1. This is
   especially risky when a note separately says `accepted` for an implemented
@@ -642,19 +644,19 @@ Severity describes owner risk, not code aesthetics:
 ### A-032 — The current certified browser lane is red on relevant behavior
 
 - Severity: **P0** for release/certification claims.
-- Evidence state: **focused families remediated; full 2176 still owed**.
-- Evidence: a focused 25-case replay on 2026-08-19 produced 10 failures / 15
-  passes. D12 was a harness false-red (A-033). AlertDialog AX is closed: S2
-  Dialog now copies RAC `slots.description` onto `ContentContext` like
-  upstream. ActionMenu list D1 (`outline-width` 1px via menu-root
-  `focusVisible: true`) and D5 arrow-roving are green. Dialog close-button
-  D5 trap-cycle is green. Dialog D1/D3 hover is green after porting RAC
-  `focusSafely` (`runAfterTransition` on virtual modality) so contain-restore
-  lands after hover `pointermove` and `createFocusRing` re-samples pointer.
-  Focused replay 2026-08-19: 23/23 ActionMenu list + Dialog close-button
-  certified cases pass. The full suite remains interrupted at 951/2176.
-- Required action: complete all 2176 cases and report passes, skips/fixmes,
-  declared divergences, and deferred dimensions separately.
+- Evidence state: **full 2176 completed once; four product families still red**.
+- Evidence: first complete run 2026-08-19 after overlay/focus (`67a66591`):
+  **2164 passed / 6 failed / 6 skipped** (15.5m, 8 workers). D12, AlertDialog
+  AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 stayed green.
+  The six failures are four families: TableView D6 `default` and `disabled`
+  (Select All missing `[checked=mixed]`), Tabs D4 `arrow-next-from-selected`
+  and D5 `arrow-roving` (ArrowRight does not move from Overview), Toast D6
+  `neutral` (inner `alert` vs `text`), TreeView D5 `tab-forward` (extra
+  checkbox/collapse tab stops). The six skips are the registered
+  knownDivergences listed under A-005.
+- Required action: diagnose each red family at the owning layer, re-run those
+  families, keep overlay/ActionMenu/Dialog green, and keep reporting pass /
+  skip-fixme / deferred separately. Do not claim certification.
 
 ### A-033 — Slashless D12 routes SPA-fell back to the marketing homepage
 
@@ -689,11 +691,12 @@ Severity describes owner risk, not code aesthetics:
 
 ## Resumption checkpoint
 
-`status.md` is the canonical short handoff. The remaining-work goal in
+`status.md` is the canonical short handoff. The remaining-work census in
 `work-queue.md` is the program through every leftover finding. D12, AlertDialog
 description mapping, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5
-are closed. Next: complete all 2176 certified cases with separate
-pass/skip/fixme/divergence/deferred counts.
+are closed. The 2176 run is complete once (2164/6/6). Next: the four red
+families (TableView mixed Select All, Tabs arrow, Toast alert role, TreeView
+tab-forward).
 
 After targeted red/green work, run the validation ladder in `status.md`
 sequentially because build lanes share `dist` trees. The packed-consumer smoke

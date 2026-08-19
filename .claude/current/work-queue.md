@@ -9,11 +9,14 @@ tasks:
     planned: { start: 2026-08-19, target: null }
     note: >-
       Durable remaining-work goal: walk every leftover audit item to
-      closed, owner-blocked, or dated evidence. Closed this wave: D12,
-      AlertDialog AX, ActionMenu D1/D5, Dialog D1/D3/D5. Current slice:
-      full 2176 certified counts. Overlay/focus source is a separate
-      commit from the pre-existing dirty audit/Kumo tree. Do not skip
-      ahead.
+      closed, owner-blocked, or dated evidence. First complete 2176
+      certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
+      (knownDivergence fixme). Current slice: the four red families
+      (TableView mixed Select All, Tabs arrow, Toast alert role,
+      TreeView tab-forward). Then smoke/site, Kumo evidence, Train 8,
+      evidence schema, owner decisions, hygiene, lowest-layer
+      ownership. Overlay/focus is a separate commit from the
+      pre-existing dirty audit/Kumo tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -60,13 +63,14 @@ page is the short selector.
 
 This is the live goal until **every leftover audit item** is fixed,
 owner-blocked, or documented with dated evidence. It is the program for this
-worktree: walk the numbered ladder in order, one slice at a time — diagnose
+worktree: walk the numbered census in order, one slice at a time — diagnose
 against pinned upstream at the owning layer, fix, verify, document in
 current-docs, `git commit --only` that slice. Do not skip ahead because a
 later item looks easier. A-findings that this wave already closed stay closed;
-the ladder is the remainder of `adversarial-audit.md`.
+the census is the remainder of `adversarial-audit.md` plus the Train-8 tickets
+that A-013 still owes.
 
-**Constraints (hold for the whole ladder):** do not reset or split the dirty
+**Constraints (hold for the whole census):** do not reset or split the dirty
 tree; do not expand Kumo; do not patch S2 styling in comparison; do not treat
 pins or green floors as absorption; TableView native-table (A-006) and Viviana
 fork/convergence (A-008) stay owner-steered — ask; do not silently ratify.
@@ -75,7 +79,7 @@ audit/Kumo tree. Do not push.
 
 **Done when:** each numbered item has a current-docs note plus the evidence
 that closed it (green certified/smoke/site/classification, an owner decision,
-or a dated block), and `status.md` is rebuilt from that ladder (A-001).
+or a dated block), and `status.md` is rebuilt from this census (A-001).
 
 ### Closed this wave
 
@@ -86,43 +90,126 @@ or a dated block), and `status.md` is rebuilt from that ladder (A-001).
 - Dialog close-button D5 trap-cycle (FocusScope re-collect + contain).
 - Dialog close-button D1 hover / D3 pixel (RAC `focusSafely` virtual
   `runAfterTransition` so contain-restore lands after hover `pointermove`).
+- First complete 2176 certified run (2026-08-19, after overlay/focus):
+  **2164 passed / 6 failed / 6 skipped**. Contract 93/93 stays a floor
+  (A-031). Do not claim certification while the six reds remain.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
-  A-015 Vite Plus configs, A-016 stale declarations) — still needs items 3–4
-  before A-001's measured `status.md` refresh.
+  A-015 Vite Plus configs, A-016 stale declarations) — still needs item 2
+  (`ui:smoke` / `ci:site`) before A-001's measured `status.md` refresh.
 
-### Remaining ladder
+### Census — every leftover item, in order
 
-1. **Full certified suite (current slice, A-005, A-032 remainder)** — finish
-   all 2176 cases. Report pass, skip/fixme, known-divergence (`test.fixme`),
-   and deferred counts separately. Any new red family is diagnosed at the
-   owning layer before the next numbered item. Do not claim certification
-   from the interrupted 951/2176 run. Contract 93/93 stays a floor (A-031).
-2. **External qualification (A-001 remaining)** — `vp run ui:smoke` then
-   `vp run ci:site` (share `dist`; run sequentially). Neither was rerun after
-   the migration. Rebuild `status.md` measured rows from this ladder.
-3. **Kumo Button evidence (A-007)** — paired browser behavior and visual
-   contracts only. Keep first-publish fail-closed. Do not grow the experiment.
-4. **Train 8 classification** — remaining RAC exports, S2 support values, and
-   `?`/`⛔` tickets in `upstream-release-audit.md`. Port only source-confirmed
-   behavior.
-5. **Evidence schema (A-002–A-005)** — machine-readable ten-gate records with
-   validated pointers; stop counting labels and file presence.
-6. **Owner decisions** — TableView native-table (A-006), Viviana
-   fork/convergence ownership (A-008), and TabSwitch/SegmentedControl public
-   boundary. Ask; do not silently ratify.
-7. **Hygiene** — response-header/CSP contracts (A-020, residual A-011
-   app-hardening), 59 `@ts-nocheck` files (A-019), macro sourcemaps (A-017),
-   stale `tech-debt.md` (A-009), leftover superseded architecture prose
-   (A-010) as found.
-8. **Lowest-layer ownership (A-018)** — the layer-boundary guard freezes
-   the sibling fork; it does not prove behavior lives in stately/aria. Use
-   the import inventory as the work list, not a verdict. Compatibility
-   ceilings (A-023) stay documented; Vite Plus noisy cold scan (A-024) is
-   last.
+#### 1. Certified reds (current slice, A-032 remainder)
+
+Diagnose at the owning layer. Do not treat TableView mixed-checkbox as a
+silent ratification of A-006 (native-table vs `div[role=grid]`): both stacks
+already expose `role=grid` in D6, and the only AX diff is Select All mixed.
+
+1. **TableView D6 `default` and `disabled`** — React Select All is
+   `checkbox "Select All" [checked=mixed]`; Solid omits mixed. First
+   hypothesis: `createTableSelectAllCheckbox` should match RAC
+   `!isEmpty && !isSelectAll`, and the native input must keep the
+   `indeterminate` IDL after `checked` updates (Chromium clears it).
+2. **Tabs D4 `horizontal-regular · arrow-next-from-selected`** — ArrowRight
+   on Overview does not emit `focusout`/`focusin` onto Parity; Solid
+   `keyup` stays on Overview.
+3. **Tabs D5 `horizontal-regular · arrow-roving`** — same keyboard
+   movement: Solid active tab stays Overview (`tabindex=-1`) instead of
+   moving to Parity/Testing.
+4. **Toast D6 `neutral`** — React inner node is `alert: Toast available`;
+   Solid is `text: Toast available` (missing `role=alert` on the content
+   live region).
+5. **TreeView D5 `default · tab-forward`** — Solid extra tab stops:
+   per-row `input` Select (`tabindex=0`) and Collapse buttons, so Tab
+   walks the tree instead of one stop like React.
+
+Re-run those four families after each owning-layer fix. Keep ActionMenu
+list and Dialog close-button green. Do not patch comparison CSS.
+
+#### 1b. Certified skip / fixme / deferred split (A-005)
+
+Playwright's **6 skipped** on the 2176 run are the six registered
+`test.fixme` **knownDivergences**, not silent `test.skip`:
+
+| Case | Kind | Tracked reason |
+| --- | --- | --- |
+| Slider D6 `default` | knownDivergence | `slider-thumb-native-input-semantics` |
+| RangeSlider D6 `default` | knownDivergence | same thumb/native-input AX value |
+| TableView D6 `sorted` | knownDivergence | sort-description `textValue` data-model vs S2 JSX Column |
+| Breadcrumbs D6 `overflow` | knownDivergence | oracle measurement-timing (Solid collapse is correct) |
+| DatePicker D4 `placeholder · open-escape-close` | knownDivergence | React batched vs Solid sync dismiss event-order |
+| DateRangePicker D4 `placeholder · open-escape-close` | knownDivergence | same dismiss event-order |
+
+Deferred dimensions (DnD pointer drag, some i18n/RTL/forced-color
+branches, virtualizer horizontal, Tooltip motion, etc.) live in certified
+spec comments and are **not** Playwright skips. Item 5 (evidence schema)
+must inventory those as unregistered obligations; they block full
+component acceptance under Rule #1.
+
+#### 2. External qualification (A-001 remaining, A-015 remaining)
+
+`vp run ui:smoke` then `vp run ci:site` (share `dist`; run sequentially).
+Neither was rerun after the migration. Rebuild `status.md` measured rows
+from this census after they finish. Keep reporting contract 93/93
+separately from certified (A-031).
+
+#### 3. Kumo Button evidence (A-007)
+
+Paired browser behavior and visual contracts only. Keep first-publish
+fail-closed (A-012). Do not grow the experiment. External npm /
+trusted-publisher registration stays owner/external.
+
+#### 4. Train 8 classification (A-013 remaining)
+
+Port only source-confirmed behavior. Remaining tickets in
+`upstream-release-audit.md`:
+
+- **?** — T-62, T-63, T-64, T-66, T-68, T-70, T-71, T-72, T-73, T-74,
+  T-76, T-77, T-78, T-79, T-83, T-84, T-85, T-88, T-89, T-90, T-91,
+  T-94, T-95, T-98.
+- **⛔** — T-61, T-80, T-82, T-87 (TableView interactive grid; owner with
+  A-006), T-92, T-96, T-97.
+- **◑** — T-93 (FocusScope without scroll; overlay/focus wave landed
+  related `focusSafely` / `runAfterTransition` — re-classify against
+  remaining T-93 branches), T-99 (style-macro `_.prose` foundation).
+- Also classify the remaining missing RAC exports (five) and missing S2
+  support values (thirteen) named in A-013.
+
+#### 5. Evidence schema (A-002, A-003, A-004, A-005 remainder)
+
+Machine-readable ten-gate records with validated pointers. Stop counting
+labels and file presence. Replace stale `visual-state-matrix.ts` spec
+strings. Publish suite output as passing obligations / expected
+fixmes / unregistered-or-deferred obligations.
+
+#### 6. Owner decisions (ask; do not silently ratify)
+
+- TableView native-table vs upstream `div[role=grid]` (A-006, T-87).
+- Viviana fork/convergence ownership (A-008).
+- TabSwitch / SegmentedControl public/register boundary (`steering.md`).
+
+#### 7. Hygiene
+
+- Response-header / CSP contracts (A-020, residual A-011 app-hardening).
+- 59 `@ts-nocheck` files (A-019).
+- Macro sourcemaps (A-017).
+- Stale `tech-debt.md` (A-009).
+- Leftover superseded architecture prose (A-010) as found.
+- Remaining package skips (A-022): full-width TimeField browser case;
+  Table `scrollRef` placeholder → explicit inventory.
+- Press-cleanup paired browser coverage (A-027).
+- Snapshot standard when generated-class tests fail (A-025, ongoing).
+
+#### 8. Lowest-layer ownership (A-018)
+
+The layer-boundary guard freezes the sibling fork; it does not prove
+behavior lives in stately/aria. Use `report:layer-imports` as the work
+list, not a verdict. Compatibility ceilings (A-023) stay documented.
+Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, starting at the full certified suite.
+1. Remaining-work goal above, starting at the four certified red families.
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only

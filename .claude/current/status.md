@@ -8,10 +8,10 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, `main@a9bfb8db`, after closing AlertDialog AX
-by copying RAC `slots.description` onto S2 `ContentContext`. Substantial
-pre-existing owner work and audit changes remain uncommitted. Do not reset or
-split this tree without first identifying ownership of overlapping changes.
+Last refreshed: **2026-08-19**, `main@67a66591`, after the first complete
+2176 certified run (2164 pass / 6 fail / 6 skip). Substantial pre-existing
+owner work and audit changes remain uncommitted. Do not reset or split this
+tree without first identifying ownership of overlapping changes.
 
 This is the short handoff. Read `adversarial-audit.md` for evidence and finding
 details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
@@ -34,8 +34,9 @@ ledger.
 Structural styling checks are healthy: the installed S2 token pin is exact,
 the 20-case macro corpus is byte-identical to upstream, and the sibling boundary
 remains 533 identical / 76 declared-divergent files. That does **not** establish
-component visual parity: the interrupted certified browser run found live
-computed-style and focus/AX divergences.
+component visual parity: the first complete 2176 certified run found four
+live AX/keyboard families still red (TableView mixed Select All, Tabs
+arrow, Toast alert role, TreeView tab-forward).
 
 ## Completed in this worktree
 
@@ -71,8 +72,8 @@ computed-style and focus/AX divergences.
 | `vp test run`                                                               | 269 files; 5580 pass, 1 expected fail, 6 skip                                                                           | package behavior floor; three CSS parse warnings       |
 | app typecheck                                                               | 0 errors, 0 warnings, 3 hints                                                                                           | Astro integration type floor                           |
 | `vp run comparison:test:contract`                                           | 93/93 pass                                                                                                              | rendered catalogue + button-family contracts           |
-| `vp run comparison:test:certified`                                          | **interrupted at 951/2176; red**                                                                                        | do not claim certification                             |
-| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, and Dialog close D1/D3/D5 all green (23/23 ActionMenu+Dialog close)** | overlay/focus class closed; full 2176 not rerun        |
+| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus)                                      | do not claim certification while 6 reds remain         |
+| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, and Dialog close D1/D3/D5 all green (23/23 ActionMenu+Dialog close)** | overlay/focus class closed; keep green while fixing reds |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -101,13 +102,18 @@ none`). Ported. Do not patch comparison CSS.
 
 The remaining-work goal is to go through **every leftover item** in
 `work-queue.md`, one slice at a time (diagnose, fix, verify, document,
-`git commit --only`). That ladder is the program until each item is closed,
+`git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Complete all 2176 certified cases with separate pass / skip/fixme /
-   divergence / deferred counts (A-005). Rebuild `status.md` measured rows
-   after this and item 2 (A-001).
+1. Four certified red families from the 2176 run (A-032 remainder), then
+   keep the A-005 skip/fixme/deferred split dated: TableView D6 mixed
+   Select All (`default` + `disabled`); Tabs D4/D5 arrow; Toast D6
+   `neutral` alert role; TreeView D5 tab-forward extra stops. Six
+   Playwright skips are the registered knownDivergences (Slider/RangeSlider
+   thumb AX, TableView sorted textValue, Breadcrumbs overflow timing,
+   DatePicker/DateRangePicker Escape event-order).
 2. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
+   Rebuild `status.md` measured rows after this (A-001).
 3. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
 4. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
@@ -126,7 +132,7 @@ owner-blocked, or dated.
 git status --short --branch
 vp install --frozen-lockfile
 vp run comparison:build
-vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified --reporter=line
+vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified/tableview.certified.spec.ts e2e/certified/tabs.certified.spec.ts e2e/certified/toast.certified.spec.ts e2e/certified/treeview.certified.spec.ts --reporter=line
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:
