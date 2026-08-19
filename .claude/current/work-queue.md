@@ -11,12 +11,12 @@ tasks:
       Durable remaining-work goal: walk every leftover audit item to
       closed, owner-blocked, or dated evidence. First complete 2176
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
-      (knownDivergence fixme). TableView mixed Select All is closed.
-      Current slice: Tabs arrow, Toast alert role, TreeView
-      tab-forward. Then smoke/site, Kumo evidence, Train 8, evidence
-      schema, owner decisions, hygiene, lowest-layer ownership.
-      Overlay/focus is a separate commit from the pre-existing dirty
-      audit/Kumo tree. Do not skip ahead.
+      (knownDivergence fixme). TableView mixed Select All and Tabs
+      D4/D5 arrow are closed. Current slice: Toast alert role,
+      TreeView tab-forward. Then smoke/site, Kumo evidence, Train 8,
+      evidence schema, owner decisions, hygiene, lowest-layer
+      ownership. Overlay/focus is a separate commit from the
+      pre-existing dirty audit/Kumo tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -92,7 +92,12 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   `runAfterTransition` so contain-restore lands after hover `pointermove`).
 - First complete 2176 certified run (2026-08-19, after overlay/focus):
   **2164 passed / 6 failed / 6 skipped**. Contract 93/93 stays a floor
-  (A-031). Do not claim certification while the six reds remain.
+  (A-031). Do not claim certification while remaining reds stay open.
+- TableView mixed Select All (`91c7991e`).
+- Tabs D4 `arrow-next-from-selected` and D5 `arrow-roving` — keydown
+  DOM focus plus batched `isFocused`/`focusedKey`; certified Tabs
+  23/23. Do not set `isFocused` on native `focus` (steals D4
+  touch-tap).
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
   A-015 Vite Plus configs, A-016 stale declarations) — still needs item 2
   (`ui:smoke` / `ci:site`) before A-001's measured `status.md` refresh.
@@ -110,12 +115,14 @@ already expose `role=grid` in D6, and the only AX diff is Select All mixed.
    re-applies `indeterminate` after Chromium clears it on `checked`
    writes. Certified TableView D6: 4 pass / 1 skip (`sorted`
    knownDivergence).
-2. **Tabs D4 `horizontal-regular · arrow-next-from-selected`** — ArrowRight
-   on Overview does not emit `focusout`/`focusin` onto Parity; Solid
-   `keyup` stays on Overview.
-3. **Tabs D5 `horizontal-regular · arrow-roving`** — same keyboard
-   movement: Solid active tab stays Overview (`tabindex=-1`) instead of
-   moving to Parity/Testing.
+2. **Tabs D4 `horizontal-regular · arrow-next-from-selected` — closed.**
+   Arrow/Home/End now move DOM focus in the tablist keydown handler
+   (Solid `createEffect` is after paint, too late for D4 keyup).
+   Collection `isFocused` is batched with `focusedKey` so the previous
+   tab's focus-move effect cannot steal a touch tap. Headless `Tab`
+   tracks its element with a signal ref. Certified Tabs: 23/23.
+3. **Tabs D5 `horizontal-regular · arrow-roving` — closed.** Same
+   keyboard-nav fix. Solid active tab moves Overview → Parity → Testing.
 4. **Toast D6 `neutral`** — React inner node is `alert: Toast available`;
    Solid is `text: Toast available` (missing `role=alert` on the content
    live region).
@@ -123,8 +130,9 @@ already expose `role=grid` in D6, and the only AX diff is Select All mixed.
    per-row `input` Select (`tabindex=0`) and Collapse buttons, so Tab
    walks the tree instead of one stop like React.
 
-Re-run those four families after each owning-layer fix. Keep ActionMenu
-list and Dialog close-button green. Do not patch comparison CSS.
+Re-run remaining red families after each owning-layer fix. Keep
+ActionMenu list, Dialog close-button, TableView mixed, and Tabs green.
+Do not patch comparison CSS.
 
 #### 1b. Certified skip / fixme / deferred split (A-005)
 

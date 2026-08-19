@@ -524,7 +524,7 @@ function TabInner(props: {
   ariaProps: Omit<TabProps, "children" | "class" | "style" | "slot" | "id">;
   children?: RenderChildren<TabRenderProps>;
 }): JSX.Element {
-  let tabRef: HTMLDivElement | undefined;
+  const [tabRef, setTabRef] = createSignal<HTMLDivElement | null>(null);
   const textValue = () => {
     if (props.ariaProps["aria-label"]) return props.ariaProps["aria-label"];
     return typeof props.children === "string" ? props.children : undefined;
@@ -557,7 +557,7 @@ function TabInner(props: {
       },
     },
     props.state,
-    () => tabRef ?? null,
+    tabRef,
   );
 
   const { isHovered, hoverProps } = createHover({
@@ -594,7 +594,7 @@ function TabInner(props: {
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       <div
-        ref={tabRef}
+        ref={setTabRef}
         id={tabAria.tabProps.id}
         role={tabAria.tabProps.role}
         aria-selected={tabAria.isSelected()}

@@ -8,10 +8,12 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, `main@67a66591`, after the first complete
-2176 certified run (2164 pass / 6 fail / 6 skip). Substantial pre-existing
-owner work and audit changes remain uncommitted. Do not reset or split this
-tree without first identifying ownership of overlapping changes.
+Last refreshed: **2026-08-19**, after Tabs D4/D5 arrow close. First
+complete 2176 certified run was 2164 pass / 6 fail / 6 skip; TableView
+mixed Select All and Tabs keyboard-nav are now closed (Tabs certified
+23/23). Substantial pre-existing owner work and audit changes remain
+uncommitted. Do not reset or split this tree without first identifying
+ownership of overlapping changes.
 
 This is the short handoff. Read `adversarial-audit.md` for evidence and finding
 details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
@@ -35,8 +37,8 @@ Structural styling checks are healthy: the installed S2 token pin is exact,
 the 20-case macro corpus is byte-identical to upstream, and the sibling boundary
 remains 533 identical / 76 declared-divergent files. That does **not** establish
 component visual parity: the first complete 2176 certified run found four
-live AX/keyboard families still red (TableView mixed Select All, Tabs
-arrow, Toast alert role, TreeView tab-forward).
+live AX/keyboard families still red. TableView mixed Select All and Tabs
+arrow are now closed; Toast alert role and TreeView tab-forward remain.
 
 ## Completed in this worktree
 
@@ -72,8 +74,8 @@ arrow, Toast alert role, TreeView tab-forward).
 | `vp test run`                                                               | 269 files; 5580 pass, 1 expected fail, 6 skip                                                                           | package behavior floor; three CSS parse warnings       |
 | app typecheck                                                               | 0 errors, 0 warnings, 3 hints                                                                                           | Astro integration type floor                           |
 | `vp run comparison:test:contract`                                           | 93/93 pass                                                                                                              | rendered catalogue + button-family contracts           |
-| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus)                                      | do not claim certification while 6 reds remain         |
-| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, and Dialog close D1/D3/D5 all green (23/23 ActionMenu+Dialog close)** | overlay/focus class closed; keep green while fixing reds |
+| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus); Tabs 23/23 and TableView mixed now closed on later focused reruns | do not claim certification while Toast/TreeView remain |
+| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, and Tabs 23/23 all green** | overlay/focus, Select All mixed, and Tabs keyboard-nav closed; keep green while fixing remaining reds |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -97,6 +99,14 @@ Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
    waits for `runAfterTransition` before contain-restore, so hover's
    `pointermove` wins and `createFocusRing` re-samples pointer (`outline:
 none`). Ported. Do not patch comparison CSS.
+5. **TableView D6 mixed Select All — green.** RAC mixed formula
+   (`!isEmpty && !isSelectAll`) plus re-applying native `indeterminate`
+   after Chromium clears it on `checked` writes. 4 pass / 1 skip
+   (`sorted` knownDivergence).
+6. **Tabs D4/D5 — all green (23/23).** Arrow/Home/End move DOM focus in
+   the tablist keydown handler. Collection `isFocused` is batched with
+   `focusedKey` so the previous tab cannot steal a touch tap. Headless
+   Tab uses a signal ref. Do not set `isFocused` on native `focus`.
 
 ## Known open work, in order
 
@@ -105,10 +115,10 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Remaining certified reds from the 2176 run (A-032 remainder): Tabs
-   D4/D5 arrow; Toast D6 `neutral` alert role; TreeView D5 tab-forward
-   extra stops. TableView D6 mixed Select All is closed (4 pass / 1
-   skip). Six Playwright skips are the registered knownDivergences
+1. Remaining certified reds from the 2176 run (A-032 remainder): Toast
+   D6 `neutral` alert role; TreeView D5 tab-forward extra stops.
+   TableView D6 mixed Select All and Tabs D4/D5 are closed. Six
+   Playwright skips are the registered knownDivergences
    (Slider/RangeSlider thumb AX, TableView sorted textValue, Breadcrumbs
    overflow timing, DatePicker/DateRangePicker Escape event-order).
 2. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
@@ -131,7 +141,7 @@ owner-blocked, or dated.
 git status --short --branch
 vp install --frozen-lockfile
 vp run comparison:build
-vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified/tableview.certified.spec.ts e2e/certified/tabs.certified.spec.ts e2e/certified/toast.certified.spec.ts e2e/certified/treeview.certified.spec.ts --reporter=line
+vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified/toast.certified.spec.ts e2e/certified/treeview.certified.spec.ts --reporter=line
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:

@@ -283,7 +283,14 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
       // holds the focus effect until the batch closes, so the synchronous
       // `onSelectionChange` fires first, then focus moves — matching upstream's
       // `callback → focusout → focusin` sequence (D4 event-sequence oracle).
+      //
+      // `setFocused(true)` stays inside the batch. Playwright `.focus()` can
+      // land DOM focus on a tab without the tablist bubbling `focusin`; the
+      // item focus-move effect is gated on `isFocused` (RAC
+      // `manager.isFocused`). Setting it here, together with `focusedKey`,
+      // avoids the previous-tab effect stealing focus back mid-gesture.
       batch(() => {
+        state.setFocused(true);
         state.setFocusedKey(nextKey);
         // Selection follows focus only for keyboard navigation in automatic mode
         // (mirrors useSelectableCollection's selectOnFocus in navigateToKey).
@@ -291,6 +298,17 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
           state.setSelectedKey(nextKey);
         }
       });
+      // Move DOM focus in the keydown handler so it lands before keyup.
+      // Solid `createEffect` is scheduled after paint; Playwright records
+      // keyup in the same turn, and a non-reactive `let` tab ref can leave
+      // the item effect with no element. Scope the query to the tablist so
+      // React/Solid comparison-panel ids cannot collide.
+      const tabList = e.currentTarget as Element | null;
+      const nextId = generateTabId(state, nextKey);
+      const nextEl = tabList?.querySelector(`#${CSS.escape(nextId)}`);
+      if (nextEl instanceof HTMLElement && nextEl.ownerDocument.activeElement !== nextEl) {
+        nextEl.focus();
+      }
     }
   };
 
@@ -425,7 +443,13 @@ export function createTab<T>(
   // the earlier `focus` event flipped the tab a whole event too soon, so touch
   // taps diverged at `focusin`. See recertification.md D4 event-ordering.
   const handleFocusIn = () => {
-    state.setFocusedKey(key());
+    // Batch collection-focused + roving key. Native `focus` is too early:
+    // setting isFocused there flushes the previous tab's focus-move effect
+    // and steals a touch tap back to Overview (D4 touch-tap).
+    batch(() => {
+      state.setFocused(true);
+      state.setFocusedKey(key());
+    });
   };
 
   const handleBlur = (e: FocusEvent) => {
