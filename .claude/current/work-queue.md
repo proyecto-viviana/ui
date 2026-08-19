@@ -8,18 +8,18 @@ tasks:
     roadmap: component-certification
     planned: { start: 2026-08-19, target: null }
     note: >-
-      Durable remaining-work goal: walk every leftover audit item to
-      closed, owner-blocked, or dated evidence. First complete 2176
-      certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
-      (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
-      alert, TreeView D5, comparison-axe 80/80, ui:smoke, and
-      a11y:contrast 154/154, a11y:smoke 44/44, playground WCAG 2.2 AA,
-      routes 155/155, seo 157/157, and api-reference 4/4 are closed.
-      Kumo Button paired spec is 11/11 (KX-03 plus rest computed
-      KX-04). Remainder: hover/pressed/focus-visible paint, then
-      Train 8, evidence schema, owner decisions, hygiene. Overlay/focus
-      is a separate commit from the pre-existing dirty audit/Kumo
-      tree. Do not skip ahead.
+      STANDING GOAL until the census is empty: walk every leftover
+      audit item to closed, owner-blocked, or dated evidence, in the
+      numbered order below, one slice at a time. Do not skip ahead.
+      First complete 2176 certified run (2026-08-19): 2164 pass / 6
+      fail / 6 skip (knownDivergence fixme). Product reds from that
+      run, comparison-axe 80/80, ui:smoke, contrast 154/154, smoke
+      44/44, playground AA, routes/seo/api-ref, and Kumo pair 15/15
+      twice (KX-03 + KX-04 rest/hover/pressed/focus-visible) are
+      closed. Current slice: Train 8 classification. Then evidence
+      schema, owner decisions, hygiene, lowest-layer inventory.
+      Overlay/focus is a separate commit from the dirty audit/Kumo
+      tree.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -84,6 +84,36 @@ audit/Kumo tree. Do not push.
 that closed it (green certified/smoke/site/classification, an owner decision,
 or a dated block), and `status.md` is rebuilt from this census (A-001).
 
+**Leftover items — walk in this order, do not skip:**
+
+1. **Kumo KX-04 (A-007) — closed this slice.** Pair spec 15/15 twice:
+   rest/hover/pressed/keyboard-focus computed; primary interaction
+   pixels with measured channel threshold 1. Do not expand. Comparison
+   aliases still live in the dirty tree.
+2. **Train 8 classification (A-013)** — remaining RAC exports, S2
+   support values, `?` / `⛔` / `◑` tickets in
+   `upstream-release-audit.md`. **Current slice.**
+3. **Evidence schema (A-002–A-005)** — machine-readable ten-gate
+   records with validated pointers; inventory unregistered deferred
+   dimensions (the 6 knownDivergence skips are already named).
+4. **Owner decisions (ask; do not silently ratify)** — TableView
+   native-table (A-006 / T-87), Viviana fork ownership (A-008),
+   TabSwitch / SegmentedControl boundary.
+5. **Hygiene** — CSP/response headers (A-020), 59 `@ts-nocheck`
+   (A-019), macro sourcemaps (A-017), stale `tech-debt.md` (A-009),
+   leftover A-010 prose, remaining package skips (A-022),
+   press-cleanup browser coverage (A-027), jsx DCE `let` refs,
+   S2 RangeSlider `data-disabled`.
+6. **Lowest-layer ownership (A-018)** — `report:layer-imports` as
+   the work list. Compatibility ceilings (A-023) stay documented.
+   Vite Plus noisy cold scan (A-024) is last.
+7. **Owed reruns, not a skip-ahead** — full 2176 certified rerun;
+   aggregate `vp run ci:site` as one shot once `vp run build` is
+   not sharing the dirty tree.
+
+This list **is** the remaining-work goal. Pick the first open item,
+close a slice, commit that slice, then take the next.
+
 ### Closed this wave
 
 - D12 slashless-route SSR capture (`bdb90f60`, A-033).
@@ -125,6 +155,9 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
 - ContextualHelp outside-click — jsx-preserving DCE of `let` refs
   had stripped `close()`; signal refs + `createInteractOutside`.
   `a11y:smoke` 44/44.
+- Kumo Button pair 15/15 twice — KX-03 plus KX-04 rest/hover/pressed/
+  keyboard-focus computed and primary interaction pixels. Oracle
+  `:focus` sets ring color only; ghost has no rest ring.
 
 ### Census — every leftover item, in order
 
@@ -217,7 +250,7 @@ constituent lanes for this census item are closed. Keep reporting
 contract 93/93 separately from certified (A-031). A full 2176
 certified rerun is still owed (item 1).
 
-#### 3. Kumo Button evidence (A-007) — current slice
+#### 3. Kumo Button evidence (A-007) — closed this slice
 
 Paired browser behavior and visual contracts only (KX-03 / KX-04).
 Keep first-publish fail-closed (A-012). Do not grow the experiment.
@@ -226,7 +259,7 @@ Do not mix the vite-plus audit dump into this slice. Comparison
 Kumo wiring (`astro.config.mjs`, comparison `package.json`) still
 lives in the dirty tree.
 
-Paired spec `apps/comparison/e2e/kumo-button.spec.ts` **11/11**:
+Paired spec `apps/comparison/e2e/kumo-button.spec.ts` **15/15 twice**:
 
 - KX-03: names, pointer, Enter/Space, disabled/loading, shared
   controls, form participation (default `type="button"`, submit
@@ -239,10 +272,14 @@ Paired spec `apps/comparison/e2e/kumo-button.spec.ts` **11/11**:
   fallback `--color-neutral-900` (`oklch(0.205 0 0)` vs
   `oklch(21% 0.006 285.885)`). UA `padding-block` reset copied
   from Tailwind preflight.
-
-Still open in this item: hover / pressed / keyboard-focus paint
-and pixel captures; package-level dual-config hydrate (Astro
-island is the SSR authority). Do not expand Kumo.
+- KX-04 interaction: hover / pressed / keyboard-focus computed
+  across variants and light/dark secondary; disabled hover does
+  not tint. Primary hover/pressed/focus-visible pixels with
+  measured `pixelThreshold: 1` (maxChannelDelta 1 on the same
+  oklch gradient). Oracle `:focus` sets ring color only — ghost
+  has no rest `ring`, so mouse-focus is 0-width. `:focus` no
+  longer forces 1px width. Dual-config package hydrate remains
+  not the SSR authority (Astro island is). Do not expand Kumo.
 
 #### 4. Train 8 classification (A-013 remaining)
 
@@ -297,8 +334,9 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, finishing Kumo KX-04 hover/pressed/
-   focus-visible paint (A-007). Do not expand the experiment.
+1. Remaining-work goal above, next Train 8 classification
+   (A-013). Kumo KX-03/KX-04 pair evidence is 15/15 twice. Do not
+   expand the experiment.
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only

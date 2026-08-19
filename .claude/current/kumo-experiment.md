@@ -27,16 +27,17 @@ tasks:
       not the authority — the Astro island is.
   - id: kumo-button-visual-evidence
     title: Prove the Kumo Button visual branches against the pinned React oracle
-    state: in-progress
+    state: done
     depends: [kumo-button-pair-fixture]
     roadmap: kumo-solid-experiment
-    planned: { start: 2026-08-19, target: null }
+    planned: { start: 2026-08-19, target: 2026-08-19 }
     note: >-
-      Rest computed paint is green for variants/sizes/shapes/modes/
-      disabled/loading. Classified: Tailwind ring extra transparent
-      layers; rounded-full vs 9999px; --color-neutral-900 fallback.
-      padding-block:0 copies Tailwind preflight. Hover, pressed, and
-      keyboard-focus paint still open.
+      e2e/kumo-button.spec.ts 15/15 twice. Rest + hover + pressed +
+      keyboard-focus computed paint; primary hover/pressed/focus-visible
+      pixels with measured channel threshold 1. Oracle :focus sets ring
+      color only (ghost has no rest ring). Classified: extra transparent
+      ring layers; 0-width rings; rounded-full vs 9999px; oklch/oklab
+      serialization; unused outline-width when style is none.
   - id: kumo-landing-story
     title: Present all three styled libraries and the Kumo experiment on the root landing page
     state: in-progress

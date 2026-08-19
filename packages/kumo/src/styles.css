@@ -55,14 +55,16 @@
 }
 
 .pv-kumo-Button:focus {
-  --pv-kumo-button-ring-width: 1px;
+  /* Oracle `focus:ring-kumo-focus/50` sets color only. Width stays the variant
+     rest ring (1px) or 0 for ghost, which has no `ring` utility. */
   --pv-kumo-button-ring-color: color-mix(in oklch, var(--color-kumo-focus), transparent 50%);
-  outline: none;
+  outline-style: none;
 }
 
 .pv-kumo-Button:focus-visible {
   --pv-kumo-button-ring-width: 2px;
   --pv-kumo-button-ring-color: var(--color-kumo-brand);
+  outline-style: none;
 }
 
 .pv-kumo-Button:disabled {
