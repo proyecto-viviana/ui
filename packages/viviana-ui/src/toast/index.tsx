@@ -24,6 +24,7 @@ import {
   ToastRegion as HeadlessToastRegion,
   ToastProvider as HeadlessToastProvider,
   ToastContext,
+  UNSTABLE_ToastContent as HeadlessToastContent,
   ToastTitle as HeadlessToastTitle,
   ToastDescription as HeadlessToastDescription,
   globalToastQueue,
@@ -1010,9 +1011,8 @@ export function Toast(props: ToastProps): JSX.Element {
           }
         >
           <div role="presentation" class={toastBody({ isSingle: shouldRenderAsSingle() })}>
-            <div
+            <HeadlessToastContent
               class={useComponentTransition() ? `${toastContent} toast-content` : toastContent}
-              data-solidaria-toast-content=""
             >
               <Show when={getVariantIcon(variant())}>
                 {(icon) => <CenterBaseline>{icon()}</CenterBaseline>}
@@ -1027,7 +1027,7 @@ export function Toast(props: ToastProps): JSX.Element {
                   </HeadlessToastDescription>
                 </Show>
               </div>
-            </div>
+            </HeadlessToastContent>
             <Show when={local.canExpand && !isExpanded() && visibleToasts().length > 1}>
               <ActionButton
                 isQuiet

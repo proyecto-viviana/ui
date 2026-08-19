@@ -644,7 +644,7 @@ Severity describes owner risk, not code aesthetics:
 ### A-032 — The current certified browser lane is red on relevant behavior
 
 - Severity: **P0** for release/certification claims.
-- Evidence state: **full 2176 completed once; two product families still red**.
+- Evidence state: **full 2176 completed once; one product family still red**.
 - Evidence: first complete run 2026-08-19 after overlay/focus (`67a66591`):
   **2164 passed / 6 failed / 6 skipped** (15.5m, 8 workers). D12, AlertDialog
   AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 stayed green.
@@ -652,10 +652,10 @@ Severity describes owner risk, not code aesthetics:
   re-applying the native `indeterminate` IDL after `checked` writes; 4 pass /
   1 skip). Tabs D4 `arrow-next-from-selected` and D5 `arrow-roving` are
   closed (keydown DOM focus + batched collection `isFocused`/`focusedKey`;
-  certified Tabs 23/23). Remaining reds: Toast D6 `neutral` (inner `alert`
-  vs `text`), TreeView D5 `tab-forward` (extra checkbox/collapse tab
-  stops). The six skips are the registered knownDivergences listed under
-  A-005.
+  certified Tabs 23/23). Toast D6 `neutral` is closed (RAC `ToastContent`
+  `role="alert"`; certified Toast 37/37). Remaining red: TreeView D5
+  `tab-forward` (extra checkbox/collapse tab stops). The six skips are
+  the registered knownDivergences listed under A-005.
 - Required action: diagnose each red family at the owning layer, re-run those
   families, keep overlay/ActionMenu/Dialog green, and keep reporting pass /
   skip-fixme / deferred separately. Do not claim certification.
@@ -697,8 +697,8 @@ Severity describes owner risk, not code aesthetics:
 `work-queue.md` is the program through every leftover finding. D12, AlertDialog
 description mapping, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5
 are closed. TableView mixed Select All is closed. Tabs D4/D5 arrow is
-closed (certified 23/23). The 2176 run is complete once (2164/6/6).
-Next: Toast alert role, TreeView tab-forward.
+closed (certified 23/23). Toast D6 alert is closed (certified 37/37).
+The 2176 run is complete once (2164/6/6). Next: TreeView tab-forward.
 
 After targeted red/green work, run the validation ladder in `status.md`
 sequentially because build lanes share `dist` trees. The packed-consumer smoke

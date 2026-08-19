@@ -6,7 +6,8 @@
  * Port of @react-aria/toast useToast.
  */
 
-import { type JSX, createMemo } from "solid-js";
+import { type JSX, createMemo, createRenderEffect, createSignal } from "solid-js";
+import { isServer } from "solid-js/web";
 import { type QueuedToast, type ToastState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 
@@ -73,6 +74,15 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     props.state.close(props.toast.key);
   };
 
+  // RAC useToast hides the alert until after layout so the live region
+  // announces on appear, not during SSR. `useLayoutEffect` → createRenderEffect.
+  const [isVisible, setIsVisible] = createSignal(false);
+  createRenderEffect(() => {
+    if (!isServer) {
+      setIsVisible(true);
+    }
+  });
+
   // Toast container - role="alertdialog" for screen readers
   const toastProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
     role: "alertdialog",
@@ -84,12 +94,17 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     "data-key": props.toast.key,
   }));
 
-  // Content area with role="alert" for immediate announcement
-  const contentProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
+  // Content area. Match RAC useToast: role="alert" + aria-atomic; aria-hidden
+  // until mounted. Getters keep the object stable so slotted context still
+  // sees the post-layout visible state. role=alert is implicitly assertive —
+  // do not add aria-live (RAC does not).
+  const contentProps: JSX.HTMLAttributes<HTMLElement> = {
     role: "alert",
     "aria-atomic": "true",
-    "aria-live": "assertive",
-  }));
+    get "aria-hidden"() {
+      return isVisible() ? undefined : "true";
+    },
+  };
 
   // Title props
   const titleProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
@@ -112,7 +127,7 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
       return toastProps();
     },
     get contentProps() {
-      return contentProps();
+      return contentProps;
     },
     get titleProps() {
       return titleProps();

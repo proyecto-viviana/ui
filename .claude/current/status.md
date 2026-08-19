@@ -8,12 +8,12 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after Tabs D4/D5 arrow close. First
+Last refreshed: **2026-08-19**, after Toast D6 alert close. First
 complete 2176 certified run was 2164 pass / 6 fail / 6 skip; TableView
-mixed Select All and Tabs keyboard-nav are now closed (Tabs certified
-23/23). Substantial pre-existing owner work and audit changes remain
-uncommitted. Do not reset or split this tree without first identifying
-ownership of overlapping changes.
+mixed, Tabs 23/23, and Toast 37/37 are now closed. Substantial
+pre-existing owner work and audit changes remain uncommitted. Do not
+reset or split this tree without first identifying ownership of
+overlapping changes.
 
 This is the short handoff. Read `adversarial-audit.md` for evidence and finding
 details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
@@ -37,8 +37,8 @@ Structural styling checks are healthy: the installed S2 token pin is exact,
 the 20-case macro corpus is byte-identical to upstream, and the sibling boundary
 remains 533 identical / 76 declared-divergent files. That does **not** establish
 component visual parity: the first complete 2176 certified run found four
-live AX/keyboard families still red. TableView mixed Select All and Tabs
-arrow are now closed; Toast alert role and TreeView tab-forward remain.
+live AX/keyboard families still red. TableView mixed Select All, Tabs
+arrow, and Toast alert role are now closed; TreeView tab-forward remains.
 
 ## Completed in this worktree
 
@@ -74,8 +74,8 @@ arrow are now closed; Toast alert role and TreeView tab-forward remain.
 | `vp test run`                                                               | 269 files; 5580 pass, 1 expected fail, 6 skip                                                                           | package behavior floor; three CSS parse warnings       |
 | app typecheck                                                               | 0 errors, 0 warnings, 3 hints                                                                                           | Astro integration type floor                           |
 | `vp run comparison:test:contract`                                           | 93/93 pass                                                                                                              | rendered catalogue + button-family contracts           |
-| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus); Tabs 23/23 and TableView mixed now closed on later focused reruns | do not claim certification while Toast/TreeView remain |
-| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, and Tabs 23/23 all green** | overlay/focus, Select All mixed, and Tabs keyboard-nav closed; keep green while fixing remaining reds |
+| `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus); TableView mixed, Tabs 23/23, and Toast 37/37 closed on later focused reruns | do not claim certification while TreeView remains |
+| focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs + Toast) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, Tabs 23/23, and Toast 37/37 all green** | overlay/focus, Select All mixed, Tabs keyboard-nav, and Toast alert closed; keep green while fixing TreeView |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -107,6 +107,11 @@ none`). Ported. Do not patch comparison CSS.
    the tablist keydown handler. Collection `isFocused` is batched with
    `focusedKey` so the previous tab cannot steal a touch tap. Headless
    Tab uses a signal ref. Do not set `isFocused` on native `focus`.
+7. **Toast D6 `neutral` — green (certified 37/37).** RAC `ToastContent`
+   is the `role="alert"` live region. S2/Viviana render
+   `UNSTABLE_ToastContent` instead of a raw div. `createToast`
+   matches RAC (`aria-atomic`, `aria-hidden` until mounted; no extra
+   `aria-live`).
 
 ## Known open work, in order
 
@@ -115,12 +120,12 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Remaining certified reds from the 2176 run (A-032 remainder): Toast
-   D6 `neutral` alert role; TreeView D5 tab-forward extra stops.
-   TableView D6 mixed Select All and Tabs D4/D5 are closed. Six
-   Playwright skips are the registered knownDivergences
-   (Slider/RangeSlider thumb AX, TableView sorted textValue, Breadcrumbs
-   overflow timing, DatePicker/DateRangePicker Escape event-order).
+1. Remaining certified reds from the 2176 run (A-032 remainder):
+   TreeView D5 tab-forward extra stops. TableView mixed, Tabs D4/D5,
+   and Toast D6 are closed. Six Playwright skips are the registered
+   knownDivergences (Slider/RangeSlider thumb AX, TableView sorted
+   textValue, Breadcrumbs overflow timing, DatePicker/DateRangePicker
+   Escape event-order).
 2. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
    Rebuild `status.md` measured rows after this (A-001).
 3. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
@@ -141,7 +146,7 @@ owner-blocked, or dated.
 git status --short --branch
 vp install --frozen-lockfile
 vp run comparison:build
-vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified/toast.certified.spec.ts e2e/certified/treeview.certified.spec.ts --reporter=line
+vp exec --filter @proyecto-viviana/comparison -- playwright test e2e/certified/treeview.certified.spec.ts --reporter=line
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:

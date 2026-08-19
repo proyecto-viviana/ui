@@ -8,9 +8,11 @@
 import {
   type JSX,
   type Accessor,
+  type Context,
   createContext,
   createMemo,
   createEffect,
+  createRenderEffect,
   createSignal,
   onCleanup,
   splitProps,
@@ -31,10 +33,17 @@ import {
   createToastRegion,
   useUNSAFE_PortalContext,
 } from "@proyecto-viviana/solidaria";
+import { ButtonContext } from "./Button";
+import { TextContext } from "./Text";
 import {
+  type ContextValue,
   type RenderChildren,
   type ClassNameOrFunction,
   type StyleOrFunction,
+  type SlotProps,
+  DEFAULT_SLOT,
+  Provider,
+  useContextProps,
   useRenderProps,
   filterDOMProps,
   useIsHydrated,
@@ -135,6 +144,9 @@ interface ToastAriaContextValue {
 }
 
 const ToastAriaContext = createContext<ToastAriaContextValue | null>(null);
+export const ToastContentContext = createContext<
+  ContextValue<ToastContentProps, HTMLDivElement>
+>({});
 const toastStateByKey = new Map<string, ToastState<ToastContent>>();
 
 export function useToastContext(): ToastState<ToastContent> {
@@ -376,7 +388,7 @@ export function ToastRegion(props: ToastRegionProps): JSX.Element {
 export function Toast(props: ToastProps): JSX.Element {
   const [local, rest] = splitProps(props, ["toast", "children", "class", "style"]);
 
-  let toastRef!: HTMLDivElement;
+  const [toastEl, setToastEl] = createSignal<HTMLDivElement | null>(null);
 
   const state = useToastContext();
 
@@ -444,6 +456,7 @@ export function Toast(props: ToastProps): JSX.Element {
   // naturally completes faster when the user prefers reduced motion.
   createEffect(() => {
     if (local.toast.animation !== "exiting") return;
+    const toastRef = toastEl();
     if (!toastRef) {
       state.remove(local.toast.key);
       return;
@@ -484,11 +497,12 @@ export function Toast(props: ToastProps): JSX.Element {
 
   const { ref: _ref, ...cleanToastProps } = toastAria.toastProps as Record<string, unknown>;
 
-  // Ensure ARIA title/description IDs and the content live-region attributes are
-  // present on rendered sub-components, even when children are pre-composed outside
-  // the Toast provider owner (as DefaultToast does), where useContext can't reach
-  // this owner's ToastAriaContext.
-  createEffect(() => {
+  // Apply title/description ids and content live-region attributes onto
+  // descendants that opted in via data-solidaria-toast-* (S2 used a raw
+  // content div before ToastContent). Signal ref + createRenderEffect so
+  // a first-run null ref still reapplies after mount, before paint.
+  createRenderEffect(() => {
+    const toastRef = toastEl();
     if (!toastRef) return;
 
     const titleId = (toastAria.titleProps as Record<string, unknown>).id as string | undefined;
@@ -511,16 +525,15 @@ export function Toast(props: ToastProps): JSX.Element {
       }
     }
 
-    // Wire the content area as a live region (role="alert" / aria-live="assertive")
-    // so the toast message is announced to screen readers when it appears.
     const contentEl = toastRef.querySelector("[data-solidaria-toast-content]");
     if (contentEl instanceof HTMLElement) {
       const role = contentProps.role as string | undefined;
-      const ariaLive = contentProps["aria-live"] as string | undefined;
       const ariaAtomic = contentProps["aria-atomic"] as string | undefined;
+      const ariaHidden = contentProps["aria-hidden"] as string | undefined;
       if (role) contentEl.setAttribute("role", role);
-      if (ariaLive) contentEl.setAttribute("aria-live", ariaLive);
       if (ariaAtomic) contentEl.setAttribute("aria-atomic", ariaAtomic);
+      if (ariaHidden) contentEl.setAttribute("aria-hidden", ariaHidden);
+      else contentEl.removeAttribute("aria-hidden");
     }
   });
 
@@ -533,7 +546,7 @@ export function Toast(props: ToastProps): JSX.Element {
       }}
     >
       <div
-        ref={toastRef}
+        ref={setToastEl}
         {...domProps()}
         {...cleanToastProps}
         class={renderProps.class()}
@@ -543,7 +556,46 @@ export function Toast(props: ToastProps): JSX.Element {
         data-variant={local.toast.content.variant}
         on:click={handleRootClick}
       >
-        {renderProps.renderChildren()}
+        <Provider
+          values={
+            [
+              [ToastContentContext, toastAria.contentProps],
+              [
+                TextContext,
+                {
+                  slots: {
+                    [DEFAULT_SLOT]: {},
+                    get title() {
+                      return toastAria.titleProps;
+                    },
+                    get description() {
+                      return toastAria.descriptionProps;
+                    },
+                  },
+                },
+              ],
+              [
+                ButtonContext,
+                {
+                  slots: {
+                    [DEFAULT_SLOT]: {},
+                    close: {
+                      onPress: () => {
+                        state.close(local.toast.key);
+                        state.remove(local.toast.key);
+                      },
+                      "aria-label": (toastAria.closeButtonProps as Record<string, unknown>)[
+                        "aria-label"
+                      ],
+                    },
+                  },
+                },
+              ],
+            ] as Array<[Context<unknown>, unknown]>
+          }
+        >
+          {renderProps.renderChildren()}
+        </Provider>
       </div>
     </ToastAriaContext.Provider>
   );
@@ -604,35 +656,28 @@ export function ToastDescription(props: ToastDescriptionProps): JSX.Element {
   );
 }
 
-export interface ToastContentProps {
-  children: JSX.Element;
+export interface ToastContentProps extends JSX.HTMLAttributes<HTMLDivElement>, SlotProps {
+  children?: JSX.Element;
   class?: string;
   style?: JSX.CSSProperties;
 }
 
 /**
  * ToastContent wraps the toast message (title + description) in the live region
- * announced to screen readers. It carries `role="alert"` / `aria-live="assertive"`
- * from createToast's contentProps so the toast text is announced when it appears.
+ * announced to screen readers. It consumes RAC ToastContentContext (role="alert",
+ * aria-atomic, aria-hidden until mounted) so the toast text is announced when
+ * it appears.
  *
  * It is rendered as a sibling of the close button (never wrapping it) so screen
  * readers announce the message without reading the close button first.
  */
 export function ToastContent(props: ToastContentProps): JSX.Element {
-  const context = useContext(ToastAriaContext);
-  const { ref: _ref, ...ariaContentProps } = (context?.contentProps ?? {}) as Record<
-    string,
-    unknown
-  >;
+  const [merged] = useContextProps(props, undefined, ToastContentContext);
+  const [local, rest] = splitProps(merged, ["class", "style", "children", "slot", "ref"]);
 
   return (
-    <div
-      data-solidaria-toast-content=""
-      {...ariaContentProps}
-      class={props.class}
-      style={props.style}
-    >
-      {props.children}
+    <div data-solidaria-toast-content="" {...rest} class={local.class} style={local.style}>
+      {local.children}
     </div>
   );
 }

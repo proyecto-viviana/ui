@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import {
   // DnD
   DIRECTORY_DRAG_TYPE,
@@ -17,6 +17,8 @@ import {
   FormValidationContext,
   // Toast alias
   UNSTABLE_ToastQueue,
+  UNSTABLE_Toast,
+  UNSTABLE_ToastContent,
 } from "../src/index";
 
 describe("solidaria-components re-exports", () => {
@@ -48,5 +50,10 @@ describe("solidaria-components re-exports", () => {
 
   it("exports UNSTABLE_ToastQueue", () => {
     expect(UNSTABLE_ToastQueue).toBeDefined();
+  });
+
+  it("exports UNSTABLE_ToastContent as ToastContent, not Toast", () => {
+    expect(UNSTABLE_ToastContent).toBeDefined();
+    expect(UNSTABLE_ToastContent).not.toBe(UNSTABLE_Toast);
   });
 });

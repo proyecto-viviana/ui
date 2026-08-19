@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
   ToastContainer,
@@ -379,6 +379,22 @@ describe("Toast (solid-spectrum)", () => {
       expect(description.id).toBeTruthy();
       expect(toast).toHaveAttribute("aria-labelledby", title.id);
       expect(toast).toHaveAttribute("aria-describedby", description.id);
+    });
+
+    it("wires the toast message as role=alert like RAC ToastContent", () => {
+      render(() => (
+        <ToastProvider useGlobalQueue>
+          <ToastRegion portal={false} />
+        </ToastProvider>
+      ));
+
+      addToast({ title: "Toast available", type: "neutral" });
+
+      const title = screen.getByText("Toast available");
+      const alert = title.closest('[role="alert"]');
+      expect(alert).toBeTruthy();
+      expect(alert).toHaveAttribute("aria-atomic", "true");
+      expect(alert).not.toHaveAttribute("aria-hidden");
     });
   });
 

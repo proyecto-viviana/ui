@@ -11,12 +11,12 @@ tasks:
       Durable remaining-work goal: walk every leftover audit item to
       closed, owner-blocked, or dated evidence. First complete 2176
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
-      (knownDivergence fixme). TableView mixed Select All and Tabs
-      D4/D5 arrow are closed. Current slice: Toast alert role,
-      TreeView tab-forward. Then smoke/site, Kumo evidence, Train 8,
-      evidence schema, owner decisions, hygiene, lowest-layer
-      ownership. Overlay/focus is a separate commit from the
-      pre-existing dirty audit/Kumo tree. Do not skip ahead.
+      (knownDivergence fixme). TableView mixed, Tabs D4/D5, and Toast
+      D6 alert are closed. Current slice: TreeView tab-forward. Then
+      smoke/site, Kumo evidence, Train 8, evidence schema, owner
+      decisions, hygiene, lowest-layer ownership. Overlay/focus is a
+      separate commit from the pre-existing dirty audit/Kumo tree. Do
+      not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -98,6 +98,9 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   DOM focus plus batched `isFocused`/`focusedKey`; certified Tabs
   23/23. Do not set `isFocused` on native `focus` (steals D4
   touch-tap).
+- Toast D6 `neutral` alert role — S2/Viviana render RAC
+  `UNSTABLE_ToastContent` so the message is `role="alert"`;
+  certified Toast 37/37.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
   A-015 Vite Plus configs, A-016 stale declarations) — still needs item 2
   (`ui:smoke` / `ci:site`) before A-001's measured `status.md` refresh.
@@ -123,16 +126,17 @@ already expose `role=grid` in D6, and the only AX diff is Select All mixed.
    tracks its element with a signal ref. Certified Tabs: 23/23.
 3. **Tabs D5 `horizontal-regular · arrow-roving` — closed.** Same
    keyboard-nav fix. Solid active tab moves Overview → Parity → Testing.
-4. **Toast D6 `neutral`** — React inner node is `alert: Toast available`;
-   Solid is `text: Toast available` (missing `role=alert` on the content
-   live region).
+4. **Toast D6 `neutral` — closed.** Headless `ToastContent` is the RAC
+   live region (`role="alert"`, `aria-atomic`, hidden until mounted).
+   S2 and Viviana render that component instead of a raw div. Certified
+   Toast: 37/37 including D6 `neutral`.
 5. **TreeView D5 `default · tab-forward`** — Solid extra tab stops:
    per-row `input` Select (`tabindex=0`) and Collapse buttons, so Tab
    walks the tree instead of one stop like React.
 
 Re-run remaining red families after each owning-layer fix. Keep
-ActionMenu list, Dialog close-button, TableView mixed, and Tabs green.
-Do not patch comparison CSS.
+ActionMenu list, Dialog close-button, TableView mixed, Tabs, and Toast
+green. Do not patch comparison CSS.
 
 #### 1b. Certified skip / fixme / deferred split (A-005)
 

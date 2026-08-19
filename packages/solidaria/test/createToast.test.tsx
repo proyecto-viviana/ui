@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent, cleanup } from "@solidjs/testing-library";
 import { createRoot, createSignal, For } from "solid-js";
 import { createToast, createToastRegion } from "../src/toast";
@@ -24,7 +24,9 @@ describe("createToast", () => {
       expect(aria.toastProps.role).toBe("alertdialog");
       expect(aria.toastProps["aria-modal"]).toBe("false");
       expect(aria.contentProps.role).toBe("alert");
-      expect(aria.contentProps["aria-live"]).toBe("assertive");
+      expect(aria.contentProps["aria-atomic"]).toBe("true");
+      expect(aria.contentProps["aria-live"]).toBeUndefined();
+      expect(aria.contentProps["aria-hidden"]).toBeUndefined();
       expect(aria.titleProps.id).toBeTruthy();
       expect(aria.descriptionProps.id).toBeTruthy();
       expect(aria.closeButtonProps["aria-label"]).toBe("Close");
