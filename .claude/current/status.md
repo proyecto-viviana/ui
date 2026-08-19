@@ -105,13 +105,12 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Four certified red families from the 2176 run (A-032 remainder), then
-   keep the A-005 skip/fixme/deferred split dated: TableView D6 mixed
-   Select All (`default` + `disabled`); Tabs D4/D5 arrow; Toast D6
-   `neutral` alert role; TreeView D5 tab-forward extra stops. Six
-   Playwright skips are the registered knownDivergences (Slider/RangeSlider
-   thumb AX, TableView sorted textValue, Breadcrumbs overflow timing,
-   DatePicker/DateRangePicker Escape event-order).
+1. Remaining certified reds from the 2176 run (A-032 remainder): Tabs
+   D4/D5 arrow; Toast D6 `neutral` alert role; TreeView D5 tab-forward
+   extra stops. TableView D6 mixed Select All is closed (4 pass / 1
+   skip). Six Playwright skips are the registered knownDivergences
+   (Slider/RangeSlider thumb AX, TableView sorted textValue, Breadcrumbs
+   overflow timing, DatePicker/DateRangePicker Escape event-order).
 2. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
    Rebuild `status.md` measured rows after this (A-001).
 3. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.

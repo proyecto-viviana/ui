@@ -72,7 +72,7 @@ Severity describes owner risk, not code aesthetics:
 | State/ARIA/component boundaries       | partial     | High-risk Dialog, overlay isolation, and Grid deletion paths were traced and fixed; a new import inventory exposes the much larger upper-layer ownership review still owed.                                                                                    |
 | S2 styling provenance                 | partial     | S2 1.6 tokens/macro foundation is source-aligned and focused tests pass; Viviana is a documented owner-ratified fork, while source-map warnings and long-term convergence remain open.                                                                         |
 | Kumo architecture and provenance      | partial     | Package/fixture target Kumo 2.11.0 and release now fails closed; paired browser behavior and visual evidence remain absent.                                                                                                                                    |
-| Test relevance and evidence integrity | partial     | First complete 2176 certified run: 2164 pass / 6 fail / 6 skip (knownDivergence fixme). D12, AlertDialog AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 stay closed. Next: the four red families in `work-queue.md` census item 1.                 |
+| Test relevance and evidence integrity | partial     | First complete 2176 certified run: 2164 pass / 6 fail / 6 skip. TableView mixed Select All closed. D12, AlertDialog AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 stay closed. Next: Tabs arrow, Toast alert, TreeView tab-forward. |
 | Accessibility and i18n                | partial     | S2 AlertDialog description mapping, ActionMenu overlay focus, and Dialog trap-cycle/hover ring are closed. Remaining AX/keyboard: TableView Select All mixed, Tabs arrow, Toast alert role, TreeView tab-forward. DateField did not surface on the 2176 run.   |
 | Security and dependencies             | partial     | Full and production audits now report zero known vulnerabilities and run in release readiness; response-header/CSP policy and app-boundary review remain open.                                                                                                 |
 | Release and supply chain              | partial     | SHA-pinned actions/same-SHA checks remain positive; Kumo's npm/trusted-publisher prerequisites are now executable and negative-tested, not prose-only.                                                                                                         |
@@ -648,9 +648,10 @@ Severity describes owner risk, not code aesthetics:
 - Evidence: first complete run 2026-08-19 after overlay/focus (`67a66591`):
   **2164 passed / 6 failed / 6 skipped** (15.5m, 8 workers). D12, AlertDialog
   AX, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5 stayed green.
-  The six failures are four families: TableView D6 `default` and `disabled`
-  (Select All missing `[checked=mixed]`), Tabs D4 `arrow-next-from-selected`
-  and D5 `arrow-roving` (ArrowRight does not move from Overview), Toast D6
+  TableView D6 mixed Select All is closed (`!isEmpty && !isSelectAll` plus
+  re-applying the native `indeterminate` IDL after `checked` writes; 4 pass /
+  1 skip). Remaining reds: Tabs D4 `arrow-next-from-selected` and D5
+  `arrow-roving` (ArrowRight does not move from Overview), Toast D6
   `neutral` (inner `alert` vs `text`), TreeView D5 `tab-forward` (extra
   checkbox/collapse tab stops). The six skips are the registered
   knownDivergences listed under A-005.
@@ -694,9 +695,8 @@ Severity describes owner risk, not code aesthetics:
 `status.md` is the canonical short handoff. The remaining-work census in
 `work-queue.md` is the program through every leftover finding. D12, AlertDialog
 description mapping, ActionMenu list D1/D5, and Dialog close-button D1/D3/D5
-are closed. The 2176 run is complete once (2164/6/6). Next: the four red
-families (TableView mixed Select All, Tabs arrow, Toast alert role, TreeView
-tab-forward).
+are closed. TableView mixed Select All is closed. The 2176 run is complete
+once (2164/6/6). Next: Tabs arrow, Toast alert role, TreeView tab-forward.
 
 After targeted red/green work, run the validation ladder in `status.md`
 sequentially because build lanes share `dist` trees. The packed-consumer smoke

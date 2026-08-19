@@ -11,12 +11,12 @@ tasks:
       Durable remaining-work goal: walk every leftover audit item to
       closed, owner-blocked, or dated evidence. First complete 2176
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
-      (knownDivergence fixme). Current slice: the four red families
-      (TableView mixed Select All, Tabs arrow, Toast alert role,
-      TreeView tab-forward). Then smoke/site, Kumo evidence, Train 8,
-      evidence schema, owner decisions, hygiene, lowest-layer
-      ownership. Overlay/focus is a separate commit from the
-      pre-existing dirty audit/Kumo tree. Do not skip ahead.
+      (knownDivergence fixme). TableView mixed Select All is closed.
+      Current slice: Tabs arrow, Toast alert role, TreeView
+      tab-forward. Then smoke/site, Kumo evidence, Train 8, evidence
+      schema, owner decisions, hygiene, lowest-layer ownership.
+      Overlay/focus is a separate commit from the pre-existing dirty
+      audit/Kumo tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -105,11 +105,11 @@ Diagnose at the owning layer. Do not treat TableView mixed-checkbox as a
 silent ratification of A-006 (native-table vs `div[role=grid]`): both stacks
 already expose `role=grid` in D6, and the only AX diff is Select All mixed.
 
-1. **TableView D6 `default` and `disabled`** — React Select All is
-   `checkbox "Select All" [checked=mixed]`; Solid omits mixed. First
-   hypothesis: `createTableSelectAllCheckbox` should match RAC
-   `!isEmpty && !isSelectAll`, and the native input must keep the
-   `indeterminate` IDL after `checked` updates (Chromium clears it).
+1. **TableView D6 `default` and `disabled` — closed.** Select All mixed
+   now matches RAC (`!isEmpty && !isSelectAll`) and the native input
+   re-applies `indeterminate` after Chromium clears it on `checked`
+   writes. Certified TableView D6: 4 pass / 1 skip (`sorted`
+   knownDivergence).
 2. **Tabs D4 `horizontal-regular · arrow-next-from-selected`** — ArrowRight
    on Overview does not emit `focusout`/`focusin` onto Parity; Solid
    `keyup` stays on Overview.

@@ -1980,11 +1980,7 @@ export function TableSelectAllCheckbox(): JSX.Element {
   const isSelected = () => state?.selectedKeys === "all";
   const isIndeterminate = () => {
     const keys = state?.selectedKeys;
-    if (!state || keys === "all" || keys == null || keys.size === 0) {
-      return false;
-    }
-
-    return keys.size < state.collection.size;
+    return !!state && keys !== "all" && keys != null && keys.size > 0;
   };
   const isDisabled = () =>
     !state || state.selectionMode !== "multiple" || state.collection.size === 0;

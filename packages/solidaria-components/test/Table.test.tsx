@@ -2,7 +2,7 @@
  * Tests for Table component.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
@@ -2256,6 +2256,48 @@ describe("Table", () => {
       for (const checkbox of screen.getAllByRole("checkbox")) {
         expect(checkbox).toBeChecked();
       }
+    });
+
+    it("exposes mixed Select All when some rows are selected", () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+          defaultSelectedKeys={new Set([1])}
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="select">{() => <TableSelectAllCheckbox />}</TableColumn>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>{() => <TableSelectionCheckbox rowKey={item.id} />}</TableCell>
+                        <TableCell>{() => <>{item.name}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const selectAll = screen.getByRole("checkbox", { name: "Select All" }) as HTMLInputElement;
+      expect(selectAll).toHaveAttribute("data-indeterminate", "true");
+      expect(selectAll.checked).toBe(false);
+      expect(selectAll.indeterminate).toBe(true);
+
+      selectAll.checked = selectAll.checked;
+      expect(selectAll.indeterminate).toBe(true);
     });
 
     it('should prevent Esc from clearing selection if escapeKeyBehavior is "none"', () => {

@@ -19,22 +19,23 @@ export function createTableSelectAllCheckbox<T extends object>(
     return s.selectedKeys === "all";
   });
 
-  const isEmpty = createMemo(() => {
+  const isCollectionEmpty = createMemo(() => {
     const s = state();
     return s.collection.size === 0;
   });
 
-  const isIndeterminate = createMemo(() => {
+  const isEmpty = createMemo(() => {
     const s = state();
     const selectedKeys = s.selectedKeys;
-    if (selectedKeys === "all") return false;
-    if (selectedKeys.size === 0) return false;
-    return selectedKeys.size < s.collection.size;
+    return selectedKeys !== "all" && selectedKeys.size === 0;
   });
+
+  // RAC: `isIndeterminate: !isEmpty && !isSelectAll` (not selectedKeys.size vs collection.size).
+  const isIndeterminate = createMemo(() => !isEmpty() && !isSelectAll());
 
   const isDisabled = createMemo(() => {
     const s = state();
-    return s.selectionMode !== "multiple" || isEmpty();
+    return s.selectionMode !== "multiple" || isCollectionEmpty();
   });
 
   const onChange = () => {
