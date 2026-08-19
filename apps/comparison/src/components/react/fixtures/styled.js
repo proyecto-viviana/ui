@@ -969,6 +969,7 @@ function ReactProviderDemo() {
       children: [
         jsx("div", {
           className: "comparison-provider-caption",
+          "data-comparison-caption-scheme": demoProps.colorScheme,
           children: `Outer provider: ${demoProps.colorScheme} / ${demoProps.background}`,
         }),
         jsx(SpectrumButton, {
@@ -982,6 +983,7 @@ function ReactProviderDemo() {
           children: [
             jsx("div", {
               className: "comparison-provider-caption",
+              "data-comparison-caption-scheme": "light",
               children: "Nested provider: local light override",
             }),
             jsx(SpectrumButton, {

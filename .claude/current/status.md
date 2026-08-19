@@ -8,14 +8,15 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after TreeView D5 close. First
+Last refreshed: **2026-08-19**, after comparison-axe 80/80. First
 complete 2176 certified run was 2164 pass / 6 fail / 6 skip; every
 product red from that run is now closed on focused reruns (TableView
-mixed, Tabs 23/23, Toast 37/37, TreeView D5). A full 2176 rerun is
-still owed before claiming the certified lane green. Substantial
-pre-existing owner work and audit changes remain uncommitted. Do not
-reset or split this tree without first identifying ownership of
-overlapping changes.
+mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke` passed.
+comparison-axe is 80/80. `ci:site` is still blocked on web contrast
+(landing + showcase). A full 2176 rerun is still owed before claiming
+the certified lane green. Substantial pre-existing owner work and
+audit changes remain uncommitted. Do not reset or split this tree
+without first identifying ownership of overlapping changes.
 
 This is the short handoff. Read `adversarial-audit.md` for evidence and finding
 details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
@@ -79,6 +80,8 @@ focused reruns.
 | `vp run comparison:test:contract`                                           | 93/93 pass                                                                                                              | rendered catalogue + button-family contracts           |
 | `vp run comparison:test:certified`                                          | **2164 pass / 6 fail / 6 skip** (15.5m, 8 workers, 2026-08-19 after overlay/focus); later focused reruns closed TableView mixed, Tabs 23/23, Toast 37/37, and TreeView D5 | do not claim the 2176 lane green until it is rerun |
 | focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs + Toast + TreeView) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, Tabs 23/23, Toast 37/37, TreeView D5 3/3 + D6 5/5, GridList/ListBox D5/D6 still green** | overlay/focus, Select All mixed, Tabs keyboard-nav, Toast alert, and TreeView D5 closed |
+| `vp run ui:smoke`                                                       | pass (packed six tarballs; consumer DOM+SSR; 159/159 export files; 38/38 JS subpaths; 68/68 CSS classes) | macro SOURCEMAP_BROKEN warnings remain (A-017)           |
+| comparison-axe (`a11y:axe:comparison`)                                  | **80/80** pass (2026-08-19)                                                                                         | `target-size` disabled (D8 authority); Provider caption chrome uses docs ink |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -130,13 +133,15 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Packed-consumer smoke and site lane (`ui:smoke`, then `ci:site`).
-   Rebuild `status.md` measured rows after this (A-001). A full 2176
-   certified rerun is still owed; do not treat focused TreeView/Tabs/
-   Toast greens as that rerun. Six Playwright skips are the registered
-   knownDivergences (Slider/RangeSlider thumb AX, TableView sorted
-   textValue, Breadcrumbs overflow timing, DatePicker/DateRangePicker
-   Escape event-order).
+1. Finish `ci:site`: web contrast (landing `#000` on dark, showcase
+   `gls-demo-label` `--text-tertiary`), then a11y:smoke, routes, seo,
+   api-reference. `ui:smoke` and comparison-axe 80/80 are in. Rebuild
+   measured rows after this (A-001). A full 2176 certified rerun is
+   still owed; do not treat focused TreeView/Tabs/Toast greens as that
+   rerun. Six Playwright skips are the registered knownDivergences
+   (Slider/RangeSlider thumb AX, TableView sorted textValue,
+   Breadcrumbs overflow timing, DatePicker/DateRangePicker Escape
+   event-order).
 2. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
 3. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
@@ -154,8 +159,12 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-vp run ui:smoke
-vp run ci:site
+# ui:smoke passed; comparison-axe 80/80. Remaining ci:site:
+vp run a11y:contrast
+vp run a11y:smoke
+vp run test:routes
+vp run test:seo
+vp run test:api-reference
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:

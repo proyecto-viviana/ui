@@ -12,11 +12,13 @@ tasks:
       closed, owner-blocked, or dated evidence. First complete 2176
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
       (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
-      alert, and TreeView D5 tab-forward are closed. Next slice:
-      packed-consumer smoke then site lane. Then Kumo evidence, Train
-      8, evidence schema, owner decisions, hygiene, lowest-layer
-      ownership. Overlay/focus is a separate commit from the
-      pre-existing dirty audit/Kumo tree. Do not skip ahead.
+      alert, and TreeView D5 tab-forward are closed. ui:smoke passed.
+      comparison-axe 80/80 (target-size disabled; Provider caption
+      chrome). Next slice: web contrast on landing + showcase, then
+      the rest of ci:site. Then Kumo evidence, Train 8, evidence
+      schema, owner decisions, hygiene, lowest-layer ownership.
+      Overlay/focus is a separate commit from the pre-existing dirty
+      audit/Kumo tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -106,8 +108,10 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   offscreen rows (`treeview-div-grid-paint`). Collection tab-stop
   census on the End walk. Do not excludeFromTabOrder row checkboxes.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
-  A-015 Vite Plus configs, A-016 stale declarations) — still needs item 2
-  (`ui:smoke` / `ci:site`) before A-001's measured `status.md` refresh.
+  A-015 Vite Plus configs, A-016 stale declarations) — `ui:smoke` and
+  comparison-axe 80/80 are in; `ci:site` still needs web contrast,
+  a11y:smoke, routes, seo, and api-reference before A-001's measured
+  `status.md` refresh.
 
 ### Census — every leftover item, in order
 
@@ -170,10 +174,20 @@ component acceptance under Rule #1.
 
 #### 2. External qualification (current slice, A-001 remaining, A-015 remaining)
 
-`vp run ui:smoke` then `vp run ci:site` (share `dist`; run sequentially).
-Neither was rerun after the migration. Rebuild `status.md` measured rows
-from this census after they finish. Keep reporting contract 93/93
-separately from certified (A-031).
+`vp run ui:smoke` **passed** (packed six tarballs; consumer DOM+SSR;
+159/159 export files; 38/38 JS subpaths; 68/68 CSS classes; macro
+SOURCEMAP_BROKEN warnings remain, A-017). `ci:site` package build
+passed. comparison-axe **80/80**: WCAG 2.2 `target-size` is disabled on
+the smoke scan (S2 compact ActionGroup is 21px; D8 pair-diff is the
+authority; playground WCAG 2.2 AA already did this). Provider captions
+use comparison docs ink keyed on the caption itself — `--cmp-pink` was
+3.27:1 on S2 dark base, and React's nested Provider has no
+`data-color-scheme` for a descendant override. Remaining `ci:site`:
+web `a11y:contrast` (landing shell has no text color so dark theme is
+`#000` on `#0c0d10`; showcase `gls-demo-label` uses `--text-tertiary`
+below AA), then a11y:smoke, routes, seo, api-reference. Rebuild
+`status.md` measured rows after those finish. Keep reporting contract
+93/93 separately from certified (A-031).
 
 #### 3. Kumo Button evidence (A-007)
 

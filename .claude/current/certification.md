@@ -49,7 +49,12 @@ These are necessary and nowhere near sufficient. None is acceptance:
 - A **route renders** → the harness mounts something. Proves plumbing, not
   parity.
 - **axe is green** → smoke only. It cannot see keyboard, focus, names,
-  announcements, or validation.
+  announcements, or validation. WCAG 2.2 `target-size` (2.5.8) is disabled
+  on the playground and comparison WCAG 2.2 AA smoke scans because S2
+  compact tokens are faithfully under 24px (ActionGroup 21px, date/time
+  segments ~20px). Driver D8 pair-diffs target size against upstream; an
+  undersized control that matches the oracle is an upstream note, not a
+  port defect. Raising those controls to 24px would invent a size.
 - A **unit test passes** → necessary, but a single unit test is not the behavior
   contract.
 - A **screenshot is stable** → a settled frame; it cannot see transitions,

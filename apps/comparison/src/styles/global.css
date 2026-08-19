@@ -2495,8 +2495,16 @@ a {
   inline-size: 240px;
 }
 
+/* Caption sits on the S2 Provider surface. `--cmp-pink` (#345bf8) is 3.27:1
+   on S2 dark base (#1b1b1b). Scheme lives on the caption itself so a nested
+   React Provider (no `data-color-scheme` on the wrapper) cannot inherit an
+   outer dark color. This is harness chrome, not S2 styling. */
 .comparison-provider-caption {
-  color: var(--cmp-pink);
+  color: #292929;
+}
+
+.comparison-provider-caption[data-comparison-caption-scheme="dark"] {
+  color: #dbdbdb;
 }
 
 .comparison-rac-button,
