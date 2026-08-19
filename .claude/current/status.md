@@ -8,15 +8,17 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after comparison-axe 80/80. First
+Last refreshed: **2026-08-19**, after `a11y:contrast` 154/154. First
 complete 2176 certified run was 2164 pass / 6 fail / 6 skip; every
 product red from that run is now closed on focused reruns (TableView
 mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke` passed.
-comparison-axe is 80/80. `ci:site` is still blocked on web contrast
-(landing + showcase). A full 2176 rerun is still owed before claiming
-the certified lane green. Substantial pre-existing owner work and
-audit changes remain uncommitted. Do not reset or split this tree
-without first identifying ownership of overlapping changes.
+comparison-axe is 80/80. Web contrast is 154/154. `ci:site` is still
+blocked on `a11y:smoke` (ContextualHelp outside-click), then routes,
+seo, and api-reference. A full 2176 rerun is still owed before
+claiming the certified lane green. Substantial pre-existing owner
+work and audit changes remain uncommitted. Do not reset or split
+this tree without first identifying ownership of overlapping
+changes.
 
 This is the short handoff. Read `adversarial-audit.md` for evidence and finding
 details, then `upstream-release-audit.md` for the Adobe 1.6/1.20 absorption
@@ -82,8 +84,8 @@ focused reruns.
 | focused certified (`D12` + AlertDialog AX + ActionMenu list + Dialog close + TableView D6 + Tabs + Toast + TreeView) | **D12 5/5, AlertDialog AX, ActionMenu list D1+D5, Dialog close D1/D3/D5, TableView D6 mixed, Tabs 23/23, Toast 37/37, TreeView D5 3/3 + D6 5/5, GridList/ListBox D5/D6 still green** | overlay/focus, Select All mixed, Tabs keyboard-nav, Toast alert, and TreeView D5 closed |
 | `vp run ui:smoke`                                                       | pass (packed six tarballs; consumer DOM+SSR; 159/159 export files; 38/38 JS subpaths; 68/68 CSS classes) | macro SOURCEMAP_BROKEN warnings remain (A-017)           |
 | comparison-axe (`a11y:axe:comparison`)                                  | **80/80** pass (2026-08-19)                                                                                         | `target-size` disabled (D8 authority); Provider caption chrome uses docs ink |
-| web contrast landing `/` and `/admin`                                   | pass                                                                                                                | landing shell `--text-primary`; admin redirects to `/` in prod |
-| web contrast showcase chrome                                            | labels on `--text-secondary`                                                                                        | 8 component-token routes still red |
+| web contrast (`a11y:contrast`)                                      | **154/154** pass (2026-08-19)                                                                                   | AA register pairings; Provider islands on `base`; RangeSlider `data-disabled` |
+| `a11y:smoke`                                                        | 43 pass / 1 fail                                                                                                | ContextualHelp outside-click (`body.click` at 1,1) does not dismiss |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -135,13 +137,13 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Finish `ci:site`: eight showcase contrast routes (Viviana chips
-   using `--accent-primary` as a fill under white instead of
-   `--interactive-fill`; error red 4.36:1; Provider islands). Landing
-   `/` and `/admin` pass. Showcase chrome labels pass. Then
-   a11y:smoke, routes, seo, api-reference. Rebuild measured rows after
-   this (A-001). A full 2176 certified rerun is still owed. Six
-   Playwright skips are the registered knownDivergences.
+1. Finish `ci:site`: contrast is 154/154. Next is `a11y:smoke`
+   (ContextualHelp outside-click stays open after `body.click` at
+   1,1; Escape close and Popover outside-click pass), then routes,
+   seo, api-reference. Rebuild measured rows after this (A-001). A
+   full 2176 certified rerun is still owed. Six Playwright skips are
+   the registered knownDivergences. S2 RangeSlider still lacks
+   `data-disabled` (Viviana-only stamp this slice).
 2. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
 3. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
@@ -159,8 +161,8 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-# ui:smoke passed; comparison-axe 80/80. Remaining ci:site:
-vp run a11y:contrast
+# ui:smoke, comparison-axe 80/80, a11y:contrast 154/154 passed.
+# Remaining ci:site:
 vp run a11y:smoke
 vp run test:routes
 vp run test:seo

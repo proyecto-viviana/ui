@@ -164,12 +164,10 @@ const badgeStyles = style<{
             yellow: "black",
             chartreuse: "black",
             celery: "black",
-            /* Metric's sky-blue is mid-luminance in light (#1c8fc9) and pale in
-               dark (#5ac2ee); black clears 4.5:1 on both, white on neither — same
-               reasoning that puts notice/orange/yellow in the black-ink family.
-               `live` stays on the white default: the spec's LIVE pill is
-               white-on-#ff6b35 verbatim (TerminalGlassLab.tsx:447-448), the
-               saturated-fill/white-ink relationship being the point. */
+            /* Metric's sky-blue and LIVE's orange-red are mid-luminance in both
+               schemes; black clears 4.5:1, white does not (LIVE white-on-#ff6b35
+               is 2.84:1). Same black-ink family as notice/orange/yellow. */
+            live: "black",
             metric: "black",
           },
         },
@@ -179,15 +177,20 @@ const badgeStyles = style<{
            outline map below value-for-value, exactly as outline's ink mirrors
            its border: one channel, two strengths, nothing can drift. Neutral and
            the decorative variants keep the plain ink for the same reasons they
-           are absent from the outline map. */
+           are absent from the outline map.
+
+           Accent/informative text uses `--text-link`, not accent-900: the brand
+           blue is the 3:1 decorative mark (SegmentedControl already made this
+           split). Notice/negative/positive step to the AA stop of the same ramp
+           Button uses for those channels as fills. */
         subtle: {
           default: "gray-1000",
           variant: {
-            accent: "accent-900",
-            informative: lightDark("informative-800", "informative-900"),
-            positive: lightDark("positive-800", "positive-900"),
-            notice: lightDark("notice-800", "notice-900"),
-            negative: lightDark("negative-800", "negative-900"),
+            accent: "[var(--text-link)]",
+            informative: "[var(--text-link)]",
+            positive: "positive-1000",
+            notice: "notice-1100",
+            negative: "negative-1000",
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
           },
@@ -204,11 +207,11 @@ const badgeStyles = style<{
         outline: {
           default: "gray-1000",
           variant: {
-            accent: "accent-900",
-            informative: lightDark("informative-800", "informative-900"),
-            positive: lightDark("positive-800", "positive-900"),
-            notice: lightDark("notice-800", "notice-900"),
-            negative: lightDark("negative-800", "negative-900"),
+            accent: "[var(--text-link)]",
+            informative: "[var(--text-link)]",
+            positive: "positive-1000",
+            notice: "notice-1100",
+            negative: "negative-1000",
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
           },
@@ -219,16 +222,20 @@ const badgeStyles = style<{
       fillStyle: {
         bold: {
           variant: {
-            accent: "accent",
-            informative: "informative",
-            neutral: "neutral-subdued",
-            positive: "positive",
+            /* Text-bearing fills use the AA pair Button already ships: interactive-fill
+               under white for the blue channel, and the 900/700 pair for negative/
+               positive. Neutral/gray need a dark-scheme fill deeper than gray-500
+               (white on #a0a6ae is 2.45:1). */
+            accent: "interactive-fill",
+            informative: "interactive-fill",
+            neutral: lightDark("gray-600", "gray-300"),
+            positive: lightDark("positive-900", "positive-700"),
             notice: "notice",
-            negative: "negative",
+            negative: lightDark("negative-900", "negative-700"),
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
-            gray: "gray",
-            red: "red",
+            gray: lightDark("gray-600", "gray-300"),
+            red: lightDark("negative-900", "negative-700"),
             orange: "orange",
             yellow: "yellow",
             chartreuse: "chartreuse",
@@ -236,7 +243,7 @@ const badgeStyles = style<{
             green: "green",
             seafoam: "seafoam",
             cyan: "cyan",
-            blue: "blue",
+            blue: "interactive-fill",
             indigo: "indigo",
             purple: "purple",
             fuchsia: "fuchsia",
@@ -312,12 +319,12 @@ const badgeStyles = style<{
       fillStyle: {
         outline: {
           variant: {
-            accent: "accent-900",
-            informative: lightDark("informative-800", "informative-900"),
+            accent: "[var(--text-link)]",
+            informative: "[var(--text-link)]",
             neutral: lightDark("gray-500", "gray-600"),
-            positive: lightDark("positive-800", "positive-900"),
-            notice: lightDark("notice-800", "notice-900"),
-            negative: lightDark("negative-800", "negative-900"),
+            positive: "positive-1000",
+            notice: "notice-1100",
+            negative: "negative-1000",
             live: "[var(--accent-live)]",
             metric: "[var(--status-metric)]",
           },

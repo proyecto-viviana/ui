@@ -101,7 +101,7 @@ const sliderRoot = style<SliderStyleState>(
       },
     },
     color: {
-      default: "neutral-subdued",
+      default: "[var(--text-secondary)]",
       forcedColors: "ButtonText",
       isDisabled: "disabled",
     },

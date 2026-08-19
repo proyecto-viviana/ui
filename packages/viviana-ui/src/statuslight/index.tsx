@@ -112,17 +112,18 @@ const wrapperStyles = style<{
     /* Register ink-toning: the wells paint the MESSAGE in the channel ink, not
      * just the dot (Panel07's status rows have no dot at all — the text IS the
      * light). A library StatusLight keeps the dot, but the semantic channels
-     * tone the label to match; the same 800/900 pairs Meter's fill uses, so
-     * text stays AA on both surfaces. Decorative palette variants keep the
-     * neutral label — they are categories, not statuses. */
+     * tone the label to match. Informative uses `--text-link` (the AA accent
+     * ink); notice/negative/positive use the same AA stops Badge outline uses.
+     * Decorative palette variants keep the neutral label — they are categories,
+     * not statuses. */
     color: {
       default: "neutral",
       variant: {
         neutral: "gray-600",
-        informative: lightDark("informative-800", "informative-900"),
-        positive: lightDark("positive-800", "positive-900"),
-        notice: lightDark("notice-800", "notice-900"),
-        negative: lightDark("negative-800", "negative-900"),
+        informative: "[var(--text-link)]",
+        positive: "positive-1000",
+        notice: "notice-1100",
+        negative: "negative-1000",
         metric: "[var(--status-metric)]",
       },
     },

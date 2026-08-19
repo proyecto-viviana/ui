@@ -212,7 +212,7 @@ const radioGroupHelpText = style<RadioGroupStyleState>({
   color: {
     default: "neutral-subdued",
     isInvalid: {
-      default: "negative",
+      default: "negative-1000",
       forcedColors: "Mark",
     },
     isDisabled: {

@@ -113,7 +113,7 @@ const optionStyles = style<ListBoxOptionRenderProps & { size: ListBoxSize }>({
     default: "neutral-subdued",
     isHovered: "neutral",
     isFocused: "neutral",
-    isSelected: "accent",
+    isSelected: "[var(--text-link)]",
     isDisabled: "disabled",
   },
 });
@@ -127,7 +127,7 @@ const optionIconStyles = style<{ size: ListBoxSize }>({
 
 const checkmarkStyles = style<{ size: ListBoxSize }>({
   flexShrink: 0,
-  color: "accent",
+  color: "[var(--text-link)]",
   width: { size: { sm: 16, md: 20, lg: 24 } },
   height: { size: { sm: 16, md: 20, lg: 24 } },
 });

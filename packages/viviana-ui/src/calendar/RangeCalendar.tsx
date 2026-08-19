@@ -586,7 +586,7 @@ const rangeCalendarHelpText = style<{ isInvalid?: boolean; isDisabled?: boolean 
   color: {
     default: "neutral-subdued",
     isInvalid: {
-      default: "negative",
+      default: "negative-1000",
       forcedColors: "Mark",
     },
     isDisabled: {

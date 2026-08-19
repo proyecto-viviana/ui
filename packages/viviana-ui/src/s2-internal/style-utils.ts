@@ -108,7 +108,11 @@ export const fieldLabel = () =>
     fontFamily: "code",
     cursor: "default",
     color: {
-      default: "neutral-subdued",
+      /* `--text-secondary` is the register's AA secondary ink. `neutral-subdued`
+       * remaps to the same hex through the theme, but the CSS variable follows
+       * `data-color-scheme` at runtime (including nested Providers) and cannot
+       * drift from viviana-tokens.css. */
+      default: "[var(--text-secondary)]",
       isDisabled: "disabled",
       isStaticColor: "transparent-overlay-1000",
       forcedColors: "ButtonText",
@@ -146,7 +150,7 @@ export const fieldValue = () =>
     fontWeight: "normal",
     cursor: "default",
     color: {
-      default: "neutral-subdued",
+      default: "[var(--text-secondary)]",
       isDisabled: "disabled",
       isStaticColor: "transparent-overlay-1000",
       forcedColors: "ButtonText",

@@ -269,13 +269,17 @@ function Page() {
 
       <Demo label="Provider · colorScheme override — light island in dark, dark island in light">
         <Row>
-          <Provider colorScheme="light" background="layer-1">
+          {/* `layer-1` is frosted glass (`--surface-panel`). A forced-scheme
+              island has to sit on the opaque app surface or the parent scheme
+              shows through the alpha and the island's ink fails AA. `base` is
+              `--surface-app` for the scheme stamped on this Provider. */}
+          <Provider colorScheme="light" background="base">
             <Flex direction="column" gap="xs">
               <Heading level={4}>Light</Heading>
               <Text>Forced light, regardless of the page theme.</Text>
             </Flex>
           </Provider>
-          <Provider colorScheme="dark" background="layer-1">
+          <Provider colorScheme="dark" background="base">
             <Flex direction="column" gap="xs">
               <Heading level={4}>Dark</Heading>
               <Text>Forced dark, regardless of the page theme.</Text>

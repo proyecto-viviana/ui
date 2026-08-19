@@ -113,7 +113,7 @@ const sliderRoot = style<RangeSliderStyleState>(
       },
     },
     color: {
-      default: "neutral-subdued",
+      default: "[var(--text-secondary)]",
       forcedColors: "ButtonText",
       isDisabled: "disabled",
     },
@@ -889,6 +889,7 @@ export function RangeSlider(props: RangeSliderProps): JSX.Element {
       id={rootId()}
       role="group"
       data-orientation="horizontal"
+      data-disabled={isDisabled() ? "true" : undefined}
       aria-labelledby={
         local["aria-labelledby"] ?? (!local["aria-label"] && local.label ? labelId : undefined)
       }

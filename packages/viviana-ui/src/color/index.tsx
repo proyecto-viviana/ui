@@ -1152,7 +1152,7 @@ function createColorFieldStyles() {
       color: {
         default: "neutral-subdued",
         isInvalid: {
-          default: "negative",
+          default: "negative-1000",
           forcedColors: "Mark",
         },
         isDisabled: {
@@ -1179,7 +1179,7 @@ function createColorFieldStyles() {
       "--iconPrimary": {
         type: "fill",
         value: {
-          default: "negative",
+          default: "negative-1000",
           forcedColors: "Mark",
         },
       },

@@ -12,15 +12,12 @@ tasks:
       closed, owner-blocked, or dated evidence. First complete 2176
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
       (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
-      alert, and TreeView D5 tab-forward are closed. ui:smoke passed.
-      comparison-axe 80/80 (target-size disabled; Provider caption
-      chrome). Landing and /admin contrast pass. Showcase chrome
-      labels use AA secondary ink. Next slice: remaining 8 showcase
-      contrast routes (Viviana filled chips still use accent-primary
-      fill under white; error red 4.36; Provider islands), then
-      a11y:smoke / routes / seo / api-reference. Then Kumo evidence,
-      Train 8, evidence schema, owner decisions, hygiene. Overlay/focus
-      is a separate commit from the pre-existing dirty audit/Kumo tree.
+      alert, TreeView D5, comparison-axe 80/80, ui:smoke, and
+      a11y:contrast 154/154 are closed. Next slice: a11y:smoke
+      (ContextualHelp outside-click is the remaining failure), then
+      routes / seo / api-reference. Then Kumo evidence, Train 8,
+      evidence schema, owner decisions, hygiene. Overlay/focus is a
+      separate commit from the pre-existing dirty audit/Kumo tree.
       Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
@@ -111,10 +108,17 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   offscreen rows (`treeview-div-grid-paint`). Collection tab-stop
   census on the End walk. Do not excludeFromTabOrder row checkboxes.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
-  A-015 Vite Plus configs, A-016 stale declarations) — `ui:smoke` and
-  comparison-axe 80/80 are in; `ci:site` still needs web contrast,
-  a11y:smoke, routes, seo, and api-reference before A-001's measured
-  `status.md` refresh.
+  A-015 Vite Plus configs, A-016 stale declarations) — `ui:smoke`,
+  comparison-axe 80/80, and `a11y:contrast` 154/154 are in; `ci:site`
+  still needs a11y:smoke (ContextualHelp outside-click), routes, seo,
+  and api-reference before A-001's measured `status.md` refresh.
+- Web contrast 154/154 — Viviana chips/status/list selection use the
+  register's AA fill/ink (`--interactive-fill`, `--text-link`,
+  `--text-secondary`, `negative-1000`); type-page Provider islands
+  sit on opaque `base`; RangeSlider stamps `data-disabled` so
+  inactive label/output is WCAG 1.4.3 incidental (matching Slider).
+  `apps/web` consumes `@proyecto-viviana/ui` from dist, so token
+  edits need `vp run build:viviana-ui` before Playwright preview.
 
 ### Census — every leftover item, in order
 
@@ -185,19 +189,24 @@ the smoke scan (S2 compact ActionGroup is 21px; D8 pair-diff is the
 authority; playground WCAG 2.2 AA already did this). Provider captions
 use comparison docs ink keyed on the caption itself — `--cmp-pink` was
 3.27:1 on S2 dark base, and React's nested Provider has no
-`data-color-scheme` for a descendant override. Landing `/` and `/admin` contrast now pass (landing shell uses
-`--text-primary`; `/admin` redirects there in production). Showcase
-chrome labels (`gls-demo-label`, navcard meta, parity colheads) use
-`--text-secondary` (the AA-pinned ink). Remaining `a11y:contrast`:
-eight showcase routes whose failures are Viviana component tokens,
-not chrome — filled chips/badges paint `--text-on-accent` on
-`--accent-primary` #2e90fa (3.23:1; the register already has
-`--interactive-fill` for this pairing), error text `#db2e26` at
-4.36:1, slider/status tertiary ink, and the type-page Provider
-scheme-override islands. Then a11y:smoke, routes, seo,
-api-reference. Rebuild `status.md` measured rows after those
-finish. Keep reporting contract 93/93 separately from certified
-(A-031).
+`data-color-scheme` for a descendant override. `a11y:contrast`
+**154/154**: landing `/` and `/admin` use `--text-primary`; showcase
+chrome labels use `--text-secondary`; Viviana chips, selected list
+options, status lights, field labels/values, and errors use the
+register's AA pairings (`--interactive-fill` under `--text-on-accent`,
+`--text-link` accent ink, `--text-secondary`, `negative-1000` /
+`notice-1100` / `positive-1000`). Type-page Provider scheme-override
+islands use opaque `background="base"` (`layer-1` is frosted glass).
+Disabled RangeSlider stamps `data-disabled="true"` on the group so
+axe's WCAG 1.4.3 incidental exemption matches Slider. S2 RangeSlider
+still lacks that stamp — sibling gap, not this slice.
+
+Remaining `ci:site`: `a11y:smoke` is **43/44** — ContextualHelp
+"closes on outside interaction" (`playground-components.spec.ts`)
+stays open after `body.click({x:1,y:1})`; Escape close and Popover
+outside-click pass. Then routes, seo, api-reference. Rebuild
+`status.md` measured rows after those finish. Keep reporting
+contract 93/93 separately from certified (A-031).
 
 #### 3. Kumo Button evidence (A-007)
 
@@ -255,7 +264,8 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, starting at the four certified red families.
+1. Remaining-work goal above, starting at `ci:site` (`a11y:smoke`
+   ContextualHelp outside-click, then routes / seo / api-reference).
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only

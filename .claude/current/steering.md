@@ -55,14 +55,12 @@ The active facts that choose work are:
 ## Now
 
 1. Execute the remaining-work census in `work-queue.md` through every
-   leftover audit item. Current slice: finish `ci:site` — eight
-   showcase contrast routes still fail on Viviana filled-chip /
-   error / Provider-island tokens (use `--interactive-fill` under
-   white; do not invent a size or a new accent). Landing and
-   showcase chrome labels are green. Then a11y:smoke / routes / seo /
-   api-reference. `ui:smoke` passed. comparison-axe 80/80. Then Kumo
-   evidence, Train 8, evidence schema, owner decisions, hygiene —
-   without skipping ahead.
+   leftover audit item. Current slice: finish `ci:site` —
+   `a11y:contrast` is 154/154. Next is `a11y:smoke` (ContextualHelp
+   outside-click), then routes / seo / api-reference. `ui:smoke`
+   passed. comparison-axe 80/80. Then Kumo evidence, Train 8,
+   evidence schema, owner decisions, hygiene — without skipping
+   ahead.
 2. Qualify the dependency/toolchain migration with meaningful targeted tests,
    complete suites, actual package artifacts, an external consumer, and
    security/peer gates.

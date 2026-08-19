@@ -277,7 +277,7 @@ const fieldErrorIcon = style({
   "--iconPrimary": {
     type: "fill",
     value: {
-      default: "negative",
+      default: "negative-1000",
       forcedColors: "Mark",
     },
   },
@@ -371,7 +371,7 @@ const helpText = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
   color: {
     default: "neutral-subdued",
     isInvalid: {
-      default: "negative",
+      default: "negative-1000",
       forcedColors: "Mark",
     },
     isDisabled: {

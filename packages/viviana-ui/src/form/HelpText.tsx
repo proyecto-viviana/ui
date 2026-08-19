@@ -15,14 +15,15 @@ export interface HelpTextProps {
 }
 
 // Mirrors S2's `helpTextStyles` (Field.tsx): the small UI font with a
-// `neutral-subdued` description color that flips to `negative` for errors and
-// `disabled` when the field is disabled. Emitted via the `style()` macro so the
-// CSS ships in the package bundle for installed consumers.
+// `neutral-subdued` description color that flips to `negative-1000` for errors
+// (Adobe `negative` is 4.36:1 on the light app surface) and `disabled` when
+// the field is disabled. Emitted via the `style()` macro so the CSS ships in
+// the package bundle for installed consumers.
 const helpTextStyles = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
   font: "ui-sm",
   color: {
     default: "neutral-subdued",
-    isInvalid: "negative",
+    isInvalid: "negative-1000",
     isDisabled: "disabled",
   },
 });

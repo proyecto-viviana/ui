@@ -230,7 +230,7 @@ const checkboxGroupHelpText = style<CheckboxGroupStyleState>({
   color: {
     default: "neutral-subdued",
     isInvalid: {
-      default: "negative",
+      default: "negative-1000",
       forcedColors: "Mark",
     },
     isDisabled: {
@@ -339,7 +339,7 @@ const checkboxHelpText = style<
   color: {
     default: "neutral-subdued",
     isInvalid: {
-      default: "negative",
+      default: "negative-1000",
       forcedColors: "Mark",
     },
     isDisabled: {
