@@ -1,0 +1,43 @@
+---
+import KumoButtonFixture from "@comparison/components/solid/KumoButtonFixture";
+import {
+  KUMO_FIXTURE_READY_MESSAGE,
+  KUMO_FIXTURE_STATE_EVENT,
+  KUMO_FIXTURE_STATE_MESSAGE,
+} from "@comparison/data/kumo-button-fixture";
+import "@proyecto-viviana/kumo/styles.css";
+import "@comparison/styles/kumo-fixture-frame.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Solid Kumo Button fixture</title>
+  </head>
+  <body
+    class="kumo-fixture-page"
+    data-state-message={KUMO_FIXTURE_STATE_MESSAGE}
+    data-ready-message={KUMO_FIXTURE_READY_MESSAGE}
+    data-state-event={KUMO_FIXTURE_STATE_EVENT}
+  >
+    <KumoButtonFixture client:load />
+    <script>
+      const { stateMessage, readyMessage, stateEvent } = document.body.dataset;
+      window.addEventListener("message", (event) => {
+        if (
+          event.origin !== location.origin ||
+          event.source !== window.parent ||
+          event.data?.type !== stateMessage ||
+          !stateEvent
+        ) {
+          return;
+        }
+
+        window.dispatchEvent(new CustomEvent(stateEvent, { detail: event.data.state }));
+      });
+      window.parent.postMessage({ type: readyMessage }, location.origin);
+    </script>
+  </body>
+</html>

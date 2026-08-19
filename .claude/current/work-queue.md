@@ -15,10 +15,11 @@ tasks:
       alert, TreeView D5, comparison-axe 80/80, ui:smoke, and
       a11y:contrast 154/154, a11y:smoke 44/44, playground WCAG 2.2 AA,
       routes 155/155, seo 157/157, and api-reference 4/4 are closed.
-      Next slice: Kumo Button paired browser evidence (do not expand
-      the experiment). Then Train 8, evidence schema, owner
-      decisions, hygiene. Overlay/focus is a separate commit from
-      the pre-existing dirty audit/Kumo tree. Do not skip ahead.
+      Kumo Button paired spec is 11/11 (KX-03 plus rest computed
+      KX-04). Remainder: hover/pressed/focus-visible paint, then
+      Train 8, evidence schema, owner decisions, hygiene. Overlay/focus
+      is a separate commit from the pre-existing dirty audit/Kumo
+      tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -221,8 +222,27 @@ certified rerun is still owed (item 1).
 Paired browser behavior and visual contracts only (KX-03 / KX-04).
 Keep first-publish fail-closed (A-012). Do not grow the experiment.
 External npm / trusted-publisher registration stays owner/external.
-The Kumo package and comparison fixtures still live in the
-pre-existing dirty tree — do not mix that dump into Adobe slices.
+Do not mix the vite-plus audit dump into this slice. Comparison
+Kumo wiring (`astro.config.mjs`, comparison `package.json`) still
+lives in the dirty tree.
+
+Paired spec `apps/comparison/e2e/kumo-button.spec.ts` **11/11**:
+
+- KX-03: names, pointer, Enter/Space, disabled/loading, shared
+  controls, form participation (default `type="button"`, submit
+  name/value, `form=` associate), callback refs, keyboard tab
+  order / `:focus-visible`, SSR + first hydrated click on both
+  fixture pages. Solid fixture is JSX `client:load` (not `h()`).
+- KX-04 rest computed: variants, sizes, shapes, modes, disabled,
+  loading. Classified (not silent): Tailwind `ring` extra
+  transparent shadow layers; `rounded-full` vs `9999px`; token
+  fallback `--color-neutral-900` (`oklch(0.205 0 0)` vs
+  `oklch(21% 0.006 285.885)`). UA `padding-block` reset copied
+  from Tailwind preflight.
+
+Still open in this item: hover / pressed / keyboard-focus paint
+and pixel captures; package-level dual-config hydrate (Astro
+island is the SSR authority). Do not expand Kumo.
 
 #### 4. Train 8 classification (A-013 remaining)
 
@@ -277,8 +297,8 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, starting at Kumo Button paired
-   evidence (A-007). Do not expand the experiment.
+1. Remaining-work goal above, finishing Kumo KX-04 hover/pressed/
+   focus-visible paint (A-007). Do not expand the experiment.
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only

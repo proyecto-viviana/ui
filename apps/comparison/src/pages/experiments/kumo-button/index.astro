@@ -1,0 +1,173 @@
+---
+import {
+  KUMO_BUTTON_FIXTURE_DEFAULTS,
+  KUMO_BUTTON_SHAPES,
+  KUMO_BUTTON_SIZES,
+  KUMO_BUTTON_VARIANTS,
+  KUMO_COLOR_MODES,
+  KUMO_FIXTURE_READY_MESSAGE,
+  KUMO_FIXTURE_STATE_MESSAGE,
+} from "@comparison/data/kumo-button-fixture";
+import "@comparison/styles/kumo-experiment.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Experimental Kumo Button pair · Proyecto Viviana</title>
+  </head>
+  <body class="kumo-experiment-page">
+    <main class="kumo-experiment-shell">
+      <header class="kumo-experiment-header">
+        <div>
+          <p class="kumo-experiment-eyebrow">@cloudflare/kumo@2.11.0 → Solid experiment</p>
+          <h1>One fixture. Two real Buttons.</h1>
+          <p class="kumo-experiment-intro">
+            The React package and the workspace Solid package render in isolated frames from one
+            state model. This is harness infrastructure, not proof of parity. Behavior and visual
+            certification remain open work.
+          </p>
+        </div>
+        <span class="kumo-experiment-status">Experimental · incomplete evidence</span>
+      </header>
+
+      <form
+        class="kumo-controls"
+        data-kumo-controls
+        data-state-message={KUMO_FIXTURE_STATE_MESSAGE}
+        data-ready-message={KUMO_FIXTURE_READY_MESSAGE}
+      >
+        <label>
+          Variant
+          <select name="variant">
+            {KUMO_BUTTON_VARIANTS.map((variant) => (
+              <option value={variant} selected={variant === KUMO_BUTTON_FIXTURE_DEFAULTS.variant}>
+                {variant}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Size
+          <select name="size">
+            {KUMO_BUTTON_SIZES.map((size) => (
+              <option value={size} selected={size === KUMO_BUTTON_FIXTURE_DEFAULTS.size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Shape
+          <select name="shape">
+            {KUMO_BUTTON_SHAPES.map((shape) => (
+              <option value={shape} selected={shape === KUMO_BUTTON_FIXTURE_DEFAULTS.shape}>
+                {shape}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Mode
+          <select name="mode">
+            {KUMO_COLOR_MODES.map((mode) => (
+              <option value={mode} selected={mode === KUMO_BUTTON_FIXTURE_DEFAULTS.mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <input
+            name="withIcon"
+            type="checkbox"
+            checked={KUMO_BUTTON_FIXTURE_DEFAULTS.withIcon}
+          />
+          Icon
+        </label>
+        <label>
+          <input name="loading" type="checkbox" />
+          Loading
+        </label>
+        <label>
+          <input name="disabled" type="checkbox" />
+          Disabled
+        </label>
+      </form>
+
+      <section class="kumo-pair-grid" aria-label="React and Solid Kumo Button fixtures">
+        <div class="kumo-pair-panel" data-framework-panel="react">
+          <div class="kumo-panel-label">
+            <strong>React oracle</strong>
+            <span>@cloudflare/kumo@2.11.0</span>
+          </div>
+          <iframe
+            class="kumo-pair-frame"
+            data-kumo-frame="react"
+            title="React Kumo Button fixture"
+            src="/experiments/kumo-button/react/"
+          ></iframe>
+        </div>
+        <div class="kumo-pair-panel" data-framework-panel="solid">
+          <div class="kumo-panel-label">
+            <strong>Solid candidate</strong>
+            <span>@proyecto-viviana/kumo</span>
+          </div>
+          <iframe
+            class="kumo-pair-frame"
+            data-kumo-frame="solid"
+            title="Solid Kumo Button fixture"
+            src="/experiments/kumo-button/solid/"
+          ></iframe>
+        </div>
+      </section>
+
+      <p class="kumo-experiment-note">
+        <span>Component paint comes from each package. This page only owns harness layout.</span>
+        <a href="https://github.com/proyecto-viviana/ui/tree/main/packages/kumo">
+          Inspect the Solid experiment source
+        </a>
+      </p>
+    </main>
+
+    <script>
+      const form = document.querySelector<HTMLFormElement>("[data-kumo-controls]");
+      const frames = Array.from(
+        document.querySelectorAll<HTMLIFrameElement>("[data-kumo-frame]"),
+      );
+
+      if (form) {
+        const stateMessage = form.dataset.stateMessage;
+        const readyMessage = form.dataset.readyMessage;
+
+        const getState = () => {
+          const values = new FormData(form);
+          return {
+            variant: String(values.get("variant")),
+            size: String(values.get("size")),
+            shape: String(values.get("shape")),
+            mode: String(values.get("mode")),
+            withIcon: values.has("withIcon"),
+            loading: values.has("loading"),
+            disabled: values.has("disabled"),
+          };
+        };
+
+        const sendState = () => {
+          if (!stateMessage) return;
+          const message = { type: stateMessage, state: getState() };
+          for (const frame of frames) frame.contentWindow?.postMessage(message, location.origin);
+        };
+
+        form.addEventListener("input", sendState);
+        form.addEventListener("change", sendState);
+        for (const frame of frames) frame.addEventListener("load", sendState);
+        window.addEventListener("message", (event) => {
+          if (event.origin === location.origin && event.data?.type === readyMessage) sendState();
+        });
+      }
+    </script>
+  </body>
+</html>

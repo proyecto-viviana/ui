@@ -8,14 +8,15 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after site constituent lanes.
+Last refreshed: **2026-08-19**, after Kumo Button pair 11/11.
 First complete 2176 certified run was 2164 pass / 6 fail / 6 skip;
 every product red from that run is now closed on focused reruns
 (TableView mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke`
 passed. comparison-axe 80/80. Web contrast 154/154. `a11y:smoke`
 44/44. Playground WCAG 2.2 AA 2/2. Routes 155/155, seo 157/157,
-api-reference 4/4. Next: Kumo Button paired evidence. A full 2176
-rerun is still owed before claiming the certified lane green.
+api-reference 4/4. Kumo pair spec 11/11 (KX-03 + rest computed).
+Next: Kumo hover/pressed/focus-visible paint. A full 2176 rerun
+is still owed before claiming the certified lane green.
 Substantial pre-existing owner work and audit changes remain
 uncommitted. Do not reset or split this tree without first
 identifying ownership of overlapping changes.
@@ -90,6 +91,7 @@ focused reruns.
 | `test:routes`                                                       | **155/155** pass                                                                                                | generated-tree sweep |
 | `test:seo`                                                          | **157/157** pass                                                                                                | unique titles, robots, sitemap |
 | `test:api-reference`                                                | **4/4** pass                                                                                                    | generated prop tables |
+| Kumo Button pair (`e2e/kumo-button.spec.ts`)                    | **11/11** pass (2026-08-19)                                                                                 | KX-03 + rest computed; classified ring/radius/token diffs |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -141,14 +143,16 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Kumo Button paired browser evidence only (A-007, KX-03/KX-04).
-   Do not expand Kumo. Site constituent lanes are in (contrast
-   154/154, smoke 44/44, playground AA, routes, seo, api-ref).
-   Aggregate `vp run ci:site` was not run as one shot because
-   `vp run build` shares the dirty tree. A full 2176 certified rerun
-   is still owed. Six Playwright skips are the registered
-   knownDivergences. S2 RangeSlider still lacks `data-disabled`.
-   jsx-preserving builds DCE `let` refs.
+1. Kumo Button evidence (A-007). Pair spec **11/11**: KX-03 closed
+   (form, tab order, `:focus-visible`, SSR hydrate, callback refs) and
+   KX-04 rest computed with classified ring/radius/token diffs.
+   Remainder: hover/pressed/keyboard-focus paint. Do not expand
+   Kumo. Comparison Kumo wiring still lives in the dirty tree.
+   Site constituent lanes are in. Aggregate `vp run ci:site` was
+   not run as one shot. A full 2176 certified rerun is still owed.
+   Six Playwright skips are the registered knownDivergences. S2
+   RangeSlider still lacks `data-disabled`. jsx-preserving builds
+   DCE `let` refs.
 2. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
 3. Machine-readable ten-gate evidence schema with validated pointers
@@ -165,8 +169,8 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-# Site constituent lanes passed. Next: Kumo Button paired evidence.
-# Do not expand Kumo. Do not mix the dirty audit/Kumo tree.
+# Kumo pair spec 11/11. Next: KX-04 hover/pressed/focus-visible paint.
+# Do not expand Kumo. Do not mix the dirty audit dump.
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:

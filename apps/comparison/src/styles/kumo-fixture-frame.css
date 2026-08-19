@@ -1,0 +1,80 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+body.kumo-fixture-page {
+  min-width: 280px;
+  min-height: 100vh;
+  margin: 0;
+  background: #ffffff;
+}
+
+.kumo-fixture-root {
+  display: grid;
+  gap: 24px;
+  min-height: 100vh;
+  padding: 20px;
+  background: var(--color-kumo-base, #fff);
+  color: var(--text-color-kumo-default, #171717);
+}
+
+.kumo-fixture-group {
+  min-width: 0;
+}
+
+.kumo-fixture-group h2 {
+  margin: 0 0 12px;
+  color: var(--text-color-kumo-subtle, #737373);
+  font:
+    600 11px/1.2 "SFMono-Regular",
+    "Roboto Mono",
+    Consolas,
+    monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kumo-fixture-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.kumo-fixture-row output,
+.kumo-fixture-form + output,
+[data-fixture-output] {
+  color: var(--text-color-kumo-subtle, #737373);
+  font-size: 12px;
+}
+
+.kumo-fixture-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.kumo-fixture-mode-swatch {
+  display: flex;
+  flex: 1 1 220px;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  min-height: 76px;
+  padding: 16px;
+  border: 1px solid var(--color-kumo-line, rgb(0 0 0 / 10%));
+  background: var(--color-kumo-base, #fff);
+  color: var(--text-color-kumo-default, #171717);
+}
+
+.kumo-fixture-mode-swatch > span {
+  flex-basis: 100%;
+  color: var(--text-color-kumo-subtle, #737373);
+  font:
+    600 10px/1 "SFMono-Regular",
+    "Roboto Mono",
+    Consolas,
+    monospace;
+  text-transform: uppercase;
+}

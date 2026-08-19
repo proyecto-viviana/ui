@@ -1,0 +1,204 @@
+:root {
+  color-scheme: light;
+  --kx-bg: #f4f2ed;
+  --kx-panel: #fffdf8;
+  --kx-ink: #191816;
+  --kx-muted: #625f58;
+  --kx-line: #d8d3c8;
+  --kx-accent: #f6821f;
+  --kx-mono: "SFMono-Regular", "Roboto Mono", Consolas, monospace;
+  --kx-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body.kumo-experiment-page {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgb(25 24 22 / 4%) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--kx-bg);
+  color: var(--kx-ink);
+  font-family: var(--kx-sans);
+}
+
+.kumo-experiment-shell {
+  width: min(1440px, calc(100% - 32px));
+  margin-inline: auto;
+  padding-block: 36px 48px;
+}
+
+.kumo-experiment-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--kx-line);
+}
+
+.kumo-experiment-eyebrow,
+.kumo-experiment-status,
+.kumo-panel-label,
+.kumo-controls label {
+  font-family: var(--kx-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kumo-experiment-eyebrow {
+  margin: 0 0 12px;
+  color: var(--kx-muted);
+}
+
+.kumo-experiment-header h1 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+}
+
+.kumo-experiment-intro {
+  max-width: 66ch;
+  margin: 18px 0 0;
+  color: var(--kx-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.kumo-experiment-status {
+  align-self: start;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--kx-accent) 60%, var(--kx-line));
+  background: color-mix(in srgb, var(--kx-accent) 10%, var(--kx-panel));
+  color: #8b3e00;
+}
+
+.kumo-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr)) repeat(3, auto);
+  gap: 12px;
+  align-items: end;
+  margin-block: 20px;
+  padding: 16px;
+  border: 1px solid var(--kx-line);
+  background: var(--kx-panel);
+}
+
+.kumo-controls label {
+  display: grid;
+  gap: 7px;
+  color: var(--kx-muted);
+}
+
+.kumo-controls label:has(input[type="checkbox"]) {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  min-height: 38px;
+  padding-inline: 6px;
+}
+
+.kumo-controls select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid var(--kx-line);
+  border-radius: 0;
+  background: white;
+  color: var(--kx-ink);
+  font: 14px var(--kx-sans);
+}
+
+.kumo-controls input {
+  accent-color: var(--kx-accent);
+}
+
+.kumo-pair-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--kx-line);
+  background: var(--kx-panel);
+}
+
+.kumo-pair-panel {
+  min-width: 0;
+}
+
+.kumo-pair-panel + .kumo-pair-panel {
+  border-left: 1px solid var(--kx-line);
+}
+
+.kumo-panel-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--kx-line);
+  color: var(--kx-muted);
+}
+
+.kumo-panel-label strong {
+  color: var(--kx-ink);
+  font-weight: 600;
+}
+
+.kumo-pair-frame {
+  display: block;
+  width: 100%;
+  height: 760px;
+  border: 0;
+  background: white;
+}
+
+.kumo-experiment-note {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin: 18px 0 0;
+  color: var(--kx-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.kumo-experiment-note a {
+  color: var(--kx-ink);
+}
+
+@media (max-width: 900px) {
+  .kumo-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kumo-pair-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kumo-pair-panel + .kumo-pair-panel {
+    border-top: 1px solid var(--kx-line);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .kumo-experiment-shell {
+    width: min(100% - 20px, 1440px);
+    padding-top: 24px;
+  }
+
+  .kumo-experiment-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kumo-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .kumo-experiment-note {
+    display: grid;
+  }
+}
