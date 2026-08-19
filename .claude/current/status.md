@@ -8,14 +8,15 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after `a11y:smoke` 44/44. First
-complete 2176 certified run was 2164 pass / 6 fail / 6 skip; every
-product red from that run is now closed on focused reruns (TableView
-mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke` passed.
-comparison-axe is 80/80. Web contrast is 154/154. `a11y:smoke` is
-44/44. `ci:site` is still blocked on routes, seo, and api-reference.
-A full 2176 rerun is still owed before claiming the certified lane
-green. Substantial pre-existing owner work and audit changes remain
+Last refreshed: **2026-08-19**, after site constituent lanes.
+First complete 2176 certified run was 2164 pass / 6 fail / 6 skip;
+every product red from that run is now closed on focused reruns
+(TableView mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke`
+passed. comparison-axe 80/80. Web contrast 154/154. `a11y:smoke`
+44/44. Playground WCAG 2.2 AA 2/2. Routes 155/155, seo 157/157,
+api-reference 4/4. Next: Kumo Button paired evidence. A full 2176
+rerun is still owed before claiming the certified lane green.
+Substantial pre-existing owner work and audit changes remain
 uncommitted. Do not reset or split this tree without first
 identifying ownership of overlapping changes.
 
@@ -85,6 +86,10 @@ focused reruns.
 | comparison-axe (`a11y:axe:comparison`)                                  | **80/80** pass (2026-08-19)                                                                                         | `target-size` disabled (D8 authority); Provider caption chrome uses docs ink |
 | web contrast (`a11y:contrast`)                                      | **154/154** pass (2026-08-19)                                                                                   | AA register pairings; Provider islands on `base`; RangeSlider `data-disabled` |
 | `a11y:smoke`                                                        | **44/44** pass (2026-08-19)                                                                                     | ContextualHelp outside-click: signal refs + `createInteractOutside` |
+| playground WCAG 2.2 AA (`a11y:axe:aa`)                              | **2/2** pass                                                                                                    | light + dark; `target-size` already disabled on this scan |
+| `test:routes`                                                       | **155/155** pass                                                                                                | generated-tree sweep |
+| `test:seo`                                                          | **157/157** pass                                                                                                | unique titles, robots, sitemap |
+| `test:api-reference`                                                | **4/4** pass                                                                                                    | generated prop tables |
 
 Focused reproduction (2026-08-19, fresh `comparison:build`, 25 cases):
 
@@ -136,23 +141,23 @@ The remaining-work goal is to go through **every leftover item** in
 `git commit --only`). That census is the program until each item is closed,
 owner-blocked, or dated.
 
-1. Finish `ci:site`: contrast 154/154 and `a11y:smoke` 44/44. Next
-   is routes, seo, api-reference. Rebuild measured rows after this
-   (A-001). A full 2176 certified rerun is still owed. Six Playwright
-   skips are the registered knownDivergences. S2 RangeSlider still
-   lacks `data-disabled` (Viviana-only stamp). jsx-preserving builds
-   DCE `let` refs — use signal/callback refs when the handler must
-   survive the solid export.
-2. Kumo Button paired browser evidence only (A-007). Do not expand Kumo.
-3. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
+1. Kumo Button paired browser evidence only (A-007, KX-03/KX-04).
+   Do not expand Kumo. Site constituent lanes are in (contrast
+   154/154, smoke 44/44, playground AA, routes, seo, api-ref).
+   Aggregate `vp run ci:site` was not run as one shot because
+   `vp run build` shares the dirty tree. A full 2176 certified rerun
+   is still owed. Six Playwright skips are the registered
+   knownDivergences. S2 RangeSlider still lacks `data-disabled`.
+   jsx-preserving builds DCE `let` refs.
+2. Adobe Train-8 classification. Remaining RAC exports, S2 support values,
    and `?`/`⛔` tickets.
-4. Machine-readable ten-gate evidence schema with validated pointers
+3. Machine-readable ten-gate evidence schema with validated pointers
    (A-002–A-005).
-5. Owner decisions: TableView native-table (A-006), Viviana fork/convergence
+4. Owner decisions: TableView native-table (A-006), Viviana fork/convergence
    (A-008), TabSwitch/SegmentedControl boundary. Ask; do not silently ratify.
-6. Hygiene: CSP/response headers (A-020), 59 `@ts-nocheck` (A-019), macro
+5. Hygiene: CSP/response headers (A-020), 59 `@ts-nocheck` (A-019), macro
    sourcemaps (A-017), stale `tech-debt.md` (A-009), leftover A-010 prose.
-7. Lowest-layer ownership inventory (A-018). Compatibility ceilings (A-023)
+6. Lowest-layer ownership inventory (A-018). Compatibility ceilings (A-023)
    stay documented.
 
 ## Exact next-agent start
@@ -160,11 +165,8 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-# ui:smoke, comparison-axe 80/80, a11y:contrast 154/154,
-# a11y:smoke 44/44 passed. Remaining ci:site:
-vp run test:routes
-vp run test:seo
-vp run test:api-reference
+# Site constituent lanes passed. Next: Kumo Button paired evidence.
+# Do not expand Kumo. Do not mix the dirty audit/Kumo tree.
 ```
 
 After targeted red/green work, run sequentially because builds share `dist`:

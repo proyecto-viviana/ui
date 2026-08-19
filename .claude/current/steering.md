@@ -55,10 +55,9 @@ The active facts that choose work are:
 ## Now
 
 1. Execute the remaining-work census in `work-queue.md` through every
-   leftover audit item. Current slice: finish `ci:site` —
-   `a11y:contrast` 154/154 and `a11y:smoke` 44/44. Next is routes /
-   seo / api-reference. `ui:smoke` passed. comparison-axe 80/80.
-   Then Kumo evidence, Train 8, evidence schema, owner decisions,
+   leftover audit item. Current slice: Kumo Button paired browser
+   evidence (A-007). Do not expand the experiment. Site constituent
+   lanes are in. Then Train 8, evidence schema, owner decisions,
    hygiene — without skipping ahead.
 2. Qualify the dependency/toolchain migration with meaningful targeted tests,
    complete suites, actual package artifacts, an external consumer, and

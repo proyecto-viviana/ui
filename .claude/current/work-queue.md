@@ -13,11 +13,12 @@ tasks:
       certified run (2026-08-19): 2164 pass / 6 fail / 6 skip
       (knownDivergence fixme). TableView mixed, Tabs D4/D5, Toast D6
       alert, TreeView D5, comparison-axe 80/80, ui:smoke, and
-      a11y:contrast 154/154, and a11y:smoke 44/44 are closed. Next
-      slice: routes / seo / api-reference. Then Kumo evidence, Train
-      8, evidence schema, owner decisions, hygiene. Overlay/focus is
-      a separate commit from the pre-existing dirty audit/Kumo tree.
-      Do not skip ahead.
+      a11y:contrast 154/154, a11y:smoke 44/44, playground WCAG 2.2 AA,
+      routes 155/155, seo 157/157, and api-reference 4/4 are closed.
+      Next slice: Kumo Button paired browser evidence (do not expand
+      the experiment). Then Train 8, evidence schema, owner
+      decisions, hygiene. Overlay/focus is a separate commit from
+      the pre-existing dirty audit/Kumo tree. Do not skip ahead.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -108,9 +109,11 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
   census on the End walk. Do not excludeFromTabOrder row checkboxes.
 - Dependency/security path (A-011 graph, A-012 Kumo fail-closed, A-013 pins,
   A-015 Vite Plus configs, A-016 stale declarations) — `ui:smoke`,
-  comparison-axe 80/80, `a11y:contrast` 154/154, and `a11y:smoke`
-  44/44 are in; `ci:site` still needs routes, seo, and api-reference
-  before A-001's measured `status.md` refresh.
+  comparison-axe 80/80, `a11y:contrast` 154/154, `a11y:smoke` 44/44,
+  playground WCAG 2.2 AA, routes 155/155, seo 157/157, and
+  api-reference 4/4 are in. Aggregate `vp run ci:site` was not run
+  as one shot (`vp run build` still shares the dirty tree). A-001
+  measured rows are refreshed from these constituent lanes.
 - Web contrast 154/154 — Viviana chips/status/list selection use the
   register's AA fill/ink (`--interactive-fill`, `--text-link`,
   `--text-secondary`, `negative-1000`); type-page Provider islands
@@ -207,15 +210,19 @@ still lacks that stamp — sibling gap, not this slice.
 jsx-preserving package build: `let` refs look unassigned, so the
 document `mousedown` handler's `close()` was dead. Headless
 ContextualHelpTrigger now uses signal refs and `createInteractOutside`
-(root wraps trigger + dialog). Remaining `ci:site`: routes, seo,
-api-reference. Rebuild `status.md` measured rows after those finish.
-Keep reporting contract 93/93 separately from certified (A-031).
+(root wraps trigger + dialog). Playground WCAG 2.2 AA **2/2**.
+Routes **155/155**, seo **157/157**, api-reference **4/4**. Site
+constituent lanes for this census item are closed. Keep reporting
+contract 93/93 separately from certified (A-031). A full 2176
+certified rerun is still owed (item 1).
 
-#### 3. Kumo Button evidence (A-007)
+#### 3. Kumo Button evidence (A-007) — current slice
 
-Paired browser behavior and visual contracts only. Keep first-publish
-fail-closed (A-012). Do not grow the experiment. External npm /
-trusted-publisher registration stays owner/external.
+Paired browser behavior and visual contracts only (KX-03 / KX-04).
+Keep first-publish fail-closed (A-012). Do not grow the experiment.
+External npm / trusted-publisher registration stays owner/external.
+The Kumo package and comparison fixtures still live in the
+pre-existing dirty tree — do not mix that dump into Adobe slices.
 
 #### 4. Train 8 classification (A-013 remaining)
 
@@ -270,8 +277,8 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, starting at `ci:site` (routes / seo /
-   api-reference).
+1. Remaining-work goal above, starting at Kumo Button paired
+   evidence (A-007). Do not expand the experiment.
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only
