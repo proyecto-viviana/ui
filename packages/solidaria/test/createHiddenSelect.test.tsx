@@ -2,7 +2,7 @@
  * Tests for createHiddenSelect with form integration.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { createHiddenSelect, HiddenSelect } from "../src/select/createHiddenSelect";

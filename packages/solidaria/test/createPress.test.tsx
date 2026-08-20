@@ -5,7 +5,7 @@
  * This matches React Aria's test patterns for compatibility.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPress, type PressEvent } from "../src/interactions/createPress";
 import { Dynamic } from "solid-js/web";

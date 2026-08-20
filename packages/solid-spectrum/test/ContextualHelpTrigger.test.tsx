@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";

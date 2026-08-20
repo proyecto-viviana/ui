@@ -105,14 +105,9 @@ export function MirrorPanel04(): JSX.Element {
                       widened to every element — but with that fixed, the label is composed
                       the idiomatic way rather than as a bare string.) */}
                   <Text>{n.label}</Text>
-                  {/* NotificationBadge is the library's own count component, so the "4"
-                      is a real component rather than a styled pill. GAP (composition):
-                      only ActionButton provides NotificationBadgeContext — Tab provides
-                      IconContext and TextContext and nothing else — so the badge renders
-                      unslotted: it trails the label at its own default size instead of
-                      being positioned and sized by the host control, and it does not
-                      right-align into the rail's trailing edge the way the spec's pill
-                      does (Tab's content box is not a space-between row). */}
+                  {/* NotificationBadge is the library's own count component. Tab now
+                      provides NotificationBadgeContext, so the badge takes the host
+                      size and aligns at the trailing edge. */}
                   {n.count === null ? null : <NotificationBadge value={n.count} />}
                 </Tab>
               )}

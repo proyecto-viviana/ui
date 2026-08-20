@@ -94,7 +94,9 @@ try {
   assert(missingOracle.status !== 0, "missing upstream oracle unexpectedly passed");
   assert(
     combined(missingOracle).includes("upstream-backed checks cannot run"),
-    "missing-oracle failure did not name the evidence contract",
+    `missing-oracle failure did not name the evidence contract:\n${combined(missingOracle)}${
+      missingOracle.error ? `\n${missingOracle.error.stack ?? missingOracle.error}` : ""
+    }`,
   );
   console.log("PASS: missing upstream oracle exits non-zero.");
 
@@ -103,6 +105,7 @@ try {
     "packages/solid-stately/src",
     "packages/solidaria/src",
     "packages/solidaria-components/src",
+    "packages/kumo/src",
     "packages/solid-spectrum/src",
     "packages/viviana-ui/src",
   ]) {
@@ -123,6 +126,161 @@ try {
     "@ts-nocheck failure did not identify the new file",
   );
   console.log("PASS: new @ts-nocheck directive exits non-zero.");
+
+  const sourceArtifactFixture = path.join(fixtureRoot, "source-artifact-growth");
+  for (const directory of [
+    "packages/solid-stately/src",
+    "packages/solidaria/src",
+    "packages/solidaria-components/src",
+    "packages/kumo/src",
+    "packages/solid-spectrum/src/style",
+    "packages/viviana-ui/src/style",
+  ]) {
+    mkdirSync(path.join(sourceArtifactFixture, directory), { recursive: true });
+  }
+  writeFileSync(
+    path.join(
+      sourceArtifactFixture,
+      "packages",
+      "solid-spectrum",
+      "src",
+      "style",
+      "spectrum-tokens-json.d.ts",
+    ),
+    "declare module '@adobe/spectrum-tokens/**/*.json';\n",
+  );
+  writeFileSync(
+    path.join(
+      sourceArtifactFixture,
+      "packages",
+      "viviana-ui",
+      "src",
+      "style",
+      "spectrum-tokens-json.d.ts",
+    ),
+    "declare module '@adobe/spectrum-tokens/**/*.json';\n",
+  );
+  writeFileSync(
+    path.join(sourceArtifactFixture, "packages", "solid-stately", "src", "stale.d.ts"),
+    "export declare const stale: true;\n",
+  );
+  const sourceArtifactGrowth = runSync("check-source-artifacts.mjs", sourceArtifactFixture);
+  assert(sourceArtifactGrowth.status !== 0, "generated source declaration unexpectedly passed");
+  assert(
+    combined(sourceArtifactGrowth).includes("packages/solid-stately/src/stale.d.ts"),
+    "source-artifact failure did not identify the generated declaration",
+  );
+  console.log("PASS: generated declaration in public-package source exits non-zero.");
+
+  const packageArtifactFixture = path.join(fixtureRoot, "missing-package-artifact");
+  json(path.join(packageArtifactFixture, "packages", "example", "package.json"), {
+    name: "@proyecto-viviana/example",
+    version: "1.0.0",
+    main: "./dist/index.js",
+    types: "./dist/index.d.ts",
+    exports: {
+      ".": {
+        types: "./dist/index.d.ts",
+        import: "./dist/index.js",
+      },
+    },
+    scripts: { build: "vp pack" },
+  });
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "vite.config.ts"),
+    'import { defineConfig } from "vite-plus";\nexport default defineConfig({pack: {entry: "src/index.ts"}});\n',
+  );
+  mkdirSync(path.join(packageArtifactFixture, "packages", "example", "dist"), {
+    recursive: true,
+  });
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "dist", "index.d.ts"),
+    "export declare const example: true;\n",
+  );
+  const missingPackageArtifact = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+  });
+  assert(
+    missingPackageArtifact.status !== 0,
+    "missing package export artifact unexpectedly passed",
+  );
+  assert(
+    combined(missingPackageArtifact).includes("missing ./dist/index.js"),
+    "package-artifact failure did not identify the missing export target",
+  );
+  console.log("PASS: missing package export artifact exits non-zero.");
+
+  const unpublishedPrerequisiteFixture = path.join(fixtureRoot, "unpublished-prerequisite");
+  json(path.join(unpublishedPrerequisiteFixture, "packages", "kumo", "package.json"), {
+    name: "@proyecto-viviana/kumo",
+    version: "0.0.0",
+  });
+  json(path.join(unpublishedPrerequisiteFixture, "scripts", "release-prerequisites.json"), {
+    packages: [
+      {
+        name: "@proyecto-viviana/kumo",
+        manifest: "packages/kumo/package.json",
+        prerequisites: [
+          { id: "npm-package-registered", satisfied: false, evidence: null },
+          { id: "trusted-publisher-registered", satisfied: false, evidence: null },
+        ],
+      },
+    ],
+  });
+  const unpublishedPrerequisites = runSync(
+    "check-release-prerequisites.mjs",
+    unpublishedPrerequisiteFixture,
+  );
+  assert(
+    unpublishedPrerequisites.status === 0,
+    "unpublished 0.0.0 package was incorrectly treated as a release candidate",
+  );
+  console.log("PASS: unpublished 0.0.0 package does not require release registration.");
+
+  const kumoManifestPath = path.join(
+    unpublishedPrerequisiteFixture,
+    "packages",
+    "kumo",
+    "package.json",
+  );
+  json(kumoManifestPath, { name: "@proyecto-viviana/kumo", version: "0.1.0" });
+  const blockedPrerequisites = runSync(
+    "check-release-prerequisites.mjs",
+    unpublishedPrerequisiteFixture,
+  );
+  assert(blockedPrerequisites.status !== 0, "unregistered Kumo release candidate passed");
+  assert(
+    combined(blockedPrerequisites).includes("trusted-publisher-registered"),
+    "release prerequisite failure did not identify the missing trusted publisher",
+  );
+  console.log("PASS: unregistered Kumo release candidate exits non-zero.");
+
+  json(path.join(unpublishedPrerequisiteFixture, "scripts", "release-prerequisites.json"), {
+    packages: [
+      {
+        name: "@proyecto-viviana/kumo",
+        manifest: "packages/kumo/package.json",
+        prerequisites: [
+          {
+            id: "npm-package-registered",
+            satisfied: true,
+            evidence: "https://www.npmjs.com/package/@proyecto-viviana/kumo",
+          },
+          {
+            id: "trusted-publisher-registered",
+            satisfied: true,
+            evidence: "npm settings checked 2026-08-19 by repository owner",
+          },
+        ],
+      },
+    ],
+  });
+  const satisfiedPrerequisites = runSync(
+    "check-release-prerequisites.mjs",
+    unpublishedPrerequisiteFixture,
+  );
+  assert(satisfiedPrerequisites.status === 0, "satisfied release prerequisites did not pass");
+  console.log("PASS: evidenced Kumo release prerequisites exit zero.");
 
   let releaseMode = "failed";
   const server = createServer((request, response) => {

@@ -10,8 +10,8 @@
  * - MenuTrigger integration
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton } from "../src/Menu";
 import { Separator } from "../src/Separator";
@@ -1793,8 +1793,10 @@ describe("MenuTrigger", () => {
       const menu = screen.getByRole("menu");
       const items = within(menu).getAllByRole("menuitem");
       expect(items.length).toBeGreaterThan(0);
-      // Focus should be within the menu
-      expect(menu.contains(document.activeElement)).toBe(true);
+      // createMenu auto-focus is after paint (React useEffect timing).
+      await waitFor(() => {
+        expect(menu.contains(document.activeElement)).toBe(true);
+      });
     });
 
     it("should restore focus to trigger when closed via Escape", async () => {

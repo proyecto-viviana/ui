@@ -57,6 +57,7 @@ const OUR_TEST_ROOT = "packages";
  * matches (e.g. S2 ToggleButtonGroup's `radio` role belongs to our ToggleButton
  * test). Without (2) the oracle false-flags correct behavior as a we-only role. */
 const ALIASES: Record<string, string> = {
+  alertdialog: "dialog",
   tableview: "table",
   editabletableview: "table",
   treeview: "tree",
@@ -65,6 +66,7 @@ const ALIASES: Record<string, string> = {
   listview: "gridlist",
   togglebuttongroup: "togglebutton",
   checkboxgroup: "checkbox",
+  standarddialog: "dialog",
 };
 
 // ---------------------------------------------------------------------------
@@ -353,7 +355,10 @@ function canon(basename: string): string {
   return ALIASES[n] ?? n;
 }
 
-const isOurTest = (f: string) => f.endsWith(".test.tsx") && !/\.(ssr|hydrate)\.test\.tsx$/.test(f);
+const isOurTest = (f: string) =>
+  f.endsWith(".test.tsx") &&
+  !/\.(ssr|hydrate)\.test\.tsx$/.test(f) &&
+  !f.includes(`${path.sep}packages${path.sep}kumo${path.sep}`);
 const isUpstreamTest = (f: string) =>
   /\.(test\.jsx?|test\.tsx|test-util\.tsx)$/.test(f) && !/\.ssr\./.test(f);
 
@@ -366,7 +371,7 @@ async function collect(roots: string[], keep: (f: string) => boolean): Promise<M
   const byKey = new Map<string, Side>();
   for (const root of roots) {
     for (const file of await walk(path.join(ROOT, root))) {
-      if (!keep(path.basename(file))) continue;
+      if (!keep(file)) continue;
       const key = canon(path.basename(file));
       const rel = path.relative(ROOT, file);
       let side = byKey.get(key);

@@ -9,7 +9,7 @@
  * Form was in the SSR tree (Picker alone was fine; Form was the bisect hit).
  */
 import { renderToString, isServer } from "solid-js/web";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import {

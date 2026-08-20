@@ -23,8 +23,8 @@ import { expect } from "@playwright/test";
  * — different nesting depth (port 2 divs vs upstream Popover-surface + inner
  * content div + wrappingDiv), the missing `maxWidth: calc(100vw - 24px)` surface
  * cap, and the outline/elevation details — is a REAL self-inflicted divergence,
- * but it lives OUTSIDE the `role="menu"` box and is tracked as a DEFERRED
- * follow-up (recertification.md CP9.32). Targeting the role-addressable list
+ * but it lives OUTSIDE the `role="menu"` box and is tracked by ticket #106.
+ * Targeting the role-addressable list
  * makes this unit independent of that surface depth: the padding around the
  * items is 8px in BOTH stacks (`menuFrame` ≡ upstream `wrappingDiv`: both
  * `display:flex; size:full`; the port's `menuPopover` `padding:0` ≡ upstream's
@@ -70,7 +70,7 @@ import { expect } from "@playwright/test";
  * of dangling), threads those id-carrying props through `MenuItemRenderProps`, and
  * the S2 `MenuItem` merges them into its `TextContext` (description slot) +
  * `KeyboardContext` so the rendered `Text`/`Keyboard` elements carry the ids the
- * item's `aria-describedby` references (recertification.md CP9.39). NOT registered
+ * item's `aria-describedby` references. NOT registered
  * here:
  *   - D2 (motion): the popover enter/exit fade is a `menuPopover`-surface concern
  *     (the port does not internally drive `isEntering`), tracked with the shared
@@ -154,7 +154,7 @@ const listScenario: DriverScenario = {
   //
   // REMOVE `outline-color`: it is an UNOBSERVABLE computed-style channel, not an
   // independent style bug. Both stacks now render the menu as `<div role="menu">`
-  // (the ul→div element-type refactor landed — recertification.md CP9.37) and
+  // (the ul→div element-type refactor landed) and
   // NEITHER element carries ANY outline-color CSS rule; both compute
   // `outline-style: none`, so nothing paints. Chromium still reports a computed
   // `outline-color`: upstream resolves it to a theme-invariant value
@@ -167,7 +167,7 @@ const listScenario: DriverScenario = {
   // the "menu list paints no outline" contract is still certified; only the
   // unpainted `outline-color` channel is excluded. Closing it for real means
   // aligning the menu root's inherited `color` so `currentColor` matches upstream's
-  // value — tracked separately, zero paint effect.
+  // value — tracked by ticket #107, zero paint effect.
   styleProps: {
     add: ["max-width", "overflow-x", "overflow-y"],
     remove: ["outline-color"],

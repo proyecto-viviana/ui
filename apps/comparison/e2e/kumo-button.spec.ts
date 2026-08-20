@@ -1,9 +1,5 @@
 import { expect, test, type FrameLocator, type Locator, type Page } from "@playwright/test";
-import {
-  clearPointer,
-  compareScreenshots,
-  type ScreenshotDiffThreshold,
-} from "./visual-diff";
+import { clearPointer, compareScreenshots, type ScreenshotDiffThreshold } from "./visual-diff";
 
 /**
  * Paired Kumo Button behavior against the experiment fixture.
@@ -174,7 +170,12 @@ function classifyPaintDiff(state: string, key: string, reactValue: string, solid
   if (key === "boxShadow" && samePaintedShadow(reactValue, solidValue)) {
     return null;
   }
-  if (key.startsWith("border") && key.endsWith("Radius") && isFullRadius(reactValue) && isFullRadius(solidValue)) {
+  if (
+    key.startsWith("border") &&
+    key.endsWith("Radius") &&
+    isFullRadius(reactValue) &&
+    isFullRadius(solidValue)
+  ) {
     return null;
   }
   // Oracle Tailwind resolves --color-neutral-900; the Button sheet fallback is
@@ -339,9 +340,7 @@ async function expectClippedPair(
 }
 
 test.describe("Kumo Button pair", () => {
-  test("accessible names match for text, icon-plus-text, square, and circle", async ({
-    page,
-  }) => {
+  test("accessible names match for text, icon-plus-text, square, and circle", async ({ page }) => {
     await waitForPair(page);
 
     for (const framework of FRAMEWORKS) {
@@ -434,7 +433,7 @@ test.describe("Kumo Button pair", () => {
     await setControl(page, "shape", "square");
 
     for (const framework of FRAMEWORKS) {
-      const root = frame(page, framework).locator('[data-framework]');
+      const root = frame(page, framework).locator("[data-framework]");
       await expect(root).toHaveAttribute("data-fixture-variant", "destructive");
       await expect(root).toHaveAttribute("data-fixture-size", "lg");
       await expect(root).toHaveAttribute("data-fixture-shape", "square");
@@ -522,9 +521,7 @@ test.describe("Kumo Button pair", () => {
     expect(solidTrail.focusVisible, "keyboard focus is :focus-visible on both sides").toEqual(
       reactTrail.focusVisible,
     );
-    expect(solidTrail.focusVisible.some(Boolean), "at least one stop is :focus-visible").toBe(
-      true,
-    );
+    expect(solidTrail.focusVisible.some(Boolean), "at least one stop is :focus-visible").toBe(true);
   });
 
   test("rest computed paint matches for variants, sizes, shapes, and modes", async ({ page }) => {
@@ -677,19 +674,29 @@ test.describe("Kumo Button pair", () => {
 
       await keyboardFocus(page, reactButton);
       const reactFocus = await interactionPaint(reactButton);
-      if (!(await reactButton.evaluate((element) => (element as HTMLElement).matches(":focus-visible")))) {
+      if (
+        !(await reactButton.evaluate((element) =>
+          (element as HTMLElement).matches(":focus-visible"),
+        ))
+      ) {
         notFocusVisible.push(`react ${state}`);
       }
       await removeFocusProbe(reactButton);
 
       await keyboardFocus(page, solidButton);
       const solidFocus = await interactionPaint(solidButton);
-      if (!(await solidButton.evaluate((element) => (element as HTMLElement).matches(":focus-visible")))) {
+      if (
+        !(await solidButton.evaluate((element) =>
+          (element as HTMLElement).matches(":focus-visible"),
+        ))
+      ) {
         notFocusVisible.push(`solid ${state}`);
       }
       await removeFocusProbe(solidButton);
 
-      mismatches.push(...collectSnapshotMismatches(`focus-visible.${state}`, reactFocus, solidFocus));
+      mismatches.push(
+        ...collectSnapshotMismatches(`focus-visible.${state}`, reactFocus, solidFocus),
+      );
       if (!paintChanged(reactRest, reactFocus)) {
         unchanged.push(`react keyboard-focus did not change ${state}`);
       }

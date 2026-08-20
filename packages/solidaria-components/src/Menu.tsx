@@ -1332,9 +1332,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   return (
     <Show when={shouldRender()}>
       <Show when={triggerContext} fallback={menuContent()}>
-        <FocusScope restoreFocus>
-          {menuContent()}
-        </FocusScope>
+        <FocusScope restoreFocus>{menuContent()}</FocusScope>
       </Show>
     </Show>
   );

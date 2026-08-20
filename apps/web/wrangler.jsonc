@@ -3,8 +3,7 @@
   // NOT "proyecto-viviana". That Worker is the live parent application — D1,
   // WEB_CLIENT_SECRET, APP_URL=https://proyectoviviana.org — and this config
   // carried its name until 2026-07-24, one `vp run deploy` away from replacing
-  // it. `guard:deploy-target` refuses that name now; see
-  // .claude/current/tech-debt.md → launch-site-deploy-stale.
+  // it. `guard:deploy-target` now rejects that production Worker name.
   "name": "viviana-ui-docs",
   "compatibility_date": "2025-12-01",
   "compatibility_flags": ["nodejs_compat"],

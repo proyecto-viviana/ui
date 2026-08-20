@@ -12,6 +12,7 @@ import {
   unresolvedVisualStatePointers,
 } from "../src/data/acceptance-inventory";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
+import { parseParityReportOptions } from "./report-component-parity-options";
 
 interface Gap {
   slug: string;
@@ -19,19 +20,13 @@ interface Gap {
   detail?: string;
 }
 
-const strict = process.argv.includes("--strict");
 // `--strict-full` ignores the frozen backlog baseline and fails on every gap
 // (useful when working down the known 9). Default `--strict` fails only on
 // *new* gaps outside `parity-strict-baseline.json` (ticket #2).
-const strictFull = process.argv.includes("--strict-full");
-
 // Optional per-component scope for the dev loop: `--slug=button` narrows every
 // gap section (and the strict exit code) to a single component, so porting one
 // docs page at a time has a focused gate to run.
-const slugFilter = (() => {
-  const arg = process.argv.find((value) => value.startsWith("--slug="));
-  return arg ? arg.slice("--slug=".length).trim().toLowerCase() : undefined;
-})();
+const { strict, strictFull, slugFilter } = parseParityReportOptions(process.argv.slice(2));
 
 interface StrictBaseline {
   version: number;

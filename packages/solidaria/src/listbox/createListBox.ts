@@ -82,6 +82,12 @@ export interface AriaListBoxProps {
    * @default "clearSelection"
    */
   escapeKeyBehavior?: "clearSelection" | "none";
+  /**
+   * Whether Escape and other collection-level interactions may clear the
+   * selection. This is an ARIA behavior override and does not change whether
+   * an option press may toggle the final selected item.
+   */
+  disallowEmptySelection?: boolean;
 }
 
 export interface ListBoxAria {
@@ -308,7 +314,10 @@ export function createListBox<T>(
 
     const collection = state.collection();
     const shouldWrap = p.shouldFocusWrap ?? false;
-    const shouldSelectOnFocus = p.shouldSelectOnFocus ?? true;
+    // Mirror useSelectableCollection: focus only selects by default for
+    // replace-selection collections. Toggle collections (including Select)
+    // move focus independently from selection.
+    const shouldSelectOnFocus = p.shouldSelectOnFocus ?? state.selectionBehavior() === "replace";
 
     switch (e.key) {
       case "ArrowDown": {
@@ -442,7 +451,7 @@ export function createListBox<T>(
         // can handle it.
         if (
           (p.escapeKeyBehavior ?? "clearSelection") === "clearSelection" &&
-          !state.disallowEmptySelection() &&
+          !(p.disallowEmptySelection ?? state.disallowEmptySelection()) &&
           !state.isEmpty()
         ) {
           e.stopPropagation();

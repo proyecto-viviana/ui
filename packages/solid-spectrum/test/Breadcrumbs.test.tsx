@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Breadcrumb, BreadcrumbItem, Breadcrumbs, BreadcrumbsContext } from "../src/breadcrumbs";

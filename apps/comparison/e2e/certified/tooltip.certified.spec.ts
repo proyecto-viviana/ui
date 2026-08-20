@@ -65,7 +65,7 @@ import { registerTimingDriver } from "../drivers/timing";
  *     motion metadata is blocked on realigning that headless layer to the RAC
  *     overlay machinery (which is also what would let the styled arrow use the
  *     real `<OverlayArrow>` with computed `arrowProps`). Tracked as a follow-up
- *     in recertification.md; deferred to a dedicated headless-overlay unit.
+ *     in ticket #64; deferred to that dedicated headless-overlay unit.
  *   - D4/D5 (events/focus): open-on-hover/focus, close-on-Escape, and focus
  *     restoration are `TooltipTrigger` behaviors, not the Tooltip surface's;
  *     they belong to a TooltipTrigger interaction unit.
@@ -146,8 +146,8 @@ const surfaceScenario: DriverScenario = {
   // (~19/13728 px, confined to the arrow bounds). Closing this to byte-exact means
   // porting the arrow onto the real `<OverlayArrow>` + `arrowProps`, which is
   // blocked on realigning the from-scratch headless positioning layer to RAC's
-  // overlay machinery — tracked in recertification.md / tech-debt.md as the
-  // headless-overlay realignment (same root cause as the deferred D2 motion cert).
+  // overlay machinery. Tickets #64 and #68 own this work, including the
+  // deferred D2 motion evidence.
   pixel: {
     waivers: [
       {

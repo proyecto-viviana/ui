@@ -6,7 +6,7 @@
  * `useContextProps`), validated end-to-end here.
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, cleanup } from "@solidjs/testing-library";
 import { type Context } from "solid-js";
 import { Text, TextContext } from "../src/Text";

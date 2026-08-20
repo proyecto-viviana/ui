@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ProgressBar } from "../src/progress-bar";
 

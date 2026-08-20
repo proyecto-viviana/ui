@@ -126,21 +126,25 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
           );
 
           let newRow: GridNode<T> | null = null;
-          while (index >= 0) {
-            const row = rows[index];
+
+          // Search forward once from the deleted position, then backward once.
+          // The previous direction-switching loop could bounce forever between
+          // two disabled rows when the focused row was deleted.
+          for (let i = Math.max(0, index); i < rows.length; i++) {
+            const row = rows[i];
             if (!disabledKeys().has(row.key) && row.type !== "headerrow") {
               newRow = row;
               break;
             }
-            // Find next, not disabled row
-            if (index < rows.length - 1) {
-              index++;
-            } else {
-              // Otherwise, find previous, not disabled row
-              if (index > parentNode.index) {
-                index = parentNode.index;
+          }
+
+          if (newRow === null) {
+            for (let i = index - 1; i >= 0; i--) {
+              const row = rows[i];
+              if (!disabledKeys().has(row.key) && row.type !== "headerrow") {
+                newRow = row;
+                break;
               }
-              index--;
             }
           }
 

@@ -42,10 +42,7 @@ type MenuTriggerOverlayState = OverlayTriggerState & {
   toggle: (focusStrategy?: "first" | "last" | null) => void;
 };
 
-function openWithStrategy(
-  state: MenuTriggerOverlayState,
-  strategy: "first" | "last" | null,
-): void {
+function openWithStrategy(state: MenuTriggerOverlayState, strategy: "first" | "last" | null): void {
   state.open(strategy);
 }
 

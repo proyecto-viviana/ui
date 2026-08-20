@@ -263,7 +263,7 @@
     "dev": "vp pack --watch"
   },
   "dependencies": {
-    "@adobe/spectrum-tokens": "14.0.0",
+    "@adobe/spectrum-tokens": "15.0.0",
     "@parcel/macros": "^2.16.4",
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",
@@ -272,7 +272,7 @@
   },
   "devDependencies": {
     "@proyecto-viviana/solid-spectrum-test-utils": "workspace:*",
-    "solid-js": "^1.9.11",
+    "solid-js": "^1.9.15",
     "unplugin-parcel-macros": "0.2.0"
   },
   "peerDependencies": {

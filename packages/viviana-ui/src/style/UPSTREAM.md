@@ -1,10 +1,12 @@
 # Spectrum 2 Vendored Styling Source
 
-Upstream package: `@react-spectrum/s2@1.5.1` (the current pin — see
+Fork baseline: `@react-spectrum/s2@1.6.0` (the current pin — see
 `scripts/upstream-pin.json`).
 
-Source path:
-`node_modules/.pnpm/@react-spectrum+s2@1.5.1_react-dom@19.2.5_react@19.2.5__react@19.2.5/node_modules/@react-spectrum/s2`
+Canonical baseline path: `react-spectrum/packages/@react-spectrum/s2` at the
+exact commit in `scripts/upstream-pin.json`. This directory is a Viviana-owned
+fork with documented design-system additions; it is not the source of S2
+styling (that boundary belongs to `solid-spectrum`).
 
 Copied files:
 
@@ -32,7 +34,7 @@ Local changes:
 - Component wrappers are ported to Solid, but style declarations should stay
   structurally copied from S2.
 - `style-macro.ts` hardcodes the class-name `POSTFIX` to the pinned S2 version
-  (`151` for 1.5.1) rather than reading it from `package.json` at runtime like
+  (`16` for 1.6.0) rather than reading it from `package.json` at runtime like
   upstream, because this module is also loaded in the dts/dom builds that omit
   Node globals. `guard:style-macro-parity` diffs the whole macro output against
   the vendored upstream oracle and fails if the postfix (or any generated CSS)

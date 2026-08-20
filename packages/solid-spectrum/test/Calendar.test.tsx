@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Calendar, CalendarContext } from "../src/Calendar";

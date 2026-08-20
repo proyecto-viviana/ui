@@ -2,7 +2,7 @@
  * createLongPress tests - Port of React Aria's useLongPress.test.js
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createLongPress, type LongPressEvent } from "../src/interactions/createLongPress";
 import { createPress, type PressEvent } from "../src/interactions/createPress";

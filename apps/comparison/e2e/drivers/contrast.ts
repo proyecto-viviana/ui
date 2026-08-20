@@ -8,7 +8,7 @@ import {
 import { walkScenario, type WalkStepContext } from "./walk";
 
 /**
- * Driver D7 — text contrast (recertification.md Phase 1).
+ * Driver D7 — text contrast (see `.claude/current/certification.md`).
  *
  * Rides the same panel-major walk as D1/D3: for every gesture state × theme,
  * every text-bearing element in the component subtree is measured for its

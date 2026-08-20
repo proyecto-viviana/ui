@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { Button, ButtonContext } from "../src/button";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";

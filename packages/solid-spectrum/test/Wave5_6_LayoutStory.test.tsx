@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render } from "@solidjs/testing-library";
 import { Flex } from "../src/layout/Flex";
 import { Grid } from "../src/layout/Grid";

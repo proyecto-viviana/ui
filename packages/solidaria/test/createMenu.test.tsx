@@ -2,9 +2,9 @@
  * Tests for createMenu, createMenuItem, and createMenuTrigger hooks
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
-import { cleanup, fireEvent, render, screen } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   createMenuState,
   createOverlayTriggerState,
@@ -105,6 +105,83 @@ describe("createMenu", () => {
       expect(menuProps.tabIndex).toBe(0);
       dispose();
     });
+  });
+
+  it("autoFocus true focuses the menu root after paint", async () => {
+    const items = [
+      { key: "copy", label: "Copy" },
+      { key: "paste", label: "Paste" },
+    ];
+
+    render(() => {
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+      let menuEl: HTMLElement | null = null;
+      const { menuProps } = createMenu(
+        { autoFocus: true, "aria-label": "Actions" },
+        state,
+        () => menuEl,
+      );
+      return (
+        <div
+          ref={(el) => {
+            menuEl = el;
+          }}
+          {...menuProps}
+        >
+          <div role="menuitem">Copy</div>
+          <div role="menuitem">Paste</div>
+        </div>
+      );
+    });
+
+    await waitFor(() => {
+      expect(document.activeElement?.getAttribute("role")).toBe("menu");
+    });
+  });
+
+  it("autoFocus true requests CSS :focus-visible on the menu root", async () => {
+    const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
+    try {
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "paste", label: "Paste" },
+      ];
+
+      render(() => {
+        const state = createMenuState({
+          items,
+          getKey: (item) => item.key,
+        });
+        let menuEl: HTMLElement | null = null;
+        const { menuProps } = createMenu(
+          { autoFocus: true, "aria-label": "Actions" },
+          state,
+          () => menuEl,
+        );
+        return (
+          <div
+            ref={(el) => {
+              menuEl = el;
+            }}
+            {...menuProps}
+          >
+            <div role="menuitem">Copy</div>
+          </div>
+        );
+      });
+
+      await waitFor(() => {
+        expect(document.activeElement?.getAttribute("role")).toBe("menu");
+      });
+      expect(focusSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ preventScroll: true, focusVisible: true }),
+      );
+    } finally {
+      focusSpy.mockRestore();
+    }
   });
 
   it("calls onAction when Enter is pressed", () => {
@@ -1198,6 +1275,15 @@ describe("createMenuTrigger", () => {
       } as unknown as KeyboardEvent);
 
       expect(state.isOpen()).toBe(true);
+      dispose();
+    });
+  });
+
+  it("forwards autoFocus true in menuProps so createMenu can focus the root", () => {
+    createRoot((dispose) => {
+      const state = createOverlayTriggerState();
+      const { menuProps } = createMenuTrigger({}, state);
+      expect(menuProps.autoFocus).toBe(true);
       dispose();
     });
   });

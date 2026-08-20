@@ -3,7 +3,16 @@
  * Ported from @react-aria/slider useSlider.test.js
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll,
+} from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSlider } from "../src/slider/createSlider";
 import { createSliderState } from "@proyecto-viviana/solid-stately";

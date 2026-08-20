@@ -3,8 +3,8 @@
  * Based on @react-stately/grid tests.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createRoot } from "solid-js";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
+import { createRoot, createSignal } from "solid-js";
 import { createGridState, type GridCollection, type GridNode, type Key } from "../src";
 
 // Helper to create a mock grid collection
@@ -303,6 +303,38 @@ describe("createGridState", () => {
         expect(state.focusedKey).toBe("cell1b");
         dispose();
       });
+    });
+
+    it("clears focus when a focused row is deleted and every remaining row is disabled", () => {
+      let state!: ReturnType<typeof createGridState>;
+      let setCollection!: (collection: GridCollection<unknown>) => void;
+      let remainingCollection!: GridCollection<unknown>;
+      const dispose = createRoot((dispose) => {
+        const initialCollection = createMockCollection([
+          { key: "row0", cells: [{ key: "cell0" }] },
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+        ]);
+        remainingCollection = createMockCollection([
+          { key: "row0", cells: [{ key: "cell0" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+        ]);
+        const [collection, setCollectionSignal] = createSignal(initialCollection);
+        state = createGridState(() => ({
+          collection: collection(),
+          disabledKeys: ["row0", "row2"],
+        }));
+        setCollection = setCollectionSignal;
+        return dispose;
+      });
+
+      // Let the collection-tracking effect cache the initial collection before
+      // simulating the user-visible deletion.
+      state.setFocusedKey("row1");
+      setCollection(remainingCollection);
+
+      expect(state.focusedKey).toBe(null);
+      dispose();
     });
   });
 

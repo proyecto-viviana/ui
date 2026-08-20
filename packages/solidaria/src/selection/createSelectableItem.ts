@@ -20,11 +20,11 @@
  *   `disabledBehavior: 'selection'` keeps actions enabled while selection stays
  *   blocked.
  * - **Virtual focus** guards real DOM focus and updates the focused key on
- *   press; we have no `moveVirtualFocus`, so no AT cursor move is dispatched.
- * - **`onDragStart`** is bubble phase (upstream uses capture to beat `useDrag`);
- *   wired to capture when drag-and-drop integration lands.
- * - **`getItemProps` press-handler chaining** (collection-provided press
- *   handlers) is omitted — our nodes don't carry them.
+ *   press. Ticket #100 tracks the missing AT cursor move.
+ * - **`onDragStart`** uses the bubble phase. Ticket #84 owns the capture-phase
+ *   integration with drag and drop.
+ * - **`getItemProps` press-handler chaining** is omitted because our nodes do
+ *   not carry collection-provided press handlers. Ticket #97 owns this boundary.
  */
 
 import { createEffect, createUniqueId, type Accessor, type JSX } from "solid-js";
@@ -319,7 +319,7 @@ export function createSelectableItem<T>(
         }
       }
     }
-    // Virtual focus: no moveVirtualFocus equivalent in our port (documented gap).
+    // Ticket #100 tracks the missing moveVirtualFocus call for this branch.
   });
 
   const { pressProps, isPressed } = createPress({
@@ -445,8 +445,8 @@ export function createSelectableItem<T>(
   };
 
   // Prevent native drag and drop on long press when we also select on long
-  // press. Upstream uses a capturing listener to beat useDrag; we use bubble
-  // until drag-and-drop integration lands (documented adaptation).
+  // press. Upstream uses a capturing listener to beat useDrag. Ticket #84 owns
+  // the capture-phase integration with drag and drop.
   const onDragStart = (e: DragEvent) => {
     if (modality === "touch" && longPressEnabledOnPressStart) {
       e.preventDefault();

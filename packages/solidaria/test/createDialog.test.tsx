@@ -3,7 +3,7 @@
  * Ported from @react-aria/dialog useDialog.test.js
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { createDialog } from "../src";
 
@@ -83,6 +83,75 @@ describe("createDialog", () => {
     ));
     const dialog = screen.getByTestId("dialog");
     expect(dialog).toHaveAttribute("aria-describedby", "dialog-desc");
+  });
+
+  it("links an alertdialog to its generated content description", () => {
+    let dialogRef: HTMLDivElement | null = null;
+
+    render(() => {
+      const { dialogProps, contentProps } = createDialog(
+        () => ({ role: "alertdialog", "aria-label": "Delete item" }),
+        () => dialogRef,
+      );
+      return (
+        <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog">
+          <p {...contentProps()}>This action cannot be undone.</p>
+        </div>
+      );
+    });
+
+    const dialog = screen.getByRole("alertdialog", { name: "Delete item" });
+    const descriptionId = dialog.getAttribute("aria-describedby");
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId!)).toHaveTextContent(
+      "This action cannot be undone.",
+    );
+    expect(dialog).toHaveAccessibleDescription("This action cannot be undone.");
+  });
+
+  it("does not generate content description wiring for a regular dialog", () => {
+    let dialogRef: HTMLDivElement | null = null;
+    let capturedContentProps: Record<string, unknown> | undefined;
+
+    render(() => {
+      const { dialogProps, contentProps } = createDialog(
+        () => ({ "aria-label": "Information" }),
+        () => dialogRef,
+      );
+      capturedContentProps = contentProps();
+      return <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog" />;
+    });
+
+    expect(screen.getByRole("dialog")).not.toHaveAttribute("aria-describedby");
+    expect(capturedContentProps?.id).toBeUndefined();
+  });
+
+  it("preserves an explicit alertdialog description instead of generating one", () => {
+    let dialogRef: HTMLDivElement | null = null;
+    let capturedContentProps: Record<string, unknown> | undefined;
+
+    render(() => {
+      const { dialogProps, contentProps } = createDialog(
+        () => ({
+          role: "alertdialog",
+          "aria-label": "Delete item",
+          "aria-describedby": "explicit-description",
+        }),
+        () => dialogRef,
+      );
+      capturedContentProps = contentProps();
+      return (
+        <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog">
+          <p id="explicit-description">Explicit description</p>
+        </div>
+      );
+    });
+
+    expect(screen.getByRole("alertdialog")).toHaveAttribute(
+      "aria-describedby",
+      "explicit-description",
+    );
+    expect(capturedContentProps?.id).toBeUndefined();
   });
 
   it("should render children", () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { GregorianCalendar } from "@internationalized/date";
 import { createDateSegment } from "../src/datepicker/createDateSegment";

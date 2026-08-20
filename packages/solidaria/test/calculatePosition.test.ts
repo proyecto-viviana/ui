@@ -11,7 +11,7 @@
  * real layout engine.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { calculatePosition, type PositionOpts } from "../src/popover/calculatePosition";
 
 function baseOpts(overrides: Partial<PositionOpts> = {}): PositionOpts {

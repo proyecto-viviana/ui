@@ -213,7 +213,12 @@ export function createSelectState<T = unknown>(
     get selectionMode() {
       return selectionMode();
     },
-    disallowEmptySelection: true,
+    // Upstream only requires a value in single-selection mode. Multiple
+    // selection must permit toggling the last selected option off.
+    get disallowEmptySelection() {
+      return selectionMode() === "single";
+    },
+    allowDuplicateSelectionEvents: true,
     get selectedKeys() {
       const keys = selectedKeys();
       if (keys === "all") return "all";

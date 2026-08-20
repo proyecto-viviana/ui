@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, waitFor, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { parseDate, parseDateTime } from "@proyecto-viviana/solid-stately";

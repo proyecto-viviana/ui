@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { DIRECTORY_DRAG_TYPE } from "@proyecto-viviana/solid-stately";
 import { getDropItemTypes } from "../src/dnd/createDroppableCollection";
 

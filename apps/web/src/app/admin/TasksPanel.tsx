@@ -1,12 +1,9 @@
 import { For, Show, createSignal } from "solid-js";
-import { GanttChart, type GanttRow } from "./GanttChart";
-import { type DocsPayload, type TaskState, postTaskState } from "./api";
+import { type DocsPayload, type TicketStatus, postTicketBlocked, postTicketStatus } from "./api";
 
-const TASK_STATES: TaskState[] = ["open", "next", "in-progress", "done", "blocked"];
-const GROUP_ORDER: TaskState[] = ["in-progress", "next", "blocked", "open", "done"];
+const TICKET_STATUSES: TicketStatus[] = ["open", "next", "in-progress", "merged", "verified"];
+const GROUP_ORDER: TicketStatus[] = ["in-progress", "next", "open", "merged", "verified"];
 
-// Low-level axis: every `tasks:` entry across the current docs, grouped by
-// state, with the same gantt component the roadmap uses.
 export function TasksPanel(props: {
   data: DocsPayload;
   onOpenDoc: (path: string) => void;
@@ -14,27 +11,26 @@ export function TasksPanel(props: {
 }) {
   const [busy, setBusy] = createSignal<string | null>(null);
 
-  const rows = (): GanttRow[] =>
-    props.data.tasks
-      .filter((task) => task.planned || task.finished || task.state === "in-progress")
-      .map((task) => ({
-        id: task.id,
-        label: task.title,
-        state: task.state,
-        plan: task.planned ? { start: task.planned.start, end: task.planned.target } : null,
-        finished: task.finished,
-      }));
-
   const grouped = () =>
-    GROUP_ORDER.map((state) => ({
-      state,
-      tasks: props.data.tasks.filter((task) => task.state === state),
+    GROUP_ORDER.map((status) => ({
+      status,
+      tasks: props.data.tasks.filter((task) => task.status === status),
     })).filter((group) => group.tasks.length > 0);
 
-  const setState = async (doc: string, taskId: string, state: TaskState) => {
-    setBusy(taskId);
+  const setStatus = async (path: string, ticketId: number, status: TicketStatus) => {
+    setBusy(`status-${ticketId}`);
     try {
-      await postTaskState(doc, taskId, state);
+      await postTicketStatus(path, ticketId, status);
+      props.onChanged();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const setBlocked = async (path: string, ticketId: number, blocked: boolean) => {
+    setBusy(`blocked-${ticketId}`);
+    try {
+      await postTicketBlocked(path, ticketId, blocked);
       props.onChanged();
     } finally {
       setBusy(null);
@@ -43,62 +39,64 @@ export function TasksPanel(props: {
 
   return (
     <div class="panel">
-      <section class="card">
-        <h2>Task timeline</h2>
-        <GanttChart rows={rows()} />
-      </section>
-
       <For each={grouped()}>
         {(group) => (
           <section class="card">
             <h2>
-              <span class={`state-dot state-${group.state}`} /> {group.state} ({group.tasks.length})
+              <span class={`state-dot state-${group.status}`} /> {group.status} (
+              {group.tasks.length})
             </h2>
             <table class="data-table">
               <thead>
                 <tr>
+                  <th>Ticket</th>
                   <th>Task</th>
-                  <th>State</th>
-                  <th>Initiative</th>
-                  <th>Depends</th>
-                  <th>Planned</th>
-                  <th>Finished</th>
-                  <th>Doc</th>
+                  <th>Status</th>
+                  <th>Blocked</th>
+                  <th>Parent</th>
+                  <th>Created</th>
+                  <th>File</th>
                 </tr>
               </thead>
               <tbody>
                 <For each={group.tasks}>
                   {(task) => (
                     <tr>
+                      <td>#{task.id}</td>
                       <td>{task.title}</td>
                       <td>
                         <select
-                          value={task.state}
-                          disabled={busy() === task.id}
+                          value={task.status}
+                          disabled={busy() === `status-${task.id}`}
                           onChange={(event) =>
-                            void setState(task.doc, task.id, event.currentTarget.value as TaskState)
+                            void setStatus(
+                              task.path,
+                              task.id,
+                              event.currentTarget.value as TicketStatus,
+                            )
                           }
                         >
-                          <For each={TASK_STATES}>
-                            {(state) => <option value={state}>{state}</option>}
+                          <For each={TICKET_STATUSES}>
+                            {(status) => <option value={status}>{status}</option>}
                           </For>
                         </select>
                       </td>
                       <td>
-                        <Show when={task.roadmap} fallback={<span class="muted">—</span>}>
-                          <span class="chip">{task.roadmap}</span>
-                        </Show>
+                        <input
+                          type="checkbox"
+                          checked={task.blocked}
+                          disabled={busy() === `blocked-${task.id}`}
+                          aria-label={`Set #${task.id} blocked`}
+                          onChange={(event) =>
+                            void setBlocked(task.path, task.id, event.currentTarget.checked)
+                          }
+                        />
                       </td>
-                      <td class="muted">{task.depends.join(", ") || "—"}</td>
-                      <td class="muted">
-                        {task.planned
-                          ? `${task.planned.start ?? "—"} → ${task.planned.target ?? "—"}`
-                          : "—"}
-                      </td>
-                      <td class="muted">{task.finished ?? "—"}</td>
+                      <td class="muted">{task.parent === null ? "—" : `#${task.parent}`}</td>
+                      <td class="muted">{task.created}</td>
                       <td>
-                        <button class="link" onClick={() => props.onOpenDoc(task.doc)}>
-                          {task.doc.split("/").pop()}
+                        <button class="link" onClick={() => props.onOpenDoc(task.path)}>
+                          {task.path.split("/").pop()}
                         </button>
                       </td>
                     </tr>
@@ -111,7 +109,7 @@ export function TasksPanel(props: {
       </For>
 
       <Show when={props.data.tasks.length === 0}>
-        <p class="muted">No tasks: add `tasks:` frontmatter to a current-tier doc.</p>
+        <p class="muted">No task tickets exist in .claude/tickets/tasks.</p>
       </Show>
     </div>
   );

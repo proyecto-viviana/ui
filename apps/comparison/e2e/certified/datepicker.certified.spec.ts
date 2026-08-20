@@ -350,8 +350,8 @@ const datePickerTriggerScenario: DriverScenario = {
         "differs. A faithful fix needs a one-frame teardown defer (the " +
         "`createAnimation` `deferNoAnimation` trick, which only engages for " +
         "exit-animated overlays; this popover's exit motion is scoped out for " +
-        "this unit). Dismiss-ordering facet of the event-ordering epic in " +
-        "recertification.md — DISTINCT from the value-change surface this unit " +
+        "this unit). Ticket #18 owns this dismiss-ordering and focus-scheduling " +
+        "gap. It is distinct from the value-change surface this unit " +
         "closes, which is certified green by the `value · segment-spin-up` " +
         "gesture (ArrowUp → onChange interleaved identically).",
     },

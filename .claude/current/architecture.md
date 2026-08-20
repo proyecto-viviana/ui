@@ -9,24 +9,26 @@ Status: live reference.
 Update when: layer boundaries, package roles, the styling boundary, or the
 harness role change.
 
-## The five-layer chain
+## The shared foundation and styled layers
 
-Viviana UI is built on a layered Solid stack. The lower four packages are the
-unofficial port stack; `@proyecto-viviana/ui` is the Viviana design-system
-package on top. Each layer adds exactly one concern and depends only on the
-layers below it:
+Viviana UI has a shared Solid foundation. Three standalone styled packages use
+that foundation.
+
+The lower three packages are the unofficial React Aria port stack. Each package
+adds one concern and depends only on lower packages.
 
 ```
-@proyecto-viviana/ui                    product design system (package dir: viviana-ui)
-  ↑
-@proyecto-viviana/solid-spectrum        Spectrum 2-compatible styled components
-  ↑
 @proyecto-viviana/solidaria-components  headless components: pre-wired state + ARIA,
   ↑                                     render props, data attributes, slots
 @proyecto-viviana/solidaria             accessibility hooks: ARIA props, keyboard,
   ↑                                     focus, press/hover
 @proyecto-viviana/solid-stately         state: signals, controlled/uncontrolled,
                                         collections, selection
+
+@proyecto-viviana/solidaria-components
+  ├─ @proyecto-viviana/solid-spectrum   Spectrum 2 styled components
+  ├─ @proyecto-viviana/ui               Viviana design system
+  └─ @proyecto-viviana/kumo             experimental Kumo styled components
 ```
 
 Upstream mapping:
@@ -38,21 +40,19 @@ Upstream mapping:
 | `react-aria-components` | `solidaria-components` | `@proyecto-viviana/solidaria-components` |
 | `@react-spectrum/s2`    | `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       |
 | Viviana design system   | `viviana-ui`           | `@proyecto-viviana/ui`                   |
+| Cloudflare Kumo         | `kumo`                 | `@proyecto-viviana/kumo`                 |
 
-All five public packages are releasable: `solid-stately`, `solidaria`,
-`solidaria-components`, `solid-spectrum`, and `@proyecto-viviana/ui`
-(`release-policy.md`). `solidaria-test-utils` and `solid-spectrum-test-utils`
-are private.
+All six public packages are releasable. The Kumo package is still experimental
+and has an initial-publish blocker (`release-policy.md`). `solidaria-test-utils`
+and `solid-spectrum-test-utils` are private.
 
 ## Where behavior goes
 
 **Put behavior in the lowest applicable layer** (Rule #4). State belongs in
-`solid-stately`; ARIA/keyboard/focus in `solidaria`; composition, slots, render
-props, and data attributes in `solidaria-components`. The upper layers must not
-reimplement low-level behavior — `solid-spectrum` and `viviana-ui` may wrap a
-headless component with a design-system API, compose several headless pieces into
-an S2-like component, add Viviana-native components, and apply
-themes/tokens/skins, but never fork ARIA or state logic.
+`solid-stately`. ARIA, keyboard, and focus belong in `solidaria`. Composition,
+slots, render props, and data attributes belong in `solidaria-components`.
+The three styled packages must not reimplement low-level behavior. They can
+wrap or compose headless components and apply design-system APIs and styles.
 
 ## Where styling goes
 
@@ -60,9 +60,12 @@ S2 component styling lives **only** in `solid-spectrum`, generated from S2 token
 through the style macro — never hand-authored, never tuned to make a screenshot
 pass (ADR 0001, `../../docs/adr/0001-s2-styling-source-of-truth.md`). Generated
 atomic classes are build output, not architecture. The comparison app _verifies_
-styling; its hand-written CSS is limited to harness layout, controls, panels, and
-screenshot frames — never component-internal colors, padding, radius, focus
-rings, or visual states.
+styling. Its hand-written CSS is limited to harness layout, controls, panels,
+and screenshot frames. It must not define component colors, padding, radius,
+focus rings, or visual states.
+
+Kumo styling lives in `packages/kumo`. Copy Kumo values from the pinned
+Cloudflare source. Do not use S2 styles for Kumo.
 
 ## Styled-component status
 
@@ -75,20 +78,26 @@ Track each styled export as one of:
   counterpart.
 - `tracked-gap` — a known missing parity component or comparison route.
 
-React Aria Components does not expose every Spectrum component 1:1; Spectrum adds
-productized wrappers above RAC, and the styled layers may do the same. A
+The Kumo package uses the same evidence rule. Its first Button slice is an
+experiment, not a parity component.
+
+React Aria Components does not expose every Spectrum component 1:1. Spectrum
+adds productized wrappers above RAC, and the styled layers may do the same. A
 `composition` or `viviana-native` component is not an upstream gap.
 
 ## Build order
 
-Packages build bottom-up; this is wired into the root `build` script:
+Packages build the shared foundation first. The three styled packages then
+build as siblings:
 
 ```
-solid-stately → solidaria → solidaria-components → solid-spectrum → viviana-ui
+solid-stately → solidaria → solidaria-components
+                                     ├─ solid-spectrum
+                                     ├─ viviana-ui
+                                     └─ kumo
 ```
 
-Inter-package dependencies use explicit caret ranges; Changesets updates them on
-bump.
+Source manifests use `workspace:*`. The release process writes registry versions.
 
 ## Why ship source via the `solid` export condition
 
@@ -108,7 +117,7 @@ component-internal styling belongs in the package, never the app.
 
 ## Solid idioms
 
-Porting React to Solid has recurring traps — `splitProps` dropping DOM
-attributes, JSX children evaluating before parent context is set, getters for
-controlled props. These are documented in `../reference/patterns.md`; consult it
-before porting compound or context-driven components.
+Porting React to Solid has recurring traps. Examples include `splitProps`
+dropping DOM attributes, early JSX child evaluation, and controlled props
+without getters. Read `../reference/patterns.md` before you port compound or
+context-driven components.

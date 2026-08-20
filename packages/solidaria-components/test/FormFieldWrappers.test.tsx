@@ -8,7 +8,7 @@
  * props / data attributes, and bridges description/error to aria-describedby —
  * mirroring react-aria-components/src/{Switch,Checkbox,RadioGroup}.tsx.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import {
   SwitchField,

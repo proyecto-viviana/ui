@@ -7,7 +7,7 @@
  * handler that jumps the calendar's focus.
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { For, type JSX } from "solid-js";
 import {

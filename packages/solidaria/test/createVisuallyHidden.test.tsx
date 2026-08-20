@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createVisuallyHidden, visuallyHiddenStyles } from "../src/visually-hidden";
 

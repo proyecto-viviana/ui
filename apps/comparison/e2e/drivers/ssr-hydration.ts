@@ -1,11 +1,11 @@
 import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
 
 /**
- * Driver D12 — SSR / hydration oracle (recertification.md Phase 1).
+ * Driver D12 — SSR / hydration oracle (see `.claude/current/certification.md`).
  *
  * Unlike D1–D11, D12 is not a Solid-vs-React byte diff: SSR/hydration
  * correctness is an ABSOLUTE self-consistency invariant, so the oracle is the
- * island's own server HTML. The contract (recertification.md): "Astro island
+ * island's own server HTML. The contract in `certification.md`: "Astro island
  * server HTML vs hydrated DOM; stable ids, no mismatch." The driver certifies,
  * for a pre-rendered `client:load` island surface (e.g. `/d12/button`):
  *

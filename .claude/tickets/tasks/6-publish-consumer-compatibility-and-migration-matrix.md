@@ -3,6 +3,7 @@ id: 6
 type: task
 title: "Publish the UI consumer compatibility and migration matrix"
 created: 2026-08-02
+parent: 32
 status: open
 history:
   - { state: open, at: 2026-08-02, note: "opened from the local ecosystem ticketing pass" }

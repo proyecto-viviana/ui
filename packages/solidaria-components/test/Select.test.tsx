@@ -10,7 +10,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal, useContext } from "solid-js";
 import h from "solid-js/h";
@@ -544,6 +544,34 @@ describe("Select", () => {
       expect(screen.getByRole("button")).toHaveTextContent("Cat and Dog");
       expect(screen.getByRole("listbox")).toBeInTheDocument();
       expect(onSelectionChangeKeys).toHaveBeenCalled();
+    });
+
+    it("should support deselection in multiple selection mode", async () => {
+      const onSelectionChangeKeys = vi.fn();
+      render(() => (
+        <TestSelect
+          selectProps={{
+            selectionMode: "multiple",
+            defaultOpen: true,
+            defaultSelectedKeys: ["cat", "dog"],
+            onSelectionChangeKeys,
+          }}
+        />
+      ));
+
+      const catOption = screen.getByRole("option", { name: "Cat" });
+      const dogOption = screen.getByRole("option", { name: "Dog" });
+      expect(catOption).toHaveAttribute("aria-selected", "true");
+      expect(dogOption).toHaveAttribute("aria-selected", "true");
+
+      await user.click(catOption);
+      expect(catOption).toHaveAttribute("aria-selected", "false");
+      expect(dogOption).toHaveAttribute("aria-selected", "true");
+
+      await user.click(dogOption);
+      expect(catOption).toHaveAttribute("aria-selected", "false");
+      expect(dogOption).toHaveAttribute("aria-selected", "false");
+      expect(onSelectionChangeKeys).toHaveBeenLastCalledWith(new Set());
     });
 
     it("should support multiple selection form integration with many items", async () => {

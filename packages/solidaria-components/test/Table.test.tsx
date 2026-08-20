@@ -2296,7 +2296,9 @@ describe("Table", () => {
       expect(selectAll.checked).toBe(false);
       expect(selectAll.indeterminate).toBe(true);
 
-      selectAll.checked = selectAll.checked;
+      // Reapplying the unchanged checked state must not clear the mixed state.
+      const checked = selectAll.checked;
+      selectAll.checked = checked;
       expect(selectAll.indeterminate).toBe(true);
     });
 

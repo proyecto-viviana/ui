@@ -9,168 +9,168 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ThemeRouteImport } from './routes/theme'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as SolidSpectrumRouteRouteImport } from './routes/solid-spectrum/route'
-import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
-import { Route as DocsRouteRouteImport } from './routes/docs/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
-import { Route as ShowcaseIndexRouteImport } from './routes/showcase/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DocsRouteRouteImport } from './routes/docs/route'
+import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
+import { Route as SolidSpectrumRouteRouteImport } from './routes/solid-spectrum/route'
+import { Route as ThemeRouteImport } from './routes/theme'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
-import { Route as SolidSpectrumPlaygroundRouteImport } from './routes/solid-spectrum/playground'
-import { Route as SolidSpectrumEcosystemRouteImport } from './routes/solid-spectrum/ecosystem'
-import { Route as ShowcaseTypeRouteImport } from './routes/showcase/type'
-import { Route as ShowcaseStatusRouteImport } from './routes/showcase/status'
-import { Route as ShowcaseSlidersRouteImport } from './routes/showcase/sliders'
-import { Route as ShowcaseSelectionRouteImport } from './routes/showcase/selection'
-import { Route as ShowcasePickersRouteImport } from './routes/showcase/pickers'
-import { Route as ShowcaseParityRouteImport } from './routes/showcase/parity'
-import { Route as ShowcaseOverlaysRouteImport } from './routes/showcase/overlays'
-import { Route as ShowcaseNavigationRouteImport } from './routes/showcase/navigation'
-import { Route as ShowcaseInputsRouteImport } from './routes/showcase/inputs'
-import { Route as ShowcaseDatetimeRouteImport } from './routes/showcase/datetime'
-import { Route as ShowcaseColorRouteImport } from './routes/showcase/color'
-import { Route as ShowcaseCollectionsRouteImport } from './routes/showcase/collections'
-import { Route as ShowcaseChipsRouteImport } from './routes/showcase/chips'
-import { Route as ShowcaseCardsRouteImport } from './routes/showcase/cards'
+import { Route as ShowcaseIndexRouteImport } from './routes/showcase/index'
 import { Route as ShowcaseButtonsRouteImport } from './routes/showcase/buttons'
+import { Route as ShowcaseCardsRouteImport } from './routes/showcase/cards'
+import { Route as ShowcaseChipsRouteImport } from './routes/showcase/chips'
+import { Route as ShowcaseCollectionsRouteImport } from './routes/showcase/collections'
+import { Route as ShowcaseColorRouteImport } from './routes/showcase/color'
+import { Route as ShowcaseDatetimeRouteImport } from './routes/showcase/datetime'
+import { Route as ShowcaseInputsRouteImport } from './routes/showcase/inputs'
+import { Route as ShowcaseNavigationRouteImport } from './routes/showcase/navigation'
+import { Route as ShowcaseOverlaysRouteImport } from './routes/showcase/overlays'
+import { Route as ShowcaseParityRouteImport } from './routes/showcase/parity'
+import { Route as ShowcasePickersRouteImport } from './routes/showcase/pickers'
+import { Route as ShowcaseSelectionRouteImport } from './routes/showcase/selection'
+import { Route as ShowcaseSlidersRouteImport } from './routes/showcase/sliders'
+import { Route as ShowcaseStatusRouteImport } from './routes/showcase/status'
+import { Route as ShowcaseTypeRouteImport } from './routes/showcase/type'
+import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/index'
 import { Route as SolidSpectrumDocsRouteRouteImport } from './routes/solid-spectrum/docs/route'
+import { Route as SolidSpectrumEcosystemRouteImport } from './routes/solid-spectrum/ecosystem'
+import { Route as SolidSpectrumPlaygroundRouteImport } from './routes/solid-spectrum/playground'
+import { Route as DocsComponentsAccordionRouteImport } from './routes/docs/components/accordion'
+import { Route as DocsComponentsActionbarRouteImport } from './routes/docs/components/actionbar'
+import { Route as DocsComponentsActionbuttonRouteImport } from './routes/docs/components/actionbutton'
+import { Route as DocsComponentsActionbuttongroupRouteImport } from './routes/docs/components/actionbuttongroup'
+import { Route as DocsComponentsActiongroupRouteImport } from './routes/docs/components/actiongroup'
+import { Route as DocsComponentsActionmenuRouteImport } from './routes/docs/components/actionmenu'
+import { Route as DocsComponentsAlertdialogRouteImport } from './routes/docs/components/alertdialog'
+import { Route as DocsComponentsAssetcardRouteImport } from './routes/docs/components/assetcard'
+import { Route as DocsComponentsAvatarRouteImport } from './routes/docs/components/avatar'
+import { Route as DocsComponentsBadgeRouteImport } from './routes/docs/components/badge'
+import { Route as DocsComponentsBreadcrumbsRouteImport } from './routes/docs/components/breadcrumbs'
+import { Route as DocsComponentsButtonRouteImport } from './routes/docs/components/button'
+import { Route as DocsComponentsButtongroupRouteImport } from './routes/docs/components/buttongroup'
+import { Route as DocsComponentsCalendarRouteImport } from './routes/docs/components/calendar'
+import { Route as DocsComponentsCardRouteImport } from './routes/docs/components/card'
+import { Route as DocsComponentsCardviewRouteImport } from './routes/docs/components/cardview'
+import { Route as DocsComponentsCheckboxRouteImport } from './routes/docs/components/checkbox'
+import { Route as DocsComponentsColorareaRouteImport } from './routes/docs/components/colorarea'
+import { Route as DocsComponentsColoreditorRouteImport } from './routes/docs/components/coloreditor'
+import { Route as DocsComponentsColorfieldRouteImport } from './routes/docs/components/colorfield'
+import { Route as DocsComponentsColorsliderRouteImport } from './routes/docs/components/colorslider'
+import { Route as DocsComponentsColorswatchRouteImport } from './routes/docs/components/colorswatch'
+import { Route as DocsComponentsColorswatchpickerRouteImport } from './routes/docs/components/colorswatchpicker'
+import { Route as DocsComponentsColorwheelRouteImport } from './routes/docs/components/colorwheel'
+import { Route as DocsComponentsComboboxRouteImport } from './routes/docs/components/combobox'
+import { Route as DocsComponentsContextualhelpRouteImport } from './routes/docs/components/contextualhelp'
+import { Route as DocsComponentsDatefieldRouteImport } from './routes/docs/components/datefield'
+import { Route as DocsComponentsDatepickerRouteImport } from './routes/docs/components/datepicker'
+import { Route as DocsComponentsDaterangepickerRouteImport } from './routes/docs/components/daterangepicker'
+import { Route as DocsComponentsDialogRouteImport } from './routes/docs/components/dialog'
+import { Route as DocsComponentsDisclosureRouteImport } from './routes/docs/components/disclosure'
+import { Route as DocsComponentsDividerRouteImport } from './routes/docs/components/divider'
+import { Route as DocsComponentsDropzoneRouteImport } from './routes/docs/components/dropzone'
+import { Route as DocsComponentsFiletriggerRouteImport } from './routes/docs/components/filetrigger'
+import { Route as DocsComponentsFormRouteImport } from './routes/docs/components/form'
+import { Route as DocsComponentsGridlistRouteImport } from './routes/docs/components/gridlist'
+import { Route as DocsComponentsIconRouteImport } from './routes/docs/components/icon'
+import { Route as DocsComponentsIllustratedmessageRouteImport } from './routes/docs/components/illustratedmessage'
+import { Route as DocsComponentsImageRouteImport } from './routes/docs/components/image'
+import { Route as DocsComponentsInlinealertRouteImport } from './routes/docs/components/inlinealert'
+import { Route as DocsComponentsLabeledvalueRouteImport } from './routes/docs/components/labeledvalue'
+import { Route as DocsComponentsLayoutRouteImport } from './routes/docs/components/layout'
+import { Route as DocsComponentsLinkRouteImport } from './routes/docs/components/link'
+import { Route as DocsComponentsLinkbuttonRouteImport } from './routes/docs/components/linkbutton'
+import { Route as DocsComponentsListboxRouteImport } from './routes/docs/components/listbox'
+import { Route as DocsComponentsMenuRouteImport } from './routes/docs/components/menu'
+import { Route as DocsComponentsMeterRouteImport } from './routes/docs/components/meter'
+import { Route as DocsComponentsNotificationbadgeRouteImport } from './routes/docs/components/notificationbadge'
+import { Route as DocsComponentsNumberfieldRouteImport } from './routes/docs/components/numberfield'
+import { Route as DocsComponentsPickerRouteImport } from './routes/docs/components/picker'
+import { Route as DocsComponentsPopoverRouteImport } from './routes/docs/components/popover'
+import { Route as DocsComponentsProductcardRouteImport } from './routes/docs/components/productcard'
+import { Route as DocsComponentsProgressRouteImport } from './routes/docs/components/progress'
+import { Route as DocsComponentsProgressBarRouteImport } from './routes/docs/components/progress-bar'
+import { Route as DocsComponentsProviderRouteImport } from './routes/docs/components/provider'
+import { Route as DocsComponentsRadioRouteImport } from './routes/docs/components/radio'
+import { Route as DocsComponentsRangecalendarRouteImport } from './routes/docs/components/rangecalendar'
+import { Route as DocsComponentsRangesliderRouteImport } from './routes/docs/components/rangeslider'
+import { Route as DocsComponentsSearchfieldRouteImport } from './routes/docs/components/searchfield'
+import { Route as DocsComponentsSegmentedcontrolRouteImport } from './routes/docs/components/segmentedcontrol'
+import { Route as DocsComponentsSelectRouteImport } from './routes/docs/components/select'
+import { Route as DocsComponentsSelectboxgroupRouteImport } from './routes/docs/components/selectboxgroup'
+import { Route as DocsComponentsSeparatorRouteImport } from './routes/docs/components/separator'
+import { Route as DocsComponentsSkeletonRouteImport } from './routes/docs/components/skeleton'
+import { Route as DocsComponentsSliderRouteImport } from './routes/docs/components/slider'
+import { Route as DocsComponentsStatuslightRouteImport } from './routes/docs/components/statuslight'
+import { Route as DocsComponentsSteplistRouteImport } from './routes/docs/components/steplist'
+import { Route as DocsComponentsSwitchRouteImport } from './routes/docs/components/switch'
+import { Route as DocsComponentsTableRouteImport } from './routes/docs/components/table'
+import { Route as DocsComponentsTabsRouteImport } from './routes/docs/components/tabs'
+import { Route as DocsComponentsTagGroupRouteImport } from './routes/docs/components/tag-group'
+import { Route as DocsComponentsTextRouteImport } from './routes/docs/components/text'
+import { Route as DocsComponentsTextfieldRouteImport } from './routes/docs/components/textfield'
+import { Route as DocsComponentsTimefieldRouteImport } from './routes/docs/components/timefield'
+import { Route as DocsComponentsToastRouteImport } from './routes/docs/components/toast'
+import { Route as DocsComponentsTogglebuttonRouteImport } from './routes/docs/components/togglebutton'
+import { Route as DocsComponentsTogglebuttongroupRouteImport } from './routes/docs/components/togglebuttongroup'
+import { Route as DocsComponentsToolbarRouteImport } from './routes/docs/components/toolbar'
+import { Route as DocsComponentsTooltipRouteImport } from './routes/docs/components/tooltip'
+import { Route as DocsComponentsTreeRouteImport } from './routes/docs/components/tree'
+import { Route as DocsComponentsUsercardRouteImport } from './routes/docs/components/usercard'
+import { Route as DocsComponentsWellRouteImport } from './routes/docs/components/well'
 import { Route as SolidSpectrumDocsIndexRouteImport } from './routes/solid-spectrum/docs/index'
 import { Route as SolidSpectrumDocsInstallationRouteImport } from './routes/solid-spectrum/docs/installation'
-import { Route as DocsComponentsWellRouteImport } from './routes/docs/components/well'
-import { Route as DocsComponentsUsercardRouteImport } from './routes/docs/components/usercard'
-import { Route as DocsComponentsTreeRouteImport } from './routes/docs/components/tree'
-import { Route as DocsComponentsTooltipRouteImport } from './routes/docs/components/tooltip'
-import { Route as DocsComponentsToolbarRouteImport } from './routes/docs/components/toolbar'
-import { Route as DocsComponentsTogglebuttongroupRouteImport } from './routes/docs/components/togglebuttongroup'
-import { Route as DocsComponentsTogglebuttonRouteImport } from './routes/docs/components/togglebutton'
-import { Route as DocsComponentsToastRouteImport } from './routes/docs/components/toast'
-import { Route as DocsComponentsTimefieldRouteImport } from './routes/docs/components/timefield'
-import { Route as DocsComponentsTextfieldRouteImport } from './routes/docs/components/textfield'
-import { Route as DocsComponentsTextRouteImport } from './routes/docs/components/text'
-import { Route as DocsComponentsTagGroupRouteImport } from './routes/docs/components/tag-group'
-import { Route as DocsComponentsTabsRouteImport } from './routes/docs/components/tabs'
-import { Route as DocsComponentsTableRouteImport } from './routes/docs/components/table'
-import { Route as DocsComponentsSwitchRouteImport } from './routes/docs/components/switch'
-import { Route as DocsComponentsSteplistRouteImport } from './routes/docs/components/steplist'
-import { Route as DocsComponentsStatuslightRouteImport } from './routes/docs/components/statuslight'
-import { Route as DocsComponentsSliderRouteImport } from './routes/docs/components/slider'
-import { Route as DocsComponentsSkeletonRouteImport } from './routes/docs/components/skeleton'
-import { Route as DocsComponentsSeparatorRouteImport } from './routes/docs/components/separator'
-import { Route as DocsComponentsSelectboxgroupRouteImport } from './routes/docs/components/selectboxgroup'
-import { Route as DocsComponentsSelectRouteImport } from './routes/docs/components/select'
-import { Route as DocsComponentsSegmentedcontrolRouteImport } from './routes/docs/components/segmentedcontrol'
-import { Route as DocsComponentsSearchfieldRouteImport } from './routes/docs/components/searchfield'
-import { Route as DocsComponentsRangesliderRouteImport } from './routes/docs/components/rangeslider'
-import { Route as DocsComponentsRangecalendarRouteImport } from './routes/docs/components/rangecalendar'
-import { Route as DocsComponentsRadioRouteImport } from './routes/docs/components/radio'
-import { Route as DocsComponentsProviderRouteImport } from './routes/docs/components/provider'
-import { Route as DocsComponentsProgressBarRouteImport } from './routes/docs/components/progress-bar'
-import { Route as DocsComponentsProgressRouteImport } from './routes/docs/components/progress'
-import { Route as DocsComponentsProductcardRouteImport } from './routes/docs/components/productcard'
-import { Route as DocsComponentsPopoverRouteImport } from './routes/docs/components/popover'
-import { Route as DocsComponentsPickerRouteImport } from './routes/docs/components/picker'
-import { Route as DocsComponentsNumberfieldRouteImport } from './routes/docs/components/numberfield'
-import { Route as DocsComponentsNotificationbadgeRouteImport } from './routes/docs/components/notificationbadge'
-import { Route as DocsComponentsMeterRouteImport } from './routes/docs/components/meter'
-import { Route as DocsComponentsMenuRouteImport } from './routes/docs/components/menu'
-import { Route as DocsComponentsListboxRouteImport } from './routes/docs/components/listbox'
-import { Route as DocsComponentsLinkbuttonRouteImport } from './routes/docs/components/linkbutton'
-import { Route as DocsComponentsLinkRouteImport } from './routes/docs/components/link'
-import { Route as DocsComponentsLayoutRouteImport } from './routes/docs/components/layout'
-import { Route as DocsComponentsLabeledvalueRouteImport } from './routes/docs/components/labeledvalue'
-import { Route as DocsComponentsInlinealertRouteImport } from './routes/docs/components/inlinealert'
-import { Route as DocsComponentsImageRouteImport } from './routes/docs/components/image'
-import { Route as DocsComponentsIllustratedmessageRouteImport } from './routes/docs/components/illustratedmessage'
-import { Route as DocsComponentsIconRouteImport } from './routes/docs/components/icon'
-import { Route as DocsComponentsGridlistRouteImport } from './routes/docs/components/gridlist'
-import { Route as DocsComponentsFormRouteImport } from './routes/docs/components/form'
-import { Route as DocsComponentsFiletriggerRouteImport } from './routes/docs/components/filetrigger'
-import { Route as DocsComponentsDropzoneRouteImport } from './routes/docs/components/dropzone'
-import { Route as DocsComponentsDividerRouteImport } from './routes/docs/components/divider'
-import { Route as DocsComponentsDisclosureRouteImport } from './routes/docs/components/disclosure'
-import { Route as DocsComponentsDialogRouteImport } from './routes/docs/components/dialog'
-import { Route as DocsComponentsDaterangepickerRouteImport } from './routes/docs/components/daterangepicker'
-import { Route as DocsComponentsDatepickerRouteImport } from './routes/docs/components/datepicker'
-import { Route as DocsComponentsDatefieldRouteImport } from './routes/docs/components/datefield'
-import { Route as DocsComponentsContextualhelpRouteImport } from './routes/docs/components/contextualhelp'
-import { Route as DocsComponentsComboboxRouteImport } from './routes/docs/components/combobox'
-import { Route as DocsComponentsColorwheelRouteImport } from './routes/docs/components/colorwheel'
-import { Route as DocsComponentsColorswatchpickerRouteImport } from './routes/docs/components/colorswatchpicker'
-import { Route as DocsComponentsColorswatchRouteImport } from './routes/docs/components/colorswatch'
-import { Route as DocsComponentsColorsliderRouteImport } from './routes/docs/components/colorslider'
-import { Route as DocsComponentsColorfieldRouteImport } from './routes/docs/components/colorfield'
-import { Route as DocsComponentsColoreditorRouteImport } from './routes/docs/components/coloreditor'
-import { Route as DocsComponentsColorareaRouteImport } from './routes/docs/components/colorarea'
-import { Route as DocsComponentsCheckboxRouteImport } from './routes/docs/components/checkbox'
-import { Route as DocsComponentsCardviewRouteImport } from './routes/docs/components/cardview'
-import { Route as DocsComponentsCardRouteImport } from './routes/docs/components/card'
-import { Route as DocsComponentsCalendarRouteImport } from './routes/docs/components/calendar'
-import { Route as DocsComponentsButtongroupRouteImport } from './routes/docs/components/buttongroup'
-import { Route as DocsComponentsButtonRouteImport } from './routes/docs/components/button'
-import { Route as DocsComponentsBreadcrumbsRouteImport } from './routes/docs/components/breadcrumbs'
-import { Route as DocsComponentsBadgeRouteImport } from './routes/docs/components/badge'
-import { Route as DocsComponentsAvatarRouteImport } from './routes/docs/components/avatar'
-import { Route as DocsComponentsAssetcardRouteImport } from './routes/docs/components/assetcard'
-import { Route as DocsComponentsAlertdialogRouteImport } from './routes/docs/components/alertdialog'
-import { Route as DocsComponentsActionmenuRouteImport } from './routes/docs/components/actionmenu'
-import { Route as DocsComponentsActiongroupRouteImport } from './routes/docs/components/actiongroup'
-import { Route as DocsComponentsActionbuttongroupRouteImport } from './routes/docs/components/actionbuttongroup'
-import { Route as DocsComponentsActionbuttonRouteImport } from './routes/docs/components/actionbutton'
-import { Route as DocsComponentsActionbarRouteImport } from './routes/docs/components/actionbar'
-import { Route as DocsComponentsAccordionRouteImport } from './routes/docs/components/accordion'
-import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from './routes/solid-spectrum/docs/hooks/create-press'
-import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from './routes/solid-spectrum/docs/hooks/create-button'
-import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from './routes/solid-spectrum/docs/components/virtualizer'
-import { Route as SolidSpectrumDocsComponentsTreeRouteImport } from './routes/solid-spectrum/docs/components/tree'
-import { Route as SolidSpectrumDocsComponentsTooltipRouteImport } from './routes/solid-spectrum/docs/components/tooltip'
-import { Route as SolidSpectrumDocsComponentsToolbarRouteImport } from './routes/solid-spectrum/docs/components/toolbar'
-import { Route as SolidSpectrumDocsComponentsToastRouteImport } from './routes/solid-spectrum/docs/components/toast'
-import { Route as SolidSpectrumDocsComponentsTimefieldRouteImport } from './routes/solid-spectrum/docs/components/timefield'
-import { Route as SolidSpectrumDocsComponentsTextfieldRouteImport } from './routes/solid-spectrum/docs/components/textfield'
-import { Route as SolidSpectrumDocsComponentsTextareaRouteImport } from './routes/solid-spectrum/docs/components/textarea'
-import { Route as SolidSpectrumDocsComponentsTaggroupRouteImport } from './routes/solid-spectrum/docs/components/taggroup'
-import { Route as SolidSpectrumDocsComponentsTabsRouteImport } from './routes/solid-spectrum/docs/components/tabs'
-import { Route as SolidSpectrumDocsComponentsTableRouteImport } from './routes/solid-spectrum/docs/components/table'
-import { Route as SolidSpectrumDocsComponentsSwitchRouteImport } from './routes/solid-spectrum/docs/components/switch'
-import { Route as SolidSpectrumDocsComponentsSliderRouteImport } from './routes/solid-spectrum/docs/components/slider'
-import { Route as SolidSpectrumDocsComponentsSeparatorRouteImport } from './routes/solid-spectrum/docs/components/separator'
-import { Route as SolidSpectrumDocsComponentsSelectRouteImport } from './routes/solid-spectrum/docs/components/select'
-import { Route as SolidSpectrumDocsComponentsSearchfieldRouteImport } from './routes/solid-spectrum/docs/components/searchfield'
-import { Route as SolidSpectrumDocsComponentsRangecalendarRouteImport } from './routes/solid-spectrum/docs/components/rangecalendar'
-import { Route as SolidSpectrumDocsComponentsProviderRouteImport } from './routes/solid-spectrum/docs/components/provider'
-import { Route as SolidSpectrumDocsComponentsProgressbarRouteImport } from './routes/solid-spectrum/docs/components/progressbar'
-import { Route as SolidSpectrumDocsComponentsPopoverRouteImport } from './routes/solid-spectrum/docs/components/popover'
-import { Route as SolidSpectrumDocsComponentsPickerRouteImport } from './routes/solid-spectrum/docs/components/picker'
-import { Route as SolidSpectrumDocsComponentsNumberfieldRouteImport } from './routes/solid-spectrum/docs/components/numberfield'
-import { Route as SolidSpectrumDocsComponentsMeterRouteImport } from './routes/solid-spectrum/docs/components/meter'
-import { Route as SolidSpectrumDocsComponentsMenuRouteImport } from './routes/solid-spectrum/docs/components/menu'
-import { Route as SolidSpectrumDocsComponentsLinkRouteImport } from './routes/solid-spectrum/docs/components/link'
-import { Route as SolidSpectrumDocsComponentsGridlistRouteImport } from './routes/solid-spectrum/docs/components/gridlist'
-import { Route as SolidSpectrumDocsComponentsFiletriggerRouteImport } from './routes/solid-spectrum/docs/components/filetrigger'
-import { Route as SolidSpectrumDocsComponentsDropzoneRouteImport } from './routes/solid-spectrum/docs/components/dropzone'
-import { Route as SolidSpectrumDocsComponentsDisclosureRouteImport } from './routes/solid-spectrum/docs/components/disclosure'
-import { Route as SolidSpectrumDocsComponentsDialogRouteImport } from './routes/solid-spectrum/docs/components/dialog'
-import { Route as SolidSpectrumDocsComponentsDaterangepickerRouteImport } from './routes/solid-spectrum/docs/components/daterangepicker'
-import { Route as SolidSpectrumDocsComponentsDatepickerRouteImport } from './routes/solid-spectrum/docs/components/datepicker'
-import { Route as SolidSpectrumDocsComponentsDatefieldRouteImport } from './routes/solid-spectrum/docs/components/datefield'
-import { Route as SolidSpectrumDocsComponentsContextualhelpRouteImport } from './routes/solid-spectrum/docs/components/contextualhelp'
-import { Route as SolidSpectrumDocsComponentsComboboxRouteImport } from './routes/solid-spectrum/docs/components/combobox'
-import { Route as SolidSpectrumDocsComponentsColorRouteImport } from './routes/solid-spectrum/docs/components/color'
-import { Route as SolidSpectrumDocsComponentsCheckboxRouteImport } from './routes/solid-spectrum/docs/components/checkbox'
-import { Route as SolidSpectrumDocsComponentsCalendarRouteImport } from './routes/solid-spectrum/docs/components/calendar'
-import { Route as SolidSpectrumDocsComponentsButtonRouteImport } from './routes/solid-spectrum/docs/components/button'
-import { Route as SolidSpectrumDocsComponentsBreadcrumbsRouteImport } from './routes/solid-spectrum/docs/components/breadcrumbs'
-import { Route as SolidSpectrumDocsComponentsBadgeRouteImport } from './routes/solid-spectrum/docs/components/badge'
-import { Route as SolidSpectrumDocsComponentsAlertdialogRouteImport } from './routes/solid-spectrum/docs/components/alertdialog'
-import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from './routes/solid-spectrum/docs/components/actiongroup'
-import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from './routes/solid-spectrum/docs/components/actionbar'
 import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from './routes/solid-spectrum/docs/components/accordion'
+import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from './routes/solid-spectrum/docs/components/actionbar'
+import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from './routes/solid-spectrum/docs/components/actiongroup'
+import { Route as SolidSpectrumDocsComponentsAlertdialogRouteImport } from './routes/solid-spectrum/docs/components/alertdialog'
+import { Route as SolidSpectrumDocsComponentsBadgeRouteImport } from './routes/solid-spectrum/docs/components/badge'
+import { Route as SolidSpectrumDocsComponentsBreadcrumbsRouteImport } from './routes/solid-spectrum/docs/components/breadcrumbs'
+import { Route as SolidSpectrumDocsComponentsButtonRouteImport } from './routes/solid-spectrum/docs/components/button'
+import { Route as SolidSpectrumDocsComponentsCalendarRouteImport } from './routes/solid-spectrum/docs/components/calendar'
+import { Route as SolidSpectrumDocsComponentsCheckboxRouteImport } from './routes/solid-spectrum/docs/components/checkbox'
+import { Route as SolidSpectrumDocsComponentsColorRouteImport } from './routes/solid-spectrum/docs/components/color'
+import { Route as SolidSpectrumDocsComponentsComboboxRouteImport } from './routes/solid-spectrum/docs/components/combobox'
+import { Route as SolidSpectrumDocsComponentsContextualhelpRouteImport } from './routes/solid-spectrum/docs/components/contextualhelp'
+import { Route as SolidSpectrumDocsComponentsDatefieldRouteImport } from './routes/solid-spectrum/docs/components/datefield'
+import { Route as SolidSpectrumDocsComponentsDatepickerRouteImport } from './routes/solid-spectrum/docs/components/datepicker'
+import { Route as SolidSpectrumDocsComponentsDaterangepickerRouteImport } from './routes/solid-spectrum/docs/components/daterangepicker'
+import { Route as SolidSpectrumDocsComponentsDialogRouteImport } from './routes/solid-spectrum/docs/components/dialog'
+import { Route as SolidSpectrumDocsComponentsDisclosureRouteImport } from './routes/solid-spectrum/docs/components/disclosure'
+import { Route as SolidSpectrumDocsComponentsDropzoneRouteImport } from './routes/solid-spectrum/docs/components/dropzone'
+import { Route as SolidSpectrumDocsComponentsFiletriggerRouteImport } from './routes/solid-spectrum/docs/components/filetrigger'
+import { Route as SolidSpectrumDocsComponentsGridlistRouteImport } from './routes/solid-spectrum/docs/components/gridlist'
+import { Route as SolidSpectrumDocsComponentsLinkRouteImport } from './routes/solid-spectrum/docs/components/link'
+import { Route as SolidSpectrumDocsComponentsMenuRouteImport } from './routes/solid-spectrum/docs/components/menu'
+import { Route as SolidSpectrumDocsComponentsMeterRouteImport } from './routes/solid-spectrum/docs/components/meter'
+import { Route as SolidSpectrumDocsComponentsNumberfieldRouteImport } from './routes/solid-spectrum/docs/components/numberfield'
+import { Route as SolidSpectrumDocsComponentsPickerRouteImport } from './routes/solid-spectrum/docs/components/picker'
+import { Route as SolidSpectrumDocsComponentsPopoverRouteImport } from './routes/solid-spectrum/docs/components/popover'
+import { Route as SolidSpectrumDocsComponentsProgressbarRouteImport } from './routes/solid-spectrum/docs/components/progressbar'
+import { Route as SolidSpectrumDocsComponentsProviderRouteImport } from './routes/solid-spectrum/docs/components/provider'
+import { Route as SolidSpectrumDocsComponentsRangecalendarRouteImport } from './routes/solid-spectrum/docs/components/rangecalendar'
+import { Route as SolidSpectrumDocsComponentsSearchfieldRouteImport } from './routes/solid-spectrum/docs/components/searchfield'
+import { Route as SolidSpectrumDocsComponentsSelectRouteImport } from './routes/solid-spectrum/docs/components/select'
+import { Route as SolidSpectrumDocsComponentsSeparatorRouteImport } from './routes/solid-spectrum/docs/components/separator'
+import { Route as SolidSpectrumDocsComponentsSliderRouteImport } from './routes/solid-spectrum/docs/components/slider'
+import { Route as SolidSpectrumDocsComponentsSwitchRouteImport } from './routes/solid-spectrum/docs/components/switch'
+import { Route as SolidSpectrumDocsComponentsTableRouteImport } from './routes/solid-spectrum/docs/components/table'
+import { Route as SolidSpectrumDocsComponentsTabsRouteImport } from './routes/solid-spectrum/docs/components/tabs'
+import { Route as SolidSpectrumDocsComponentsTaggroupRouteImport } from './routes/solid-spectrum/docs/components/taggroup'
+import { Route as SolidSpectrumDocsComponentsTextareaRouteImport } from './routes/solid-spectrum/docs/components/textarea'
+import { Route as SolidSpectrumDocsComponentsTextfieldRouteImport } from './routes/solid-spectrum/docs/components/textfield'
+import { Route as SolidSpectrumDocsComponentsTimefieldRouteImport } from './routes/solid-spectrum/docs/components/timefield'
+import { Route as SolidSpectrumDocsComponentsToastRouteImport } from './routes/solid-spectrum/docs/components/toast'
+import { Route as SolidSpectrumDocsComponentsToolbarRouteImport } from './routes/solid-spectrum/docs/components/toolbar'
+import { Route as SolidSpectrumDocsComponentsTooltipRouteImport } from './routes/solid-spectrum/docs/components/tooltip'
+import { Route as SolidSpectrumDocsComponentsTreeRouteImport } from './routes/solid-spectrum/docs/components/tree'
+import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from './routes/solid-spectrum/docs/components/virtualizer'
+import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from './routes/solid-spectrum/docs/hooks/create-button'
+import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from './routes/solid-spectrum/docs/hooks/create-press'
 
-const ThemeRoute = ThemeRouteImport.update({
-  id: '/theme',
-  path: '/theme',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -178,9 +178,9 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SolidSpectrumRouteRoute = SolidSpectrumRouteRouteImport.update({
-  id: '/solid-spectrum',
-  path: '/solid-spectrum',
+const DocsRouteRoute = DocsRouteRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShowcaseRouteRoute = ShowcaseRouteRouteImport.update({
@@ -188,109 +188,24 @@ const ShowcaseRouteRoute = ShowcaseRouteRouteImport.update({
   path: '/showcase',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DocsRouteRoute = DocsRouteRouteImport.update({
-  id: '/docs',
-  path: '/docs',
+const SolidSpectrumRouteRoute = SolidSpectrumRouteRouteImport.update({
+  id: '/solid-spectrum',
+  path: '/solid-spectrum',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const ThemeRoute = ThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
   getParentRoute: () => rootRouteImport,
-} as any)
-const SolidSpectrumIndexRoute = SolidSpectrumIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => SolidSpectrumRouteRoute,
-} as any)
-const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DocsRouteRoute,
 } as any)
-const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
-  id: '/playground',
-  path: '/playground',
-  getParentRoute: () => SolidSpectrumRouteRoute,
-} as any)
-const SolidSpectrumEcosystemRoute = SolidSpectrumEcosystemRouteImport.update({
-  id: '/ecosystem',
-  path: '/ecosystem',
-  getParentRoute: () => SolidSpectrumRouteRoute,
-} as any)
-const ShowcaseTypeRoute = ShowcaseTypeRouteImport.update({
-  id: '/type',
-  path: '/type',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseStatusRoute = ShowcaseStatusRouteImport.update({
-  id: '/status',
-  path: '/status',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseSlidersRoute = ShowcaseSlidersRouteImport.update({
-  id: '/sliders',
-  path: '/sliders',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseSelectionRoute = ShowcaseSelectionRouteImport.update({
-  id: '/selection',
-  path: '/selection',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcasePickersRoute = ShowcasePickersRouteImport.update({
-  id: '/pickers',
-  path: '/pickers',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseParityRoute = ShowcaseParityRouteImport.update({
-  id: '/parity',
-  path: '/parity',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseOverlaysRoute = ShowcaseOverlaysRouteImport.update({
-  id: '/overlays',
-  path: '/overlays',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseNavigationRoute = ShowcaseNavigationRouteImport.update({
-  id: '/navigation',
-  path: '/navigation',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseInputsRoute = ShowcaseInputsRouteImport.update({
-  id: '/inputs',
-  path: '/inputs',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseDatetimeRoute = ShowcaseDatetimeRouteImport.update({
-  id: '/datetime',
-  path: '/datetime',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseColorRoute = ShowcaseColorRouteImport.update({
-  id: '/color',
-  path: '/color',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseCollectionsRoute = ShowcaseCollectionsRouteImport.update({
-  id: '/collections',
-  path: '/collections',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseChipsRoute = ShowcaseChipsRouteImport.update({
-  id: '/chips',
-  path: '/chips',
-  getParentRoute: () => ShowcaseRouteRoute,
-} as any)
-const ShowcaseCardsRoute = ShowcaseCardsRouteImport.update({
-  id: '/cards',
-  path: '/cards',
+const ShowcaseIndexRoute = ShowcaseIndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => ShowcaseRouteRoute,
 } as any)
 const ShowcaseButtonsRoute = ShowcaseButtonsRouteImport.update({
@@ -298,10 +213,539 @@ const ShowcaseButtonsRoute = ShowcaseButtonsRouteImport.update({
   path: '/buttons',
   getParentRoute: () => ShowcaseRouteRoute,
 } as any)
+const ShowcaseCardsRoute = ShowcaseCardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseChipsRoute = ShowcaseChipsRouteImport.update({
+  id: '/chips',
+  path: '/chips',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseCollectionsRoute = ShowcaseCollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseColorRoute = ShowcaseColorRouteImport.update({
+  id: '/color',
+  path: '/color',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseDatetimeRoute = ShowcaseDatetimeRouteImport.update({
+  id: '/datetime',
+  path: '/datetime',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseInputsRoute = ShowcaseInputsRouteImport.update({
+  id: '/inputs',
+  path: '/inputs',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseNavigationRoute = ShowcaseNavigationRouteImport.update({
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseOverlaysRoute = ShowcaseOverlaysRouteImport.update({
+  id: '/overlays',
+  path: '/overlays',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseParityRoute = ShowcaseParityRouteImport.update({
+  id: '/parity',
+  path: '/parity',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcasePickersRoute = ShowcasePickersRouteImport.update({
+  id: '/pickers',
+  path: '/pickers',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseSelectionRoute = ShowcaseSelectionRouteImport.update({
+  id: '/selection',
+  path: '/selection',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseSlidersRoute = ShowcaseSlidersRouteImport.update({
+  id: '/sliders',
+  path: '/sliders',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseStatusRoute = ShowcaseStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const ShowcaseTypeRoute = ShowcaseTypeRouteImport.update({
+  id: '/type',
+  path: '/type',
+  getParentRoute: () => ShowcaseRouteRoute,
+} as any)
+const SolidSpectrumIndexRoute = SolidSpectrumIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SolidSpectrumRouteRoute,
+} as any)
 const SolidSpectrumDocsRouteRoute = SolidSpectrumDocsRouteRouteImport.update({
   id: '/docs',
   path: '/docs',
   getParentRoute: () => SolidSpectrumRouteRoute,
+} as any)
+const SolidSpectrumEcosystemRoute = SolidSpectrumEcosystemRouteImport.update({
+  id: '/ecosystem',
+  path: '/ecosystem',
+  getParentRoute: () => SolidSpectrumRouteRoute,
+} as any)
+const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => SolidSpectrumRouteRoute,
+} as any)
+const DocsComponentsAccordionRoute = DocsComponentsAccordionRouteImport.update({
+  id: '/components/accordion',
+  path: '/components/accordion',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsActionbarRoute = DocsComponentsActionbarRouteImport.update({
+  id: '/components/actionbar',
+  path: '/components/actionbar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsActionbuttonRoute =
+  DocsComponentsActionbuttonRouteImport.update({
+    id: '/components/actionbutton',
+    path: '/components/actionbutton',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActionbuttongroupRoute =
+  DocsComponentsActionbuttongroupRouteImport.update({
+    id: '/components/actionbuttongroup',
+    path: '/components/actionbuttongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActiongroupRoute =
+  DocsComponentsActiongroupRouteImport.update({
+    id: '/components/actiongroup',
+    path: '/components/actiongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsActionmenuRoute =
+  DocsComponentsActionmenuRouteImport.update({
+    id: '/components/actionmenu',
+    path: '/components/actionmenu',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsAlertdialogRoute =
+  DocsComponentsAlertdialogRouteImport.update({
+    id: '/components/alertdialog',
+    path: '/components/alertdialog',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsAssetcardRoute = DocsComponentsAssetcardRouteImport.update({
+  id: '/components/assetcard',
+  path: '/components/assetcard',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsAvatarRoute = DocsComponentsAvatarRouteImport.update({
+  id: '/components/avatar',
+  path: '/components/avatar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsBadgeRoute = DocsComponentsBadgeRouteImport.update({
+  id: '/components/badge',
+  path: '/components/badge',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsBreadcrumbsRoute =
+  DocsComponentsBreadcrumbsRouteImport.update({
+    id: '/components/breadcrumbs',
+    path: '/components/breadcrumbs',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsButtonRoute = DocsComponentsButtonRouteImport.update({
+  id: '/components/button',
+  path: '/components/button',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsButtongroupRoute =
+  DocsComponentsButtongroupRouteImport.update({
+    id: '/components/buttongroup',
+    path: '/components/buttongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsCalendarRoute = DocsComponentsCalendarRouteImport.update({
+  id: '/components/calendar',
+  path: '/components/calendar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCardRoute = DocsComponentsCardRouteImport.update({
+  id: '/components/card',
+  path: '/components/card',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCardviewRoute = DocsComponentsCardviewRouteImport.update({
+  id: '/components/cardview',
+  path: '/components/cardview',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsCheckboxRoute = DocsComponentsCheckboxRouteImport.update({
+  id: '/components/checkbox',
+  path: '/components/checkbox',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsColorareaRoute = DocsComponentsColorareaRouteImport.update({
+  id: '/components/colorarea',
+  path: '/components/colorarea',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsColoreditorRoute =
+  DocsComponentsColoreditorRouteImport.update({
+    id: '/components/coloreditor',
+    path: '/components/coloreditor',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorfieldRoute =
+  DocsComponentsColorfieldRouteImport.update({
+    id: '/components/colorfield',
+    path: '/components/colorfield',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorsliderRoute =
+  DocsComponentsColorsliderRouteImport.update({
+    id: '/components/colorslider',
+    path: '/components/colorslider',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorswatchRoute =
+  DocsComponentsColorswatchRouteImport.update({
+    id: '/components/colorswatch',
+    path: '/components/colorswatch',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorswatchpickerRoute =
+  DocsComponentsColorswatchpickerRouteImport.update({
+    id: '/components/colorswatchpicker',
+    path: '/components/colorswatchpicker',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsColorwheelRoute =
+  DocsComponentsColorwheelRouteImport.update({
+    id: '/components/colorwheel',
+    path: '/components/colorwheel',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsComboboxRoute = DocsComponentsComboboxRouteImport.update({
+  id: '/components/combobox',
+  path: '/components/combobox',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsContextualhelpRoute =
+  DocsComponentsContextualhelpRouteImport.update({
+    id: '/components/contextualhelp',
+    path: '/components/contextualhelp',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDatefieldRoute = DocsComponentsDatefieldRouteImport.update({
+  id: '/components/datefield',
+  path: '/components/datefield',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsDatepickerRoute =
+  DocsComponentsDatepickerRouteImport.update({
+    id: '/components/datepicker',
+    path: '/components/datepicker',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDaterangepickerRoute =
+  DocsComponentsDaterangepickerRouteImport.update({
+    id: '/components/daterangepicker',
+    path: '/components/daterangepicker',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDialogRoute = DocsComponentsDialogRouteImport.update({
+  id: '/components/dialog',
+  path: '/components/dialog',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsDisclosureRoute =
+  DocsComponentsDisclosureRouteImport.update({
+    id: '/components/disclosure',
+    path: '/components/disclosure',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsDividerRoute = DocsComponentsDividerRouteImport.update({
+  id: '/components/divider',
+  path: '/components/divider',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsDropzoneRoute = DocsComponentsDropzoneRouteImport.update({
+  id: '/components/dropzone',
+  path: '/components/dropzone',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsFiletriggerRoute =
+  DocsComponentsFiletriggerRouteImport.update({
+    id: '/components/filetrigger',
+    path: '/components/filetrigger',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsFormRoute = DocsComponentsFormRouteImport.update({
+  id: '/components/form',
+  path: '/components/form',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsGridlistRoute = DocsComponentsGridlistRouteImport.update({
+  id: '/components/gridlist',
+  path: '/components/gridlist',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsIconRoute = DocsComponentsIconRouteImport.update({
+  id: '/components/icon',
+  path: '/components/icon',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsIllustratedmessageRoute =
+  DocsComponentsIllustratedmessageRouteImport.update({
+    id: '/components/illustratedmessage',
+    path: '/components/illustratedmessage',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsImageRoute = DocsComponentsImageRouteImport.update({
+  id: '/components/image',
+  path: '/components/image',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsInlinealertRoute =
+  DocsComponentsInlinealertRouteImport.update({
+    id: '/components/inlinealert',
+    path: '/components/inlinealert',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsLabeledvalueRoute =
+  DocsComponentsLabeledvalueRouteImport.update({
+    id: '/components/labeledvalue',
+    path: '/components/labeledvalue',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsLayoutRoute = DocsComponentsLayoutRouteImport.update({
+  id: '/components/layout',
+  path: '/components/layout',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsLinkRoute = DocsComponentsLinkRouteImport.update({
+  id: '/components/link',
+  path: '/components/link',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsLinkbuttonRoute =
+  DocsComponentsLinkbuttonRouteImport.update({
+    id: '/components/linkbutton',
+    path: '/components/linkbutton',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsListboxRoute = DocsComponentsListboxRouteImport.update({
+  id: '/components/listbox',
+  path: '/components/listbox',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsMenuRoute = DocsComponentsMenuRouteImport.update({
+  id: '/components/menu',
+  path: '/components/menu',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsMeterRoute = DocsComponentsMeterRouteImport.update({
+  id: '/components/meter',
+  path: '/components/meter',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsNotificationbadgeRoute =
+  DocsComponentsNotificationbadgeRouteImport.update({
+    id: '/components/notificationbadge',
+    path: '/components/notificationbadge',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsNumberfieldRoute =
+  DocsComponentsNumberfieldRouteImport.update({
+    id: '/components/numberfield',
+    path: '/components/numberfield',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsPickerRoute = DocsComponentsPickerRouteImport.update({
+  id: '/components/picker',
+  path: '/components/picker',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsPopoverRoute = DocsComponentsPopoverRouteImport.update({
+  id: '/components/popover',
+  path: '/components/popover',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsProductcardRoute =
+  DocsComponentsProductcardRouteImport.update({
+    id: '/components/productcard',
+    path: '/components/productcard',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsProgressRoute = DocsComponentsProgressRouteImport.update({
+  id: '/components/progress',
+  path: '/components/progress',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsProgressBarRoute =
+  DocsComponentsProgressBarRouteImport.update({
+    id: '/components/progress-bar',
+    path: '/components/progress-bar',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsProviderRoute = DocsComponentsProviderRouteImport.update({
+  id: '/components/provider',
+  path: '/components/provider',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsRadioRoute = DocsComponentsRadioRouteImport.update({
+  id: '/components/radio',
+  path: '/components/radio',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsRangecalendarRoute =
+  DocsComponentsRangecalendarRouteImport.update({
+    id: '/components/rangecalendar',
+    path: '/components/rangecalendar',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsRangesliderRoute =
+  DocsComponentsRangesliderRouteImport.update({
+    id: '/components/rangeslider',
+    path: '/components/rangeslider',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSearchfieldRoute =
+  DocsComponentsSearchfieldRouteImport.update({
+    id: '/components/searchfield',
+    path: '/components/searchfield',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSegmentedcontrolRoute =
+  DocsComponentsSegmentedcontrolRouteImport.update({
+    id: '/components/segmentedcontrol',
+    path: '/components/segmentedcontrol',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSelectRoute = DocsComponentsSelectRouteImport.update({
+  id: '/components/select',
+  path: '/components/select',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSelectboxgroupRoute =
+  DocsComponentsSelectboxgroupRouteImport.update({
+    id: '/components/selectboxgroup',
+    path: '/components/selectboxgroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSeparatorRoute = DocsComponentsSeparatorRouteImport.update({
+  id: '/components/separator',
+  path: '/components/separator',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSkeletonRoute = DocsComponentsSkeletonRouteImport.update({
+  id: '/components/skeleton',
+  path: '/components/skeleton',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSliderRoute = DocsComponentsSliderRouteImport.update({
+  id: '/components/slider',
+  path: '/components/slider',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsStatuslightRoute =
+  DocsComponentsStatuslightRouteImport.update({
+    id: '/components/statuslight',
+    path: '/components/statuslight',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsSteplistRoute = DocsComponentsSteplistRouteImport.update({
+  id: '/components/steplist',
+  path: '/components/steplist',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsSwitchRoute = DocsComponentsSwitchRouteImport.update({
+  id: '/components/switch',
+  path: '/components/switch',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTableRoute = DocsComponentsTableRouteImport.update({
+  id: '/components/table',
+  path: '/components/table',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTabsRoute = DocsComponentsTabsRouteImport.update({
+  id: '/components/tabs',
+  path: '/components/tabs',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTagGroupRoute = DocsComponentsTagGroupRouteImport.update({
+  id: '/components/tag-group',
+  path: '/components/tag-group',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTextRoute = DocsComponentsTextRouteImport.update({
+  id: '/components/text',
+  path: '/components/text',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTextfieldRoute = DocsComponentsTextfieldRouteImport.update({
+  id: '/components/textfield',
+  path: '/components/textfield',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTimefieldRoute = DocsComponentsTimefieldRouteImport.update({
+  id: '/components/timefield',
+  path: '/components/timefield',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsToastRoute = DocsComponentsToastRouteImport.update({
+  id: '/components/toast',
+  path: '/components/toast',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTogglebuttonRoute =
+  DocsComponentsTogglebuttonRouteImport.update({
+    id: '/components/togglebutton',
+    path: '/components/togglebutton',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsTogglebuttongroupRoute =
+  DocsComponentsTogglebuttongroupRouteImport.update({
+    id: '/components/togglebuttongroup',
+    path: '/components/togglebuttongroup',
+    getParentRoute: () => DocsRouteRoute,
+  } as any)
+const DocsComponentsToolbarRoute = DocsComponentsToolbarRouteImport.update({
+  id: '/components/toolbar',
+  path: '/components/toolbar',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTooltipRoute = DocsComponentsTooltipRouteImport.update({
+  id: '/components/tooltip',
+  path: '/components/tooltip',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsTreeRoute = DocsComponentsTreeRouteImport.update({
+  id: '/components/tree',
+  path: '/components/tree',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsUsercardRoute = DocsComponentsUsercardRouteImport.update({
+  id: '/components/usercard',
+  path: '/components/usercard',
+  getParentRoute: () => DocsRouteRoute,
+} as any)
+const DocsComponentsWellRoute = DocsComponentsWellRouteImport.update({
+  id: '/components/well',
+  path: '/components/well',
+  getParentRoute: () => DocsRouteRoute,
 } as any)
 const SolidSpectrumDocsIndexRoute = SolidSpectrumDocsIndexRouteImport.update({
   id: '/',
@@ -314,718 +758,10 @@ const SolidSpectrumDocsInstallationRoute =
     path: '/installation',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
-const DocsComponentsWellRoute = DocsComponentsWellRouteImport.update({
-  id: '/components/well',
-  path: '/components/well',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsUsercardRoute = DocsComponentsUsercardRouteImport.update({
-  id: '/components/usercard',
-  path: '/components/usercard',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTreeRoute = DocsComponentsTreeRouteImport.update({
-  id: '/components/tree',
-  path: '/components/tree',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTooltipRoute = DocsComponentsTooltipRouteImport.update({
-  id: '/components/tooltip',
-  path: '/components/tooltip',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsToolbarRoute = DocsComponentsToolbarRouteImport.update({
-  id: '/components/toolbar',
-  path: '/components/toolbar',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTogglebuttongroupRoute =
-  DocsComponentsTogglebuttongroupRouteImport.update({
-    id: '/components/togglebuttongroup',
-    path: '/components/togglebuttongroup',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsTogglebuttonRoute =
-  DocsComponentsTogglebuttonRouteImport.update({
-    id: '/components/togglebutton',
-    path: '/components/togglebutton',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsToastRoute = DocsComponentsToastRouteImport.update({
-  id: '/components/toast',
-  path: '/components/toast',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTimefieldRoute = DocsComponentsTimefieldRouteImport.update({
-  id: '/components/timefield',
-  path: '/components/timefield',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTextfieldRoute = DocsComponentsTextfieldRouteImport.update({
-  id: '/components/textfield',
-  path: '/components/textfield',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTextRoute = DocsComponentsTextRouteImport.update({
-  id: '/components/text',
-  path: '/components/text',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTagGroupRoute = DocsComponentsTagGroupRouteImport.update({
-  id: '/components/tag-group',
-  path: '/components/tag-group',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTabsRoute = DocsComponentsTabsRouteImport.update({
-  id: '/components/tabs',
-  path: '/components/tabs',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsTableRoute = DocsComponentsTableRouteImport.update({
-  id: '/components/table',
-  path: '/components/table',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsSwitchRoute = DocsComponentsSwitchRouteImport.update({
-  id: '/components/switch',
-  path: '/components/switch',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsSteplistRoute = DocsComponentsSteplistRouteImport.update({
-  id: '/components/steplist',
-  path: '/components/steplist',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsStatuslightRoute =
-  DocsComponentsStatuslightRouteImport.update({
-    id: '/components/statuslight',
-    path: '/components/statuslight',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsSliderRoute = DocsComponentsSliderRouteImport.update({
-  id: '/components/slider',
-  path: '/components/slider',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsSkeletonRoute = DocsComponentsSkeletonRouteImport.update({
-  id: '/components/skeleton',
-  path: '/components/skeleton',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsSeparatorRoute = DocsComponentsSeparatorRouteImport.update({
-  id: '/components/separator',
-  path: '/components/separator',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsSelectboxgroupRoute =
-  DocsComponentsSelectboxgroupRouteImport.update({
-    id: '/components/selectboxgroup',
-    path: '/components/selectboxgroup',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsSelectRoute = DocsComponentsSelectRouteImport.update({
-  id: '/components/select',
-  path: '/components/select',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsSegmentedcontrolRoute =
-  DocsComponentsSegmentedcontrolRouteImport.update({
-    id: '/components/segmentedcontrol',
-    path: '/components/segmentedcontrol',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsSearchfieldRoute =
-  DocsComponentsSearchfieldRouteImport.update({
-    id: '/components/searchfield',
-    path: '/components/searchfield',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsRangesliderRoute =
-  DocsComponentsRangesliderRouteImport.update({
-    id: '/components/rangeslider',
-    path: '/components/rangeslider',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsRangecalendarRoute =
-  DocsComponentsRangecalendarRouteImport.update({
-    id: '/components/rangecalendar',
-    path: '/components/rangecalendar',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsRadioRoute = DocsComponentsRadioRouteImport.update({
-  id: '/components/radio',
-  path: '/components/radio',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsProviderRoute = DocsComponentsProviderRouteImport.update({
-  id: '/components/provider',
-  path: '/components/provider',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsProgressBarRoute =
-  DocsComponentsProgressBarRouteImport.update({
-    id: '/components/progress-bar',
-    path: '/components/progress-bar',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsProgressRoute = DocsComponentsProgressRouteImport.update({
-  id: '/components/progress',
-  path: '/components/progress',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsProductcardRoute =
-  DocsComponentsProductcardRouteImport.update({
-    id: '/components/productcard',
-    path: '/components/productcard',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsPopoverRoute = DocsComponentsPopoverRouteImport.update({
-  id: '/components/popover',
-  path: '/components/popover',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsPickerRoute = DocsComponentsPickerRouteImport.update({
-  id: '/components/picker',
-  path: '/components/picker',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsNumberfieldRoute =
-  DocsComponentsNumberfieldRouteImport.update({
-    id: '/components/numberfield',
-    path: '/components/numberfield',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsNotificationbadgeRoute =
-  DocsComponentsNotificationbadgeRouteImport.update({
-    id: '/components/notificationbadge',
-    path: '/components/notificationbadge',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsMeterRoute = DocsComponentsMeterRouteImport.update({
-  id: '/components/meter',
-  path: '/components/meter',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsMenuRoute = DocsComponentsMenuRouteImport.update({
-  id: '/components/menu',
-  path: '/components/menu',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsListboxRoute = DocsComponentsListboxRouteImport.update({
-  id: '/components/listbox',
-  path: '/components/listbox',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsLinkbuttonRoute =
-  DocsComponentsLinkbuttonRouteImport.update({
-    id: '/components/linkbutton',
-    path: '/components/linkbutton',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsLinkRoute = DocsComponentsLinkRouteImport.update({
-  id: '/components/link',
-  path: '/components/link',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsLayoutRoute = DocsComponentsLayoutRouteImport.update({
-  id: '/components/layout',
-  path: '/components/layout',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsLabeledvalueRoute =
-  DocsComponentsLabeledvalueRouteImport.update({
-    id: '/components/labeledvalue',
-    path: '/components/labeledvalue',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsInlinealertRoute =
-  DocsComponentsInlinealertRouteImport.update({
-    id: '/components/inlinealert',
-    path: '/components/inlinealert',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsImageRoute = DocsComponentsImageRouteImport.update({
-  id: '/components/image',
-  path: '/components/image',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsIllustratedmessageRoute =
-  DocsComponentsIllustratedmessageRouteImport.update({
-    id: '/components/illustratedmessage',
-    path: '/components/illustratedmessage',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsIconRoute = DocsComponentsIconRouteImport.update({
-  id: '/components/icon',
-  path: '/components/icon',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsGridlistRoute = DocsComponentsGridlistRouteImport.update({
-  id: '/components/gridlist',
-  path: '/components/gridlist',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsFormRoute = DocsComponentsFormRouteImport.update({
-  id: '/components/form',
-  path: '/components/form',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsFiletriggerRoute =
-  DocsComponentsFiletriggerRouteImport.update({
-    id: '/components/filetrigger',
-    path: '/components/filetrigger',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsDropzoneRoute = DocsComponentsDropzoneRouteImport.update({
-  id: '/components/dropzone',
-  path: '/components/dropzone',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsDividerRoute = DocsComponentsDividerRouteImport.update({
-  id: '/components/divider',
-  path: '/components/divider',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsDisclosureRoute =
-  DocsComponentsDisclosureRouteImport.update({
-    id: '/components/disclosure',
-    path: '/components/disclosure',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsDialogRoute = DocsComponentsDialogRouteImport.update({
-  id: '/components/dialog',
-  path: '/components/dialog',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsDaterangepickerRoute =
-  DocsComponentsDaterangepickerRouteImport.update({
-    id: '/components/daterangepicker',
-    path: '/components/daterangepicker',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsDatepickerRoute =
-  DocsComponentsDatepickerRouteImport.update({
-    id: '/components/datepicker',
-    path: '/components/datepicker',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsDatefieldRoute = DocsComponentsDatefieldRouteImport.update({
-  id: '/components/datefield',
-  path: '/components/datefield',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsContextualhelpRoute =
-  DocsComponentsContextualhelpRouteImport.update({
-    id: '/components/contextualhelp',
-    path: '/components/contextualhelp',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsComboboxRoute = DocsComponentsComboboxRouteImport.update({
-  id: '/components/combobox',
-  path: '/components/combobox',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsColorwheelRoute =
-  DocsComponentsColorwheelRouteImport.update({
-    id: '/components/colorwheel',
-    path: '/components/colorwheel',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsColorswatchpickerRoute =
-  DocsComponentsColorswatchpickerRouteImport.update({
-    id: '/components/colorswatchpicker',
-    path: '/components/colorswatchpicker',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsColorswatchRoute =
-  DocsComponentsColorswatchRouteImport.update({
-    id: '/components/colorswatch',
-    path: '/components/colorswatch',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsColorsliderRoute =
-  DocsComponentsColorsliderRouteImport.update({
-    id: '/components/colorslider',
-    path: '/components/colorslider',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsColorfieldRoute =
-  DocsComponentsColorfieldRouteImport.update({
-    id: '/components/colorfield',
-    path: '/components/colorfield',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsColoreditorRoute =
-  DocsComponentsColoreditorRouteImport.update({
-    id: '/components/coloreditor',
-    path: '/components/coloreditor',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsColorareaRoute = DocsComponentsColorareaRouteImport.update({
-  id: '/components/colorarea',
-  path: '/components/colorarea',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsCheckboxRoute = DocsComponentsCheckboxRouteImport.update({
-  id: '/components/checkbox',
-  path: '/components/checkbox',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsCardviewRoute = DocsComponentsCardviewRouteImport.update({
-  id: '/components/cardview',
-  path: '/components/cardview',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsCardRoute = DocsComponentsCardRouteImport.update({
-  id: '/components/card',
-  path: '/components/card',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsCalendarRoute = DocsComponentsCalendarRouteImport.update({
-  id: '/components/calendar',
-  path: '/components/calendar',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsButtongroupRoute =
-  DocsComponentsButtongroupRouteImport.update({
-    id: '/components/buttongroup',
-    path: '/components/buttongroup',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsButtonRoute = DocsComponentsButtonRouteImport.update({
-  id: '/components/button',
-  path: '/components/button',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsBreadcrumbsRoute =
-  DocsComponentsBreadcrumbsRouteImport.update({
-    id: '/components/breadcrumbs',
-    path: '/components/breadcrumbs',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsBadgeRoute = DocsComponentsBadgeRouteImport.update({
-  id: '/components/badge',
-  path: '/components/badge',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsAvatarRoute = DocsComponentsAvatarRouteImport.update({
-  id: '/components/avatar',
-  path: '/components/avatar',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsAssetcardRoute = DocsComponentsAssetcardRouteImport.update({
-  id: '/components/assetcard',
-  path: '/components/assetcard',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsAlertdialogRoute =
-  DocsComponentsAlertdialogRouteImport.update({
-    id: '/components/alertdialog',
-    path: '/components/alertdialog',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsActionmenuRoute =
-  DocsComponentsActionmenuRouteImport.update({
-    id: '/components/actionmenu',
-    path: '/components/actionmenu',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsActiongroupRoute =
-  DocsComponentsActiongroupRouteImport.update({
-    id: '/components/actiongroup',
-    path: '/components/actiongroup',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsActionbuttongroupRoute =
-  DocsComponentsActionbuttongroupRouteImport.update({
-    id: '/components/actionbuttongroup',
-    path: '/components/actionbuttongroup',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsActionbuttonRoute =
-  DocsComponentsActionbuttonRouteImport.update({
-    id: '/components/actionbutton',
-    path: '/components/actionbutton',
-    getParentRoute: () => DocsRouteRoute,
-  } as any)
-const DocsComponentsActionbarRoute = DocsComponentsActionbarRouteImport.update({
-  id: '/components/actionbar',
-  path: '/components/actionbar',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const DocsComponentsAccordionRoute = DocsComponentsAccordionRouteImport.update({
-  id: '/components/accordion',
-  path: '/components/accordion',
-  getParentRoute: () => DocsRouteRoute,
-} as any)
-const SolidSpectrumDocsHooksCreatePressRoute =
-  SolidSpectrumDocsHooksCreatePressRouteImport.update({
-    id: '/hooks/create-press',
-    path: '/hooks/create-press',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsHooksCreateButtonRoute =
-  SolidSpectrumDocsHooksCreateButtonRouteImport.update({
-    id: '/hooks/create-button',
-    path: '/hooks/create-button',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsVirtualizerRoute =
-  SolidSpectrumDocsComponentsVirtualizerRouteImport.update({
-    id: '/components/virtualizer',
-    path: '/components/virtualizer',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTreeRoute =
-  SolidSpectrumDocsComponentsTreeRouteImport.update({
-    id: '/components/tree',
-    path: '/components/tree',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTooltipRoute =
-  SolidSpectrumDocsComponentsTooltipRouteImport.update({
-    id: '/components/tooltip',
-    path: '/components/tooltip',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsToolbarRoute =
-  SolidSpectrumDocsComponentsToolbarRouteImport.update({
-    id: '/components/toolbar',
-    path: '/components/toolbar',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsToastRoute =
-  SolidSpectrumDocsComponentsToastRouteImport.update({
-    id: '/components/toast',
-    path: '/components/toast',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTimefieldRoute =
-  SolidSpectrumDocsComponentsTimefieldRouteImport.update({
-    id: '/components/timefield',
-    path: '/components/timefield',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTextfieldRoute =
-  SolidSpectrumDocsComponentsTextfieldRouteImport.update({
-    id: '/components/textfield',
-    path: '/components/textfield',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTextareaRoute =
-  SolidSpectrumDocsComponentsTextareaRouteImport.update({
-    id: '/components/textarea',
-    path: '/components/textarea',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTaggroupRoute =
-  SolidSpectrumDocsComponentsTaggroupRouteImport.update({
-    id: '/components/taggroup',
-    path: '/components/taggroup',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTabsRoute =
-  SolidSpectrumDocsComponentsTabsRouteImport.update({
-    id: '/components/tabs',
-    path: '/components/tabs',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsTableRoute =
-  SolidSpectrumDocsComponentsTableRouteImport.update({
-    id: '/components/table',
-    path: '/components/table',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsSwitchRoute =
-  SolidSpectrumDocsComponentsSwitchRouteImport.update({
-    id: '/components/switch',
-    path: '/components/switch',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsSliderRoute =
-  SolidSpectrumDocsComponentsSliderRouteImport.update({
-    id: '/components/slider',
-    path: '/components/slider',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsSeparatorRoute =
-  SolidSpectrumDocsComponentsSeparatorRouteImport.update({
-    id: '/components/separator',
-    path: '/components/separator',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsSelectRoute =
-  SolidSpectrumDocsComponentsSelectRouteImport.update({
-    id: '/components/select',
-    path: '/components/select',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsSearchfieldRoute =
-  SolidSpectrumDocsComponentsSearchfieldRouteImport.update({
-    id: '/components/searchfield',
-    path: '/components/searchfield',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsRangecalendarRoute =
-  SolidSpectrumDocsComponentsRangecalendarRouteImport.update({
-    id: '/components/rangecalendar',
-    path: '/components/rangecalendar',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsProviderRoute =
-  SolidSpectrumDocsComponentsProviderRouteImport.update({
-    id: '/components/provider',
-    path: '/components/provider',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsProgressbarRoute =
-  SolidSpectrumDocsComponentsProgressbarRouteImport.update({
-    id: '/components/progressbar',
-    path: '/components/progressbar',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsPopoverRoute =
-  SolidSpectrumDocsComponentsPopoverRouteImport.update({
-    id: '/components/popover',
-    path: '/components/popover',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsPickerRoute =
-  SolidSpectrumDocsComponentsPickerRouteImport.update({
-    id: '/components/picker',
-    path: '/components/picker',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsNumberfieldRoute =
-  SolidSpectrumDocsComponentsNumberfieldRouteImport.update({
-    id: '/components/numberfield',
-    path: '/components/numberfield',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsMeterRoute =
-  SolidSpectrumDocsComponentsMeterRouteImport.update({
-    id: '/components/meter',
-    path: '/components/meter',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsMenuRoute =
-  SolidSpectrumDocsComponentsMenuRouteImport.update({
-    id: '/components/menu',
-    path: '/components/menu',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsLinkRoute =
-  SolidSpectrumDocsComponentsLinkRouteImport.update({
-    id: '/components/link',
-    path: '/components/link',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsGridlistRoute =
-  SolidSpectrumDocsComponentsGridlistRouteImport.update({
-    id: '/components/gridlist',
-    path: '/components/gridlist',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsFiletriggerRoute =
-  SolidSpectrumDocsComponentsFiletriggerRouteImport.update({
-    id: '/components/filetrigger',
-    path: '/components/filetrigger',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsDropzoneRoute =
-  SolidSpectrumDocsComponentsDropzoneRouteImport.update({
-    id: '/components/dropzone',
-    path: '/components/dropzone',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsDisclosureRoute =
-  SolidSpectrumDocsComponentsDisclosureRouteImport.update({
-    id: '/components/disclosure',
-    path: '/components/disclosure',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsDialogRoute =
-  SolidSpectrumDocsComponentsDialogRouteImport.update({
-    id: '/components/dialog',
-    path: '/components/dialog',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsDaterangepickerRoute =
-  SolidSpectrumDocsComponentsDaterangepickerRouteImport.update({
-    id: '/components/daterangepicker',
-    path: '/components/daterangepicker',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsDatepickerRoute =
-  SolidSpectrumDocsComponentsDatepickerRouteImport.update({
-    id: '/components/datepicker',
-    path: '/components/datepicker',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsDatefieldRoute =
-  SolidSpectrumDocsComponentsDatefieldRouteImport.update({
-    id: '/components/datefield',
-    path: '/components/datefield',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsContextualhelpRoute =
-  SolidSpectrumDocsComponentsContextualhelpRouteImport.update({
-    id: '/components/contextualhelp',
-    path: '/components/contextualhelp',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsComboboxRoute =
-  SolidSpectrumDocsComponentsComboboxRouteImport.update({
-    id: '/components/combobox',
-    path: '/components/combobox',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsColorRoute =
-  SolidSpectrumDocsComponentsColorRouteImport.update({
-    id: '/components/color',
-    path: '/components/color',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsCheckboxRoute =
-  SolidSpectrumDocsComponentsCheckboxRouteImport.update({
-    id: '/components/checkbox',
-    path: '/components/checkbox',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsCalendarRoute =
-  SolidSpectrumDocsComponentsCalendarRouteImport.update({
-    id: '/components/calendar',
-    path: '/components/calendar',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsButtonRoute =
-  SolidSpectrumDocsComponentsButtonRouteImport.update({
-    id: '/components/button',
-    path: '/components/button',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsBreadcrumbsRoute =
-  SolidSpectrumDocsComponentsBreadcrumbsRouteImport.update({
-    id: '/components/breadcrumbs',
-    path: '/components/breadcrumbs',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsBadgeRoute =
-  SolidSpectrumDocsComponentsBadgeRouteImport.update({
-    id: '/components/badge',
-    path: '/components/badge',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsAlertdialogRoute =
-  SolidSpectrumDocsComponentsAlertdialogRouteImport.update({
-    id: '/components/alertdialog',
-    path: '/components/alertdialog',
-    getParentRoute: () => SolidSpectrumDocsRouteRoute,
-  } as any)
-const SolidSpectrumDocsComponentsActiongroupRoute =
-  SolidSpectrumDocsComponentsActiongroupRouteImport.update({
-    id: '/components/actiongroup',
-    path: '/components/actiongroup',
+const SolidSpectrumDocsComponentsAccordionRoute =
+  SolidSpectrumDocsComponentsAccordionRouteImport.update({
+    id: '/components/accordion',
+    path: '/components/accordion',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
 const SolidSpectrumDocsComponentsActionbarRoute =
@@ -1034,10 +770,274 @@ const SolidSpectrumDocsComponentsActionbarRoute =
     path: '/components/actionbar',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
-const SolidSpectrumDocsComponentsAccordionRoute =
-  SolidSpectrumDocsComponentsAccordionRouteImport.update({
-    id: '/components/accordion',
-    path: '/components/accordion',
+const SolidSpectrumDocsComponentsActiongroupRoute =
+  SolidSpectrumDocsComponentsActiongroupRouteImport.update({
+    id: '/components/actiongroup',
+    path: '/components/actiongroup',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsAlertdialogRoute =
+  SolidSpectrumDocsComponentsAlertdialogRouteImport.update({
+    id: '/components/alertdialog',
+    path: '/components/alertdialog',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsBadgeRoute =
+  SolidSpectrumDocsComponentsBadgeRouteImport.update({
+    id: '/components/badge',
+    path: '/components/badge',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsBreadcrumbsRoute =
+  SolidSpectrumDocsComponentsBreadcrumbsRouteImport.update({
+    id: '/components/breadcrumbs',
+    path: '/components/breadcrumbs',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsButtonRoute =
+  SolidSpectrumDocsComponentsButtonRouteImport.update({
+    id: '/components/button',
+    path: '/components/button',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsCalendarRoute =
+  SolidSpectrumDocsComponentsCalendarRouteImport.update({
+    id: '/components/calendar',
+    path: '/components/calendar',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsCheckboxRoute =
+  SolidSpectrumDocsComponentsCheckboxRouteImport.update({
+    id: '/components/checkbox',
+    path: '/components/checkbox',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsColorRoute =
+  SolidSpectrumDocsComponentsColorRouteImport.update({
+    id: '/components/color',
+    path: '/components/color',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsComboboxRoute =
+  SolidSpectrumDocsComponentsComboboxRouteImport.update({
+    id: '/components/combobox',
+    path: '/components/combobox',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsContextualhelpRoute =
+  SolidSpectrumDocsComponentsContextualhelpRouteImport.update({
+    id: '/components/contextualhelp',
+    path: '/components/contextualhelp',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsDatefieldRoute =
+  SolidSpectrumDocsComponentsDatefieldRouteImport.update({
+    id: '/components/datefield',
+    path: '/components/datefield',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsDatepickerRoute =
+  SolidSpectrumDocsComponentsDatepickerRouteImport.update({
+    id: '/components/datepicker',
+    path: '/components/datepicker',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsDaterangepickerRoute =
+  SolidSpectrumDocsComponentsDaterangepickerRouteImport.update({
+    id: '/components/daterangepicker',
+    path: '/components/daterangepicker',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsDialogRoute =
+  SolidSpectrumDocsComponentsDialogRouteImport.update({
+    id: '/components/dialog',
+    path: '/components/dialog',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsDisclosureRoute =
+  SolidSpectrumDocsComponentsDisclosureRouteImport.update({
+    id: '/components/disclosure',
+    path: '/components/disclosure',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsDropzoneRoute =
+  SolidSpectrumDocsComponentsDropzoneRouteImport.update({
+    id: '/components/dropzone',
+    path: '/components/dropzone',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsFiletriggerRoute =
+  SolidSpectrumDocsComponentsFiletriggerRouteImport.update({
+    id: '/components/filetrigger',
+    path: '/components/filetrigger',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsGridlistRoute =
+  SolidSpectrumDocsComponentsGridlistRouteImport.update({
+    id: '/components/gridlist',
+    path: '/components/gridlist',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsLinkRoute =
+  SolidSpectrumDocsComponentsLinkRouteImport.update({
+    id: '/components/link',
+    path: '/components/link',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsMenuRoute =
+  SolidSpectrumDocsComponentsMenuRouteImport.update({
+    id: '/components/menu',
+    path: '/components/menu',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsMeterRoute =
+  SolidSpectrumDocsComponentsMeterRouteImport.update({
+    id: '/components/meter',
+    path: '/components/meter',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsNumberfieldRoute =
+  SolidSpectrumDocsComponentsNumberfieldRouteImport.update({
+    id: '/components/numberfield',
+    path: '/components/numberfield',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsPickerRoute =
+  SolidSpectrumDocsComponentsPickerRouteImport.update({
+    id: '/components/picker',
+    path: '/components/picker',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsPopoverRoute =
+  SolidSpectrumDocsComponentsPopoverRouteImport.update({
+    id: '/components/popover',
+    path: '/components/popover',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsProgressbarRoute =
+  SolidSpectrumDocsComponentsProgressbarRouteImport.update({
+    id: '/components/progressbar',
+    path: '/components/progressbar',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsProviderRoute =
+  SolidSpectrumDocsComponentsProviderRouteImport.update({
+    id: '/components/provider',
+    path: '/components/provider',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsRangecalendarRoute =
+  SolidSpectrumDocsComponentsRangecalendarRouteImport.update({
+    id: '/components/rangecalendar',
+    path: '/components/rangecalendar',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSearchfieldRoute =
+  SolidSpectrumDocsComponentsSearchfieldRouteImport.update({
+    id: '/components/searchfield',
+    path: '/components/searchfield',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSelectRoute =
+  SolidSpectrumDocsComponentsSelectRouteImport.update({
+    id: '/components/select',
+    path: '/components/select',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSeparatorRoute =
+  SolidSpectrumDocsComponentsSeparatorRouteImport.update({
+    id: '/components/separator',
+    path: '/components/separator',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSliderRoute =
+  SolidSpectrumDocsComponentsSliderRouteImport.update({
+    id: '/components/slider',
+    path: '/components/slider',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsSwitchRoute =
+  SolidSpectrumDocsComponentsSwitchRouteImport.update({
+    id: '/components/switch',
+    path: '/components/switch',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTableRoute =
+  SolidSpectrumDocsComponentsTableRouteImport.update({
+    id: '/components/table',
+    path: '/components/table',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTabsRoute =
+  SolidSpectrumDocsComponentsTabsRouteImport.update({
+    id: '/components/tabs',
+    path: '/components/tabs',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTaggroupRoute =
+  SolidSpectrumDocsComponentsTaggroupRouteImport.update({
+    id: '/components/taggroup',
+    path: '/components/taggroup',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTextareaRoute =
+  SolidSpectrumDocsComponentsTextareaRouteImport.update({
+    id: '/components/textarea',
+    path: '/components/textarea',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTextfieldRoute =
+  SolidSpectrumDocsComponentsTextfieldRouteImport.update({
+    id: '/components/textfield',
+    path: '/components/textfield',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTimefieldRoute =
+  SolidSpectrumDocsComponentsTimefieldRouteImport.update({
+    id: '/components/timefield',
+    path: '/components/timefield',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsToastRoute =
+  SolidSpectrumDocsComponentsToastRouteImport.update({
+    id: '/components/toast',
+    path: '/components/toast',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsToolbarRoute =
+  SolidSpectrumDocsComponentsToolbarRouteImport.update({
+    id: '/components/toolbar',
+    path: '/components/toolbar',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTooltipRoute =
+  SolidSpectrumDocsComponentsTooltipRouteImport.update({
+    id: '/components/tooltip',
+    path: '/components/tooltip',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsTreeRoute =
+  SolidSpectrumDocsComponentsTreeRouteImport.update({
+    id: '/components/tree',
+    path: '/components/tree',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsComponentsVirtualizerRoute =
+  SolidSpectrumDocsComponentsVirtualizerRouteImport.update({
+    id: '/components/virtualizer',
+    path: '/components/virtualizer',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsHooksCreateButtonRoute =
+  SolidSpectrumDocsHooksCreateButtonRouteImport.update({
+    id: '/hooks/create-button',
+    path: '/hooks/create-button',
+    getParentRoute: () => SolidSpectrumDocsRouteRoute,
+  } as any)
+const SolidSpectrumDocsHooksCreatePressRoute =
+  SolidSpectrumDocsHooksCreatePressRouteImport.update({
+    id: '/hooks/create-press',
+    path: '/hooks/create-press',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
 
@@ -2008,11 +2008,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/solid-router' {
   interface FileRoutesByPath {
-    '/theme': {
-      id: '/theme'
-      path: '/theme'
-      fullPath: '/theme'
-      preLoaderRoute: typeof ThemeRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -2022,11 +2022,11 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/solid-spectrum': {
-      id: '/solid-spectrum'
-      path: '/solid-spectrum'
-      fullPath: '/solid-spectrum'
-      preLoaderRoute: typeof SolidSpectrumRouteRouteImport
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/showcase': {
@@ -2036,33 +2036,19 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ShowcaseRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/docs': {
-      id: '/docs'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof DocsRouteRouteImport
+    '/solid-spectrum': {
+      id: '/solid-spectrum'
+      path: '/solid-spectrum'
+      fullPath: '/solid-spectrum'
+      preLoaderRoute: typeof SolidSpectrumRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/theme': {
+      id: '/theme'
+      path: '/theme'
+      fullPath: '/theme'
+      preLoaderRoute: typeof ThemeRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/solid-spectrum/': {
-      id: '/solid-spectrum/'
-      path: '/'
-      fullPath: '/solid-spectrum/'
-      preLoaderRoute: typeof SolidSpectrumIndexRouteImport
-      parentRoute: typeof SolidSpectrumRouteRoute
-    }
-    '/showcase/': {
-      id: '/showcase/'
-      path: '/'
-      fullPath: '/showcase/'
-      preLoaderRoute: typeof ShowcaseIndexRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
     }
     '/docs/': {
       id: '/docs/'
@@ -2071,116 +2057,11 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof DocsIndexRouteImport
       parentRoute: typeof DocsRouteRoute
     }
-    '/solid-spectrum/playground': {
-      id: '/solid-spectrum/playground'
-      path: '/playground'
-      fullPath: '/solid-spectrum/playground'
-      preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport
-      parentRoute: typeof SolidSpectrumRouteRoute
-    }
-    '/solid-spectrum/ecosystem': {
-      id: '/solid-spectrum/ecosystem'
-      path: '/ecosystem'
-      fullPath: '/solid-spectrum/ecosystem'
-      preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport
-      parentRoute: typeof SolidSpectrumRouteRoute
-    }
-    '/showcase/type': {
-      id: '/showcase/type'
-      path: '/type'
-      fullPath: '/showcase/type'
-      preLoaderRoute: typeof ShowcaseTypeRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/status': {
-      id: '/showcase/status'
-      path: '/status'
-      fullPath: '/showcase/status'
-      preLoaderRoute: typeof ShowcaseStatusRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/sliders': {
-      id: '/showcase/sliders'
-      path: '/sliders'
-      fullPath: '/showcase/sliders'
-      preLoaderRoute: typeof ShowcaseSlidersRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/selection': {
-      id: '/showcase/selection'
-      path: '/selection'
-      fullPath: '/showcase/selection'
-      preLoaderRoute: typeof ShowcaseSelectionRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/pickers': {
-      id: '/showcase/pickers'
-      path: '/pickers'
-      fullPath: '/showcase/pickers'
-      preLoaderRoute: typeof ShowcasePickersRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/parity': {
-      id: '/showcase/parity'
-      path: '/parity'
-      fullPath: '/showcase/parity'
-      preLoaderRoute: typeof ShowcaseParityRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/overlays': {
-      id: '/showcase/overlays'
-      path: '/overlays'
-      fullPath: '/showcase/overlays'
-      preLoaderRoute: typeof ShowcaseOverlaysRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/navigation': {
-      id: '/showcase/navigation'
-      path: '/navigation'
-      fullPath: '/showcase/navigation'
-      preLoaderRoute: typeof ShowcaseNavigationRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/inputs': {
-      id: '/showcase/inputs'
-      path: '/inputs'
-      fullPath: '/showcase/inputs'
-      preLoaderRoute: typeof ShowcaseInputsRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/datetime': {
-      id: '/showcase/datetime'
-      path: '/datetime'
-      fullPath: '/showcase/datetime'
-      preLoaderRoute: typeof ShowcaseDatetimeRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/color': {
-      id: '/showcase/color'
-      path: '/color'
-      fullPath: '/showcase/color'
-      preLoaderRoute: typeof ShowcaseColorRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/collections': {
-      id: '/showcase/collections'
-      path: '/collections'
-      fullPath: '/showcase/collections'
-      preLoaderRoute: typeof ShowcaseCollectionsRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/chips': {
-      id: '/showcase/chips'
-      path: '/chips'
-      fullPath: '/showcase/chips'
-      preLoaderRoute: typeof ShowcaseChipsRouteImport
-      parentRoute: typeof ShowcaseRouteRoute
-    }
-    '/showcase/cards': {
-      id: '/showcase/cards'
-      path: '/cards'
-      fullPath: '/showcase/cards'
-      preLoaderRoute: typeof ShowcaseCardsRouteImport
+    '/showcase/': {
+      id: '/showcase/'
+      path: '/'
+      fullPath: '/showcase/'
+      preLoaderRoute: typeof ShowcaseIndexRouteImport
       parentRoute: typeof ShowcaseRouteRoute
     }
     '/showcase/buttons': {
@@ -2190,12 +2071,705 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ShowcaseButtonsRouteImport
       parentRoute: typeof ShowcaseRouteRoute
     }
+    '/showcase/cards': {
+      id: '/showcase/cards'
+      path: '/cards'
+      fullPath: '/showcase/cards'
+      preLoaderRoute: typeof ShowcaseCardsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/chips': {
+      id: '/showcase/chips'
+      path: '/chips'
+      fullPath: '/showcase/chips'
+      preLoaderRoute: typeof ShowcaseChipsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/collections': {
+      id: '/showcase/collections'
+      path: '/collections'
+      fullPath: '/showcase/collections'
+      preLoaderRoute: typeof ShowcaseCollectionsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/color': {
+      id: '/showcase/color'
+      path: '/color'
+      fullPath: '/showcase/color'
+      preLoaderRoute: typeof ShowcaseColorRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/datetime': {
+      id: '/showcase/datetime'
+      path: '/datetime'
+      fullPath: '/showcase/datetime'
+      preLoaderRoute: typeof ShowcaseDatetimeRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/inputs': {
+      id: '/showcase/inputs'
+      path: '/inputs'
+      fullPath: '/showcase/inputs'
+      preLoaderRoute: typeof ShowcaseInputsRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/navigation': {
+      id: '/showcase/navigation'
+      path: '/navigation'
+      fullPath: '/showcase/navigation'
+      preLoaderRoute: typeof ShowcaseNavigationRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/overlays': {
+      id: '/showcase/overlays'
+      path: '/overlays'
+      fullPath: '/showcase/overlays'
+      preLoaderRoute: typeof ShowcaseOverlaysRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/parity': {
+      id: '/showcase/parity'
+      path: '/parity'
+      fullPath: '/showcase/parity'
+      preLoaderRoute: typeof ShowcaseParityRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/pickers': {
+      id: '/showcase/pickers'
+      path: '/pickers'
+      fullPath: '/showcase/pickers'
+      preLoaderRoute: typeof ShowcasePickersRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/selection': {
+      id: '/showcase/selection'
+      path: '/selection'
+      fullPath: '/showcase/selection'
+      preLoaderRoute: typeof ShowcaseSelectionRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/sliders': {
+      id: '/showcase/sliders'
+      path: '/sliders'
+      fullPath: '/showcase/sliders'
+      preLoaderRoute: typeof ShowcaseSlidersRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/status': {
+      id: '/showcase/status'
+      path: '/status'
+      fullPath: '/showcase/status'
+      preLoaderRoute: typeof ShowcaseStatusRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/showcase/type': {
+      id: '/showcase/type'
+      path: '/type'
+      fullPath: '/showcase/type'
+      preLoaderRoute: typeof ShowcaseTypeRouteImport
+      parentRoute: typeof ShowcaseRouteRoute
+    }
+    '/solid-spectrum/': {
+      id: '/solid-spectrum/'
+      path: '/'
+      fullPath: '/solid-spectrum/'
+      preLoaderRoute: typeof SolidSpectrumIndexRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
+    }
     '/solid-spectrum/docs': {
       id: '/solid-spectrum/docs'
       path: '/docs'
       fullPath: '/solid-spectrum/docs'
       preLoaderRoute: typeof SolidSpectrumDocsRouteRouteImport
       parentRoute: typeof SolidSpectrumRouteRoute
+    }
+    '/solid-spectrum/ecosystem': {
+      id: '/solid-spectrum/ecosystem'
+      path: '/ecosystem'
+      fullPath: '/solid-spectrum/ecosystem'
+      preLoaderRoute: typeof SolidSpectrumEcosystemRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
+    }
+    '/solid-spectrum/playground': {
+      id: '/solid-spectrum/playground'
+      path: '/playground'
+      fullPath: '/solid-spectrum/playground'
+      preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport
+      parentRoute: typeof SolidSpectrumRouteRoute
+    }
+    '/docs/components/accordion': {
+      id: '/docs/components/accordion'
+      path: '/components/accordion'
+      fullPath: '/docs/components/accordion'
+      preLoaderRoute: typeof DocsComponentsAccordionRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionbar': {
+      id: '/docs/components/actionbar'
+      path: '/components/actionbar'
+      fullPath: '/docs/components/actionbar'
+      preLoaderRoute: typeof DocsComponentsActionbarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionbutton': {
+      id: '/docs/components/actionbutton'
+      path: '/components/actionbutton'
+      fullPath: '/docs/components/actionbutton'
+      preLoaderRoute: typeof DocsComponentsActionbuttonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionbuttongroup': {
+      id: '/docs/components/actionbuttongroup'
+      path: '/components/actionbuttongroup'
+      fullPath: '/docs/components/actionbuttongroup'
+      preLoaderRoute: typeof DocsComponentsActionbuttongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actiongroup': {
+      id: '/docs/components/actiongroup'
+      path: '/components/actiongroup'
+      fullPath: '/docs/components/actiongroup'
+      preLoaderRoute: typeof DocsComponentsActiongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/actionmenu': {
+      id: '/docs/components/actionmenu'
+      path: '/components/actionmenu'
+      fullPath: '/docs/components/actionmenu'
+      preLoaderRoute: typeof DocsComponentsActionmenuRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/alertdialog': {
+      id: '/docs/components/alertdialog'
+      path: '/components/alertdialog'
+      fullPath: '/docs/components/alertdialog'
+      preLoaderRoute: typeof DocsComponentsAlertdialogRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/assetcard': {
+      id: '/docs/components/assetcard'
+      path: '/components/assetcard'
+      fullPath: '/docs/components/assetcard'
+      preLoaderRoute: typeof DocsComponentsAssetcardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/avatar': {
+      id: '/docs/components/avatar'
+      path: '/components/avatar'
+      fullPath: '/docs/components/avatar'
+      preLoaderRoute: typeof DocsComponentsAvatarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/badge': {
+      id: '/docs/components/badge'
+      path: '/components/badge'
+      fullPath: '/docs/components/badge'
+      preLoaderRoute: typeof DocsComponentsBadgeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/breadcrumbs': {
+      id: '/docs/components/breadcrumbs'
+      path: '/components/breadcrumbs'
+      fullPath: '/docs/components/breadcrumbs'
+      preLoaderRoute: typeof DocsComponentsBreadcrumbsRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/button': {
+      id: '/docs/components/button'
+      path: '/components/button'
+      fullPath: '/docs/components/button'
+      preLoaderRoute: typeof DocsComponentsButtonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/buttongroup': {
+      id: '/docs/components/buttongroup'
+      path: '/components/buttongroup'
+      fullPath: '/docs/components/buttongroup'
+      preLoaderRoute: typeof DocsComponentsButtongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/calendar': {
+      id: '/docs/components/calendar'
+      path: '/components/calendar'
+      fullPath: '/docs/components/calendar'
+      preLoaderRoute: typeof DocsComponentsCalendarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/card': {
+      id: '/docs/components/card'
+      path: '/components/card'
+      fullPath: '/docs/components/card'
+      preLoaderRoute: typeof DocsComponentsCardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/cardview': {
+      id: '/docs/components/cardview'
+      path: '/components/cardview'
+      fullPath: '/docs/components/cardview'
+      preLoaderRoute: typeof DocsComponentsCardviewRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/checkbox': {
+      id: '/docs/components/checkbox'
+      path: '/components/checkbox'
+      fullPath: '/docs/components/checkbox'
+      preLoaderRoute: typeof DocsComponentsCheckboxRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorarea': {
+      id: '/docs/components/colorarea'
+      path: '/components/colorarea'
+      fullPath: '/docs/components/colorarea'
+      preLoaderRoute: typeof DocsComponentsColorareaRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/coloreditor': {
+      id: '/docs/components/coloreditor'
+      path: '/components/coloreditor'
+      fullPath: '/docs/components/coloreditor'
+      preLoaderRoute: typeof DocsComponentsColoreditorRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorfield': {
+      id: '/docs/components/colorfield'
+      path: '/components/colorfield'
+      fullPath: '/docs/components/colorfield'
+      preLoaderRoute: typeof DocsComponentsColorfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorslider': {
+      id: '/docs/components/colorslider'
+      path: '/components/colorslider'
+      fullPath: '/docs/components/colorslider'
+      preLoaderRoute: typeof DocsComponentsColorsliderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorswatch': {
+      id: '/docs/components/colorswatch'
+      path: '/components/colorswatch'
+      fullPath: '/docs/components/colorswatch'
+      preLoaderRoute: typeof DocsComponentsColorswatchRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorswatchpicker': {
+      id: '/docs/components/colorswatchpicker'
+      path: '/components/colorswatchpicker'
+      fullPath: '/docs/components/colorswatchpicker'
+      preLoaderRoute: typeof DocsComponentsColorswatchpickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/colorwheel': {
+      id: '/docs/components/colorwheel'
+      path: '/components/colorwheel'
+      fullPath: '/docs/components/colorwheel'
+      preLoaderRoute: typeof DocsComponentsColorwheelRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/combobox': {
+      id: '/docs/components/combobox'
+      path: '/components/combobox'
+      fullPath: '/docs/components/combobox'
+      preLoaderRoute: typeof DocsComponentsComboboxRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/contextualhelp': {
+      id: '/docs/components/contextualhelp'
+      path: '/components/contextualhelp'
+      fullPath: '/docs/components/contextualhelp'
+      preLoaderRoute: typeof DocsComponentsContextualhelpRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/datefield': {
+      id: '/docs/components/datefield'
+      path: '/components/datefield'
+      fullPath: '/docs/components/datefield'
+      preLoaderRoute: typeof DocsComponentsDatefieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/datepicker': {
+      id: '/docs/components/datepicker'
+      path: '/components/datepicker'
+      fullPath: '/docs/components/datepicker'
+      preLoaderRoute: typeof DocsComponentsDatepickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/daterangepicker': {
+      id: '/docs/components/daterangepicker'
+      path: '/components/daterangepicker'
+      fullPath: '/docs/components/daterangepicker'
+      preLoaderRoute: typeof DocsComponentsDaterangepickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/dialog': {
+      id: '/docs/components/dialog'
+      path: '/components/dialog'
+      fullPath: '/docs/components/dialog'
+      preLoaderRoute: typeof DocsComponentsDialogRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/disclosure': {
+      id: '/docs/components/disclosure'
+      path: '/components/disclosure'
+      fullPath: '/docs/components/disclosure'
+      preLoaderRoute: typeof DocsComponentsDisclosureRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/divider': {
+      id: '/docs/components/divider'
+      path: '/components/divider'
+      fullPath: '/docs/components/divider'
+      preLoaderRoute: typeof DocsComponentsDividerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/dropzone': {
+      id: '/docs/components/dropzone'
+      path: '/components/dropzone'
+      fullPath: '/docs/components/dropzone'
+      preLoaderRoute: typeof DocsComponentsDropzoneRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/filetrigger': {
+      id: '/docs/components/filetrigger'
+      path: '/components/filetrigger'
+      fullPath: '/docs/components/filetrigger'
+      preLoaderRoute: typeof DocsComponentsFiletriggerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/form': {
+      id: '/docs/components/form'
+      path: '/components/form'
+      fullPath: '/docs/components/form'
+      preLoaderRoute: typeof DocsComponentsFormRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/gridlist': {
+      id: '/docs/components/gridlist'
+      path: '/components/gridlist'
+      fullPath: '/docs/components/gridlist'
+      preLoaderRoute: typeof DocsComponentsGridlistRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/icon': {
+      id: '/docs/components/icon'
+      path: '/components/icon'
+      fullPath: '/docs/components/icon'
+      preLoaderRoute: typeof DocsComponentsIconRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/illustratedmessage': {
+      id: '/docs/components/illustratedmessage'
+      path: '/components/illustratedmessage'
+      fullPath: '/docs/components/illustratedmessage'
+      preLoaderRoute: typeof DocsComponentsIllustratedmessageRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/image': {
+      id: '/docs/components/image'
+      path: '/components/image'
+      fullPath: '/docs/components/image'
+      preLoaderRoute: typeof DocsComponentsImageRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/inlinealert': {
+      id: '/docs/components/inlinealert'
+      path: '/components/inlinealert'
+      fullPath: '/docs/components/inlinealert'
+      preLoaderRoute: typeof DocsComponentsInlinealertRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/labeledvalue': {
+      id: '/docs/components/labeledvalue'
+      path: '/components/labeledvalue'
+      fullPath: '/docs/components/labeledvalue'
+      preLoaderRoute: typeof DocsComponentsLabeledvalueRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/layout': {
+      id: '/docs/components/layout'
+      path: '/components/layout'
+      fullPath: '/docs/components/layout'
+      preLoaderRoute: typeof DocsComponentsLayoutRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/link': {
+      id: '/docs/components/link'
+      path: '/components/link'
+      fullPath: '/docs/components/link'
+      preLoaderRoute: typeof DocsComponentsLinkRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/linkbutton': {
+      id: '/docs/components/linkbutton'
+      path: '/components/linkbutton'
+      fullPath: '/docs/components/linkbutton'
+      preLoaderRoute: typeof DocsComponentsLinkbuttonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/listbox': {
+      id: '/docs/components/listbox'
+      path: '/components/listbox'
+      fullPath: '/docs/components/listbox'
+      preLoaderRoute: typeof DocsComponentsListboxRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/menu': {
+      id: '/docs/components/menu'
+      path: '/components/menu'
+      fullPath: '/docs/components/menu'
+      preLoaderRoute: typeof DocsComponentsMenuRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/meter': {
+      id: '/docs/components/meter'
+      path: '/components/meter'
+      fullPath: '/docs/components/meter'
+      preLoaderRoute: typeof DocsComponentsMeterRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/notificationbadge': {
+      id: '/docs/components/notificationbadge'
+      path: '/components/notificationbadge'
+      fullPath: '/docs/components/notificationbadge'
+      preLoaderRoute: typeof DocsComponentsNotificationbadgeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/numberfield': {
+      id: '/docs/components/numberfield'
+      path: '/components/numberfield'
+      fullPath: '/docs/components/numberfield'
+      preLoaderRoute: typeof DocsComponentsNumberfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/picker': {
+      id: '/docs/components/picker'
+      path: '/components/picker'
+      fullPath: '/docs/components/picker'
+      preLoaderRoute: typeof DocsComponentsPickerRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/popover': {
+      id: '/docs/components/popover'
+      path: '/components/popover'
+      fullPath: '/docs/components/popover'
+      preLoaderRoute: typeof DocsComponentsPopoverRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/productcard': {
+      id: '/docs/components/productcard'
+      path: '/components/productcard'
+      fullPath: '/docs/components/productcard'
+      preLoaderRoute: typeof DocsComponentsProductcardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/progress': {
+      id: '/docs/components/progress'
+      path: '/components/progress'
+      fullPath: '/docs/components/progress'
+      preLoaderRoute: typeof DocsComponentsProgressRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/progress-bar': {
+      id: '/docs/components/progress-bar'
+      path: '/components/progress-bar'
+      fullPath: '/docs/components/progress-bar'
+      preLoaderRoute: typeof DocsComponentsProgressBarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/provider': {
+      id: '/docs/components/provider'
+      path: '/components/provider'
+      fullPath: '/docs/components/provider'
+      preLoaderRoute: typeof DocsComponentsProviderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/radio': {
+      id: '/docs/components/radio'
+      path: '/components/radio'
+      fullPath: '/docs/components/radio'
+      preLoaderRoute: typeof DocsComponentsRadioRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/rangecalendar': {
+      id: '/docs/components/rangecalendar'
+      path: '/components/rangecalendar'
+      fullPath: '/docs/components/rangecalendar'
+      preLoaderRoute: typeof DocsComponentsRangecalendarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/rangeslider': {
+      id: '/docs/components/rangeslider'
+      path: '/components/rangeslider'
+      fullPath: '/docs/components/rangeslider'
+      preLoaderRoute: typeof DocsComponentsRangesliderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/searchfield': {
+      id: '/docs/components/searchfield'
+      path: '/components/searchfield'
+      fullPath: '/docs/components/searchfield'
+      preLoaderRoute: typeof DocsComponentsSearchfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/segmentedcontrol': {
+      id: '/docs/components/segmentedcontrol'
+      path: '/components/segmentedcontrol'
+      fullPath: '/docs/components/segmentedcontrol'
+      preLoaderRoute: typeof DocsComponentsSegmentedcontrolRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/select': {
+      id: '/docs/components/select'
+      path: '/components/select'
+      fullPath: '/docs/components/select'
+      preLoaderRoute: typeof DocsComponentsSelectRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/selectboxgroup': {
+      id: '/docs/components/selectboxgroup'
+      path: '/components/selectboxgroup'
+      fullPath: '/docs/components/selectboxgroup'
+      preLoaderRoute: typeof DocsComponentsSelectboxgroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/separator': {
+      id: '/docs/components/separator'
+      path: '/components/separator'
+      fullPath: '/docs/components/separator'
+      preLoaderRoute: typeof DocsComponentsSeparatorRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/skeleton': {
+      id: '/docs/components/skeleton'
+      path: '/components/skeleton'
+      fullPath: '/docs/components/skeleton'
+      preLoaderRoute: typeof DocsComponentsSkeletonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/slider': {
+      id: '/docs/components/slider'
+      path: '/components/slider'
+      fullPath: '/docs/components/slider'
+      preLoaderRoute: typeof DocsComponentsSliderRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/statuslight': {
+      id: '/docs/components/statuslight'
+      path: '/components/statuslight'
+      fullPath: '/docs/components/statuslight'
+      preLoaderRoute: typeof DocsComponentsStatuslightRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/steplist': {
+      id: '/docs/components/steplist'
+      path: '/components/steplist'
+      fullPath: '/docs/components/steplist'
+      preLoaderRoute: typeof DocsComponentsSteplistRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/switch': {
+      id: '/docs/components/switch'
+      path: '/components/switch'
+      fullPath: '/docs/components/switch'
+      preLoaderRoute: typeof DocsComponentsSwitchRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/table': {
+      id: '/docs/components/table'
+      path: '/components/table'
+      fullPath: '/docs/components/table'
+      preLoaderRoute: typeof DocsComponentsTableRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tabs': {
+      id: '/docs/components/tabs'
+      path: '/components/tabs'
+      fullPath: '/docs/components/tabs'
+      preLoaderRoute: typeof DocsComponentsTabsRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tag-group': {
+      id: '/docs/components/tag-group'
+      path: '/components/tag-group'
+      fullPath: '/docs/components/tag-group'
+      preLoaderRoute: typeof DocsComponentsTagGroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/text': {
+      id: '/docs/components/text'
+      path: '/components/text'
+      fullPath: '/docs/components/text'
+      preLoaderRoute: typeof DocsComponentsTextRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/textfield': {
+      id: '/docs/components/textfield'
+      path: '/components/textfield'
+      fullPath: '/docs/components/textfield'
+      preLoaderRoute: typeof DocsComponentsTextfieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/timefield': {
+      id: '/docs/components/timefield'
+      path: '/components/timefield'
+      fullPath: '/docs/components/timefield'
+      preLoaderRoute: typeof DocsComponentsTimefieldRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/toast': {
+      id: '/docs/components/toast'
+      path: '/components/toast'
+      fullPath: '/docs/components/toast'
+      preLoaderRoute: typeof DocsComponentsToastRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/togglebutton': {
+      id: '/docs/components/togglebutton'
+      path: '/components/togglebutton'
+      fullPath: '/docs/components/togglebutton'
+      preLoaderRoute: typeof DocsComponentsTogglebuttonRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/togglebuttongroup': {
+      id: '/docs/components/togglebuttongroup'
+      path: '/components/togglebuttongroup'
+      fullPath: '/docs/components/togglebuttongroup'
+      preLoaderRoute: typeof DocsComponentsTogglebuttongroupRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/toolbar': {
+      id: '/docs/components/toolbar'
+      path: '/components/toolbar'
+      fullPath: '/docs/components/toolbar'
+      preLoaderRoute: typeof DocsComponentsToolbarRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tooltip': {
+      id: '/docs/components/tooltip'
+      path: '/components/tooltip'
+      fullPath: '/docs/components/tooltip'
+      preLoaderRoute: typeof DocsComponentsTooltipRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/tree': {
+      id: '/docs/components/tree'
+      path: '/components/tree'
+      fullPath: '/docs/components/tree'
+      preLoaderRoute: typeof DocsComponentsTreeRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/usercard': {
+      id: '/docs/components/usercard'
+      path: '/components/usercard'
+      fullPath: '/docs/components/usercard'
+      preLoaderRoute: typeof DocsComponentsUsercardRouteImport
+      parentRoute: typeof DocsRouteRoute
+    }
+    '/docs/components/well': {
+      id: '/docs/components/well'
+      path: '/components/well'
+      fullPath: '/docs/components/well'
+      preLoaderRoute: typeof DocsComponentsWellRouteImport
+      parentRoute: typeof DocsRouteRoute
     }
     '/solid-spectrum/docs/': {
       id: '/solid-spectrum/docs/'
@@ -2211,893 +2785,11 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SolidSpectrumDocsInstallationRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
     }
-    '/docs/components/well': {
-      id: '/docs/components/well'
-      path: '/components/well'
-      fullPath: '/docs/components/well'
-      preLoaderRoute: typeof DocsComponentsWellRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/usercard': {
-      id: '/docs/components/usercard'
-      path: '/components/usercard'
-      fullPath: '/docs/components/usercard'
-      preLoaderRoute: typeof DocsComponentsUsercardRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/tree': {
-      id: '/docs/components/tree'
-      path: '/components/tree'
-      fullPath: '/docs/components/tree'
-      preLoaderRoute: typeof DocsComponentsTreeRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/tooltip': {
-      id: '/docs/components/tooltip'
-      path: '/components/tooltip'
-      fullPath: '/docs/components/tooltip'
-      preLoaderRoute: typeof DocsComponentsTooltipRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/toolbar': {
-      id: '/docs/components/toolbar'
-      path: '/components/toolbar'
-      fullPath: '/docs/components/toolbar'
-      preLoaderRoute: typeof DocsComponentsToolbarRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/togglebuttongroup': {
-      id: '/docs/components/togglebuttongroup'
-      path: '/components/togglebuttongroup'
-      fullPath: '/docs/components/togglebuttongroup'
-      preLoaderRoute: typeof DocsComponentsTogglebuttongroupRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/togglebutton': {
-      id: '/docs/components/togglebutton'
-      path: '/components/togglebutton'
-      fullPath: '/docs/components/togglebutton'
-      preLoaderRoute: typeof DocsComponentsTogglebuttonRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/toast': {
-      id: '/docs/components/toast'
-      path: '/components/toast'
-      fullPath: '/docs/components/toast'
-      preLoaderRoute: typeof DocsComponentsToastRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/timefield': {
-      id: '/docs/components/timefield'
-      path: '/components/timefield'
-      fullPath: '/docs/components/timefield'
-      preLoaderRoute: typeof DocsComponentsTimefieldRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/textfield': {
-      id: '/docs/components/textfield'
-      path: '/components/textfield'
-      fullPath: '/docs/components/textfield'
-      preLoaderRoute: typeof DocsComponentsTextfieldRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/text': {
-      id: '/docs/components/text'
-      path: '/components/text'
-      fullPath: '/docs/components/text'
-      preLoaderRoute: typeof DocsComponentsTextRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/tag-group': {
-      id: '/docs/components/tag-group'
-      path: '/components/tag-group'
-      fullPath: '/docs/components/tag-group'
-      preLoaderRoute: typeof DocsComponentsTagGroupRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/tabs': {
-      id: '/docs/components/tabs'
-      path: '/components/tabs'
-      fullPath: '/docs/components/tabs'
-      preLoaderRoute: typeof DocsComponentsTabsRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/table': {
-      id: '/docs/components/table'
-      path: '/components/table'
-      fullPath: '/docs/components/table'
-      preLoaderRoute: typeof DocsComponentsTableRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/switch': {
-      id: '/docs/components/switch'
-      path: '/components/switch'
-      fullPath: '/docs/components/switch'
-      preLoaderRoute: typeof DocsComponentsSwitchRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/steplist': {
-      id: '/docs/components/steplist'
-      path: '/components/steplist'
-      fullPath: '/docs/components/steplist'
-      preLoaderRoute: typeof DocsComponentsSteplistRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/statuslight': {
-      id: '/docs/components/statuslight'
-      path: '/components/statuslight'
-      fullPath: '/docs/components/statuslight'
-      preLoaderRoute: typeof DocsComponentsStatuslightRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/slider': {
-      id: '/docs/components/slider'
-      path: '/components/slider'
-      fullPath: '/docs/components/slider'
-      preLoaderRoute: typeof DocsComponentsSliderRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/skeleton': {
-      id: '/docs/components/skeleton'
-      path: '/components/skeleton'
-      fullPath: '/docs/components/skeleton'
-      preLoaderRoute: typeof DocsComponentsSkeletonRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/separator': {
-      id: '/docs/components/separator'
-      path: '/components/separator'
-      fullPath: '/docs/components/separator'
-      preLoaderRoute: typeof DocsComponentsSeparatorRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/selectboxgroup': {
-      id: '/docs/components/selectboxgroup'
-      path: '/components/selectboxgroup'
-      fullPath: '/docs/components/selectboxgroup'
-      preLoaderRoute: typeof DocsComponentsSelectboxgroupRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/select': {
-      id: '/docs/components/select'
-      path: '/components/select'
-      fullPath: '/docs/components/select'
-      preLoaderRoute: typeof DocsComponentsSelectRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/segmentedcontrol': {
-      id: '/docs/components/segmentedcontrol'
-      path: '/components/segmentedcontrol'
-      fullPath: '/docs/components/segmentedcontrol'
-      preLoaderRoute: typeof DocsComponentsSegmentedcontrolRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/searchfield': {
-      id: '/docs/components/searchfield'
-      path: '/components/searchfield'
-      fullPath: '/docs/components/searchfield'
-      preLoaderRoute: typeof DocsComponentsSearchfieldRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/rangeslider': {
-      id: '/docs/components/rangeslider'
-      path: '/components/rangeslider'
-      fullPath: '/docs/components/rangeslider'
-      preLoaderRoute: typeof DocsComponentsRangesliderRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/rangecalendar': {
-      id: '/docs/components/rangecalendar'
-      path: '/components/rangecalendar'
-      fullPath: '/docs/components/rangecalendar'
-      preLoaderRoute: typeof DocsComponentsRangecalendarRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/radio': {
-      id: '/docs/components/radio'
-      path: '/components/radio'
-      fullPath: '/docs/components/radio'
-      preLoaderRoute: typeof DocsComponentsRadioRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/provider': {
-      id: '/docs/components/provider'
-      path: '/components/provider'
-      fullPath: '/docs/components/provider'
-      preLoaderRoute: typeof DocsComponentsProviderRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/progress-bar': {
-      id: '/docs/components/progress-bar'
-      path: '/components/progress-bar'
-      fullPath: '/docs/components/progress-bar'
-      preLoaderRoute: typeof DocsComponentsProgressBarRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/progress': {
-      id: '/docs/components/progress'
-      path: '/components/progress'
-      fullPath: '/docs/components/progress'
-      preLoaderRoute: typeof DocsComponentsProgressRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/productcard': {
-      id: '/docs/components/productcard'
-      path: '/components/productcard'
-      fullPath: '/docs/components/productcard'
-      preLoaderRoute: typeof DocsComponentsProductcardRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/popover': {
-      id: '/docs/components/popover'
-      path: '/components/popover'
-      fullPath: '/docs/components/popover'
-      preLoaderRoute: typeof DocsComponentsPopoverRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/picker': {
-      id: '/docs/components/picker'
-      path: '/components/picker'
-      fullPath: '/docs/components/picker'
-      preLoaderRoute: typeof DocsComponentsPickerRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/numberfield': {
-      id: '/docs/components/numberfield'
-      path: '/components/numberfield'
-      fullPath: '/docs/components/numberfield'
-      preLoaderRoute: typeof DocsComponentsNumberfieldRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/notificationbadge': {
-      id: '/docs/components/notificationbadge'
-      path: '/components/notificationbadge'
-      fullPath: '/docs/components/notificationbadge'
-      preLoaderRoute: typeof DocsComponentsNotificationbadgeRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/meter': {
-      id: '/docs/components/meter'
-      path: '/components/meter'
-      fullPath: '/docs/components/meter'
-      preLoaderRoute: typeof DocsComponentsMeterRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/menu': {
-      id: '/docs/components/menu'
-      path: '/components/menu'
-      fullPath: '/docs/components/menu'
-      preLoaderRoute: typeof DocsComponentsMenuRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/listbox': {
-      id: '/docs/components/listbox'
-      path: '/components/listbox'
-      fullPath: '/docs/components/listbox'
-      preLoaderRoute: typeof DocsComponentsListboxRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/linkbutton': {
-      id: '/docs/components/linkbutton'
-      path: '/components/linkbutton'
-      fullPath: '/docs/components/linkbutton'
-      preLoaderRoute: typeof DocsComponentsLinkbuttonRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/link': {
-      id: '/docs/components/link'
-      path: '/components/link'
-      fullPath: '/docs/components/link'
-      preLoaderRoute: typeof DocsComponentsLinkRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/layout': {
-      id: '/docs/components/layout'
-      path: '/components/layout'
-      fullPath: '/docs/components/layout'
-      preLoaderRoute: typeof DocsComponentsLayoutRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/labeledvalue': {
-      id: '/docs/components/labeledvalue'
-      path: '/components/labeledvalue'
-      fullPath: '/docs/components/labeledvalue'
-      preLoaderRoute: typeof DocsComponentsLabeledvalueRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/inlinealert': {
-      id: '/docs/components/inlinealert'
-      path: '/components/inlinealert'
-      fullPath: '/docs/components/inlinealert'
-      preLoaderRoute: typeof DocsComponentsInlinealertRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/image': {
-      id: '/docs/components/image'
-      path: '/components/image'
-      fullPath: '/docs/components/image'
-      preLoaderRoute: typeof DocsComponentsImageRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/illustratedmessage': {
-      id: '/docs/components/illustratedmessage'
-      path: '/components/illustratedmessage'
-      fullPath: '/docs/components/illustratedmessage'
-      preLoaderRoute: typeof DocsComponentsIllustratedmessageRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/icon': {
-      id: '/docs/components/icon'
-      path: '/components/icon'
-      fullPath: '/docs/components/icon'
-      preLoaderRoute: typeof DocsComponentsIconRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/gridlist': {
-      id: '/docs/components/gridlist'
-      path: '/components/gridlist'
-      fullPath: '/docs/components/gridlist'
-      preLoaderRoute: typeof DocsComponentsGridlistRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/form': {
-      id: '/docs/components/form'
-      path: '/components/form'
-      fullPath: '/docs/components/form'
-      preLoaderRoute: typeof DocsComponentsFormRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/filetrigger': {
-      id: '/docs/components/filetrigger'
-      path: '/components/filetrigger'
-      fullPath: '/docs/components/filetrigger'
-      preLoaderRoute: typeof DocsComponentsFiletriggerRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/dropzone': {
-      id: '/docs/components/dropzone'
-      path: '/components/dropzone'
-      fullPath: '/docs/components/dropzone'
-      preLoaderRoute: typeof DocsComponentsDropzoneRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/divider': {
-      id: '/docs/components/divider'
-      path: '/components/divider'
-      fullPath: '/docs/components/divider'
-      preLoaderRoute: typeof DocsComponentsDividerRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/disclosure': {
-      id: '/docs/components/disclosure'
-      path: '/components/disclosure'
-      fullPath: '/docs/components/disclosure'
-      preLoaderRoute: typeof DocsComponentsDisclosureRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/dialog': {
-      id: '/docs/components/dialog'
-      path: '/components/dialog'
-      fullPath: '/docs/components/dialog'
-      preLoaderRoute: typeof DocsComponentsDialogRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/daterangepicker': {
-      id: '/docs/components/daterangepicker'
-      path: '/components/daterangepicker'
-      fullPath: '/docs/components/daterangepicker'
-      preLoaderRoute: typeof DocsComponentsDaterangepickerRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/datepicker': {
-      id: '/docs/components/datepicker'
-      path: '/components/datepicker'
-      fullPath: '/docs/components/datepicker'
-      preLoaderRoute: typeof DocsComponentsDatepickerRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/datefield': {
-      id: '/docs/components/datefield'
-      path: '/components/datefield'
-      fullPath: '/docs/components/datefield'
-      preLoaderRoute: typeof DocsComponentsDatefieldRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/contextualhelp': {
-      id: '/docs/components/contextualhelp'
-      path: '/components/contextualhelp'
-      fullPath: '/docs/components/contextualhelp'
-      preLoaderRoute: typeof DocsComponentsContextualhelpRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/combobox': {
-      id: '/docs/components/combobox'
-      path: '/components/combobox'
-      fullPath: '/docs/components/combobox'
-      preLoaderRoute: typeof DocsComponentsComboboxRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/colorwheel': {
-      id: '/docs/components/colorwheel'
-      path: '/components/colorwheel'
-      fullPath: '/docs/components/colorwheel'
-      preLoaderRoute: typeof DocsComponentsColorwheelRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/colorswatchpicker': {
-      id: '/docs/components/colorswatchpicker'
-      path: '/components/colorswatchpicker'
-      fullPath: '/docs/components/colorswatchpicker'
-      preLoaderRoute: typeof DocsComponentsColorswatchpickerRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/colorswatch': {
-      id: '/docs/components/colorswatch'
-      path: '/components/colorswatch'
-      fullPath: '/docs/components/colorswatch'
-      preLoaderRoute: typeof DocsComponentsColorswatchRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/colorslider': {
-      id: '/docs/components/colorslider'
-      path: '/components/colorslider'
-      fullPath: '/docs/components/colorslider'
-      preLoaderRoute: typeof DocsComponentsColorsliderRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/colorfield': {
-      id: '/docs/components/colorfield'
-      path: '/components/colorfield'
-      fullPath: '/docs/components/colorfield'
-      preLoaderRoute: typeof DocsComponentsColorfieldRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/coloreditor': {
-      id: '/docs/components/coloreditor'
-      path: '/components/coloreditor'
-      fullPath: '/docs/components/coloreditor'
-      preLoaderRoute: typeof DocsComponentsColoreditorRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/colorarea': {
-      id: '/docs/components/colorarea'
-      path: '/components/colorarea'
-      fullPath: '/docs/components/colorarea'
-      preLoaderRoute: typeof DocsComponentsColorareaRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/checkbox': {
-      id: '/docs/components/checkbox'
-      path: '/components/checkbox'
-      fullPath: '/docs/components/checkbox'
-      preLoaderRoute: typeof DocsComponentsCheckboxRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/cardview': {
-      id: '/docs/components/cardview'
-      path: '/components/cardview'
-      fullPath: '/docs/components/cardview'
-      preLoaderRoute: typeof DocsComponentsCardviewRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/card': {
-      id: '/docs/components/card'
-      path: '/components/card'
-      fullPath: '/docs/components/card'
-      preLoaderRoute: typeof DocsComponentsCardRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/calendar': {
-      id: '/docs/components/calendar'
-      path: '/components/calendar'
-      fullPath: '/docs/components/calendar'
-      preLoaderRoute: typeof DocsComponentsCalendarRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/buttongroup': {
-      id: '/docs/components/buttongroup'
-      path: '/components/buttongroup'
-      fullPath: '/docs/components/buttongroup'
-      preLoaderRoute: typeof DocsComponentsButtongroupRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/button': {
-      id: '/docs/components/button'
-      path: '/components/button'
-      fullPath: '/docs/components/button'
-      preLoaderRoute: typeof DocsComponentsButtonRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/breadcrumbs': {
-      id: '/docs/components/breadcrumbs'
-      path: '/components/breadcrumbs'
-      fullPath: '/docs/components/breadcrumbs'
-      preLoaderRoute: typeof DocsComponentsBreadcrumbsRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/badge': {
-      id: '/docs/components/badge'
-      path: '/components/badge'
-      fullPath: '/docs/components/badge'
-      preLoaderRoute: typeof DocsComponentsBadgeRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/avatar': {
-      id: '/docs/components/avatar'
-      path: '/components/avatar'
-      fullPath: '/docs/components/avatar'
-      preLoaderRoute: typeof DocsComponentsAvatarRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/assetcard': {
-      id: '/docs/components/assetcard'
-      path: '/components/assetcard'
-      fullPath: '/docs/components/assetcard'
-      preLoaderRoute: typeof DocsComponentsAssetcardRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/alertdialog': {
-      id: '/docs/components/alertdialog'
-      path: '/components/alertdialog'
-      fullPath: '/docs/components/alertdialog'
-      preLoaderRoute: typeof DocsComponentsAlertdialogRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/actionmenu': {
-      id: '/docs/components/actionmenu'
-      path: '/components/actionmenu'
-      fullPath: '/docs/components/actionmenu'
-      preLoaderRoute: typeof DocsComponentsActionmenuRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/actiongroup': {
-      id: '/docs/components/actiongroup'
-      path: '/components/actiongroup'
-      fullPath: '/docs/components/actiongroup'
-      preLoaderRoute: typeof DocsComponentsActiongroupRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/actionbuttongroup': {
-      id: '/docs/components/actionbuttongroup'
-      path: '/components/actionbuttongroup'
-      fullPath: '/docs/components/actionbuttongroup'
-      preLoaderRoute: typeof DocsComponentsActionbuttongroupRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/actionbutton': {
-      id: '/docs/components/actionbutton'
-      path: '/components/actionbutton'
-      fullPath: '/docs/components/actionbutton'
-      preLoaderRoute: typeof DocsComponentsActionbuttonRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/actionbar': {
-      id: '/docs/components/actionbar'
-      path: '/components/actionbar'
-      fullPath: '/docs/components/actionbar'
-      preLoaderRoute: typeof DocsComponentsActionbarRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/docs/components/accordion': {
-      id: '/docs/components/accordion'
+    '/solid-spectrum/docs/components/accordion': {
+      id: '/solid-spectrum/docs/components/accordion'
       path: '/components/accordion'
-      fullPath: '/docs/components/accordion'
-      preLoaderRoute: typeof DocsComponentsAccordionRouteImport
-      parentRoute: typeof DocsRouteRoute
-    }
-    '/solid-spectrum/docs/hooks/create-press': {
-      id: '/solid-spectrum/docs/hooks/create-press'
-      path: '/hooks/create-press'
-      fullPath: '/solid-spectrum/docs/hooks/create-press'
-      preLoaderRoute: typeof SolidSpectrumDocsHooksCreatePressRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/hooks/create-button': {
-      id: '/solid-spectrum/docs/hooks/create-button'
-      path: '/hooks/create-button'
-      fullPath: '/solid-spectrum/docs/hooks/create-button'
-      preLoaderRoute: typeof SolidSpectrumDocsHooksCreateButtonRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/virtualizer': {
-      id: '/solid-spectrum/docs/components/virtualizer'
-      path: '/components/virtualizer'
-      fullPath: '/solid-spectrum/docs/components/virtualizer'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsVirtualizerRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/tree': {
-      id: '/solid-spectrum/docs/components/tree'
-      path: '/components/tree'
-      fullPath: '/solid-spectrum/docs/components/tree'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTreeRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/tooltip': {
-      id: '/solid-spectrum/docs/components/tooltip'
-      path: '/components/tooltip'
-      fullPath: '/solid-spectrum/docs/components/tooltip'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTooltipRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/toolbar': {
-      id: '/solid-spectrum/docs/components/toolbar'
-      path: '/components/toolbar'
-      fullPath: '/solid-spectrum/docs/components/toolbar'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsToolbarRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/toast': {
-      id: '/solid-spectrum/docs/components/toast'
-      path: '/components/toast'
-      fullPath: '/solid-spectrum/docs/components/toast'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsToastRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/timefield': {
-      id: '/solid-spectrum/docs/components/timefield'
-      path: '/components/timefield'
-      fullPath: '/solid-spectrum/docs/components/timefield'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTimefieldRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/textfield': {
-      id: '/solid-spectrum/docs/components/textfield'
-      path: '/components/textfield'
-      fullPath: '/solid-spectrum/docs/components/textfield'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextfieldRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/textarea': {
-      id: '/solid-spectrum/docs/components/textarea'
-      path: '/components/textarea'
-      fullPath: '/solid-spectrum/docs/components/textarea'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextareaRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/taggroup': {
-      id: '/solid-spectrum/docs/components/taggroup'
-      path: '/components/taggroup'
-      fullPath: '/solid-spectrum/docs/components/taggroup'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTaggroupRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/tabs': {
-      id: '/solid-spectrum/docs/components/tabs'
-      path: '/components/tabs'
-      fullPath: '/solid-spectrum/docs/components/tabs'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTabsRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/table': {
-      id: '/solid-spectrum/docs/components/table'
-      path: '/components/table'
-      fullPath: '/solid-spectrum/docs/components/table'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsTableRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/switch': {
-      id: '/solid-spectrum/docs/components/switch'
-      path: '/components/switch'
-      fullPath: '/solid-spectrum/docs/components/switch'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSwitchRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/slider': {
-      id: '/solid-spectrum/docs/components/slider'
-      path: '/components/slider'
-      fullPath: '/solid-spectrum/docs/components/slider'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSliderRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/separator': {
-      id: '/solid-spectrum/docs/components/separator'
-      path: '/components/separator'
-      fullPath: '/solid-spectrum/docs/components/separator'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSeparatorRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/select': {
-      id: '/solid-spectrum/docs/components/select'
-      path: '/components/select'
-      fullPath: '/solid-spectrum/docs/components/select'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSelectRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/searchfield': {
-      id: '/solid-spectrum/docs/components/searchfield'
-      path: '/components/searchfield'
-      fullPath: '/solid-spectrum/docs/components/searchfield'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsSearchfieldRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/rangecalendar': {
-      id: '/solid-spectrum/docs/components/rangecalendar'
-      path: '/components/rangecalendar'
-      fullPath: '/solid-spectrum/docs/components/rangecalendar'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsRangecalendarRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/provider': {
-      id: '/solid-spectrum/docs/components/provider'
-      path: '/components/provider'
-      fullPath: '/solid-spectrum/docs/components/provider'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsProviderRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/progressbar': {
-      id: '/solid-spectrum/docs/components/progressbar'
-      path: '/components/progressbar'
-      fullPath: '/solid-spectrum/docs/components/progressbar'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsProgressbarRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/popover': {
-      id: '/solid-spectrum/docs/components/popover'
-      path: '/components/popover'
-      fullPath: '/solid-spectrum/docs/components/popover'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsPopoverRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/picker': {
-      id: '/solid-spectrum/docs/components/picker'
-      path: '/components/picker'
-      fullPath: '/solid-spectrum/docs/components/picker'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsPickerRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/numberfield': {
-      id: '/solid-spectrum/docs/components/numberfield'
-      path: '/components/numberfield'
-      fullPath: '/solid-spectrum/docs/components/numberfield'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsNumberfieldRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/meter': {
-      id: '/solid-spectrum/docs/components/meter'
-      path: '/components/meter'
-      fullPath: '/solid-spectrum/docs/components/meter'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsMeterRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/menu': {
-      id: '/solid-spectrum/docs/components/menu'
-      path: '/components/menu'
-      fullPath: '/solid-spectrum/docs/components/menu'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsMenuRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/link': {
-      id: '/solid-spectrum/docs/components/link'
-      path: '/components/link'
-      fullPath: '/solid-spectrum/docs/components/link'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsLinkRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/gridlist': {
-      id: '/solid-spectrum/docs/components/gridlist'
-      path: '/components/gridlist'
-      fullPath: '/solid-spectrum/docs/components/gridlist'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsGridlistRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/filetrigger': {
-      id: '/solid-spectrum/docs/components/filetrigger'
-      path: '/components/filetrigger'
-      fullPath: '/solid-spectrum/docs/components/filetrigger'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsFiletriggerRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/dropzone': {
-      id: '/solid-spectrum/docs/components/dropzone'
-      path: '/components/dropzone'
-      fullPath: '/solid-spectrum/docs/components/dropzone'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDropzoneRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/disclosure': {
-      id: '/solid-spectrum/docs/components/disclosure'
-      path: '/components/disclosure'
-      fullPath: '/solid-spectrum/docs/components/disclosure'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDisclosureRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/dialog': {
-      id: '/solid-spectrum/docs/components/dialog'
-      path: '/components/dialog'
-      fullPath: '/solid-spectrum/docs/components/dialog'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDialogRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/daterangepicker': {
-      id: '/solid-spectrum/docs/components/daterangepicker'
-      path: '/components/daterangepicker'
-      fullPath: '/solid-spectrum/docs/components/daterangepicker'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/datepicker': {
-      id: '/solid-spectrum/docs/components/datepicker'
-      path: '/components/datepicker'
-      fullPath: '/solid-spectrum/docs/components/datepicker'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatepickerRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/datefield': {
-      id: '/solid-spectrum/docs/components/datefield'
-      path: '/components/datefield'
-      fullPath: '/solid-spectrum/docs/components/datefield'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatefieldRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/contextualhelp': {
-      id: '/solid-spectrum/docs/components/contextualhelp'
-      path: '/components/contextualhelp'
-      fullPath: '/solid-spectrum/docs/components/contextualhelp'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsContextualhelpRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/combobox': {
-      id: '/solid-spectrum/docs/components/combobox'
-      path: '/components/combobox'
-      fullPath: '/solid-spectrum/docs/components/combobox'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsComboboxRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/color': {
-      id: '/solid-spectrum/docs/components/color'
-      path: '/components/color'
-      fullPath: '/solid-spectrum/docs/components/color'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsColorRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/checkbox': {
-      id: '/solid-spectrum/docs/components/checkbox'
-      path: '/components/checkbox'
-      fullPath: '/solid-spectrum/docs/components/checkbox'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsCheckboxRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/calendar': {
-      id: '/solid-spectrum/docs/components/calendar'
-      path: '/components/calendar'
-      fullPath: '/solid-spectrum/docs/components/calendar'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsCalendarRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/button': {
-      id: '/solid-spectrum/docs/components/button'
-      path: '/components/button'
-      fullPath: '/solid-spectrum/docs/components/button'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsButtonRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/breadcrumbs': {
-      id: '/solid-spectrum/docs/components/breadcrumbs'
-      path: '/components/breadcrumbs'
-      fullPath: '/solid-spectrum/docs/components/breadcrumbs'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/badge': {
-      id: '/solid-spectrum/docs/components/badge'
-      path: '/components/badge'
-      fullPath: '/solid-spectrum/docs/components/badge'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsBadgeRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/alertdialog': {
-      id: '/solid-spectrum/docs/components/alertdialog'
-      path: '/components/alertdialog'
-      fullPath: '/solid-spectrum/docs/components/alertdialog'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsAlertdialogRouteImport
-      parentRoute: typeof SolidSpectrumDocsRouteRoute
-    }
-    '/solid-spectrum/docs/components/actiongroup': {
-      id: '/solid-spectrum/docs/components/actiongroup'
-      path: '/components/actiongroup'
-      fullPath: '/solid-spectrum/docs/components/actiongroup'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsActiongroupRouteImport
+      fullPath: '/solid-spectrum/docs/components/accordion'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsAccordionRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
     }
     '/solid-spectrum/docs/components/actionbar': {
@@ -3107,11 +2799,319 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SolidSpectrumDocsComponentsActionbarRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
     }
-    '/solid-spectrum/docs/components/accordion': {
-      id: '/solid-spectrum/docs/components/accordion'
-      path: '/components/accordion'
-      fullPath: '/solid-spectrum/docs/components/accordion'
-      preLoaderRoute: typeof SolidSpectrumDocsComponentsAccordionRouteImport
+    '/solid-spectrum/docs/components/actiongroup': {
+      id: '/solid-spectrum/docs/components/actiongroup'
+      path: '/components/actiongroup'
+      fullPath: '/solid-spectrum/docs/components/actiongroup'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsActiongroupRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/alertdialog': {
+      id: '/solid-spectrum/docs/components/alertdialog'
+      path: '/components/alertdialog'
+      fullPath: '/solid-spectrum/docs/components/alertdialog'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsAlertdialogRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/badge': {
+      id: '/solid-spectrum/docs/components/badge'
+      path: '/components/badge'
+      fullPath: '/solid-spectrum/docs/components/badge'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsBadgeRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/breadcrumbs': {
+      id: '/solid-spectrum/docs/components/breadcrumbs'
+      path: '/components/breadcrumbs'
+      fullPath: '/solid-spectrum/docs/components/breadcrumbs'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsBreadcrumbsRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/button': {
+      id: '/solid-spectrum/docs/components/button'
+      path: '/components/button'
+      fullPath: '/solid-spectrum/docs/components/button'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsButtonRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/calendar': {
+      id: '/solid-spectrum/docs/components/calendar'
+      path: '/components/calendar'
+      fullPath: '/solid-spectrum/docs/components/calendar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsCalendarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/checkbox': {
+      id: '/solid-spectrum/docs/components/checkbox'
+      path: '/components/checkbox'
+      fullPath: '/solid-spectrum/docs/components/checkbox'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsCheckboxRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/color': {
+      id: '/solid-spectrum/docs/components/color'
+      path: '/components/color'
+      fullPath: '/solid-spectrum/docs/components/color'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsColorRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/combobox': {
+      id: '/solid-spectrum/docs/components/combobox'
+      path: '/components/combobox'
+      fullPath: '/solid-spectrum/docs/components/combobox'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsComboboxRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/contextualhelp': {
+      id: '/solid-spectrum/docs/components/contextualhelp'
+      path: '/components/contextualhelp'
+      fullPath: '/solid-spectrum/docs/components/contextualhelp'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsContextualhelpRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/datefield': {
+      id: '/solid-spectrum/docs/components/datefield'
+      path: '/components/datefield'
+      fullPath: '/solid-spectrum/docs/components/datefield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatefieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/datepicker': {
+      id: '/solid-spectrum/docs/components/datepicker'
+      path: '/components/datepicker'
+      fullPath: '/solid-spectrum/docs/components/datepicker'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDatepickerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/daterangepicker': {
+      id: '/solid-spectrum/docs/components/daterangepicker'
+      path: '/components/daterangepicker'
+      fullPath: '/solid-spectrum/docs/components/daterangepicker'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDaterangepickerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/dialog': {
+      id: '/solid-spectrum/docs/components/dialog'
+      path: '/components/dialog'
+      fullPath: '/solid-spectrum/docs/components/dialog'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDialogRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/disclosure': {
+      id: '/solid-spectrum/docs/components/disclosure'
+      path: '/components/disclosure'
+      fullPath: '/solid-spectrum/docs/components/disclosure'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDisclosureRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/dropzone': {
+      id: '/solid-spectrum/docs/components/dropzone'
+      path: '/components/dropzone'
+      fullPath: '/solid-spectrum/docs/components/dropzone'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsDropzoneRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/filetrigger': {
+      id: '/solid-spectrum/docs/components/filetrigger'
+      path: '/components/filetrigger'
+      fullPath: '/solid-spectrum/docs/components/filetrigger'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsFiletriggerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/gridlist': {
+      id: '/solid-spectrum/docs/components/gridlist'
+      path: '/components/gridlist'
+      fullPath: '/solid-spectrum/docs/components/gridlist'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsGridlistRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/link': {
+      id: '/solid-spectrum/docs/components/link'
+      path: '/components/link'
+      fullPath: '/solid-spectrum/docs/components/link'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsLinkRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/menu': {
+      id: '/solid-spectrum/docs/components/menu'
+      path: '/components/menu'
+      fullPath: '/solid-spectrum/docs/components/menu'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsMenuRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/meter': {
+      id: '/solid-spectrum/docs/components/meter'
+      path: '/components/meter'
+      fullPath: '/solid-spectrum/docs/components/meter'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsMeterRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/numberfield': {
+      id: '/solid-spectrum/docs/components/numberfield'
+      path: '/components/numberfield'
+      fullPath: '/solid-spectrum/docs/components/numberfield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsNumberfieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/picker': {
+      id: '/solid-spectrum/docs/components/picker'
+      path: '/components/picker'
+      fullPath: '/solid-spectrum/docs/components/picker'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsPickerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/popover': {
+      id: '/solid-spectrum/docs/components/popover'
+      path: '/components/popover'
+      fullPath: '/solid-spectrum/docs/components/popover'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsPopoverRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/progressbar': {
+      id: '/solid-spectrum/docs/components/progressbar'
+      path: '/components/progressbar'
+      fullPath: '/solid-spectrum/docs/components/progressbar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsProgressbarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/provider': {
+      id: '/solid-spectrum/docs/components/provider'
+      path: '/components/provider'
+      fullPath: '/solid-spectrum/docs/components/provider'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsProviderRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/rangecalendar': {
+      id: '/solid-spectrum/docs/components/rangecalendar'
+      path: '/components/rangecalendar'
+      fullPath: '/solid-spectrum/docs/components/rangecalendar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsRangecalendarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/searchfield': {
+      id: '/solid-spectrum/docs/components/searchfield'
+      path: '/components/searchfield'
+      fullPath: '/solid-spectrum/docs/components/searchfield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSearchfieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/select': {
+      id: '/solid-spectrum/docs/components/select'
+      path: '/components/select'
+      fullPath: '/solid-spectrum/docs/components/select'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSelectRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/separator': {
+      id: '/solid-spectrum/docs/components/separator'
+      path: '/components/separator'
+      fullPath: '/solid-spectrum/docs/components/separator'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSeparatorRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/slider': {
+      id: '/solid-spectrum/docs/components/slider'
+      path: '/components/slider'
+      fullPath: '/solid-spectrum/docs/components/slider'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSliderRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/switch': {
+      id: '/solid-spectrum/docs/components/switch'
+      path: '/components/switch'
+      fullPath: '/solid-spectrum/docs/components/switch'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsSwitchRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/table': {
+      id: '/solid-spectrum/docs/components/table'
+      path: '/components/table'
+      fullPath: '/solid-spectrum/docs/components/table'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTableRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/tabs': {
+      id: '/solid-spectrum/docs/components/tabs'
+      path: '/components/tabs'
+      fullPath: '/solid-spectrum/docs/components/tabs'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTabsRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/taggroup': {
+      id: '/solid-spectrum/docs/components/taggroup'
+      path: '/components/taggroup'
+      fullPath: '/solid-spectrum/docs/components/taggroup'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTaggroupRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/textarea': {
+      id: '/solid-spectrum/docs/components/textarea'
+      path: '/components/textarea'
+      fullPath: '/solid-spectrum/docs/components/textarea'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextareaRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/textfield': {
+      id: '/solid-spectrum/docs/components/textfield'
+      path: '/components/textfield'
+      fullPath: '/solid-spectrum/docs/components/textfield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTextfieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/timefield': {
+      id: '/solid-spectrum/docs/components/timefield'
+      path: '/components/timefield'
+      fullPath: '/solid-spectrum/docs/components/timefield'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTimefieldRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/toast': {
+      id: '/solid-spectrum/docs/components/toast'
+      path: '/components/toast'
+      fullPath: '/solid-spectrum/docs/components/toast'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsToastRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/toolbar': {
+      id: '/solid-spectrum/docs/components/toolbar'
+      path: '/components/toolbar'
+      fullPath: '/solid-spectrum/docs/components/toolbar'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsToolbarRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/tooltip': {
+      id: '/solid-spectrum/docs/components/tooltip'
+      path: '/components/tooltip'
+      fullPath: '/solid-spectrum/docs/components/tooltip'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTooltipRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/tree': {
+      id: '/solid-spectrum/docs/components/tree'
+      path: '/components/tree'
+      fullPath: '/solid-spectrum/docs/components/tree'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsTreeRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/components/virtualizer': {
+      id: '/solid-spectrum/docs/components/virtualizer'
+      path: '/components/virtualizer'
+      fullPath: '/solid-spectrum/docs/components/virtualizer'
+      preLoaderRoute: typeof SolidSpectrumDocsComponentsVirtualizerRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/hooks/create-button': {
+      id: '/solid-spectrum/docs/hooks/create-button'
+      path: '/hooks/create-button'
+      fullPath: '/solid-spectrum/docs/hooks/create-button'
+      preLoaderRoute: typeof SolidSpectrumDocsHooksCreateButtonRouteImport
+      parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/solid-spectrum/docs/hooks/create-press': {
+      id: '/solid-spectrum/docs/hooks/create-press'
+      path: '/hooks/create-press'
+      fullPath: '/solid-spectrum/docs/hooks/create-press'
+      preLoaderRoute: typeof SolidSpectrumDocsHooksCreatePressRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
     }
   }

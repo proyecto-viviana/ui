@@ -5,7 +5,7 @@
  * Verifies that touch events don't trigger hover (mouse-only behavior).
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createHover, type HoverEvent, type HoverProps } from "../src/interactions/createHover";
 import type { Component } from "solid-js";

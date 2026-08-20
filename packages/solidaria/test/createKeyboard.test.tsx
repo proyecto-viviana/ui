@@ -5,7 +5,7 @@
  * Verifies event handling, propagation control, and disabled state.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createKeyboard, type KeyboardEvent } from "../src/interactions/createKeyboard";
 import type { Component } from "solid-js";

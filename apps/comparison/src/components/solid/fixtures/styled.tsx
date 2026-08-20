@@ -1223,14 +1223,16 @@ function SolidSpectrumProviderDemo() {
     },
     [
       hc("div", { class: "comparison-provider-stack" }, [
-        hc("div", {
-          class: "comparison-provider-caption",
-          get "data-comparison-caption-scheme"() {
-            return demoProps().colorScheme;
+        hc(
+          "div",
+          {
+            class: "comparison-provider-caption",
+            get "data-comparison-caption-scheme"() {
+              return demoProps().colorScheme;
+            },
           },
-        }, [
-          () => `Outer provider: ${demoProps().colorScheme} / ${demoProps().background}`,
-        ]),
+          [() => `Outer provider: ${demoProps().colorScheme} / ${demoProps().background}`],
+        ),
         h(SolidSpectrumButton, { variant: "primary" }, "Inherited Action"),
         h(
           SolidSpectrumProvider,

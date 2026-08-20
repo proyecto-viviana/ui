@@ -1,7 +1,7 @@
 /**
  * Debug test for DialogTrigger + Button integration
  */
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { useContext } from "solid-js";
 import { DialogTriggerContext } from "../src/contexts";

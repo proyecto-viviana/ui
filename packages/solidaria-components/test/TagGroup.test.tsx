@@ -9,7 +9,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
 import { SelectionIndicator } from "../src/SelectionIndicator";

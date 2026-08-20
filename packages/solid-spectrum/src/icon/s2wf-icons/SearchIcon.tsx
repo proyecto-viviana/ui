@@ -5,8 +5,8 @@
  * Pixel parity requires the SHIPPED path data, not the raw vendored `.svg`
  * source: the compiled React S2 SearchField renders `icons/Search.mjs`, whose
  * `d` is SVGO-optimized to lower decimal precision. The higher-precision raw
- * source drifts sub-glyph antialiasing and fails D3. (Same principle recorded
- * on the Cross ui-icon.) See tech-debt `s2wf-icon-shipped-path-provenance`.
+ * source drifts sub-glyph antialiasing and fails D3. The Cross ui-icon has the
+ * same requirement. Ticket #72 owns the generation and provenance work.
  */
 
 import { type JSX } from "solid-js";

@@ -3,7 +3,7 @@ import type { OracleScope } from "./dom-oracle";
 import type { ComparisonColorScheme, ScreenshotDiffThreshold } from "../visual-diff";
 
 /**
- * Recertification driver scenario model (recertification.md Phase 1).
+ * Pair-oracle driver scenario model (see `.claude/current/certification.md`).
  *
  * A scenario describes one component route in pair-oracle terms: which prop
  * cases to load (URL params), which element to measure on each framework
@@ -222,7 +222,7 @@ export interface TimingTimeline {
 }
 
 /**
- * D11 timing driver config (recertification.md Phase 1). The driver installs
+ * D11 timing driver config (see `.claude/current/certification.md`). The driver installs
  * Playwright's mocked clock, lets each panel load + become ready under the
  * RUNNING clock (readiness awaits real `requestAnimationFrame`s a frozen clock
  * would deadlock), then FREEZES the clock and walks each timeline: real gestures

@@ -10,8 +10,9 @@ import {
   saveDoc,
 } from "./api";
 
-const TIER_ORDER: DocEntry["tier"][] = ["current", "repo", "research", "archive"];
+const TIER_ORDER: DocEntry["tier"][] = ["ticket", "current", "repo", "research", "archive"];
 const TIER_LABEL: Record<DocEntry["tier"], string> = {
+  ticket: "Tickets",
   current: "Current docs",
   repo: "Repo root",
   research: "Research (read-only)",
@@ -130,7 +131,10 @@ export function DocsPanel(props: {
                             title={entry.path}
                             onClick={() => props.onOpenDoc(entry.path)}
                           >
-                            {entry.path.replace(/^\.claude\/(current|research|archive)\//, "")}
+                            {entry.path.replace(
+                              /^\.claude\/(current|tickets|research|archive)\//,
+                              "",
+                            )}
                             <Show when={reviewState() && reviewState() !== "ok"}>
                               <span class={`chip review-${reviewState()}`}>{reviewState()}</span>
                             </Show>

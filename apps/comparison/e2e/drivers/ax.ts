@@ -10,7 +10,7 @@ import {
 import { forEachScenarioPanel } from "./walk";
 
 /**
- * Driver D6 — accessibility tree & announcements (recertification.md Phase 1).
+ * Driver D6 — accessibility tree & announcements (see `.claude/current/certification.md`).
  *
  * The semantics tier the style/pixel/event drivers cannot see: what a screen
  * reader actually perceives. Two halves, both exact pair-oracle assertions.
@@ -24,7 +24,7 @@ import { forEachScenarioPanel } from "./walk";
  *   omits the accessible *description*, so a second `evaluate` pass captures
  *   `{role, name, description}` for every element carrying an
  *   `aria-describedby` / `aria-description`, covering the spec's description
- *   field (recertification.md line 81). Both are diffed as JSON.
+ *   field. Both are diffed as JSON.
  * - **Announcements (live transcript).** Each `announce` trigger scripts an
  *   interaction expected to speak (a ComboBox result count, a Toast, a
  *   validation error). The oracle's MutationObserver records the ordered

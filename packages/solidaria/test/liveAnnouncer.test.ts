@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { announce, clearAnnouncer, destroyAnnouncer } from "../src/live-announcer";
 
 // Mark as test environment for immediate announcements

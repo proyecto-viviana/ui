@@ -4,7 +4,7 @@
  * Tests ARIA attributes, keyboard navigation, selection modes, and type-to-select.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { cleanup } from "@solidjs/testing-library";
 import { createListState, createListCollection } from "../../solid-stately/src";
@@ -25,6 +25,7 @@ function createMockKeyboardEvent(key: string, options: Partial<KeyboardEvent> = 
 function createBasicListState(
   options: {
     selectionMode?: "none" | "single" | "multiple";
+    selectionBehavior?: "toggle" | "replace";
     defaultSelectedKeys?: Iterable<string>;
     disabledKeys?: Iterable<string>;
     disabledBehavior?: "selection" | "all";
@@ -43,6 +44,7 @@ function createBasicListState(
     items,
     getKey: (item) => item.key,
     selectionMode: options.selectionMode ?? "single",
+    selectionBehavior: options.selectionBehavior,
     defaultSelectedKeys: options.defaultSelectedKeys,
     disabledKeys: options.disabledKeys,
     disabledBehavior: options.disabledBehavior,
@@ -844,9 +846,12 @@ describe("createListBox", () => {
   });
 
   describe("selection behavior", () => {
-    it("selects on ArrowDown in single selection mode", () => {
+    it("selects on ArrowDown when single selection uses replace behavior", () => {
       createRoot((dispose) => {
-        const state = createBasicListState({ selectionMode: "single" });
+        const state = createBasicListState({
+          selectionMode: "single",
+          selectionBehavior: "replace",
+        });
         const { listBoxProps } = createListBox({}, state);
 
         state.setFocusedKey("a");
@@ -856,6 +861,23 @@ describe("createListBox", () => {
 
         expect(state.focusedKey()).toBe("b");
         expect(state.selectedKeys().has("b")).toBe(true);
+        dispose();
+      });
+    });
+
+    it("moves focus without selecting when single selection uses toggle behavior", () => {
+      createRoot((dispose) => {
+        const state = createBasicListState({
+          selectionMode: "single",
+          selectionBehavior: "toggle",
+        });
+        const { listBoxProps } = createListBox({}, state);
+
+        state.setFocusedKey("a");
+        (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("ArrowDown"));
+
+        expect(state.focusedKey()).toBe("b");
+        expect(state.selectedKeys().size).toBe(0);
         dispose();
       });
     });

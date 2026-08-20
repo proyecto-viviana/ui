@@ -7,8 +7,8 @@
  * Note: The component is named ToggleSwitch to avoid conflict with
  * SolidJS's built-in Switch component.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@solidjs/testing-library";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, waitFor } from "@solidjs/testing-library";
 import { ToggleSwitch, type ToggleSwitchRenderProps } from "../src/Switch";
 import {
   setupUser,
@@ -202,6 +202,28 @@ describe("ToggleSwitch", () => {
   });
 
   describe("controlled/uncontrolled", () => {
+    it("should clear pointer press state after clicking the native input", async () => {
+      render(() => (
+        <ToggleSwitch
+          aria-label="Toggle"
+          class={({ isPressed }) => (isPressed ? "pressed" : "released")}
+        >
+          Toggle
+        </ToggleSwitch>
+      ));
+
+      const switchEl = screen.getByRole("switch");
+      const label = switchEl.closest("label")!;
+
+      await user.click(switchEl);
+
+      await waitFor(() => {
+        expect(label).not.toHaveAttribute("data-pressed");
+        expect(label).toHaveClass("released");
+        expect((switchEl as HTMLInputElement).style.userSelect).toBe("");
+      });
+    });
+
     it("should work as uncontrolled with defaultSelected", async () => {
       render(() => (
         <ToggleSwitch aria-label="Toggle" defaultSelected>

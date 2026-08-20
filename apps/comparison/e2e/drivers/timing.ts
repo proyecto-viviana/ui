@@ -9,7 +9,7 @@ import {
 import { forEachScenarioPanel } from "./walk";
 
 /**
- * Driver D11 — timing oracle (recertification.md Phase 1).
+ * Driver D11 — timing oracle (see `.claude/current/certification.md`).
  *
  * Certifies delay-driven behavior (tooltip warmup/cooldown, toast auto-dismiss,
  * long-press thresholds) under Playwright's mocked clock, so a delay boundary is

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { createTreeData } from "../../src/data/createTreeData";
 

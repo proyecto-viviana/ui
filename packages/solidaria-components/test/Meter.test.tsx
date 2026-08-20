@@ -10,7 +10,7 @@
  * - Labels
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { Meter } from "../src/Meter";
 import {

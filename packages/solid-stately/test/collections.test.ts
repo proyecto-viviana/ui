@@ -2,7 +2,7 @@
  * Tests for collection state management
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import {
   ListCollection,
@@ -636,6 +636,23 @@ describe("createMenuTriggerState", () => {
 
       state.close();
       expect(onOpenChange).toHaveBeenCalledWith(false);
+      dispose();
+    });
+  });
+
+  it("stores the focus strategy passed to open and toggle", () => {
+    createRoot((dispose) => {
+      const state = createMenuTriggerState();
+      expect(state.focusStrategy()).toBe(null);
+
+      state.open("first");
+      expect(state.isOpen()).toBe(true);
+      expect(state.focusStrategy()).toBe("first");
+
+      state.close();
+      state.toggle("last");
+      expect(state.isOpen()).toBe(true);
+      expect(state.focusStrategy()).toBe("last");
       dispose();
     });
   });

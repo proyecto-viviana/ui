@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import type { JSX } from "solid-js";
 import { useDragAndDrop } from "../src/useDragAndDrop";

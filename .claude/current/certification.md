@@ -3,7 +3,7 @@ kind: reference
 status: current
 ---
 
-# Evidence Bar
+# Evidence bar
 
 Status: live reference.
 Update when: the evidence dimensions, acceptance gates, or gate commands change.
@@ -13,9 +13,9 @@ This file keeps its historical name for link stability. It defines what
 can be accepted as ported.
 
 The per-component task runner is
-`../../apps/comparison/COMPONENT_PLAYBOOK.md`; the per-component checklist is
+`../../apps/comparison/COMPONENT_PLAYBOOK.md`. The per-component checklist is
 `../../apps/comparison/playbook/acceptance-gates.md`. This page explains the
-bar those documents enforce.
+bar that those documents enforce.
 
 ## What "ported" means
 
@@ -52,13 +52,13 @@ These are necessary and nowhere near sufficient. None is acceptance:
   announcements, or validation. WCAG 2.2 `target-size` (2.5.8) is disabled
   on the playground and comparison WCAG 2.2 AA smoke scans because S2
   compact tokens are faithfully under 24px (ActionGroup 21px, date/time
-  segments ~20px). Driver D8 pair-diffs target size against upstream; an
-  undersized control that matches the oracle is an upstream note, not a
-  port defect. Raising those controls to 24px would invent a size.
+  segments ~20px). Driver D8 compares target size against upstream. An
+  undersized control that matches the oracle is an upstream note, not a port
+  defect. Raising those controls to 24px would invent a size.
 - A **unit test passes** → necessary, but a single unit test is not the behavior
   contract.
-- A **screenshot is stable** → a settled frame; it cannot see transitions,
-  timing, or cleanup.
+- A **screenshot is stable** → proves only that one frame settled. It cannot
+  detect transitions, timing, or cleanup.
 
 ## Checks
 
@@ -68,7 +68,7 @@ Floors (fast, run constantly):
 vp run check              # format, lint (type-aware), typecheck
 vp run test:run           # package unit/integration suites (vitest)
 vp run a11y:check         # axe AA + comparison + every-route/two-theme contrast + smoke
-vp run a11y:contrast      # focused route-wide contrast gate (154 routes, light + dark)
+vp run a11y:contrast      # focused route-wide contrast gate, light and dark
 vp run a11y:full          # strict AA/best-practice + bounded AAA/experimental reports
 ```
 
@@ -91,7 +91,7 @@ vp run comparison:test:<component> # focused keyboard/focus/forms/announcements
 Repo-level guards and reports:
 
 ```bash
-vp run comparison:report:parity:strict   # expected to pass; in-scope failure blocks
+vp run comparison:report:parity:strict   # blocks on in-scope failure
 vp run comparison:report:gaps
 vp run comparison:report:exports
 vp run guard:upstream-oracle     # commit, package identities, and required evidence paths
@@ -113,7 +113,7 @@ Source Parity, Solid Idiomatic Implementation, Accessibility & I18n, Behavior
 State Machine, Style Source-to-Computed Parity, React-vs-Solid Comparison Harness
 Parity, Known Defects & Regression Protection, Evidence & Handoff. They are
 **additive**: one gate never substitutes for another. A component is `accepted`
-only when every in-scope gate is `complete`; otherwise it is `partial` or
+only when every in-scope gate is `complete`. Otherwise, it is `partial` or
 `not-started`. Each component's validation note
 (`../../apps/comparison/playbook/components/`) carries the gate outcome table and
 the evidence.
@@ -121,27 +121,49 @@ the evidence.
 `guard:upstream-test-parity` mechanizes a first-pass triage for **Gate 3 (Upstream
 React Source Parity)**: it diffs the ARIA-contract vocabulary our tests assert
 against the pinned upstream React Aria Components + S2 suites and ranks where we
-diverge. Its known findings are baselined, so resolved facts may disappear and
-new suspect/coverage facts fail; the report still does not decide which side is
-correct. Every flag is reconciled against authoritative source before a test
+diverge. Its known findings are baselined. Resolved facts can disappear, and
+new suspect or coverage facts fail. The report does not decide which side is
+correct. Reconcile each flag against authoritative source before a test
 changes (see `upstream-sync.md`). `guard:upstream-oracle` is the prerequisite:
 missing or mismatched upstream inputs are a gate failure, never a green skip.
 
-### Driver applicability (recertification march)
+## Pair-oracle driver catalog
 
-A recertification unit runs a component through every **applicable** pair-oracle
-driver (D1–D10; see `recertification.md`). Which drivers are in-scope is a
-per-component judgement, with one hard floor: **D5 (focus trail) and D6 (AX tree)
-are mandatory for every keyboard-heavy composite** — any component with roving
-focus, arrow-key navigation, type-ahead, or a collection of focusable items
-(menus, listboxes, grids, trees, tabs, toolbars, comboboxes, pickers, and their
-compositions). Certifying such a component on paint drivers alone (D1/D3/D7) is
-insufficient: it cannot catch a regression of the `menu-focus-roving` class (real
-DOM focus not following `focusedKey`) or a lost/dangling item description — both
-were REAL port bugs the Menu/ActionMenu D5+D6 backfill surfaced only once these
-drivers were registered (recertification.md CP9.38/CP9.39). A keyboard-heavy unit
-that omits D5 or D6 is `partial`, not `accepted`.
+Each driver runs the same scenario against React and Solid. The driver compares
+observable output. A component must run every applicable driver.
+
+| ID  | Driver             | Compared signal                                                                         |
+| --- | ------------------ | --------------------------------------------------------------------------------------- |
+| D1  | State matrix       | Computed styles for each state, theme, and size.                                        |
+| D2  | Motion             | Animation frames, keyframes, timing, and reduced-motion behavior.                       |
+| D3  | Strict pixels      | Zero-tolerance pair screenshots unless a tracked waiver names a measured harness limit. |
+| D4  | Events             | Ordered pointer, keyboard, focus, and callback events, including `defaultPrevented`.    |
+| D5  | Focus and keyboard | Active-element trails, roving `tabindex`, and `aria-activedescendant`.                  |
+| D6  | Accessibility tree | Role, name, description, state, and live-region announcements.                          |
+| D7  | Contrast           | Computed foreground and background ratios. AA blocks and AAA reports.                   |
+| D8  | Target size        | Pair-diffed hit boxes, with WCAG 2.5.8 and 2.5.5 reports.                               |
+| D9  | Forced colors      | State styles under `forced-colors: active`.                                             |
+| D10 | RTL and i18n       | Styles, focus, icons, navigation, and formatting under RTL and `ar-AE`.                 |
+| D11 | Timing             | Warmup, cooldown, auto-dismiss, pause, long-press, and cleanup under a mocked clock.    |
+| D12 | SSR and hydration  | Server HTML, stable ids, hydrated DOM, and post-hydration behavior.                     |
+
+Specialized drivers cover behavior that the base catalog does not model.
+D-scroll compares virtualized visible windows, position metadata, scroll
+extent, and focus survival. D-reorder compares keyboard drag focus and the
+resulting item order. Their source is in `../../apps/comparison/e2e/drivers/`.
+
+### Driver applicability
+
+D5 and D6 are mandatory for every keyboard-heavy composite. This includes any
+component with roving focus, arrow-key navigation, typeahead, or a collection of
+focusable items. Menus, listboxes, grids, trees, tabs, toolbars, comboboxes,
+pickers, and their compositions are in this group.
+
+Paint drivers alone cannot detect real DOM focus that stops following
+`focusedKey`, or a lost item description. Both defects occurred in Menu and
+ActionMenu before D5 and D6 were added. A keyboard-heavy component that omits D5
+or D6 is `partial`, not `accepted`.
 
 ## Refresh
 
-Status is refreshed from commands and reports; the snapshot lives in `status.md`.
+Commands and reports refresh status. The snapshot lives in `status.md`.

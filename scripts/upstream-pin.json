@@ -1,10 +1,10 @@
 {
-  "release": "@react-spectrum/s2@1.5.1",
-  "commit": "c4de1e2235bce213d392477a2ebc1e575937051f",
+  "release": "@react-spectrum/s2@1.6.0",
+  "commit": "5ecb3333001313e83898cd07644227897e3bae1f",
   "tags": {
-    "@react-spectrum/s2": "1.5.1",
-    "react-aria-components": "1.19.0"
+    "@react-spectrum/s2": "1.6.0",
+    "react-aria-components": "1.20.0"
   },
-  "pinnedAt": "2026-07-03",
-  "notes": "The gitignored ./react-spectrum oracle is materialized at this upstream release (an S2-only patch train; no new @adobe/react-spectrum umbrella tag, RAC stays 1.19.0). Bump it via the .claude/current/upstream-sync.md playbook, then re-run `vp run guard:upstream-test-parity` and triage the diff. Absorb backlog: Train 6 (1.18/1.4 -> 1.19/1.5) + Train 7 (s2 1.5.0 -> 1.5.1) in .claude/current/upstream-release-audit.md."
+  "pinnedAt": "2026-08-19",
+  "notes": "The gitignored ./react-spectrum oracle is materialized at the S2 1.6.0 / React Aria Components 1.20.0 release train. Bump it via the .claude/current/upstream-sync.md playbook, then re-run the upstream, style, and behavior gates and triage every release delta. Train 8 absorption is tracked by .claude/tickets/tasks/82-absorb-the-2026-08-upstream-train.md; pin alignment is complete, behavior absorption is not."
 }

@@ -5,10 +5,7 @@
 
 import { createSignal } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
-import {
-  createOverlayTriggerState,
-  type OverlayTriggerProps,
-} from "../overlays";
+import { createOverlayTriggerState, type OverlayTriggerProps } from "../overlays";
 import { createListState, type ListState, type ListStateProps } from "./createListState";
 import type { Key } from "./types";
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { createDropState } from "../src/dnd/createDropState";
 

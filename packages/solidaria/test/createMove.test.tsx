@@ -2,7 +2,7 @@
  * createMove tests - Port of React Aria's useMove.test.js
  */
 
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createMove } from "../src/interactions/createMove";
 import type { Component } from "solid-js";

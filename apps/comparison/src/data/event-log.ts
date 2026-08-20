@@ -1,6 +1,6 @@
 /**
  * Fixture-side callback logging for the D4 event-sequence oracle
- * (recertification.md Phase 1).
+ * (see the driver catalog in `.claude/current/certification.md`).
  *
  * Component callbacks (onPress*, onSelectionChange, onOpenChange, ...) are
  * invisible to DOM listeners, so fixtures re-emit them as bubbling

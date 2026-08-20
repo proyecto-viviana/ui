@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
-import { afterEach } from "vitest";
+import { afterEach } from "vite-plus/test";
 import {
   setGlobalDraggingCollectionRef,
   setGlobalDraggingKeys,

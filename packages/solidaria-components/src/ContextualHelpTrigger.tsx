@@ -5,14 +5,7 @@
  * Uses existing overlay infrastructure.
  */
 
-import {
-  type JSX,
-  createSignal,
-  splitProps,
-  Show,
-  createEffect,
-  createUniqueId,
-} from "solid-js";
+import { type JSX, createSignal, splitProps, Show, createEffect, createUniqueId } from "solid-js";
 import { createInteractOutside } from "@proyecto-viviana/solidaria";
 
 export interface ContextualHelpTriggerProps extends Omit<

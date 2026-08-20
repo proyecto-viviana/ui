@@ -55,7 +55,7 @@ const toggleButtonGroupScenario: DriverScenario = {
   // identically; `multiple` proves the independent-toggle path (aria-pressed);
   // `disabled` proves the group-level disable suppresses every press callback.
   // This is also the driver that catches the fixture's memo-rebuild focus-loss
-  // anti-pattern (see recertification.md ToggleButton watch-list): a selection
+  // anti-pattern: a selection
   // change that unmounts the pressed button emits a trailing focusout the React
   // oracle never fires.
   events: {

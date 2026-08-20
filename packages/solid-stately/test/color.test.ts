@@ -9,7 +9,7 @@
  * - ColorField state
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
 import type { Color } from "../src/color";
 import {

@@ -25,7 +25,7 @@ describe("acceptance schema", () => {
     expect(classifyGateOutcome("complete").kind).toBe("complete");
     expect(classifyGateOutcome("partial").kind).toBe("partial");
     expect(classifyGateOutcome("not-started").kind).toBe("not-started");
-    expect(classifyGateOutcome("pending").kind).toBe("not-started");
+    expect(classifyGateOutcome("pending").kind).toBe("unnormalized");
     expect(classifyGateOutcome("done").kind).toBe("unnormalized");
     expect(classifyGateOutcome("passing").kind).toBe("unnormalized");
     expect(classifyGateOutcome("accepted").kind).toBe("unnormalized");

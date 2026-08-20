@@ -12,9 +12,8 @@ companion.
 
 ## Sourced — Adobe React Spectrum (Apache-2.0)
 
-The five-layer package chain is a SolidJS **port** of Adobe's React Spectrum
-stack. This is direct, derivative-work use: the code structure, behavior, and
-tests are translated from the originals.
+The shared foundation and `solid-spectrum` are a SolidJS **port project** for
+Adobe's React Spectrum stack. This is direct, derivative-work use.
 
 | Our package                              | Ported from             | Upstream license |
 | ---------------------------------------- | ----------------------- | ---------------- |
@@ -38,6 +37,17 @@ Apache-2.0 material from Adobe:
   `apps/comparison/vendor/s2-docs/` (comparison reference; carries its own
   upstream `NOTICE`).
 
+## Sourced — Cloudflare Kumo (MIT)
+
+`@proyecto-viviana/kumo` translates selected Cloudflare Kumo components to
+Solid. The API, visual values, component structure, and tests use Kumo as the
+source.
+
+- Source: <https://github.com/cloudflare/kumo> — Copyright 2026 Cloudflare, Inc.
+- Initial source version: `@cloudflare/kumo@2.10.0`.
+- License notice: [`packages/kumo/LICENSE-CLOUDFLARE`](packages/kumo/LICENSE-CLOUDFLARE).
+- Current status: experiment with incomplete parity evidence.
+
 ## Inspired by — peer libraries
 
 Influence at the idea/pattern level, not derived code. No license obligation;
@@ -51,9 +61,10 @@ credited here because it shaped a decision.
 ## Sourced — Glasselated design lane (our own work, ported)
 
 The Glasselated visual system (the register on `packages/viviana-ui` and the
-`apps/web/src/routes/showcase` surface) was designed in the owner-directed
-Claude design lane recorded in `.claude/current/visual-system-lane.md`. Assets
-ported from the external, now-frozen design repository
+`apps/web/src/routes/showcase` surface) was designed in an owner-directed Claude
+design lane. The lane landed on 2026-07-22 from
+`design/visual-system-claude-v2`. Assets came from the external, now-frozen
+design repository
 (`proyecto-viviana/visual-system-claude`, branch `design/glasselated-v2`):
 
 - `apps/web/public/glasselated/` — scene photographs (`bg-scene.png`,

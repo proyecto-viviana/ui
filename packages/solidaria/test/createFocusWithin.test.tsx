@@ -4,7 +4,7 @@
  * Tests for handling focus events on a target element and its descendants.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createFocusWithin, type FocusWithinProps } from "../src/interactions/createFocusWithin";
 import { createSignal, type Component, type JSX } from "solid-js";

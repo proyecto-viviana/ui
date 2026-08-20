@@ -87,8 +87,8 @@ jobs:
         id: ci_guard_contracts
         run: pnpm run test:ci-guard-contracts
 
-      # 174 files had drifted out of format by the time anyone looked, because
-      # this ran here with continue-on-error and nowhere else (`launch.md` → B4).
+      # Formatting must block here. A non-blocking lint step once let 174 files
+      # drift before the next audit detected the failure.
       - name: lint (vp check)
         id: lint
         run: pnpm exec vp check
@@ -119,6 +119,13 @@ jobs:
         id: guard_style_macro_parity
         run: pnpm run guard:style-macro-parity
 
+      # Generated declarations beside source can silently shadow newer .ts
+      # files. Package declarations belong in dist; only the two explicit JSON
+      # module shims are allowed in source trees.
+      - name: guard source artifacts
+        id: guard_source_artifacts
+        run: pnpm run guard:source-artifacts
+
       # solid-spectrum ↔ viviana-ui dual-tree edge (ticket #2). Baselined
       # identical-copy backlog stays frozen; new Spectrum forks into ui fail.
       - name: guard layer-boundary
@@ -148,8 +155,8 @@ jobs:
         id: guard_api_reference
         run: pnpm run guard:api-reference
 
-      # Keeps the repository slug from rotting in site links again and holds
-      # every published package to full npm metadata (`launch.md` → B1, B7).
+      # Keeps the repository slug from rotting in site links and holds every
+      # published package to full npm metadata.
       - name: guard outbound-links
         id: guard_outbound_links
         run: pnpm run guard:outbound-links
@@ -174,7 +181,7 @@ jobs:
         run: pnpm run docs:check
 
       # Promoted 2026-08-07 (ticket #2): baselined the 9 known catalogue-depth
-      # gaps (tech-debt.md → labeledvalue-strict-parity). New gaps outside
+      # gaps. Ticket #85 owns that strict-parity backlog. New gaps outside
       # apps/comparison/scripts/parity-strict-baseline.json fail the job.
       # Use report:parity:strict --strict-full locally to see the full backlog.
       - name: comparison parity (strict)
@@ -247,6 +254,7 @@ jobs:
           O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_STYLE_MACRO_PARITY: ${{ steps.guard_style_macro_parity.outcome }}
+          O_GUARD_SOURCE_ARTIFACTS: ${{ steps.guard_source_artifacts.outcome }}
           O_GUARD_LAYER_BOUNDARY: ${{ steps.guard_layer_boundary.outcome }}
           O_GUARD_IDIOMATIC_SOLID: ${{ steps.guard_idiomatic_solid.outcome }}
           O_GUARD_INVENTED_UTILITIES: ${{ steps.guard_invented_utilities.outcome }}
@@ -292,6 +300,7 @@ jobs:
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
             echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
             echo "| \`guard:style-macro-parity\` | $(icon "$O_GUARD_STYLE_MACRO_PARITY") |"
+            echo "| \`guard:source-artifacts\` | $(icon "$O_GUARD_SOURCE_ARTIFACTS") |"
             echo "| \`guard:layer-boundary\` | $(icon "$O_GUARD_LAYER_BOUNDARY") |"
             echo "| \`guard:idiomatic-solid\` | $(icon "$O_GUARD_IDIOMATIC_SOLID") |"
             echo "| \`guard:invented-utilities\` | $(icon "$O_GUARD_INVENTED_UTILITIES") |"

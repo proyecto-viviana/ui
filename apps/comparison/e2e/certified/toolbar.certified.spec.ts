@@ -67,9 +67,8 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  * DRIVERS SCOPED OUT (documented, not silent):
  *   - D1 (state-matrix) / D3 (pixel) / D7 (contrast) / D8 (target size) / D9
  *     (forced colors) — no styled S2 Toolbar oracle exists (S2 adds zero style),
- *     so there is nothing to pixel-diff. The solid-spectrum Toolbar is stripped
- *     to a bare passthrough as part of this unit (tailwind-removal Phase 0),
- *     matching S2.
+ *     so there is nothing to pixel-diff. This unit stripped the solid-spectrum
+ *     Toolbar to a bare passthrough, matching S2 (tickets #46 and #59).
  *   - D2 (motion) — no enter/exit animation.
  *   - D4 (events) — the press/focus event model is exercised through the shared
  *     interaction-hook family (createButton / focus manager), per the hook-family

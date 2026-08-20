@@ -4,7 +4,7 @@
  * collection-order helpers (getChildNodes / get*Item / compareNodeOrder).
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { ListCollection } from "../src/collections/ListCollection";
 import type { CollectionNode } from "../src/collections/types";
 import {

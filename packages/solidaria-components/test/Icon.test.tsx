@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { Icon, type IconRenderProps } from "../src/Icon";

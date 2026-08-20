@@ -185,8 +185,12 @@ button.link:hover {
   background: #76828d;
 }
 
-.state-done {
+.state-merged {
   background: #3fa66a;
+}
+
+.state-verified {
+  background: #55c58a;
 }
 
 .state-in-progress {
@@ -197,16 +201,15 @@ button.link:hover {
   background: #a86fd6;
 }
 
-.state-blocked {
-  background: #d65f5f;
-}
-
 .state-open {
   background: #76828d;
 }
 
-.stat.state-bg-done .stat-num {
+.stat.state-bg-merged .stat-num {
   color: #3fa66a;
+}
+.stat.state-bg-verified .stat-num {
+  color: #55c58a;
 }
 .stat.state-bg-in-progress .stat-num {
   color: #4a8fd6;
@@ -214,10 +217,6 @@ button.link:hover {
 .stat.state-bg-next .stat-num {
   color: #a86fd6;
 }
-.stat.state-bg-blocked .stat-num {
-  color: #d65f5f;
-}
-
 /* tables */
 .data-table {
   width: 100%;
@@ -247,103 +246,6 @@ button.link:hover {
   border-radius: 5px;
   padding: 3px 6px;
   font: inherit;
-}
-
-/* gantt */
-.gantt {
-  display: flex;
-  flex-direction: column;
-  font-size: 12px;
-}
-
-.gantt-row {
-  display: flex;
-  align-items: center;
-  min-height: 26px;
-}
-
-.gantt-row.gantt-sub .gantt-label {
-  padding-left: 26px;
-  color: #9aa6b1;
-}
-
-.gantt-label {
-  width: 280px;
-  flex: none;
-  padding: 0 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.gantt-track {
-  position: relative;
-  flex: 1;
-  height: 22px;
-  border-left: 1px solid #2a3138;
-  background: repeating-linear-gradient(
-    to right,
-    transparent 0,
-    transparent calc(100% / 8 - 1px),
-    #1a2026 calc(100% / 8 - 1px),
-    #1a2026 calc(100% / 8)
-  );
-}
-
-.gantt-axis .gantt-track {
-  height: 18px;
-  background: none;
-}
-
-.gantt-tick {
-  position: absolute;
-  top: 0;
-  transform: translateX(-50%);
-  color: #76828d;
-  font-size: 10px;
-}
-
-.gantt-today {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #d6b35f;
-  opacity: 0.8;
-}
-
-.gantt-plan {
-  position: absolute;
-  top: 3px;
-  height: 7px;
-  border: 1px solid #5b6a78;
-  border-radius: 3px;
-  background: rgba(91, 106, 120, 0.25);
-}
-
-.gantt-actual {
-  position: absolute;
-  bottom: 3px;
-  height: 7px;
-  border-radius: 3px;
-  opacity: 0.9;
-}
-
-.gantt-finish {
-  position: absolute;
-  bottom: 2px;
-  width: 9px;
-  height: 9px;
-  background: #3fa66a;
-  transform: translateX(-50%) rotate(45deg);
-}
-
-.gantt-unscheduled {
-  position: absolute;
-  left: 8px;
-  top: 2px;
-  color: #56616c;
-  font-size: 10px;
 }
 
 /* docs panel */

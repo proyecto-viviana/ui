@@ -2,12 +2,12 @@
 
 ## Rule #1 — Evidence-backed parity, or it isn't ported
 
-Viviana UI is Proyecto Viviana's published open-source UI suite and design
-system, built on Solid. Its lower packages form an unofficial port stack for
-Adobe's React Stately, React Aria, React Aria Components, and React Spectrum S2.
-A component in that stack is "ported" only when real evidence exists: real
-accessibility, real behavior, a full port. axe is not enough; a single unit test
-is not enough; coverage is comprehensive and strict.
+Viviana UI is Proyecto Viviana's published open-source UI experiment for Solid.
+Its shared foundation is an unofficial port stack for Adobe's React Stately,
+React Aria, and React Aria Components. `solid-spectrum` targets React Spectrum
+S2, and `kumo` targets Cloudflare Kumo. A component is "ported" only when real
+evidence exists: real accessibility, real behavior, a full port. axe is not
+enough; a single unit test is not enough; coverage is comprehensive and strict.
 
 Every user-observable upstream branch is matched and held by a regression test
 that would fail if the behavior drifted — across API, ARIA/accessibility,
@@ -24,10 +24,12 @@ below.)
 
 ## Rule #2 — Mirror upstream; don't invent
 
-Adobe's React Stately, React Aria, and React Spectrum S2 are the authority. Read
-the upstream source and official docs first and copy the real values — sizes,
-weights, tokens, ARIA wiring, state machines, structure. Do not invent a size, a
-name, a behavior, or a structure when an upstream answer exists.
+Adobe's React Stately, React Aria, and React Spectrum S2 are the authority for
+the Adobe port stack. Cloudflare Kumo is the authority for `packages/kumo`.
+Read the applicable upstream source and official docs first and copy the real
+values — sizes, weights, tokens, ARIA wiring, state machines, structure. Do not
+invent a size, a name, a behavior, or a structure when an upstream answer
+exists.
 
 A Solid-specific export with no upstream counterpart (an alias or composition
 helper) is allowed only when it is explicit and documented as a _local addition_
@@ -54,9 +56,9 @@ bring back and decide together, never agent territory.
 
 State belongs in `solid-stately`; ARIA, keyboard, and focus in `solidaria`;
 composition, slots, render props, and data attributes in `solidaria-components`.
-The upper layers (`solid-spectrum`, `viviana-ui`) wrap a headless component with a
-design-system API, compose primitives, theme, and add Viviana-native components —
-they never fork ARIA or state logic.
+The upper layers (`solid-spectrum`, `viviana-ui`, `kumo`) wrap a headless
+component with a design-system API, compose primitives, theme, and add
+design-system components — they never fork ARIA or state logic.
 
 S2 component styling lives **only** in `solid-spectrum`, generated from S2 tokens
 through the style macro: never hand-authored, never tuned to make a screenshot
@@ -83,8 +85,9 @@ Never trust a document against the code. When a doc says one thing and the code
 does another, the code is right and the doc is stale — verify against source,
 tests, and the report scripts before acting on any documented claim the task
 depends on. The exception: a spec or ADR records _intent_; code that disagrees
-with its spec is a suspected bug, not a stale doc. The report commands in
-`.claude/current/status.md` are the status authority, not memory.
+with its spec is a suspected bug, not a stale doc. `.claude/current/status.md`
+is a generated view of ticket state. Executable reports and tests are the
+evidence authority, not memory.
 
 ## Rule #7 — Tests prove behavior
 
@@ -97,11 +100,12 @@ enforced.
 
 ## What `ls` won't tell you
 
-- The five public packages are one dependency chain, each adding one concern:
-  `solid-stately → solidaria → solidaria-components → solid-spectrum →
-@proyecto-viviana/ui`. The directory `packages/viviana-ui` publishes as
-  `@proyecto-viviana/ui` (dir name ≠ npm name). All five public packages are
-  releasable; two test-utils packages are private. See
+- Six public packages share one lower dependency chain. The styled libraries
+  are standalone siblings above `solidaria-components`. They are
+  `solid-spectrum`, `@proyecto-viviana/ui`, and `@proyecto-viviana/kumo`. The
+  directory `packages/viviana-ui` publishes as `@proyecto-viviana/ui` (dir name
+  ≠ npm name). All six public packages are releasable; two test-utils packages
+  are private. See
   `.claude/current/release-policy.md`.
 - `apps/comparison` is the verification harness, not a styling source — it mounts
   upstream React and the ported Solid component side by side and proves parity.
@@ -114,10 +118,9 @@ enforced.
   source-of-truth boundary, referenced by the comparison playbook.
 - A vendored upstream `react-spectrum/` reference tree may be present and
   git-ignored: read-only parity reference, never imported from.
-- The dev-only `/admin` dashboard (`apps/web`, dev only) projects
-  `.claude/current/` frontmatter — roadmap items and tasks — as the internal
-  operating surface. It is tooling, not product: keep a task's state in sync in
-  the same commit as the work it tracks. (Seed/mock data for now.)
+- The dev-only `/admin` dashboard (`apps/web`, dev only) projects and edits
+  `.claude/tickets`. It is tooling, not product. Generated views under
+  `.claude/current/` are read-only.
 
 ## Operating
 

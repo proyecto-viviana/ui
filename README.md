@@ -1,22 +1,20 @@
 # Viviana UI
 
-Viviana UI is Proyecto Viviana's open-source UI suite and design system, built
-on Solid. Its foundation is an unofficial open-source port of Adobe's React
-Stately, React Aria, React Aria Components, and React Spectrum S2 through the
-Solidaria and Solid Spectrum packages. It is not affiliated with Adobe.
+Viviana UI is Proyecto Viviana's open-source UI experiment for Solid. It includes
+a shared headless foundation and three styled component libraries.
 
-The suite is built in layers: `solid-stately`, `solidaria`,
-`solidaria-components`, and `solid-spectrum` are the port stack;
-`@proyecto-viviana/ui` is the Viviana design-system package built on top of that
-stack.
+The foundation is an unofficial port project for Adobe's React Stately, React
+Aria, and React Aria Components. `solid-spectrum` also experiments with React
+Spectrum S2 parity. The project is not affiliated with Adobe or Cloudflare.
 
-| Package                | npm                                      | Role                                                                 |
-| ---------------------- | ---------------------------------------- | -------------------------------------------------------------------- |
-| `viviana-ui`           | `@proyecto-viviana/ui`                   | Viviana design-system package and client-facing entry point.         |
-| `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Solid port of React Spectrum S2 styled components.                   |
-| `solidaria-components` | `@proyecto-viviana/solidaria-components` | Solid port of React Aria Components.                                 |
-| `solidaria`            | `@proyecto-viviana/solidaria`            | Solid port of React Aria hooks: ARIA, keyboard, focus, press, hover. |
-| `solid-stately`        | `@proyecto-viviana/solid-stately`        | Solid port of React Stately state primitives.                        |
+| Package                | npm                                      | Role                                                              |
+| ---------------------- | ---------------------------------------- | ----------------------------------------------------------------- |
+| `viviana-ui`           | `@proyecto-viviana/ui`                   | Viviana design-system package and client-facing entry point.      |
+| `solid-spectrum`       | `@proyecto-viviana/solid-spectrum`       | Styled Solid experiment based on React Spectrum S2.               |
+| `kumo`                 | `@proyecto-viviana/kumo`                 | Experimental Kumo-shaped styled components for Solid.             |
+| `solidaria-components` | `@proyecto-viviana/solidaria-components` | Headless Solid experiment based on React Aria Components.         |
+| `solidaria`            | `@proyecto-viviana/solidaria`            | Experimental Solid ARIA, keyboard, focus, press, and hover hooks. |
+| `solid-stately`        | `@proyecto-viviana/solid-stately`        | Experimental Solid state primitives based on React Stately.       |
 
 ## Install
 
@@ -28,7 +26,6 @@ npm install @proyecto-viviana/ui solid-js
 import { Provider, Button } from "@proyecto-viviana/ui";
 import { TextField } from "@proyecto-viviana/ui/TextField";
 
-import "@proyecto-viviana/ui/theme.css";
 import "@proyecto-viviana/ui/components.css";
 
 export function App() {
@@ -41,17 +38,22 @@ export function App() {
 }
 ```
 
-Components do not inject CSS. Import the theme and component styles once at the
-app entry. See [`packages/viviana-ui/README.md`](packages/viviana-ui/README.md)
-for styling details, deep imports, and the Vite macro helper.
+Components do not inject CSS. Import `components.css` once at the app entry; it
+already includes the font faces, theme tokens, and generated component rules.
+See [`packages/viviana-ui/README.md`](packages/viviana-ui/README.md) for the
+separate-file alternative, deep imports, and the Vite macro helper.
 
 ## Status
 
-Viviana UI is published and in active development. Use it with the expectation
-that APIs, package boundaries, and component behavior are still being tightened.
+Treat all parity claims as unproved until the component evidence says otherwise.
+This project is active, experimental, and incomplete. APIs and package boundaries
+can change.
 
 The lower packages are available directly for lower-level Solid ports and
 experiments, but most apps should start with `@proyecto-viviana/ui`.
+
+The Kumo package is a separate styled library. Its first Button slice is not a
+complete Kumo port.
 
 ## Development
 
@@ -65,7 +67,7 @@ vp run check            # format + lint + typecheck
 ## Repo layout
 
 ```text
-packages/                Viviana UI, the port stack, and private test-utils
+packages/                Shared foundations, styled libraries, and private test utilities
 apps/web                 playground app
 apps/comparison          React-vs-Solid parity verification harness
 docs/adr/                architecture decision records (ADR 0001 = S2 styling boundary)
@@ -74,9 +76,11 @@ docs/adr/                architecture decision records (ADR 0001 = S2 styling bo
 ## License & attribution
 
 - Our own work is [MIT](LICENSE).
-- The port stack is an unofficial Solid port of Adobe's React Spectrum stack
-  (Apache-2.0). That direct-license obligation is honored in [`NOTICE`](NOTICE) and
-  [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0); ported files keep their upstream
+- The Adobe port project uses code under Apache-2.0. That direct-license
+  obligation is honored in [`NOTICE`](NOTICE) and
+  [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0). Derived files keep their upstream
   headers.
 - [`CREDITS.md`](CREDITS.md) credits everything sourced, referenced, or
   inspired-by — add to it in the change that introduces new such material.
+- Kumo-derived material keeps the Cloudflare MIT notice in
+  [`packages/kumo/LICENSE-CLOUDFLARE`](packages/kumo/LICENSE-CLOUDFLARE).

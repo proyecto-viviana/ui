@@ -170,7 +170,7 @@
             "'last'"
           ],
           "required": false,
-          "description": "Whether to auto-focus the first item when the menu opens.",
+          "description": "Whether to auto-focus the menu root (`true`) or the first/last item.",
           "origin": "solidaria"
         },
         {

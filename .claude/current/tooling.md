@@ -10,7 +10,7 @@ Update when: the command layer, static gates, hooks, MCP setup, or the
 package-build migration change.
 
 `vp` (Vite Plus) is the repo command layer. It runs the pinned package manager
-(`pnpm@10.33.2`) underneath, but scripts and docs use `vp`. Use raw `pnpm` only
+(`pnpm@11.22.0`) underneath, but scripts and docs use `vp`. Use raw `pnpm` only
 when debugging pnpm-specific behavior.
 
 ## Daily commands
@@ -36,8 +36,8 @@ vp run check        # vp check (format + lint) && vp run typecheck
 `vite.config.ts` is the shared config for `fmt`, `lint`, and `staged` — do not
 add `.oxfmtrc.json` or `.oxlintrc.json`. Lint `typeCheck` is intentionally off in
 the Vite Plus block (the `tsgolint` path checks files outside the
-`tsconfig.typecheck.json` contract); `vp run typecheck` runs `tsc` separately
-after `vp check` (`tech-debt.md`).
+`tsconfig.typecheck.json` contract). `vp run typecheck` runs `tsc` separately
+after `vp check`.
 
 Install git hooks once per checkout:
 
@@ -45,7 +45,7 @@ Install git hooks once per checkout:
 vp config
 ```
 
-The tracked hook entrypoint is `.vite-hooks/pre-commit`; generated shims under
+The tracked hook entrypoint is `.vite-hooks/pre-commit`. Generated shims under
 `.vite-hooks/_` stay untracked.
 
 ## MCP servers for parity
@@ -63,15 +63,17 @@ and the comparison playbook. `apps/comparison/playbook/source-index.md` and
 `component-research.md` name the source hierarchy and documentation sources to use
 during an audit. Do not block work on an optional local MCP integration.
 
-## Package-build migration
+## Package builds and browser preview
 
-Package builds are moving to native Vite Plus packaging, one package at a time.
-`@proyecto-viviana/solid-spectrum` is first: its JS/CSS build uses
-`vp pack`/tsdown from `packages/solid-spectrum/vite.config.ts`, while its
-declaration files stay on `tsc -p tsconfig.build.json` for the first checkpoint.
-For each migration, diff generated `dist`, type declarations, declaration maps,
-package exports, and packed npm contents before rolling forward; keep each
-package its own reversible checkpoint (`tech-debt.md`).
+All six public packages now use Vite Plus packaging from `vite.config.ts`.
+Declarations remain a separate `tsc -p tsconfig.build.json` step. A successful
+process exit is insufficient: `vp run build` finishes with
+`guard:package-artifacts`, which checks every declared manifest target.
+`guard:source-artifacts` rejects generated declarations and maps in source.
+
+The comparison app uses `astro build`, but its Playwright server uses foreground
+`vp preview`. Astro 7 automatically backgrounds preview when it detects an
+agent, which makes Playwright treat the server command as terminated.
 
 ## Host note
 

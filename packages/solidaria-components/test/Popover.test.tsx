@@ -1,7 +1,7 @@
 /**
  * Tests for Popover component
  */
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";
 import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";

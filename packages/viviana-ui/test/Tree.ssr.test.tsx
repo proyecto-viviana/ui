@@ -8,7 +8,7 @@
  * real client DOM). The hydrate half owns the real catch.
  */
 import { renderToString } from "solid-js/web";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { TreeFixture, TreeLabeledFixture } from "./fixtures/tree";

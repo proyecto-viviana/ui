@@ -20,9 +20,8 @@
  * all. It cannot tell you the name you *did* choose is free; that is what
  * `wrangler deployments list` is for.
  *
- * Removing the check is not the way to unblock a deploy. Choosing a name is.
- * See `.claude/current/tech-debt.md` → `launch-site-deploy-stale` for the four
- * things that decision has to settle.
+ * Removing the check is not the way to unblock a deploy. The docs site must use
+ * its own Worker name and hostname.
  */
 
 import { readFile } from "node:fs/promises";
@@ -108,8 +107,7 @@ if (name === PRODUCTION_APP_WORKER) {
   console.error("APP_URL=https://proyectoviviana.org, AUTH_URL=https://auth.proyectoviviana.org.");
   console.error("Deploying the docs site to it would replace a running production app.");
   console.error("");
-  console.error("Pick a name of our own (and a hostname to serve it from) first:");
-  console.error("  .claude/current/tech-debt.md → launch-site-deploy-stale");
+  console.error("Pick a Worker name and hostname that belong to the docs site.");
   process.exit(1);
 }
 

@@ -340,18 +340,18 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf dist && tsdown && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
     "dev": "tsup --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },
   "dependencies": {
-    "@internationalized/date": "^3.8.0",
-    "@internationalized/number": "^3.6.0",
-    "@internationalized/string": "^3.2.5",
+    "@internationalized/date": "^3.12.3",
+    "@internationalized/number": "^3.6.7",
+    "@internationalized/string": "^3.2.10",
     "@proyecto-viviana/solid-stately": "workspace:*"
   },
   "devDependencies": {
-    "solid-js": "^1.9.11"
+    "solid-js": "^1.9.15"
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"

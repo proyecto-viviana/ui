@@ -14,7 +14,7 @@
  * Breadcrumbs.hydrate.test.tsx hydrates over this output and asserts no mismatch.
  */
 import { renderToString } from "solid-js/web";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { BreadcrumbsOverflowFixture } from "./fixtures/breadcrumbs";

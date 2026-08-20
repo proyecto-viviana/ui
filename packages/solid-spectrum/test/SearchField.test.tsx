@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { Content, ContextualHelp, Form, Heading, SearchField, SearchFieldContext } from "../src";
 

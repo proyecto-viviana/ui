@@ -2,7 +2,7 @@
  * Tests for solidaria-components SharedElementTransition
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal, type JSX } from "solid-js";
 import {

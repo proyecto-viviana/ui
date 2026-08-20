@@ -8,7 +8,7 @@
  * - Context for slot composition
  * - Full accessibility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { destroyAnnouncer, SSRProvider } from "@proyecto-viviana/solidaria";
 import { createSignal } from "solid-js";

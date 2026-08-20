@@ -27,7 +27,7 @@ export interface FieldProps {
 }
 
 // Vertical field stack. The label/help-text colors mirror S2's `fieldLabel()`
-// and `helpTextStyles` (`neutral-subdued`, flipping to `negative-1000`/`disabled`);
+// and `helpTextStyles` (`neutral-subdued`, flipping to `negative`/`disabled`);
 // sizes map sm/md/lg → the UI font's xs/sm/base steps. Routed through the
 // `style()` macro so the CSS ships in the package bundle for installed consumers.
 const fieldStyles = style<{ size: FieldSize }>({
@@ -43,10 +43,10 @@ const fieldLabelStyles = style<{ size: FieldSize; isDisabled?: boolean }>({
 
 const fieldTextStyles = style<{ size: FieldSize; isInvalid?: boolean; isDisabled?: boolean }>({
   font: { default: "ui-sm", size: { sm: "ui-xs" } },
-  color: { default: "neutral-subdued", isInvalid: "negative-1000", isDisabled: "disabled" },
+  color: { default: "neutral-subdued", isInvalid: "negative", isDisabled: "disabled" },
 });
 
-const requiredStyles = style({ color: "negative-1000", marginStart: 2 });
+const requiredStyles = style({ color: "negative", marginStart: 2 });
 
 /**
  * A field layout component that provides label, help text, and error message

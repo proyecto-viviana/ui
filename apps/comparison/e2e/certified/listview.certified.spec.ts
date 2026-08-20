@@ -81,8 +81,8 @@ const controlled = (selectedKeys: string, extra: Record<string, string> = {}) =>
 });
 
 /**
- * D3 waiver — the checkbox-column sub-pixel AA (tracked: `listview-virtualizer-subpixel`
- * in tech-debt.md / recertification.md). The bordered checkbox cases leave a ≤5/255
+ * D3 waiver — ticket #66 tracks the checkbox-column sub-pixel AA. The bordered
+ * checkbox cases leave a ≤5/255
  * anti-aliasing residual (≤26/136320 px, ~1.9e-4) confined to the selection checkbox
  * column (x≈45-60): the port renders ListView rows as DIRECT grid children, whereas S2
  * wraps every row in an absolutely-positioned `<Virtualizer layout={S2ListLayout}>`

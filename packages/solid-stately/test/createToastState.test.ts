@@ -4,7 +4,7 @@
  * Tests for toast state management.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import {
   createToastState,

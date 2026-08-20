@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen, within } from "@solidjs/testing-library";
 import { ToggleButton, ToggleButtonGroup } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";

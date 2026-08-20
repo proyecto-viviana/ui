@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { createDatePicker } from "../src/datepicker/createDatePicker";
 import { I18nProvider } from "../src/i18n";

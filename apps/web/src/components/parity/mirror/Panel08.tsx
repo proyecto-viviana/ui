@@ -130,6 +130,7 @@ export function MirrorPanel08(): JSX.Element {
               nothing else. Every ListView row carries a 1px gray-300 borderBottom
               that no prop turns off — isQuiet only drops it from the LAST row. The
               twin therefore reads as a ruled table where the spec reads as a stack.
+              Tracked by ticket #103.
 
               The spec opens each row with a `>` prompt glyph in --accent-primary, and
               the library now draws it with real components: PixelChevronRightIcon in
@@ -158,13 +159,14 @@ export function MirrorPanel08(): JSX.Element {
                     the label (gridlist/index.tsx:334) where the spec has it inline and
                     right-aligned. Every row doubles in height and the spec's four-column
                     rhythm collapses into a two-line stack. There is no prop to inline it.
+                    The design decision is tracked by ticket #103.
 
                     NOTE (first paint): these slots — label, description, actions — get
                     their grid-area from applyItemSlotClasses(), a querySelectorAll walk
                     inside a createEffect. That is client-only, so the server paints the
                     row unslotted and the grid layout lands on mount; it does not change
                     the node count, so hydration is clean. Worth catching if the sweep
-                    screenshots before mount. */}
+                    screenshots before mount. Tracked separately by ticket #102. */}
                 {/* <Text slot="label">: the slot earns the row its grid-area and Text
                     carries the slot while adding the label's typography context. */}
                 <Text slot="label">{row.title}</Text>
@@ -178,7 +180,8 @@ export function MirrorPanel08(): JSX.Element {
                       closest it gets — the sole fill-less option, transparent background with
                       the ink mirroring the border channel — but it still adds a 1px rule,
                       a radius and horizontal padding the spec does not draw, and it cannot
-                      reach the spec's 9.5px/0.1em tracked mono. size="S" is the floor. */}
+                      reach the spec's 9.5px/0.1em tracked mono. size="S" is the floor.
+                      The design decision is tracked by ticket #103. */}
                   <Badge size="S" variant={row.variant} fillStyle="outline">
                     {row.tag}
                   </Badge>

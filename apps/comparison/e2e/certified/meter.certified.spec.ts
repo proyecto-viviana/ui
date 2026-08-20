@@ -55,7 +55,7 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  * self-inflicted divergence; both token lists resolve to the same `meter` role in
  * the accessibility tree, so D6 is green either way, but the port should emit the
  * faithful `"meter progressbar"` and the fixture patch should be removed. That fix
- * is filed as `meter-role-fallback-token` (recertification.md deferred list) —
+ * is filed as ticket #104 —
  * it is deferred here only because it also touches solidaria's `createMeter` (a
  * dist rebuild) and must be re-validated against the web a11y/axe gate, which is
  * out of this unit's harness. Everything else below is honest byte-identical

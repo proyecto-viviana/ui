@@ -98,7 +98,7 @@ const surfaceScenario: DriverScenario = {
   // CloseButton, the footer action buttons, AND RAC's injected screen-reader
   // "dismiss sentinel" (tabindex=-1, aria-label="Dismiss"), measured for its
   // hit box. The 24px/44px floors are reported. This pilot rediscovered +
-  // fixed a real port divergence (recertification.md CP8): the port had inlined
+  // fixed a real port divergence: the port had inlined
   // the visually-hidden reset onto the sentinel button (collapsing it to 1x1)
   // where upstream wraps a bare button (~16x6) in a VisuallyHidden div — now
   // mirrored faithfully in Modal.tsx, so the sentinel measures identically.

@@ -9,8 +9,8 @@ import {
 import { walkScenario, type WalkStepContext } from "./walk";
 
 /**
- * Driver D1 — state-matrix computed-style pair diff (recertification.md
- * Phase 1). For every case × theme, walks both panels through the gesture
+ * Driver D1 — state-matrix computed-style pair diff (see
+ * `.claude/current/certification.md`). For every case × theme, walks both panels through the gesture
  * states and asserts the Solid target (and any named parts) resolves to the
  * exact same computed values as the React target for every property in the
  * allowlist. No thresholds, no normalization: the two stacks render in the

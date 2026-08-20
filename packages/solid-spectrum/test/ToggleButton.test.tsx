@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ToggleButton } from "../src";
 import CrossIcon from "../src/icon/ui-icons/Cross";

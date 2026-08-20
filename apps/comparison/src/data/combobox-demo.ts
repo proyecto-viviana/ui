@@ -15,7 +15,7 @@ export const comboBoxAlignOptions = ["start", "end"] as const;
 export const comboBoxFormValueOptions = ["key", "text"] as const;
 export const comboBoxValidationBehaviorOptions = ["native", "aria"] as const;
 
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // ComboBox fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
 // can re-run D1/D5 mirrored — and, crucially, certify that the PORTALED listbox
 // popover inherits `dir="rtl"` — matching the picker/button/accordion wiring.

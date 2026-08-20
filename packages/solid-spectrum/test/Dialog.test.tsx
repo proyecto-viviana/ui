@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { createSignal } from "solid-js";
 import { render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
@@ -282,7 +282,9 @@ describe("Dialog (solid-spectrum)", () => {
     expect(dialog).toHaveAccessibleDescription("This action cannot be undone.");
     const describedBy = dialog.getAttribute("aria-describedby");
     expect(describedBy).toBeTruthy();
-    expect(document.getElementById(describedBy!)).toHaveTextContent("This action cannot be undone.");
+    expect(document.getElementById(describedBy!)).toHaveTextContent(
+      "This action cannot be undone.",
+    );
   });
 
   it("does not auto-describe a composed Dialog from Content", () => {

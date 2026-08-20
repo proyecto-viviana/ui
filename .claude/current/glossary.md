@@ -9,13 +9,12 @@ Status: live reference.
 Update when: a term with reach is added, renamed, or redefined.
 
 Vocabulary that appears in conversations about the system. Names with reach are
-owner-steered (Rule #3); do not mint one silently.
+owner-steered (Rule #3). Do not create one silently.
 
 ## Layers & packages
 
-- **Viviana UI** — Proyecto Viviana's open-source UI suite and design system.
-  Built on Solid, with `@proyecto-viviana/ui` as the client-facing design-system
-  package and the Solidaria/Solid Spectrum port stack beneath it.
+- **Viviana UI** — Proyecto Viviana's open-source UI experiment for Solid. It
+  includes a shared headless foundation and three standalone styled libraries.
 - **solid-stately** — `@proyecto-viviana/solid-stately`. State layer (signals,
   controlled/uncontrolled, collections, selection). Mirrors `@react-stately`.
 - **solidaria** — `@proyecto-viviana/solidaria`. Accessibility-hook layer (ARIA,
@@ -28,6 +27,9 @@ owner-steered (Rule #3); do not mint one silently.
   styling.
 - **viviana-ui** — package directory for `@proyecto-viviana/ui`, the Viviana
   design-system package.
+- **kumo** — package directory for `@proyecto-viviana/kumo`. An experimental
+  Kumo-shaped styled library for Solid. It uses `solidaria-components` for
+  behavior and Cloudflare Kumo as its API and visual source.
 
 ## Port Acceptance
 
@@ -38,8 +40,8 @@ owner-steered (Rule #3); do not mint one silently.
   render, green axe, and stable screenshot are _floors_, not evidence of parity.
 - **Acceptance gate** — one of the ten additive gates in
   `../../apps/comparison/playbook/acceptance-gates.md`. `complete` / `partial` /
-  `not-started` per gate; a component is `accepted` only when all in-scope gates
-  are `complete`.
+  `not-started` per gate. A component is `accepted` only when all in-scope
+  gates are `complete`.
 - **Pair diff** — a strict React-vs-Solid comparison of the same public state.
 - **Computed contract** — an assertion on computed style, attributes, geometry,
   or CSS variables, used where a screenshot is too coarse.
@@ -47,19 +49,18 @@ owner-steered (Rule #3); do not mint one silently.
 ## Component status
 
 - **parity / composition / viviana-native / tracked-gap** — styled-component
-  statuses; see `architecture.md`.
+  statuses. See `architecture.md`.
 - **Support export** — a context, slot, hook, helper, or support value (not a
   root catalogue component). Tracked separately from catalogue export parity.
 - **Catalogue** — the set of official S2 entries tracked for parity.
-- **Local addition** — a Solid-specific export (alias or composition helper) with
-  no upstream counterpart; allowed only when explicit and documented, never
-  silent drift.
+- **Local addition** — a Solid-specific export, such as an alias or composition
+  helper, with no upstream counterpart. It must be explicit and documented.
 
 ## Harness
 
-- **Comparison harness** — `apps/comparison`; the verifier (`architecture.md`).
-  Not a styling source.
+- **Comparison harness** — `apps/comparison`, the verifier described in
+  `architecture.md`. It is not a styling source.
 - **Route / fixture** — the harness surface that mounts React and Solid under the
   same props.
-- **COMPONENT_PLAYBOOK** — `apps/comparison/COMPONENT_PLAYBOOK.md`; the task
-  runner for porting/re-baselining one component.
+- **COMPONENT_PLAYBOOK** — `apps/comparison/COMPONENT_PLAYBOOK.md`, the task
+  runner for porting or rebaselining one component.

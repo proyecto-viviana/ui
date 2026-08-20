@@ -68,10 +68,6 @@ export function classifyGateOutcome(raw: string): ClassifiedGateOutcome {
     return { kind: "missing", raw };
   }
 
-  if (token === "pending") {
-    return { kind: "not-started", raw };
-  }
-
   if (CANONICAL_OUTCOMES.has(token)) {
     return { kind: token as CanonicalGateOutcome, raw };
   }

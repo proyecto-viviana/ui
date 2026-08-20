@@ -130,8 +130,8 @@ const closeHelp = async ({ page }: PanelContext) => {
  *  ≤7/7056 px (0.1%) in a ≤2px sliver at the glyph edge, theme-independent and
  *  visually invisible. Closing it to byte-exact needs the comparison harness to
  *  snap both panels to the same sub-pixel x-phase (a shared measurement-layer
- *  concern, not this component) — tracked in recertification.md D3 sub-pixel
- *  burn-down. The waiver is scoped to the three observed cases so any regression
+ *  concern, not this component) — tracked by ticket #105. The waiver is scoped
+ *  to the three observed cases so any regression
  *  on `help-s` (or beyond ~10px on the others) still fails. */
 const glyphSubpixel = { maxMismatchRatio: 0.0015, maxDimensionDelta: 0, pixelThreshold: 0 };
 const glyphSubpixelReason =

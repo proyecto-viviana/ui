@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";

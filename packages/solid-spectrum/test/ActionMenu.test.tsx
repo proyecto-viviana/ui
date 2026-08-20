@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";

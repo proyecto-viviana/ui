@@ -12,7 +12,7 @@ import {
 import { forEachScenarioPanel, walkScenario } from "./walk";
 
 /**
- * Driver D10 — RTL / i18n (recertification.md Phase 1).
+ * Driver D10 — RTL / i18n (see `.claude/current/certification.md`).
  *
  * Re-runs D1 (state-matrix) and D5 (focus trail) — the exact capture
  * functions those drivers use, see `state-matrix.ts` / `focus.ts` — routed

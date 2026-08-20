@@ -5,7 +5,7 @@
  * One describe block per component, each rendering with realistic props,
  * making multiple assertions, and capturing an innerHTML snapshot.
  */
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { parseDate, type TreeItemData } from "@proyecto-viviana/solid-stately";
@@ -78,13 +78,21 @@ function clearGlobalToasts() {
   }
 }
 
-/** Normalize auto-generated IDs so snapshots stay stable across runs. */
+/**
+ * Normalize generated implementation details while retaining the observable
+ * DOM, ARIA, state attributes, structure, and inline behavior in snapshots.
+ * Macro/token parity and browser computed-style comparisons own CSS evidence;
+ * pinning private class hashes here made dependency updates look behavioral.
+ */
 function normalizeIds(html: string): string {
   const idMap = new Map<string, string>();
   const tokenMap = new Map<string, string>();
   let counter = 0;
   let tokenCounter = 0;
   return html
+    .replace(/\sclass="[^"]*"/g, ' class="[generated]"')
+    .replace(/\s(data-[\w-]*class)="[^"]*"/g, ' $1="[generated]"')
+    .replace(/\sstyle=""/g, "")
     .replace(/id="([^"]+)"/g, (_match, id) => {
       if (!idMap.has(id)) {
         idMap.set(id, `id-${counter++}`);
@@ -150,8 +158,12 @@ describe("Regression: Checkbox", () => {
     expect(screen.getByText("Accept terms")).toBeInTheDocument();
 
     await user.click(cb);
-    await Promise.resolve();
     expect(cb).toBeChecked();
+    const label = cb.closest("label")!;
+    await waitFor(() => {
+      expect(label).not.toHaveAttribute("data-pressed");
+      expect((cb as HTMLInputElement).style.userSelect).toBe("");
+    });
 
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
@@ -240,8 +252,12 @@ describe("Regression: Switch", () => {
     expect(sw).not.toBeChecked();
 
     await user.click(sw);
-    await Promise.resolve();
     expect(sw).toBeChecked();
+    const label = sw.closest("label")!;
+    await waitFor(() => {
+      expect(label).not.toHaveAttribute("data-pressed");
+      expect((sw as HTMLInputElement).style.userSelect).toBe("");
+    });
 
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
@@ -380,6 +396,14 @@ describe("Regression: Menu", () => {
     const menuItems = screen.getAllByRole("menuitem");
     expect(menuItems.length).toBe(3);
     expect(menuItems[0].textContent).toContain("Edit");
+    await waitFor(() => {
+      expect(screen.getByRole("menu")).toHaveFocus();
+    });
+    await waitFor(() => {
+      expect(document.querySelector('[data-trigger="MenuTrigger"]')).not.toHaveAttribute(
+        "data-entering",
+      );
+    });
 
     expect(normalizeIds(document.body.innerHTML)).toMatchSnapshot();
   });
@@ -403,6 +427,14 @@ describe("Regression: ActionMenu", () => {
 
     await user.click(trigger);
     expect(screen.getByRole("menu")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("menu")).toHaveFocus();
+    });
+    await waitFor(() => {
+      expect(document.querySelector('[data-trigger="MenuTrigger"]')).not.toHaveAttribute(
+        "data-entering",
+      );
+    });
 
     expect(normalizeIds(document.body.innerHTML)).toMatchSnapshot();
   });
@@ -678,6 +710,10 @@ describe("Regression: Toast", () => {
     const region = screen.getByRole("region");
     expect(region).toBeInTheDocument();
     expect(screen.getByText("Saved successfully")).toBeInTheDocument();
+    const content = container.querySelector("[data-solidaria-toast-content]");
+    expect(content).toHaveAttribute("role", "alert");
+    expect(content).toHaveAttribute("aria-atomic", "true");
+    expect(content).not.toHaveAttribute("aria-live");
     expect(normalizeIds(container.innerHTML)).toMatchSnapshot();
   });
 });

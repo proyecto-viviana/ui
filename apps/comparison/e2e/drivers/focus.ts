@@ -10,7 +10,7 @@ import {
 import { forEachScenarioPanel } from "./walk";
 
 /**
- * Driver D5 — focus/keyboard trails (recertification.md Phase 1).
+ * Driver D5 — focus/keyboard trails (see `.claude/current/certification.md`).
  *
  * Focuses a start element, presses a scripted key sequence, and snapshots
  * after every key: the active element descriptor, the resolved

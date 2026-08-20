@@ -1,7 +1,7 @@
 /**
  * Tests for solidaria-components Keyboard
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { Keyboard, KeyboardContext } from "../src/Keyboard";
 

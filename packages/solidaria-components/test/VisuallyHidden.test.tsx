@@ -7,7 +7,7 @@
  * - Element type customization
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { VisuallyHidden } from "../src/VisuallyHidden";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";

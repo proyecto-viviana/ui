@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
 import { createComboBox } from "../src/combobox";
 import { createComboBoxState } from "@proyecto-viviana/solid-stately";

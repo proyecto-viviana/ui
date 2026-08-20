@@ -3,11 +3,12 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { collectDocs } from "../apps/web/src/app/admin/server/data";
+import { checkGeneratedWorkViews } from "./generate-work-views";
 
 // docs:check — gate for the .claude/current spine. Every current doc must carry
-// the status header, and the tracking model (roadmap items <-> tasks) must be
-// internally consistent. The same validator drives the /admin Home problems
-// strip; see .claude/current/admin-dashboard.md.
+// the status header, the ticket board must conform to the shared scheme, and
+// generated work views must match that board. The same validator drives the
+// /admin Home problems strip; see .claude/current/admin-dashboard.md.
 
 const root = process.cwd();
 const currentDir = path.join(root, ".claude", "current");
@@ -31,8 +32,9 @@ function fail(message: string): void {
   failures.push(message);
 }
 
-// Spine docs carry a visible status header ("Status: live ...") and a colon
-// update header ("Update when: ..."), so match by prefix, not exact line.
+// Human-authored docs carry a visible "Status: live ..." header. Generated
+// views carry "Status: generated ...". Both carry an "Update when: ..."
+// header, so match by prefix, not exact text.
 //
 // Docs that frontmatter already marks as finished are exempt: an archived log or
 // a completed plan has nothing to say about when to update it, and stamping one
@@ -56,18 +58,20 @@ for (const file of currentMarkdown) {
 
   const lines = contents.split(/\r?\n/);
   const hasHeader =
-    lines.some((line) => line.startsWith("Status: live ")) &&
-    lines.some((line) => line.startsWith("Update when:"));
+    lines.some(
+      (line) => line.startsWith("Status: live ") || line.startsWith("Status: generated "),
+    ) && lines.some((line) => line.startsWith("Update when:"));
   if (!hasHeader) {
     fail(`Current doc lacks required status header: ${relative}`);
   }
 }
 
-// Tracking integrity: tasks must link to real roadmap items, done <=> finished,
-// in-progress items must have tasks.
+// Ticket-board and stable-document integrity.
 for (const problem of collectDocs().problems) {
   fail(`Tracking integrity: ${problem.doc}: ${problem.message}`);
 }
+
+for (const problem of checkGeneratedWorkViews()) fail(problem);
 
 if (failures.length > 0) {
   console.error("docs:check failed:");

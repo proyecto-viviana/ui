@@ -10,7 +10,7 @@
  * its items.
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import {

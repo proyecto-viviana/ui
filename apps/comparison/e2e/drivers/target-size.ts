@@ -3,7 +3,7 @@ import { scenarioThemes, type DriverScenario, type PanelFramework } from "./scen
 import { forEachScenarioPanel } from "./walk";
 
 /**
- * Driver D8 — pointer target size (recertification.md Phase 1).
+ * Driver D8 — pointer target size (see `.claude/current/certification.md`).
  *
  * Every interactive element in the component subtree is measured for its
  * rendered border-box across the scenario's size cases, and the two stacks are

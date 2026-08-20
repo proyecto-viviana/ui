@@ -1,7 +1,7 @@
 /**
  * Tests for solidaria-components FieldError
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import type { ValidationResult } from "@proyecto-viviana/solid-stately";
 import { FieldError, FieldErrorContext } from "../src/FieldError";

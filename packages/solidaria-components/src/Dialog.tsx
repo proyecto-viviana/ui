@@ -6,6 +6,7 @@
  */
 
 import {
+  type Context,
   type JSX,
   createContext,
   createEffect,
@@ -28,8 +29,10 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
 import { ButtonContext } from "./Button";
+import { TextContext } from "./Text";
 import {
   DEFAULT_SLOT,
+  Provider,
   type RenderChildren,
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -174,8 +177,9 @@ export function Dialog(props: DialogProps): JSX.Element {
   // Get trigger context for aria-labelledby fallback
   const triggerContext = useContext(DialogTriggerContext);
 
-  // createDialog returns dialogProps AND titleProps (with the id for the Heading)
-  const { dialogProps, titleProps } = createDialog(
+  // createDialog returns the props that wire the dialog to its title and, for
+  // alertdialogs, its description content.
+  const { dialogProps, titleProps, contentProps } = createDialog(
     {
       get role() {
         return ariaProps.role;
@@ -249,11 +253,26 @@ export function Dialog(props: DialogProps): JSX.Element {
         style={renderProps.style()}
         slot={local.slot}
       >
-        <ButtonContext.Provider
-          value={{ slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } }}
+        <Provider
+          values={
+            [
+              [
+                TextContext,
+                {
+                  slots: {
+                    [DEFAULT_SLOT]: {},
+                    get description() {
+                      return contentProps();
+                    },
+                  },
+                },
+              ],
+              [ButtonContext, { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } }],
+            ] as Array<[Context<unknown>, unknown]>
+          }
         >
           {renderProps.renderChildren()}
-        </ButtonContext.Provider>
+        </Provider>
       </section>
     </DialogContext.Provider>
   );

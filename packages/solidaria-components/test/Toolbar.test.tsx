@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Toolbar, ToolbarContext } from "../src/Toolbar";

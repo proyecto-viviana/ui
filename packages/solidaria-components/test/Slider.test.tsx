@@ -12,7 +12,7 @@
  * - Orientation
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Slider, SliderTrack, SliderThumb, SliderFill, SliderOutput } from "../src/Slider";
 import { I18nProvider } from "@proyecto-viviana/solidaria";

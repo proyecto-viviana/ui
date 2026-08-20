@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { SharedElementTransition, SharedElement } from "../src/shared-element";
 

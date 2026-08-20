@@ -587,8 +587,7 @@ export function Tag(props: TagProps): JSX.Element {
   // Mirror S2 ClearButton: `<Button style={pressScale(domRef)}>` — pressScale
   // ALWAYS contributes the `will-change: transform` layer hint. The plain headless
   // remove button carries no press state yet, so only the resting hint is mirrored
-  // here; the on-press scale lands with the CP9.44b interaction pass
-  // (tech-debt `taggroup-remove-pressscale`).
+  // here. Ticket #63 owns the on-press scale.
   const removeButtonRestStyle = pressScale(undefined)({ isPressed: false });
 
   const className = (renderProps: TagRenderProps) =>

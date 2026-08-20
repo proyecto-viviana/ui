@@ -16,9 +16,9 @@
  *  - The link branch opens the anchor directly (we have no router abstraction)
  *    and needs no `flushSync` — `setFocusedKey` is synchronous and the keyed
  *    item element already exists in the DOM.
- *  - Virtual-focus cursor movement (`moveVirtualFocus` / `dispatchVirtualFocus`)
- *    is not yet modeled — a documented gap, consistent with createSelectableItem.
- *    The focused-key bookkeeping around it is preserved.
+ *  - Ticket #100 tracks the missing virtual-focus cursor movement through
+ *    `moveVirtualFocus` and `dispatchVirtualFocus`. The focused-key bookkeeping
+ *    around it is preserved.
  */
 
 import { createEffect, on, onCleanup, type JSX } from "solid-js";
@@ -442,8 +442,8 @@ export function createSelectableCollection<T = unknown>(
         }
         if (firstKey == null) {
           // No focusable items: clear the virtual-focus intent once the
-          // collection is settled. We don't move an AT cursor here (the
-          // moveVirtualFocus / dispatchVirtualFocus gap noted above).
+          // collection is settled. Ticket #100 tracks the missing AT cursor
+          // reset for this branch.
           if (manager.collection.size > 0) {
             shouldVirtualFocusFirst = false;
           }

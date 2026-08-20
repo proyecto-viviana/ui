@@ -9,7 +9,7 @@
  */
 import { hydrate } from "solid-js/web";
 import type { JSX } from "solid-js";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { TagGroupFixture, TagGroupPrebuiltTagFixture } from "./fixtures/tag-group";

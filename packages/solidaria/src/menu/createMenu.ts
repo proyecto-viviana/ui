@@ -206,8 +206,7 @@ export function createMenu<T>(
   // Auto-focus the menu (or its first/last/selected item) when `autoFocus` is
   // set. Mirrors useMenu → useSelectableCollection: mouse open passes `true`
   // (focus the menu root); ArrowDown/ArrowUp pass `"first"`/`"last"`.
-  const isNavDisabled = (key: Key) =>
-    state.isDisabled(key) && state.disabledBehavior() === "all";
+  const isNavDisabled = (key: Key) => state.isDisabled(key) && state.disabledBehavior() === "all";
 
   let autoFocusDone = false;
   let cancelAutoFocus: (() => void) | undefined;

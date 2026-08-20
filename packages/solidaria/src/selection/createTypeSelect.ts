@@ -254,7 +254,8 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       // bubble-phase `onKeyDown` is the live path — and it also covers mid-search
       // Space because its bail check only rejects a *leading* Space. True capture
       // would need a ref-based addEventListener threaded through every consumer;
-      // see the typeahead follow-up in upstream-sync.md.
+      // A spread capture handler is inert in Solid; ticket #128 owns the real
+      // capture-phase binding.
       onKeyDownCapture,
       onKeyDown,
     } as JSX.HTMLAttributes<HTMLElement>,

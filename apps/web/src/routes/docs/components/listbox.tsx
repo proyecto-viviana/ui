@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/listbox")({
     seo({
       title: "ListBox props",
       description:
-        "Every prop ListBox accepts in @proyecto-viviana/ui — 71 documented from the package's own types.",
+        "Every prop ListBox accepts in @proyecto-viviana/ui — 72 documented from the package's own types.",
       path: "/docs/components/listbox",
     }),
   component: () => <ApiReference page={page} />,

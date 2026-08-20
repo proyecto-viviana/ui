@@ -3,6 +3,7 @@ id: 3
 type: task
 title: "Burn down the ts-nocheck surface"
 created: 2026-08-01
+parent: 24
 status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
@@ -36,3 +37,5 @@ The count only decreases, and no file in the public API surface carries the prag
 ## Relationship
 
 Finding `L1-M2-typecheck-gate-skips-37k-lines` (CONFIRMED). Related: #2 (same class of suppressed signal).
+This ticket also replaces legacy task `ts-nocheck-components` from
+`.claude/current/tech-debt.md`; both records describe the same burn-down.

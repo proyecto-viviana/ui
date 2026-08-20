@@ -32,10 +32,11 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 
-/** Hand-written Solid source roots (React→Solid ports + our UI package). */
+/** Hand-written Solid source roots (ports and styled component packages). */
 const SRC_ROOTS = [
   "packages/solidaria/src",
   "packages/solidaria-components/src",
+  "packages/kumo/src",
   "packages/solid-spectrum/src",
   "packages/solid-stately/src",
   "packages/viviana-ui/src",

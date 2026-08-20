@@ -26,20 +26,20 @@ export function nodeContains(parent: Node | null, child: Node | null): boolean {
     return false;
   }
 
-  // Standard contains check
-  if (parent.contains(child)) {
-    return true;
-  }
-
-  // Check if child is in a shadow root
+  // Walk the composed tree so slotted elements and nodes in nested shadow roots
+  // are treated as descendants of their rendered ancestors.
   let node: Node | null = child;
   while (node) {
     if (node === parent) {
       return true;
     }
 
-    // Check shadow root host
-    if ((node as ShadowRoot).host) {
+    if (
+      typeof (node as HTMLSlotElement).assignedElements !== "function" &&
+      (node as HTMLSlotElement).assignedSlot?.parentNode
+    ) {
+      node = (node as HTMLSlotElement).assignedSlot!.parentNode;
+    } else if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && (node as ShadowRoot).host) {
       node = (node as ShadowRoot).host;
     } else {
       node = node.parentNode;

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { type JSX } from "solid-js";
 import {
@@ -16,9 +16,14 @@ import {
 
 const TestIllustration = createIllustration(
   (props: JSX.SvgSVGAttributes<SVGSVGElement> & { size?: "S" | "M" | "L" }) => {
-    const { size: _size, ...svgProps } = props;
+    const { size, ...svgProps } = props;
     return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" {...svgProps}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 48 48"
+        data-received-size={size}
+        {...svgProps}
+      >
         <path d="M8 12h32v24H8z" fill="var(--iconPrimary, #222)" />
       </svg>
     );
@@ -72,8 +77,7 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     expect(illustration).toHaveAttribute("data-slot", "illustration");
     expect(illustration).toHaveAttribute("aria-hidden", "true");
     expect(illustration).not.toHaveAttribute("size");
-    expect(illustration.className.baseVal).toContain("Zq151");
-    expect(illustration.className.baseVal).toContain("Fr151");
+    expect(illustration).toHaveAttribute("data-received-size", "L");
     expect(illustration.className.baseVal).not.toBe("");
 
     const heading = screen.getByTestId("message-heading");
@@ -129,27 +133,34 @@ describe("IllustratedMessage (solid-spectrum)", () => {
     expect(localRef).toBe(root());
 
     const illustration = screen.getByTestId("message-illustration");
-    expect(illustration.className.baseVal).toContain("ZH151");
-    expect(illustration.className.baseVal).toContain("FB151");
+    // Upstream maps both S and M IllustratedMessage illustrations to M.
+    expect(illustration).toHaveAttribute("data-received-size", "M");
+    expect(illustration.className.baseVal).not.toBe("");
   });
 
   it("inherits DropZone target context and filters arbitrary DOM event props", () => {
     const onClick = vi.fn();
 
     render(() => (
-      <IllustratedMessageContext.Provider
-        value={{ isInDropZone: true, isDropTarget: true, size: "L" }}
-      >
-        <IllustratedMessage data-testid="message-root" onClick={onClick}>
-          <TestIllustration slot="illustration" data-testid="message-illustration" />
+      <>
+        <IllustratedMessageContext.Provider
+          value={{ isInDropZone: true, isDropTarget: true, size: "L" }}
+        >
+          <IllustratedMessage data-testid="message-root" onClick={onClick}>
+            <TestIllustration slot="illustration" data-testid="message-illustration" />
+          </IllustratedMessage>
+        </IllustratedMessageContext.Provider>
+        <IllustratedMessage data-testid="baseline-message-root" size="L">
+          <TestIllustration slot="illustration" data-testid="baseline-message-illustration" />
         </IllustratedMessage>
-      </IllustratedMessageContext.Provider>
+      </>
     ));
 
     const illustration = screen.getByTestId("message-illustration");
-    expect(illustration.className.baseVal).toContain("Zq151");
-    expect(illustration.className.baseVal).toContain("Fr151");
     expect(illustration.className.baseVal).not.toBe("");
+    expect(illustration.className.baseVal).not.toBe(
+      screen.getByTestId("baseline-message-illustration").className.baseVal,
+    );
 
     fireEvent.click(root());
     expect(onClick).not.toHaveBeenCalled();

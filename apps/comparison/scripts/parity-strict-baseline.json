@@ -1,7 +1,7 @@
 {
   "version": 1,
   "generated": "2026-08-07",
-  "description": "Allowed blocking gaps for comparison:report:parity:strict. New catalogue gaps outside this set fail the gate. tech-debt labeledvalue-strict-parity / ticket #2.",
+  "description": "Allowed blocking gaps for comparison:report:parity:strict. New catalogue gaps outside this set fail the gate. Ticket #85 owns the known backlog.",
   "allowedBlockingGapSlugs": {
     "missingControlGroups": [
       "actiongroup",

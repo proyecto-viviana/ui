@@ -3,10 +3,11 @@
  *
  * Ported from react-aria-components Dialog.test.js
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Dialog, DialogTrigger, Heading, type DialogRenderProps } from "../src/Dialog";
+import { Text } from "../src/Text";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { Button } from "../src/Button";
 import {
@@ -92,6 +93,34 @@ describe("Dialog", () => {
 
     const dialog = screen.getByRole("alertdialog");
     expect(dialog).toBeInTheDocument();
+  });
+
+  it('links an alertdialog to a <Text slot="description"> child', () => {
+    render(() => (
+      <Dialog role="alertdialog" aria-label="Delete item">
+        <Text slot="description">This action cannot be undone.</Text>
+      </Dialog>
+    ));
+
+    const dialog = screen.getByRole("alertdialog", { name: "Delete item" });
+    const descriptionId = dialog.getAttribute("aria-describedby");
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId!)).toHaveTextContent(
+      "This action cannot be undone.",
+    );
+    expect(dialog).toHaveAccessibleDescription("This action cannot be undone.");
+  });
+
+  it("does not auto-describe a regular dialog from its description slot", () => {
+    render(() => (
+      <Dialog aria-label="Information">
+        <Text slot="description">Additional information.</Text>
+      </Dialog>
+    ));
+
+    const dialog = screen.getByRole("dialog", { name: "Information" });
+    expect(dialog).not.toHaveAttribute("aria-describedby");
+    expect(screen.getByText("Additional information.")).not.toHaveAttribute("id");
   });
 
   it("should support render props with close function", () => {

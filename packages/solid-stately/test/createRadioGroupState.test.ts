@@ -5,7 +5,7 @@
  * Note: @react-stately doesn't have tests for useRadioGroupState,
  * so these tests follow the same patterns as useCheckboxGroupState tests.
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
 import { createRadioGroupState, type RadioGroupProps } from "../src/radio/createRadioGroupState";
 

@@ -144,9 +144,9 @@ interface ToastAriaContextValue {
 }
 
 const ToastAriaContext = createContext<ToastAriaContextValue | null>(null);
-export const ToastContentContext = createContext<
-  ContextValue<ToastContentProps, HTMLDivElement>
->({});
+export const ToastContentContext = createContext<ContextValue<ToastContentProps, HTMLDivElement>>(
+  {},
+);
 const toastStateByKey = new Map<string, ToastState<ToastContent>>();
 
 export function useToastContext(): ToastState<ToastContent> {

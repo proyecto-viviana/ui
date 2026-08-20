@@ -441,7 +441,7 @@ export function createTab<T>(
   // before focus (createTabListState's selection→focus effect), so its tab
   // already reads tabIndex=0 at `focusin`, again matching React. Setting it on
   // the earlier `focus` event flipped the tab a whole event too soon, so touch
-  // taps diverged at `focusin`. See recertification.md D4 event-ordering.
+  // taps diverged at `focusin`. The D4 event driver holds this ordering.
   const handleFocusIn = () => {
     // Batch collection-focused + roving key. Native `focus` is too early:
     // setting isFocused there flushes the previous tab's focus-move effect

@@ -1,0 +1,20 @@
+{
+  "packages": [
+    {
+      "name": "@proyecto-viviana/kumo",
+      "manifest": "packages/kumo/package.json",
+      "prerequisites": [
+        {
+          "id": "npm-package-registered",
+          "satisfied": false,
+          "evidence": null
+        },
+        {
+          "id": "trusted-publisher-registered",
+          "satisfied": false,
+          "evidence": null
+        }
+      ]
+    }
+  ]
+}

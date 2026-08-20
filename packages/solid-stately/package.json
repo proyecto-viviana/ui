@@ -33,21 +33,26 @@
       "solid": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./private/flags/flags": {
+      "types": "./dist/flags/flags.d.ts",
+      "import": "./dist/private/flags/flags.js",
+      "default": "./dist/private/flags/flags.js"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf dist && tsdown && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
     "dev": "tsup --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },
   "dependencies": {
-    "@internationalized/date": "^3.8.0"
+    "@internationalized/date": "^3.12.3"
   },
   "devDependencies": {
-    "solid-js": "^1.9.11"
+    "solid-js": "^1.9.15"
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"

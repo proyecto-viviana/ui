@@ -1,14 +1,13 @@
-import type { DocTask, RoadmapItem, TaskState } from "./server/frontmatter";
-import type { Problem } from "./server/validate";
+import type { Problem, TicketStatus, WorkTicket } from "./server/tickets";
 
 // Client-side fetch helpers for the dev-only /admin API. Types are shared with
 // the server module via type-only imports (no Node code reaches the client).
 
-export type { DocTask, Problem, RoadmapItem, TaskState };
+export type { Problem, TicketStatus, WorkTicket };
 
 export interface DocEntry {
   path: string;
-  tier: "current" | "research" | "archive" | "repo";
+  tier: "current" | "ticket" | "research" | "archive" | "repo";
   writable: boolean;
   title: string;
   frontmatter: Record<string, unknown> | null;
@@ -16,8 +15,8 @@ export interface DocEntry {
 
 export interface DocsPayload {
   docs: DocEntry[];
-  tasks: (DocTask & { doc: string })[];
-  roadmap: RoadmapItem[];
+  tasks: WorkTicket[];
+  roadmap: WorkTicket[];
   problems: Problem[];
 }
 
@@ -63,11 +62,15 @@ export const fetchDoc = (path: string) => getJson<DocContent>(`/api/admin/doc/${
 export const saveDoc = (path: string, content: string) =>
   sendJson<{ ok: boolean }>(`/api/admin/doc/${path}`, "PUT", { content });
 
-export const postTaskState = (path: string, taskId: string, state: TaskState) =>
-  sendJson<{ ok: boolean }>("/api/admin/task-state", "POST", { path, taskId, state });
+export const postTicketStatus = (path: string, ticketId: number, status: TicketStatus) =>
+  sendJson<{ ok: boolean }>("/api/admin/ticket-status", "POST", { path, ticketId, status });
 
-export const postRoadmapStatus = (id: string, status: string) =>
-  sendJson<{ ok: boolean }>("/api/admin/roadmap-status", "POST", { id, status });
+export const postTicketBlocked = (path: string, ticketId: number, blocked: boolean) =>
+  sendJson<{ ok: boolean }>("/api/admin/ticket-blocked", "POST", {
+    path,
+    ticketId,
+    blocked,
+  });
 
 export const postMarkReviewed = (path: string) =>
   sendJson<{ ok: boolean }>("/api/admin/mark-reviewed", "POST", { path });

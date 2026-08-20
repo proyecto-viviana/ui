@@ -3,7 +3,7 @@
  *
  * Based on @react-stately/disclosure useDisclosureState and useDisclosureGroupState.
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
 import {
   createDisclosureState,
