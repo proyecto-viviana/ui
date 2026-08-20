@@ -83,4 +83,5 @@ export {
   type KeyboardResult,
   type KeyboardEvents,
   type KeyboardEvent,
+  type KeyboardShortcutBindings,
 } from "./createKeyboard";

@@ -5,6 +5,12 @@
  */
 
 import { JSX } from "solid-js";
+import { chain } from "../utils/events";
+import { getEventTarget, nodeContains } from "../utils/dom";
+import {
+  createKeyboardShortcutHandler,
+  type KeyboardShortcutBindings,
+} from "./createKeyboardShortcutHandler";
 
 /**
  * Keyboard event with continuePropagation support.
@@ -25,11 +31,17 @@ export interface KeyboardEvents {
 export interface CreateKeyboardProps extends KeyboardEvents {
   /** Whether the keyboard events should be disabled. */
   isDisabled?: boolean;
+  /** Keyboard shortcuts to handle. */
+  shortcuts?: KeyboardShortcutBindings;
+  /** Whether shortcut handlers receive repeated keydown events. @default false */
+  allowRepeats?: boolean;
+  /** Whether shortcut handlers receive composing keydown events. @default false */
+  allowComposing?: boolean;
 }
 
 export interface KeyboardResult {
   /** Props to spread onto the target element. */
-  keyboardProps: JSX.HTMLAttributes<HTMLElement>;
+  keyboardProps: Pick<JSX.HTMLAttributes<HTMLElement>, "onKeyDown" | "onKeyUp">;
 }
 
 /**
@@ -77,16 +89,59 @@ function createEventHandler<T extends globalThis.KeyboardEvent>(
  * Based on react-aria's useKeyboard but adapted for SolidJS.
  */
 export function createKeyboard(props: CreateKeyboardProps = {}): KeyboardResult {
-  if (props.isDisabled) {
-    return {
-      keyboardProps: {},
-    };
+  const { shortcuts, allowRepeats = false, allowComposing = false } = props;
+
+  let onKeyDown: ((event: globalThis.KeyboardEvent) => void) | undefined;
+  let onKeyUp: ((event: globalThis.KeyboardEvent) => void) | undefined;
+
+  if (shortcuts) {
+    const shortcutHandler = createKeyboardShortcutHandler(shortcuts);
+    const shortcutOnKeyDown = createEventHandler((event) => {
+      if (!nodeContains(event.currentTarget as Node | null, getEventTarget<Node>(event))) {
+        event.continuePropagation();
+        return;
+      }
+
+      if ((event.repeat && !allowRepeats) || (event.isComposing && !allowComposing)) {
+        event.continuePropagation();
+        return;
+      }
+
+      shortcutHandler(event);
+    });
+    const shortcutOnKeyUp = createEventHandler((event) => {
+      if (!nodeContains(event.currentTarget as Node | null, getEventTarget<Node>(event))) {
+        event.continuePropagation();
+        return;
+      }
+
+      if ((event.repeat && !allowRepeats) || (event.isComposing && !allowComposing)) {
+        event.continuePropagation();
+        return;
+      }
+
+      event.continuePropagation();
+    });
+
+    onKeyDown = props.onKeyDown
+      ? chain(props.onKeyDown as (event: globalThis.KeyboardEvent) => void, shortcutOnKeyDown)
+      : shortcutOnKeyDown;
+    onKeyUp = props.onKeyUp
+      ? chain(props.onKeyUp as (event: globalThis.KeyboardEvent) => void, shortcutOnKeyUp)
+      : shortcutOnKeyUp;
+  } else {
+    onKeyDown = createEventHandler(props.onKeyDown);
+    onKeyUp = createEventHandler(props.onKeyUp);
   }
 
   return {
-    keyboardProps: {
-      onKeyDown: createEventHandler(props.onKeyDown),
-      onKeyUp: createEventHandler(props.onKeyUp),
-    },
+    keyboardProps: props.isDisabled
+      ? {}
+      : {
+          onKeyDown,
+          onKeyUp,
+        },
   };
 }
+
+export type { KeyboardShortcutBindings } from "./createKeyboardShortcutHandler";
