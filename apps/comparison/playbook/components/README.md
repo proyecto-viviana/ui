@@ -52,19 +52,21 @@ partial if any gate remains unresolved.
 
 ## Strict Component Parity Audit
 
-Run `vp run comparison:report:parity` before claiming catalogue parity, and
-run `vp run comparison:report:parity:strict` before claiming 100% current-gate
-component parity. The audit checks official S2 catalogue coverage against the
-comparison manifest, sidebar grouping, live styled fixtures, modeled viewer
-controls, validation notes, and current visual/asserted evidence.
+Run `vp run comparison:report:parity` before claiming catalogue **inventory**
+coverage, and `vp run comparison:report:parity:strict` to fail new inventory
+gaps. That report is file/label presence plus resolved evidence pointers. It
+is **not** current-gate acceptance (A-002). Current-gate status comes from
+each note's Gate Outcome Summary (`complete` / `partial` / `not-started` only).
 
 Current snapshot:
 
 - Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
 - Modeled viewer controls: 69/69 entries.
-- Validation notes: 69/69 entries.
-- Current visual/asserted evidence: 69/69 entries.
-- `comparison:report:parity:strict`: passing.
+- Validation notes present: 69/69 entries (presence is not `complete`).
+- Visual-state-matrix labels: 69/69 entries. Spec pointers must resolve;
+  superseded `*-visual.spec.ts` files map to `e2e/certified/*.certified.spec.ts`.
+- `comparison:report:parity:strict`: inventory anti-regression, not 100%
+  current-gate parity.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
 `icons`. Icons and Illustrations now have modeled controls and strict primitive

@@ -57,10 +57,11 @@ The active facts that choose work are:
 ## Now
 
 1. Execute the remaining-work census in `work-queue.md` through every
-   leftover audit item. Current slice: evidence schema (A-002–A-005).
-   Kumo Button pair 15/15 twice; Train 8 classification closed. Do not
-   expand Kumo. Do not skip ahead to unported RAC/S2 surfaces. Then
-   owner decisions, hygiene, lowest-layer inventory.
+   leftover audit item. Current slice: evidence-schema remainder
+   (migrate notes, structured spec literals, live suite three-count).
+   Floor is in. Kumo Button pair 15/15 twice; Train 8 classification
+   closed. Do not expand Kumo. Do not skip ahead to unported RAC/S2
+   surfaces. Then owner decisions, hygiene, lowest-layer inventory.
 2. Qualify the dependency/toolchain migration with meaningful targeted tests,
    complete suites, actual package artifacts, an external consumer, and
    security/peer gates.

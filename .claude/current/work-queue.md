@@ -17,9 +17,10 @@ tasks:
       44/44, playground AA, routes/seo/api-ref, and Kumo pair 15/15
       twice (KX-03 + KX-04 rest/hover/pressed/focus-visible) are
       closed. Train 8 classification is closed (no remaining `?`).
-      Current slice: evidence schema (A-002–A-005). Then owner
-      decisions, hygiene, lowest-layer inventory. Overlay/focus is a
-      separate commit from the dirty audit/Kumo tree.
+      Current slice: evidence-schema remainder (note vocab, structured
+      literals, live three-count). Floor is in. Then owner decisions,
+      hygiene, lowest-layer inventory. Overlay/focus is a separate
+      commit from the dirty audit/Kumo tree.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -98,10 +99,14 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
    `isFileDropItem`, `isTextDropItem`, `useDragAndDrop`,
    `DIRECTORY_DRAG_TYPE`, `DragPreview`), and SideNav (six names).
    Absorption remaining is the classified ⛔ list, not a skip-ahead.
-3. **Evidence schema (A-002–A-005)** — machine-readable ten-gate
-   records with validated pointers; inventory unregistered deferred
-   dimensions (the 6 knownDivergence skips are already named).
-   **Current slice.**
+3. **Evidence schema (A-002–A-005)** — **floor landed this slice;
+   remainder open.** Canonical ten-gate outcomes; parity report is
+   inventory not current-gate acceptance; spec pointers resolve (13
+   stale visual files remapped to certified); six knownDivergence
+   fixmes + 87 deferred comments printed. **Current slice remainder:**
+   migrate notes to canonical vocab, structured `{ file, title }`
+   literals, live suite three-count. The 6 knownDivergence skips are
+   named.
 4. **Owner decisions (ask; do not silently ratify)** — TableView
    native-table (A-006 / T-87), Viviana fork ownership (A-008),
    TabSwitch / SegmentedControl boundary.
@@ -168,6 +173,10 @@ close a slice, commit that slice, then take the next.
   source-reconciled against pin `5ecb3333`. No remaining `?`. Five RAC
   and thirteen S2 support export gaps named. Absorption remaining is
   the classified ⛔ list, not this leftover.
+- Evidence-schema floor — canonical ten-gate outcomes; parity report
+  is inventory; 13 stale spec pointers remapped to certified; 6
+  knownDivergence fixmes named. Remainder (note vocab, structured
+  literals, live three-count) stays leftover 3.
 
 ### Census — every leftover item, in order
 
@@ -323,10 +332,22 @@ from evidence schema.
 
 #### 5. Evidence schema (A-002, A-003, A-004, A-005 remainder)
 
-Machine-readable ten-gate records with validated pointers. Stop counting
-labels and file presence. Replace stale `visual-state-matrix.ts` spec
-strings. Publish suite output as passing obligations / expected
-fixmes / unregistered-or-deferred obligations.
+Floor 2026-08-19: `apps/comparison/src/data/acceptance-schema.ts` plus
+inventory in `comparison:report:parity`. 15/66 notes have ten
+canonical `complete` gates; file presence is 69/69 and is not
+acceptance. Unresolved spec pointers: 0 after remapping the 13 stale
+visual/contract files to `e2e/certified/*.certified.spec.ts`. Expected
+fixmes: 6. Deferred comments: 87.
+
+Remainder:
+
+- Migrate every validation note to the current ten-gate table and
+  `complete` / `partial` / `not-started` only (A-003).
+- Replace remaining free-form `spec` strings with `{ file, title }`
+  literals (A-004).
+- Publish passing / expected-fixme / deferred counts from suite
+  output, and block full acceptance on deferred user-observable
+  branches (A-005).
 
 #### 6. Owner decisions (ask; do not silently ratify)
 
@@ -358,10 +379,11 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, next evidence schema (A-002–A-005).
-   Train 8 classification is closed. Kumo KX-03/KX-04 pair evidence
-   is 15/15 twice. Do not expand the experiment. Do not skip ahead
-   to unported RAC/S2 surfaces.
+1. Remaining-work goal above, next evidence-schema remainder (note
+   vocab, structured spec literals, live suite three-count). Train 8
+   classification is closed. Kumo KX-03/KX-04 pair evidence is 15/15
+   twice. Do not expand the experiment. Do not skip ahead to
+   unported RAC/S2 surfaces.
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
 3. Absorb only source-confirmed Train 8 ⛔ gaps

@@ -8,7 +8,7 @@ status: current
 Status: live audit/migration handoff; **not release-ready**.
 Update when: audit findings, validation evidence, dependency ceilings, or the
 ordered continuation path changes.
-Last refreshed: **2026-08-19**, after Train 8 classification.
+Last refreshed: **2026-08-19**, after the evidence-schema floor.
 First complete 2176 certified run was 2164 pass / 6 fail / 6 skip;
 every product red from that run is now closed on focused reruns
 (TableView mixed, Tabs 23/23, Toast 37/37, TreeView D5). `ui:smoke`
@@ -16,9 +16,11 @@ passed. comparison-axe 80/80. Web contrast 154/154. `a11y:smoke`
 44/44. Playground WCAG 2.2 AA 2/2. Routes 155/155, seo 157/157,
 api-reference 4/4. Kumo pair spec 15/15 twice (KX-03 + KX-04
 rest/hover/pressed/focus-visible computed; primary interaction
-pixels). Train 8 classification is closed (no remaining `?`). Next:
-evidence schema (A-002–A-005). A full 2176 rerun is still owed
-before claiming the certified lane green.
+pixels). Train 8 classification is closed (no remaining `?`). Evidence
+schema floor is in: inventory report, resolving spec pointers, six
+named fixmes. Remainder: note vocab migration, structured literals,
+live suite three-count. A full 2176 rerun is still owed before
+claiming the certified lane green.
 Substantial pre-existing owner work and audit changes remain
 uncommitted. Do not reset or split this tree without first
 identifying ownership of overlapping changes.
@@ -156,7 +158,9 @@ owner-blocked, or dated.
    knownDivergences. S2 RangeSlider still lacks `data-disabled`.
    jsx-preserving builds DCE `let` refs.
 2. Machine-readable ten-gate evidence schema with validated pointers
-   (A-002–A-005). **Current slice.**
+   (A-002–A-005). **Floor landed; remainder is current.** Canonical
+   outcomes; pointer guard; 13 stale specs remapped; 6 fixmes named.
+   Still owed: note migration, structured literals, live three-count.
 3. Owner decisions: TableView native-table (A-006), Viviana fork/convergence
    (A-008), TabSwitch/SegmentedControl boundary. Ask; do not silently ratify.
 4. Hygiene: CSP/response headers (A-020), 59 `@ts-nocheck` (A-019), macro
@@ -169,8 +173,8 @@ owner-blocked, or dated.
 ```bash
 git status --short --branch
 vp install --frozen-lockfile
-# Kumo pair spec 15/15 twice. Train 8 classification closed.
-# Next: evidence schema (A-002–A-005).
+# Evidence-schema floor landed. Remainder: note vocab, structured
+# spec literals, live suite three-count.
 # Do not expand Kumo. Do not mix the dirty audit dump.
 ```
 

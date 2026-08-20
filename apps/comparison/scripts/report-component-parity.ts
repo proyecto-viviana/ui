@@ -5,6 +5,12 @@ import ts from "typescript";
 import { componentControlGroups } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
+import {
+  inventoryCertifiedObligations,
+  inventoryValidationNotes,
+  summarizeNoteInventory,
+  unresolvedVisualStatePointers,
+} from "../src/data/acceptance-inventory";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
 
 interface Gap {
@@ -163,6 +169,7 @@ function hasCurrentVisualEvidence(slug: string): boolean {
     return false;
   }
 
+  // Label presence in visual-state-matrix, not a resolved spec run (A-002).
   return getVisualStateTargets(entry).some(
     (state) =>
       (state.react === "visual" || state.react === "asserted") &&
@@ -357,6 +364,22 @@ const noCurrentVisualEvidence = reactSpectrumCatalogue
   .filter((entry) => !hasCurrentVisualEvidence(entry.slug))
   .map((entry) => ({ slug: entry.slug, title: entry.title }));
 
+const comparisonRoot = fileURLToPath(new URL("..", import.meta.url));
+const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
+const noteInventory = inventoryValidationNotes(
+  fileURLToPath(new URL("../playbook/components/", import.meta.url)),
+);
+const noteSummary = summarizeNoteInventory(noteInventory);
+const unresolvedPointers = unresolvedVisualStatePointers({ comparisonRoot, repoRoot });
+const certifiedObligations = inventoryCertifiedObligations(
+  fileURLToPath(new URL("../e2e/certified/", import.meta.url)),
+);
+const unresolvedPointerGaps: Gap[] = unresolvedPointers.map((pointer) => ({
+  slug: pointer.slug,
+  title: titleForSlug(pointer.slug),
+  detail: `${pointer.stateId} → ${pointer.file}`,
+}));
+
 // Docs-page gate.
 const docsPagesMissing: Gap[] = [];
 const docsSectionDrift: Gap[] = [];
@@ -434,6 +457,7 @@ const alwaysBlockingSections = [
   // pages live in docsPagesMissing, which is tracked but non-blocking.)
   docsSectionDrift,
   docsIntegrityGaps,
+  unresolvedPointerGaps,
 ] as const;
 
 const baselinedControlGaps = unbaselined(
@@ -463,7 +487,8 @@ const blockingGaps =
 const depthGaps = scope(noCurrentVisualEvidence).length;
 const strictFailCount = structuralBlockingGaps + baselinedNewGaps;
 
-console.log("Comparison component parity audit");
+console.log("Comparison component catalogue inventory");
+console.log("This report measures file/label presence, not current-gate acceptance (A-002).");
 console.log(`Official S2 catalogue entries: ${reactSpectrumCatalogue.length}`);
 console.log(`Comparison manifest entries: ${comparisonEntries.length}`);
 console.log(
@@ -480,9 +505,16 @@ console.log(
   }`,
 );
 console.log(
-  `Official entries with current visual/asserted evidence: ${
+  `Official entries with visual-state-matrix labels (not resolved spec runs): ${
     reactSpectrumCatalogue.length - depthGaps
   }`,
+);
+console.log(
+  `Validation notes with ten canonical complete gates: ${noteSummary.allTenComplete} / ${noteSummary.notes}`,
+);
+console.log(`Unresolved visual-state spec pointers: ${unresolvedPointers.length}`);
+console.log(
+  `Certified expected fixmes: ${certifiedObligations.expectedFixmes.length}; deferred comments: ${certifiedObligations.deferredComments.length}`,
 );
 console.log(`Docs pages ported: ${docsPagesPorted} / ${vendoredMdxBySlug.size} vendored`);
 if (slugFilter) {
@@ -511,15 +543,37 @@ printGapSection(
 printGapSection("Live React styled entries missing React fixtures", missingReactStyledFixtures);
 printGapSection("Live Solid styled entries missing Solid fixtures", missingSolidStyledFixtures);
 printGapSection("Official entries missing validation-note coverage", missingValidationNotes);
-printGapSection(
-  "Official entries without current visual/asserted evidence",
-  noCurrentVisualEvidence,
-);
+printGapSection("Official entries without visual-state-matrix labels", noCurrentVisualEvidence);
+printGapSection("Visual-state-matrix spec pointers that do not resolve", unresolvedPointerGaps);
 
 console.log("");
 printGapSection("Docs pages not yet ported (upstream MDX vendored)", docsPagesMissing);
 printGapSection("Docs pages drifting from upstream section structure", docsSectionDrift);
 printGapSection("Docs pages with ToC / anchor / parity integrity problems", docsIntegrityGaps);
+
+console.log("");
+console.log("Gate-outcome inventory (canonical outcomes: complete/partial/not-started)");
+console.log(`Notes: ${noteSummary.notes}`);
+console.log(`Ten-row current-gate tables: ${noteSummary.withTenCanonicalRows}`);
+console.log(`Nine-gate tables (pre-known-defect): ${noteSummary.nineGate}`);
+console.log(`Missing Gate Outcome Summary: ${noteSummary.missingTable}`);
+console.log(
+  `Outcome kinds: complete=${noteSummary.outcomeKindCounts.complete} partial=${noteSummary.outcomeKindCounts.partial} not-started=${noteSummary.outcomeKindCounts["not-started"]} unnormalized=${noteSummary.outcomeKindCounts.unnormalized} missing-row=${noteSummary.outcomeKindCounts.missing}`,
+);
+console.log(
+  `Components with every current gate complete: ${noteSummary.allTenComplete} (file presence is not complete)`,
+);
+
+console.log("");
+console.log("Certified suite obligations (A-005)");
+console.log(`Expected fixmes (knownDivergence): ${certifiedObligations.expectedFixmes.length}`);
+for (const fixme of certifiedObligations.expectedFixmes) {
+  console.log(`- ${fixme.spec} · ${fixme.caseId}`);
+}
+console.log(`Unregistered/deferred comment lines: ${certifiedObligations.deferredComments.length}`);
+console.log(
+  "Passing obligations are the non-fixme certified cases from the last full suite run, not this inventory.",
+);
 
 if (strict) {
   if (strictBaseline != null && !strictFull) {

@@ -125,6 +125,11 @@ Severity describes owner risk, not code aesthetics:
   evidence file/test case; rename the existing headline so its narrower meaning
   is unmistakable. Preserve a backlog baseline only as an explicit incomplete
   status, never under a 100%-parity claim.
+- Floor landed 2026-08-19: `acceptance-schema.ts` permits only
+  `complete` / `partial` / `not-started`; `comparison:report:parity` is
+  titled catalogue inventory and prints ten-gate counts (15/66 notes all
+  complete). `--strict` remains inventory anti-regression, not current-gate
+  acceptance. Remainder: derive blocking status from gate rows, not labels.
 
 ### A-003 — Component acceptance records use incompatible generations and vocabularies
 
@@ -145,6 +150,11 @@ Severity describes owner risk, not code aesthetics:
 - Required action: define one schema and migrate every note mechanically;
   historical command evidence may remain, but current status must be derived
   from current gate rows and unresolved defects.
+- Floor landed 2026-08-19: generated inventory in
+  `comparison:report:parity` — 66 notes, 21 ten-row tables, 8 nine-gate,
+  36 missing Gate Outcome Summary; unnormalized outcomes (`done` /
+  `passing` / `accepted` / `covered`) are counted and are not complete.
+  Remainder: migrate every note to the canonical table and vocab.
 
 ### A-004 — Current visual-evidence records contain stale test-file pointers
 
@@ -163,6 +173,11 @@ Severity describes owner risk, not code aesthetics:
 - Required action: replace free-form `spec` strings with validated structured
   references to file, driver, case, and state; fail CI when any reference does
   not resolve.
+- Floor landed 2026-08-19: `evidencePointersFromSpec` splits `+` / `;`
+  strings; `--strict` fails unresolved pointers. The 13 stale
+  `*-visual.spec.ts` / `calendar-contract` paths now point at
+  `e2e/certified/*.certified.spec.ts`. Unresolved count is 0. Remainder:
+  structured `{ file, title }` literals instead of free-form spec strings.
 
 ### A-005 — The certified suite deliberately excludes unresolved parity branches from pass/fail
 
@@ -188,6 +203,12 @@ Severity describes owner risk, not code aesthetics:
   expected failures, and unregistered/deferred obligations—and make any
   divergence or deferred user-observable upstream branch block full component
   acceptance.
+- Floor landed 2026-08-19: the parity report prints expected fixmes (the
+  six registered `knownDivergence` cases, parsed from certified specs)
+  and 87 deferred comment lines. Passing obligations remain the non-fixme
+  cases from the last full 2176 run (2164), which is still owed as a
+  rerun. Remainder: emit the three counts from suite output, not comments
+  plus memory.
 
 ### A-006 — TableView adapts certification around an unratified architecture divergence
 
@@ -722,8 +743,10 @@ passed. comparison-axe 80/80. `a11y:contrast` 154/154. `a11y:smoke`
 44/44. Playground WCAG 2.2 AA 2/2. Routes 155/155, seo 157/157,
 api-reference 4/4. Kumo pair 15/15 twice (KX-03 + KX-04). Train 8
 classification is closed (no remaining `?`; ⛔ list named in A-013).
-Next: evidence schema (A-002–A-005). Do not expand Kumo. Do not skip
-ahead to unported RAC/S2 surfaces.
+Evidence-schema floor is in (inventory report, resolving spec
+pointers, six named fixmes). Next: evidence-schema remainder (note
+vocab, structured literals, live suite three-count). Do not expand
+Kumo. Do not skip ahead to unported RAC/S2 surfaces.
 
 After targeted red/green work, run the validation ladder in `status.md`
 sequentially because build lanes share `dist` trees. The packed-consumer smoke
