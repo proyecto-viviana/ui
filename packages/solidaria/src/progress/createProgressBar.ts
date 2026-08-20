@@ -9,6 +9,7 @@
  */
 
 import { createLabel } from "../label/createLabel";
+import type { JSX } from "solid-js";
 import { mergeProps } from "../utils/mergeProps";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
@@ -29,7 +30,7 @@ export interface AriaProgressBarProps {
   /** The display format of the value label. */
   formatOptions?: Intl.NumberFormatOptions;
   /** The content to display as the label. */
-  label?: string;
+  label?: JSX.Element;
   /** An accessibility label for this item. */
   "aria-label"?: string;
   /** Identifies the element (or elements) that labels the current element. */

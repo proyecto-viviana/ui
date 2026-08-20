@@ -9,6 +9,7 @@
  */
 
 import { createProgressBar, type AriaProgressBarProps } from "../progress/createProgressBar";
+import type { JSX } from "solid-js";
 
 export interface AriaMeterProps extends Omit<AriaProgressBarProps, "isIndeterminate"> {
   /** The current value (controlled). */
@@ -22,7 +23,7 @@ export interface AriaMeterProps extends Omit<AriaProgressBarProps, "isIndetermin
   /** The display format of the value label. */
   formatOptions?: Intl.NumberFormatOptions;
   /** The content to display as the label. */
-  label?: string;
+  label?: JSX.Element;
   /** An accessibility label for this item. */
   "aria-label"?: string;
   /** Identifies the element (or elements) that labels the current element. */

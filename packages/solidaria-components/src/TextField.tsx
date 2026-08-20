@@ -42,6 +42,7 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
+import { LabelContext, type LabelProps } from "./Label";
 
 export interface TextFieldRenderProps {
   /** Whether the text field is disabled. */
@@ -86,7 +87,6 @@ export interface TextFieldContextValue {
 }
 
 export const TextFieldContext = createContext<TextFieldContextValue | null>(null);
-export const LabelContext = TextFieldContext;
 export const InputContext = TextFieldContext;
 export const TextAreaContext = TextFieldContext;
 export const FieldInputContext = TextFieldContext;
@@ -139,53 +139,6 @@ function withFormValidationBehavior(
       return undefined;
     },
   });
-}
-
-export interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
-  children?: JSX.Element;
-}
-
-/**
- * A label element that automatically wires up to the parent TextField context.
- * This enables the proper htmlFor/id relationship between label and input.
- */
-export function Label(props: LabelProps): JSX.Element {
-  const context = useContext(TextFieldContext);
-
-  const localDOMProps = () => {
-    const result: Record<string, unknown> = {};
-    const propsRecord = props as Record<string, unknown>;
-
-    for (const key in propsRecord) {
-      if (key !== "children") {
-        result[key] = propsRecord[key];
-      }
-    }
-    return result;
-  };
-
-  // Merge context labelProps with local props (local props take precedence)
-  const mergedProps = () => {
-    const localProps = localDOMProps();
-    if (context) {
-      const { ref: _ref, ...contextLabelProps } = (context.labelProps ?? {}) as Record<
-        string,
-        unknown
-      >;
-      const merged = {
-        ...contextLabelProps,
-        ...(context.inputId ? { for: context.inputId } : {}),
-        ...localProps,
-      } as Record<string, unknown>;
-      if (merged.class == null) {
-        merged.class = "solidaria-Label";
-      }
-      return merged;
-    }
-    return localProps.class == null ? { ...localProps, class: "solidaria-Label" } : localProps;
-  };
-
-  return <label {...mergedProps()}>{props.children}</label>;
 }
 
 export interface InputProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "children"> {}
@@ -594,6 +547,17 @@ export function TextField(props: TextFieldProps): JSX.Element {
       setInputIdOverride(id);
     },
   };
+  const labelContextValue: LabelProps = {
+    get id() {
+      return (textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).id;
+    },
+    get for() {
+      return (
+        inputIdOverride() ??
+        (textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).for
+      );
+    },
+  };
   // Resolve the render-prop children ONCE (untracked). Re-invoking it on a
   // reactive update re-clones its templates; if that lands mid-hydration it
   // throws a Hydration Mismatch (worst in dev, where slow unbundled modules widen
@@ -647,15 +611,19 @@ export function TextField(props: TextFieldProps): JSX.Element {
 
   return (
     <FieldErrorContext.Provider value={fieldErrorContext}>
-      <TextFieldContext.Provider value={contextValue}>
-        {local.render ? (
-          local.render(customRootProps(), renderValues())
-        ) : (
-          <div {...rootProps()}>
-            <FieldChildrenSlotted />
-          </div>
-        )}
-      </TextFieldContext.Provider>
+      <LabelContext.Provider value={labelContextValue}>
+        <TextFieldContext.Provider value={contextValue}>
+          {local.render ? (
+            local.render(customRootProps(), renderValues())
+          ) : (
+            <div {...rootProps()}>
+              <FieldChildrenSlotted />
+            </div>
+          )}
+        </TextFieldContext.Provider>
+      </LabelContext.Provider>
     </FieldErrorContext.Provider>
   );
 }
+
+export { Label, LabelContext, type LabelProps } from "./Label";
