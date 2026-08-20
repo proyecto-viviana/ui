@@ -41,39 +41,42 @@ The active facts that choose work are:
 - package builds previously passed while Vite Plus ignored six legacy config
   files and omitted declared artifacts; configs are migrated and an artifact
   manifest guard now makes that class of false green executable;
-- the exact oracle is now S2 1.6.0 / RAC 1.20.0, but most T-61…T-99 behavioral
-  deltas remain open or unresolved in `upstream-release-audit.md`;
+- the exact oracle is now S2 1.6.0 / RAC 1.20.0; Train 8 (T-61…T-99) is
+  classified against pinned source (no remaining `?`). Absorption remaining
+  is the ⛔ list in `upstream-release-audit.md`, not a pin-alignment claim;
 - strict component reports still count modeled labels and frozen exceptions,
   not full ten-gate acceptance;
 - the upper-register guard freezes source-fork growth but does not prove that
   behavior is owned at the lowest layer;
-- Kumo is aligned to 2.11.0 and still experimental; paired browser evidence is
-  absent and its first publish is blocked by an executable prerequisite;
+- Kumo is aligned to 2.11.0 and still experimental; Button pair evidence is
+  15/15 twice (KX-03 + KX-04). Do not expand. First publish is blocked by
+  an executable prerequisite;
 - public styling explanations now state the actual sibling/fork model, while
   stale internal plan prose is being retired.
 
 ## Now
 
 1. Execute the remaining-work census in `work-queue.md` through every
-   leftover audit item. Current slice: Kumo Button paired browser
-   evidence (A-007). Do not expand the experiment. Site constituent
-   lanes are in. Then Train 8, evidence schema, owner decisions,
-   hygiene — without skipping ahead.
+   leftover audit item. Current slice: evidence schema (A-002–A-005).
+   Kumo Button pair 15/15 twice; Train 8 classification closed. Do not
+   expand Kumo. Do not skip ahead to unported RAC/S2 surfaces. Then
+   owner decisions, hygiene, lowest-layer inventory.
 2. Qualify the dependency/toolchain migration with meaningful targeted tests,
    complete suites, actual package artifacts, an external consumer, and
    security/peer gates.
 3. Keep Kumo's first publish closed until its external npm/trusted-publisher
    prerequisite is verified; keep the package labeled experimental.
-4. Continue source-level classification of T-61…T-99. Do not equate updated
-   pins, exports, or passing broad suites with absorbed behavior.
+4. Absorb only the classified ⛔ Train-8 tickets, in dependency order.
+   Do not equate updated pins, exports, or passing broad suites with
+   absorbed behavior. T-87 stays owner with A-006.
 5. Repair the component evidence model so current gate outcomes and runnable
    evidence, not labels and frozen baselines, determine acceptance.
 
 ## Next
 
-1. Prove the Kumo Button behavior and visual branches in the paired fixture,
-   qualify the root site, and align the sibling proposal.
-2. Close the remaining classified 1.20/1.6 behavior gaps in dependency order.
+1. Close the evidence-schema leftover (A-002–A-005), then owner
+   decisions, hygiene, and lowest-layer inventory in census order.
+2. Close the remaining classified 1.20/1.6 ⛔ gaps in dependency order.
 3. Close the frozen strict modeled-control gaps and missing exports/DnD surface
    against the exact current oracle.
 4. Consume the shared headless spine and reduce upper-layer duplication in

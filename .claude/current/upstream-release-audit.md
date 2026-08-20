@@ -45,7 +45,7 @@ tasks:
       NOT fake it with bespoke per-widget consumers.
 ---
 
-# Upstream release audit — RAC 1.14→1.19 / S2 1.0→1.5.1
+# Upstream release audit — RAC 1.14→1.20 / S2 1.0→1.6
 
 Status: live audit.
 Update when: a T-NN ticket changes state or a new upstream release is audited.
@@ -181,7 +181,9 @@ asserted role. The release notes are the only signal those happened — see the
 | 2026-03-04   | 1.16.0 | 1.2.0                        | rac v1-16-0 · rs v1-2-0                   |
 | 2026-04-15   | 1.17.0 | 1.3.0                        | rac v1-17-0 · rs v1-3-0                   |
 | 2026-05-30   | 1.18.0 | 1.4.0                        | rac v1-18-0 · rs v1-4-0                   |
-| 2026-06-17   | 1.19.0 | 1.5.0                        | rac v1-19-0 · rs v1-5-0 ← **current pin** |
+| 2026-06-17   | 1.19.0 | 1.5.0                        | rac v1-19-0 · rs v1-5-0                   |
+| 2026-06-24   | 1.19.0 | 1.5.1                        | S2 patch train                            |
+| 2026-08-19   | 1.20.0 | 1.6.0                        | rac v1-20-0 · rs v1-6-0 ← **current pin** |
 
 Tickets below are built from the **per-package GitHub Release highlights**
 (`gh release view '<pkg>@<ver>' --repo adobe/react-spectrum`). Those are summaries;
@@ -289,7 +291,7 @@ our code; land a changeset when a published-package `src` changes.
 - [x] **T-49** ➖ S2 — **Menu un-omit `dependencies`** (+9) — **N/A by construction, confirmed.** Upstream re-exposes the `dependencies` array prop (RAC's collection-invalidation deps array). In the pinned upstream, `@react-spectrum/s2` `MenuProps` `Omit`s only `'children' | 'style' | 'className' | 'render' | 'renderEmptyState' | keyof GlobalDOMAttributes` from `AriaMenuProps` — `dependencies` is already _not_ omitted. We never had the omit because we never had the prop: our collections invalidate **reactively via Solid signals** (any signal read inside an item render is auto-tracked), so there is no manual `dependencies` array to surface — `dependencies` is grep-empty across our `menu`/`solidaria`. Nothing else in the un-omit applies.
 - [x] **T-50** ➖ S2 — **Tabs stable `contentId`** (+11) — **N/A in Solid's no-rerender model, confirmed.** Upstream's S2 `Tab` (`@react-spectrum/s2/src/Tabs.tsx`) derives `contentId = \`${baseId ?? fallbackId}-content-${props.id ?? fallbackId}\``from a shared`baseId`(on`InternalTabsContext`), used as the text `id`and in`aria-labelledby`for the`labelBehavior === 'hide'`case; the comment states it "Prevents infinite loop when rendering across multiple CollectionBuilder portals" — a React reconciliation artifact where`useId()`re-derives a changing id across the portal double-render. Our`Tab` (`solid-spectrum/src/tabs/index.tsx`) uses `const contentId = createUniqueId()`**once** in the component body (Solid runs the body once → stable for the instance's lifetime), and both the text`id={contentId}`and`aria-labelledby={…contentId…}`read the **same closure variable**, so they are internally consistent. With no re-render and no portal double-render producing a changing id, neither the infinite loop nor an aria mismatch can occur; the upstream`baseId`-derivation exists purely to be deterministic across React's double render, which we don't have. (The aria-hook id path is separately faithful: our `getTabListId`WeakMap +`${baseId}-tab/tabpanel-${key}`mirrors upstream`generateId`.)
 
-## Train 7 — S2 1.5.1 (2026-06-24, current pin)
+## Train 7 — S2 1.5.1 (2026-06-24, former pin)
 
 S2-only patch train: no RAC release and no `@adobe/react-spectrum` umbrella tag
 (RAC stays 1.19.0); no GitHub release notes are published for patch trains, so
@@ -318,6 +320,212 @@ metadata bump of Adobe's unported chat-components package (pre-existing at
       `actionbutton-staticcolor-text-overlay.md`). The background's
       `isSelected: baseColor('transparent-overlay-800')` is upstream-faithful
       and stays.
+
+## Train 8 — RAC 1.20.0 / S2 1.6.0 (current pin, classified 2026-08-19)
+
+The oracle, comparison dependencies, and S2 style foundation are aligned to
+commit `5ecb3333001313e83898cd07644227897e3bae1f`. **Pin alignment is not
+behavior absorption.** Classification is source-reconciled against the vendored
+oracle and local packages (2026-08-19). No remaining `?` tickets. This leftover
+is classification, not a port wave: do not treat the ⛔ list as a skip-ahead.
+
+Guards run the same day:
+
+- `vp run guard:rac-export-gap` fails by design: five missing RAC named value
+  exports — `PreviewTrigger`, `Token`, `TokenField`, `TokenFieldContext`,
+  `TokenInput`. RAC 252 / solidaria-components 415; the extra 168 are Solid
+  composition helpers, not a fail.
+- `vp run comparison:report:exports` (reporter, exit 0): S2
+  `@react-spectrum/s2@1.6.0` 224 value exports, solid-spectrum 281, **thirteen
+  missing non-root/support** — `LabeledValueContext`; `isDirectoryDropItem`,
+  `isFileDropItem`, `isTextDropItem`; `useDragAndDrop`; `DIRECTORY_DRAG_TYPE`,
+  `DragPreview`; `SideNav`, `SideNavHeader`, `SideNavItem`,
+  `SideNavItemContent`, `SideNavItemLink`, `SideNavSection`. Missing catalogue
+  root exports: 0.
+
+Release notes: [RAC 1.20.0](https://react-aria.adobe.com/releases/v1-20-0),
+[S2 1.6.0](https://react-spectrum.adobe.com/releases/v1-6-0). GitHub tags
+`react-aria-components@1.20.0` / `@react-spectrum/s2@1.6.0` share the pin
+commit.
+
+### Classification tally (T-61…T-99)
+
+| Status | Tickets |
+| ------ | ------- |
+| ✔ already present / ported | T-65, T-66, T-69, T-75, T-81, T-91, T-98 |
+| ➖ N/A, consumed library, or first-pass misread | T-67, T-74, T-76, T-78, T-79, T-86, T-97 |
+| ◑ remaining branch | T-93 (restore-on-unmount), T-99 (Adobe prose surface) |
+| ⛔ confirmed unported | T-61, T-62, T-63, T-64, T-68, T-70, T-71, T-72, T-73, T-77, T-80, T-82, T-83, T-84, T-85, T-87, T-88, T-89, T-90, T-92, T-94, T-95, T-96 |
+
+Browser still owed as the acceptance vehicle even after source ⛔: T-64
+trackpad, T-70 stuck-after-hold, T-84 Firefox date-segment, T-88 Android tap
+(mobile). T-87 stays owner with A-006 — do not silently ratify a native-table
+absorb.
+
+### Tickets
+
+- [ ] **T-61** ⛔ RAC — keyboard-shortcut API on `createKeyboard`. The hook
+      exists (`packages/solidaria/src/interactions/createKeyboard.ts`); the
+      1.20 `shortcuts` / `allowRepeats` / `allowComposing` surface
+      (`createKeyboardShortcutHandler`) does not. First-pass "no public
+      surface" was imprecise. Port and prove announced text, platform
+      modifiers, and form behavior. T-90 is blocked on this.
+- [ ] **T-62** ⛔ RAC — FileTrigger hidden-input click + DropZone restore
+      focus. RAC FileTrigger stamps `onClick={e => e.stopPropagation()}` on
+      the hidden file input; local `FileTrigger.tsx` does not. DropZone
+      restores with `hiddenButton.focus()`, not `focusWithoutScrolling`.
+- [ ] **T-63** ⛔ RAC — fractional Table column widths. Upstream
+      `TableUtils.calculateColumnSizes` floors `availableWidth`; local
+      `createTableColumnResizeState.ts` does not floor table width.
+- [ ] **T-64** ⛔ RAC — virtual pointer 1×1 clause. Local
+      `isVirtualPointerEvent` (`packages/solidaria/src/utils/events.ts`) does
+      not gate the second 1×1 clause on `isAndroid()`; upstream does.
+      Trackpad 1×1 mouse events can be treated as virtual. Browser still
+      owed as acceptance.
+- [x] **T-65** ✔ RAC — `alertdialog` default description wiring. Ported the
+      upstream `contentProps` contract into `createDialog` and routed the
+      default description slot through `solidaria-components` without moving
+      ARIA ownership upward. Headless regressions cover generated versus
+      explicit descriptions, and the composed Dialog test proves the computed
+      accessible description; ordinary dialogs remain undescribed by default.
+      **Certified follow-up closed:** S2 Dialog now copies RAC
+      `TextContext.slots.description` onto `ContentContext` so AlertDialog
+      `<Content>` receives the generated description id. Package regressions
+      cover AlertDialog description and keep composed Dialog undescribed;
+      certified D6 `variant-error` passes.
+- [x] **T-66** ✔ RAC — public Tree render-prop type exports.
+      `TreeSectionProps` and `TreeHeaderProps` are exported from
+      `packages/solidaria-components/src/Tree.tsx` and the package barrel.
+- [x] **T-67** ➖ RAC — `useId` leak fix is React render-lifecycle-specific;
+      Solid component bodies do not repeatedly allocate ids on rerender.
+- [ ] **T-68** ⛔ RAC — DnD ancestor drop-target resolution. Local
+      `DragManager.findNearestDropTarget` is distance-only; upstream prefers
+      an ancestor drop target over nearest-by-distance.
+- [x] **T-69** ✅ RAC — ProgressBar/Meter `minValue === maxValue` avoids NaN
+      through the local safe-range calculation; retain the equal-range
+      regression as the evidence anchor.
+- [ ] **T-70** ⛔ RAC — Table resize remains active after click. Local resize
+      ends on handle `pointerup`; upstream uses `useMove.onMoveEnd` for
+      mouse/touch. Browser still owed for stuck-after-hold.
+- [ ] **T-71** ⛔ RAC — Dialog/Popover overlay id. RAC DialogTrigger sets
+      `PopoverContext.id: overlayProps.id`. Local DialogTrigger exposes
+      `overlayProps` on `DialogTriggerContext` but does not put the overlay
+      id into `PopoverContext`.
+- [ ] **T-72** ⛔ RAC — Virtualizer item-size observation. The 1.20 delta is
+      `shouldObserveItemSize` plus skip measure when `!isElementVisible`.
+      Local Virtualizer has neither. First-pass "hidden virtualized Grid
+      items use `display:none`" / reverse-axis was a misread of this delta
+      (see T-97).
+- [ ] **T-73** ⛔ RAC — multiple ComboBox value type. Upstream
+      `ValueType<M> = readonly Key[]` for multiple; local
+      `createComboBoxState` uses `selectedKeys?: Iterable<Key>`, not
+      `value?: readonly Key[]`. First-pass "readonly ComboBox values" was a
+      misread of the TypeScript `readonly Key[]`.
+- [x] **T-74** ➖ RAC — millisecond segment clamping. The clamp lives in
+      consumed `@internationalized/date@^3.12.3`
+      (`Math.max(0, Math.min(time.millisecond, 999))`). Both local and
+      upstream IncompleteDate `getSegmentLimits` lack millisecond.
+- [x] **T-75** ✔ RAC — `ariaHideOutside` across Shadow DOM. Ported the
+      upstream shadow-tree walker and feature flag at the shared
+      Stately/ARIA layers. Regressions cover nested shadow roots,
+      dynamically inserted shadow content, disconnected targets, and empty
+      top-layer attributes. This does not close T-92: global scroll and
+      `closeOnScroll` still require their own shadow-root reconciliation.
+- [x] **T-76** ➖ RAC — Breadcrumb items whose `href` is `undefined`. Solid
+      omits undefined attributes. Local Link chooses `<a>` vs span via
+      `ariaProps.href && !isDisabled`.
+- [ ] **T-77** ⛔ RAC — Tree unslotted Checkbox. RAC Tree provides
+      `CheckboxContext` with `DEFAULT_SLOT` plus selection; local Tree has
+      `TreeSelectionCheckbox` only, no `CheckboxContext`.
+- [x] **T-78** ➖ RAC — Table press-and-hold navigation. No distinct 1.20
+      changelog delta; resize stuck is T-70, interactive table is T-87.
+- [x] **T-79** ➖ RAC — explicit-script locale handling. Language-script
+      match lives in consumed `@internationalized/string@^3.2.10`
+      (`LocalizedStringDictionary` / `getScript` / `sr-Latn`). Local `isRTL`
+      already uses `locale.script`.
+- [ ] **T-80** ⛔ RAC — `PreviewTrigger` is a new unported component/public
+      surface. Maps 1:1 to one of the five RAC export-gap names. Treat
+      implementation, exports, docs, and browser evidence as one ticket.
+- [x] **T-81** ✔ Stately — deleting the focused Grid row could loop forever
+      when every remaining row was disabled. Ported upstream's bounded
+      forward-then-backward search in `createGridState`; a reactive
+      collection regression hangs/fails against the old loop and passes now.
+- [ ] **T-82** ⛔ RAC — `TokenField` is a new unported component/public
+      surface (`Token`, `TokenField`, `TokenFieldContext`, `TokenInput`).
+      Remaining four RAC export-gap names.
+- [ ] **T-83** ⛔ RAC — `MenuTrigger` context-menu activation. No
+      `createContextMenu` / `trigger="contextMenu"` in packages. Reconcile
+      trigger modality, virtual target rect, keyboard invocation, and
+      dismissal when ported.
+- [ ] **T-84** ⛔ RAC — Firefox `selectionchange` date-field focus. Local
+      date-segment `selectionchange` collapses whenever the anchor is in the
+      segment; upstream also requires `getActiveElement() === ref.current`.
+      Firefox browser still owed as the regression vehicle.
+- [ ] **T-85** ⛔ RAC — iOS user-agent detection update. Local `platform.ts`
+      is missing `userAgentData.brands`, CriOS/CrMo, FxiOS, the `isWebKit`
+      iOS exception (`isIOS() || !isChrome()`), `isSafari`, and the cache;
+      it uses `nav.platform || userAgentData.platform` (upstream order is
+      reversed). Reconcile every local consumer before copying the detector.
+- [x] **T-86** ➖ RAC — React-canary collection compatibility is
+      React-specific; no Solid runtime equivalent is required.
+- [ ] **T-87** ⛔ RAC/S2 — interactive Table evolution. Table
+      `keyboardNavigationBehavior="tab"` is not in `createTable` / S2
+      TableView; GridList and Tree already have it. The local styled
+      TableView's native `<table>` architecture already excludes upstream
+      branches; reconcile this train only after the owner ratifies or
+      removes that structural divergence (audit A-006). Do not silently
+      ratify.
+- [ ] **T-88** ⛔ RAC — Android taps interpreted as drag. Local `createDrag`
+      has no `onPointerDown` modality tracking; upstream `useDrag` detects
+      iOS VoiceOver (`width<1 && height<1 && isIOS() && isWebKit()`) and
+      Android TalkBack (center tap ≤0.5px). Mobile browser still owed.
+- [ ] **T-89** ⛔ S2 — Switch field `position: 'relative'`. Upstream S2
+      Switch `field` style gained `position: 'relative'`; local
+      `switchFieldStyle` (`ToggleSwitch.tsx`) has none. DropZone half of
+      this release note is T-62.
+- [ ] **T-90** ⛔ RAC — repeated-key navigation. Upstream
+      `useSelectableCollection` now uses `useKeyboard({ shortcuts:
+      withShiftSel(arrows/page), allowRepeats: true })`. Local
+      `createSelectableCollection` still has a hand-rolled `onKeyDown` with
+      no repeat/shortcuts path. Blocked on T-61.
+- [x] **T-91** ✔ S2 — Toast `id`. Already on `ToastOptions`
+      (`packages/solid-spectrum/src/toast/index.tsx`) and forwarded via
+      `filterDOMProps` (`id` is in `DOMPropNames`).
+- [ ] **T-92** ⛔ RAC — global scroll and `closeOnScroll` across Shadow DOM.
+      No `addGlobalScrollListener`; local overlay scroll is
+      `document`/`window` (Tooltip `window.addEventListener("scroll",
+      closeOnScroll, true)`). Does not close T-75.
+- [ ] **T-93** ◑ RAC — FocusScope focusing without scroll. Contain/tab
+      paths use `focusSafely`. Restore-on-unmount still calls raw `.focus()`
+      (`packages/solidaria/src/focus/FocusScope.tsx` onCleanup). Remaining
+      branch.
+- [ ] **T-94** ⛔ S2 — empty TextArea height. Upstream fieldGroup
+      `paddingTop.isChrome['::before']:
+      '[calc((var(--field-height) - 1lh) / 2)]'`. Local
+      `s2-textarea-styles.ts` / `TextArea.tsx` use `alignItems: "baseline"`
+      and have no isChrome `::before` padding. Prove computed size in a
+      real browser at every S2 size/density branch when ported.
+- [ ] **T-95** ⛔ RAC/S2 — Select generic/default type. RAC is
+      `Select<T, M extends SelectionMode = 'single'>`; local is `Select<T>`
+      only (`packages/solidaria-components/src/Select.tsx`).
+- [ ] **T-96** ⛔ S2 — `SideNav` is a new unported component/public surface
+      (`SideNav`, `SideNavHeader`, `SideNavItem`, `SideNavItemContent`,
+      `SideNavItemLink`, `SideNavSection`). Six of the thirteen S2 support
+      gaps.
+- [x] **T-97** ➖ RAC — reverse-layout Virtualizer. First-pass reverse-axis
+      was a misread of `shouldObserveItemSize`. That 1.20 delta is T-72.
+      Reverse-axis remains absent as a pre-existing structural note, not
+      this train's highlight.
+- [x] **T-98** ✔ S2 — Popover no longer exposes/forwards
+      `shouldSkipAnimation`. Upstream S2 omits it; local S2 Popover is
+      `Omit<HeadlessPopoverProps, "class"|"style"|"children">` and headless
+      has no such prop.
+- [x] **T-99** ◑ S2 — the 1.6 style macro reserves `_.prose` below its
+      atomic layers and changes typography conditional-map shape. The
+      shared macro and theme changes are ported into `solid-spectrum` and
+      synchronized into the documented Viviana fork. Adobe's prose
+      macro/component surface itself is not ported; that remains outside
+      this ticket's completed foundation scope.
 
 ## Cross-train behavioral tickets (source-level sweep)
 
@@ -451,3 +659,5 @@ done; **T-59** table focus-ring is closed; **T-51**'s
 GridList + Tree + Table row-hook scope is ported, ListBox option and Menu item
 activation have joined the shared item path, **T-56** is closed, and **T-34**
 is closed with lower-layer, RAC, and S2 wrapper evidence.
+
+**Train 8 (T-61…T-99)** — classified 2026-08-19 against pin `5ecb3333`. Classification leftover is closed. Absorption remaining is the ⛔ list plus T-93 restore-on-unmount and T-99 Adobe prose; T-87 stays owner with A-006. Pin alignment is not absorption.

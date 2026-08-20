@@ -16,10 +16,10 @@ tasks:
       run, comparison-axe 80/80, ui:smoke, contrast 154/154, smoke
       44/44, playground AA, routes/seo/api-ref, and Kumo pair 15/15
       twice (KX-03 + KX-04 rest/hover/pressed/focus-visible) are
-      closed. Current slice: Train 8 classification. Then evidence
-      schema, owner decisions, hygiene, lowest-layer inventory.
-      Overlay/focus is a separate commit from the dirty audit/Kumo
-      tree.
+      closed. Train 8 classification is closed (no remaining `?`).
+      Current slice: evidence schema (A-002–A-005). Then owner
+      decisions, hygiene, lowest-layer inventory. Overlay/focus is a
+      separate commit from the dirty audit/Kumo tree.
   - id: toast-comparison-viewer
     title: Rebuild Toast comparison viewer around docs-style trigger buttons
     state: done
@@ -90,12 +90,18 @@ or a dated block), and `status.md` is rebuilt from this census (A-001).
    rest/hover/pressed/keyboard-focus computed; primary interaction
    pixels with measured channel threshold 1. Do not expand. Comparison
    aliases still live in the dirty tree.
-2. **Train 8 classification (A-013)** — remaining RAC exports, S2
-   support values, `?` / `⛔` / `◑` tickets in
-   `upstream-release-audit.md`. **Current slice.**
+2. **Train 8 classification (A-013) — closed this slice.** Source
+   reconciled against pin `5ecb3333`. No remaining `?`. Named RAC
+   export gaps: `PreviewTrigger`, `Token`, `TokenField`,
+   `TokenFieldContext`, `TokenInput`. Named S2 support gaps:
+   `LabeledValueContext`, DnD helpers (`isDirectoryDropItem`,
+   `isFileDropItem`, `isTextDropItem`, `useDragAndDrop`,
+   `DIRECTORY_DRAG_TYPE`, `DragPreview`), and SideNav (six names).
+   Absorption remaining is the classified ⛔ list, not a skip-ahead.
 3. **Evidence schema (A-002–A-005)** — machine-readable ten-gate
    records with validated pointers; inventory unregistered deferred
    dimensions (the 6 knownDivergence skips are already named).
+   **Current slice.**
 4. **Owner decisions (ask; do not silently ratify)** — TableView
    native-table (A-006 / T-87), Viviana fork ownership (A-008),
    TabSwitch / SegmentedControl boundary.
@@ -158,6 +164,10 @@ close a slice, commit that slice, then take the next.
 - Kumo Button pair 15/15 twice — KX-03 plus KX-04 rest/hover/pressed/
   keyboard-focus computed and primary interaction pixels. Oracle
   `:focus` sets ring color only; ghost has no rest ring.
+- Train 8 classification — RAC 1.20 / S2 1.6 tickets T-61…T-99
+  source-reconciled against pin `5ecb3333`. No remaining `?`. Five RAC
+  and thirteen S2 support export gaps named. Absorption remaining is
+  the classified ⛔ list, not this leftover.
 
 ### Census — every leftover item, in order
 
@@ -281,21 +291,35 @@ Paired spec `apps/comparison/e2e/kumo-button.spec.ts` **15/15 twice**:
   longer forces 1px width. Dual-config package hydrate remains
   not the SSR authority (Astro island is). Do not expand Kumo.
 
-#### 4. Train 8 classification (A-013 remaining)
+#### 4. Train 8 classification (A-013 remaining) — closed this slice
 
-Port only source-confirmed behavior. Remaining tickets in
-`upstream-release-audit.md`:
+Source-reconciled 2026-08-19 against pin `5ecb3333`. No remaining `?`.
+Port only the classified ⛔ list, in later slices — not a skip-ahead
+from evidence schema.
 
-- **?** — T-62, T-63, T-64, T-66, T-68, T-70, T-71, T-72, T-73, T-74,
-  T-76, T-77, T-78, T-79, T-83, T-84, T-85, T-88, T-89, T-90, T-91,
-  T-94, T-95, T-98.
-- **⛔** — T-61, T-80, T-82, T-87 (TableView interactive grid; owner with
-  A-006), T-92, T-96, T-97.
-- **◑** — T-93 (FocusScope without scroll; overlay/focus wave landed
-  related `focusSafely` / `runAfterTransition` — re-classify against
-  remaining T-93 branches), T-99 (style-macro `_.prose` foundation).
-- Also classify the remaining missing RAC exports (five) and missing S2
-  support values (thirteen) named in A-013.
+- **✔** — T-65, T-66, T-69, T-75, T-81, T-91, T-98.
+- **➖** — T-67, T-74, T-76, T-78, T-79, T-86, T-97 (T-97 first-pass
+  reverse-axis was a misread of `shouldObserveItemSize`; that delta is
+  T-72).
+- **◑** — T-93 (contain/tab use `focusSafely`; restore-on-unmount still
+  raw `.focus()`), T-99 (style-macro `_.prose` foundation; Adobe prose
+  surface not ported).
+- **⛔** — T-61 (`createKeyboard` shortcuts API), T-62 (FileTrigger
+  `stopPropagation` + DropZone `focusWithoutScrolling`), T-63 (floor
+  table width), T-64 (Android-gated 1×1 virtual pointer; browser owed),
+  T-68 (ancestor drop target), T-70 (resize `onMoveEnd`; browser owed),
+  T-71 (PopoverContext overlay id), T-72 (`shouldObserveItemSize`),
+  T-73 (multiple ComboBox `readonly Key[]`), T-77 (Tree
+  `CheckboxContext`), T-80 (`PreviewTrigger`), T-82 (`TokenField` +
+  Token / TokenFieldContext / TokenInput), T-83 (`trigger="contextMenu"`),
+  T-84 (Firefox date-segment `selectionchange`; Firefox owed), T-85
+  (platform UA), T-87 (Table `keyboardNavigationBehavior="tab"`; owner
+  with A-006 — do not silently ratify), T-88 (iOS VO / Android TalkBack
+  drag; mobile owed), T-89 (Switch `position: relative`; DropZone is
+  T-62), T-90 (collection shortcuts/`allowRepeats`; blocked on T-61),
+  T-92 (`addGlobalScrollListener`), T-94 (TextArea Chrome empty-height),
+  T-95 (`Select<T, M>`), T-96 (SideNav + five subcomponents).
+- Named export gaps: RAC five + S2 support thirteen (A-013).
 
 #### 5. Evidence schema (A-002, A-003, A-004, A-005 remainder)
 
@@ -334,15 +358,17 @@ Vite Plus noisy cold scan (A-024) is last.
 
 ## Pick order
 
-1. Remaining-work goal above, next Train 8 classification
-   (A-013). Kumo KX-03/KX-04 pair evidence is 15/15 twice. Do not
-   expand the experiment.
+1. Remaining-work goal above, next evidence schema (A-002–A-005).
+   Train 8 classification is closed. Kumo KX-03/KX-04 pair evidence
+   is 15/15 twice. Do not expand the experiment. Do not skip ahead
+   to unported RAC/S2 surfaces.
 2. Complete and validate the dependency/toolchain migration, including actual
    package artifacts, consumer tarballs, peer compatibility, and security gates.
-3. Finish classifying the pinned RAC 1.20 / S2 1.6 train and port only
-   source-confirmed behavior gaps (`upstream-release-audit.md` T-61…T-99).
-4. Prove the Kumo Button through paired browser behavior and visual contracts;
-   keep its executable publish prerequisite closed until npm setup is verified.
+3. Absorb only source-confirmed Train 8 ⛔ gaps
+   (`upstream-release-audit.md` T-61…T-99), in dependency order. T-87
+   stays owner with A-006.
+4. Keep Kumo's executable publish prerequisite closed until npm setup is
+   verified; do not expand the Button-only experiment.
 5. Normalize component-acceptance records and make reports resolve the evidence
    they claim instead of counting labels and file presence.
 6. Refresh measured facts and commands in `status.md` after the integration

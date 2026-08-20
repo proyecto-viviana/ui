@@ -21,11 +21,14 @@ committed — but it is **pinned, not floating**. The pin lives in a tracked fil
 `scripts/upstream-pin.json`: release umbrella tag, commit SHA, and the resolved
 `@react-spectrum/s2` / `react-aria-components` versions.
 
-Current pin (2026-07-03): `@react-spectrum/s2@1.5.1`, commit `c4de1e22`,
-`react-aria-components@1.19.0` — an S2-only patch train, so there is no new
-`@adobe/react-spectrum` umbrella tag (the last umbrella release stays 3.47.2).
-Absorb backlog: **Train 6 (T-34…T-50)** and **Train 7 (T-60, closed on
-arrival)** in [upstream-release-audit.md](./upstream-release-audit.md).
+Current pin (2026-08-19): `@react-spectrum/s2@1.6.0`, commit `5ecb3333`,
+`react-aria-components@1.20.0`, `react-aria@3.51.0`, and
+`react-stately@3.49.0`. The ignored oracle tree and comparison app are aligned
+to this release train. **Alignment is not absorption:** Train 8's behavior,
+accessibility, API, component, and style deltas were classified against
+pinned source on 2026-08-19 (no remaining `?`) in
+[upstream-release-audit.md](./upstream-release-audit.md). Absorption
+remaining is that ⛔ list.
 
 The tree is materialized as a **shallow checkout at the pinned commit** (nested
 `.git`), which makes release-to-release diffing first-class.
@@ -46,9 +49,9 @@ Four distinct staleness axes, don't conflate them:
   by hand anytime with `vp run guard:upstream-freshness`. When it goes red, work
   the "Absorbing a new upstream release" steps below.
 - **installed comparison deps vs. pin** (does `apps/comparison/node_modules`
-  match the pin?) — aligned 2026-07-03 (recertification 0.2): the app manifest
-  pins exact versions (s2 `1.5.1` / RAC `1.19.0` / react-aria `3.50.0` /
-  react-stately `3.48.0`), so installed == pin today. Those deps are still
+  match the pin?) — aligned 2026-08-19: the app manifest pins exact versions
+  (s2 `1.6.0` / RAC `1.20.0` / react-aria `3.51.0` / react-stately `3.49.0`),
+  so installed == pin today. Those deps are still
   resolved by the app's own manifest, not by `upstream-pin.json`, so **bumping
   the pin means bumping the app manifest too** — re-check here on every
   absorb. Two shape notes from the alignment: react-aria `3.50.0` is
@@ -68,7 +71,9 @@ Four distinct staleness axes, don't conflate them:
   and a floating range had silently drifted 357 used token values ahead of the
   oracle. The guard fails on any declared/installed/vendored mismatch or a
   non-exact spec; on every absorb, re-check the pinned S2's
-  `@adobe/spectrum-tokens` devDependency and move ours with it.
+  `@adobe/spectrum-tokens` devDependency and move ours with it. S2 1.6.0 still
+  pins `14.0.0`; the numerically newer token package is not an automatic
+  upgrade for the S2 port.
 
 ### Materialize / re-materialize the tree
 
@@ -204,7 +209,7 @@ source before changing a test. Known limits:
 - `queryByRole` and `[role="x"]` selector strings are deliberately ignored
   (presence/absence probes and candidate enumerations, not assertions).
 
-## Latest sweep — 2026-06-16 (pin `s2@1.4.0` / `rac@1.18.0`)
+## Historical sweep — 2026-06-16 (then pin `s2@1.4.0` / `rac@1.18.0`)
 
 45 components matched; 17 raw role-divergence flags. Regenerate anytime with
 `vp run guard:upstream-test-parity`. **17 is a ceiling, not a bug count** — triage

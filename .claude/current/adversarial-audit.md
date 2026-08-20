@@ -374,11 +374,23 @@ Severity describes owner risk, not code aesthetics:
   `scripts/upstream-pin.json` now align exactly to commit
   `5ecb3333001313e83898cd07644227897e3bae1f` (S2 1.6.0, RAC 1.20.0,
   react-aria 3.51.0, react-stately 3.49.0); Kumo is 2.11.0. Train-8 tickets
-  T-61…T-99 were filed, and T-65, T-75, T-81, and the T-99 foundation have
-  source-matched implementations/regressions in this worktree.
-- Remaining action: resolve every `?` and ⛔ ticket and recertify affected
-  observable branches. Pin alignment is not behavior absorption; missing RAC
-  exports now total five and missing S2 support values total thirteen.
+  T-61…T-99 were classified against pinned source on 2026-08-19. No remaining
+  `?` tickets. Already present/ported: T-65, T-66, T-69, T-75, T-81, T-91,
+  T-98, plus the T-99 foundation. N/A or first-pass misread: T-67, T-74,
+  T-76, T-78, T-79, T-86, T-97.
+- Remaining action: absorb the classified ⛔ list in
+  `upstream-release-audit.md` Train 8 and the two ◑ remaining branches
+  (T-93 restore-on-unmount; T-99 Adobe prose surface). T-87 stays owner
+  with A-006 — do not silently ratify. Named export gaps, from
+  `vp run guard:rac-export-gap` and `vp run comparison:report:exports`:
+  RAC `PreviewTrigger`, `Token`, `TokenField`, `TokenFieldContext`,
+  `TokenInput`; S2 support `LabeledValueContext`, `isDirectoryDropItem`,
+  `isFileDropItem`, `isTextDropItem`, `useDragAndDrop`,
+  `DIRECTORY_DRAG_TYPE`, `DragPreview`, `SideNav`, `SideNavHeader`,
+  `SideNavItem`, `SideNavItemContent`, `SideNavItemLink`,
+  `SideNavSection`. Pin alignment is not behavior absorption. Census
+  leftover 2 (classification) is closed; do not skip ahead from evidence
+  schema to these ports.
 
 ### A-014 — The live release policy gives the wrong dependency closure for Viviana UI
 
@@ -708,8 +720,10 @@ TreeView D5 tab-forward/End is closed (collection tab-stop on End;
 product reds from that run are closed on focused reruns. `ui:smoke`
 passed. comparison-axe 80/80. `a11y:contrast` 154/154. `a11y:smoke`
 44/44. Playground WCAG 2.2 AA 2/2. Routes 155/155, seo 157/157,
-api-reference 4/4. Next: Kumo Button paired browser evidence
-(A-007). Do not expand Kumo.
+api-reference 4/4. Kumo pair 15/15 twice (KX-03 + KX-04). Train 8
+classification is closed (no remaining `?`; ⛔ list named in A-013).
+Next: evidence schema (A-002–A-005). Do not expand Kumo. Do not skip
+ahead to unported RAC/S2 surfaces.
 
 After targeted red/green work, run the validation ladder in `status.md`
 sequentially because build lanes share `dist` trees. The packed-consumer smoke

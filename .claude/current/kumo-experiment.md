@@ -16,6 +16,7 @@ tasks:
   - id: kumo-button-behavior-evidence
     title: Prove the Kumo Button interaction and accessibility branches in a browser
     state: done
+    finished: 2026-08-19
     depends: [kumo-button-pair-fixture]
     roadmap: kumo-solid-experiment
     planned: { start: 2026-08-19, target: 2026-08-19 }
@@ -28,6 +29,7 @@ tasks:
   - id: kumo-button-visual-evidence
     title: Prove the Kumo Button visual branches against the pinned React oracle
     state: done
+    finished: 2026-08-19
     depends: [kumo-button-pair-fixture]
     roadmap: kumo-solid-experiment
     planned: { start: 2026-08-19, target: 2026-08-19 }
