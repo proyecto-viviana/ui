@@ -141,6 +141,8 @@ export interface DroppableCollectionOptions {
   setSelectedKeys?: (keys: Set<Key>) => void;
   /** Sets collection focus after a drop when new rows were inserted. */
   setFocusedKey?: (key: Key | null) => void;
+  /** Restores the collection's focused state after a drop. */
+  setFocused?: (isFocused: boolean) => void;
   /** Whether the collection is disabled for dropping. */
   isDisabled?: boolean;
   /** Accepted drag types. 'all' accepts any type. */
@@ -182,6 +184,7 @@ export function createDroppableCollection(
   // Track the next target during drag operations
   let nextTarget: DropTarget | null = null;
   let currentDropOperation: DropOperation | null = null;
+  let focusAfterDropTimeout: ReturnType<typeof setTimeout> | undefined;
 
   const isInternalDropOperation = (): boolean => {
     const ref = getOptions().ref();
@@ -294,11 +297,16 @@ export function createDroppableCollection(
       x: e.x,
       y: e.y,
     });
-    void Promise.resolve(handleDrop(e.items, target, e.dropOperation)).then(() => {
-      queueMicrotask(() => {
-        updateFocusAfterDrop(getOptions(), previousCollection, previousSelectedKeys, target);
-      });
-    });
+    void handleDrop(e.items, target, e.dropOperation);
+
+    // Match upstream's fallback delay. Drag teardown can move focus out of the
+    // collection after the drop handler returns, so a microtask is too early.
+    // The delay also gives asynchronous collection updates time to render.
+    clearTimeout(focusAfterDropTimeout);
+    focusAfterDropTimeout = setTimeout(() => {
+      updateFocusAfterDrop(getOptions(), previousCollection, previousSelectedKeys, target);
+      focusAfterDropTimeout = undefined;
+    }, 50);
   };
 
   const handleDrop = async (
@@ -374,6 +382,7 @@ export function createDroppableCollection(
 
   // Clean up on unmount
   onCleanup(() => {
+    clearTimeout(focusAfterDropTimeout);
     const ref = getOptions().ref();
     if (globalDropCollectionRef === ref) {
       setGlobalDropCollectionRef(null);
@@ -876,40 +885,50 @@ function updateFocusAfterDrop(
   // are simply absent (undefined) for flat collections like ListBox.
   const collection = opts.collection as CollectionLike | undefined;
   const previousCollection = previousCollectionRaw as unknown as CollectionLike | undefined;
-  if (!collection || !previousCollection) return;
+  if (!collection || !previousCollection) {
+    opts.setFocused?.(true);
+    return;
+  }
 
   const newKeys = getNewItemKeys(collection, previousCollection);
-  if (newKeys.size === 0) return;
+  if (newKeys.size > 0) {
+    const currentSelectedKeys = normalizeSelection(opts.selectedKeys);
+    if (
+      opts.setSelectedKeys &&
+      previousSelectedKeys &&
+      selectionEquals(previousSelectedKeys, currentSelectedKeys)
+    ) {
+      opts.setSelectedKeys(newKeys);
+    }
 
-  const currentSelectedKeys = normalizeSelection(opts.selectedKeys);
-  if (
-    opts.setSelectedKeys &&
-    previousSelectedKeys &&
-    selectionEquals(previousSelectedKeys, currentSelectedKeys)
-  ) {
-    opts.setSelectedKeys(newKeys);
+    const first = newKeys.values().next().value;
+    if (first != null) {
+      let focusKey: Key | null = first;
+      const item = collection.getItem(first);
+      const parent = item?.parentKey != null ? collection.getItem(item.parentKey) : null;
+      const isDroppedOnCollapsedParent =
+        target.type === "item" &&
+        target.dropPosition === "on" &&
+        item?.parentKey != null &&
+        parent?.isExpanded !== true;
+
+      if (
+        item &&
+        (item.type === "cell" || item.type === "rowheader" || isDroppedOnCollapsedParent)
+      ) {
+        focusKey = item.parentKey ?? first;
+      }
+
+      opts.setFocusedKey?.(focusKey);
+
+      queueMicrotask(() => {
+        const row = opts.ref()?.querySelector<HTMLElement>('[role="row"][tabindex="0"]');
+        row?.focus();
+      });
+    }
   }
 
-  const first = newKeys.values().next().value;
-  if (first == null) return;
-
-  let focusKey: Key | null = first;
-  const item = collection.getItem(first);
-  const parent = item?.parentKey != null ? collection.getItem(item.parentKey) : null;
-  const isDroppedOnCollapsedParent =
-    target.type === "item" &&
-    target.dropPosition === "on" &&
-    item?.parentKey != null &&
-    parent?.isExpanded !== true;
-
-  if (item && (item.type === "cell" || item.type === "rowheader" || isDroppedOnCollapsedParent)) {
-    focusKey = item.parentKey ?? first;
-  }
-
-  opts.setFocusedKey?.(focusKey);
-
-  queueMicrotask(() => {
-    const row = opts.ref()?.querySelector<HTMLElement>('[role="row"][tabindex="0"]');
-    row?.focus();
-  });
+  // Upstream always marks the collection focused after a drop. This lets the
+  // existing focused key restore real DOM focus after an internal reorder.
+  opts.setFocused?.(true);
 }

@@ -408,17 +408,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     ref: () => listRef(),
   });
 
-  // Autocomplete bridge. createListBox reimplements navigation inline (it does
-  // not route through createSelectableCollection), so the virtual-focus event
-  // wiring the Autocomplete input relies on lives here, gated on the bridge
-  // context. This mirrors createSelectableCollection's FOCUS_EVENT/CLEAR_FOCUS_EVENT
-  // handlers and useSelectableItem's per-item moveVirtualFocus, at the component
-  // layer, without touching the shared hooks (protecting ComboBox/Picker).
+  // Autocomplete bridge. The shared selectable collection owns keyboard
+  // navigation and collection focus. This component keeps the Solid DOM handoff
+  // that mirrors the focused key to the input's active descendant. Ticket #100
+  // tracks moving the remaining virtual-focus work into the shared item layer.
   if (autocompleteCtx) {
     // Forward path: the input dispatches FOCUS_EVENT/CLEAR_FOCUS_EVENT onto the
     // collection element. FOCUS_EVENT marks the collection focused (and, when the
-    // user types forward, requests the first item); the actual arrow navigation
-    // arrives as a re-dispatched KeyboardEvent handled by createListBox's onKeyDown.
+    // user types forward, requests the first item). The shared collection handles
+    // the re-dispatched keyboard event.
     let shouldVirtualFocusFirst = false;
     createEffect(() => {
       const list = listRef();
@@ -564,10 +562,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         // (`navigate()` walks getKeyAfter/getKeyBefore) and post-drop focus
         // restoration. Reading it here re-registers the drop target when the
         // collection changes (mirrors upstream keying its effect on the state).
-        collection: state.collection(),
-        selectedKeys: state.selectionManager.selectedKeys,
+        get collection() {
+          return state.collection();
+        },
+        get selectedKeys() {
+          return state.selectionManager.selectedKeys;
+        },
         setSelectedKeys: (keys) => state.selectionManager.setSelectedKeys(keys),
         setFocusedKey: (key) => state.setFocusedKey(key),
+        setFocused: (isFocused) => state.setFocused(isFocused),
       },
       activeDropState,
       () => listRef(),

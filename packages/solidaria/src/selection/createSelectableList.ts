@@ -43,6 +43,10 @@ export interface CreateSelectableListOptions<T = unknown> extends Omit<
    * read from the DOM.
    */
   layoutDelegate?: LayoutDelegate;
+  /** The primary orientation of the list items. @default "vertical" */
+  orientation?: "horizontal" | "vertical";
+  /** The text direction used for horizontal navigation. */
+  direction?: "ltr" | "rtl";
 }
 
 export interface SelectableListAria {
@@ -73,6 +77,8 @@ export function createSelectableList<T = unknown>(
       ref: options.ref,
       collator: collator(),
       layoutDelegate: options.layoutDelegate,
+      orientation: options.orientation,
+      direction: options.direction,
     });
   });
 

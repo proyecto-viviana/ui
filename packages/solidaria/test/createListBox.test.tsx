@@ -9,6 +9,7 @@ import { createRoot } from "solid-js";
 import { cleanup } from "@solidjs/testing-library";
 import { createListState, createListCollection } from "../../solid-stately/src";
 import { createListBox, createOption } from "../src/listbox";
+import { isMac } from "../src/utils/platform";
 
 // Helper to create a mock keyboard event with proper currentTarget
 function createMockKeyboardEvent(key: string, options: Partial<KeyboardEvent> = {}) {
@@ -171,19 +172,15 @@ describe("createListBox", () => {
       });
     });
 
-    it("sets aria-activedescendant only under virtual focus (combobox path)", () => {
+    it("leaves virtual-focus ownership with the combobox input", () => {
       createRoot((dispose) => {
-        // With shouldUseVirtualFocus, DOM focus stays on the input and the
-        // active option is announced via aria-activedescendant. The container is
-        // NOT a tab stop at all — useSelectableCollection leaves tabIndex
-        // undefined under virtual focus (useSelectableCollection.ts:687-690:
-        // `tabIndex = undefined; if (!shouldUseVirtualFocus) tabIndex = ...`), so
-        // the popover listbox never enters the roving-focus trail.
+        // With virtual focus, the input owns aria-activedescendant. The listbox
+        // is not a tab stop and does not duplicate the active descendant.
         const state = createBasicListState();
         const listBoxAria = createListBox({ shouldUseVirtualFocus: true }, state);
 
         state.setFocusedKey("c");
-        expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBe("c");
+        expect(listBoxAria.listBoxProps["aria-activedescendant"]).toBeUndefined();
         expect(listBoxAria.listBoxProps.tabIndex).toBeUndefined();
 
         state.setFocusedKey(null);
@@ -349,7 +346,7 @@ describe("createListBox", () => {
       });
     });
 
-    it("handles Space to toggle selection", () => {
+    it("leaves Space activation to the focused option", () => {
       createRoot((dispose) => {
         const state = createBasicListState({ selectionMode: "multiple" });
         const { listBoxProps } = createListBox({}, state);
@@ -360,12 +357,13 @@ describe("createListBox", () => {
         const event = createMockKeyboardEvent(" ");
         (listBoxProps.onKeyDown as any)?.(event);
 
-        expect(state.selectedKeys().has("b")).toBe(true);
+        expect(state.selectedKeys().has("b")).toBe(false);
+        expect(event.preventDefault).not.toHaveBeenCalled();
         dispose();
       });
     });
 
-    it("handles Enter to toggle selection and call onAction", () => {
+    it("leaves Enter activation to the focused option", () => {
       createRoot((dispose) => {
         const onAction = vi.fn();
         const state = createBasicListState({ selectionMode: "single" });
@@ -376,7 +374,9 @@ describe("createListBox", () => {
         const event = createMockKeyboardEvent("Enter");
         (listBoxProps.onKeyDown as any)?.(event);
 
-        expect(onAction).toHaveBeenCalledWith("a");
+        expect(onAction).not.toHaveBeenCalled();
+        expect(state.selectedKeys().size).toBe(0);
+        expect(event.preventDefault).not.toHaveBeenCalled();
         dispose();
       });
     });
@@ -511,15 +511,16 @@ describe("createListBox", () => {
       });
     });
 
-    it("handles Meta+A to select all in multiple selection mode", () => {
+    it("rejects the non-platform select-all modifier", () => {
       createRoot((dispose) => {
         const state = createBasicListState({ selectionMode: "multiple" });
         const { listBoxProps } = createListBox({}, state);
 
-        const event = createMockKeyboardEvent("a", { metaKey: true });
+        const event = createMockKeyboardEvent("a", isMac() ? { ctrlKey: true } : { metaKey: true });
         (listBoxProps.onKeyDown as any)?.(event);
 
-        expect(state.selectedKeys()).toBe("all");
+        expect(state.selectedKeys()).not.toBe("all");
+        expect(event.preventDefault).not.toHaveBeenCalled();
         dispose();
       });
     });
@@ -652,7 +653,7 @@ describe("createListBox", () => {
       });
     });
 
-    it("fires onAction but does not select a disabled-for-selection option on Enter", () => {
+    it("leaves disabled option activation to the option", () => {
       createRoot((dispose) => {
         const onAction = vi.fn();
         const state = createBasicListState({
@@ -662,12 +663,11 @@ describe("createListBox", () => {
         });
         const { listBoxProps } = createListBox({ onAction }, state);
 
-        // b is focusable under "selection": Enter fires onAction but must not
-        // select it (toggleSelection self-guards on the raw disabled check).
+        // The collection can focus b, but the option owns Enter activation.
         state.setFocusedKey("b");
         (listBoxProps.onKeyDown as any)?.(createMockKeyboardEvent("Enter"));
 
-        expect(onAction).toHaveBeenCalledWith("b");
+        expect(onAction).not.toHaveBeenCalled();
         expect((state.selectedKeys() as Set<string>).has("b")).toBe(false);
         dispose();
       });
@@ -818,9 +818,9 @@ describe("createListBox", () => {
         const event = createMockKeyboardEvent("Home");
         (listBoxProps.onKeyDown as any)?.(event);
 
-        // The guard is shift-specific: plain Home still enters at the first item.
+        // The key moves focus. It is not consumed when focus does not select.
         expect(state.focusedKey()).toBe("a");
-        expect(event.preventDefault).toHaveBeenCalled();
+        expect(event.preventDefault).not.toHaveBeenCalled();
         dispose();
       });
     });
@@ -909,40 +909,6 @@ describe("createListBox", () => {
         (listBoxProps.onKeyDown as any)?.(event);
 
         expect(state.selectedKeys().size).toBe(0);
-        dispose();
-      });
-    });
-  });
-
-  describe("onAction callback", () => {
-    it("calls onAction when Enter is pressed", () => {
-      createRoot((dispose) => {
-        const onAction = vi.fn();
-        const state = createBasicListState();
-        const { listBoxProps } = createListBox({ onAction }, state);
-
-        state.setFocusedKey("c");
-
-        const event = createMockKeyboardEvent("Enter");
-        (listBoxProps.onKeyDown as any)?.(event);
-
-        expect(onAction).toHaveBeenCalledWith("c");
-        dispose();
-      });
-    });
-
-    it("calls onAction when Space is pressed", () => {
-      createRoot((dispose) => {
-        const onAction = vi.fn();
-        const state = createBasicListState();
-        const { listBoxProps } = createListBox({ onAction }, state);
-
-        state.setFocusedKey("b");
-
-        const event = createMockKeyboardEvent(" ");
-        (listBoxProps.onKeyDown as any)?.(event);
-
-        expect(onAction).toHaveBeenCalledWith("b");
         dispose();
       });
     });

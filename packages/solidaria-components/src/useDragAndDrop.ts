@@ -260,6 +260,7 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
           selectedKeys: props.selectedKeys,
           setSelectedKeys: props.setSelectedKeys,
           setFocusedKey: props.setFocusedKey,
+          setFocused: props.setFocused,
           onKeyDown: props.onKeyDown,
           acceptedDragTypes: normalizedAcceptedDragTypes,
           isDisabled: options.isDisabled ?? props.isDisabled,

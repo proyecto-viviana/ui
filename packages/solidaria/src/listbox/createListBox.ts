@@ -7,7 +7,7 @@
 import { createEffect, onCleanup, type JSX } from "solid-js";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { createLabel } from "../label/createLabel";
-import { createTypeSelect } from "../selection/createTypeSelect";
+import { createSelectableList } from "../selection/createSelectableList";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
@@ -117,53 +117,13 @@ export function getListBoxData(state: ListState): ListBoxData | undefined {
 }
 
 /**
- * Whether a key should be skipped during keyboard navigation. Disabled keys only
- * block navigation under `disabledBehavior: "all"` (the default); under
- * `"selection"` they stay focusable (selection is still blocked elsewhere).
- * Mirrors `ListKeyboardDelegate.isDisabled` in React Aria, which gates the skip
- * on the resolved `disabledBehavior` from the selection manager.
- */
-function isNavigationDisabled<T>(state: ListState<T>, key: Key): boolean {
-  return state.isDisabled(key) && state.disabledBehavior() === "all";
-}
-
-function findNextEnabledKey<T>(
-  state: ListState<T>,
-  currentKey: Key | null,
-  direction: "next" | "prev",
-  wrap: boolean,
-): Key | null {
-  const collection = state.collection();
-  const getAdjacentKey =
-    direction === "next"
-      ? (key: Key) => collection.getKeyAfter(key)
-      : (key: Key) => collection.getKeyBefore(key);
-  const getBoundaryKey =
-    direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
-
-  let key = currentKey != null ? getAdjacentKey(currentKey) : getBoundaryKey();
-  while (key != null && isNavigationDisabled(state, key)) {
-    key = getAdjacentKey(key);
-  }
-
-  if (key == null && wrap) {
-    key = getBoundaryKey();
-    while (key != null && isNavigationDisabled(state, key)) {
-      key = getAdjacentKey(key);
-    }
-  }
-
-  return key;
-}
-
-/**
  * Provides the behavior and accessibility implementation for a listbox component.
  * A listbox displays a list of options and allows a user to select one or more of them.
  */
 export function createListBox<T>(
   props: MaybeAccessor<AriaListBoxProps>,
   state: ListState<T>,
-  _ref?: () => HTMLElement | null,
+  ref: () => HTMLElement | null = () => null,
 ): ListBoxAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
@@ -219,13 +179,7 @@ export function createListBox<T>(
   const { focusWithinProps } = createFocusWithin({
     onFocusWithin: (e) => getProps().onFocus?.(e),
     onBlurWithin: (e) => getProps().onBlur?.(e),
-    onFocusWithinChange: (isFocused) => {
-      getProps().onFocusChange?.(isFocused);
-      // Collection focus lives on the selection manager (upstream tracks it in
-      // useSelectableCollection); the ListState-level setFocused may be a
-      // widget-level focus state (e.g. Select's trigger focus).
-      state.selectionManager.setFocused(isFocused);
-    },
+    onFocusWithinChange: (isFocused) => getProps().onFocusChange?.(isFocused),
   });
 
   // Label handling
@@ -245,223 +199,48 @@ export function createListBox<T>(
     labelElementType: "span",
   });
 
-  // Type-to-select
-  const { typeSelectProps } = createTypeSelect({
-    collection: () => state.collection(),
-    focusedKey: () => state.focusedKey(),
-    onFocusedKeyChange: (key) => state.setFocusedKey(key),
-    isKeyDisabled: (key) => state.isDisabled(key),
-    get isDisabled() {
-      return getProps().disallowTypeAhead ?? false;
+  const selectableList = createSelectableList<T>({
+    selectionManager: state.selectionManager,
+    ref,
+    get shouldFocusWrap() {
+      return getProps().shouldFocusWrap;
+    },
+    get disallowEmptySelection() {
+      return getProps().disallowEmptySelection ?? state.disallowEmptySelection();
+    },
+    get escapeKeyBehavior() {
+      return getProps().escapeKeyBehavior;
+    },
+    get selectOnFocus() {
+      return getProps().shouldSelectOnFocus;
+    },
+    get disallowTypeAhead() {
+      return getProps().disallowTypeAhead;
+    },
+    get shouldUseVirtualFocus() {
+      return getProps().shouldUseVirtualFocus;
+    },
+    get isVirtualized() {
+      return getProps().isVirtualized;
+    },
+    get linkBehavior() {
+      const p = getProps();
+      const selectionBehavior = state.selectionBehavior();
+      const behavior = p.linkBehavior ?? (selectionBehavior === "replace" ? "action" : "override");
+      if (behavior === "none") {
+        // Collection navigation has no "none" mode. Treat links as actions here;
+        // createOption still reads "none" from the parent listbox metadata.
+        return "action";
+      }
+      return selectionBehavior === "toggle" && behavior === "action" ? "override" : behavior;
+    },
+    get orientation() {
+      return getProps().orientation;
+    },
+    get direction() {
+      return getProps().direction ?? "ltr";
     },
   });
-
-  // Focus marshalling — the container is a trampoline. When a standalone
-  // listbox receives DOM focus with nothing focused yet (e.g. Tab lands on the
-  // container, whose roving tabIndex is 0 only while `focusedKey == null`), move
-  // the focused key to the first/last option; `createSelectableItem`'s focus
-  // effect then pulls REAL DOM focus onto that option and the container rolls to
-  // tabIndex -1. This mirrors `useSelectableCollection`'s `onFocus`
-  // (useSelectableCollection.ts:409-454) and is why upstream never needs
-  // `aria-activedescendant` on a standalone listbox — real focus IS the AT
-  // channel. Skipped under `shouldUseVirtualFocus` (ComboBox/Autocomplete keep
-  // DOM focus on the input and drive an activedescendant via the virtual-focus
-  // channel instead).
-  //
-  // NOTE on the guard: unlike upstream (whose selectable `onFocus` sets
-  // `manager.setFocused(true)` itself and guards on `manager.isFocused`), our
-  // `createFocusWithin` already flips `setFocused(true)` via `onFocusWithinChange`
-  // — and mergeProps chains it BEFORE this handler — so `manager.isFocused` is
-  // already true here. Guard on `focusedKey() == null` instead (only marshal when
-  // no option is focused yet). `onFocus` is non-bubbling in Solid, so this fires
-  // only when the container element itself receives focus, not on child focus.
-  const onListBoxFocus: JSX.EventHandler<HTMLElement, FocusEvent> = (e) => {
-    const p = getProps();
-    if (p.isDisabled || p.shouldUseVirtualFocus) return;
-    // Ignore focus events that bubbled through a portal.
-    if (!e.currentTarget.contains(e.target as Node)) return;
-    if (state.focusedKey() != null) return;
-
-    const manager = state.selectionManager;
-    const selectOnFocus = state.selectionBehavior() === "replace";
-    const navigateToKey = (key: Key | null | undefined) => {
-      if (key == null) return;
-      state.setFocusedKey(key);
-      if (selectOnFocus && !manager.isSelected(key)) {
-        state.replaceSelection(key);
-      }
-    };
-
-    const collection = state.collection();
-    const relatedTarget = e.relatedTarget as Element | null;
-    // Detect tab direction: if focus came from an element that FOLLOWS the
-    // listbox in the document, the user is shift-tabbing backward into it, so
-    // enter at the last item; otherwise enter at the first.
-    if (
-      relatedTarget &&
-      e.currentTarget.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING
-    ) {
-      navigateToKey(manager.lastSelectedKey ?? collection.getLastKey());
-    } else {
-      navigateToKey(manager.firstSelectedKey ?? collection.getFirstKey());
-    }
-  };
-
-  // Keyboard navigation
-  const onKeyDown: JSX.EventHandler<HTMLElement, KeyboardEvent> = (e) => {
-    const p = getProps();
-    if (p.isDisabled) return;
-
-    const collection = state.collection();
-    const shouldWrap = p.shouldFocusWrap ?? false;
-    // Mirror useSelectableCollection: focus only selects by default for
-    // replace-selection collections. Toggle collections (including Select)
-    // move focus independently from selection.
-    const shouldSelectOnFocus = p.shouldSelectOnFocus ?? state.selectionBehavior() === "replace";
-
-    switch (e.key) {
-      case "ArrowDown": {
-        // Only consume the key once a target exists. Mirrors
-        // useSelectableCollection (ArrowDown, 211-225): preventDefault is called
-        // inside `if (nextKey != null)`, so at the last item without wrap the
-        // arrow is left alone to bubble (e.g. to scroll an enclosing region).
-        const nextKey = findNextEnabledKey(state, state.focusedKey(), "next", shouldWrap);
-        if (nextKey != null) {
-          e.preventDefault();
-          state.setFocusedKey(nextKey);
-          if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
-            state.replaceSelection(nextKey);
-          } else if (e.shiftKey && state.selectionMode() === "multiple") {
-            state.extendSelection(nextKey, collection);
-          }
-        }
-        break;
-      }
-      case "ArrowUp": {
-        const prevKey = findNextEnabledKey(state, state.focusedKey(), "prev", shouldWrap);
-        if (prevKey != null) {
-          e.preventDefault();
-          state.setFocusedKey(prevKey);
-          if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
-            state.replaceSelection(prevKey);
-          } else if (e.shiftKey && state.selectionMode() === "multiple") {
-            state.extendSelection(prevKey, collection);
-          }
-        }
-        break;
-      }
-      case "ArrowRight":
-      case "ArrowLeft": {
-        // Horizontal orientation promotes the inline axis to the primary
-        // navigation axis. Upstream's ListKeyboardDelegate strips
-        // getKeyLeftOf/getKeyRightOf for a vertical stack, so Left/Right stay
-        // no-ops there; in a horizontal stack they move prev/next, flipped
-        // under RTL (Right=next, Left=prev in LTR).
-        if (p.orientation !== "horizontal") break;
-        const isRtl = p.direction === "rtl";
-        const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
-        const focusedKey = state.focusedKey();
-        // With nothing focused, both directions enter at the first item,
-        // mirroring upstream's getFirstKey() fallback for Left and Right.
-        const nextKey =
-          focusedKey != null
-            ? findNextEnabledKey(state, focusedKey, forward ? "next" : "prev", shouldWrap)
-            : findNextEnabledKey(state, null, "next", false);
-        // As with the block axis, only swallow the key when it moves focus
-        // (useSelectableCollection ArrowLeft/Right, 243-280).
-        if (nextKey != null) {
-          e.preventDefault();
-          state.setFocusedKey(nextKey);
-          if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
-            state.replaceSelection(nextKey);
-          } else if (e.shiftKey && state.selectionMode() === "multiple") {
-            state.extendSelection(nextKey, collection);
-          }
-        }
-        break;
-      }
-      case "Home": {
-        // Mirror useSelectableCollection (Home, 283-285): with nothing focused,
-        // Shift+Home has no anchor to extend a selection from, so leave the
-        // event alone (no focus move, no preventDefault).
-        if (state.focusedKey() == null && e.shiftKey) break;
-        e.preventDefault();
-        const firstKey = findNextEnabledKey(state, null, "next", false);
-        if (firstKey != null) {
-          state.setFocusedKey(firstKey);
-          if (e.ctrlKey && e.shiftKey && state.selectionMode() === "multiple") {
-            // Select from current to first
-            state.extendSelection(firstKey, collection);
-          } else if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
-            state.replaceSelection(firstKey);
-          }
-        }
-        break;
-      }
-      case "End": {
-        // Mirror useSelectableCollection (End, 300-302): same anchor guard as Home.
-        if (state.focusedKey() == null && e.shiftKey) break;
-        e.preventDefault();
-        const lastKey = findNextEnabledKey(state, null, "prev", false);
-        if (lastKey != null) {
-          state.setFocusedKey(lastKey);
-          if (e.ctrlKey && e.shiftKey && state.selectionMode() === "multiple") {
-            // Select from current to last
-            state.extendSelection(lastKey, collection);
-          } else if (shouldSelectOnFocus && !e.shiftKey && state.selectionMode() === "single") {
-            state.replaceSelection(lastKey);
-          }
-        }
-        break;
-      }
-      case " ":
-      case "Enter": {
-        if (e.target !== e.currentTarget) {
-          break;
-        }
-
-        e.preventDefault();
-        const focusedKey = state.focusedKey();
-        // Activation is gated on the navigation-disabled check, not the raw
-        // one: under disabledBehavior "selection" a focusable disabled option
-        // still fires onAction, mirroring useSelectableItem's allowsActions
-        // (manager.isDisabled is gated on "all"). Selection stays blocked —
-        // toggleSelection self-guards on the raw disabled check.
-        if (focusedKey != null && !isNavigationDisabled(state, focusedKey)) {
-          if (state.selectionMode() !== "none") {
-            state.toggleSelection(focusedKey);
-          }
-          p.onAction?.(focusedKey);
-        }
-        break;
-      }
-      case "a": {
-        if ((e.ctrlKey || e.metaKey) && state.selectionMode() === "multiple") {
-          e.preventDefault();
-          state.selectAll();
-        }
-        break;
-      }
-      case "Escape": {
-        // Mirror useSelectableCollection (Escape, 352-362): only clear the
-        // selection — and swallow the event — when escapeKeyBehavior is
-        // 'clearSelection', there is actually a selection to clear, and empty
-        // selection is allowed. With escapeKeyBehavior 'none', or otherwise,
-        // leave Escape alone so an enclosing overlay (popover, dialog, combobox)
-        // can handle it.
-        if (
-          (p.escapeKeyBehavior ?? "clearSelection") === "clearSelection" &&
-          !(p.disallowEmptySelection ?? state.disallowEmptySelection()) &&
-          !state.isEmpty()
-        ) {
-          e.stopPropagation();
-          e.preventDefault();
-          state.clearSelection();
-        }
-        break;
-      }
-    }
-  };
 
   return {
     get labelProps() {
@@ -470,52 +249,18 @@ export function createListBox<T>(
     get listBoxProps() {
       const p = getProps();
       const selectionMode = state.selectionMode();
-      const virtualFocus = p.shouldUseVirtualFocus ?? false;
-      const focusedKey = state.focusedKey();
-
-      // Roving container tabIndex mirrors `useSelectableCollection`
-      // (useSelectableCollection.ts:581-582): with real option focus, the
-      // container is tabbable (0) only while nothing is focused, then rolls to
-      // -1 once focus lands on an option so Tab exits the widget. Under virtual
-      // focus (ComboBox/Autocomplete) the container is NOT a tab stop at all —
-      // upstream leaves `tabIndex` undefined, so the popover listbox never
-      // appears in the roving trail. `aria-activedescendant` is the
-      // virtual-focus AT channel and is emitted ONLY on that path — a standalone
-      // listbox announces the active option through real DOM focus, so upstream
-      // never sets it there.
-      const tabIndex = p.isDisabled
-        ? undefined
-        : virtualFocus
-          ? undefined
-          : focusedKey != null
-            ? -1
-            : 0;
-
-      const baseProps = mergeProps(
+      return mergeProps(
         domProps(),
         focusWithinProps as Record<string, unknown>,
         fieldProps as Record<string, unknown>,
+        p.isDisabled ? {} : (selectableList.listProps as Record<string, unknown>),
         {
           role: "listbox",
-          tabIndex,
+          "aria-orientation": p.orientation ?? "vertical",
           "aria-disabled": p.isDisabled || undefined,
           "aria-multiselectable": selectionMode === "multiple" ? true : undefined,
-          "aria-activedescendant":
-            virtualFocus && focusedKey != null ? String(focusedKey) : undefined,
-          onKeyDown,
-          onFocus: onListBoxFocus,
         },
-      );
-
-      // Add type-select props if enabled
-      if (!p.disallowTypeAhead) {
-        return mergeProps(
-          baseProps,
-          typeSelectProps as Record<string, unknown>,
-        ) as JSX.HTMLAttributes<HTMLElement>;
-      }
-
-      return baseProps as JSX.HTMLAttributes<HTMLElement>;
+      ) as JSX.HTMLAttributes<HTMLElement>;
     },
   };
 }
