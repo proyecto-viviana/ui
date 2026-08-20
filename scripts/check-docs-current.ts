@@ -2,6 +2,7 @@
 
 import { collectDocs } from "../apps/web/src/app/admin/server/data";
 import { checkDocsOrganization } from "./docs-organization";
+import { checkGeneratedEvidence } from "./generated-evidence";
 import { checkGeneratedWorkViews } from "./generate-work-views";
 
 // docs:check — gate for the .claude/current spine. Every current doc must carry
@@ -16,6 +17,7 @@ function fail(message: string): void {
 }
 
 for (const problem of checkDocsOrganization(root)) fail(problem);
+for (const problem of checkGeneratedEvidence(root)) fail(problem);
 
 // Ticket-board and stable-document integrity.
 for (const problem of collectDocs().problems) {
