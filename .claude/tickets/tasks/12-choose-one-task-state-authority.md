@@ -4,7 +4,7 @@ type: task
 title: "Choose one task-state authority"
 created: 2026-08-20
 parent: 28
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -26,6 +26,16 @@ history:
       at: 2026-08-20,
       note: "cut over /admin, migrated unique active records, and removed task and roadmap state from current-doc frontmatter",
     }
+  - {
+      state: merged,
+      at: 2026-08-20,
+      note: "landed the ticket-backed admin projection, generated work views, and duplicate-authority checks",
+    }
+  - {
+      state: verified,
+      at: 2026-08-20,
+      note: "admin tests and docs:check prove one writable task-state authority",
+    }
 ---
 
 Task state currently exists in the `tasks:` frontmatter under
@@ -41,7 +51,7 @@ that decision and its implementation.
 - [x] Identify state that exists in only one source.
 - [x] Verify the authority declared by the portfolio and execution playbook.
 - [x] Verify which source `/admin` edits.
-- [ ] Verify why the ecosystem source allowlist omits the UI board source.
+- [x] Verify why the ecosystem source allowlist omits the UI board source.
 - Bring the map and conflicts to the owner without inventing a third model.
 
 ## Evidence
@@ -108,7 +118,7 @@ open work is migrated, and the documentation checks pass.
 Each task has one writable state record. All other surfaces link to or generate
 their view from that record.
 
-## Implementation checkpoint
+## Verified evidence
 
 - `.claude/tickets` now contains the required task, initiative, and milestone
   directories.
@@ -122,8 +132,8 @@ their view from that record.
 - `status.md` and `roadmap.md` are generated from the ticket board.
 - Board, admin, generated-view, and duplicate-authority checks pass.
 
-The ecosystem source allowlist remains outside this repository and is not part
-of this working-tree cutover.
+The ecosystem source allowlist remains outside this repository. This repository
+cannot change that allowlist. The local cutover does not depend on it.
 
 ## Relationship
 

@@ -27,15 +27,17 @@ completed operational records.
 
 ## Stable references
 
-| Document                                 | Purpose                                  |
-| ---------------------------------------- | ---------------------------------------- |
-| [architecture.md](architecture.md)       | Package layers and ownership boundaries. |
-| [certification.md](certification.md)     | Evidence required to accept a port.      |
-| [glossary.md](glossary.md)               | Owner-steered project terms.             |
-| [tooling.md](tooling.md)                 | Commands, checks, and local setup.       |
-| [release-policy.md](release-policy.md)   | Package and release rules.               |
-| [upstream-sync.md](upstream-sync.md)     | Upstream pin and update process.         |
-| [admin-dashboard.md](admin-dashboard.md) | Development-only ticket-board interface. |
+| Document                                   | Purpose                                   |
+| ------------------------------------------ | ----------------------------------------- |
+| [architecture.md](architecture.md)         | Package layers and ownership boundaries.  |
+| [certification.md](certification.md)       | Evidence required to accept a port.       |
+| [glossary.md](glossary.md)                 | Owner-steered project terms.              |
+| [tooling.md](tooling.md)                   | Commands, checks, and local setup.        |
+| [release-policy.md](release-policy.md)     | Package and release rules.                |
+| [upstream-sync.md](upstream-sync.md)       | Upstream pin and update process.          |
+| [admin-dashboard.md](admin-dashboard.md)   | Development-only ticket-board interface.  |
+| [glasselated-port.md](glasselated-port.md) | Glasselated register and source boundary. |
+| [kumo-experiment.md](kumo-experiment.md)   | Kumo experiment boundary.                 |
 
 ## Documentation contract
 

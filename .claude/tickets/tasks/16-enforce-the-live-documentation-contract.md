@@ -3,7 +3,7 @@ id: 16
 type: task
 title: "Enforce the live documentation contract"
 created: 2026-08-20
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -19,6 +19,16 @@ history:
       state: in-progress,
       at: 2026-08-20,
       note: "enforced board validity, single task authority, read-only generated views, and generated revision freshness",
+    }
+  - {
+      state: merged,
+      at: 2026-08-20,
+      note: "added the live-set, index, local-link, retired-status, and public-plan checks",
+    }
+  - {
+      state: verified,
+      at: 2026-08-20,
+      note: "six drift fixtures, the complete web test suite, and docs:check pass",
     }
 ---
 
@@ -57,17 +67,19 @@ growth, but the checks must enforce authority and structure first.
 Each documented organization rule has a regression test that fails on a real
 drift case. `docs:check` remains fast enough for normal repository checks.
 
-## Progress checkpoint
+## Verified evidence
 
 The current checks validate the ticket scheme, lifecycle history, hierarchy,
 duplicate identifiers, and generated-view freshness. They reject `tasks:` and
 roadmap `items:` under `.claude/current`. `/admin` treats generated views as
 read-only.
 
-Local Markdown-link validation, completed-document retirement, the live-set
-contract, and active internal plans under public `docs/` still need checks.
-A one-time local-link scan passed for all 13 current documents. This does not
-replace the missing regression check.
+The organization checker freezes the 13-file live set. It requires every file
+in the index and validates each local Markdown link. It rejects retired status
+under `.claude/current` and active internal plans under public `docs/`.
+
+Six drift fixtures prove these rules. The complete web test suite and
+`vp run docs:check` pass.
 
 ## Relationship
 

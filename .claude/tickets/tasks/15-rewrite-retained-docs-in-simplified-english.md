@@ -3,7 +3,7 @@ id: 15
 type: task
 title: "Rewrite retained documentation in simplified English"
 created: 2026-08-20
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -19,6 +19,16 @@ history:
       state: in-progress,
       at: 2026-08-20,
       note: "completed a first rewrite pass across all retained human-authored current docs and removed copied volatile evidence counts",
+    }
+  - {
+      state: merged,
+      at: 2026-08-20,
+      note: "rewrote the complete retained set with the agreed language and authority model",
+    }
+  - {
+      state: verified,
+      at: 2026-08-20,
+      note: "reviewed all retained human-authored current docs with the Simplified English workflow",
     }
 ---
 
@@ -53,7 +63,7 @@ Do not claim formal compliance.
 The retained human-authored documentation is STE-aligned, concise, and
 technically equivalent to its verified sources.
 
-## Progress checkpoint
+## Verified evidence
 
 The new index uses a seven-step reading path, direct verbs, short sentences, and
 one term for each authority. The admin reference, ticket records, and generated

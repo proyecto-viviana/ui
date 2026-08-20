@@ -3,7 +3,7 @@ id: 13
 type: task
 title: "Reduce the live documentation surface"
 created: 2026-08-20
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -74,6 +74,16 @@ history:
       state: in-progress,
       at: 2026-08-20,
       note: "verified the 13-file live set with docs:check, a repository dead-link scan, and a local-link existence scan",
+    }
+  - {
+      state: merged,
+      at: 2026-08-20,
+      note: "reduced the live surface to 13 indexed documents and moved active plans to tickets",
+    }
+  - {
+      state: verified,
+      at: 2026-08-20,
+      note: "docs:check freezes the live set, index, local links, status boundary, and public-doc plan boundary",
     }
 ---
 
@@ -178,7 +188,7 @@ operating documents must use the six-package boundary or generate the count.
 A contributor can identify the current state, next action, stable architecture,
 evidence rules, and operating commands without reading completed history.
 
-## Progress checkpoint
+## Verified evidence
 
 - `.claude/current` is down from 25 files and approximately 14,586 lines to 13
   files and approximately 1,143 lines. This is a 92% reduction.
@@ -219,8 +229,8 @@ evidence rules, and operating commands without reading completed history.
   direction reference.
 - A repository-wide scan found no live links to the retired documents.
 
-Next, finish the retained-prose rewrite in #15 and enforce this structure in
-#16. Ticket #19 owns the separate active attribution plan under `docs/`.
+Ticket #15 verifies the retained prose. Ticket #16 enforces this structure.
+Ticket #19 owns the attribution work that formerly lived under `docs/`.
 
 ## Relationship
 
