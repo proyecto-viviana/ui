@@ -1,4 +1,5 @@
 // @ts-nocheck
+
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -11,7 +12,10 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Button.tsx
+
 import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };
+
 import {
   control,
   getAllowedOverrides,

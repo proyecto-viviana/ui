@@ -10,3 +10,9 @@ Add the exact upstream Adobe license header and source path to each reviewed
 Solid port. Keep the applicable Microsoft Tabster notice for the shadow-tree
 port. Remove three unused Solidaria state copies; the public exports already
 use the implementations from Solid Stately.
+
+Record exact S2 and flags source paths, and replace their local Adobe blocks
+with the exact headers from the pinned upstream files.
+
+Preserve exact source headers in styled-package runtime bundles and
+declaration-only outputs.

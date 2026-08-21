@@ -461,8 +461,8 @@ interface RootHiddenDateInputProps {
 
 /**
  * The always-rendered hidden date input at the DateField root — a faithful port
- * of react-aria-components' HiddenDateInput (private/HiddenDateInput.mjs). It is
- * NOT a validation input: it is a clipped, aria-hidden, tabIndex={-1} native
+ * of react-aria-components/src/HiddenDateInput.tsx. It is NOT a validation
+ * input: it is a clipped, aria-hidden, tabIndex={-1} native
  * date input that mirrors the current value for browser autofill. `form=""`
  * detaches it from form submission (the DateInput's <Input> submits), so it
  * never double-counts in FormData. RAC renders it unconditionally, which is why

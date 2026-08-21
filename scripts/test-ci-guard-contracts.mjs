@@ -269,6 +269,69 @@ try {
     `preserved built attribution header failed:\n${combined(preservedBuiltHeader)}`,
   );
   console.log("PASS: package artifacts preserve mapped attribution headers after printing.");
+  const typeOnlyHeader = builtHeader.replace(
+    "packages/upstream/src/index.ts",
+    "packages/upstream/src/types.ts",
+  );
+  const typeOnlySource = `${typeOnlyHeader}\n\nexport type Example = true;\n`;
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "src", "types.ts"),
+    typeOnlySource,
+  );
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "dist", "types.d.ts"),
+    "export type Example = true;\n",
+  );
+  json(path.join(packageArtifactFixture, "packages", "example", "dist", "types.d.ts.map"), {
+    version: 3,
+    file: "types.d.ts",
+    sources: ["../src/types.ts"],
+    names: [],
+    mappings: "",
+  });
+  const missingDeclarationHeader = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+  });
+  assert(
+    missingDeclarationHeader.status !== 0 &&
+      combined(missingDeclarationHeader).includes(
+        "dist/types.d.ts: missing built attribution header for ../src/types.ts",
+      ),
+    "artifact guard did not identify a stripped declaration-only attribution header",
+  );
+  const declarationWrite = runSync(
+    "write-package-declaration-attribution.mjs",
+    packageArtifactFixture,
+    {},
+    ["packages/example"],
+  );
+  assert(
+    declarationWrite.status === 0 && combined(declarationWrite).includes("wrote 1"),
+    `declaration attribution writer failed:\n${combined(declarationWrite)}`,
+  );
+  const preservedDeclarationHeader = runSync(
+    "check-package-artifacts.mjs",
+    packageArtifactFixture,
+    {
+      VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+    },
+  );
+  assert(
+    preservedDeclarationHeader.status === 0,
+    `preserved declaration attribution header failed:\n${combined(preservedDeclarationHeader)}`,
+  );
+  const idempotentDeclarationWrite = runSync(
+    "write-package-declaration-attribution.mjs",
+    packageArtifactFixture,
+    {},
+    ["packages/example"],
+  );
+  assert(
+    idempotentDeclarationWrite.status === 0 &&
+      combined(idempotentDeclarationWrite).includes("wrote 0"),
+    "declaration attribution writer was not idempotent",
+  );
+  console.log("PASS: declaration-only attribution survives package builds.");
   rmSync(path.join(packageArtifactFixture, "packages", "example", "dist", "index.js.map"));
   const missingBuiltSourceMap = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
     VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
@@ -334,6 +397,25 @@ try {
     "attribution failure did not identify the changed package NOTICE",
   );
   console.log("PASS: changed package NOTICE exits non-zero.");
+  writeFileSync(path.join(attributionFixture, "packages", "solidaria", "NOTICE"), fixtureNotice);
+  writeFileSync(
+    path.join(attributionFixture, "packages", "solid-spectrum", "src", "index.ts"),
+    [
+      "// Ported to SolidJS for Proyecto Viviana;",
+      "// based on packages/@react-spectrum/s2/style/index.ts",
+      "export {};",
+      "",
+    ].join("\n"),
+  );
+  const completeAttribution = runSync("check-package-attribution.mjs", attributionFixture);
+  assert(
+    completeAttribution.status === 0 &&
+      completeAttribution.stdout.includes(
+        "@proyecto-viviana/solid-spectrum: 1 TS/TSX files, 0 Adobe headers, 1 source marker",
+      ),
+    "package attribution inventory did not use the shared multiline marker parser",
+  );
+  console.log("PASS: package attribution inventory uses shared source-marker parsing.");
 
   const mappingFixture = path.join(fixtureRoot, "attribution-mappings");
   for (const directory of [
@@ -345,6 +427,7 @@ try {
     "packages/solidaria/src/table",
     "packages/solidaria-components/src",
     "packages/solid-spectrum/src/shared",
+    "packages/solid-spectrum/src/style",
     "packages/solid-spectrum/src/icon/ui-icons",
     "packages/viviana-ui/src/shared",
     "packages/viviana-ui/src/icon/pixel-icons",
@@ -357,6 +440,7 @@ try {
     "react-spectrum/packages/react-stately/src/calendar",
     "react-spectrum/packages/react-stately/src/disclosure",
     "react-spectrum/packages/@react-spectrum/s2/ui-icons",
+    "react-spectrum/packages/@react-spectrum/s2/style",
   ]) {
     mkdirSync(path.join(mappingFixture, directory), { recursive: true });
   }
@@ -389,8 +473,19 @@ try {
     `${fullAdobeHeader}export default function Add() {}\n`,
   );
   writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/@react-spectrum/s2/style/runtime.ts"),
+    `${fullAdobeHeader}export const upstreamRuntime = true;\n`,
+  );
+  writeFileSync(
     path.join(mappingFixture, "react-spectrum/packages/react-aria-components/src/utils.tsx"),
     `${fullAdobeHeader}export const upstreamUtils = true;\n`,
+  );
+  writeFileSync(
+    path.join(
+      mappingFixture,
+      "react-spectrum/packages/react-aria-components/src/HiddenDateInput.tsx",
+    ),
+    "export const upstreamHiddenDateInput = true;\n",
   );
   writeFileSync(
     path.join(mappingFixture, "react-spectrum/packages/react-stately/src/calendar/useCalendar.ts"),
@@ -477,8 +572,36 @@ try {
     `${fullAdobeHeader}export const orphan = true;\n`,
   );
   writeFileSync(
+    path.join(mappingFixture, "packages/solidaria-components/src/hidden-date-input.ts"),
+    [
+      "/**",
+      " * A faithful port",
+      " * of react-aria-components/src/HiddenDateInput.tsx.",
+      " */",
+      "export const localHiddenDateInput = true;",
+      "",
+    ].join("\n"),
+  );
+  writeFileSync(
     path.join(mappingFixture, "packages/solid-spectrum/src/shared/createTable.ts"),
     exactSource,
+  );
+  const exactS2RuntimeMarker =
+    "// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/style/runtime.ts";
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-spectrum/src/style/runtime.ts"),
+    `${fullAdobeHeader}\n${exactS2RuntimeMarker}\n\nexport const localRuntime = true;\n`,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-spectrum/src/shared/documentation.ts"),
+    [
+      "/**",
+      " * Computes spacing based on the input value.",
+      " * @example import {style} from '@react-spectrum/s2/style';",
+      " */",
+      "export const documentation = true;",
+      "",
+    ].join("\n"),
   );
   writeFileSync(
     path.join(mappingFixture, "packages/viviana-ui/src/shared/createTable.ts"),
@@ -509,7 +632,24 @@ try {
     "explicit unified-source mapping was not exact",
   );
   assert(
-    mappingReport.summary.headerContracts.files === 5 &&
+    mappingByPath.get("packages/solid-spectrum/src/style/runtime.ts")?.status === "exact",
+    "an exact S2 repository path did not resolve",
+  );
+  assert(
+    mappingByPath.get("packages/solidaria-components/src/hidden-date-input.ts")?.status ===
+      "exact-no-header",
+    "a multiline provenance comment did not resolve",
+  );
+  const documentationExample = mappingByPath.get(
+    "packages/solid-spectrum/src/shared/documentation.ts",
+  );
+  assert(
+    documentationExample?.status === "unmarked" && documentationExample.markers.length === 0,
+    "ordinary API documentation was misclassified as source evidence",
+  );
+  assert(
+    mappingReport.summary.headerContracts.files === 6 &&
+      mappingReport.summary.headerContracts.statuses.satisfied === 1 &&
       mappingReport.summary.headerContracts.statuses.mismatch === 3 &&
       mappingReport.summary.headerContracts.statuses.missing === 2,
     "exact header contract states were not reported",

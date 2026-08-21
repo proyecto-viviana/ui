@@ -262,7 +262,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
     "dev": "vp pack --watch"
   },
   "dependencies": {

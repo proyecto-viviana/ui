@@ -2,6 +2,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { sourceMarkers as findSourceMarkers } from "./attribution-source-markers.mjs";
 
 const root = process.cwd();
 const adobePackages = [
@@ -149,13 +150,7 @@ const sourceInventory = adobePackages.map((entry) => {
     ) {
       adobeHeaders += 1;
     }
-    if (
-      /\b(?:Ported from|Based on)\s+(?:@react-(?:aria|spectrum|stately|types)|react-aria-components|React[- ]Aria)/i.test(
-        content,
-      )
-    ) {
-      sourceMarkers += 1;
-    }
+    if (findSourceMarkers(content).length > 0) sourceMarkers += 1;
   }
   return { ...entry, files: files.length, adobeHeaders, sourceMarkers };
 });

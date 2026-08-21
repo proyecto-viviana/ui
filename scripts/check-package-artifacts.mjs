@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   builtCodeHasAttributionHeader,
   sourceAttributionHeader,
+  sourceMapEntries,
 } from "./package-attribution-banner.mjs";
 
 const ROOT = process.cwd();
@@ -67,6 +68,7 @@ for (const packageDir of publicPackageDirs) {
   }
 
   const mappedAttributionSources = new Set();
+  const runtimeAttributionSources = new Set();
   for (const codeFile of codeFiles(path.join(ROOT, packageDir, "dist"), /\.(?:js|jsx)$/)) {
     const mapFile = `${codeFile}.map`;
     if (!existsSync(mapFile)) continue;
@@ -80,22 +82,45 @@ for (const packageDir of publicPackageDirs) {
     }
 
     const code = readFileSync(codeFile, "utf8");
-    for (const [index, source] of (sourceMap.sourcesContent ?? []).entries()) {
+    for (const { source, sourceFile, sourceName } of sourceMapEntries(mapFile, sourceMap)) {
       if (typeof source !== "string") continue;
       const header = sourceAttributionHeader(source);
       if (!header) continue;
 
-      const sourceName = sourceMap.sources?.[index];
-      if (typeof sourceName === "string") {
-        mappedAttributionSources.add(
-          path.resolve(path.dirname(mapFile), sourceMap.sourceRoot ?? "", sourceName),
-        );
-      }
+      mappedAttributionSources.add(sourceFile);
+      runtimeAttributionSources.add(sourceFile);
       checkedAttributionHeaders += 1;
       if (!builtCodeHasAttributionHeader(code, header)) {
-        const sourceLabel = sourceName ?? `source #${index + 1}`;
         problems.push(
-          `${path.relative(ROOT, codeFile)}: missing built attribution header for ${sourceLabel}`,
+          `${path.relative(ROOT, codeFile)}: missing built attribution header for ${sourceName}`,
+        );
+      }
+    }
+  }
+
+  for (const codeFile of codeFiles(path.join(ROOT, packageDir, "dist"), /\.d\.ts$/)) {
+    const mapFile = `${codeFile}.map`;
+    if (!existsSync(mapFile)) continue;
+
+    let sourceMap;
+    try {
+      sourceMap = readJson(mapFile);
+    } catch (error) {
+      problems.push(`${path.relative(ROOT, mapFile)}: invalid source map (${error.message})`);
+      continue;
+    }
+
+    const code = readFileSync(codeFile, "utf8");
+    for (const { source, sourceFile, sourceName } of sourceMapEntries(mapFile, sourceMap)) {
+      if (runtimeAttributionSources.has(sourceFile) || typeof source !== "string") continue;
+      const header = sourceAttributionHeader(source);
+      if (!header) continue;
+
+      mappedAttributionSources.add(sourceFile);
+      checkedAttributionHeaders += 1;
+      if (!builtCodeHasAttributionHeader(code, header)) {
+        problems.push(
+          `${path.relative(ROOT, codeFile)}: missing built attribution header for ${sourceName}`,
         );
       }
     }

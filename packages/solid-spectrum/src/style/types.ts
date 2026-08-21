@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/style/types.ts
+
 import type * as CSS from "csstype";
 
 export type CSSValue = string | number;

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
+import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 import { packageMacros, sourceMapWarningGuard } from "../../scripts/package-macro-plugin.mjs";
 
 // Curated public surface: the `.` barrel, the hand-picked PascalCase component
@@ -126,7 +127,11 @@ export default defineConfig({
       // Shared chunks routed to a reserved subdir so a `dist/<name>.js` chunk can
       // never collide with a per-module output directory.
       outputOptions(options) {
-        return { ...options, chunkFileNames: "_chunk/[name].js" };
+        return {
+          ...options,
+          banner: packageAttributionBanner,
+          chunkFileNames: "_chunk/[name].js",
+        };
       },
       plugins: [
         sourceMapWarningGuard(),
@@ -160,6 +165,7 @@ export default defineConfig({
       outputOptions(options) {
         return {
           ...options,
+          banner: packageAttributionBanner,
           entryFileNames: "[name].jsx",
           chunkFileNames: "_chunk/[name].jsx",
         };

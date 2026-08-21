@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { comments, normalizedComment, sourceMarkers } from "./attribution-source-markers.mjs";
 
 const root = process.cwd();
 const upstreamRoot = path.join(root, "react-spectrum", "packages");
@@ -233,19 +234,6 @@ function rewriteAttributionHeader(content, source) {
   return `${directivePrefix}${adobeBlock}\n\n${portLineFor(source.relativePath)}\n\n${body}`;
 }
 
-function comments(content) {
-  return content.match(/\/\*[\s\S]*?\*\/|\/\/(?:[^\n]*)/g) ?? [];
-}
-
-function normalizedComment(comment) {
-  return comment
-    .replace(/^\/\*+|\*+\/$/g, "")
-    .replace(/^\s*\*\s?/gm, "")
-    .replace(/^\/\/\s?/gm, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function isS2GeneratedComment(comment) {
   return (
     /\bAuto-generated\b/i.test(comment) &&
@@ -258,16 +246,6 @@ const generatorNotices = new Set(
     .filter(isS2GeneratedComment)
     .map(normalizedComment),
 );
-
-function sourceMarkers(content) {
-  return comments(content)
-    .filter(
-      (comment) =>
-        /(?:Port(?:ed)?\s+(?:of|from)|Based on)\b/i.test(comment) &&
-        /(?:@react-(?:aria|spectrum|stately|types)|react[- ]aria|react[- ]stately)/i.test(comment),
-    )
-    .map(normalizedComment);
-}
 
 const upstreamFiles = sourceFiles(upstreamRoot, /\.(?:ts|tsx|js|jsx|css|svg|json)$/).map(
   (absolutePath) => {
@@ -323,6 +301,14 @@ function explicitSources(markers) {
   const resolved = [];
 
   for (const marker of markers) {
+    const exactRepositoryPaths = marker.matchAll(
+      /\b(packages\/(?:@react-(?:aria|spectrum|stately|types)\/[a-z0-9-]+|react-(?:aria|stately)|react-aria-components)\/[A-Za-z0-9@_./-]+\.(?:tsx?|jsx?|css|svg|json))\b/gi,
+    );
+    for (const match of exactRepositoryPaths) {
+      const candidate = fileAt(match[1]);
+      if (candidate) resolved.push(candidate);
+    }
+
     const urls = marker.matchAll(
       /https:\/\/github\.com\/adobe\/react-spectrum\/blob\/[^/\s]+\/(packages\/[A-Za-z0-9@_./-]+)/g,
     );

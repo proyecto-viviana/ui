@@ -42,6 +42,16 @@ history:
       at: 2026-08-21,
       note: "classified four headerless exact mappings, recorded the Microsoft Tabster source, and isolated the remaining Grid State decision",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "mapped all 23 header-bearing S2 and flags sources, shared marker parsing, and removed the last short Adobe block",
+    }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "preserved styled-package attribution in runtime and declaration-only build outputs",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -61,16 +71,17 @@ package. It excludes declaration files.
 
 | Package                                  | TS/TSX | Adobe header | Source marker |
 | ---------------------------------------- | -----: | -----------: | ------------: |
-| `@proyecto-viviana/solid-stately`        |     93 |           28 |            39 |
-| `@proyecto-viviana/solidaria`            |    231 |          104 |            86 |
-| `@proyecto-viviana/solidaria-components` |     74 |           31 |             3 |
-| `@proyecto-viviana/solid-spectrum`       |    604 |           11 |             2 |
-| `@proyecto-viviana/ui`                   |    644 |           11 |             2 |
+| `@proyecto-viviana/solid-stately`        |     93 |           28 |            47 |
+| `@proyecto-viviana/solidaria`            |    231 |          104 |           145 |
+| `@proyecto-viviana/solidaria-components` |     74 |           31 |            44 |
+| `@proyecto-viviana/solid-spectrum`       |    604 |           11 |            15 |
+| `@proyecto-viviana/ui`                   |    644 |           11 |            15 |
 
-These columns are discovery aids. A source marker is a `Based on` or
-`Ported from` phrase followed by an Adobe package or library name. A marker is
-not proof that a full notice is correct. A missing marker is not proof that a
-file is original.
+These columns are discovery aids. A source marker is a `Based on`, `Port of`,
+or `Ported from` clause that names a React Aria, React Stately, React Spectrum,
+or React Aria Components source. Both attribution commands use the shared
+`scripts/attribution-source-markers.mjs` parser. A marker is not proof that a
+full notice is correct. A missing marker is not proof that a file is original.
 
 `vp run guard:layer-boundary -- --report` scanned 609 Spectrum files and 650
 Viviana UI files. The packages share 609 paths: 533 are identical and 76 have
@@ -93,22 +104,28 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   162 |
+| `exact`                     |   182 |
 | `exact-no-header`           |     5 |
 | `generated-exact-no-header` |   396 |
 | `generated-multiple`        |     2 |
 | `generated-stale-generator` |    12 |
 | `generated-unresolved`      |    13 |
-| `header-unmapped`           |    16 |
 | `marker-unresolved`         |    65 |
-| `mirror`                    |   531 |
-| `multiple`                  |     9 |
+| `mirror`                    |   526 |
+| `multiple`                  |    10 |
 | `unmarked`                  |   435 |
 
-The report scanned 1,646 files. It found 162 exact independent mappings. All
-162 now satisfy the confirmed source-header contract. The report keeps 949
-independent mappings in review. The 531 byte-identical Viviana UI files inherit
+The report scanned 1,646 files. It found 182 independent files with one exact
+source. It also found 184 exact-source header contracts, including inherited
+mirror cases. All 184 satisfy the confirmed contract. The report keeps 934
+independent mappings in review. The 526 byte-identical Viviana UI files inherit
 their Solid Spectrum mapping and do not create duplicate review work.
+
+This pass mapped 23 previously header-bearing S2 and flags sources to exact
+upstream files. No file remains in `header-unmapped`. Multiline marker parsing
+also exposed the hidden native date input in `DateField.tsx` as a port of
+`react-aria-components/src/HiddenDateInput.tsx`. DateField is now an explicit
+two-source review instead of a false single-source mapping.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -149,12 +166,14 @@ current icon generator: 11 UI icons and `SearchIcon`. Do not run that generator
 until its inputs and notice are corrected. Another 13 workflow icons have no
 verified byte-identical upstream asset in the pinned tree.
 
-The regression fixture proves that a matching filename is not enough, an Adobe
-header without a source stays unmapped, original Glasselated generated source
-stays unmarked, and exact mirrors inherit one review result. It also proves that
-each marker must resolve independently, explicit TSX and repository paths stay
-exact, and a scoped package marker cannot fall through to an incidental symbol
-in another package. A missing upstream tree fails the command.
+The regression fixture proves that a matching filename is not enough. An Adobe
+header without a source stays unmapped. Original Glasselated generated source
+stays unmarked, and exact mirrors inherit one review result. Each marker must
+resolve independently. Exact TSX and repository paths stay exact, including S2
+`src` and `style` paths. Multiline provenance is detected, but an ordinary API
+example is not source evidence. A scoped package marker cannot fall through to
+an incidental symbol in another package. A missing upstream tree fails the
+command.
 
 Before this ticket's package repair, `vp exec npm pack --dry-run --json` showed:
 
@@ -197,17 +216,17 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 185 files with an Adobe license block. Of these, 184
-files use the full upstream block. One file uses a shorter block without the
-warranty text. Ten full blocks follow a required `// @ts-nocheck` first line.
-The formatter preserves these current forms.
+The current source tree has 185 files with an Adobe license block. All 185 use
+the full upstream block. Ten blocks follow a required `// @ts-nocheck` first
+line. The formatter preserves these forms.
 
-All 162 exact mappings with a usable upstream header satisfy the confirmed
-contract. Four exact mappings with no Adobe header satisfy their reviewed
-source-evidence contract. Package builds carry the applicable headers into
-emitted JS and JSX. `guard:package-artifacts` proves 297 mapped
-source-map-to-output references and covers all 162 attributed source files in
-the three headless packages.
+All 184 exact-source header contracts with a usable upstream header are
+satisfied. Four exact mappings with no Adobe header satisfy their reviewed
+source-evidence contract. Package builds carry applicable headers into emitted
+JS and JSX. The two styled packages also copy exact headers to declaration-only
+outputs that have no runtime bundle. `guard:package-artifacts` reads runtime
+and declaration source maps. It proves 328 mapped source-to-output references
+and covers all 185 attributed source files in the five Adobe-derived packages.
 
 The retired plan recorded this form as decided:
 
@@ -223,8 +242,8 @@ The owner confirmed this form on 2026-08-21. The confirmed policy is:
   fallback year.
 - Do not add a blanket Adobe or MIT header to original Proyecto Viviana source.
 
-The one current short Adobe block must be reconciled with its exact upstream
-file during the mapping pass.
+The flags mapping identified the last short Adobe block. Header synchronization
+replaced it with the exact full block from the pinned upstream file.
 
 ## Verification
 
@@ -232,8 +251,9 @@ Passed on 2026-08-21:
 
 - `vp run guard:attribution`
 - `vp run report:attribution-mappings`
-- `vp run test:ci-guard-contracts`, including the changed-NOTICE, mapping, and
-  reviewed-headerless negative cases
+- `vp run test:ci-guard-contracts`, including the changed-NOTICE,
+  shared-marker-parser, exact-repository-path, ordinary-documentation, and
+  reviewed-headerless cases
 - `vp run guard:attribution-headers`
 - `vp run sync:attribution-headers`; a second run wrote zero files
 - `vp run build:stately`
@@ -241,8 +261,9 @@ Passed on 2026-08-21:
 - `vp run build:components`
 - `vp test run` for the Solidaria switch, checkbox-group, and radio-group
   suites; 55 tests passed
-- `vp run guard:package-artifacts`, including 297 mapped header references
-  across all 162 attributed source files
+- `vp run guard:package-artifacts`, including 328 mapped header references
+  across all 185 attributed source files and declaration-only styled-package
+  outputs
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
 - `vp run changeset:status`
@@ -258,13 +279,15 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 1. Resolve the Grid State historical/current-source header conflict before
    recording that mapping as reviewed.
-2. Review the ambiguous, generated, and unmapped inventory groups.
-3. Map each generated asset to an exact upstream input where possible.
-4. Update the icon generator after the generated-file mappings are confirmed.
-5. Review header-unmapped, unmarked, and original Proyecto Viviana files by
-   hand.
+2. Review the ten multiple-source mappings, including DateField's two exact
+   upstream sources.
+3. Review the 65 unresolved markers and 435 unmarked files. Separate derivative
+   source from original Proyecto Viviana source.
+4. Review the generated groups and map each asset to an exact upstream input
+   where possible.
+5. Update the icon generator after the generated-file mappings are confirmed.
 6. Extend the guard only where the source classification is deterministic. Do
-   not freeze today's incomplete header counts as an accepted baseline.
+   not freeze today's incomplete counts as an accepted baseline.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action
 would misattribute the source.
