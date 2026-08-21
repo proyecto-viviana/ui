@@ -87,11 +87,8 @@ export function createTableRow<T extends object>(
     selectedKeys: () => state().selectedKeys as Selection,
     disabledKeys: () => state().disabledKeys,
     disabledBehavior: () => state().disabledBehavior,
-    isEmpty: () => {
-      const keys = state().selectedKeys;
-      return keys !== "all" && keys.size === 0;
-    },
-    isSelectAll: () => state().selectedKeys === "all",
+    isEmpty: () => state().isEmpty,
+    isSelectAll: () => state().isSelectAll,
     isSelected: (key: Key) => state().isSelected(key),
     isDisabled: (key: Key) => {
       const s = state();

@@ -166,10 +166,62 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   );
 
   // Selection methods
-  const isSelected = (key: Key): boolean => {
+  const getSelectionKey = (key: Key): Key | null => {
+    const collection = getOptions().collection;
+    let item = collection.getItem(key);
+
+    if (!item) {
+      return key;
+    }
+
+    // Cells and other child nodes select their parent row.
+    while (item && item.type !== "item" && item.parentKey != null) {
+      item = collection.getItem(item.parentKey);
+    }
+
+    return item?.type === "item" ? item.key : null;
+  };
+
+  const canSelectItem = (key: Key): boolean => {
+    if (selectionMode() === "none" || disabledKeys().has(key)) {
+      return false;
+    }
+
+    const item = getOptions().collection.getItem(key);
+    return !!item && item.type === "item" && !item.isDisabled && !item.props?.isDisabled;
+  };
+
+  const getSelectAllKeys = (): Key[] => {
+    return getOptions()
+      .collection.rows.filter((row) => row.type === "item" && canSelectItem(row.key))
+      .map((row) => row.key);
+  };
+
+  const isEmpty = createMemo(() => {
     const keys = selectedKeys();
-    if (keys === "all") return true;
-    return keys.has(key);
+    return keys !== "all" && keys.size === 0;
+  });
+
+  const isSelectAll = createMemo(() => {
+    const keys = selectedKeys();
+    if (isEmpty()) return false;
+
+    if (keys === "all") {
+      return true;
+    }
+
+    return getSelectAllKeys().every((key) => keys.has(key));
+  });
+
+  const isSelected = (key: Key): boolean => {
+    if (selectionMode() === "none") return false;
+
+    const selectionKey = getSelectionKey(key);
+    if (selectionKey == null) return false;
+
+    const keys = selectedKeys();
+    if (keys === "all") return canSelectItem(selectionKey);
+    return keys.has(selectionKey);
   };
 
   const isDisabled = (key: Key): boolean => {
@@ -200,49 +252,62 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   };
 
   const toggleSelection = (key: Key) => {
-    if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
+
+    const selectionKey = getSelectionKey(key);
+    if (selectionKey == null) return;
 
     const current = selectedKeys();
 
     if (selectionMode() === "single") {
-      if (isSelected(key) && !disallowEmptySelection()) {
+      if (isSelected(selectionKey) && !disallowEmptySelection()) {
         updateSelection(new Set());
-      } else {
-        updateSelection(new Set([key]));
+      } else if (canSelectItem(selectionKey)) {
+        updateSelection(new Set([selectionKey]));
       }
       return;
     }
 
     // Multiple selection
-    if (current === "all") {
-      // Can't toggle when all selected without knowing all keys
-      return;
-    }
-
-    const newSelection = new Set(current);
-    if (newSelection.has(key)) {
+    const newSelection = new Set(current === "all" ? getSelectAllKeys() : current);
+    if (newSelection.has(selectionKey)) {
       if (newSelection.size > 1 || !disallowEmptySelection()) {
-        newSelection.delete(key);
+        newSelection.delete(selectionKey);
       }
-    } else {
-      newSelection.add(key);
+    } else if (canSelectItem(selectionKey)) {
+      newSelection.add(selectionKey);
     }
 
     updateSelection(newSelection);
-    setAnchorKey(key);
+    setAnchorKey(selectionKey);
   };
 
   const replaceSelection = (key: Key) => {
-    if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
 
-    updateSelection(new Set([key]));
-    setAnchorKey(key);
+    const selectionKey = getSelectionKey(key);
+    if (selectionKey == null) return;
+
+    updateSelection(canSelectItem(selectionKey) ? new Set([selectionKey]) : new Set());
+    setAnchorKey(selectionKey);
   };
 
   const setSelectedKeys = (keys: Selection | Iterable<Key>) => {
-    updateSelection(normalizeSelection(keys));
+    if (selectionMode() === "none") return;
+    if (keys === "all") {
+      updateSelection("all");
+      return;
+    }
+
+    const selection = new Set<Key>();
+    for (const key of keys) {
+      const selectionKey = getSelectionKey(key);
+      if (selectionKey != null) {
+        selection.add(selectionKey);
+        if (selectionMode() === "single") break;
+      }
+    }
+    updateSelection(selection);
   };
 
   const extendSelection = (toKey: Key) => {
@@ -278,7 +343,9 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
 
   const selectAll = () => {
     if (selectionMode() !== "multiple") return;
-    updateSelection("all");
+    if (!isSelectAll()) {
+      updateSelection("all");
+    }
   };
 
   const clearSelection = () => {
@@ -289,7 +356,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   const toggleSelectAll = () => {
     if (selectionMode() !== "multiple") return;
 
-    if (selectedKeys() === "all") {
+    if (isSelectAll()) {
       clearSelection();
     } else {
       selectAll();
@@ -329,6 +396,12 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     },
     get selectedKeys() {
       return selectedKeys();
+    },
+    get isEmpty() {
+      return isEmpty();
+    },
+    get isSelectAll() {
+      return isSelectAll();
     },
     isSelected,
     isDisabled,

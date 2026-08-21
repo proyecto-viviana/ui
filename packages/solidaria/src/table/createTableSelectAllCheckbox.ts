@@ -15,8 +15,7 @@ export function createTableSelectAllCheckbox<T extends object>(
   state: Accessor<TableState<T, TableCollection<T>>>,
 ): TableSelectAllCheckboxAria {
   const isSelectAll = createMemo(() => {
-    const s = state();
-    return s.selectedKeys === "all";
+    return state().isSelectAll;
   });
 
   const isCollectionEmpty = createMemo(() => {
@@ -25,9 +24,7 @@ export function createTableSelectAllCheckbox<T extends object>(
   });
 
   const isEmpty = createMemo(() => {
-    const s = state();
-    const selectedKeys = s.selectedKeys;
-    return selectedKeys !== "all" && selectedKeys.size === 0;
+    return state().isEmpty;
   });
 
   // RAC: `isIndeterminate: !isEmpty && !isSelectAll` (not selectedKeys.size vs collection.size).

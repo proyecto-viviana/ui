@@ -1977,11 +1977,8 @@ export function TableSelectionCheckbox(props: {
 export function TableSelectAllCheckbox(): JSX.Element {
   const context = useContext(InternalTableContext);
   const state = useContext(HeadlessTableStateContext);
-  const isSelected = () => state?.selectedKeys === "all";
-  const isIndeterminate = () => {
-    const keys = state?.selectedKeys;
-    return !!state && keys !== "all" && keys != null && keys.size > 0;
-  };
+  const isSelected = () => state?.isSelectAll ?? false;
+  const isIndeterminate = () => !!state && !state.isEmpty && !state.isSelectAll;
   const isDisabled = () =>
     !state || state.selectionMode !== "multiple" || state.collection.size === 0;
   const className = (renderProps: TableColumnRenderProps): string =>

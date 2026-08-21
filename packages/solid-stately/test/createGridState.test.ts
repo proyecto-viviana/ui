@@ -458,6 +458,54 @@ describe("createGridState", () => {
       });
     });
 
+    it("should recognize a controlled set containing every selectable row as select all", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+          { key: "row3", cells: [{ key: "cell3" }] },
+        ]);
+        const [selectedKeys, setSelectedKeys] = createSignal<"all" | Set<Key>>(
+          new Set(["row1", "row3"]),
+        );
+        const state = createGridState(() => ({
+          collection,
+          selectionMode: "multiple",
+          disabledKeys: ["row2"],
+          selectedKeys: selectedKeys(),
+          onSelectionChange: (keys) => setSelectedKeys(keys),
+        }));
+
+        expect(state.isSelectAll).toBe(true);
+        state.toggleSelectAll();
+        expect(state.selectedKeys).toEqual(new Set());
+        expect(state.isEmpty).toBe(true);
+        expect(state.isSelectAll).toBe(false);
+        dispose();
+      });
+    });
+
+    it("should materialize select all before deselecting one row", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+          { key: "row3", cells: [{ key: "cell3" }] },
+        ]);
+        const state = createGridState(() => ({
+          collection,
+          selectionMode: "multiple",
+          defaultSelectedKeys: "all",
+        }));
+
+        state.toggleSelection("row2");
+        expect(state.selectedKeys).toEqual(new Set(["row1", "row3"]));
+        expect(state.isSelectAll).toBe(false);
+        expect(state.isSelected("row2")).toBe(false);
+        dispose();
+      });
+    });
+
     it("should clear selection", () => {
       createRoot((dispose) => {
         const collection = createMockCollection([{ key: "row1", cells: [{ key: "cell1" }] }]);

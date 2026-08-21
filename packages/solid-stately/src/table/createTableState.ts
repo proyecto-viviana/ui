@@ -111,6 +111,12 @@ export function createTableState<
     get selectedKeys() {
       return gridState.selectedKeys;
     },
+    get isEmpty() {
+      return gridState.isEmpty;
+    },
+    get isSelectAll() {
+      return gridState.isSelectAll;
+    },
 
     // Grid state methods
     isSelected: gridState.isSelected,

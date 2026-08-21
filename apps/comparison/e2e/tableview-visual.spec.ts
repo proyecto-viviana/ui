@@ -60,6 +60,68 @@ async function sortMarker(root: Locator) {
   return (await root.getAttribute("data-comparison-sort-descriptor")) ?? "";
 }
 
+interface SelectAllState {
+  checked: boolean;
+  indeterminate: boolean;
+  dataIndeterminate: string | null;
+  aria: string;
+}
+
+async function selectAllState(root: Locator): Promise<SelectAllState> {
+  const checkbox = root.getByRole("checkbox", { name: "Select All" });
+  const domState = await checkbox.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    return {
+      checked: input.checked,
+      indeterminate: input.indeterminate,
+      dataIndeterminate: input.getAttribute("data-indeterminate"),
+    };
+  });
+
+  return { ...domState, aria: await checkbox.ariaSnapshot() };
+}
+
+async function activateCheckbox(checkbox: Locator) {
+  await checkbox.evaluate((element) => (element as HTMLInputElement).click());
+}
+
+async function expectSelectAllParity(
+  reactRoot: Locator,
+  solidRoot: Locator,
+  expected: Pick<SelectAllState, "checked" | "indeterminate">,
+) {
+  const aria = expected.indeterminate
+    ? '- checkbox "Select All" [checked=mixed]'
+    : expected.checked
+      ? '- checkbox "Select All" [checked]'
+      : '- checkbox "Select All"';
+
+  await expect
+    .poll(async () => {
+      const [react, solid] = await Promise.all([
+        selectAllState(reactRoot),
+        selectAllState(solidRoot),
+      ]);
+      return {
+        react: { checked: react.checked, indeterminate: react.indeterminate, aria: react.aria },
+        solid: {
+          checked: solid.checked,
+          indeterminate: solid.indeterminate,
+          dataIndeterminate: solid.dataIndeterminate,
+          aria: solid.aria,
+        },
+      };
+    })
+    .toEqual({
+      react: { ...expected, aria },
+      solid: {
+        ...expected,
+        dataIndeterminate: expected.indeterminate ? "true" : null,
+        aria,
+      },
+    });
+}
+
 async function tableViewState(root: Locator) {
   return root.evaluate((element) => {
     const text = (node: Element | null) => node?.textContent?.replace(/\s+/g, " ").trim() ?? "";
@@ -474,4 +536,65 @@ test.describe("comparison TableView visual parity", () => {
       "name:descending",
     );
   });
+
+  for (const selectionSource of ["selectedKeys", "defaultSelectedKeys"] as const) {
+    test(`Select All exposes reactive mixed state with ${selectionSource}`, async ({ page }) => {
+      const fixtures = await tableViewFixtures(
+        page,
+        `?selectionSource=${selectionSource}&${selectionSource}=project-brief&selectionMode=multiple`,
+      );
+      const reactSelectAll = fixtures.reactRoot.getByRole("checkbox", { name: "Select All" });
+      const solidSelectAll = fixtures.solidRoot.getByRole("checkbox", { name: "Select All" });
+      const reactRowCheckbox = (name: RegExp) =>
+        fixtures.reactRoot.getByRole("row", { name }).getByRole("checkbox");
+      const solidRowCheckbox = (name: RegExp) =>
+        fixtures.solidRoot.getByRole("row", { name }).getByRole("checkbox");
+      const activatePair = async (react: Locator, solid: Locator) => {
+        await activateCheckbox(react);
+        await activateCheckbox(solid);
+      };
+
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: false,
+        indeterminate: true,
+      });
+
+      // mixed -> none -> mixed -> all -> mixed
+      await activatePair(reactRowCheckbox(/Project brief/), solidRowCheckbox(/Project brief/));
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: false,
+        indeterminate: false,
+      });
+      await activatePair(reactRowCheckbox(/Budget/), solidRowCheckbox(/Budget/));
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: false,
+        indeterminate: true,
+      });
+      await activatePair(reactSelectAll, solidSelectAll);
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: true,
+        indeterminate: false,
+      });
+      await activatePair(
+        reactRowCheckbox(/Quarterly report/),
+        solidRowCheckbox(/Quarterly report/),
+      );
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: false,
+        indeterminate: true,
+      });
+
+      // Reduce the mixed set to one row, then prove mixed -> none.
+      await activatePair(reactRowCheckbox(/Project brief/), solidRowCheckbox(/Project brief/));
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: false,
+        indeterminate: true,
+      });
+      await activatePair(reactRowCheckbox(/Budget/), solidRowCheckbox(/Budget/));
+      await expectSelectAllParity(fixtures.reactRoot, fixtures.solidRoot, {
+        checked: false,
+        indeterminate: false,
+      });
+    });
+  }
 });

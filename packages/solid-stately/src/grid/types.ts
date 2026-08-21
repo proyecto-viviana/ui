@@ -145,6 +145,10 @@ export interface GridState<T, C extends GridCollection<T> = GridCollection<T>> {
   readonly disallowEmptySelection: boolean;
   /** The currently selected keys. */
   readonly selectedKeys: "all" | Set<Key>;
+  /** Whether no rows are selected. */
+  readonly isEmpty: boolean;
+  /** Whether every selectable row is selected. */
+  readonly isSelectAll: boolean;
   /** Check if a key is selected. */
   isSelected(key: Key): boolean;
   /** Check if a key is disabled. */
