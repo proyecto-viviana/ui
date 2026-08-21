@@ -17,6 +17,11 @@ history:
       at: 2026-08-21,
       note: "workflow budget fix merged as 08eb8413; waiting for exact-SHA main qualification and a refreshed release head",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "PR #20 merged as 0f1e1198; exact-SHA gates and Release passed; four npm records verified while solid-spectrum propagation remains pending",
+    }
 ---
 
 Merge version PR #20 after explicit owner approval, then verify the same-SHA
@@ -82,6 +87,35 @@ versions are unchanged:
 GitHub required manual approval for runs `32437933270`, `32437933271`,
 `32437933249`, and `32437933251`. They were approved and are running on the
 exact new head. Do not merge until all four pass.
+
+All four PR checks passed on `ea4d535322c35452425254069e1aba04208630a9`.
+Certification Gates run `32437933270` finished in 40 minutes 52 seconds and
+included the certified comparison suite and the full axe audit. PR #20 merged
+as `0f1e1198963c46eb3294744475e269a7c0041eb6` on 2026-08-21.
+
+The three required `main` workflows passed on that exact merge SHA:
+
+- Certification Gates run `32485238975` passed in 43 minutes 33 seconds,
+  including the certified comparison suite and the full axe audit.
+- Release Readiness run `32485238838` passed.
+- Site Gate run `32485238779` passed.
+
+Exact-SHA Release run `32489037398` passed in 2 minutes 34 seconds. Its
+same-SHA evidence guard and publish-drift guard passed before Changesets
+reported all five packages as published. The five annotated release tags exist
+and all resolve to `0f1e1198963c46eb3294744475e269a7c0041eb6`.
+
+The npm registry exposes the expected version, integrity hash, tarball, and
+SLSA provenance record for `solid-stately@0.5.1`, `solidaria@0.4.3`,
+`solidaria-components@0.5.1`, and `@proyecto-viviana/ui@0.6.3`. Each provenance
+record names `.github/workflows/release.yml`, GitHub's hosted runner, Release
+run `32489037398`, and source commit
+`0f1e1198963c46eb3294744475e269a7c0041eb6`.
+
+`solid-spectrum@0.6.4` still returns 404 from npm's version and attestation
+endpoints. The successful Release log and exact Git tag prove that Changesets
+submitted it, but they do not replace registry evidence. Keep this task in
+progress until npm exposes its version, integrity hash, and provenance record.
 
 ## Done when
 
