@@ -4,7 +4,7 @@ type: task
 title: "Publish the qualified version commit"
 created: 2026-08-20
 parent: 30
-status: in-progress
+status: verified
 history:
   - { state: next, at: 2026-08-20, note: "migrated from legacy task release-train-unjam" }
   - {
@@ -21,6 +21,16 @@ history:
       state: in-progress,
       at: 2026-08-21,
       note: "PR #20 merged as 0f1e1198; exact-SHA gates and Release passed; four npm records verified while solid-spectrum propagation remains pending",
+    }
+  - {
+      state: merged,
+      at: 2026-08-21,
+      note: "PR #20 merged as 0f1e1198 and Release run 32489037398 published the five qualified versions",
+    }
+  - {
+      state: verified,
+      at: 2026-08-21,
+      note: "all five npm integrity values and SLSA provenance records resolve to 0f1e1198 and Release run 32489037398",
     }
 ---
 
@@ -105,17 +115,25 @@ same-SHA evidence guard and publish-drift guard passed before Changesets
 reported all five packages as published. The five annotated release tags exist
 and all resolve to `0f1e1198963c46eb3294744475e269a7c0041eb6`.
 
-The npm registry exposes the expected version, integrity hash, tarball, and
-SLSA provenance record for `solid-stately@0.5.1`, `solidaria@0.4.3`,
-`solidaria-components@0.5.1`, and `@proyecto-viviana/ui@0.6.3`. Each provenance
-record names `.github/workflows/release.yml`, GitHub's hosted runner, Release
-run `32489037398`, and source commit
-`0f1e1198963c46eb3294744475e269a7c0041eb6`.
+The npm registry now exposes the expected version, integrity hash, tarball, and
+SLSA provenance record for all five packages. A consolidated registry check
+decoded each integrity value and compared it with the provenance subject. All
+five values match:
 
-`solid-spectrum@0.6.4` still returns 404 from npm's version and attestation
-endpoints. The successful Release log and exact Git tag prove that Changesets
-submitted it, but they do not replace registry evidence. Keep this task in
-progress until npm exposes its version, integrity hash, and provenance record.
+- `solid-spectrum@0.6.4`:
+  `8c89184ec4e8468942c312f691dcac82a92b3cad8ed0fa96ea0aba929e30f535d81652960a60dd257c9e3596332169bdcb4ab4bf903ab9eda9e35d04f0ee95ac`
+- `solid-stately@0.5.1`:
+  `f0056d0076c133ad20e40bae175df8e118189cd4bccee961749413bb8b0eb48e2f6edaf06cfa85c22d53c067d044949c9bd0ab020bd605e2074b309565b173c9`
+- `solidaria@0.4.3`:
+  `52a329ac53cf67c35f339df84742ecbe2fc7b2a52177bcb72f025cc9c9bbf84435ad2d7d61d89170255cdcbb26c35646e08d5f5f438ba5aacc6ce030a82a49ad`
+- `solidaria-components@0.5.1`:
+  `b0ef91661025e49835774b6bd885ab177b1f2dfeef2af60d2979ddd7f3531f4bcb3d69d535905415dd03485f02aebdfa23024923344eb488f678fb18a2792f3e`
+- `@proyecto-viviana/ui@0.6.3`:
+  `c5b7e752bbac2443310388aee92a757fe65f2745c1103bdd0559ee5203e020ba1b20625b00f38f412e4740f2b1fa9893fec2708ecdea6b9fc6ec7adbcce94d42`
+
+Each provenance record names `.github/workflows/release.yml`, GitHub's hosted
+runner, Release run `32489037398`, and source commit
+`0f1e1198963c46eb3294744475e269a7c0041eb6`.
 
 ## Done when
 
