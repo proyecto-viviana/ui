@@ -287,6 +287,25 @@
   },
 
   {
+    "localPath": "packages/solidaria-components/src/Color.tsx",
+    "upstreamPaths": [
+      "packages/react-aria-components/src/ColorArea.tsx",
+      "packages/react-aria-components/src/ColorField.tsx",
+      "packages/react-aria-components/src/ColorPicker.tsx",
+      "packages/react-aria-components/src/ColorSlider.tsx",
+      "packages/react-aria-components/src/ColorSwatch.tsx",
+      "packages/react-aria-components/src/ColorSwatchPicker.tsx",
+      "packages/react-aria-components/src/ColorThumb.tsx",
+      "packages/react-aria-components/src/ColorWheel.tsx",
+      "packages/react-aria/src/selection/ListKeyboardDelegate.ts"
+    ],
+    "requiredText": [
+      "Color components for solidaria-components.",
+      "This Solid module combines",
+      "const handleGridKeyDown"
+    ]
+  },
+  {
     "localPath": "packages/solidaria-components/src/DateField.tsx",
     "upstreamPaths": [
       "packages/react-aria-components/src/DateField.tsx",

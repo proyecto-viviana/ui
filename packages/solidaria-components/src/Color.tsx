@@ -1,8 +1,19 @@
 /**
- * Color components for solidaria-components
+ * Color components for solidaria-components.
  *
  * Pre-wired headless color picker components that combine state + aria hooks.
- * Port of react-aria-components color components.
+ * Based on these pinned React Aria Components sources:
+ * - packages/react-aria-components/src/ColorArea.tsx
+ * - packages/react-aria-components/src/ColorField.tsx
+ * - packages/react-aria-components/src/ColorPicker.tsx
+ * - packages/react-aria-components/src/ColorSlider.tsx
+ * - packages/react-aria-components/src/ColorSwatch.tsx
+ * - packages/react-aria-components/src/ColorSwatchPicker.tsx
+ * - packages/react-aria-components/src/ColorThumb.tsx
+ * - packages/react-aria-components/src/ColorWheel.tsx
+ * - packages/react-aria/src/selection/ListKeyboardDelegate.ts
+ *
+ * This Solid module combines the upstream component files and grid keyboard behavior.
  */
 
 import {
@@ -2265,8 +2276,8 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
         break;
     }
 
-    // Mirror react-aria's grid keyboard delegate: an arrow in grid layout is
-    // always consumed (blocking the linear ListBox handler and page scroll),
+    // Match the pinned ListKeyboardDelegate: an arrow in grid layout is always
+    // consumed (blocking the linear ListBox handler and page scroll),
     // but focus only moves when the delegate yields a next key. With
     // shouldFocusWrap unset (upstream default false) there is no wrap, so arrows
     // stop dead at the grid's edges. Selection is not mutated on arrow — under

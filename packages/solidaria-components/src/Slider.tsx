@@ -1,8 +1,22 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Slider.tsx
+
 /**
  * Slider component for solidaria-components
  *
  * A pre-wired headless slider that combines state + aria hooks.
- * Port of react-aria-components/src/Slider.tsx
+ * Solid adaptation of the pinned Slider component.
  */
 
 import { type JSX, createContext, createMemo, splitProps, useContext, Show } from "solid-js";
@@ -532,7 +546,7 @@ function clampFill(value: number, min: number, max: number): number {
 /**
  * The fill element of a slider, displaying the selected range.
  *
- * Port of react-aria-components `SliderFill` (RAC 1.18). Upstream reads the
+ * Solid adaptation of the pinned `SliderFill`. Upstream reads the
  * array-based `SliderState` (`values`/`getThumbPercent`); our `SliderState` is
  * single-value, so this fills from `offset` (default the slider's minValue, i.e.
  * 0%) to the current value — the single-thumb branch of upstream's math, using

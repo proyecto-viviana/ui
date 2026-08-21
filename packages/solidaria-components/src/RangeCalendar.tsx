@@ -1,8 +1,22 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Calendar.tsx
+
 /**
  * RangeCalendar component for solidaria-components
  *
  * Pre-wired headless range calendar component that combines aria hooks.
- * Port of react-aria-components/src/RangeCalendar.tsx
+ * Solid adaptation of the pinned RangeCalendar implementation.
  */
 
 import {
@@ -300,7 +314,7 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
           {props.children}
           {/* For touch screen readers, a visually hidden next button after the
            * month grid so it's easy to navigate after reaching the end without
-           * going all the way back to the start. Mirrors react-aria-components
+           * going all the way back to the start. Matches the upstream component
            * Calendar (and the headless Calendar). */}
           <VisuallyHidden>
             <button
@@ -388,7 +402,7 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
           {props.children}
           {/* For touch screen readers, a visually hidden next button after the
            * month grid so it's easy to navigate after reaching the end without
-           * going all the way back to the start. Mirrors react-aria-components
+           * going all the way back to the start. Matches the upstream component
            * Calendar (and the headless Calendar). */}
           <VisuallyHidden>
             <button

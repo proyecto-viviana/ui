@@ -1,8 +1,22 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ListBox.tsx
+
 /**
  * ListBox component for solidaria-components
  *
  * A pre-wired headless listbox that combines state + aria hooks.
- * Port of react-aria-components/src/ListBox.tsx
+ * Solid adaptation of the pinned ListBox component.
  */
 
 import {
@@ -589,7 +603,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   };
 
   // ── Drop indicator (Fix B: labeled, self-focusing) ─────────────────────────
-  // The port of react-aria-components' ListBoxDropIndicatorWrapper +
+  // The upstream ListBoxDropIndicatorWrapper and
   // useDropIndicator. The droppable-collection state layer diverged to a minimal
   // reactive target-holder with no collection reference, so the label (which
   // needs the collection's text values) and the self-focus (which needs the live

@@ -1,10 +1,9 @@
 /**
- * solidaria-components
+ * solidaria-components.
  *
- * Pre-wired headless components for SolidJS.
- * Port of react-aria-components.
- *
- * These components combine state management + accessibility hooks into
+ * This is the local package barrel. Each exported module owns its upstream
+ * source mapping.
+ * The components combine state management and accessibility hooks into
  * ready-to-style components using the render props pattern and data attributes.
  */
 
