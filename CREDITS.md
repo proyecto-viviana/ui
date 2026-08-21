@@ -6,8 +6,8 @@ every material we **sourced from**, **referenced**, or were **inspired by**.
 Our original work uses the [MIT License](LICENSE). Derived work keeps its
 upstream terms. The Adobe port stack uses Apache-2.0; its project attribution
 is in [`NOTICE`](NOTICE) and [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0).
-The Kumo section identifies its upstream MIT notice. This document is the
-readable companion.
+The Microsoft Tabster and Kumo sections identify their upstream MIT notices.
+This document is the readable companion.
 
 ## Sourced — Adobe React Spectrum (Apache-2.0)
 
@@ -38,6 +38,20 @@ Apache-2.0 material from Adobe:
 - A vendored copy of the React Spectrum S2 documentation site under
   `apps/comparison/vendor/s2-docs/` (comparison reference; carries its own
   upstream `NOTICE`).
+
+## Sourced — Microsoft Tabster (MIT)
+
+`@proyecto-viviana/solidaria` includes a SolidJS port of
+`ShadowTreeWalker`. Adobe's React Aria source says that this file is based on
+Microsoft Tabster.
+
+- Adobe source:
+  <https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/react-aria/src/utils/shadowdom/ShadowTreeWalker.ts>.
+- Microsoft source:
+  <https://github.com/microsoft/tabster/blob/a89fc5d7e332d48f68d03b1ca6e344489d1c3898/src/Shadowdomize/ShadowTreeWalker.ts>.
+- Copyright Microsoft Corporation.
+- License: MIT. The complete notice is in [`NOTICE`](NOTICE) and in each
+  Adobe-derived package archive.
 
 ## Sourced — Cloudflare Kumo (MIT)
 

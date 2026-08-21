@@ -7,6 +7,7 @@ import path from "node:path";
 const root = process.cwd();
 const upstreamRoot = path.join(root, "react-spectrum", "packages");
 const generatorPath = path.join(root, "scripts", "generate-solid-spectrum-icons.mjs");
+const headerlessReviewPath = path.join(root, "scripts", "attribution-headerless-reviews.json");
 const jsonOutput = process.argv.includes("--json");
 const showAll = process.argv.includes("--all");
 const checkHeaders = process.argv.includes("--check-headers");
@@ -55,6 +56,46 @@ if (!existsSync(upstreamRoot)) {
     "the pinned react-spectrum/packages tree is missing; exact source mappings cannot be reported",
   );
 }
+if (!existsSync(headerlessReviewPath)) {
+  fail("scripts/attribution-headerless-reviews.json is missing");
+}
+
+let headerlessReviewEntries;
+try {
+  headerlessReviewEntries = JSON.parse(readFileSync(headerlessReviewPath, "utf8"));
+} catch (error) {
+  fail(`scripts/attribution-headerless-reviews.json is invalid JSON (${error.message})`);
+}
+if (!Array.isArray(headerlessReviewEntries)) {
+  fail("scripts/attribution-headerless-reviews.json must contain an array");
+}
+
+const reviewedHeaderlessMappings = new Map();
+for (const [index, entry] of headerlessReviewEntries.entries()) {
+  const label = `scripts/attribution-headerless-reviews.json entry ${index + 1}`;
+  if (
+    !entry ||
+    typeof entry !== "object" ||
+    typeof entry.localPath !== "string" ||
+    entry.localPath.length === 0 ||
+    typeof entry.upstreamPath !== "string" ||
+    entry.upstreamPath.length === 0 ||
+    !Array.isArray(entry.requiredText) ||
+    entry.requiredText.length === 0 ||
+    entry.requiredText.some((value) => typeof value !== "string" || value.length === 0)
+  ) {
+    fail(
+      `${label} must contain localPath, upstreamPath, and an array of non-empty requiredText strings`,
+    );
+  }
+  if (reviewedHeaderlessMappings.has(entry.localPath)) {
+    fail(`${label} repeats localPath ${entry.localPath}`);
+  }
+  reviewedHeaderlessMappings.set(entry.localPath, {
+    upstreamPath: entry.upstreamPath,
+    requiredText: entry.requiredText,
+  });
+}
 
 function slash(file) {
   return file.split(path.sep).join("/");
@@ -90,6 +131,31 @@ function adobeHeader(content) {
     content.includes("WITHOUT WARRANTIES OR REPRESENTATIONS");
   return { kind: full ? "full" : "short", year };
 }
+
+function headerlessReviewContract(relativePath, content, sources, localHeader, status) {
+  const review = reviewedHeaderlessMappings.get(relativePath);
+  if (!review) return null;
+
+  const actualUpstreamPath = sources.length === 1 ? sources[0].relativePath : null;
+  const upstreamHeader = sources.length === 1 ? adobeHeader(sources[0].content) : null;
+  const missingText = review.requiredText.filter((value) => !content.includes(value));
+  const satisfied =
+    status === "exact-no-header" &&
+    actualUpstreamPath === review.upstreamPath &&
+    upstreamHeader?.kind === "none" &&
+    localHeader.kind === "none" &&
+    missingText.length === 0;
+
+  return {
+    status: satisfied ? "satisfied" : "mismatch",
+    upstreamPath: review.upstreamPath,
+    actualUpstreamPath,
+    upstreamHeader: upstreamHeader?.kind ?? null,
+    localHeader: localHeader.kind,
+    missingText,
+  };
+}
+
 function fullAdobeHeaderBlock(content) {
   return (
     (content.match(/\/\*[\s\S]*?\*\//g) ?? []).find(
@@ -505,6 +571,13 @@ function classify(localFile, packageEntry) {
   }
 
   const headerContract = status === "exact" ? attributionHeaderContract(content, sources[0]) : null;
+  const headerlessReview = headerlessReviewContract(
+    relativePath,
+    content,
+    sources,
+    localHeader,
+    status,
+  );
   return {
     package: packageEntry.name,
     path: relativePath,
@@ -521,7 +594,8 @@ function classify(localFile, packageEntry) {
       ...adobeHeader(source.content),
     })),
     headerContract,
-    reviewRequired: status !== "exact",
+    headerlessReview,
+    reviewRequired: status !== "exact" && headerlessReview?.status !== "satisfied",
   };
 }
 
@@ -566,9 +640,25 @@ for (const packageEntry of packages) {
   }
 }
 
+for (const localPath of reviewedHeaderlessMappings.keys()) {
+  if (!results.some((result) => result.path === localPath && result.headerlessReview)) {
+    fail(`${localPath}: reviewed headerless mapping does not match a scanned source file`);
+  }
+}
+
+const managedHeaderlessResults = results.filter((result) => result.headerlessReview);
+const incompleteHeaderlessReviews = managedHeaderlessResults.filter(
+  (result) => result.headerlessReview.status !== "satisfied",
+);
+
 const managedHeaderResults = results.filter((result) => result.headerContract);
 
 if (writeHeaders) {
+  if (incompleteHeaderlessReviews.length > 0) {
+    const result = incompleteHeaderlessReviews[0];
+    fail(`${result.path}: reviewed headerless mapping is ${result.headerlessReview.status}`);
+  }
+
   const pendingWrites = [];
   for (const result of managedHeaderResults) {
     const source = fileAt(result.headerContract.upstreamPath);
@@ -609,6 +699,12 @@ for (const result of managedHeaderResults) {
   headerStatusCounts[status] = (headerStatusCounts[status] ?? 0) + 1;
 }
 
+const headerlessReviewStatusCounts = {};
+for (const result of managedHeaderlessResults) {
+  const status = result.headerlessReview.status;
+  headerlessReviewStatusCounts[status] = (headerlessReviewStatusCounts[status] ?? 0) + 1;
+}
+
 const report = {
   scope: {
     localPackages: packages.map((entry) => entry.name),
@@ -628,6 +724,14 @@ const report = {
       files: managedHeaderResults.length,
       statuses: Object.fromEntries(
         Object.entries(headerStatusCounts).sort(([left], [right]) => left.localeCompare(right)),
+      ),
+    },
+    headerlessReviews: {
+      files: managedHeaderlessResults.length,
+      statuses: Object.fromEntries(
+        Object.entries(headerlessReviewStatusCounts).sort(([left], [right]) =>
+          left.localeCompare(right),
+        ),
       ),
     },
   },
@@ -651,11 +755,16 @@ if (jsonOutput) {
   for (const [status, count] of Object.entries(report.summary.headerContracts.statuses)) {
     console.log(`- ${status}: ${count}`);
   }
+  console.log("Reviewed exact mappings without Adobe source headers:");
+  for (const [status, count] of Object.entries(report.summary.headerlessReviews.statuses)) {
+    console.log(`- ${status}: ${count}`);
+  }
 
   const attention = results.filter(
     (result) =>
       showAll ||
-      (result.status !== "exact" &&
+      (result.reviewRequired &&
+        result.status !== "exact" &&
         result.status !== "generated-exact" &&
         result.status !== "generated-exact-no-header" &&
         result.status !== "generated-stale-generator" &&
@@ -687,14 +796,20 @@ if (checkHeaders) {
   const incomplete = managedHeaderResults.filter(
     (result) => result.headerContract.status !== "satisfied",
   );
-  if (incomplete.length > 0) {
+  if (incomplete.length > 0 || incompleteHeaderlessReviews.length > 0) {
     console.error("report:attribution-mappings — exact-source headers are incomplete:");
     for (const result of incomplete) {
       console.error(`- [${result.headerContract.status}] ${result.path}`);
+    }
+    for (const result of incompleteHeaderlessReviews) {
+      console.error(`- [${result.headerlessReview.status}] ${result.path}`);
     }
     process.exit(1);
   }
   console.log(
     `report:attribution-mappings — PASS: ${managedHeaderResults.length} exact-source headers match their upstream blocks and port lines.`,
+  );
+  console.log(
+    `report:attribution-mappings — PASS: ${managedHeaderlessResults.length} reviewed exact mappings remain headerless and match their recorded source evidence.`,
   );
 }

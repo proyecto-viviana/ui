@@ -1,11 +1,12 @@
-/*
- * Copyright 2025 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
+/*!
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License.
  */
 
-// Port of React Aria's ShadowTreeWalker, originally based on Microsoft Tabster.
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/shadowdom/ShadowTreeWalker.ts
+// Adobe's source is based on:
+// https://github.com/microsoft/tabster/blob/a89fc5d7e332d48f68d03b1ca6e344489d1c3898/src/Shadowdomize/ShadowTreeWalker.ts
+
 import { shadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
 import { nodeContains } from "./dom";
 

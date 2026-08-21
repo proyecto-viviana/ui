@@ -1,0 +1,26 @@
+[
+  {
+    "localPath": "packages/solidaria/src/datepicker/createDatePickerGroup.ts",
+    "upstreamPath": "packages/react-aria/src/datepicker/useDatePickerGroup.ts",
+    "requiredText": ["@react-aria/datepicker `useDatePickerGroup`"]
+  },
+  {
+    "localPath": "packages/solidaria/src/interactions/createFocusRing.ts",
+    "upstreamPath": "packages/react-aria/src/focus/useFocusRing.ts",
+    "requiredText": ["@react-aria/focus useFocusRing"]
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/ShadowTreeWalker.ts",
+    "upstreamPath": "packages/react-aria/src/utils/shadowdom/ShadowTreeWalker.ts",
+    "requiredText": [
+      "Copyright (c) Microsoft Corporation. All rights reserved.",
+      "Licensed under the MIT License.",
+      "https://github.com/microsoft/tabster/blob/a89fc5d7e332d48f68d03b1ca6e344489d1c3898/src/Shadowdomize/ShadowTreeWalker.ts"
+    ]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Table.tsx",
+    "upstreamPath": "packages/react-aria-components/src/Table.tsx",
+    "requiredText": ["react-aria-components/src/Table.tsx"]
+  }
+]

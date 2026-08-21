@@ -340,6 +340,7 @@ try {
     "packages/solid-stately/src/calendar",
     "packages/solid-stately/src/disclosure",
     "packages/solidaria/src/color/intl",
+    "packages/solidaria/src/focus",
     "packages/solidaria/src/utils",
     "packages/solidaria/src/table",
     "packages/solidaria-components/src",
@@ -350,6 +351,7 @@ try {
     "react-spectrum/packages/react-aria-components/src",
     "react-spectrum/packages/react-aria/intl/color",
     "react-spectrum/packages/react-aria/src/i18n",
+    "react-spectrum/packages/react-aria/src/focus",
     "react-spectrum/packages/react-aria/src/utils",
     "react-spectrum/packages/react-aria/src/table",
     "react-spectrum/packages/react-stately/src/calendar",
@@ -405,6 +407,24 @@ try {
     ),
     `${fullAdobeHeader}export const useLocalizedStringFormatter = true;\n`,
   );
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/react-aria/src/focus/useFocusRing.ts"),
+    "export const useFocusRing = true;\n",
+  );
+  const reviewedFocusRing =
+    "// Based on @react-aria/focus useFocusRing.\nexport const localFocusRing = true;\n";
+  const reviewedFocusRingPath = path.join(
+    mappingFixture,
+    "packages/solidaria/src/focus/createFocusRing.ts",
+  );
+  writeFileSync(reviewedFocusRingPath, reviewedFocusRing);
+  json(path.join(mappingFixture, "scripts", "attribution-headerless-reviews.json"), [
+    {
+      localPath: "packages/solidaria/src/focus/createFocusRing.ts",
+      upstreamPath: "packages/react-aria/src/focus/useFocusRing.ts",
+      requiredText: ["@react-aria/focus useFocusRing"],
+    },
+  ]);
   for (const locale of ["en-US", "fr-FR"]) {
     writeFileSync(
       path.join(mappingFixture, `react-spectrum/packages/react-aria/intl/color/${locale}.json`),
@@ -493,6 +513,14 @@ try {
       mappingReport.summary.headerContracts.statuses.mismatch === 3 &&
       mappingReport.summary.headerContracts.statuses.missing === 2,
     "exact header contract states were not reported",
+  );
+  const reviewedHeaderless = mappingByPath.get("packages/solidaria/src/focus/createFocusRing.ts");
+  assert(
+    reviewedHeaderless?.status === "exact-no-header" &&
+      reviewedHeaderless.reviewRequired === false &&
+      reviewedHeaderless.headerlessReview?.status === "satisfied" &&
+      mappingReport.summary.headerlessReviews.statuses.satisfied === 1,
+    "reviewed exact source without an Adobe header did not retain its audit result",
   );
 
   assert(
@@ -607,6 +635,22 @@ try {
     completeHeaders.status === 0,
     `completed exact-source headers failed:\n${combined(completeHeaders)}`,
   );
+  writeFileSync(reviewedFocusRingPath, `${fullAdobeHeader}${reviewedFocusRing}`);
+  const contradictedHeaderlessReview = runSync(
+    "report-attribution-mappings.mjs",
+    mappingFixture,
+    {},
+    ["--check-headers"],
+  );
+  assert(
+    contradictedHeaderlessReview.status !== 0 &&
+      combined(contradictedHeaderlessReview).includes(
+        "[mismatch] packages/solidaria/src/focus/createFocusRing.ts",
+      ),
+    "reviewed headerless source accepted an unsupported Adobe header",
+  );
+  writeFileSync(reviewedFocusRingPath, reviewedFocusRing);
+  console.log("PASS: reviewed headerless mappings reject unsupported Adobe headers.");
   const idempotentWrite = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
     "--write-headers",
   ]);

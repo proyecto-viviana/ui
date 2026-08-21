@@ -54,6 +54,14 @@ verified generated assets. It does not assume that equal filenames have the
 same source. The default output is a short review summary. Use `--json` for the
 complete inventory. These two report modes do not write files.
 
+Reviewed exact mappings whose Adobe source has no Adobe header are recorded in
+`scripts/attribution-headerless-reviews.json`. Each record fixes the local
+path, the exact upstream path, and the source evidence that the local file must
+keep. The header guard fails if the upstream file gains an Adobe header, the
+local file gains an unsupported Adobe header, or the required evidence changes.
+Add a record only after you review the exact source history and all applicable
+third-party notices.
+
 `guard:attribution-headers` checks the confirmed header contract for each exact
 mapping. `sync:attribution-headers` copies the exact full Adobe block and adds
 the exact upstream path. It keeps a required `// @ts-nocheck` directive first.
