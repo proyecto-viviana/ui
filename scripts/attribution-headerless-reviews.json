@@ -5,6 +5,14 @@
     "requiredText": ["Color types for color picker components.", "export interface Color"]
   },
   {
+    "localPath": "packages/solid-stately/src/grid/createGridState.ts",
+    "upstreamPath": "packages/react-stately/src/grid/useGridState.ts",
+    "requiredText": [
+      "Grid state management for Table and GridList components.",
+      "export function createGridState"
+    ]
+  },
+  {
     "localPath": "packages/solidaria/src/dnd/DropTargetKeyboardNavigation.ts",
     "upstreamPath": "packages/react-aria/src/dnd/DropTargetKeyboardNavigation.ts",
     "requiredText": ["Keyboard navigation between drop targets", "export function navigate"]

@@ -1,6 +1,6 @@
 /**
  * Grid state management for Table and GridList components.
- * Based on @react-stately/grid/useGridState.
+ * Based on packages/react-stately/src/grid/useGridState.ts.
  */
 
 import { createSignal, createEffect, createMemo, on, type Accessor } from "solid-js";

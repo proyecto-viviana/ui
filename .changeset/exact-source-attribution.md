@@ -22,3 +22,6 @@ upstream Adobe headers.
 
 Classify the remaining styled-package source markers as four exact source
 adaptations and two guarded Toast composites.
+
+Record Grid State as a reviewed headerless exact mapping after checking its
+upstream form at the local port date and the pinned revision.

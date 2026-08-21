@@ -87,6 +87,11 @@ history:
       at: 2026-08-21,
       note: "classified all six independent styled-package markers as four exact mappings and two Toast composites",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "resolved Grid State as a reviewed headerless exact mapping using its port-date and pinned upstream forms",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -151,7 +156,7 @@ The 2026-08-21 inventory has these results:
 
 The report scanned 1,646 files. It found 223 independent files with one exact
 source. It also found 227 exact-source header contracts, including inherited
-mirror cases. All 227 satisfy the confirmed contract. The report keeps 890
+mirror cases. All 227 satisfy the confirmed contract. The report keeps 889
 independent mappings in review. The 526 byte-identical Viviana UI files inherit
 their Solid Spectrum mapping and do not create duplicate review work.
 
@@ -205,7 +210,7 @@ an exception to the guard.
 
 ### Exact mappings without a current Adobe header
 
-Seven mappings have verified headerless exact sources. Four earlier mappings
+Eight mappings have verified headerless exact sources. Four earlier mappings
 were checked across longer reachable exact-path histories. Color types is
 confirmed in the pinned tree. Drop Target Keyboard Navigation and virtual focus
 each have one reachable exact-path revision, which is headerless:
@@ -213,6 +218,7 @@ each have one reachable exact-path revision, which is headerless:
 | Local source                                    | Exact upstream source                            | Result                                                        |
 | ----------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------- |
 | `solid-stately/color/types.ts`                  | `react-stately/color/types.ts`                   | No Adobe header in the pinned exact source.                   |
+| `solid-stately/grid/createGridState.ts`         | `react-stately/grid/useGridState.ts`             | Headerless at the port date and pinned revision.              |
 | `solidaria/datepicker/createDatePickerGroup.ts` | `react-aria/datepicker/useDatePickerGroup.ts`    | No Adobe header in any exact-path revision.                   |
 | `solidaria/interactions/createFocusRing.ts`     | `react-aria/focus/useFocusRing.ts`               | No Adobe header in any exact-path revision.                   |
 | `solidaria/utils/ShadowTreeWalker.ts`           | `react-aria/utils/shadowdom/ShadowTreeWalker.ts` | No Adobe header. Adobe names Microsoft Tabster as its source. |
@@ -220,19 +226,22 @@ each have one reachable exact-path revision, which is headerless:
 | `solidaria/focus/virtualFocus.ts`               | `react-aria/focus/virtualFocus.ts`               | The one reachable exact-path revision has no Adobe header.    |
 | `solidaria-components/Table.tsx`                | `react-aria-components/Table.tsx`                | No Adobe header in any exact-path revision.                   |
 
-`scripts/attribution-headerless-reviews.json` records these seven decisions.
+`scripts/attribution-headerless-reviews.json` records these eight decisions.
 The guard fixes each local path to its exact upstream path and required source
 evidence. ShadowTreeWalker keeps Microsoft's exact short MIT block and source
 link. The root and package notices keep the complete Microsoft MIT notice.
 
-`solid-stately/grid/createGridState.ts` remains in review. Six early revisions
-of the exact `react-stately/grid/useGridState.ts` path used the full Adobe 2020
-header. The last identified header was at
+`solid-stately/grid/createGridState.ts` was first committed locally on
+2026-01-17. Six early revisions of the exact upstream path used the full Adobe
+2020 header. The last identified header was at
 [`147f775`](https://github.com/adobe/react-spectrum/commit/147f775b8831349c9e302c7bbc379abe24cf07d0).
-The path was headerless by
-[`7927421`](https://github.com/adobe/react-spectrum/commit/7927421dedfb001d3459e0a94f5def9461fbc4c7)
-and is headerless at the pinned revision. Do not add this case to the review
-record until that historical/current-source conflict is resolved.
+Adobe removed the per-file header by
+[`7927421`](https://github.com/adobe/react-spectrum/commit/7927421dedfb001d3459e0a94f5def9461fbc4c7).
+The latest upstream change to this path before the local port was
+[`9b249e0`](https://github.com/adobe/react-spectrum/commit/9b249e0479f142919ac67cda322a77eb36d585ac),
+which is headerless. The pinned source is also headerless. The review therefore
+records the exact source as headerless and does not copy the superseded 2020
+block. Root and package notices continue to carry Apache-2.0.
 
 The generated-file statuses need care. An exact generated asset can map to an
 upstream SVG that has no source header to copy. Those files stay in review. The
@@ -296,7 +305,7 @@ the full upstream block. Ten blocks follow a required `// @ts-nocheck` first
 line. The formatter preserves these forms.
 
 All 227 exact-source header contracts with a usable upstream header are
-satisfied. Seven exact mappings with no Adobe header satisfy their reviewed
+satisfied. Eight exact mappings with no Adobe header satisfy their reviewed
 source-evidence contract. Package builds carry applicable headers into emitted
 JS and JSX. The two styled packages also copy exact headers to declaration-only
 outputs that have no runtime bundle. `guard:package-artifacts` reads runtime
@@ -360,16 +369,14 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Resolve the Grid State historical/current-source header conflict before
-   recording that mapping as reviewed.
-2. Decide and enforce the header form for the 27 verified composite mappings.
+1. Decide and enforce the header form for the 27 verified composite mappings.
    Their exact source sets are guarded.
-3. Review the 439 unmarked files. No unresolved source markers remain. Separate
+2. Review the 439 unmarked files. No unresolved source markers remain. Separate
    derivative source from original Proyecto Viviana source.
-4. Review the generated groups and map each asset to an exact upstream input
+3. Review the generated groups and map each asset to an exact upstream input
    where possible.
-5. Update the icon generator after the generated-file mappings are confirmed.
-6. Extend the guard only where the source classification is deterministic. Do
+4. Update the icon generator after the generated-file mappings are confirmed.
+5. Extend the guard only where the source classification is deterministic. Do
    not freeze today's incomplete counts as an accepted baseline.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action
