@@ -1,126 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
-import macros from "unplugin-parcel-macros";
-
-const macroCssIdPattern = /^macro-[a-f0-9]+\.css$/;
-const macroCssImportPattern = /import\s+["']macro-[a-f0-9]+\.css["'];\n?/g;
-
-function getMacroCssFileName(id: string) {
-  const fileName = id.split("/").pop();
-  return fileName && macroCssIdPattern.test(fileName) ? fileName : null;
-}
-
-function removeMacroCssImports(code: string) {
-  return code.replace(macroCssImportPattern, "");
-}
-
-function getMacroCssContent(content: unknown) {
-  if (typeof content === "string") {
-    return content;
-  }
-
-  if (content && typeof content === "object" && "code" in content) {
-    const code = (content as { code: unknown }).code;
-    return typeof code === "string" ? code : null;
-  }
-
-  return null;
-}
-
-function s2Macros(options?: { stripCssImports?: boolean }) {
-  const plugin = macros.rolldown();
-  const macroCssCache = new Map<string, string>();
-  const stripCssImports = options?.stripCssImports ?? false;
-
-  const cacheMacroCss = (id: string, content: unknown) => {
-    const fileName = getMacroCssFileName(id);
-    const css = getMacroCssContent(content);
-    if (fileName && css != null) {
-      macroCssCache.set(fileName, css);
-    }
-    return css;
-  };
-
-  return {
-    ...plugin,
-    async transform(this: unknown, code: string, id: string) {
-      const result = await plugin.transform?.call(this, code, id);
-      const transformedCode =
-        typeof result === "string"
-          ? result
-          : result && typeof result === "object" && "code" in result
-            ? String(result.code)
-            : "";
-
-      for (const match of transformedCode.matchAll(/import\s+["'](macro-[a-f0-9]+\.css)["'];/g)) {
-        try {
-          const content = await plugin.load?.call(this, match[1]);
-          cacheMacroCss(match[1], content);
-        } catch {
-          // Asset already evicted by a competing build pass; the pass that
-          // minted it has already populated macroCssCache.
-        }
-      }
-
-      // The JSX-preserve pass doesn't ship CSS (styles.css comes from the DOM
-      // pass), so drop the macro CSS imports before they enter the module
-      // graph — otherwise the pass emits a redundant default-named style.css.
-      if (stripCssImports && result != null) {
-        if (typeof result === "string") {
-          return removeMacroCssImports(result);
-        }
-        if (typeof result === "object" && "code" in result && typeof result.code === "string") {
-          return { ...result, code: removeMacroCssImports(result.code), map: null };
-        }
-      }
-
-      return result;
-    },
-    async resolveId(this: unknown, id: string, importer?: string, options?: object) {
-      const resolved = await plugin.resolveId?.call(this, id, importer, options);
-      if (resolved) {
-        return resolved;
-      }
-      const fileName = getMacroCssFileName(id);
-      if (fileName && macroCssCache.has(fileName)) {
-        return fileName;
-      }
-      return resolved;
-    },
-    loadInclude(id: string) {
-      const fileName = getMacroCssFileName(id);
-      return (
-        (fileName != null && macroCssCache.has(fileName)) || (plugin.loadInclude?.(id) ?? false)
-      );
-    },
-    async load(this: unknown, id: string) {
-      // Serve macro CSS from our own cache FIRST. The raw plugin's module-global
-      // asset map is shared by every build pass in this process and evicts a
-      // file's old assets on re-transform, so by the time a pass loads a CSS id
-      // the entry may be gone — returning the raw plugin's null here silently
-      // drops the rules from the bundle. macroCssCache is populated in
-      // `transform` (while the asset still exists) and is never evicted.
-      const fileName = getMacroCssFileName(id);
-      if (fileName && macroCssCache.has(fileName)) {
-        return macroCssCache.get(fileName);
-      }
-      if (plugin.loadInclude?.(id)) {
-        try {
-          const content = await plugin.load?.call(this, id);
-          const css = cacheMacroCss(id, content);
-          return css ?? content;
-        } catch {
-          // Evicted — fall through to the cache below.
-        }
-      }
-      return fileName ? (macroCssCache.get(fileName) ?? null) : null;
-    },
-    renderChunk(code: string) {
-      return removeMacroCssImports(code);
-    },
-  };
-}
+import { packageMacros, sourceMapWarningGuard } from "../../scripts/package-macro-plugin.mjs";
 
 // Curated public surface: the `.` barrel, the hand-picked PascalCase component
 // aliases (each backed by a package.json subpath export), and the JSX-free style
@@ -212,7 +93,7 @@ const deps = {
     "solid-js/store",
     "@proyecto-viviana/solidaria-components",
   ],
-  onlyBundle: [/^@adobe\/spectrum-tokens$/],
+  onlyBundle: false,
 };
 
 const css = {
@@ -247,7 +128,11 @@ export default defineConfig({
       outputOptions(options) {
         return { ...options, chunkFileNames: "_chunk/[name].js" };
       },
-      plugins: [s2Macros(), solid({ solid: { generate: "dom", hydratable: true } })],
+      plugins: [
+        sourceMapWarningGuard(),
+        packageMacros(),
+        solid({ solid: { generate: "dom", hydratable: true } }),
+      ],
       deps,
       copy: copiedCssFiles,
     },
@@ -279,7 +164,7 @@ export default defineConfig({
           chunkFileNames: "_chunk/[name].jsx",
         };
       },
-      plugins: [s2Macros({ stripCssImports: true })],
+      plugins: [sourceMapWarningGuard(), packageMacros({ stripCssImports: true })],
       deps,
     },
   ],

@@ -15,6 +15,9 @@ comparison app.
   see in static screenshots.
 - `check-virtualizer-keyboard-parity.ts` guards virtualizer keyboard navigation
   invariants.
+- `check-package-macro-sourcemaps.mjs` transforms a fixed S2 style-macro fixture
+  and traces a generated binding to its authored line and column. Published
+  styled-package builds also fail if Rolldown reports `SOURCEMAP_BROKEN`.
 - `check-changeset-required.mjs` enforces changesets for releasable packages.
 - `check-layer-boundary.ts` freezes the solid-spectrum ↔ viviana-ui dual-tree
   inventory (ticket #2). New forks of baselined-identical Spectrum files into
