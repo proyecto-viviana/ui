@@ -66,6 +66,23 @@ running on that exact `main` SHA. Release PR #20 still points to the old
 `d5e2bcce3b68cb0b0bb8310d41dc747df5fa674d` head. Wait for release automation
 to refresh the PR, then require all four checks on the new head before merge.
 
+Exact-SHA Release run `32437902817` passed on
+`08eb84135b1814b656454893c2fb4bc4f0d185f0`. It passed the same-SHA evidence
+guard and the publish-drift guard, then refreshed PR #20 to
+`ea4d535322c35452425254069e1aba04208630a9`. The new PR changes only six
+consumed changesets, five changelogs, and five package manifests. The manifest
+versions are unchanged:
+
+- `@proyecto-viviana/solid-spectrum@0.6.4`
+- `@proyecto-viviana/solid-stately@0.5.1`
+- `@proyecto-viviana/solidaria@0.4.3`
+- `@proyecto-viviana/solidaria-components@0.5.1`
+- `@proyecto-viviana/ui@0.6.3`
+
+GitHub required manual approval for runs `32437933270`, `32437933271`,
+`32437933249`, and `32437933251`. They were approved and are running on the
+exact new head. Do not merge until all four pass.
+
 ## Done when
 
 The approved PR is merged, the Release run uses the same SHA, and all five npm
