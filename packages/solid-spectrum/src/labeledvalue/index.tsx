@@ -1,3 +1,17 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/LabeledValue.tsx
+
 import { type JSX, Show, createMemo, splitProps } from "solid-js";
 import { NumberFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
@@ -113,10 +127,11 @@ const valueStyles = style<LabeledValueStyleProps>({
  * A LabeledValue displays a non-editable value with a label. It formats numbers and lists
  * according to the user's locale.
  *
- * Faithful port of `@react-spectrum/s2` `LabeledValue`: the shared `field()` grid, a
- * `FieldLabel` rendered as a `<span>`, and a value `<span>` styled with `fieldInput()` +
- * `controlFont()`. `size` / `labelPosition` / `labelAlign` are inherited from an enclosing
- * `Form` via `useFormProps` for any prop left undefined.
+ * Based on packages/@react-spectrum/s2/src/LabeledValue.tsx.
+ * The Solid adaptation uses the shared `field()` grid, a `FieldLabel` rendered as a
+ * `<span>`, and a value `<span>` styled with `fieldInput()` + `controlFont()`.
+ * `size`, `labelPosition`, and `labelAlign` are inherited from an enclosing `Form`
+ * through `useFormProps` for each prop left undefined.
  */
 export function LabeledValue(props: LabeledValueProps): JSX.Element {
   const merged = useFormProps(props);

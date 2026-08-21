@@ -326,5 +326,29 @@
       "react-aria-components/src/utils.tsx",
       "Port of react-aria-components' `useSlot`"
     ]
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/toast/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Toast.module.css",
+      "packages/@react-spectrum/s2/src/Toast.tsx"
+    ],
+    "requiredText": [
+      "S2 Toast for solid-spectrum.",
+      "This Solid module combines the pinned Toast component and transition stylesheet.",
+      "const TOAST_ANIMATION_CSS"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/toast/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Toast.module.css",
+      "packages/@react-spectrum/s2/src/Toast.tsx"
+    ],
+    "requiredText": [
+      "S2 Toast for @proyecto-viviana/ui.",
+      "This Solid module combines the pinned Toast component and transition stylesheet.",
+      "const TOAST_ANIMATION_CSS"
+    ]
   }
 ]

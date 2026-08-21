@@ -19,3 +19,6 @@ declaration-only outputs.
 
 Replace four ambiguous source notes with exact primary paths, and apply their
 upstream Adobe headers.
+
+Classify the remaining styled-package source markers as four exact source
+adaptations and two guarded Toast composites.

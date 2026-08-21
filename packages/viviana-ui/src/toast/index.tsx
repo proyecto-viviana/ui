@@ -1,3 +1,13 @@
+/**
+ * S2 Toast for @proyecto-viviana/ui.
+ *
+ * Based on these pinned React Spectrum S2 sources:
+ * - packages/@react-spectrum/s2/src/Toast.module.css
+ * - packages/@react-spectrum/s2/src/Toast.tsx
+ *
+ * This Solid module combines the pinned Toast component and transition stylesheet.
+ */
+
 import {
   type JSX,
   type Accessor,
@@ -62,7 +72,7 @@ type ToastEdge = "top" | "bottom";
 type ToastAlign = "center" | "end";
 
 // --- S2 Toast view transitions -------------------------------------------------
-// Ported from @react-spectrum/s2's Toast.module.css and the startViewTransition /
+// The transition rules match the pinned Toast.module.css and startViewTransition /
 // global reduce-motion machinery in Toast.tsx. Upstream ships these rules as a CSS
 // module that the bundler injects; the `::view-transition-group()` pseudo-elements,
 // `html.toast-*` global selectors and `@keyframes` cannot be expressed by the atomic
