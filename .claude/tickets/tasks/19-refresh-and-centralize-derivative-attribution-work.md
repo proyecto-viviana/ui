@@ -27,6 +27,11 @@ history:
       at: 2026-08-21,
       note: "added a deterministic mapping inventory and found icon-generator drift",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "tightened exact mappings so every marker and explicit path remains evidence-backed",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -77,20 +82,20 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   143 |
-| `exact-no-header`           |     4 |
+| `exact`                     |   165 |
+| `exact-no-header`           |     5 |
 | `generated-exact-no-header` |   396 |
 | `generated-multiple`        |     2 |
 | `generated-stale-generator` |    12 |
 | `generated-unresolved`      |    13 |
 | `header-unmapped`           |    16 |
-| `marker-unresolved`         |    90 |
+| `marker-unresolved`         |    65 |
 | `mirror`                    |   531 |
-| `multiple`                  |     7 |
+| `multiple`                  |     9 |
 | `unmarked`                  |   435 |
 
-The report scanned 1,649 files. It found 143 exact independent mappings. It
-keeps 975 independent mappings in review. The 531 byte-identical Viviana UI
+The report scanned 1,649 files. It found 165 exact independent mappings. It
+keeps 953 independent mappings in review. The 531 byte-identical Viviana UI
 files inherit their Solid Spectrum mapping and do not create duplicate review
 work.
 
@@ -103,8 +108,10 @@ verified byte-identical upstream asset in the pinned tree.
 
 The regression fixture proves that a matching filename is not enough, an Adobe
 header without a source stays unmapped, original Glasselated generated source
-stays unmarked, exact mirrors inherit one review result, and a missing upstream
-tree fails the command.
+stays unmarked, and exact mirrors inherit one review result. It also proves that
+each marker must resolve independently, explicit TSX and repository paths stay
+exact, and a scoped package marker cannot fall through to an incidental symbol
+in another package. A missing upstream tree fails the command.
 
 Before this ticket's package repair, `vp exec npm pack --dry-run --json` showed:
 

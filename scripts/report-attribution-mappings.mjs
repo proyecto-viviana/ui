@@ -119,7 +119,7 @@ function sourceMarkers(content) {
     .map(normalizedComment);
 }
 
-const upstreamFiles = sourceFiles(upstreamRoot, /\.(?:ts|tsx|js|jsx|css|svg)$/).map(
+const upstreamFiles = sourceFiles(upstreamRoot, /\.(?:ts|tsx|js|jsx|css|svg|json)$/).map(
   (absolutePath) => {
     const relativePath = slash(path.relative(path.join(root, "react-spectrum"), absolutePath));
     const extension = path.extname(absolutePath);
@@ -187,10 +187,18 @@ function explicitSources(markers) {
     }
 
     const racPaths = marker.matchAll(
-      /react-aria-components(?:\/src)?\/([A-Za-z0-9_.-]+\.(?:ts|tsx|js|jsx))/gi,
+      /react-aria-components(?:\/src)?\/([A-Za-z0-9_.-]+\.(?:tsx?|jsx?))\b/gi,
     );
     for (const match of racPaths) {
       const candidate = fileAt(`packages/react-aria-components/src/${match[1]}`);
+      if (candidate) resolved.push(candidate);
+    }
+
+    const repositoryPaths = marker.matchAll(
+      /\breact-(aria|stately)(?:\/src)?\/([A-Za-z0-9_./-]+\.(?:tsx?|jsx?))\b/gi,
+    );
+    for (const match of repositoryPaths) {
+      const candidate = fileAt(`packages/react-${match[1]}/src/${match[2]}`);
       if (candidate) resolved.push(candidate);
     }
 
@@ -201,6 +209,11 @@ function explicitSources(markers) {
     ];
     for (const match of packageReferences) {
       const [, scope, packageName, pathSymbol] = match;
+      if (scope === "aria" && /\bintl (?:catalog|messages|strings)\b/i.test(marker)) {
+        const prefix = `packages/react-aria/intl/${packageName}/`;
+        resolved.push(...upstreamFiles.filter((file) => file.relativePath.startsWith(prefix)));
+      }
+
       if (pathSymbol) {
         resolved.push(...resolvePackageSymbol(scope, packageName, pathSymbol));
         continue;
@@ -226,7 +239,7 @@ function explicitSources(markers) {
       }
     }
 
-    if (resolved.length === 0 && /react[- ]aria/i.test(marker)) {
+    if (resolved.length === 0 && packageReferences.length === 0 && /react[- ]aria/i.test(marker)) {
       const symbols = [
         ...marker.matchAll(
           /\b((?:use|create)[A-Z][A-Za-z0-9]*|[A-Z][A-Za-z0-9]*(?:Event|Delegate|Walker|Pressable|Focusable))\b/g,
@@ -246,7 +259,11 @@ function explicitSources(markers) {
       }
     }
 
-    if (resolved.length === 0 && /react[- ]stately/i.test(marker)) {
+    if (
+      resolved.length === 0 &&
+      packageReferences.length === 0 &&
+      /react[- ]stately/i.test(marker)
+    ) {
       const symbols = [
         ...marker.matchAll(/\b(use[A-Z][A-Za-z0-9]*|[A-Z][A-Za-z0-9]*State)\b/g),
       ].map((match) => match[1]);
@@ -376,11 +393,22 @@ function classify(localFile, packageEntry) {
     };
   }
 
-  const sources = explicitSources(markers);
+  const markerEvidence = markers.map((marker) => {
+    const sources = explicitSources([marker]);
+    return {
+      marker,
+      upstreamPaths: sources.map((source) => source.relativePath),
+      sources,
+    };
+  });
+  const unresolvedMarkers = markerEvidence.filter((evidence) => evidence.sources.length === 0);
+  const sources = unique(markerEvidence.flatMap((evidence) => evidence.sources));
   const headerSources = sources.filter((source) => adobeHeader(source.content).kind !== "none");
   let status;
   if (sources.length > 1) status = "multiple";
-  else if (sources.length === 1 && adobeHeader(sources[0].content).kind === "full") {
+  else if (sources.length === 1 && unresolvedMarkers.length > 0) {
+    status = "marker-unresolved";
+  } else if (sources.length === 1 && adobeHeader(sources[0].content).kind === "full") {
     status = "exact";
   } else if (sources.length === 1) {
     status = "exact-no-header";
@@ -399,6 +427,10 @@ function classify(localFile, packageEntry) {
     localHeader,
     markers,
     upstreamPaths: sources.map((source) => source.relativePath),
+    markerEvidence: markerEvidence.map((evidence) => ({
+      marker: evidence.marker,
+      upstreamPaths: evidence.upstreamPaths,
+    })),
     headerSources: headerSources.map((source) => ({
       path: source.relativePath,
       ...adobeHeader(source.content),
@@ -428,6 +460,7 @@ for (const packageEntry of packages) {
           localHeader: adobeHeader(content),
           markers: spectrum.result.markers,
           upstreamPaths: spectrum.result.upstreamPaths,
+          markerEvidence: spectrum.result.markerEvidence,
           headerSources: spectrum.result.headerSources,
           reviewRequired: false,
           mirrorOf: spectrum.result.path,

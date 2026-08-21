@@ -265,14 +265,22 @@ try {
 
   const mappingFixture = path.join(fixtureRoot, "attribution-mappings");
   for (const directory of [
+    "packages/solid-stately/src/calendar",
     "packages/solid-stately/src/disclosure",
+    "packages/solidaria/src/color/intl",
+    "packages/solidaria/src/utils",
     "packages/solidaria/src/table",
     "packages/solidaria-components/src",
     "packages/solid-spectrum/src/shared",
     "packages/solid-spectrum/src/icon/ui-icons",
     "packages/viviana-ui/src/shared",
     "packages/viviana-ui/src/icon/pixel-icons",
+    "react-spectrum/packages/react-aria-components/src",
+    "react-spectrum/packages/react-aria/intl/color",
+    "react-spectrum/packages/react-aria/src/i18n",
+    "react-spectrum/packages/react-aria/src/utils",
     "react-spectrum/packages/react-aria/src/table",
+    "react-spectrum/packages/react-stately/src/calendar",
     "react-spectrum/packages/react-stately/src/disclosure",
     "react-spectrum/packages/@react-spectrum/s2/ui-icons",
   ]) {
@@ -306,6 +314,31 @@ try {
     path.join(mappingFixture, "react-spectrum/packages/@react-spectrum/s2/ui-icons/Add.tsx"),
     `${fullAdobeHeader}export default function Add() {}\n`,
   );
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/react-aria-components/src/utils.tsx"),
+    `${fullAdobeHeader}export const upstreamUtils = true;\n`,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/react-stately/src/calendar/useCalendar.ts"),
+    `${fullAdobeHeader}export const useCalendar = true;\n`,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/react-aria/src/utils/animation.ts"),
+    `${fullAdobeHeader}export const animation = true;\n`,
+  );
+  writeFileSync(
+    path.join(
+      mappingFixture,
+      "react-spectrum/packages/react-aria/src/i18n/useLocalizedStringFormatter.ts",
+    ),
+    `${fullAdobeHeader}export const useLocalizedStringFormatter = true;\n`,
+  );
+  for (const locale of ["en-US", "fr-FR"]) {
+    writeFileSync(
+      path.join(mappingFixture, `react-spectrum/packages/react-aria/intl/color/${locale}.json`),
+      `{"colorPicker":"${locale}"}\n`,
+    );
+  }
 
   const exactSource = "// Based on @react-aria/table/useTable.\nexport const local = true;\n";
   writeFileSync(
@@ -319,6 +352,32 @@ try {
   writeFileSync(
     path.join(mappingFixture, "packages/solid-stately/src/disclosure/createDisclosureState.ts"),
     "// Based on @react-stately/disclosure useDisclosureState and useDisclosureGroupState.\n",
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-stately/src/calendar/createCalendar.ts"),
+    [
+      "// Based on @react-stately/calendar useCalendar.",
+      "// Based on React Stately selection alignment rules.",
+      "export const calendar = true;",
+      "",
+    ].join("\n"),
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solidaria-components/src/utils.tsx"),
+    "// Port of react-aria-components/src/utils.tsx.\n",
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solidaria/src/utils/animation.ts"),
+    "// Port of react-aria/src/utils/animation.ts.\n",
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solidaria/src/color/intl/index.ts"),
+    [
+      "// Port of @react-aria/color intl catalog.",
+      "// Consumed via useLocalizedStringFormatter.",
+      "export const colorStrings = true;",
+      "",
+    ].join("\n"),
   );
   writeFileSync(
     path.join(mappingFixture, "packages/solidaria-components/src/orphan.ts"),
@@ -364,6 +423,32 @@ try {
     mappingByPath.get("packages/solid-stately/src/disclosure/createDisclosureState.ts")?.status ===
       "multiple",
     "multiple upstream sources were not kept for review",
+  );
+  assert(
+    mappingByPath.get("packages/solid-stately/src/calendar/createCalendar.ts")?.status ===
+      "marker-unresolved",
+    "a resolved marker hid a second unresolved marker",
+  );
+  assert(
+    mappingByPath.get("packages/solidaria-components/src/utils.tsx")?.status === "exact",
+    "an explicit react-aria-components TSX path did not resolve",
+  );
+  assert(
+    mappingByPath.get("packages/solidaria-components/src/utils.tsx")?.upstreamPaths[0] ===
+      "packages/react-aria-components/src/utils.tsx",
+    "a react-aria-components TSX path was truncated to a TS path",
+  );
+  assert(
+    mappingByPath.get("packages/solidaria/src/utils/animation.ts")?.upstreamPaths[0] ===
+      "packages/react-aria/src/utils/animation.ts",
+    "an explicit react-aria repository path did not resolve to that file",
+  );
+  const colorCatalog = mappingByPath.get("packages/solidaria/src/color/intl/index.ts");
+  assert(
+    colorCatalog?.status === "multiple" &&
+      colorCatalog.upstreamPaths.length === 2 &&
+      colorCatalog.upstreamPaths.every((source) => source.includes("/intl/color/")),
+    "a scoped intl catalog marker fell back to an incidental cross-package hook",
   );
   assert(
     mappingByPath.get("packages/solidaria-components/src/orphan.ts")?.status === "header-unmapped",
