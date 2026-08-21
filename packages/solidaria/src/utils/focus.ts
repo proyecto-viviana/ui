@@ -92,7 +92,11 @@ function getScrollableAncestors(element: Element): Element[] {
  */
 export function runAfterPaint(fn: () => void, doc?: Document): () => void {
   const ownerDoc = doc ?? (typeof document !== "undefined" ? document : undefined);
-  const win = ownerDoc?.defaultView ?? (typeof window !== "undefined" ? window : undefined);
+  const win = ownerDoc
+    ? (ownerDoc.defaultView ?? undefined)
+    : typeof window !== "undefined"
+      ? window
+      : undefined;
   if (!win) {
     fn();
     return () => {};

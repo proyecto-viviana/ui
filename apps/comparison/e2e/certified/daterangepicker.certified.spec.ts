@@ -392,25 +392,6 @@ const dateRangePickerTriggerScenario: DriverScenario = {
         settleMs: 700,
       },
     ],
-    knownDivergences: {
-      "placeholder · open-escape-close":
-        "React batched-effect vs Solid synchronous reactivity: on Escape, RAC " +
-        "defers the overlay teardown + FocusScope focus-restoration past the " +
-        "current event dispatch (its passive-effect commit), so `keyup` fires on " +
-        "the still-focused calendar cell BEFORE `focusout`/`focusin` move focus " +
-        "back to the trigger. Solid unmounts the `<Show>` and restores focus " +
-        "synchronously inside the Escape `keydown` handler, so `focusout`/" +
-        "`focusin` land first and `keyup` fires on the trigger. Same events, same " +
-        "callbacks, same `defaultPrevented`; only the keyup↔focus interleave " +
-        "differs. A faithful fix needs a one-frame teardown defer (the " +
-        "`createAnimation` `deferNoAnimation` trick, which only engages for " +
-        "exit-animated overlays; this popover's exit motion is scoped out for " +
-        "this unit). Ticket #18 owns this dismiss-ordering and focus-scheduling " +
-        "gap. It is distinct from the value-change surface this unit " +
-        "certifies green via the `value · segment-spin-up` gesture (ArrowUp → " +
-        "onChange interleaved identically). Shared verbatim with the DatePicker " +
-        "unit — same RAC overlay/FocusScope teardown machinery.",
-    },
   },
 };
 

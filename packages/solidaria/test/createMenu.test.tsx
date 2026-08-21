@@ -22,6 +22,7 @@ import { PressEvent } from "../src/interactions/createPress";
 describe("createMenu", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it('returns menu props with role="menu"', () => {
@@ -114,11 +115,21 @@ describe("createMenu", () => {
     });
   });
 
-  it("autoFocus true focuses the menu root after paint", async () => {
+  it("autoFocus true focuses the menu root after the frame-to-timer paint boundary", () => {
     const items = [
       { key: "copy", label: "Copy" },
       { key: "paste", label: "Paste" },
     ];
+    let frame: FrameRequestCallback | undefined;
+    let timer: TimerHandler | undefined;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frame = callback;
+      return 91;
+    });
+    vi.spyOn(window, "setTimeout").mockImplementation(((callback: TimerHandler) => {
+      timer = callback;
+      return 92;
+    }) as typeof window.setTimeout);
 
     render(() => {
       const state = createMenuState({
@@ -144,9 +155,11 @@ describe("createMenu", () => {
       );
     });
 
-    await waitFor(() => {
-      expect(document.activeElement?.getAttribute("role")).toBe("menu");
-    });
+    expect(document.activeElement).toBe(document.body);
+    frame?.(0);
+    expect(document.activeElement).toBe(document.body);
+    if (typeof timer === "function") timer();
+    expect(document.activeElement?.getAttribute("role")).toBe("menu");
   });
 
   it("autoFocus true requests CSS :focus-visible on the menu root", async () => {

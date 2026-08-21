@@ -37,6 +37,7 @@ function TestDialog(props: {
 describe("createDialog", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it('should have role="dialog" by default', () => {
@@ -163,15 +164,28 @@ describe("createDialog", () => {
     expect(screen.getByText("Dialog content")).toBeInTheDocument();
   });
 
-  it("should focus the dialog on mount when no focusable children", async () => {
+  it("focuses the dialog only after the frame-to-timer paint boundary", () => {
+    let frame: FrameRequestCallback | undefined;
+    const timers: TimerHandler[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frame = callback;
+      return 81;
+    });
+    vi.spyOn(window, "setTimeout").mockImplementation(((callback: TimerHandler) => {
+      timers.push(callback);
+      return 82 + timers.length;
+    }) as typeof window.setTimeout);
+
     render(() => <TestDialog aria-label="Test" />);
     const dialog = screen.getByTestId("dialog");
+    expect(document.activeElement).toBe(document.body);
 
-    // Wait for focus effect to run
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    frame?.(0);
+    expect(document.activeElement).toBe(document.body);
 
-    // Dialog should be focusable (has tabIndex=-1)
-    expect(dialog).toHaveAttribute("tabIndex", "-1");
+    const focusTimer = timers.shift();
+    if (typeof focusTimer === "function") focusTimer();
+    expect(document.activeElement).toBe(dialog);
   });
 
   it("should not steal focus from autofocused children", async () => {

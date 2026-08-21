@@ -4,12 +4,22 @@ type: task
 title: "Prove transition-aware focus scheduling"
 created: 2026-08-20
 parent: 31
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "opened from the latest-work review of focusSafely and runAfterPaint",
+    }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "selected after ticket #17; auditing the pinned scheduler branches before changing shared focus timing",
+    }
+  - {
+      state: verified,
+      at: 2026-08-21,
+      note: "proved each transition and paint scheduler branch, routed FocusScope restoration through focusSafely, and removed both picker Escape-order waivers after browser parity passed",
     }
 ---
 
@@ -35,19 +45,42 @@ that now control overlay and menu focus.
 
 ## Scope
 
-- Port each applicable upstream `runAfterTransition` regression.
-- Prove immediate execution when no transition runs.
-- Prove deferral until all transition properties finish or cancel.
-- Prove that multiple queued callbacks run once.
-- Prove that detached transitioning elements do not block callbacks.
-- Prove the fallback when animation frames are unavailable.
-- Prove `runAfterPaint` frame-to-timer order and cancellation.
-- Add integration regressions for Dialog, Menu, and FocusScope focus timing.
-- Route FocusScope restore-on-unmount through `focusSafely` and prove its scroll
-  and timing behavior.
-- Remove the DatePicker and DateRangePicker D4 known divergences after their
-  Escape teardown and focus-return order matches upstream.
-- Keep the tests deterministic. Do not silently skip missing browser behavior.
+- [x] Port each applicable upstream `runAfterTransition` regression.
+- [x] Prove immediate execution when no transition runs.
+- [x] Prove deferral until all transition properties finish or cancel.
+- [x] Prove that multiple queued callbacks run once.
+- [x] Prove that detached transitioning elements do not block callbacks.
+- [x] Prove the fallback when animation frames are unavailable.
+- [x] Prove `runAfterPaint` frame-to-timer order and cancellation.
+- [x] Add integration regressions for Dialog, Menu, and FocusScope focus timing.
+- [x] Route FocusScope restore-on-unmount through `focusSafely` and prove its
+      scroll and timing behavior.
+- [x] Remove the DatePicker and DateRangePicker D4 known divergences after their
+      Escape teardown and focus-return order matches upstream.
+- [x] Keep the tests deterministic. Do not silently skip missing browser behavior.
+
+## Checkpoint
+
+`runAfterTransition` now has direct regressions for the pinned upstream cases.
+The tests also cover transition cancellation, duplicate completion events, and
+the no-animation-frame fallback. `runAfterPaint` has direct tests for its frame,
+timer, cancellation, timer-only, and no-window paths.
+
+Dialog, Menu, and FocusScope tests now name the paint phase that owns focus.
+FocusScope restores through `focusSafely`, so it waits for active transitions
+and uses `preventScroll`. DatePicker and DateRangePicker keep their popovers
+mounted while they exit and disable focus containment during that exit. Their
+Escape keyup and focus-return order now matches the pinned React implementation.
+
+Verification on 2026-08-21:
+
+- `vp test run packages/solidaria/test/runAfterTransition.test.ts packages/solidaria/test/runAfterPaint.test.ts packages/solidaria/test/focusSafely.test.tsx packages/solidaria/test/FocusScope.test.tsx packages/solidaria/test/createDialog.test.tsx packages/solidaria/test/createMenu.test.tsx packages/solidaria-components/test/DatePicker.test.tsx` — 171 passed.
+- `vp run typecheck` — passed.
+- `vp run lint` — passed.
+- `vp run guard:layer-boundary` — passed with no new forks.
+- `vp run comparison:build` — built all 100 comparison pages. The existing
+  source-map warning remains tracked by ticket #22.
+- `vp exec playwright test e2e/certified/datepicker.certified.spec.ts e2e/certified/daterangepicker.certified.spec.ts --grep 'D4' --reporter=line` from `apps/comparison` — 6 passed with no known-divergence waiver.
 
 ## Done when
 

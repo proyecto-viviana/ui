@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { FocusScope, useFocusManager } from "../src/focus/FocusScope";
 import { preventFocus } from "../src/utils/focus";
+import { setInteractionModality } from "../src/interactions/createInteractionModality";
 import { createSignal, type Component, Show } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
@@ -500,6 +501,44 @@ describe("FocusScope", () => {
       vi.runAllTimers();
 
       // Should restore focus to outside
+      expect(document.activeElement).toBe(outside);
+    });
+
+    it("restores focus after one frame without scrolling", () => {
+      const TestComponent: Component = () => {
+        const [show, setShow] = createSignal(false);
+
+        return (
+          <div>
+            <input data-testid="safe-restore-outside" />
+            <button data-testid="safe-restore-toggle" onClick={() => setShow(!show())}>
+              Toggle
+            </button>
+            <Show when={show()}>
+              <FocusScope restoreFocus autoFocus>
+                <input data-testid="safe-restore-inside" />
+              </FocusScope>
+            </Show>
+          </div>
+        );
+      };
+
+      setInteractionModality("keyboard");
+      render(() => <TestComponent />);
+      const outside = screen.getByTestId("safe-restore-outside");
+      const toggle = screen.getByTestId("safe-restore-toggle");
+      outside.focus();
+
+      fireEvent.click(toggle);
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(screen.getByTestId("safe-restore-inside"));
+
+      const focusSpy = vi.spyOn(outside, "focus");
+      fireEvent.click(toggle);
+      expect(focusSpy).not.toHaveBeenCalled();
+
+      vi.advanceTimersToNextTimer();
+      expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
       expect(document.activeElement).toBe(outside);
     });
 

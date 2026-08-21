@@ -711,7 +711,7 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       // Use requestAnimationFrame to ensure the element is still in the DOM
       win.requestAnimationFrame(() => {
         if (nodeToRestore && doc.body.contains(nodeToRestore as Node)) {
-          (nodeToRestore as HTMLElement).focus();
+          focusSafely(nodeToRestore as HTMLElement);
         }
       });
     }

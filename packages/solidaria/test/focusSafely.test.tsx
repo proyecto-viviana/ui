@@ -16,6 +16,12 @@ function nextFrame(): Promise<void> {
   });
 }
 
+function transitionEvent(type: string, propertyName: string): Event {
+  const event = new Event(type, { bubbles: true });
+  Object.defineProperty(event, "propertyName", { value: propertyName });
+  return event;
+}
+
 describe("focusSafely", () => {
   afterEach(() => {
     setInteractionModality("keyboard");
@@ -65,5 +71,33 @@ describe("focusSafely", () => {
 
     await nextFrame();
     expect(document.activeElement).toBe(second);
+  });
+
+  it("waits for an in-flight transition before virtual-modality focus", async () => {
+    setInteractionModality("virtual");
+    const transitionTarget = document.createElement("div");
+    const button = document.createElement("button");
+    document.body.appendChild(transitionTarget);
+    document.body.appendChild(button);
+    transitionTarget.dispatchEvent(transitionEvent("transitionrun", "opacity"));
+
+    focusSafely(button);
+    await nextFrame();
+    expect(document.activeElement).toBe(document.body);
+
+    transitionTarget.dispatchEvent(transitionEvent("transitionend", "opacity"));
+    expect(document.activeElement).toBe(button);
+  });
+
+  it("does not focus a target disconnected during the virtual delay", async () => {
+    setInteractionModality("virtual");
+    const button = document.createElement("button");
+    document.body.appendChild(button);
+
+    focusSafely(button);
+    button.remove();
+    await nextFrame();
+
+    expect(document.activeElement).toBe(document.body);
   });
 });
