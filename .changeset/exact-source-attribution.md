@@ -16,3 +16,6 @@ with the exact headers from the pinned upstream files.
 
 Preserve exact source headers in styled-package runtime bundles and
 declaration-only outputs.
+
+Replace four ambiguous source notes with exact primary paths, and apply their
+upstream Adobe headers.

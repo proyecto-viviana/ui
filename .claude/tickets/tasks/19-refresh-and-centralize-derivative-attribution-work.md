@@ -52,6 +52,11 @@ history:
       at: 2026-08-21,
       note: "preserved styled-package attribution in runtime and declaration-only build outputs",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "resolved four false multi-source mappings and synchronized their exact upstream headers",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -71,8 +76,8 @@ package. It excludes declaration files.
 
 | Package                                  | TS/TSX | Adobe header | Source marker |
 | ---------------------------------------- | -----: | -----------: | ------------: |
-| `@proyecto-viviana/solid-stately`        |     93 |           28 |            47 |
-| `@proyecto-viviana/solidaria`            |    231 |          104 |           145 |
+| `@proyecto-viviana/solid-stately`        |     93 |           30 |            47 |
+| `@proyecto-viviana/solidaria`            |    231 |          106 |           145 |
 | `@proyecto-viviana/solidaria-components` |     74 |           31 |            44 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |           11 |            15 |
 | `@proyecto-viviana/ui`                   |    644 |           11 |            15 |
@@ -104,7 +109,7 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   182 |
+| `exact`                     |   186 |
 | `exact-no-header`           |     5 |
 | `generated-exact-no-header` |   396 |
 | `generated-multiple`        |     2 |
@@ -112,12 +117,12 @@ The 2026-08-21 inventory has these results:
 | `generated-unresolved`      |    13 |
 | `marker-unresolved`         |    65 |
 | `mirror`                    |   526 |
-| `multiple`                  |    10 |
+| `multiple`                  |     6 |
 | `unmarked`                  |   435 |
 
-The report scanned 1,646 files. It found 182 independent files with one exact
-source. It also found 184 exact-source header contracts, including inherited
-mirror cases. All 184 satisfy the confirmed contract. The report keeps 934
+The report scanned 1,646 files. It found 186 independent files with one exact
+source. It also found 188 exact-source header contracts, including inherited
+mirror cases. All 188 satisfy the confirmed contract. The report keeps 930
 independent mappings in review. The 526 byte-identical Viviana UI files inherit
 their Solid Spectrum mapping and do not create duplicate review work.
 
@@ -126,6 +131,14 @@ upstream files. No file remains in `header-unmapped`. Multiline marker parsing
 also exposed the hidden native date input in `DateField.tsx` as a port of
 `react-aria-components/src/HiddenDateInput.tsx`. DateField is now an explicit
 two-source review instead of a false single-source mapping.
+
+Four broad prose markers also named a helper or consumer next to the primary
+upstream implementation. Those markers created false `multiple` results. This
+pass replaced them with the verified exact source paths for Time Field State,
+Multiple Selection State, List Keyboard Delegate, and Selectable List. The
+report now finds six genuine composite files. Their complete source sets were
+read against the pinned upstream tree; the required multi-source header form
+is the remaining decision for that group.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -216,17 +229,17 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 185 files with an Adobe license block. All 185 use
+The current source tree has 189 files with an Adobe license block. All 189 use
 the full upstream block. Ten blocks follow a required `// @ts-nocheck` first
 line. The formatter preserves these forms.
 
-All 184 exact-source header contracts with a usable upstream header are
+All 188 exact-source header contracts with a usable upstream header are
 satisfied. Four exact mappings with no Adobe header satisfy their reviewed
 source-evidence contract. Package builds carry applicable headers into emitted
 JS and JSX. The two styled packages also copy exact headers to declaration-only
 outputs that have no runtime bundle. `guard:package-artifacts` reads runtime
-and declaration source maps. It proves 328 mapped source-to-output references
-and covers all 185 attributed source files in the five Adobe-derived packages.
+and declaration source maps. It proves 334 mapped source-to-output references
+and covers all 189 attributed source files in the five Adobe-derived packages.
 
 The retired plan recorded this form as decided:
 
@@ -261,8 +274,8 @@ Passed on 2026-08-21:
 - `vp run build:components`
 - `vp test run` for the Solidaria switch, checkbox-group, and radio-group
   suites; 55 tests passed
-- `vp run guard:package-artifacts`, including 328 mapped header references
-  across all 185 attributed source files and declaration-only styled-package
+- `vp run guard:package-artifacts`, including 334 mapped header references
+  across all 189 attributed source files and declaration-only styled-package
   outputs
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
@@ -279,8 +292,9 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 1. Resolve the Grid State historical/current-source header conflict before
    recording that mapping as reviewed.
-2. Review the ten multiple-source mappings, including DateField's two exact
-   upstream sources.
+2. Decide and enforce the header form for the six verified composite mappings:
+   Date Field State, Color Field State, Disclosure State, Color international
+   messages, DateField, and component utilities.
 3. Review the 65 unresolved markers and 435 unmarked files. Separate derivative
    source from original Proyecto Viviana source.
 4. Review the generated groups and map each asset to an exact upstream input
