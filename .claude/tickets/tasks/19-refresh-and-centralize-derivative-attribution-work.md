@@ -17,6 +17,11 @@ history:
       at: 2026-08-21,
       note: "recounted the six packages and guarded the stable package attribution files",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "owner confirmed the exact header, manual fallback review, and no blanket header for original source",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -83,8 +88,8 @@ The public wording does not say that the per-file mapping audit is complete.
 - The pinned `@spectrum-icons/ui@3.7.1`,
   `@spectrum-icons/workflow@4.3.1`, and `@react-spectrum/s2@1.6.0` manifests
   declare Apache-2.0. The generated icon sources therefore have a confirmed
-  upstream license. The exact generated-file header still needs the owner's
-  decision.
+  upstream license. Generated files use the confirmed policy below after their
+  exact upstream source is mapped.
 - The pinned `@cloudflare/kumo@2.10.0` source uses MIT, and the package already
   carries that notice.
 
@@ -100,9 +105,17 @@ The retired plan recorded this form as decided:
 - Copy the exact full Adobe block from the mapped upstream file.
 - Add `Ported to SolidJS for Proyecto Viviana; based on <upstream>`.
 
-The retired plan is not a live decision record. The current source is
-inconsistent, and no current ADR or policy confirms that exact change note.
-The owner must confirm the form before a generator or bulk edit applies it.
+The owner confirmed this form on 2026-08-21. The confirmed policy is:
+
+- Keep the exact full Adobe block and year from the mapped upstream file.
+- Add the recorded Solid port line with the exact upstream path or URL.
+- Keep a required `// @ts-nocheck` directive before the block.
+- Send files without an exact mapping to manual review. Do not invent a
+  fallback year.
+- Do not add a blanket Adobe or MIT header to original Proyecto Viviana source.
+
+The two current short Adobe blocks must be reconciled with their exact upstream
+files during the mapping pass.
 
 ## Verification
 
@@ -123,27 +136,26 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Confirm the exact source-header form and Solid port change note.
-2. Verify that the formatter and package build preserve that form.
-3. Update the icon generator after the generated-file header is confirmed.
-4. Map each derived source file to its exact upstream source.
-5. Copy only the applicable upstream notice and year from that source.
-6. Review unmapped files and original Proyecto Viviana files by hand.
-7. Extend the guard only where the source classification is deterministic. Do
+1. Verify that the formatter and package build preserve the confirmed form.
+2. Map each derived source file to its exact upstream source.
+3. Update the icon generator after the generated-file mappings are confirmed.
+4. Copy only the applicable upstream notice and year from that source.
+5. Review unmapped files and original Proyecto Viviana files by hand.
+6. Extend the guard only where the source classification is deterministic. Do
    not freeze today's incomplete header counts as an accepted baseline.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action
 would misattribute the source.
 
-## Owner decisions required
+## Confirmed owner decisions
 
-- Confirm whether the exact Adobe block and the previously recorded
+- The exact Adobe block and
   `Ported to SolidJS for Proyecto Viviana; based on <upstream>` line are policy.
-- Confirm the treatment for an upstream file that has no exact mapping.
-- Decide whether original source needs a short Proyecto Viviana MIT header.
+- A file without an exact upstream mapping requires manual review.
+- Original source does not receive a blanket license header.
 
-The icon license source is no longer an open question. Do not change the
-generator until the header form is confirmed.
+The icon license and header form are no longer open questions. Change the
+generator only after its exact upstream inputs are mapped.
 
 ## Done when
 
