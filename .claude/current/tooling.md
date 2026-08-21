@@ -65,20 +65,25 @@ third-party notices.
 Reviewed multi-source mappings are recorded in
 `scripts/attribution-composite-reviews.json`. Each record fixes the local path,
 the complete upstream path set, and the required local evidence. The header
-guard fails if a recorded path set or its required evidence changes. Add a
-record only after you read every listed pinned source.
+guard fails if a recorded path set, required evidence, or composite header
+changes. The composite header keeps each distinct full upstream Adobe block
+once and adds one exact source-path line for every input. A headerless input
+gets a source-path line, not an invented Adobe block. Add a record only after
+you read every listed pinned source.
 
 `guard:attribution-headers` checks the confirmed header contract for each exact
-mapping. `sync:attribution-headers` copies the exact full Adobe block and adds
-the exact upstream path. It keeps a required `// @ts-nocheck` directive first.
-It does not change ambiguous, generated, or unmapped files. Run the guard after
-the sync.
+and reviewed composite mapping. `sync:attribution-headers` copies the exact
+full Adobe blocks and adds the exact upstream paths. It keeps a required
+`// @ts-nocheck` directive first. It does not change unreviewed ambiguous,
+generated, or unmapped files. Run the guard after the sync.
 
-The three headless package builds copy each confirmed source header into emitted
-chunks. `guard:package-artifacts` uses source maps to check every mapped JS and
-JSX output. It also fails when an attributed source file has no mapped build
-output. It accepts Rolldown's comment-spacing changes, but it still requires the
-complete license text, year, port marker, and upstream path.
+Package builds copy each confirmed source header into emitted chunks.
+`guard:package-artifacts` uses source maps to check every mapped JS and JSX
+output. It also fails when an attributed source file has no mapped build output.
+It accepts Rolldown's comment-spacing changes, but it still requires every
+complete license block, year, port marker, and upstream path. Each
+Adobe-derived package build also copies the source header to declaration-only
+outputs. Declaration maps keep type-only source files in this check.
 
 These commands are review aids. They do not make a legal compliance claim. They
 stop when the pinned upstream tree is not available because they cannot produce

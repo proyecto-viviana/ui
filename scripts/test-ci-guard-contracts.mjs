@@ -6,6 +6,8 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+import { sourceAttributionHeader } from "./package-attribution-banner.mjs";
+
 const ROOT = process.cwd();
 const fixtureRoot = mkdtempSync(path.join(tmpdir(), "viviana-ci-guards-"));
 
@@ -220,9 +222,23 @@ try {
     " * OF ANY KIND.",
     " *" + "/",
     "",
+    "/" + "*",
+    " * Copyright 2020 Adobe. All rights reserved.",
+    ' * This file is licensed to you under the Apache License, Version 2.0 (the "License");',
+    " * you may not use this file except in compliance with the License.",
+    " * Unless required by applicable law or agreed to in writing, software distributed",
+    ' * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS',
+    " * OF ANY KIND.",
+    " *" + "/",
+    "",
+    "// Ported to SolidJS for Proyecto Viviana; based on packages/upstream/src/collection.ts",
     "// Ported to SolidJS for Proyecto Viviana; based on packages/upstream/src/index.ts",
   ].join("\n");
   const builtSource = `${builtHeader}\n\nexport const example = true;\n`;
+  assert(
+    sourceAttributionHeader(builtSource) === builtHeader,
+    "composite attribution header parsing did not preserve every block and source path",
+  );
   mkdirSync(path.join(packageArtifactFixture, "packages", "example", "src"), {
     recursive: true,
   });
@@ -706,7 +722,8 @@ try {
       reviewedComposite.reviewRequired === true &&
       reviewedComposite.compositeReview?.status === "satisfied" &&
       mappingReport.summary.compositeReviews.statuses.satisfied === 1,
-    "reviewed composite source set did not retain its guarded audit result",
+    reviewedComposite.compositeReview.headerContract?.status === "missing" &&
+      "reviewed composite source set or pending header contract was not reported",
   );
   assert(
     mappingByPath.get("packages/solid-stately/src/calendar/createCalendar.ts")?.status ===
@@ -769,7 +786,7 @@ try {
     "--write-headers",
   ]);
   assert(headerWrite.status === 0, `header writer failed:\n${combined(headerWrite)}`);
-  assert(combined(headerWrite).includes("wrote 6 exact-source header contracts"));
+  assert(combined(headerWrite).includes("wrote 7 attribution header contracts"));
 
   const managedTable = readFileSync(
     path.join(mappingFixture, "packages/solidaria/src/table/createTable.ts"),
@@ -785,6 +802,19 @@ try {
   assert(
     managedTable.includes("// Based on @react-aria/table/useTable."),
     "writer removed the source evidence marker",
+  );
+
+  const managedDisclosure = readFileSync(
+    path.join(mappingFixture, "packages/solid-stately/src/disclosure/createDisclosureState.ts"),
+    "utf8",
+  );
+  const expectedDisclosurePrefix =
+    `${fullAdobeHeader}\n` +
+    "// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/disclosure/useDisclosureGroupState.ts\n" +
+    "// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/disclosure/useDisclosureState.ts\n\n";
+  assert(
+    managedDisclosure.startsWith(expectedDisclosurePrefix),
+    "writer did not deduplicate a composite Adobe block or preserve every exact source path",
   );
 
   const managedSpectrum = readFileSync(

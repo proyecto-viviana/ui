@@ -224,6 +224,14 @@ function compositeReviewContract(relativePath, content, sources, status) {
     actualUpstreamPaths.length === review.upstreamPaths.length &&
     actualUpstreamPaths.every((value, index) => value === review.upstreamPaths[index]) &&
     missingText.length === 0;
+  const reviewedSources = satisfied
+    ? review.upstreamPaths.map((sourcePath) => fileAt(sourcePath))
+    : [];
+  const missingUpstreamPath = reviewedSources.findIndex((source) => source === null);
+  const headerContract =
+    satisfied && missingUpstreamPath === -1
+      ? compositeAttributionHeaderContract(content, reviewedSources)
+      : null;
 
   return {
     status: satisfied ? "satisfied" : "mismatch",
@@ -234,6 +242,7 @@ function compositeReviewContract(relativePath, content, sources, status) {
       ...adobeHeader(source.content),
     })),
     missingText,
+    headerContract,
   };
 }
 
@@ -251,6 +260,25 @@ function sha256(content) {
 
 function portLineFor(upstreamPath) {
   return `// Ported to SolidJS for Proyecto Viviana; based on ${upstreamPath}`;
+}
+
+function uniqueFullAdobeHeaderBlocks(sources) {
+  const seen = new Set();
+  const blocks = [];
+  for (const source of sources) {
+    const block = fullAdobeHeaderBlock(source.content);
+    if (block && !seen.has(block)) {
+      seen.add(block);
+      blocks.push(block);
+    }
+  }
+  return blocks;
+}
+
+function compositeAttributionPrefix(sources) {
+  const headerBlocks = uniqueFullAdobeHeaderBlocks(sources);
+  const portLines = sources.map((source) => portLineFor(source.relativePath));
+  return `${[...headerBlocks, portLines.join("\n")].filter(Boolean).join("\n\n")}\n\n`;
 }
 
 function splitTsNocheck(content) {
@@ -287,31 +315,72 @@ function attributionHeaderContract(content, source) {
   };
 }
 
-function rewriteAttributionHeader(content, source) {
-  const adobeBlock = fullAdobeHeaderBlock(source.content);
-  if (!adobeBlock) {
-    throw new Error(`${source.relativePath}: exact mapping has no full Adobe header`);
-  }
+function compositeAttributionHeaderContract(content, sources) {
+  const expectedPrefix = compositeAttributionPrefix(sources);
+  const { directive, body } = splitTsNocheck(content);
+  const tsNocheckFirst = !content.includes("// @ts-nocheck") || directive !== null;
+  const satisfied = tsNocheckFirst && body.startsWith(expectedPrefix);
+  const hasManagedContent =
+    adobeHeader(content).kind !== "none" ||
+    content.includes("Ported to SolidJS for Proyecto Viviana; based on");
 
+  return {
+    status: satisfied ? "satisfied" : hasManagedContent ? "mismatch" : "missing",
+    adobeHeaderSha256: uniqueFullAdobeHeaderBlocks(sources).map((block) => sha256(block)),
+    portLines: sources.map((source) => portLineFor(source.relativePath)),
+    tsNocheckFirst,
+  };
+}
+
+function stripManagedAttributionPrefix(content) {
   const { directive, body: contentBody } = splitTsNocheck(content);
   if (content.includes("// @ts-nocheck") && directive === null) {
     throw new Error("a required // @ts-nocheck directive is not the first line");
   }
 
   let body = contentBody.replace(/^(?:\r?\n)+/, "");
-  const leadingBlock = body.match(/^\/\*[\s\S]*?\*\//)?.[0] ?? null;
-  if (leadingBlock && adobeHeader(leadingBlock).kind !== "none") {
+  while (true) {
+    const leadingBlock = body.match(/^\/\*[\s\S]*?\*\//)?.[0] ?? null;
+    if (!leadingBlock || adobeHeader(leadingBlock).kind === "none") break;
+    if (adobeHeader(leadingBlock).kind !== "full") {
+      throw new Error("a leading Adobe header is not the full upstream block");
+    }
     body = body.slice(leadingBlock.length).replace(/^(?:\r?\n)+/, "");
-  } else if (adobeHeader(body).kind !== "none") {
-    throw new Error("an Adobe header exists outside the managed file prefix");
   }
 
-  body = body.replace(
-    /^\/\/ Ported to SolidJS for Proyecto Viviana; based on [^\r\n]+(?:\r?\n)+/,
-    "",
-  );
+  while (true) {
+    const portLine = body.match(
+      /^\/\/ Ported to SolidJS for Proyecto Viviana; based on [^\r\n]+(?:\r?\n|$)/,
+    )?.[0];
+    if (!portLine) break;
+    body = body.slice(portLine.length).replace(/^(?:\r?\n)+/, "");
+  }
+
+  if (adobeHeader(body).kind !== "none") {
+    throw new Error("an Adobe header exists outside the managed file prefix");
+  }
+  if (body.includes("// Ported to SolidJS for Proyecto Viviana; based on")) {
+    throw new Error("a Solid port line exists outside the managed file prefix");
+  }
+
+  return { directive, body };
+}
+
+function rewriteAttributionHeader(content, source) {
+  const adobeBlock = fullAdobeHeaderBlock(source.content);
+  if (!adobeBlock) {
+    throw new Error(`${source.relativePath}: exact mapping has no full Adobe header`);
+  }
+
+  const { directive, body } = stripManagedAttributionPrefix(content);
   const directivePrefix = directive ? `${directive}\n\n` : "";
   return `${directivePrefix}${adobeBlock}\n\n${portLineFor(source.relativePath)}\n\n${body}`;
+}
+
+function rewriteCompositeAttributionHeader(content, sources) {
+  const { directive, body } = stripManagedAttributionPrefix(content);
+  const directivePrefix = directive ? `${directive}\n\n` : "";
+  return `${directivePrefix}${compositeAttributionPrefix(sources)}${body}`;
 }
 
 function isS2GeneratedComment(comment) {
@@ -662,7 +731,13 @@ function classify(localFile, packageEntry) {
     })),
     headerContract,
     headerlessReview,
-    reviewRequired: status !== "exact" && headerlessReview?.status !== "satisfied",
+    reviewRequired:
+      status !== "exact" &&
+      headerlessReview?.status !== "satisfied" &&
+      !(
+        compositeReview?.status === "satisfied" &&
+        compositeReview.headerContract?.status === "satisfied"
+      ),
     compositeReview,
   };
 }
@@ -728,6 +803,9 @@ const incompleteCompositeReviews = managedCompositeResults.filter(
   (result) => result.compositeReview.status !== "satisfied",
 );
 
+const incompleteCompositeHeaders = managedCompositeResults.filter(
+  (result) => result.compositeReview.headerContract?.status !== "satisfied",
+);
 const managedHeaderResults = results.filter((result) => result.headerContract);
 
 if (writeHeaders) {
@@ -760,11 +838,30 @@ if (writeHeaders) {
     }
   }
 
+  for (const result of managedCompositeResults) {
+    const sources = result.compositeReview.upstreamPaths.map((sourcePath) => fileAt(sourcePath));
+    if (sources.some((source) => source === null)) {
+      fail(`${result.path}: mapped upstream file is missing`);
+    }
+
+    const absolutePath = path.join(root, result.path);
+    const content = readFileSync(absolutePath, "utf8");
+    let updated;
+    try {
+      updated = rewriteCompositeAttributionHeader(content, sources);
+    } catch (error) {
+      fail(`${result.path}: ${error.message}`);
+    }
+    if (updated !== content) {
+      pendingWrites.push({ absolutePath, updated });
+    }
+  }
+
   for (const pending of pendingWrites) {
     writeFileSync(pending.absolutePath, pending.updated);
   }
   console.log(
-    `report:attribution-mappings — wrote ${pendingWrites.length} exact-source header contract${pendingWrites.length === 1 ? "" : "s"}`,
+    `report:attribution-mappings — wrote ${pendingWrites.length} attribution header contract${pendingWrites.length === 1 ? "" : "s"}`,
   );
   process.exit(0);
 }
@@ -790,6 +887,11 @@ const compositeReviewStatusCounts = {};
 for (const result of managedCompositeResults) {
   const status = result.compositeReview.status;
   compositeReviewStatusCounts[status] = (compositeReviewStatusCounts[status] ?? 0) + 1;
+}
+const compositeHeaderStatusCounts = {};
+for (const result of managedCompositeResults) {
+  const status = result.compositeReview.headerContract?.status ?? "unavailable";
+  compositeHeaderStatusCounts[status] = (compositeHeaderStatusCounts[status] ?? 0) + 1;
 }
 
 const report = {
@@ -829,6 +931,14 @@ const report = {
         ),
       ),
     },
+    compositeHeaderContracts: {
+      files: managedCompositeResults.length,
+      statuses: Object.fromEntries(
+        Object.entries(compositeHeaderStatusCounts).sort(([left], [right]) =>
+          left.localeCompare(right),
+        ),
+      ),
+    },
   },
   files: results,
 };
@@ -857,6 +967,10 @@ if (jsonOutput) {
 
   console.log("Reviewed composite source sets:");
   for (const [status, count] of Object.entries(report.summary.compositeReviews.statuses)) {
+    console.log(`- ${status}: ${count}`);
+  }
+  console.log("Composite attribution header contracts:");
+  for (const [status, count] of Object.entries(report.summary.compositeHeaderContracts.statuses)) {
     console.log(`- ${status}: ${count}`);
   }
 
@@ -899,7 +1013,8 @@ if (checkHeaders) {
   if (
     incomplete.length > 0 ||
     incompleteHeaderlessReviews.length > 0 ||
-    incompleteCompositeReviews.length > 0
+    incompleteCompositeReviews.length > 0 ||
+    incompleteCompositeHeaders.length > 0
   ) {
     console.error("report:attribution-mappings — attribution contracts are incomplete:");
     for (const result of incomplete) {
@@ -911,6 +1026,11 @@ if (checkHeaders) {
     for (const result of incompleteCompositeReviews) {
       console.error(`- [${result.compositeReview.status}] ${result.path}`);
     }
+    for (const result of incompleteCompositeHeaders) {
+      console.error(
+        `- [${result.compositeReview.headerContract?.status ?? "unavailable"}] ${result.path}`,
+      );
+    }
     process.exit(1);
   }
   console.log(
@@ -921,5 +1041,8 @@ if (checkHeaders) {
   );
   console.log(
     `report:attribution-mappings — PASS: ${managedCompositeResults.length} reviewed composite mappings match their recorded upstream source sets.`,
+  );
+  console.log(
+    `report:attribution-mappings — PASS: ${managedCompositeResults.length} composite headers preserve every distinct upstream block and exact source path.`,
   );
 }

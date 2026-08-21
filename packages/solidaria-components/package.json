@@ -433,7 +433,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "rm -rf dist && vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
     "dev": "tsup --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },

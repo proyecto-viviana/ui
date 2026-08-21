@@ -2,10 +2,10 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const managedHeaderPattern =
-  /^(?:\/\/ @ts-nocheck[^\r\n]*(?:\r?\n){2})?(\/\*[\s\S]*?\*\/(?:\r?\n){2}\/\/ Ported to SolidJS for Proyecto Viviana; based on [^\r\n]+)/;
+  /^(?:\/\/ @ts-nocheck[^\r\n]*(?:\r?\n){2})?((?:\/\*[\s\S]*?\*\/(?:\r?\n){2})+(?:\/\/ Ported to SolidJS for Proyecto Viviana; based on [^\r\n]+(?:\r?\n|$))+)/;
 
 export function sourceAttributionHeader(source) {
-  const header = source.match(managedHeaderPattern)?.[1] ?? null;
+  const header = source.match(managedHeaderPattern)?.[1].replace(/(?:\r?\n)+$/, "") ?? null;
   if (
     !header?.includes("Adobe") ||
     !header.includes("Apache License, Version 2.0") ||
@@ -20,7 +20,7 @@ function normalizeBuiltAttributionHeader(value) {
   return value
     .replace(/\r\n/g, "\n")
     .replace(/^ (?=\*)/gm, "")
-    .replace(/\*\/\n\n(?=\/\/ Ported to SolidJS)/g, "*/\n");
+    .replace(/\*\/\n\n(?=\/\*|\/\/ Ported to SolidJS)/g, "*/\n");
 }
 
 export function builtCodeHasAttributionHeader(code, header) {
