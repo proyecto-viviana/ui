@@ -95,6 +95,7 @@
     "guard:source-artifacts": "node scripts/check-source-artifacts.mjs",
     "guard:package-artifacts": "node scripts/check-package-artifacts.mjs",
     "guard:layer-boundary": "vp exec tsx scripts/check-layer-boundary.ts",
+    "report:attribution-mappings": "node scripts/report-attribution-mappings.mjs",
     "report:layer-imports": "vp exec tsx scripts/report-layer-imports.ts",
     "guard:jsx-deopt-size": "vp exec tsx scripts/check-jsx-deopt-size.ts",
     "guard:ts-nocheck-budget": "node scripts/check-ts-nocheck-budget.mjs",

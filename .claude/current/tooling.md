@@ -39,6 +39,23 @@ the Vite Plus block (the `tsgolint` path checks files outside the
 `tsconfig.typecheck.json` contract). `vp run typecheck` runs `tsc` separately
 after `vp check`.
 
+## Attribution audit
+
+```bash
+vp run report:attribution-mappings
+vp run report:attribution-mappings --json
+```
+
+The report compares the five Adobe-derived source packages with the pinned,
+git-ignored `react-spectrum/packages` tree. It uses explicit source markers and
+verified generated assets. It does not assume that equal filenames have the
+same source. The default output is a short review summary. Use `--json` for the
+complete inventory.
+
+This command is a review aid. It does not write files or make a legal compliance
+claim. It stops when the pinned upstream tree is not available because it cannot
+produce evidence-backed mappings without that tree.
+
 Install git hooks once per checkout:
 
 ```bash

@@ -17,8 +17,8 @@ function combined(result) {
   return `${result.stdout ?? ""}${result.stderr ?? ""}`;
 }
 
-function runSync(script, cwd, env = {}) {
-  return spawnSync(process.execPath, [path.join(ROOT, "scripts", script)], {
+function runSync(script, cwd, env = {}, args = []) {
+  return spawnSync(process.execPath, [path.join(ROOT, "scripts", script), ...args], {
     cwd,
     encoding: "utf8",
     env: { ...process.env, ...env },
@@ -262,6 +262,136 @@ try {
     "attribution failure did not identify the changed package NOTICE",
   );
   console.log("PASS: changed package NOTICE exits non-zero.");
+
+  const mappingFixture = path.join(fixtureRoot, "attribution-mappings");
+  for (const directory of [
+    "packages/solid-stately/src/disclosure",
+    "packages/solidaria/src/table",
+    "packages/solidaria-components/src",
+    "packages/solid-spectrum/src/shared",
+    "packages/solid-spectrum/src/icon/ui-icons",
+    "packages/viviana-ui/src/shared",
+    "packages/viviana-ui/src/icon/pixel-icons",
+    "react-spectrum/packages/react-aria/src/table",
+    "react-spectrum/packages/react-stately/src/disclosure",
+    "react-spectrum/packages/@react-spectrum/s2/ui-icons",
+  ]) {
+    mkdirSync(path.join(mappingFixture, directory), { recursive: true });
+  }
+  const fullAdobeHeader = [
+    "/" + "*",
+    " * Copyright 2024 Adobe. All rights reserved.",
+    ' * This file is licensed to you under the Apache License, Version 2.0 (the "License");',
+    " * you may not use this file except in compliance with the License.",
+    " * Unless required by applicable law or agreed to in writing, software distributed",
+    ' * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS',
+    " * OF ANY KIND.",
+    " *" + "/",
+    "",
+  ].join("\n");
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/react-aria/src/table/useTable.ts"),
+    `${fullAdobeHeader}export const useTable = true;\n`,
+  );
+  for (const symbol of ["useDisclosureState", "useDisclosureGroupState"]) {
+    writeFileSync(
+      path.join(
+        mappingFixture,
+        `react-spectrum/packages/react-stately/src/disclosure/${symbol}.ts`,
+      ),
+      `${fullAdobeHeader}export const ${symbol} = true;\n`,
+    );
+  }
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/@react-spectrum/s2/ui-icons/Add.tsx"),
+    `${fullAdobeHeader}export default function Add() {}\n`,
+  );
+
+  const exactSource = "// Based on @react-aria/table/useTable.\nexport const local = true;\n";
+  writeFileSync(
+    path.join(mappingFixture, "packages/solidaria/src/table/createTable.ts"),
+    exactSource,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solidaria/src/table/useTable.ts"),
+    "export const unrelated = true;\n",
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-stately/src/disclosure/createDisclosureState.ts"),
+    "// Based on @react-stately/disclosure useDisclosureState and useDisclosureGroupState.\n",
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solidaria-components/src/orphan.ts"),
+    `${fullAdobeHeader}export const orphan = true;\n`,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-spectrum/src/shared/createTable.ts"),
+    exactSource,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/viviana-ui/src/shared/createTable.ts"),
+    exactSource,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/viviana-ui/src/icon/pixel-icons/Pixel.tsx"),
+    "/" +
+      "* Auto-generated from the Glasselated pixel-art SVG set. *" +
+      "/\nexport const Pixel = true;\n",
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-spectrum/src/icon/ui-icons/Add.tsx"),
+    "/" +
+      "* Auto-generated from the shipped @react-spectrum/s2 dist assets. *" +
+      "/\nexport const Add = true;\n",
+  );
+
+  const mappingResult = runSync("report-attribution-mappings.mjs", mappingFixture, {}, ["--json"]);
+  assert(
+    mappingResult.status === 0,
+    `attribution mapping fixture failed:\n${combined(mappingResult)}`,
+  );
+  const mappingReport = JSON.parse(mappingResult.stdout);
+  const mappingByPath = new Map(mappingReport.files.map((file) => [file.path, file]));
+  assert(
+    mappingByPath.get("packages/solidaria/src/table/createTable.ts")?.status === "exact",
+    "explicit unified-source mapping was not exact",
+  );
+  assert(
+    mappingByPath.get("packages/solidaria/src/table/useTable.ts")?.status === "unmarked",
+    "same-name source was promoted without an explicit marker",
+  );
+  assert(
+    mappingByPath.get("packages/solid-stately/src/disclosure/createDisclosureState.ts")?.status ===
+      "multiple",
+    "multiple upstream sources were not kept for review",
+  );
+  assert(
+    mappingByPath.get("packages/solidaria-components/src/orphan.ts")?.status === "header-unmapped",
+    "unmapped Adobe header was not kept for review",
+  );
+  const mirror = mappingByPath.get("packages/viviana-ui/src/shared/createTable.ts");
+  assert(
+    mirror?.status === "mirror" && mirror.inheritedStatus === "exact",
+    "identical Viviana UI source did not inherit the Spectrum mapping",
+  );
+  assert(
+    mappingByPath.get("packages/viviana-ui/src/icon/pixel-icons/Pixel.tsx")?.status === "unmarked",
+    "original generated source was misattributed to S2",
+  );
+  assert(
+    mappingByPath.get("packages/solid-spectrum/src/icon/ui-icons/Add.tsx")?.status ===
+      "generated-stale-generator",
+    "generated output drift was not reported",
+  );
+  console.log("PASS: attribution mappings preserve evidence and review boundaries.");
+
+  const missingMapping = runSync("report-attribution-mappings.mjs", oracleFixture);
+  assert(missingMapping.status !== 0, "missing attribution upstream unexpectedly passed");
+  assert(
+    combined(missingMapping).includes("exact source mappings cannot be reported"),
+    "missing attribution upstream did not identify the evidence requirement",
+  );
+  console.log("PASS: attribution mapping report requires the pinned upstream tree.");
 
   const unpublishedPrerequisiteFixture = path.join(fixtureRoot, "unpublished-prerequisite");
   json(path.join(unpublishedPrerequisiteFixture, "packages", "kumo", "package.json"), {

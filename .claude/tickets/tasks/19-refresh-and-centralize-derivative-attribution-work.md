@@ -22,6 +22,11 @@ history:
       at: 2026-08-21,
       note: "owner confirmed the exact header, manual fallback review, and no blanket header for original source",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "added a deterministic mapping inventory and found icon-generator drift",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -56,6 +61,50 @@ Viviana UI files. The packages share 609 paths: 533 are identical and 76 have
 diverged. Viviana UI has 41 additional paths. This proves that Viviana UI must
 be included in project and package-level Adobe attribution. It does not prove
 which additional paths are derivative.
+
+## Mapping inventory
+
+`vp run report:attribution-mappings` compares local TS and TSX source with the
+pinned `react-spectrum/packages` tree. It reports evidence; it does not add
+headers or make a compliance claim. The JSON form is the resumable file-level
+inventory:
+
+```bash
+vp run report:attribution-mappings --json
+```
+
+The 2026-08-21 inventory has these results:
+
+| Status                      | Files |
+| --------------------------- | ----: |
+| `exact`                     |   143 |
+| `exact-no-header`           |     4 |
+| `generated-exact-no-header` |   396 |
+| `generated-multiple`        |     2 |
+| `generated-stale-generator` |    12 |
+| `generated-unresolved`      |    13 |
+| `header-unmapped`           |    16 |
+| `marker-unresolved`         |    90 |
+| `mirror`                    |   531 |
+| `multiple`                  |     7 |
+| `unmarked`                  |   435 |
+
+The report scanned 1,649 files. It found 143 exact independent mappings. It
+keeps 975 independent mappings in review. The 531 byte-identical Viviana UI
+files inherit their Solid Spectrum mapping and do not create duplicate review
+work.
+
+The generated-file statuses need care. An exact generated asset can map to an
+upstream SVG that has no source header to copy. Those files stay in review. The
+report also found 12 generated outputs whose notice is not emitted by the
+current icon generator: 11 UI icons and `SearchIcon`. Do not run that generator
+until its inputs and notice are corrected. Another 13 workflow icons have no
+verified byte-identical upstream asset in the pinned tree.
+
+The regression fixture proves that a matching filename is not enough, an Adobe
+header without a source stays unmapped, original Glasselated generated source
+stays unmarked, exact mirrors inherit one review result, and a missing upstream
+tree fails the command.
 
 Before this ticket's package repair, `vp exec npm pack --dry-run --json` showed:
 
@@ -122,7 +171,9 @@ files during the mapping pass.
 Passed on 2026-08-21:
 
 - `vp run guard:attribution`
-- `vp run test:ci-guard-contracts`, including the changed-NOTICE negative case
+- `vp run report:attribution-mappings`
+- `vp run test:ci-guard-contracts`, including the changed-NOTICE and attribution
+  mapping negative cases
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
 - `vp run changeset:status`
@@ -137,7 +188,7 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 ## Remaining work
 
 1. Verify that the formatter and package build preserve the confirmed form.
-2. Map each derived source file to its exact upstream source.
+2. Review the exact, ambiguous, and unmapped inventory groups.
 3. Update the icon generator after the generated-file mappings are confirmed.
 4. Copy only the applicable upstream notice and year from that source.
 5. Review unmapped files and original Proyecto Viviana files by hand.
