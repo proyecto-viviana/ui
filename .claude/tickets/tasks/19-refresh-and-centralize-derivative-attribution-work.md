@@ -88,6 +88,22 @@ The public wording does not say that the per-file mapping audit is complete.
 - The pinned `@cloudflare/kumo@2.10.0` source uses MIT, and the package already
   carries that notice.
 
+## Header-form evidence
+
+The current source tree has 25 files with an Adobe license block. Twenty-three
+files use the full upstream block. Two files use a shorter block without the
+warranty text. Ten full blocks follow a required `// @ts-nocheck` first line.
+The formatter preserves these current forms.
+
+The retired plan recorded this form as decided:
+
+- Copy the exact full Adobe block from the mapped upstream file.
+- Add `Ported to SolidJS for Proyecto Viviana; based on <upstream>`.
+
+The retired plan is not a live decision record. The current source is
+inconsistent, and no current ADR or policy confirms that exact change note.
+The owner must confirm the form before a generator or bulk edit applies it.
+
 ## Verification
 
 Passed on 2026-08-21:
@@ -121,7 +137,8 @@ would misattribute the source.
 
 ## Owner decisions required
 
-- Confirm the exact per-file notice form and Solid port change note.
+- Confirm whether the exact Adobe block and the previously recorded
+  `Ported to SolidJS for Proyecto Viviana; based on <upstream>` line are policy.
 - Confirm the treatment for an upstream file that has no exact mapping.
 - Decide whether original source needs a short Proyecto Viviana MIT header.
 
