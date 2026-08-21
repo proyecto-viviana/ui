@@ -4,17 +4,24 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   inventoryCertifiedObligations,
+  inventoryVisualStateEvidence,
   inventoryValidationNotes,
   parseGateOutcomeTable,
   summarizeNoteInventory,
+  summarizeVisualStateEvidence,
   unresolvedVisualStatePointers,
 } from "./acceptance-inventory";
 import {
   classifyGateOutcome,
   evidencePointersFromSpec,
   resolveEvidenceFile,
+  resolveRunnableEvidencePointer,
   splitSpecString,
 } from "./acceptance-schema";
+import {
+  lastFullCertifiedSuiteRun,
+  validateCertifiedSuiteEvidence,
+} from "./certified-suite-evidence";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const comparisonRoot = resolve(here, "../..");
@@ -65,6 +72,23 @@ describe("acceptance schema", () => {
       null,
     );
   });
+
+  it("resolves structured evidence only when the exact runnable title exists", () => {
+    const pointer = {
+      file: "e2e/actionmenu-contract.spec.ts",
+      title: "ActionMenu semantic accessibility contracts pass on both stacks",
+    };
+
+    expect(resolveRunnableEvidencePointer(pointer, { comparisonRoot, repoRoot })).toBe(
+      resolve(comparisonRoot, pointer.file),
+    );
+    expect(
+      resolveRunnableEvidencePointer(
+        { ...pointer, title: "A descriptive sentence that is not a runnable test" },
+        { comparisonRoot, repoRoot },
+      ),
+    ).toBe(null);
+  });
 });
 
 describe("acceptance inventory", () => {
@@ -102,6 +126,16 @@ describe("acceptance inventory", () => {
     expect(unresolvedVisualStatePointers({ comparisonRoot, repoRoot })).toEqual([]);
   });
 
+  it("distinguishes resolved structured evidence from legacy file-only claims", () => {
+    const summary = summarizeVisualStateEvidence(
+      inventoryVisualStateEvidence({ comparisonRoot, repoRoot }),
+    );
+
+    expect(summary.resolved).toBeGreaterThan(0);
+    expect(summary.legacy).toBeGreaterThan(0);
+    expect(summary.invalid).toBe(0);
+  });
+
   it("names the six certified knownDivergence fixmes", () => {
     const { expectedFixmes } = inventoryCertifiedObligations(
       resolve(comparisonRoot, "e2e/certified"),
@@ -118,5 +152,21 @@ describe("acceptance inventory", () => {
         "tableview.certified.spec.ts::sorted",
       ].sort(),
     );
+  });
+
+  it("holds the recorded full-suite counts against the registered fixmes", () => {
+    const { expectedFixmes } = inventoryCertifiedObligations(
+      resolve(comparisonRoot, "e2e/certified"),
+    );
+
+    expect(
+      validateCertifiedSuiteEvidence(lastFullCertifiedSuiteRun, expectedFixmes.length),
+    ).toEqual([]);
+    expect(
+      validateCertifiedSuiteEvidence(
+        { ...lastFullCertifiedSuiteRun, passed: lastFullCertifiedSuiteRun.passed - 1 },
+        expectedFixmes.length,
+      ),
+    ).toContain("passed, failed, and skipped counts must add up to total");
   });
 });

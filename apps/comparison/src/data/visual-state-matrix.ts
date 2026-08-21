@@ -5,6 +5,7 @@ import {
   type ComparisonEntry,
   type ComparisonSlug,
 } from "./comparison-manifest";
+import type { EvidencePointer } from "./acceptance-schema";
 
 export type VisualStateKind =
   | "static"
@@ -23,7 +24,9 @@ export interface VisualStateTarget {
   react: VisualStateSideStatus;
   solid: VisualStateSideStatus;
   pairDiff: PairDiffStatus;
-  /** Evidence files, `+` / `;` separated. Resolved by `acceptance-schema`. */
+  /** Reviewed pointers to exact runnable tests. */
+  evidence?: readonly EvidencePointer[];
+  /** Legacy file-only evidence. It does not prove a current runnable test. */
   spec?: string;
   note: string;
 }
@@ -107,7 +110,32 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu controls match the S2 viewer axes and drive both implementations",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu omitted viewer props reset to default branch values",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu item actions fire with matching keys",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu keyboard state follows the APG menu-button contract",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu outside pointer press closes the open menu",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu focus leaving the overlay closes the open menu",
+        },
+      ],
       note: "ActionMenu route mounts both stacks with static JSX MenuItem composition and asserts the official S2 viewer controls plus the shouldFlip API axis, omitted-prop default reset, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, focus restore, outside pointer dismissal, and focus-out dismissal.",
     },
     {
@@ -117,7 +145,12 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu semantic accessibility contracts pass on both stacks",
+        },
+      ],
       note: "Scoped browser axe scans and manual semantic assertions cover closed trigger and open menu states on both stacks, including menu-button ARIA, menu/menuitem roles, accessible names, portal labeling, and ARIA ID integrity.",
     },
     {
@@ -127,7 +160,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu virtual click lifecycle matches on both stacks",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu touch activation and disabled suppression match on both stacks",
+        },
+      ],
       note: "Browser contracts assert DOM virtual click activation, touch tap activation, menu item action dispatch, close-on-select cleanup, ARIA state reset, and disabled trigger touch suppression on both stacks.",
     },
     {
@@ -137,7 +179,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu trigger target sizes match React Spectrum on both stacks",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu color contrast has no scoped axe violations on both stacks",
+        },
+      ],
       note: "Scoped color-contrast axe scans cover closed and open states on both stacks; target-size checks compare all trigger sizes against React Spectrum and record the upstream XS 20px target while enforcing the 24px floor for non-XS sizes.",
     },
     {
@@ -147,7 +198,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu default trigger is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger computed styles match React Spectrum across viewer axes",
+        },
+      ],
       note: "Default closed ActionMenu trigger has strict zero-tolerance pair-diff evidence and computed trigger styles matching React Spectrum across default, XS, XL, quiet, and disabled viewer axes.",
     },
     {
@@ -157,7 +217,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu open menu is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu open menu computed styles match React Spectrum",
+        },
+      ],
       note: "Open ActionMenu menu surface has strict zero-tolerance pair-diff evidence and computed style/geometry parity for the static JSX menu, first item, icon, label, description, and keyboard shortcut slots.",
     },
     {
@@ -167,7 +236,12 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu popover transition lifecycle matches React Spectrum",
+        },
+      ],
       note: "Browser computed contracts compare ActionMenu popover entering and exiting opacity, translate, transition property/duration/timing, placement, pointer-events, and delayed cleanup against React Spectrum.",
     },
     {
@@ -177,7 +251,20 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger hover state is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger focus-visible state is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger pressed state matches current React Spectrum",
+        },
+      ],
       note: "ActionMenu trigger hover and focus-visible states have strict padded pair-diff evidence, and pressed state matches React Spectrum's pressScale transform with a bounded transform antialias threshold plus package regression coverage.",
     },
     {
@@ -187,7 +274,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu placement axes match React Spectrum",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu shouldFlip=false keeps the requested placement",
+        },
+      ],
       note: "Settled overlay geometry matches React Spectrum for align start/end, direction top/bottom/left/right/start/end, and shouldFlip=false bottom placement.",
     },
     {
@@ -197,7 +293,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu forced-colors trigger is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu forced-colors open menu is pixel-identical",
+        },
+      ],
       note: "Forced-colors media emulation verifies the browser environment, compares trigger computed contracts for default, quiet, and disabled states, adds strict pair-diff evidence for the closed trigger, and adds backed open-menu visual evidence with a bounded threshold for Chromium forced-colors text subpixel rasterization.",
     },
     {
@@ -207,7 +312,12 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu accessibility media environments match React Spectrum",
+        },
+      ],
       note: "Reduced-motion media emulation verifies the browser environment and compares settled trigger and open-menu computed contracts across React Spectrum and Solid.",
     },
   ],

@@ -4,9 +4,14 @@ type: task
 title: "Complete menu-trigger behavior parity"
 created: 2026-08-20
 parent: 31
-status: open
+status: next
 history:
   - { state: open, at: 2026-08-20, note: "opened from the latest-work review of createMenuTrigger" }
+  - {
+      state: next,
+      at: 2026-08-21,
+      note: "selected after ticket #11 completed the acceptance evidence model",
+    }
 ---
 
 The latest menu-focus change stores a first-or-last focus strategy in

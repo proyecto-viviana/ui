@@ -7,12 +7,14 @@ import {
   evidencePointersFromSpec,
   isAcceptanceGate,
   resolveEvidenceFile,
+  resolveRunnableEvidencePointer,
   type AcceptanceGate,
   type ClassifiedGateOutcome,
   type EvidencePointer,
   type GateOutcomeKind,
+  type LegacyEvidencePointer,
 } from "./acceptance-schema";
-import { officialVisualStateCoverage } from "./visual-state-matrix";
+import { officialVisualStateCoverage, type VisualStateTarget } from "./visual-state-matrix";
 
 export interface NoteGateRow {
   gate: AcceptanceGate;
@@ -38,6 +40,16 @@ export interface DeferredComment {
   spec: string;
   line: number;
   text: string;
+}
+
+export type VisualStateEvidenceStatus = "resolved" | "legacy" | "missing" | "invalid";
+
+export interface VisualStateEvidenceRecord {
+  slug: string;
+  stateId: string;
+  status: VisualStateEvidenceStatus;
+  pointers: readonly EvidencePointer[];
+  invalidPointers: readonly EvidencePointer[];
 }
 
 export function parseGateOutcomeTable(markdown: string): NoteGateRow[] {
@@ -106,6 +118,7 @@ export function summarizeNoteInventory(notes: readonly NoteInventory[]): {
   missingTable: number;
   nineGate: number;
   outcomeKindCounts: Record<GateOutcomeKind, number>;
+  noncanonicalSourceCounts: Record<string, number>;
   allTenComplete: number;
 } {
   const outcomeKindCounts: Record<GateOutcomeKind, number> = {
@@ -120,6 +133,7 @@ export function summarizeNoteInventory(notes: readonly NoteInventory[]): {
   let missingTable = 0;
   let nineGate = 0;
   let allTenComplete = 0;
+  const noncanonicalSourceCounts: Record<string, number> = {};
 
   for (const note of notes) {
     if (!note.hasOutcomeTable) {
@@ -135,6 +149,10 @@ export function summarizeNoteInventory(notes: readonly NoteInventory[]): {
 
     for (const row of note.rows) {
       outcomeKindCounts[row.outcome.kind] += 1;
+      if (row.outcome.kind === "unnormalized") {
+        noncanonicalSourceCounts[row.outcome.raw] =
+          (noncanonicalSourceCounts[row.outcome.raw] ?? 0) + 1;
+      }
     }
   }
 
@@ -144,24 +162,94 @@ export function summarizeNoteInventory(notes: readonly NoteInventory[]): {
     missingTable,
     nineGate,
     outcomeKindCounts,
+    noncanonicalSourceCounts,
     allTenComplete,
   };
+}
+
+export function isCompleteAcceptanceNote(note: NoteInventory | undefined): boolean {
+  return (
+    note != null &&
+    note.rows.length === ACCEPTANCE_GATES.length &&
+    note.missingGates.length === 0 &&
+    note.rows.every((row) => row.outcome.kind === "complete")
+  );
+}
+
+export function isCurrentVisualState(state: VisualStateTarget): boolean {
+  return (
+    (state.react === "visual" || state.react === "asserted") &&
+    (state.solid === "visual" || state.solid === "asserted") &&
+    state.pairDiff !== "planned" &&
+    state.pairDiff !== "blocked"
+  );
 }
 
 export function collectVisualStatePointers(): {
   slug: string;
   stateId: string;
-  pointers: EvidencePointer[];
+  pointers: readonly LegacyEvidencePointer[];
 }[] {
   return officialVisualStateCoverage.flatMap((entry) =>
     entry.states
-      .filter((state) => state.spec != null && state.spec.length > 0)
+      .filter(
+        (state) =>
+          (state.evidence != null && state.evidence.length > 0) ||
+          (state.spec != null && state.spec.length > 0),
+      )
       .map((state) => ({
         slug: entry.slug,
         stateId: state.id,
-        pointers: evidencePointersFromSpec(state.spec),
+        pointers: state.evidence ?? evidencePointersFromSpec(state.spec),
       })),
   );
+}
+
+export function inventoryVisualStateEvidence(roots: {
+  comparisonRoot: string;
+  repoRoot: string;
+}): VisualStateEvidenceRecord[] {
+  return officialVisualStateCoverage.flatMap((entry) =>
+    entry.states.filter(isCurrentVisualState).map((state) => {
+      if (state.evidence != null && state.evidence.length > 0) {
+        const invalidPointers = state.evidence.filter(
+          (pointer) => resolveRunnableEvidencePointer(pointer, roots) == null,
+        );
+        return {
+          slug: entry.slug,
+          stateId: state.id,
+          status: invalidPointers.length === 0 ? "resolved" : "invalid",
+          pointers: state.evidence,
+          invalidPointers,
+        };
+      }
+
+      return {
+        slug: entry.slug,
+        stateId: state.id,
+        status: state.spec != null && state.spec.length > 0 ? "legacy" : "missing",
+        pointers: [],
+        invalidPointers: [],
+      };
+    }),
+  );
+}
+
+export function summarizeVisualStateEvidence(
+  records: readonly VisualStateEvidenceRecord[],
+): Record<VisualStateEvidenceStatus, number> {
+  const summary: Record<VisualStateEvidenceStatus, number> = {
+    resolved: 0,
+    legacy: 0,
+    missing: 0,
+    invalid: 0,
+  };
+
+  for (const record of records) {
+    summary[record.status] += 1;
+  }
+
+  return summary;
 }
 
 export function unresolvedVisualStatePointers(roots: {

@@ -4,7 +4,7 @@ type: task
 title: "Complete the component acceptance evidence model"
 created: 2026-08-20
 parent: 24
-status: next
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "opened from the acceptance-schema review of a8ecda44" }
   - {
@@ -22,6 +22,16 @@ history:
       at: 2026-08-21,
       note: "selected by the documented order in tickets #10 and #87 after the release and documentation reorganization closed",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "implementing exact runnable evidence pointers, recorded certified-run evidence, and a separate full-acceptance command",
+    }
+  - {
+      state: verified,
+      at: 2026-08-21,
+      note: "proved exact runnable-title resolution, recorded the successful 2170/0/6 certified run, kept the frozen strict guard green, and held the full acceptance backlog red",
+    }
 ---
 
 The current report is an inventory. It does not prove current component
@@ -34,38 +44,53 @@ not complete.
 - `pending` now reports as unnormalized instead of silently becoming
   `not-started`.
 
-## Open gaps
+## Backlog exposed by the model
 
-- Visual evidence pointers identify files but not runnable test titles.
 - Only 15 of 66 validation notes report ten complete gates.
 - Thirty-six notes have no gate summary.
 - Ninety-one gate outcomes are unnormalized.
-- The report does not record the last full-suite revision and three-count as
-  current executable evidence.
+- Three hundred thirty-nine current visual-state claims still use legacy
+  file-only evidence. ActionMenu is the first reviewed structured migration.
 - Validation notes repeat large prose templates but still omit resolved test
   titles. The volume does not provide stronger evidence.
 
 ## Scope
 
 - [x] Make full-strict behavior unambiguous and hold it with a regression test.
-- Store structured evidence pointers with a file and test title.
-- Resolve each pointer to an existing runnable test case.
+- [x] Store structured evidence pointers with a file and test title.
+- [x] Resolve each pointer to an existing runnable test case.
 - [x] Use only `complete`, `partial`, and `not-started` as canonical outcomes.
-- Report noncanonical source text until each note is migrated.
-- Record the last full certified run with revision, passed, failed, and skipped
-  counts.
-- Provide a command that fails when required acceptance evidence is incomplete.
-- Keep the frozen baseline command as a regression guard with a precise name
-  and description.
-- Generate repeated note structure from the evidence model when practical.
-  Keep component-specific decisions and failure modes near the component.
+- [x] Report noncanonical source text until each note is migrated.
+- [x] Record the last full certified run with revision, passed, failed, and skipped
+      counts.
+- [x] Provide a command that fails when required acceptance evidence is incomplete.
+- [x] Keep the frozen baseline command as a regression guard with a precise name
+      and description.
+- [x] Keep repeated state evidence in the typed model instead of copying it into
+      validation-note prose.
+      Keep component-specific decisions and failure modes near the component.
 
 ## Checkpoint
 
-`parseParityReportOptions` now makes `--strict-full` imply strict mode. A unit
-test holds the option contract. A command test runs the report against the
-current backlog and requires exit code 1. `pending` now reports as unnormalized
-source text. The focused nine-test run passed.
+The report now resolves `{file, title}` pointers from the TypeScript test source.
+ActionMenu's 11 current visual states are the first structured migration. The
+report counts 339 remaining file-only state claims as legacy and does not accept
+them. It combines this evidence with the ten canonical gate outcomes, so the
+current honest result is `0 / 78` accepted components.
+
+The recorded successful certified run is revision
+`0f1e1198963c46eb3294744475e269a7c0041eb6`, run `32485238975`, job
+`96780157126`: 2,170 passed, 0 failed, and 6 skipped out of 2,176. The six skips
+match the six registered known divergences.
+
+Verification on 2026-08-21:
+
+- `vp test run apps/comparison/src/data/acceptance-schema.test.ts apps/comparison/src/data/report-component-parity-options.test.ts` — 12 passed.
+- `vp run comparison:report:parity:strict` — passed with no new gaps outside
+  the frozen baseline.
+- `vp run comparison:report:acceptance` — exited 1 on the known full-acceptance
+  backlog, as required.
+- `vp run check` — formatting, lint, and typecheck passed.
 
 ## Done when
 

@@ -1,5 +1,6 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 /** The ten additive playbook gates. Titles match the validation-note table. */
 export const ACCEPTANCE_GATES = [
@@ -30,8 +31,12 @@ export type GateOutcomeKind = CanonicalGateOutcome | "unnormalized" | "missing";
 export interface EvidencePointer {
   /** Path relative to `apps/comparison` (`e2e/…`) or the repo root (`packages/…`). */
   file: string;
-  /** Optional Playwright title, case id, or note. */
-  title?: string;
+  /** Exact runnable Playwright or Vite Plus test title. */
+  title: string;
+}
+
+export interface LegacyEvidencePointer {
+  file: string;
 }
 
 export interface ClassifiedGateOutcome {
@@ -52,7 +57,7 @@ export function splitSpecString(spec: string | undefined): string[] {
     .filter((part) => part.length > 0);
 }
 
-export function evidencePointersFromSpec(spec: string | undefined): EvidencePointer[] {
+export function evidencePointersFromSpec(spec: string | undefined): LegacyEvidencePointer[] {
   return splitSpecString(spec).map((file) => ({ file }));
 }
 
@@ -93,6 +98,80 @@ export function resolveEvidenceFile(
   }
 
   return null;
+}
+
+const runnableTitleCache = new Map<string, ReadonlySet<string>>();
+
+function literalText(node: ts.Node | undefined): string | null {
+  if (node != null && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))) {
+    return node.text;
+  }
+
+  return null;
+}
+
+function isTestIdentifier(node: ts.Node): boolean {
+  return ts.isIdentifier(node) && (node.text === "test" || node.text === "it");
+}
+
+function isRunnableTestExpression(node: ts.Expression): boolean {
+  if (isTestIdentifier(node)) {
+    return true;
+  }
+
+  if (ts.isPropertyAccessExpression(node) && isTestIdentifier(node.expression)) {
+    return ["concurrent", "fails", "only"].includes(node.name.text);
+  }
+
+  return (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    isTestIdentifier(node.expression.expression) &&
+    node.expression.name.text === "each"
+  );
+}
+
+export function runnableTestTitles(file: string): ReadonlySet<string> {
+  const cached = runnableTitleCache.get(file);
+  if (cached != null) {
+    return cached;
+  }
+
+  const source = ts.createSourceFile(
+    file,
+    readFileSync(file, "utf8"),
+    ts.ScriptTarget.Latest,
+    true,
+    file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const titles = new Set<string>();
+
+  function visit(node: ts.Node): void {
+    if (ts.isCallExpression(node) && isRunnableTestExpression(node.expression)) {
+      const title = literalText(node.arguments[0]);
+      if (title != null && title.trim().length > 0) {
+        titles.add(title);
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(source);
+  runnableTitleCache.set(file, titles);
+  return titles;
+}
+
+export function resolveRunnableEvidencePointer(
+  pointer: EvidencePointer,
+  roots: { comparisonRoot: string; repoRoot: string },
+): string | null {
+  const file = resolveEvidenceFile(pointer.file, roots);
+  if (file == null || pointer.title.trim().length === 0) {
+    return null;
+  }
+
+  return runnableTestTitles(file).has(pointer.title) ? file : null;
 }
 
 export function isAcceptanceGate(value: string): value is AcceptanceGate {

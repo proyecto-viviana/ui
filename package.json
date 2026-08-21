@@ -30,6 +30,7 @@
     "comparison:report:exports": "vp run --filter @proyecto-viviana/comparison report:exports",
     "comparison:report:parity": "vp run --filter @proyecto-viviana/comparison report:parity",
     "comparison:report:parity:strict": "vp run --filter @proyecto-viviana/comparison report:parity:strict",
+    "comparison:report:acceptance": "vp run --filter @proyecto-viviana/comparison report:acceptance",
     "comparison:test:button": "vp run --filter @proyecto-viviana/comparison test:button",
     "comparison:test:certified": "vp run --filter @proyecto-viviana/comparison test:certified",
     "comparison:test:buttons": "vp run --filter @proyecto-viviana/comparison test:buttons",

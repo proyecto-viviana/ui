@@ -27,6 +27,7 @@ describe("component parity report options", () => {
 
     expect(result.error).toBeUndefined();
     expect(result.status).toBe(1);
-    expect(result.stdout).toContain("[gap]");
+    expect(result.stdout).toContain("[gap] Components that do not meet the full acceptance model");
+    expect(result.stdout).toContain("Last full certified suite: revision=");
   });
 });

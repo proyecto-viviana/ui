@@ -91,7 +91,8 @@ vp run comparison:test:<component> # focused keyboard/focus/forms/announcements
 Repo-level guards and reports:
 
 ```bash
-vp run comparison:report:parity:strict   # blocks on in-scope failure
+vp run comparison:report:parity:strict   # blocks on new catalogue drift outside the frozen baseline
+vp run comparison:report:acceptance      # blocks until all components have complete gates and runnable evidence
 vp run comparison:report:gaps
 vp run comparison:report:exports
 vp run guard:upstream-oracle     # commit, package identities, and required evidence paths
@@ -117,6 +118,19 @@ only when every in-scope gate is `complete`. Otherwise, it is `partial` or
 `not-started`. Each component's validation note
 (`../../apps/comparison/playbook/components/`) carries the gate outcome table and
 the evidence.
+
+The acceptance report recognizes only `complete`, `partial`, and `not-started`
+as gate outcomes. It reports other source text without translating it. A current
+visual-state claim must point to an exact runnable test with `{file, title}`.
+A file-only `spec` pointer is legacy inventory and cannot accept a component.
+The report resolves each title from the test source before it counts the
+evidence.
+
+The report also prints the recorded revision and the passed, failed, and skipped
+counts from the last full certified suite. The typed record is in
+`../../apps/comparison/src/data/certified-suite-evidence.ts`. Its totals must be
+consistent, its failed count must be zero, and its skipped count must match the
+registered certified-suite divergences.
 
 `guard:upstream-test-parity` mechanizes a first-pass triage for **Gate 3 (Upstream
 React Source Parity)**: it diffs the ARIA-contract vocabulary our tests assert
