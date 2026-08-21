@@ -1,6 +1,11 @@
 /**
  * Event utilities for detecting virtual clicks and event handling.
- * Based on @react-aria/utils event utilities.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/utils/isVirtualEvent.ts
+ * - packages/react-aria/src/utils/chain.ts
+ * - packages/react-aria/src/interactions/utils.ts
+ *
+ * createMouseEvent is a local event adapter.
  */
 
 import { isAndroid } from "./platform";

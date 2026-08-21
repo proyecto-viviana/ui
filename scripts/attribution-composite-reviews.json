@@ -137,6 +137,156 @@
     "requiredText": ["all 34 upstream locales"]
   },
   {
+    "localPath": "packages/solidaria/src/combobox/intl/index.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/combobox/ar-AE.json",
+      "packages/react-aria/intl/combobox/bg-BG.json",
+      "packages/react-aria/intl/combobox/cs-CZ.json",
+      "packages/react-aria/intl/combobox/da-DK.json",
+      "packages/react-aria/intl/combobox/de-DE.json",
+      "packages/react-aria/intl/combobox/el-GR.json",
+      "packages/react-aria/intl/combobox/en-US.json",
+      "packages/react-aria/intl/combobox/es-ES.json",
+      "packages/react-aria/intl/combobox/et-EE.json",
+      "packages/react-aria/intl/combobox/fi-FI.json",
+      "packages/react-aria/intl/combobox/fr-FR.json",
+      "packages/react-aria/intl/combobox/he-IL.json",
+      "packages/react-aria/intl/combobox/hr-HR.json",
+      "packages/react-aria/intl/combobox/hu-HU.json",
+      "packages/react-aria/intl/combobox/it-IT.json",
+      "packages/react-aria/intl/combobox/ja-JP.json",
+      "packages/react-aria/intl/combobox/ko-KR.json",
+      "packages/react-aria/intl/combobox/lt-LT.json",
+      "packages/react-aria/intl/combobox/lv-LV.json",
+      "packages/react-aria/intl/combobox/nb-NO.json",
+      "packages/react-aria/intl/combobox/nl-NL.json",
+      "packages/react-aria/intl/combobox/pl-PL.json",
+      "packages/react-aria/intl/combobox/pt-BR.json",
+      "packages/react-aria/intl/combobox/pt-PT.json",
+      "packages/react-aria/intl/combobox/ro-RO.json",
+      "packages/react-aria/intl/combobox/ru-RU.json",
+      "packages/react-aria/intl/combobox/sk-SK.json",
+      "packages/react-aria/intl/combobox/sl-SI.json",
+      "packages/react-aria/intl/combobox/sr-SP.json",
+      "packages/react-aria/intl/combobox/sv-SE.json",
+      "packages/react-aria/intl/combobox/tr-TR.json",
+      "packages/react-aria/intl/combobox/uk-UA.json",
+      "packages/react-aria/intl/combobox/zh-CN.json",
+      "packages/react-aria/intl/combobox/zh-TW.json"
+    ],
+    "requiredText": ["all 34 upstream locales"]
+  },
+  {
+    "localPath": "packages/solidaria/src/grid/types.ts",
+    "upstreamPaths": [
+      "packages/@react-types/shared/src/collections.d.ts",
+      "packages/react-aria/src/grid/useGrid.ts",
+      "packages/react-aria/src/grid/useGridRow.ts",
+      "packages/react-aria/src/grid/useGridCell.ts"
+    ],
+    "requiredText": [
+      "Grid ARIA types for Table and GridList components.",
+      "key-based row and cell props"
+    ]
+  },
+  {
+    "localPath": "packages/solidaria/src/gridlist/types.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/gridlist/useGridList.ts",
+      "packages/react-aria/src/gridlist/useGridListItem.ts",
+      "packages/react-aria/src/gridlist/useGridListSelectionCheckbox.ts",
+      "packages/react-aria/src/gridlist/useGridListSection.ts"
+    ],
+    "requiredText": [
+      "GridList ARIA types for GridList components.",
+      "collection-disabled fields are Solid-specific adapters"
+    ]
+  },
+  {
+    "localPath": "packages/solidaria/src/ssr/index.tsx",
+    "upstreamPaths": [
+      "packages/react-aria/src/ssr/SSRProvider.tsx",
+      "packages/react-aria/src/utils/useId.ts"
+    ],
+    "requiredText": ["SSR utilities for Solidaria.", "Solid-specific hydration"]
+  },
+  {
+    "localPath": "packages/solidaria/src/table/types.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/table/useTable.ts",
+      "packages/react-aria/src/table/useTableHeaderRow.ts",
+      "packages/react-aria/src/table/useTableColumnHeader.ts",
+      "packages/react-aria/src/table/useTableRow.ts",
+      "packages/react-aria/src/table/useTableCell.ts",
+      "packages/react-aria/src/table/useTableRowGroup.ts",
+      "packages/react-aria/src/table/useTableSelectionCheckbox.ts"
+    ],
+    "requiredText": ["Table ARIA types for Table components.", "disabled-row checkbox field"]
+  },
+  {
+    "localPath": "packages/solidaria/src/tabs/createTabs.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/tabs/useTabList.ts",
+      "packages/react-aria/src/tabs/useTab.ts",
+      "packages/react-aria/src/tabs/useTabPanel.ts",
+      "packages/react-aria/src/tabs/TabsKeyboardDelegate.ts",
+      "packages/react-aria/src/tabs/utils.ts"
+    ],
+    "requiredText": ["ARIA hooks for tab components.", "This Solid module combines"]
+  },
+  {
+    "localPath": "packages/solidaria/src/tree/types.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/tree/useTree.ts",
+      "packages/react-aria/src/tree/useTreeItem.ts",
+      "packages/react-aria/src/gridlist/useGridListSelectionCheckbox.ts"
+    ],
+    "requiredText": ["Tree ARIA types.", "grid-list checkbox pattern"]
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/dom.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/utils/domHelpers.ts",
+      "packages/react-aria/src/utils/shadowdom/DOMFunctions.ts",
+      "packages/react-aria/src/utils/isElementVisible.ts",
+      "packages/react-aria/src/utils/isFocusable.ts",
+      "packages/react-aria/src/interactions/usePress.ts",
+      "packages/react-aria/src/utils/openLink.tsx",
+      "packages/react-aria/src/utils/isScrollable.ts",
+      "packages/react-aria/src/utils/getScrollParent.ts",
+      "packages/react-aria/src/utils/getScrollParents.ts",
+      "packages/react-aria/src/utils/keyboard.tsx",
+      "packages/react-aria/src/focus/FocusScope.tsx"
+    ],
+    "requiredText": [
+      "DOM utilities for cross-browser compatibility.",
+      "export function getFocusableTreeWalker",
+      "export function openLink"
+    ]
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/events.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/utils/isVirtualEvent.ts",
+      "packages/react-aria/src/utils/chain.ts",
+      "packages/react-aria/src/interactions/utils.ts"
+    ],
+    "requiredText": ["createMouseEvent is a local event adapter.", "export function setEventTarget"]
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/focus.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/utils/focusWithoutScrolling.ts",
+      "packages/react-aria/src/interactions/utils.ts",
+      "packages/react-aria/src/interactions/focusSafely.ts"
+    ],
+    "requiredText": [
+      "runAfterPaint and the focusVisible option are local Solid adapters.",
+      "export function focusSafely"
+    ]
+  },
+
+  {
     "localPath": "packages/solidaria-components/src/DateField.tsx",
     "upstreamPaths": [
       "packages/react-aria-components/src/DateField.tsx",

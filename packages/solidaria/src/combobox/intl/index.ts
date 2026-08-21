@@ -1,6 +1,7 @@
 /**
- * ComboBox internationalization strings
- * Based on @react-aria/combobox/intl
+ * ComboBox internationalization strings.
+ * Ported from the complete @react-aria/combobox intl strings catalog.
+ * This module includes all 34 upstream locales.
  */
 
 import type { LocalizedString, LocalizedStrings } from "@internationalized/string";

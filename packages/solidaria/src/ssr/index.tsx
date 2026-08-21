@@ -1,9 +1,11 @@
 /**
- * SSR utilities for Solidaria
+ * SSR utilities for Solidaria.
  *
- * SolidJS has built-in SSR support with `isServer` and `createUniqueId()`.
- * These utilities provide a consistent API matching React-Aria's patterns
- * with additional features for hydration management.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/ssr/SSRProvider.tsx
+ * - packages/react-aria/src/utils/useId.ts
+ *
+ * This module adds Solid-specific hydration, document-access, and portal-owner utilities.
  */
 
 import {

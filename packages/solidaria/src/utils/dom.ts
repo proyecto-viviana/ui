@@ -1,6 +1,17 @@
 /**
  * DOM utilities for cross-browser compatibility.
- * Based on @react-aria/utils DOM utilities.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/utils/domHelpers.ts
+ * - packages/react-aria/src/utils/shadowdom/DOMFunctions.ts
+ * - packages/react-aria/src/utils/isElementVisible.ts
+ * - packages/react-aria/src/utils/isFocusable.ts
+ * - packages/react-aria/src/interactions/usePress.ts
+ * - packages/react-aria/src/utils/openLink.tsx
+ * - packages/react-aria/src/utils/isScrollable.ts
+ * - packages/react-aria/src/utils/getScrollParent.ts
+ * - packages/react-aria/src/utils/getScrollParents.ts
+ * - packages/react-aria/src/utils/keyboard.tsx
+ * - packages/react-aria/src/focus/FocusScope.tsx
  */
 
 /**

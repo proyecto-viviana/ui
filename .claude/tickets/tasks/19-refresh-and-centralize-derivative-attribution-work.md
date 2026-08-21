@@ -74,6 +74,12 @@ history:
     }
 ---
 
+- {
+  state: in-progress,
+  at: 2026-08-21,
+  note: "classified the remaining 13 Solidaria markers as ten composites and three local helpers or barrels",
+  }
+
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
 This ticket is now the one active task for initiative #35. Do not restore a
 second plan under `docs/`.
@@ -92,7 +98,7 @@ package. It excludes declaration files.
 | Package                                  | TS/TSX | Adobe header | Source marker |
 | ---------------------------------------- | -----: | -----------: | ------------: |
 | `@proyecto-viviana/solid-stately`        |     93 |           35 |            47 |
-| `@proyecto-viviana/solidaria`            |    231 |          125 |           145 |
+| `@proyecto-viviana/solidaria`            |    231 |          125 |           142 |
 | `@proyecto-viviana/solidaria-components` |     74 |           31 |            44 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |           11 |            15 |
 | `@proyecto-viviana/ui`                   |    644 |           11 |            15 |
@@ -130,10 +136,10 @@ The 2026-08-21 inventory has these results:
 | `generated-multiple`        |     2 |
 | `generated-stale-generator` |    12 |
 | `generated-unresolved`      |    13 |
-| `marker-unresolved`         |    30 |
+| `marker-unresolved`         |    17 |
 | `mirror`                    |   526 |
-| `multiple`                  |    14 |
-| `unmarked`                  |   435 |
+| `multiple`                  |    24 |
+| `unmarked`                  |   438 |
 
 The report scanned 1,646 files. It found 210 independent files with one exact
 source. It also found 212 exact-source header contracts, including inherited
@@ -155,16 +161,22 @@ The Stately review resolved all 13 previously unresolved source markers: five
 map to header-bearing exact sources, one maps to a headerless exact source, and
 seven are genuine composites.
 
-The next Solidaria pass resolved 22 markers. Nineteen map to header-bearing
+The first Solidaria pass resolved 22 markers. Nineteen map to header-bearing
 exact sources, two map to headerless exact sources, and Breadcrumbs is a
-two-source composite. The report now finds 14 genuine composite files across
-the repository. Their complete source sets were read against the pinned
-upstream tree; the required multi-source header form is the remaining decision.
+two-source composite.
 
-`scripts/attribution-composite-reviews.json` records 63 upstream paths and the
+The second Solidaria pass resolved the remaining 13 markers. Ten files are
+genuine composites with explicit pinned paths. Three broad markers described
+local Solidaria code: one composition helper and two barrels.
+
+The report now finds 24 genuine composite files across the repository. Their
+complete source sets were read against the pinned upstream tree. The required
+multi-source header form is the remaining decision.
+
+`scripts/attribution-composite-reviews.json` records 139 upstream paths and the
 required local source text. The report compares each complete path set with the
 live marker result and exposes a review status in JSON. The header guard fails
-when a recorded set changes. All 14 records are satisfied.
+when a recorded set changes. All 24 records are satisfied.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -272,8 +284,8 @@ outputs that have no runtime bundle. `guard:package-artifacts` reads runtime
 and declaration source maps. It proves 377 mapped source-to-output references
 and covers all 213 attributed source files in the five Adobe-derived packages.
 
-The 14 composite reviews cover 63 pinned upstream files. Twenty-seven sources
-carry a full Adobe header; 36 have no per-file Adobe header. Their dated headers
+The 24 composite reviews cover 139 pinned upstream files. Sixty-eight sources
+carry a full Adobe header; 71 have no per-file Adobe header. Their dated headers
 span 2020 through 2026. The source-set evidence is settled. The correct local
 header form for mixed and differently dated sources is not.
 
@@ -329,10 +341,11 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 1. Resolve the Grid State historical/current-source header conflict before
    recording that mapping as reviewed.
-2. Decide and enforce the header form for the 14 verified composite mappings.
+2. Decide and enforce the header form for the 24 verified composite mappings.
    Their exact source sets are guarded.
-3. Review the 30 unresolved markers and 435 unmarked files. Separate derivative
-   source from original Proyecto Viviana source.
+3. Review the 17 unresolved markers and 438 unmarked files. The unresolved
+   markers are in the component and styled packages. Separate derivative source
+   from original Proyecto Viviana source.
 4. Review the generated groups and map each asset to an exact upstream input
    where possible.
 5. Update the icon generator after the generated-file mappings are confirmed.

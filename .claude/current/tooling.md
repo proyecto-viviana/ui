@@ -62,6 +62,12 @@ local file gains an unsupported Adobe header, or the required evidence changes.
 Add a record only after you review the exact source history and all applicable
 third-party notices.
 
+Reviewed multi-source mappings are recorded in
+`scripts/attribution-composite-reviews.json`. Each record fixes the local path,
+the complete upstream path set, and the required local evidence. The header
+guard fails if a recorded path set or its required evidence changes. Add a
+record only after you read every listed pinned source.
+
 `guard:attribution-headers` checks the confirmed header contract for each exact
 mapping. `sync:attribution-headers` copies the exact full Adobe block and adds
 the exact upstream path. It keeps a required `// @ts-nocheck` directive first.

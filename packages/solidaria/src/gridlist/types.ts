@@ -1,6 +1,12 @@
 /**
  * GridList ARIA types for GridList components.
- * Based on @react-aria/gridlist types.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/gridlist/useGridList.ts
+ * - packages/react-aria/src/gridlist/useGridListItem.ts
+ * - packages/react-aria/src/gridlist/useGridListSelectionCheckbox.ts
+ * - packages/react-aria/src/gridlist/useGridListSection.ts
+ *
+ * The orientation, direction, and collection-disabled fields are Solid-specific adapters.
  */
 
 import type { JSX } from "solid-js";

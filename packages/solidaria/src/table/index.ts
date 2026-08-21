@@ -1,6 +1,6 @@
 /**
- * Table accessibility primitives for Table components.
- * Based on @react-aria/table.
+ * Local Solidaria barrel for table accessibility primitives.
+ * Each exported module owns its upstream source mapping.
  */
 
 export { createTable, getTableData } from "./createTable";

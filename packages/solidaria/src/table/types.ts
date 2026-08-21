@@ -1,6 +1,16 @@
 /**
  * Table ARIA types for Table components.
- * Based on @react-aria/table types.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/table/useTable.ts
+ * - packages/react-aria/src/table/useTableHeaderRow.ts
+ * - packages/react-aria/src/table/useTableColumnHeader.ts
+ * - packages/react-aria/src/table/useTableRow.ts
+ * - packages/react-aria/src/table/useTableCell.ts
+ * - packages/react-aria/src/table/useTableRowGroup.ts
+ * - packages/react-aria/src/table/useTableSelectionCheckbox.ts
+ *
+ * The row-link event, row-group tag, and disabled-row checkbox field are
+ * Solid-specific adapters.
  */
 
 import type { JSX } from "solid-js";

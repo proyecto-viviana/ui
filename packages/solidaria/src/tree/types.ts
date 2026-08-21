@@ -1,6 +1,11 @@
 /**
  * Tree ARIA types.
- * Based on @react-aria/tree.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/tree/useTree.ts
+ * - packages/react-aria/src/tree/useTreeItem.ts
+ * - packages/react-aria/src/gridlist/useGridListSelectionCheckbox.ts
+ *
+ * This module combines the tree hooks with the grid-list checkbox pattern.
  */
 
 import type { JSX } from "solid-js";

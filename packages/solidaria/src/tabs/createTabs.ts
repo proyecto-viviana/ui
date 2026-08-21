@@ -1,6 +1,13 @@
 /**
  * ARIA hooks for tab components.
- * Based on @react-aria/tabs.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/tabs/useTabList.ts
+ * - packages/react-aria/src/tabs/useTab.ts
+ * - packages/react-aria/src/tabs/useTabPanel.ts
+ * - packages/react-aria/src/tabs/TabsKeyboardDelegate.ts
+ * - packages/react-aria/src/tabs/utils.ts
+ *
+ * This Solid module combines the upstream hooks and keyboard delegate.
  */
 
 import { type Accessor, batch, createEffect, createMemo } from "solid-js";

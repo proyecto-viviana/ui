@@ -1,6 +1,12 @@
 /**
  * Grid ARIA types for Table and GridList components.
- * Based on @react-aria/grid types.
+ * Based on these pinned React Aria sources:
+ * - packages/@react-types/shared/src/collections.d.ts
+ * - packages/react-aria/src/grid/useGrid.ts
+ * - packages/react-aria/src/grid/useGridRow.ts
+ * - packages/react-aria/src/grid/useGridCell.ts
+ *
+ * The key-based row and cell props adapt the upstream node-based API to Solid state.
  */
 
 import type { JSX } from "solid-js";

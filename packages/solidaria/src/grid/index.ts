@@ -1,6 +1,6 @@
 /**
- * Grid accessibility primitives for Table and GridList components.
- * Based on @react-aria/grid.
+ * Local Solidaria barrel for grid accessibility primitives.
+ * Each exported module owns its upstream source mapping.
  */
 
 export { createGrid, getGridData } from "./createGrid";

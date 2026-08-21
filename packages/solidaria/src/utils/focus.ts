@@ -1,6 +1,11 @@
 /**
  * Focus management utilities.
- * Based on @react-aria/utils focus utilities.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/utils/focusWithoutScrolling.ts
+ * - packages/react-aria/src/interactions/utils.ts
+ * - packages/react-aria/src/interactions/focusSafely.ts
+ *
+ * runAfterPaint and the focusVisible option are local Solid adapters.
  */
 
 import { getInteractionModality } from "../interactions/createInteractionModality";
