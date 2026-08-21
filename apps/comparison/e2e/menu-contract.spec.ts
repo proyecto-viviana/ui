@@ -69,7 +69,9 @@ async function expectKeyboardContract(
   const menu = await openMenuFromAria(page, trigger);
   await expect(trigger).toHaveAttribute("aria-expanded", "true");
   await expect(root).toHaveAttribute("data-comparison-last-open-state", "true");
-  await expect(menu.getByRole("menuitem", { name: /Copy/ })).toBeVisible();
+  const firstItem = menu.getByRole("menuitem", { name: /Copy/ });
+  await expect(firstItem).toBeVisible();
+  await expect(firstItem).toBeFocused();
 
   await page.keyboard.press("Escape");
 
@@ -77,6 +79,17 @@ async function expectKeyboardContract(
   await expect(trigger).toHaveAttribute("aria-expanded", "false");
   await expect(trigger).not.toHaveAttribute("aria-controls");
   await expect(root).toHaveAttribute("data-comparison-last-open-state", "false");
+  await expect(trigger).toBeFocused();
+
+  await page.keyboard.press("ArrowUp");
+
+  const reopenedMenu = await openMenuFromAria(page, trigger);
+  const lastItem = reopenedMenu.getByRole("menuitem", { name: /Delete/ });
+  await expect(lastItem).toBeVisible();
+  await expect(lastItem).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("menu")).toHaveCount(0);
   await expect(trigger).toBeFocused();
 }
 

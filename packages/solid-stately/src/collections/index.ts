@@ -48,6 +48,8 @@ export {
   createMenuTriggerState,
   type MenuStateProps,
   type MenuState,
+  type MenuTriggerType,
+  type MenuTriggerProps,
   type MenuTriggerStateProps,
   type MenuTriggerState,
 } from "./createMenuState";

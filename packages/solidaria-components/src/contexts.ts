@@ -48,6 +48,7 @@ export interface PopoverTriggerContextValue {
     open: () => void;
     close: () => void;
     toggle: () => void;
+    point?: () => { x: number; y: number } | null;
   };
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (el: HTMLElement | null) => void;

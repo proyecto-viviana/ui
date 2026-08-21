@@ -426,6 +426,7 @@ export function Popover(props: PopoverProps): JSX.Element {
           local.onOpenChange?.(true);
         }
       },
+      point: () => triggerContext?.state.point?.() ?? dialogTriggerContext?.state.point?.() ?? null,
     },
   );
 

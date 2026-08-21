@@ -88,6 +88,7 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { ActionButtonContext, ToggleButtonContext } from "../button/context";
 
 export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
 export type { MenuAlign, MenuDirection };
@@ -306,6 +307,8 @@ function menuPlacementAxis(
  */
 export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   const mergedProps = useProviderProps(props);
+  const actionButtonContext = useContext(ActionButtonContext);
+  const toggleButtonContext = useContext(ToggleButtonContext);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "align",
@@ -314,20 +317,35 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
     "class",
   ]);
   const size = () => normalizeMenuSize(local.size);
+  const actionButtonContextValue = mergeProps(actionButtonContext ?? {}, {
+    get holdAffordance() {
+      return headlessProps.trigger === "longPress";
+    },
+  });
+  const toggleButtonContextValue = mergeProps(toggleButtonContext ?? {}, {
+    get holdAffordance() {
+      return headlessProps.trigger === "longPress";
+    },
+  });
 
   return (
     <MenuSizeContext.Provider value={size()}>
-      <div class={[triggerWrapperStyles, local.class].filter(Boolean).join(" ")}>
-        <HeadlessMenuTrigger {...headlessProps}>
-          <MenuTriggerOverlayContext
-            align={() => local.align}
-            direction={() => local.direction}
-            shouldFlip={() => local.shouldFlip}
-          >
-            {props.children}
-          </MenuTriggerOverlayContext>
-        </HeadlessMenuTrigger>
-      </div>
+      <ActionButtonContext.Provider value={actionButtonContextValue}>
+        <ToggleButtonContext.Provider value={toggleButtonContextValue}>
+          <div class={[triggerWrapperStyles, local.class].filter(Boolean).join(" ")}>
+            <HeadlessMenuTrigger {...headlessProps}>
+              <MenuTriggerOverlayContext
+                align={() => local.align}
+                direction={() => local.direction}
+                shouldFlip={() => local.shouldFlip}
+                trigger={() => headlessProps.trigger}
+              >
+                {props.children}
+              </MenuTriggerOverlayContext>
+            </HeadlessMenuTrigger>
+          </div>
+        </ToggleButtonContext.Provider>
+      </ActionButtonContext.Provider>
     </MenuSizeContext.Provider>
   );
 }
@@ -337,6 +355,7 @@ interface MenuTriggerOverlayContextProps {
   align: () => MenuAlign | undefined;
   direction: () => MenuDirection | undefined;
   shouldFlip: () => boolean | undefined;
+  trigger: () => HeadlessMenuTriggerProps["trigger"];
 }
 
 function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.Element {
@@ -350,6 +369,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
       open: () => triggerContext?.state.open(),
       close: () => triggerContext?.state.close(),
       toggle: () => triggerContext?.state.toggle(),
+      point: () => triggerContext?.state.point() ?? null,
     },
     triggerRef: () => triggerElement(),
     setTriggerRef: (element: HTMLElement | null) => {
@@ -360,6 +380,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
       const current = triggerElement();
       if (!current || !current.isConnected) {
         setTriggerElement(element);
+        triggerContext?.setTriggerRef?.(element);
       }
     },
     triggerId,
@@ -372,6 +393,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
         align: props.align,
         direction: props.direction,
         shouldFlip: props.shouldFlip,
+        trigger: props.trigger,
       }}
     >
       <PopoverTriggerContext.Provider value={popoverTriggerContext}>
@@ -552,7 +574,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
           trigger="MenuTrigger"
           triggerRef={() => popoverTrigger?.triggerRef() ?? null}
           placement={popoverPlacement() as never}
-          offset={8}
+          offset={triggerOptions?.trigger() === "contextMenu" ? 0 : 8}
           shouldFlip={popoverShouldFlip()}
           autoFocus={false}
           class={getPopoverClassName}

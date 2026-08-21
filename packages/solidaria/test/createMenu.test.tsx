@@ -7,10 +7,17 @@ import { createRoot } from "solid-js";
 import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import {
   createMenuState,
-  createOverlayTriggerState,
+  createMenuTriggerState,
   type MenuState,
+  type MenuTriggerState,
 } from "../../solid-stately/src";
-import { createMenu, createMenuItem, createMenuTrigger } from "../src/menu";
+import {
+  createMenu,
+  createMenuItem,
+  createMenuTrigger,
+  type AriaMenuTriggerProps,
+} from "../src/menu";
+import { PressEvent } from "../src/interactions/createPress";
 
 describe("createMenu", () => {
   afterEach(() => {
@@ -1163,128 +1170,308 @@ describe("createMenu - accessibility warnings", () => {
 
 describe("createMenuTrigger", () => {
   afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     cleanup();
   });
 
-  it("returns trigger props with aria-haspopup", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({ type: "menu" }, state);
+  function renderTrigger(props: AriaMenuTriggerProps = {}) {
+    let state!: MenuTriggerState;
+    let trigger!: ReturnType<typeof createMenuTrigger>;
 
-      expect(menuTriggerProps["aria-haspopup"]).toBe("menu");
-      dispose();
-    });
-  });
-
-  it("sets aria-expanded based on state", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({}, state);
-
-      expect(menuTriggerProps["aria-expanded"]).toBe(false);
-
-      state.open();
-      const { menuTriggerProps: triggerPropsAfter } = createMenuTrigger({}, state);
-      expect(triggerPropsAfter["aria-expanded"]).toBe(true);
-      dispose();
-    });
-  });
-
-  it("sets aria-controls when open", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps, menuProps } = createMenuTrigger({}, state);
-
-      expect(menuTriggerProps["aria-controls"]).toBeUndefined();
-
-      state.open();
-      const { menuTriggerProps: triggerPropsAfter, menuProps: menuPropsAfter } = createMenuTrigger(
-        {},
-        state,
+    render(() => {
+      state = createMenuTriggerState(props);
+      trigger = createMenuTrigger(props, state);
+      const domProps = () => {
+        const {
+          onPress: _onPress,
+          onPressStart: _onPressStart,
+          preventFocusOnPress: _preventFocusOnPress,
+          ...rest
+        } = trigger.menuTriggerProps;
+        return rest;
+      };
+      return (
+        <button
+          {...domProps()}
+          aria-haspopup={trigger.menuTriggerProps["aria-haspopup"]}
+          aria-expanded={trigger.menuTriggerProps["aria-expanded"]}
+          aria-controls={trigger.menuTriggerProps["aria-controls"]}
+          aria-describedby={trigger.menuTriggerProps["aria-describedby"]}
+        >
+          Trigger
+        </button>
       );
-      expect(triggerPropsAfter["aria-controls"]).toBe(menuPropsAfter.id);
+    });
+
+    return {
+      button: screen.getByRole("button", { name: "Trigger" }),
+      state,
+      get menuProps() {
+        return trigger.menuProps;
+      },
+    };
+  }
+
+  it("links the trigger and menu with the upstream ARIA contract", () => {
+    const { button, state, menuProps } = renderTrigger({ type: "menu" });
+
+    expect(button).toHaveAttribute("aria-haspopup", "true");
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(button).not.toHaveAttribute("aria-controls");
+    expect(menuProps["aria-labelledby"]).toBe(button.id);
+    expect(menuProps.autoFocus).toBe(true);
+
+    state.open();
+    expect(button).toHaveAttribute("aria-expanded", "true");
+    expect(button).toHaveAttribute("aria-controls", menuProps.id);
+  });
+
+  it("opens on mouse press start, focuses the trigger, and focuses the menu root", () => {
+    createRoot((dispose) => {
+      const state = createMenuTriggerState();
+      const trigger = createMenuTrigger({}, state);
+      const button = document.createElement("button");
+      document.body.append(button);
+
+      trigger.menuTriggerProps.onPressStart?.(new PressEvent("pressstart", "mouse", null, button));
+
+      expect(state.isOpen()).toBe(true);
+      expect(state.focusStrategy()).toBeNull();
+      expect(trigger.menuProps.autoFocus).toBe(true);
+      expect(document.activeElement).toBe(button);
+      button.remove();
       dispose();
     });
   });
 
-  it("onPress toggles state", () => {
+  it("opens a virtual press at the first item", () => {
     createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({}, state);
+      const state = createMenuTriggerState();
+      const trigger = createMenuTrigger({}, state);
+      const button = document.createElement("button");
+      document.body.append(button);
 
+      trigger.menuTriggerProps.onPressStart?.(
+        new PressEvent("pressstart", "virtual", null, button),
+      );
+
+      expect(state.focusStrategy()).toBe("first");
+      expect(trigger.menuProps.autoFocus).toBe("first");
+      button.remove();
+      dispose();
+    });
+  });
+
+  it("waits for touch release and then toggles", () => {
+    createRoot((dispose) => {
+      const state = createMenuTriggerState();
+      const { menuTriggerProps } = createMenuTrigger({}, state);
+      const button = document.createElement("button");
+      document.body.append(button);
+      const start = new PressEvent("pressstart", "touch", null, button);
+      const release = new PressEvent("press", "touch", null, button);
+
+      menuTriggerProps.onPressStart?.(start);
       expect(state.isOpen()).toBe(false);
 
-      menuTriggerProps.onPress();
+      menuTriggerProps.onPress?.(release);
       expect(state.isOpen()).toBe(true);
+      expect(document.activeElement).toBe(button);
 
-      menuTriggerProps.onPress();
+      menuTriggerProps.onPress?.(release);
       expect(state.isOpen()).toBe(false);
+      button.remove();
       dispose();
     });
   });
 
-  it("does not toggle when disabled", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({ isDisabled: true }, state);
+  it("does not open disabled press or keyboard input", () => {
+    const { button, state } = renderTrigger({ isDisabled: true });
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    expect(state.isOpen()).toBe(false);
 
-      menuTriggerProps.onPress();
-      expect(state.isOpen()).toBe(false);
-      dispose();
-    });
+    const press = createMenuTrigger({ isDisabled: true }, state).menuTriggerProps;
+    press.onPressStart?.(new PressEvent("pressstart", "mouse", null, button));
+    press.onPress?.(new PressEvent("press", "touch", null, button));
+    expect(state.isOpen()).toBe(false);
   });
 
-  it("opens on ArrowDown key", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({}, state);
+  it.each([
+    ["Enter", false, "first"],
+    [" ", false, "first"],
+    ["ArrowDown", false, "first"],
+    ["ArrowUp", false, "last"],
+    ["ArrowDown", true, "first"],
+    ["ArrowUp", true, "last"],
+  ] as const)("opens press trigger with %s (Alt: %s) at %s", (key, altKey, strategy) => {
+    const { button, state } = renderTrigger();
+    const event = new KeyboardEvent("keydown", { key, altKey, bubbles: true, cancelable: true });
 
-      menuTriggerProps.onKeyDown({
-        key: "ArrowDown",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
+    button.dispatchEvent(event);
 
-      expect(state.isOpen()).toBe(true);
-      dispose();
-    });
+    expect(event.defaultPrevented).toBe(true);
+    expect(state.isOpen()).toBe(true);
+    expect(state.focusStrategy()).toBe(strategy);
   });
 
-  it("opens on Enter key", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({}, state);
-
-      menuTriggerProps.onKeyDown({
-        key: "Enter",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
-
-      expect(state.isOpen()).toBe(true);
-      dispose();
+  it("leaves a handled keyboard event closed", () => {
+    const { button, state } = renderTrigger();
+    const event = new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      bubbles: true,
+      cancelable: true,
     });
+    event.preventDefault();
+
+    button.dispatchEvent(event);
+
+    expect(state.isOpen()).toBe(false);
   });
 
-  it("opens on Space key", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuTriggerProps } = createMenuTrigger({}, state);
+  it("requires Alt for long-press keyboard activation", () => {
+    const { button, state } = renderTrigger({ trigger: "longPress" });
 
-      menuTriggerProps.onKeyDown({
-        key: " ",
-        preventDefault: vi.fn(),
-      } as unknown as KeyboardEvent);
+    fireEvent.keyDown(button, { key: "Enter" });
+    expect(state.isOpen()).toBe(false);
 
-      expect(state.isOpen()).toBe(true);
-      dispose();
-    });
+    fireEvent.keyDown(button, { key: "Enter", altKey: true });
+    expect(state.isOpen()).toBe(true);
+    expect(state.focusStrategy()).toBe("first");
   });
 
-  it("forwards autoFocus true in menuProps so createMenu can focus the root", () => {
-    createRoot((dispose) => {
-      const state = createOverlayTriggerState();
-      const { menuProps } = createMenuTrigger({}, state);
-      expect(menuProps.autoFocus).toBe(true);
-      dispose();
+  it("opens a long press at the first item and exposes the localized instruction", () => {
+    vi.useFakeTimers();
+    const { button, state } = renderTrigger({ trigger: "longPress" });
+
+    fireEvent.pointerDown(button, { pointerType: "touch" });
+    vi.advanceTimersByTime(500);
+
+    expect(state.isOpen()).toBe(true);
+    expect(state.focusStrategy()).toBe("first");
+    const descriptionId = button.getAttribute("aria-describedby");
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId!)).toHaveTextContent(
+      "Long press or press Alt + ArrowDown to open menu",
+    );
+  });
+
+  it("opens a context menu at the requested viewport point and removes popup ARIA", () => {
+    const { button, state } = renderTrigger({ trigger: "contextMenu" });
+    vi.spyOn(button, "getBoundingClientRect").mockReturnValue({
+      x: 100,
+      y: 200,
+      left: 100,
+      top: 200,
+      right: 140,
+      bottom: 220,
+      width: 40,
+      height: 20,
+      toJSON: () => ({}),
     });
+
+    const event = new MouseEvent("contextmenu", {
+      clientX: 112,
+      clientY: 214,
+      bubbles: true,
+      cancelable: true,
+    });
+    button.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(state.isOpen()).toBe(true);
+    expect(state.point()).toEqual({ x: 112, y: 214 });
+    expect(button).not.toHaveAttribute("aria-haspopup");
+    expect(button).not.toHaveAttribute("aria-expanded");
+    expect(button).not.toHaveAttribute("aria-controls");
+  });
+
+  it.each([
+    ["right click", { button: 2 }],
+    ["Control+click", { button: 0, ctrlKey: true }],
+  ])("closes an open context menu on a body %s", (_name, pointer) => {
+    const { button, state } = renderTrigger({ trigger: "contextMenu" });
+    fireEvent.contextMenu(button, { clientX: 4, clientY: 6 });
+    expect(state.isOpen()).toBe(true);
+
+    fireEvent.mouseDown(document.body, pointer);
+    expect(state.isOpen()).toBe(false);
+  });
+
+  it("uses a long press to open a context menu on iOS", () => {
+    vi.useFakeTimers();
+    vi.spyOn(window.navigator, "platform", "get").mockReturnValue("iPhone");
+    const { button, state } = renderTrigger({ trigger: "contextMenu" });
+    vi.spyOn(button, "getBoundingClientRect").mockReturnValue({
+      x: 100,
+      y: 200,
+      left: 100,
+      top: 200,
+      right: 140,
+      bottom: 220,
+      width: 40,
+      height: 20,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.pointerDown(button, {
+      pointerType: "touch",
+      clientX: 112,
+      clientY: 214,
+    });
+    vi.advanceTimersByTime(500);
+
+    expect(state.isOpen()).toBe(true);
+    expect(state.point()).toEqual({ x: 112, y: 214 });
+  });
+
+  it("does not open an iOS context menu when the long press is canceled", () => {
+    vi.useFakeTimers();
+    vi.spyOn(window.navigator, "platform", "get").mockReturnValue("iPhone");
+    const { button, state } = renderTrigger({ trigger: "contextMenu" });
+
+    fireEvent.pointerDown(button, { pointerType: "touch" });
+    vi.advanceTimersByTime(200);
+    fireEvent.pointerCancel(button, { pointerType: "touch" });
+    vi.advanceTimersByTime(400);
+
+    expect(state.isOpen()).toBe(false);
+  });
+
+  it("uses the trigger center for the macOS Control+Enter fallback", () => {
+    vi.useFakeTimers();
+    vi.spyOn(window.navigator, "platform", "get").mockReturnValue("MacIntel");
+    const { button, state } = renderTrigger({ trigger: "contextMenu" });
+    vi.spyOn(button, "getBoundingClientRect").mockReturnValue({
+      x: 100,
+      y: 200,
+      left: 100,
+      top: 200,
+      right: 140,
+      bottom: 220,
+      width: 40,
+      height: 20,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.keyDown(button, { key: "Enter", ctrlKey: true });
+    vi.advanceTimersByTime(10);
+
+    expect(state.isOpen()).toBe(true);
+    expect(state.point()).toEqual({ x: 120, y: 210 });
+  });
+
+  it("does not double-open when macOS Control+Enter also fires contextmenu", () => {
+    vi.useFakeTimers();
+    vi.spyOn(window.navigator, "platform", "get").mockReturnValue("MacIntel");
+    const { button, state } = renderTrigger({ trigger: "contextMenu" });
+    const open = vi.spyOn(state, "open");
+
+    fireEvent.keyDown(button, { key: "Enter", ctrlKey: true });
+    fireEvent.contextMenu(button, { clientX: 4, clientY: 6 });
+    vi.advanceTimersByTime(10);
+
+    expect(state.isOpen()).toBe(true);
+    expect(open).toHaveBeenCalledTimes(1);
   });
 });

@@ -277,7 +277,7 @@ export function Button(props: ButtonProps): JSX.Element {
     if (isDialogTrigger()) {
       dialogTriggerContext!.state.toggle();
     }
-    if (isPopoverTrigger()) {
+    if (isPopoverTrigger() && popoverTriggerContext!.trigger !== "MenuTrigger") {
       popoverTriggerContext!.state.toggle();
     }
   };

@@ -26,6 +26,10 @@ export interface OverlayTriggerState {
   close(): void;
   /** Toggles the overlay's visibility. */
   toggle(): void;
+  /** Cursor position relative to the window viewport. */
+  readonly point: Accessor<{ x: number; y: number } | null>;
+  /** Sets the cursor position relative to the window viewport. */
+  setPoint(point: { x: number; y: number }): void;
 }
 
 /**
@@ -38,6 +42,7 @@ export function createOverlayTriggerState(
   const propsAccessor = () => access(props);
 
   const [internalOpen, setInternalOpen] = createSignal(propsAccessor().defaultOpen ?? false);
+  const [point, setPoint] = createSignal<{ x: number; y: number } | null>(null);
 
   const isOpen: Accessor<boolean> = () => {
     const p = propsAccessor();
@@ -62,5 +67,7 @@ export function createOverlayTriggerState(
     open,
     close,
     toggle,
+    point,
+    setPoint,
   };
 }

@@ -1,4 +1,5 @@
 import { createContext } from "solid-js";
+import type { MenuTriggerType } from "@proyecto-viviana/solid-stately";
 import type { S2MenuSize } from "./s2-menu-styles";
 
 export type MenuAlign = "start" | "end";
@@ -8,6 +9,7 @@ export interface MenuTriggerOptionsContextValue {
   align: () => MenuAlign | undefined;
   direction: () => MenuDirection | undefined;
   shouldFlip: () => boolean | undefined;
+  trigger: () => MenuTriggerType | undefined;
 }
 
 export const MenuSizeContext = createContext<S2MenuSize>("M");

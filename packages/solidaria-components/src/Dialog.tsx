@@ -135,6 +135,8 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
         restoreFocusToTrigger();
       }
     },
+    point: state.point,
+    setPoint: state.setPoint,
   };
 
   const setTriggerRef = (el: HTMLElement | null) => {

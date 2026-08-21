@@ -86,14 +86,15 @@ export function createMenuState<T = unknown>(
   };
 }
 
-export interface MenuTriggerStateProps {
-  /** Whether the menu is open (controlled). */
-  isOpen?: boolean;
-  /** Default open state (uncontrolled). */
-  defaultOpen?: boolean;
-  /** Handler called when the open state changes. */
-  onOpenChange?: (isOpen: boolean) => void;
+export type MenuTriggerType = "press" | "longPress" | "contextMenu";
+
+export interface MenuTriggerProps extends OverlayTriggerProps {
+  /** How the menu is triggered. */
+  trigger?: MenuTriggerType;
 }
+
+/** @deprecated Use `MenuTriggerProps`. */
+export interface MenuTriggerStateProps extends MenuTriggerProps {}
 
 export interface MenuTriggerState {
   /** Whether the menu is open. */
@@ -110,6 +111,10 @@ export interface MenuTriggerState {
   readonly focusStrategy: () => "first" | "last" | null;
   /** Set the focus strategy. */
   setFocusStrategy(strategy: "first" | "last" | null): void;
+  /** Cursor position relative to the window viewport. */
+  readonly point: () => { x: number; y: number } | null;
+  /** Sets the cursor position relative to the window viewport. */
+  setPoint(point: { x: number; y: number }): void;
 }
 
 /**
@@ -117,9 +122,9 @@ export interface MenuTriggerState {
  * overlay open state plus the focus strategy passed through to `createMenu`.
  */
 export function createMenuTriggerState(
-  props: MaybeAccessor<MenuTriggerStateProps> = {},
+  props: MaybeAccessor<MenuTriggerProps> = {},
 ): MenuTriggerState {
-  const overlay = createOverlayTriggerState(props as MaybeAccessor<OverlayTriggerProps>);
+  const overlay = createOverlayTriggerState(props);
   const [focusStrategy, setFocusStrategy] = createSignal<"first" | "last" | null>(null);
 
   return {

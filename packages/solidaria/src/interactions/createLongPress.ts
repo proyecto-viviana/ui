@@ -8,7 +8,7 @@ import { JSX, onCleanup } from "solid-js";
 import { createPress, type PressEvent } from "./createPress";
 import { mergeProps, focusWithoutScrolling, createGlobalListeners } from "../utils";
 import { createDescription } from "../utils/createDescription";
-import { type MaybeAccessor } from "../utils/reactivity";
+import { access, type MaybeAccessor } from "../utils/reactivity";
 
 export interface LongPressEvent {
   /** The type of long press event being fired. */
@@ -55,7 +55,7 @@ export interface LongPressProps {
    * A description for assistive technology users indicating that a long press
    * action is available, e.g. "Long press to open menu".
    */
-  accessibilityDescription?: string;
+  accessibilityDescription?: MaybeAccessor<string | undefined>;
 }
 
 export interface LongPressResult {
@@ -151,7 +151,7 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
   });
 
   const descriptionProps = createDescription(() =>
-    onLongPress && !isDisabledValue(isDisabled) ? accessibilityDescription : undefined,
+    onLongPress && !isDisabledValue(isDisabled) ? access(accessibilityDescription) : undefined,
   );
 
   onCleanup(() => {

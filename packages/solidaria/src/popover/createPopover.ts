@@ -25,6 +25,8 @@ export interface OverlayTriggerState {
   close: () => void;
   /** Toggles the overlay's open state. */
   toggle: () => void;
+  /** Cursor position relative to the window viewport. */
+  point?: () => { x: number; y: number } | null;
 }
 
 export interface AriaPopoverProps extends Omit<
@@ -143,6 +145,19 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
     },
     get onClose() {
       return isNonModal() && !isSubmenu() ? state.close : null;
+    },
+    get getTargetRect() {
+      if (props.getTargetRect) {
+        return props.getTargetRect;
+      }
+
+      const point = state.point?.();
+      return point
+        ? () => {
+            const currentPoint = state.point?.();
+            return currentPoint ? new DOMRect(currentPoint.x, currentPoint.y, 0, 0) : null;
+          }
+        : undefined;
     },
   });
 
