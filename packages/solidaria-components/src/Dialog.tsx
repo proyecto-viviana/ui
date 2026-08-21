@@ -174,7 +174,10 @@ export function Dialog(props: DialogProps): JSX.Element {
     ["role", "aria-label", "aria-labelledby", "aria-describedby"],
   );
 
-  let dialogRef!: HTMLElement;
+  let dialogRef: HTMLElement | undefined;
+  const setDialogRef = (element: HTMLElement) => {
+    dialogRef = element;
+  };
 
   // Get trigger context for aria-labelledby fallback
   const triggerContext = useContext(DialogTriggerContext);
@@ -250,7 +253,7 @@ export function Dialog(props: DialogProps): JSX.Element {
       <section
         {...dialogProps()}
         {...domProps()}
-        ref={dialogRef}
+        ref={setDialogRef}
         class={renderProps.class()}
         style={renderProps.style()}
         slot={local.slot}
@@ -300,6 +303,9 @@ export function Heading(props: HeadingProps): JSX.Element {
   const level = () => props.level ?? 2;
   const id = () => dialogContext?.titleId;
   let headingRef: HTMLHeadingElement | undefined;
+  const setHeadingRef = (element: HTMLHeadingElement) => {
+    headingRef = element;
+  };
 
   createEffect(() => {
     const el = headingRef;
@@ -323,32 +329,32 @@ export function Heading(props: HeadingProps): JSX.Element {
   return (
     <Switch>
       <Match when={level() === 1}>
-        <h1 ref={headingRef} id={id()} class={props.class}>
+        <h1 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h1>
       </Match>
       <Match when={level() === 2}>
-        <h2 ref={headingRef} id={id()} class={props.class}>
+        <h2 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h2>
       </Match>
       <Match when={level() === 3}>
-        <h3 ref={headingRef} id={id()} class={props.class}>
+        <h3 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h3>
       </Match>
       <Match when={level() === 4}>
-        <h4 ref={headingRef} id={id()} class={props.class}>
+        <h4 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h4>
       </Match>
       <Match when={level() === 5}>
-        <h5 ref={headingRef} id={id()} class={props.class}>
+        <h5 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h5>
       </Match>
       <Match when={level() === 6}>
-        <h6 ref={headingRef} id={id()} class={props.class}>
+        <h6 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h6>
       </Match>

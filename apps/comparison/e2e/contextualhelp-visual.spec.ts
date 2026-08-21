@@ -292,4 +292,26 @@ test.describe("comparison ContextualHelp parity", () => {
     );
     await expect(page.getByRole("tooltip")).toHaveCount(0);
   });
+
+  test("Solid built output focuses, dismisses, and restores the trigger", async ({ page }) => {
+    const setup = await setupContextualHelpRoute(page, { triggerLabel: "Build behavior" });
+    await bringTriggerIntoViewport(setup.solidButton);
+
+    await setup.solidButton.click();
+    let dialog = await dialogForTrigger(setup.solidButton, "Permission required");
+    expect(await dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true);
+
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(setup.solidButton).toHaveAttribute("aria-expanded", "false");
+    await expect(setup.solidButton).toBeFocused();
+
+    await setup.solidButton.click();
+    dialog = await dialogForTrigger(setup.solidButton, "Permission required");
+    await expect(dialog).toBeVisible();
+
+    await page.mouse.click(4, 4);
+    await expect(dialog).toHaveCount(0);
+    await expect(setup.solidButton).toHaveAttribute("aria-expanded", "false");
+  });
 });

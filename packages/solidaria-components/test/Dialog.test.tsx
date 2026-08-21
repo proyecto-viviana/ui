@@ -331,7 +331,9 @@ describe("DialogTrigger", () => {
     await user.click(button);
     vi.runAllTimers();
 
-    expect(screen.getByRole("dialog")).toHaveAttribute("aria-labelledby", button.id);
+    const dialog = screen.getByRole("dialog", { name: "Settings" });
+    expect(dialog).toHaveAttribute("aria-labelledby", button.id);
+    expect(dialog).toHaveAccessibleName("Settings");
   });
 
   it("should support render props", async () => {

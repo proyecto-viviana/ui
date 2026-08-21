@@ -5799,7 +5799,9 @@ function ReactDialogDemo() {
                 role: demoProps.role,
                 size: demoProps.size,
                 children: [
-                  jsx(SpectrumHeading, { slot: "title", children: demoProps.title }),
+                  demoProps.hasTitle
+                    ? jsx(SpectrumHeading, { slot: "title", children: demoProps.title })
+                    : null,
                   jsx(SpectrumContent, {
                     children: jsx(SpectrumText, {
                       children: demoProps.body,

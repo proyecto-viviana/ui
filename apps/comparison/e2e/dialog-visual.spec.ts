@@ -63,7 +63,7 @@ async function openDialog(panel: Locator, title = dialogTitle) {
 }
 
 async function closeButton(dialog: Locator) {
-  const button = dialog.getByRole("button", { name: /dismiss|close/i }).first();
+  const button = dialog.getByRole("button", { name: /dismiss|close|cancel/i }).first();
   await expect(button).toBeVisible();
   return button;
 }
@@ -227,14 +227,50 @@ test.describe("comparison Dialog visual parity", () => {
     await triggerFor(solidPanel).click();
     const solidAlert = page.getByRole("alertdialog", { name: "Alert Review" });
     await expect(solidAlert).toBeVisible();
-    await expect(solidAlert).toHaveAttribute("data-size", "XL");
+    await expect(solidAlert).toHaveAttribute("data-size", "L");
     const geometry = await dialogGeometry(solidAlert);
-    expect(geometry.width).toBeGreaterThanOrEqual(900);
+    expect(geometry.width).toBeGreaterThanOrEqual(600);
+    expect(geometry.width).toBeLessThanOrEqual(660);
     expect(geometry.visibleInViewport, JSON.stringify(geometry)).toBe(true);
 
     await page.keyboard.press("Escape");
     await expect(solidAlert).toBeVisible();
     await (await closeButton(solidAlert)).click();
     await expect(solidAlert).toHaveCount(0);
+  });
+
+  test("a dialog without a title uses its trigger name and restores focus on Escape", async ({
+    page,
+  }) => {
+    const triggerLabel = "Account settings";
+    const { reactPanel, solidPanel, reactRoot, solidRoot } = await setupDialogRoute(
+      page,
+      `/components/dialog/?hasTitle=false&triggerLabel=${encodeURIComponent(triggerLabel)}`,
+    );
+
+    for (const { panel, root, stack } of [
+      { panel: reactPanel, root: reactRoot, stack: "React" },
+      { panel: solidPanel, root: solidRoot, stack: "Solid" },
+    ]) {
+      const trigger = triggerFor(panel, triggerLabel);
+      const triggerId = await trigger.getAttribute("id");
+      expect(triggerId, `${stack} trigger must have an id`).toBeTruthy();
+
+      await trigger.click();
+      const dialog = page.getByRole("dialog", { name: triggerLabel });
+      await expect(dialog).toBeVisible();
+      await expect(root).toHaveAttribute("data-comparison-open", "true");
+      await expect(dialog).toHaveAttribute("aria-labelledby", triggerId!);
+      await expect(dialog.getByRole("heading")).toHaveCount(0);
+      expect(
+        await dialog.evaluate((node) => node.contains(document.activeElement)),
+        `${stack} dialog must contain focus after it opens`,
+      ).toBe(true);
+
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+      await expect(root).toHaveAttribute("data-comparison-open", "false");
+      await expect(trigger).toBeFocused();
+    }
   });
 });

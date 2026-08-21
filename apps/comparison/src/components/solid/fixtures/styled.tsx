@@ -6687,13 +6687,15 @@ function SolidSpectrumDialogDemo() {
                       },
                       [
                         () => [
-                          hc(
-                            SolidSpectrumHeading,
-                            {
-                              slot: "title",
-                            },
-                            [() => demoProps().title],
-                          ),
+                          demoProps().hasTitle
+                            ? hc(
+                                SolidSpectrumHeading,
+                                {
+                                  slot: "title",
+                                },
+                                [() => demoProps().title],
+                              )
+                            : null,
                           hc(SolidSpectrumContent, {}, [
                             () => hc(SolidSpectrumText, {}, [() => demoProps().body]),
                           ]),

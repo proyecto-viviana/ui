@@ -888,6 +888,9 @@ export function GridListSelectionCheckbox(props: {
 
 export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Element {
   let sentinelRef: HTMLDivElement | undefined;
+  const setSentinelRef = (element: HTMLDivElement) => {
+    sentinelRef = element;
+  };
   const [isPending, setIsPending] = createSignal(false);
   const isLoading = () => !!props.isLoading || isPending();
 
@@ -932,7 +935,7 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={sentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
       </div>
       <div
         role="row"

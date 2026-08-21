@@ -18,6 +18,11 @@ comparison app.
 - `check-package-macro-sourcemaps.mjs` transforms a fixed S2 style-macro fixture
   and traces a generated binding to its authored line and column. Published
   styled-package builds also fail if Rolldown reports `SOURCEMAP_BROKEN`.
+- `check-jsx-ref-dead-code.ts` rejects new direct JSX refs backed by local
+  `let` bindings. Its exact allowlist contains 12 styling refs whose reads
+  remain in emitted JSX callbacks. It also transforms the repaired dialog and
+  load-more sources plus a negative fixture, and fails if observable ref,
+  callback, focus, or close behavior disappears.
 - `check-changeset-required.mjs` enforces changesets for releasable packages.
 - `check-layer-boundary.ts` freezes the solid-spectrum ↔ viviana-ui dual-tree
   inventory (ticket #2). New forks of baselined-identical Spectrum files into
