@@ -3,7 +3,7 @@ id: 10
 type: task
 title: "Simplify the live documentation and planning system"
 created: 2026-08-20
-status: in-progress
+status: verified
 history:
   - {
       state: open,
@@ -50,6 +50,11 @@ history:
       at: 2026-08-20,
       note: "verified the task authority, reduced live docs, Simplified English pass, generated evidence, contract checks, and admin projection",
     }
+  - {
+      state: verified,
+      at: 2026-08-21,
+      note: "closed the documentation reorganization after all focused organization tickets passed; follow-up engineering gaps remain in their owning tickets",
+    }
 ---
 
 The repository had multiple sources for work state, volatile results, and
@@ -69,9 +74,10 @@ not replace them.
 - Ticket #19 owns the attribution plan that formerly lived under public
   `docs/`.
 
-## Resume here
+## Next work
 
-Continue the remaining focused tickets in this order:
+The documentation reorganization is complete. Continue the engineering work in
+this order:
 
 1. Complete the acceptance evidence model in #11.
 2. Prove the behavior gaps in #17, #18, and #20.

@@ -4,7 +4,7 @@ type: task
 title: "Complete the component acceptance evidence model"
 created: 2026-08-20
 parent: 24
-status: open
+status: next
 history:
   - { state: open, at: 2026-08-20, note: "opened from the acceptance-schema review of a8ecda44" }
   - {
@@ -16,6 +16,11 @@ history:
       state: open,
       at: 2026-08-20,
       note: "stopped translating pending into the canonical not-started outcome",
+    }
+  - {
+      state: next,
+      at: 2026-08-21,
+      note: "selected by the documented order in tickets #10 and #87 after the release and documentation reorganization closed",
     }
 ---
 

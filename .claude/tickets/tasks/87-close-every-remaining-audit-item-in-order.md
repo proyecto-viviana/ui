@@ -17,6 +17,11 @@ history:
       at: 2026-08-20,
       note: "absorbed the open recertification and 2026-08 upstream branches through ticket 129",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "made ticket #11 the single next task after the release and documentation reorganization closed",
+    }
 ---
 
 Work through the numbered census below. Do not skip an open item because a later
