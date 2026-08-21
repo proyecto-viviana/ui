@@ -3,17 +3,16 @@
 Proyecto Viviana stands on a great deal of prior work. This document credits
 every material we **sourced from**, **referenced**, or were **inspired by**.
 
-Our own work is licensed under the [MIT License](LICENSE) — kept deliberately
-permissive. Direct upstream-license compliance is required for one stack only:
-**Adobe's React Spectrum** (Apache-2.0), which our packages are ported from. The
-legal attribution for that lives in [`NOTICE`](NOTICE) and
-[`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0); this document is the readable
-companion.
+Our original work uses the [MIT License](LICENSE). Derived work keeps its
+upstream terms. The Adobe port stack uses Apache-2.0; its project attribution
+is in [`NOTICE`](NOTICE) and [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0).
+The Kumo section identifies its upstream MIT notice. This document is the
+readable companion.
 
 ## Sourced — Adobe React Spectrum (Apache-2.0)
 
-The shared foundation and `solid-spectrum` are a SolidJS **port project** for
-Adobe's React Spectrum stack. This is direct, derivative-work use.
+The shared foundation, `solid-spectrum`, and the Spectrum-derived part of
+`@proyecto-viviana/ui` are a SolidJS **port project** for Adobe's stack.
 
 | Our package                              | Ported from             | Upstream license |
 | ---------------------------------------- | ----------------------- | ---------------- |
@@ -21,11 +20,14 @@ Adobe's React Spectrum stack. This is direct, derivative-work use.
 | `@proyecto-viviana/solidaria`            | `@react-aria/*`         | Apache-2.0       |
 | `@proyecto-viviana/solidaria-components` | `react-aria-components` | Apache-2.0       |
 | `@proyecto-viviana/solid-spectrum`       | `@react-spectrum/s2`    | Apache-2.0       |
+| `@proyecto-viviana/ui`                   | `@react-spectrum/s2`    | Apache-2.0       |
 
 - Source: <https://github.com/adobe/react-spectrum> — Copyright 2019 Adobe.
-- Ported files retain Adobe's original copyright header and a `Ported from` /
-  `Based on` link to the exact upstream module they descend from.
+- Files with verified mappings identify the applicable upstream source. The
+  exact per-file mapping audit is not complete.
 - Significant changes (React → SolidJS) are summarized in [`NOTICE`](NOTICE).
+- Each Adobe-derived package archive includes the MIT license, Apache-2.0
+  license, and project NOTICE.
 
 We also use, as runtime/peer dependencies or vendored reference, further
 Apache-2.0 material from Adobe:
@@ -115,9 +117,10 @@ first authority, followed by official Adobe docs, then formal specs.
 
 ## How attribution is kept current
 
-- Ported source files keep their upstream copyright header and a
-  `Ported from` / `Based on` reference inline.
-- Project-level Apache-2.0 obligations are in [`NOTICE`](NOTICE) and
-  [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0).
+- Root `LICENSE`, `LICENSE-APACHE-2.0`, and `NOTICE` are the sources for
+  package archive copies.
+- A release guard checks package metadata and exact file contents.
+- Source-specific notices are added only after the upstream mapping is
+  verified.
 - New sourced/referenced/inspired material should be added to this file in the
   same change that introduces it.

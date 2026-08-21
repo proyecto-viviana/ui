@@ -23,6 +23,10 @@ comparison app.
   remain in emitted JSX callbacks. It also transforms the repaired dialog and
   load-more sources plus a negative fixture, and fails if observable ref,
   callback, focus, or close behavior disappears.
+- `check-package-attribution.mjs` checks the six public package manifests and
+  their shipped license files. It also reports the current Adobe header and
+  source-marker inventory without treating incomplete counts as an accepted
+  baseline.
 - `check-changeset-required.mjs` enforces changesets for releasable packages.
 - `check-layer-boundary.ts` freezes the solid-spectrum ↔ viviana-ui dual-tree
   inventory (ticket #2). New forks of baselined-identical Spectrum files into

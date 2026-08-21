@@ -210,6 +210,59 @@ try {
   );
   console.log("PASS: missing package export artifact exits non-zero.");
 
+  const attributionFixture = path.join(fixtureRoot, "changed-package-notice");
+  mkdirSync(attributionFixture, { recursive: true });
+  const adobePackages = [
+    ["packages/solid-stately", "@proyecto-viviana/solid-stately"],
+    ["packages/solidaria", "@proyecto-viviana/solidaria"],
+    ["packages/solidaria-components", "@proyecto-viviana/solidaria-components"],
+    ["packages/solid-spectrum", "@proyecto-viviana/solid-spectrum"],
+    ["packages/viviana-ui", "@proyecto-viviana/ui"],
+  ];
+  const fixtureMit = "Proyecto Viviana MIT fixture\n";
+  const fixtureApache = "Apache-2.0 fixture\n";
+  const fixtureNotice = adobePackages.map(([, name]) => name).join("\n") + "\n";
+  writeFileSync(path.join(attributionFixture, "LICENSE"), fixtureMit);
+  writeFileSync(path.join(attributionFixture, "LICENSE-APACHE-2.0"), fixtureApache);
+  writeFileSync(path.join(attributionFixture, "NOTICE"), fixtureNotice);
+  writeFileSync(path.join(attributionFixture, "CREDITS.md"), fixtureNotice);
+
+  for (const [packageDir, name] of adobePackages) {
+    json(path.join(attributionFixture, packageDir, "package.json"), {
+      name,
+      license: "MIT AND Apache-2.0",
+      files: ["src", "LICENSE", "LICENSE-APACHE-2.0", "NOTICE"],
+    });
+    mkdirSync(path.join(attributionFixture, packageDir, "src"), { recursive: true });
+    writeFileSync(path.join(attributionFixture, packageDir, "src", "index.ts"), "export {};\n");
+    writeFileSync(path.join(attributionFixture, packageDir, "LICENSE"), fixtureMit);
+    writeFileSync(path.join(attributionFixture, packageDir, "LICENSE-APACHE-2.0"), fixtureApache);
+    writeFileSync(path.join(attributionFixture, packageDir, "NOTICE"), fixtureNotice);
+  }
+
+  const kumoFixture = path.join(attributionFixture, "packages", "kumo");
+  json(path.join(kumoFixture, "package.json"), {
+    name: "@proyecto-viviana/kumo",
+    license: "MIT",
+    files: ["src", "LICENSE", "LICENSE-CLOUDFLARE"],
+  });
+  writeFileSync(path.join(kumoFixture, "LICENSE"), fixtureMit);
+  writeFileSync(path.join(kumoFixture, "LICENSE-CLOUDFLARE"), "Cloudflare MIT fixture\n");
+
+  writeFileSync(
+    path.join(attributionFixture, "packages", "solidaria", "NOTICE"),
+    "changed notice\n",
+  );
+  const changedPackageNotice = runSync("check-package-attribution.mjs", attributionFixture);
+  assert(changedPackageNotice.status !== 0, "changed package NOTICE unexpectedly passed");
+  assert(
+    combined(changedPackageNotice).includes(
+      "packages/solidaria/NOTICE: content differs from root NOTICE",
+    ),
+    "attribution failure did not identify the changed package NOTICE",
+  );
+  console.log("PASS: changed package NOTICE exits non-zero.");
+
   const unpublishedPrerequisiteFixture = path.join(fixtureRoot, "unpublished-prerequisite");
   json(path.join(unpublishedPrerequisiteFixture, "packages", "kumo", "package.json"), {
     name: "@proyecto-viviana/kumo",

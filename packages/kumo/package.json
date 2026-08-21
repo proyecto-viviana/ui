@@ -21,6 +21,7 @@
   "files": [
     "dist",
     "src",
+    "LICENSE",
     "LICENSE-CLOUDFLARE"
   ],
   "type": "module",
