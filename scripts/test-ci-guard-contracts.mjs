@@ -421,6 +421,7 @@ try {
   for (const directory of [
     "packages/solid-stately/src/calendar",
     "packages/solid-stately/src/disclosure",
+    "packages/solid-stately/src/table",
     "packages/solidaria/src/color/intl",
     "packages/solidaria/src/focus",
     "packages/solidaria/src/utils",
@@ -441,6 +442,7 @@ try {
     "react-spectrum/packages/react-stately/src/disclosure",
     "react-spectrum/packages/@react-spectrum/s2/ui-icons",
     "react-spectrum/packages/@react-spectrum/s2/style",
+    "react-spectrum/packages/@react-types/table/src",
   ]) {
     mkdirSync(path.join(mappingFixture, directory), { recursive: true });
   }
@@ -458,6 +460,10 @@ try {
   writeFileSync(
     path.join(mappingFixture, "react-spectrum/packages/react-aria/src/table/useTable.ts"),
     `${fullAdobeHeader}export const useTable = true;\n`,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "react-spectrum/packages/@react-types/table/src/index.d.ts"),
+    `${fullAdobeHeader}export type TableSource = true;\n`,
   );
   for (const symbol of ["useDisclosureState", "useDisclosureGroupState"]) {
     writeFileSync(
@@ -547,6 +553,10 @@ try {
   writeFileSync(
     path.join(mappingFixture, "packages/solidaria/src/table/createTable.ts"),
     exactSource,
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-stately/src/table/types.ts"),
+    "// Ported from packages/@react-types/table/src/index.d.ts.\nexport type LocalTable = true;\n",
   );
   writeFileSync(
     path.join(mappingFixture, "packages/solidaria/src/table/useTable.ts"),
@@ -650,6 +660,12 @@ try {
     mappingByPath.get("packages/solid-spectrum/src/style/runtime.ts")?.status === "exact",
     "an exact S2 repository path did not resolve",
   );
+  const declarationMapping = mappingByPath.get("packages/solid-stately/src/table/types.ts");
+  assert(
+    declarationMapping?.status === "exact" &&
+      declarationMapping.upstreamPaths[0] === "packages/@react-types/table/src/index.d.ts",
+    "an explicit upstream declaration path did not resolve",
+  );
   assert(
     mappingByPath.get("packages/solidaria-components/src/hidden-date-input.ts")?.status ===
       "exact-no-header",
@@ -663,10 +679,10 @@ try {
     "ordinary API documentation was misclassified as source evidence",
   );
   assert(
-    mappingReport.summary.headerContracts.files === 6 &&
+    mappingReport.summary.headerContracts.files === 7 &&
       mappingReport.summary.headerContracts.statuses.satisfied === 1 &&
       mappingReport.summary.headerContracts.statuses.mismatch === 3 &&
-      mappingReport.summary.headerContracts.statuses.missing === 2,
+      mappingReport.summary.headerContracts.statuses.missing === 3,
     "exact header contract states were not reported",
   );
   const reviewedHeaderless = mappingByPath.get("packages/solidaria/src/focus/createFocusRing.ts");
@@ -753,7 +769,7 @@ try {
     "--write-headers",
   ]);
   assert(headerWrite.status === 0, `header writer failed:\n${combined(headerWrite)}`);
-  assert(combined(headerWrite).includes("wrote 5 exact-source header contracts"));
+  assert(combined(headerWrite).includes("wrote 6 exact-source header contracts"));
 
   const managedTable = readFileSync(
     path.join(mappingFixture, "packages/solidaria/src/table/createTable.ts"),

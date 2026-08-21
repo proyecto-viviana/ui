@@ -1,7 +1,9 @@
 /**
  * Helpers for traversing collection nodes and comparing their document order.
  *
- * Based on @react-stately/collections.
+ * Ported from:
+ * - packages/react-stately/src/collections/getChildNodes.ts
+ * - packages/react-stately/src/collections/getItemCount.ts
  */
 
 import type { Collection, CollectionNode } from "./types";
@@ -51,8 +53,8 @@ const itemCountCache = new WeakMap<Collection<unknown>, number>();
 
 /**
  * Counts the item nodes (recursing into sections, ignoring section headers and
- * other non-item nodes) in a collection. Faithful port of
- * @react-stately/collections `getItemCount`; used by createOption to populate
+ * other non-item nodes) in a collection. Ported from
+ * packages/react-stately/src/collections/getItemCount.ts; used by createOption to populate
  * `aria-setsize` when the listbox is virtualized. Cached per (immutable)
  * collection identity, exactly like upstream.
  */

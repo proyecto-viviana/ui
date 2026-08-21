@@ -1,6 +1,8 @@
 /**
  * Tree collection types for Tree components.
- * Based on @react-stately/tree.
+ * Ported from:
+ * - packages/react-stately/src/tree/TreeCollection.ts
+ * - packages/react-stately/src/tree/useTreeState.ts
  */
 
 import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";

@@ -150,7 +150,11 @@ function slash(file) {
   return file.split(path.sep).join("/");
 }
 
-function sourceFiles(directory, extensions = /\.(?:ts|tsx)$/) {
+function sourceFiles(
+  directory,
+  extensions = /\.(?:ts|tsx)$/,
+  { includeDeclarations = false } = {},
+) {
   if (!existsSync(directory)) return [];
 
   const files = [];
@@ -158,9 +162,13 @@ function sourceFiles(directory, extensions = /\.(?:ts|tsx)$/) {
     const absolutePath = path.join(directory, entry.name);
     if (entry.isDirectory()) {
       if (entry.name !== "node_modules") {
-        files.push(...sourceFiles(absolutePath, extensions));
+        files.push(...sourceFiles(absolutePath, extensions, { includeDeclarations }));
       }
-    } else if (entry.isFile() && extensions.test(entry.name) && !entry.name.endsWith(".d.ts")) {
+    } else if (
+      entry.isFile() &&
+      extensions.test(entry.name) &&
+      (includeDeclarations || !entry.name.endsWith(".d.ts"))
+    ) {
       files.push(absolutePath);
     }
   }
@@ -319,18 +327,18 @@ const generatorNotices = new Set(
     .map(normalizedComment),
 );
 
-const upstreamFiles = sourceFiles(upstreamRoot, /\.(?:ts|tsx|js|jsx|css|svg|json)$/).map(
-  (absolutePath) => {
-    const relativePath = slash(path.relative(path.join(root, "react-spectrum"), absolutePath));
-    const extension = path.extname(absolutePath);
-    return {
-      absolutePath,
-      relativePath,
-      stem: path.basename(absolutePath, extension),
-      content: readFileSync(absolutePath, "utf8"),
-    };
-  },
-);
+const upstreamFiles = sourceFiles(upstreamRoot, /\.(?:ts|tsx|js|jsx|css|svg|json)$/, {
+  includeDeclarations: true,
+}).map((absolutePath) => {
+  const relativePath = slash(path.relative(path.join(root, "react-spectrum"), absolutePath));
+  const extension = path.extname(absolutePath);
+  return {
+    absolutePath,
+    relativePath,
+    stem: path.basename(absolutePath, extension),
+    content: readFileSync(absolutePath, "utf8"),
+  };
+});
 const upstreamByPath = new Map(upstreamFiles.map((file) => [file.relativePath, file]));
 
 function unique(files) {

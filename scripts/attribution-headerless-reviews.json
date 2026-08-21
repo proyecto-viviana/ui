@@ -1,5 +1,10 @@
 [
   {
+    "localPath": "packages/solid-stately/src/color/types.ts",
+    "upstreamPath": "packages/react-stately/src/color/types.ts",
+    "requiredText": ["Color types for color picker components.", "export interface Color"]
+  },
+  {
     "localPath": "packages/solidaria/src/datepicker/createDatePickerGroup.ts",
     "upstreamPath": "packages/react-aria/src/datepicker/useDatePickerGroup.ts",
     "requiredText": ["@react-aria/datepicker `useDatePickerGroup`"]

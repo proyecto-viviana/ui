@@ -1,6 +1,8 @@
 /**
  * Grid collection types for Table and GridList components.
- * Based on @react-types/grid.
+ * Ported from:
+ * - packages/react-stately/src/grid/GridCollection.ts
+ * - packages/react-stately/src/grid/useGridState.ts
  */
 
 import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";

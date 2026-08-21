@@ -2,7 +2,10 @@
  * RangeCalendarState for Solid-Stately
  *
  * Provides state management for range calendar components.
- * Based on @react-stately/calendar useRangeCalendarState
+ * Ported from:
+ * - packages/react-stately/src/calendar/useRangeCalendarState.ts
+ * - packages/react-stately/src/calendar/useCalendarState.ts
+ * - packages/react-stately/src/calendar/utils.ts
  */
 
 import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
@@ -448,7 +451,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return { start: focused, end: anchor };
   });
 
-  // Visible range based on React Stately's selection alignment rules.
+  // The visible range follows React Stately's selection alignment rules.
   const visibleRange = createMemo(() => {
     const start = visibleRangeStart();
     return { start, end: visibleRangeEndFromStart(start) };

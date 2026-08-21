@@ -1,6 +1,8 @@
 /**
  * Selection state management for collections.
- * Based on @react-stately/selection.
+ * Ported from:
+ * - packages/react-stately/src/selection/useMultipleSelectionState.ts
+ * - packages/react-stately/src/selection/SelectionManager.ts
  */
 
 import { createSignal, createMemo, type Accessor } from "solid-js";

@@ -1,7 +1,9 @@
 /**
  * State management for list-like components.
  * Combines collection and selection state.
- * Based on @react-stately/list.
+ * Ported from:
+ * - packages/react-stately/src/list/useListState.ts
+ * - packages/react-stately/src/list/useSingleSelectListState.ts
  */
 
 import { createMemo, createEffect, untrack, type Accessor } from "solid-js";

@@ -1,6 +1,10 @@
 /**
  * Table state types for Table components.
- * Based on @react-stately/table and @react-types/table.
+ * Ported from:
+ * - packages/react-stately/src/table/TableCollection.ts
+ * - packages/react-stately/src/table/useTableState.ts
+ * - packages/react-stately/src/table/useTreeGridState.ts
+ * - packages/@react-types/table/src/index.d.ts
  */
 
 import type { Key, FocusStrategy } from "../collections/types";

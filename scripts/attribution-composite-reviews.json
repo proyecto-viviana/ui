@@ -27,6 +27,65 @@
     "requiredText": ["useDisclosureState and useDisclosureGroupState"]
   },
   {
+    "localPath": "packages/solid-stately/src/calendar/createRangeCalendarState.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/calendar/useRangeCalendarState.ts",
+      "packages/react-stately/src/calendar/useCalendarState.ts",
+      "packages/react-stately/src/calendar/utils.ts"
+    ],
+    "requiredText": ["RangeCalendarState for Solid-Stately", "selection alignment rules"]
+  },
+  {
+    "localPath": "packages/solid-stately/src/collections/createListState.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/list/useListState.ts",
+      "packages/react-stately/src/list/useSingleSelectListState.ts"
+    ],
+    "requiredText": ["Combines collection and selection state.", "UNSTABLE_useFilteredListState"]
+  },
+  {
+    "localPath": "packages/solid-stately/src/collections/createSelectionState.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/selection/useMultipleSelectionState.ts",
+      "packages/react-stately/src/selection/SelectionManager.ts"
+    ],
+    "requiredText": ["Selection state management for collections.", "SelectionManager.select"]
+  },
+  {
+    "localPath": "packages/solid-stately/src/collections/getChildNodes.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/collections/getChildNodes.ts",
+      "packages/react-stately/src/collections/getItemCount.ts"
+    ],
+    "requiredText": ["Helpers for traversing collection nodes", "aria-setsize"]
+  },
+  {
+    "localPath": "packages/solid-stately/src/grid/types.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/grid/GridCollection.ts",
+      "packages/react-stately/src/grid/useGridState.ts"
+    ],
+    "requiredText": ["Grid collection types for Table and GridList components."]
+  },
+  {
+    "localPath": "packages/solid-stately/src/table/types.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/table/TableCollection.ts",
+      "packages/react-stately/src/table/useTableState.ts",
+      "packages/react-stately/src/table/useTreeGridState.ts",
+      "packages/@react-types/table/src/index.d.ts"
+    ],
+    "requiredText": ["Table state types for Table components.", "UNSTABLE_useTreeGridState"]
+  },
+  {
+    "localPath": "packages/solid-stately/src/tree/types.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/tree/TreeCollection.ts",
+      "packages/react-stately/src/tree/useTreeState.ts"
+    ],
+    "requiredText": ["Tree collection types for Tree components."]
+  },
+  {
     "localPath": "packages/solidaria/src/color/intl/index.ts",
     "upstreamPaths": [
       "packages/react-aria/intl/color/ar-AE.json",
