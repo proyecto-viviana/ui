@@ -24,12 +24,21 @@ passed every gate before the full axe audit. The retry also passed the certified
 comparison suite, then GitHub cancelled axe when the job reached 45 minutes 19
 seconds. The required check did not pass, so PR #20 was not merged.
 
+PR #30 changed only `.github/workflows/certification-gates.yml`. It kept all
+blocking gates and increased the job budget from 45 to 60 minutes. On commit
+`2a13127e1a669817770069ea75a483bc01c90e57`, all four required checks passed.
+Certification Gates finished in 43 minutes 31 seconds, including the full axe
+audit. The PR merged to `main` as
+`08eb84135b1814b656454893c2fb4bc4f0d185f0` on 2026-08-21. Exact-SHA `main`
+qualification is now running.
+
 ## Work
 
 - Keep the certified comparison suite and full axe audit blocking.
 - Increase the job budget from 45 to 60 minutes.
-- Prove the workflow change on its pull request.
-- Merge the workflow fix before requalifying release PR #20.
+- Proved the workflow change on PR #30.
+- Merged the workflow fix before requalifying release PR #20.
+- Confirm that Certification Gates also passes on the merge commit.
 
 ## Done when
 

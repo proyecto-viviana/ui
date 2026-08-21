@@ -12,6 +12,11 @@ history:
       at: 2026-08-20,
       note: "owner approved the release workflow; requalifying the rebased version PR head before merge",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "workflow budget fix merged as 08eb8413; waiting for exact-SHA main qualification and a refreshed release head",
+    }
 ---
 
 Merge version PR #20 after explicit owner approval, then verify the same-SHA
@@ -51,6 +56,15 @@ GitHub cancelled the blocking full axe audit. The retry ended after 45 minutes
 failure. Ticket #132 increases the budget without removing evidence. Do not
 merge PR #20 until that fix lands and all four checks pass on the resulting
 release head.
+
+PR #30 proved the 60-minute budget on
+`2a13127e1a669817770069ea75a483bc01c90e57`. All four required checks passed.
+Certification Gates finished in 43 minutes 31 seconds, including the certified
+comparison suite and the full axe audit. PR #30 merged as
+`08eb84135b1814b656454893c2fb4bc4f0d185f0` on 2026-08-21. Qualification is now
+running on that exact `main` SHA. Release PR #20 still points to the old
+`d5e2bcce3b68cb0b0bb8310d41dc747df5fa674d` head. Wait for release automation
+to refresh the PR, then require all four checks on the new head before merge.
 
 ## Done when
 
