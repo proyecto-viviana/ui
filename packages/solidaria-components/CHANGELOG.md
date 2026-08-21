@@ -1,5 +1,34 @@
 # @proyecto-viviana/solidaria-components
 
+## 0.5.1
+
+### Patch Changes
+
+- 82965fe: Fix Form SSR hydration: do not reify `props.children` into FormContext.
+
+  Solid's `props.children` is a create-on-read getter. Spreading full Form props into FormContext (safe in React Aria Components) double-created the child tree and desynced `createUniqueId` hydration keys — Form + sole Spectrum Button blanked consumer routes (effect-latam /perfil, /foros). Context now carries only `validationBehavior`. Spectrum / viviana-ui Form leave children as lazy headless props (no forced render-prop wrapper). Guarded by Form SSR + hydrate fixtures.
+
+- a0f3cc8: Give every package the metadata npm renders.
+
+  None of the five set `homepage` or `bugs`, so the npm page had no link to
+  documentation and no way to report a problem. `homepage` now points at the docs
+  site — https://ui.proyectoviviana.org — and `bugs` at the shared issue tracker.
+
+  `@proyecto-viviana/ui` also had no keywords at all — it could not be found by
+  search — and a description written for a maintainer rather than a user ("a
+  reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is
+  duplicated and remapped to the Viviana v2 register"). It now says what the
+  package is: the Viviana design system for SolidJS, accessible and themeable, on
+  a headless ARIA foundation.
+
+  `guard:outbound-links` checks all of it, so a new package cannot publish
+  anonymously.
+
+- Updated dependencies a0f3cc8:
+- Updated dependencies 20fb616:
+  - @proyecto-viviana/solid-stately@0.5.1
+  - @proyecto-viviana/solidaria@0.4.3
+
 ## 0.5.0
 
 ### Minor Changes

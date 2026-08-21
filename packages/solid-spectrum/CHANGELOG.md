@@ -1,5 +1,67 @@
 # @proyecto-viviana/solid-spectrum
 
+## 0.6.4
+
+### Patch Changes
+
+- 82965fe: Fix Form SSR hydration: do not reify `props.children` into FormContext.
+
+  Solid's `props.children` is a create-on-read getter. Spreading full Form props into FormContext (safe in React Aria Components) double-created the child tree and desynced `createUniqueId` hydration keys — Form + sole Spectrum Button blanked consumer routes (effect-latam /perfil, /foros). Context now carries only `validationBehavior`. Spectrum / viviana-ui Form leave children as lazy headless props (no forced render-prop wrapper). Guarded by Form SSR + hydrate fixtures.
+
+- a0f3cc8: Give every package the metadata npm renders.
+
+  None of the five set `homepage` or `bugs`, so the npm page had no link to
+  documentation and no way to report a problem. `homepage` now points at the docs
+  site — https://ui.proyectoviviana.org — and `bugs` at the shared issue tracker.
+
+  `@proyecto-viviana/ui` also had no keywords at all — it could not be found by
+  search — and a description written for a maintainer rather than a user ("a
+  reskinned fork of @proyecto-viviana/solid-spectrum: the styled top layer is
+  duplicated and remapped to the Viviana v2 register"). It now says what the
+  package is: the Viviana design system for SolidJS, accessible and themeable, on
+  a headless ARIA foundation.
+
+  `guard:outbound-links` checks all of it, so a new package cannot publish
+  anonymously.
+
+- 20fb616: Raise placeholder, secondary text, link, interactive-fill, and semantic bold-fill contrast across light and dark Viviana themes.
+
+  Match React Aria's Select trigger naming when consumers provide `aria-label`, so the visible placeholder or selected value remains part of the computed accessible name.
+
+- 2356117: Let `Flex` take an inline `style`, the way `Grid` already does.
+
+  The same gap that was just closed in `@proyecto-viviana/ui`'s `Flex`, in the
+  register that shipped it first. `Grid` splits `style` out of its props and merges
+  it into the declarations it generates; `Flex` declared no such prop, so anything
+  passed landed in `rest` and was then overwritten by the `style={flexStyle()}`
+  assignment on the container — it vanished with no type error and no warning.
+
+  `style` is now merged first and the derived flex declarations are applied after
+  it, mirroring `Grid`'s ordering, so `direction`, `gap`, `wrap`, `alignItems` and
+  `justifyContent` still win over a hand-written override of the same property.
+
+- 71371d6: Correct the README's CSS import and refresh its parity evidence.
+
+  The install example imported `styles.css`, but this package's `theme.css` is a
+  stub and `components.css` is the file that carries the font faces alongside the
+  generated rules — following the README left Geist unloaded. The README now
+  imports `components.css`, says outright that the import is required (components
+  inject no styles of their own), and notes that `font-faces.css` must precede
+  other rules because CSS drops an `@import` that anything precedes.
+
+  The "Current Parity Evidence" block was also two months stale, reporting 69
+  catalogue entries with 33 live and 36 missing. The catalogue gap has since
+  closed: 78 entries, 78 live on both sides. The only remaining export gap is the
+  seven drag-and-drop and `LabeledValueContext` names, which are now listed
+  explicitly instead of summarized as "80 missing".
+
+- Updated dependencies 82965fe:
+- Updated dependencies a0f3cc8:
+- Updated dependencies 20fb616:
+  - @proyecto-viviana/solidaria-components@0.5.1
+  - @proyecto-viviana/solid-stately@0.5.1
+  - @proyecto-viviana/solidaria@0.4.3
+
 ## 0.6.3
 
 ### Patch Changes
