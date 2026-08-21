@@ -210,6 +210,78 @@ try {
   );
   console.log("PASS: missing package export artifact exits non-zero.");
 
+  const builtHeader = [
+    "/" + "*",
+    " * Copyright 2024 Adobe. All rights reserved.",
+    ' * This file is licensed to you under the Apache License, Version 2.0 (the "License");',
+    " * you may not use this file except in compliance with the License.",
+    " * Unless required by applicable law or agreed to in writing, software distributed",
+    ' * under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS',
+    " * OF ANY KIND.",
+    " *" + "/",
+    "",
+    "// Ported to SolidJS for Proyecto Viviana; based on packages/upstream/src/index.ts",
+  ].join("\n");
+  const builtSource = `${builtHeader}\n\nexport const example = true;\n`;
+  mkdirSync(path.join(packageArtifactFixture, "packages", "example", "src"), {
+    recursive: true,
+  });
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "src", "index.ts"),
+    builtSource,
+  );
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "dist", "index.js"),
+    "const example = true;\n",
+  );
+  json(path.join(packageArtifactFixture, "packages", "example", "dist", "index.js.map"), {
+    version: 3,
+    file: "index.js",
+    sources: ["../src/index.ts"],
+    sourcesContent: [builtSource],
+    names: [],
+    mappings: "",
+  });
+  const missingBuiltHeader = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+  });
+  assert(missingBuiltHeader.status !== 0, "missing built attribution header unexpectedly passed");
+  assert(
+    combined(missingBuiltHeader).includes(
+      "dist/index.js: missing built attribution header for ../src/index.ts",
+    ),
+    "artifact guard did not identify the stripped attribution header",
+  );
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "dist", "index.js"),
+    `${builtHeader
+      .replace(/^ (?=\*)/gm, "")
+      .replace(
+        "*/\n\n// Ported to SolidJS",
+        "*/\n// Ported to SolidJS",
+      )}\n\nconst example = true;\n`,
+  );
+  const preservedBuiltHeader = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+  });
+  assert(
+    preservedBuiltHeader.status === 0,
+    `preserved built attribution header failed:\n${combined(preservedBuiltHeader)}`,
+  );
+  console.log("PASS: package artifacts preserve mapped attribution headers after printing.");
+  rmSync(path.join(packageArtifactFixture, "packages", "example", "dist", "index.js.map"));
+  const missingBuiltSourceMap = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+  });
+  assert(missingBuiltSourceMap.status !== 0, "missing attribution source map unexpectedly passed");
+  assert(
+    combined(missingBuiltSourceMap).includes(
+      "src/index.ts: attributed source has no mapped build output",
+    ),
+    "artifact guard silently skipped an attributed source without a map",
+  );
+  console.log("PASS: attributed source without a mapped build output exits non-zero.");
+
   const attributionFixture = path.join(fixtureRoot, "changed-package-notice");
   mkdirSync(attributionFixture, { recursive: true });
   const adobePackages = [
@@ -340,7 +412,8 @@ try {
     );
   }
 
-  const exactSource = "// Based on @react-aria/table/useTable.\nexport const local = true;\n";
+  const exactSource = `// @ts-nocheck\n\n${fullAdobeHeader}// Based on @react-aria/table/useTable.\nexport const local = true;\n`;
+
   writeFileSync(
     path.join(mappingFixture, "packages/solidaria/src/table/createTable.ts"),
     exactSource,
@@ -416,6 +489,13 @@ try {
     "explicit unified-source mapping was not exact",
   );
   assert(
+    mappingReport.summary.headerContracts.files === 5 &&
+      mappingReport.summary.headerContracts.statuses.mismatch === 3 &&
+      mappingReport.summary.headerContracts.statuses.missing === 2,
+    "exact header contract states were not reported",
+  );
+
+  assert(
     mappingByPath.get("packages/solidaria/src/table/useTable.ts")?.status === "unmarked",
     "same-name source was promoted without an explicit marker",
   );
@@ -469,6 +549,72 @@ try {
     "generated output drift was not reported",
   );
   console.log("PASS: attribution mappings preserve evidence and review boundaries.");
+  const incompleteHeaders = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
+    "--check-headers",
+  ]);
+  assert(incompleteHeaders.status !== 0, "incomplete exact-source headers unexpectedly passed");
+  assert(
+    combined(incompleteHeaders).includes(
+      "[mismatch] packages/solidaria/src/table/createTable.ts",
+    ) &&
+      combined(incompleteHeaders).includes("[missing] packages/solidaria/src/utils/animation.ts"),
+    "header check did not identify missing and mismatched contracts",
+  );
+
+  const headerWrite = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
+    "--write-headers",
+  ]);
+  assert(headerWrite.status === 0, `header writer failed:\n${combined(headerWrite)}`);
+  assert(combined(headerWrite).includes("wrote 5 exact-source header contracts"));
+
+  const managedTable = readFileSync(
+    path.join(mappingFixture, "packages/solidaria/src/table/createTable.ts"),
+    "utf8",
+  );
+  const expectedTablePrefix =
+    `// @ts-nocheck\n\n${fullAdobeHeader}\n` +
+    "// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/table/useTable.ts\n\n";
+  assert(
+    managedTable.startsWith(expectedTablePrefix),
+    "writer did not preserve ts-nocheck first or copy the exact header and path",
+  );
+  assert(
+    managedTable.includes("// Based on @react-aria/table/useTable."),
+    "writer removed the source evidence marker",
+  );
+
+  const managedSpectrum = readFileSync(
+    path.join(mappingFixture, "packages/solid-spectrum/src/shared/createTable.ts"),
+    "utf8",
+  );
+  const managedMirror = readFileSync(
+    path.join(mappingFixture, "packages/viviana-ui/src/shared/createTable.ts"),
+    "utf8",
+  );
+  assert(managedSpectrum === managedMirror, "writer broke an exact inherited mirror");
+  assert(
+    !readFileSync(
+      path.join(mappingFixture, "packages/solidaria-components/src/orphan.ts"),
+      "utf8",
+    ).includes("Ported to SolidJS for Proyecto Viviana"),
+    "writer changed an unmapped Adobe header",
+  );
+
+  const completeHeaders = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
+    "--check-headers",
+  ]);
+  assert(
+    completeHeaders.status === 0,
+    `completed exact-source headers failed:\n${combined(completeHeaders)}`,
+  );
+  const idempotentWrite = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
+    "--write-headers",
+  ]);
+  assert(
+    idempotentWrite.status === 0 && combined(idempotentWrite).includes("wrote 0"),
+    "header writer was not idempotent",
+  );
+  console.log("PASS: exact-source header contracts are enforced and written safely.");
 
   const missingMapping = runSync("report-attribution-mappings.mjs", oracleFixture);
   assert(missingMapping.status !== 0, "missing attribution upstream unexpectedly passed");

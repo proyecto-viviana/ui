@@ -2,6 +2,10 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import {
+  builtCodeHasAttributionHeader,
+  sourceAttributionHeader,
+} from "./package-attribution-banner.mjs";
 
 const ROOT = process.cwd();
 const DEFAULT_PUBLIC_PACKAGE_DIRS = [
@@ -26,9 +30,24 @@ function exportTargets(value, condition = "default") {
   return Object.entries(value).flatMap(([key, child]) => exportTargets(child, key));
 }
 
+function codeFiles(directory, extensionPattern) {
+  if (!existsSync(directory)) return [];
+  const files = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...codeFiles(file, extensionPattern));
+    } else if (entry.isFile() && extensionPattern.test(entry.name)) {
+      files.push(file);
+    }
+  }
+  return files;
+}
 const problems = [];
 let checkedTargets = 0;
+let checkedAttributionHeaders = 0;
 
+let checkedAttributionSources = 0;
 for (const packageDir of publicPackageDirs) {
   const manifestPath = path.join(ROOT, packageDir, "package.json");
   if (!existsSync(manifestPath)) {
@@ -47,6 +66,52 @@ for (const packageDir of publicPackageDirs) {
     for (const target of exportTargets(value)) refs.push({ label: subpath, ...target });
   }
 
+  const mappedAttributionSources = new Set();
+  for (const codeFile of codeFiles(path.join(ROOT, packageDir, "dist"), /\.(?:js|jsx)$/)) {
+    const mapFile = `${codeFile}.map`;
+    if (!existsSync(mapFile)) continue;
+
+    let sourceMap;
+    try {
+      sourceMap = readJson(mapFile);
+    } catch (error) {
+      problems.push(`${path.relative(ROOT, mapFile)}: invalid source map (${error.message})`);
+      continue;
+    }
+
+    const code = readFileSync(codeFile, "utf8");
+    for (const [index, source] of (sourceMap.sourcesContent ?? []).entries()) {
+      if (typeof source !== "string") continue;
+      const header = sourceAttributionHeader(source);
+      if (!header) continue;
+
+      const sourceName = sourceMap.sources?.[index];
+      if (typeof sourceName === "string") {
+        mappedAttributionSources.add(
+          path.resolve(path.dirname(mapFile), sourceMap.sourceRoot ?? "", sourceName),
+        );
+      }
+      checkedAttributionHeaders += 1;
+      if (!builtCodeHasAttributionHeader(code, header)) {
+        const sourceLabel = sourceName ?? `source #${index + 1}`;
+        problems.push(
+          `${path.relative(ROOT, codeFile)}: missing built attribution header for ${sourceLabel}`,
+        );
+      }
+    }
+  }
+
+  for (const sourceFile of codeFiles(path.join(ROOT, packageDir, "src"), /\.(?:ts|tsx)$/)) {
+    const source = readFileSync(sourceFile, "utf8");
+    if (!sourceAttributionHeader(source)) continue;
+
+    checkedAttributionSources += 1;
+    if (!mappedAttributionSources.has(path.resolve(sourceFile))) {
+      problems.push(
+        `${path.relative(ROOT, sourceFile)}: attributed source has no mapped build output`,
+      );
+    }
+  }
   for (const { label, condition, target } of refs) {
     checkedTargets += 1;
     if (!target.startsWith("./")) {
@@ -93,5 +158,5 @@ if (problems.length > 0) {
 }
 
 console.log(
-  `guard:package-artifacts — PASS: ${checkedTargets} manifest target(s) exist across ${publicPackageDirs.length} public packages; all vp pack packages use vite.config.ts.`,
+  `guard:package-artifacts — PASS: ${checkedTargets} manifest target(s) exist across ${publicPackageDirs.length} public packages; ${checkedAttributionHeaders} mapped attribution header reference(s) cover ${checkedAttributionSources} attributed source file(s); all vp pack packages use vite.config.ts.`,
 );

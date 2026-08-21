@@ -32,6 +32,11 @@ history:
       at: 2026-08-21,
       note: "tightened exact mappings so every marker and explicit path remains evidence-backed",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "applied exact-source headers, removed three dead state duplicates, and preserved all 162 remaining headers in package builds",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -43,16 +48,17 @@ compliance claim.
 
 ## Evidence snapshot
 
-Baseline revision: `03edb8e3` on 2026-08-21.
+The pre-header baseline revision is `03edb8e3` on 2026-08-21. The table below
+shows the current source counts after the exact-source header pass.
 
 `vp run guard:attribution` counts TypeScript source under each Adobe-derived
 package. It excludes declaration files.
 
 | Package                                  | TS/TSX | Adobe header | Source marker |
 | ---------------------------------------- | -----: | -----------: | ------------: |
-| `@proyecto-viviana/solid-stately`        |     93 |            1 |            39 |
-| `@proyecto-viviana/solidaria`            |    234 |            2 |            86 |
-| `@proyecto-viviana/solidaria-components` |     74 |            0 |             3 |
+| `@proyecto-viviana/solid-stately`        |     93 |           28 |            39 |
+| `@proyecto-viviana/solidaria`            |    231 |          105 |            86 |
+| `@proyecto-viviana/solidaria-components` |     74 |           31 |             3 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |           11 |             2 |
 | `@proyecto-viviana/ui`                   |    644 |           11 |             2 |
 
@@ -82,7 +88,7 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   165 |
+| `exact`                     |   162 |
 | `exact-no-header`           |     5 |
 | `generated-exact-no-header` |   396 |
 | `generated-multiple`        |     2 |
@@ -94,10 +100,16 @@ The 2026-08-21 inventory has these results:
 | `multiple`                  |     9 |
 | `unmarked`                  |   435 |
 
-The report scanned 1,649 files. It found 165 exact independent mappings. It
-keeps 953 independent mappings in review. The 531 byte-identical Viviana UI
-files inherit their Solid Spectrum mapping and do not create duplicate review
-work.
+The report scanned 1,646 files. It found 162 exact independent mappings. All
+162 now satisfy the confirmed source-header contract. The report keeps 953
+independent mappings in review. The 531 byte-identical Viviana UI files inherit
+their Solid Spectrum mapping and do not create duplicate review work.
+
+The artifact guard found three attributed state files in `solidaria` that had
+no mapped build output. The public barrels already re-exported these helpers
+from `solid-stately`, and no source imported the local copies. The files were
+dead duplicates in the wrong layer, so this pass removed them instead of adding
+an exception to the guard.
 
 The generated-file statuses need care. An exact generated asset can map to an
 upstream SVG that has no source header to copy. Those files stay in review. The
@@ -151,10 +163,15 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 25 files with an Adobe license block. Twenty-three
+The current source tree has 186 files with an Adobe license block. Of these, 184
 files use the full upstream block. Two files use a shorter block without the
 warranty text. Ten full blocks follow a required `// @ts-nocheck` first line.
 The formatter preserves these current forms.
+
+All 162 exact mappings with a usable upstream header satisfy the confirmed
+contract. Package builds carry those headers into emitted JS and JSX.
+`guard:package-artifacts` proves 297 mapped source-map-to-output references and
+covers all 162 attributed source files in the three headless packages.
 
 The retired plan recorded this form as decided:
 
@@ -181,6 +198,15 @@ Passed on 2026-08-21:
 - `vp run report:attribution-mappings`
 - `vp run test:ci-guard-contracts`, including the changed-NOTICE and attribution
   mapping negative cases
+- `vp run guard:attribution-headers`
+- `vp run sync:attribution-headers`; a second run wrote zero files
+- `vp run build:stately`
+- `vp run build:solidaria`
+- `vp run build:components`
+- `vp test run` for the Solidaria switch, checkbox-group, and radio-group
+  suites; 55 tests passed
+- `vp run guard:package-artifacts`, including 297 mapped header references
+  across all 162 attributed source files
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
 - `vp run changeset:status`
@@ -194,12 +220,13 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Verify that the formatter and package build preserve the confirmed form.
-2. Review the exact, ambiguous, and unmapped inventory groups.
-3. Update the icon generator after the generated-file mappings are confirmed.
-4. Copy only the applicable upstream notice and year from that source.
-5. Review unmapped files and original Proyecto Viviana files by hand.
-6. Extend the guard only where the source classification is deterministic. Do
+1. Review the five exact mappings whose upstream source has no usable header.
+2. Review the ambiguous, generated, and unmapped inventory groups.
+3. Map each generated asset to an exact upstream input where possible.
+4. Update the icon generator after the generated-file mappings are confirmed.
+5. Copy only the applicable upstream notice and year from that source.
+6. Review unmapped files and original Proyecto Viviana files by hand.
+7. Extend the guard only where the source classification is deterministic. Do
    not freeze today's incomplete header counts as an accepted baseline.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action

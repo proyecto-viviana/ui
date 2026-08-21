@@ -44,17 +44,31 @@ after `vp check`.
 ```bash
 vp run report:attribution-mappings
 vp run report:attribution-mappings --json
+vp run guard:attribution-headers
+vp run sync:attribution-headers
 ```
 
 The report compares the five Adobe-derived source packages with the pinned,
 git-ignored `react-spectrum/packages` tree. It uses explicit source markers and
 verified generated assets. It does not assume that equal filenames have the
 same source. The default output is a short review summary. Use `--json` for the
-complete inventory.
+complete inventory. These two report modes do not write files.
 
-This command is a review aid. It does not write files or make a legal compliance
-claim. It stops when the pinned upstream tree is not available because it cannot
-produce evidence-backed mappings without that tree.
+`guard:attribution-headers` checks the confirmed header contract for each exact
+mapping. `sync:attribution-headers` copies the exact full Adobe block and adds
+the exact upstream path. It keeps a required `// @ts-nocheck` directive first.
+It does not change ambiguous, generated, or unmapped files. Run the guard after
+the sync.
+
+The three headless package builds copy each confirmed source header into emitted
+chunks. `guard:package-artifacts` uses source maps to check every mapped JS and
+JSX output. It also fails when an attributed source file has no mapped build
+output. It accepts Rolldown's comment-spacing changes, but it still requires the
+complete license text, year, port marker, and upstream path.
+
+These commands are review aids. They do not make a legal compliance claim. They
+stop when the pinned upstream tree is not available because they cannot produce
+evidence-backed mappings without that tree.
 
 Install git hooks once per checkout:
 

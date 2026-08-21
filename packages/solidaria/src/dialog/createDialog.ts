@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/dialog/useDialog.ts
+
 /**
  * Ported from React Aria:
  * https://github.com/adobe/react-spectrum/blob/main/packages/@react-aria/dialog/src/useDialog.ts

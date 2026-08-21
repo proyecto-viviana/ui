@@ -2,6 +2,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { defineConfig } from "vite-plus";
 import solid from "unplugin-solid/rolldown";
+import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 
 const neverBundle = [
   "solid-js",
@@ -53,7 +54,11 @@ export default defineConfig({
         opts.transform = { ...(opts.transform || {}), jsx: "preserve" };
         return opts;
       },
-      outputOptions: { entryFileNames: "[name].jsx", chunkFileNames: "_chunk/[name].jsx" },
+      outputOptions: {
+        entryFileNames: "[name].jsx",
+        chunkFileNames: "_chunk/[name].jsx",
+        banner: packageAttributionBanner,
+      },
     },
     // Solid-compiled DOM -> dist/<name>/index.js  (the `default`/`import` fallback)
     {
@@ -65,7 +70,11 @@ export default defineConfig({
       clean: false,
       dts: false,
       deps: { neverBundle },
-      outputOptions: { entryFileNames: "[name].js", chunkFileNames: "_chunk/[name].js" },
+      outputOptions: {
+        entryFileNames: "[name].js",
+        chunkFileNames: "_chunk/[name].js",
+        banner: packageAttributionBanner,
+      },
       plugins: [solid({ solid: { generate: "dom", hydratable: true } })],
     },
   ],

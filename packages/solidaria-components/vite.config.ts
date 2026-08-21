@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { defineConfig } from "vite-plus";
 import solid from "unplugin-solid/rolldown";
+import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 
 // Keep the lower layers external. Regexes (not bare strings) so the per-primitive
 // subpaths we now import (`@proyecto-viviana/solidaria/dnd`, …) also stay external
@@ -60,7 +61,11 @@ export default defineConfig({
         opts.transform = { ...(opts.transform || {}), jsx: "preserve" };
         return opts;
       },
-      outputOptions: { entryFileNames: "[name].jsx", chunkFileNames: "[name].jsx" },
+      outputOptions: {
+        entryFileNames: "[name].jsx",
+        chunkFileNames: "[name].jsx",
+        banner: packageAttributionBanner,
+      },
     },
     // Solid-compiled DOM -> dist/<name>.js  (the `default`/`import` fallback)
     {
@@ -72,7 +77,11 @@ export default defineConfig({
       clean: false,
       dts: false,
       deps: { neverBundle },
-      outputOptions: { entryFileNames: "[name].js", chunkFileNames: "[name].js" },
+      outputOptions: {
+        entryFileNames: "[name].js",
+        chunkFileNames: "[name].js",
+        banner: packageAttributionBanner,
+      },
       plugins: [solid({ solid: { generate: "dom", hydratable: true } })],
     },
   ],

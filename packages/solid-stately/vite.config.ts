@@ -1,4 +1,5 @@
 import { defineConfig } from "vite-plus";
+import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
 
 // Pure state logic (no JSX) -> a single isomorphic build, no Solid compiler needed.
 export default defineConfig({
@@ -14,6 +15,6 @@ export default defineConfig({
     clean: false,
     dts: false,
     deps: { neverBundle: ["solid-js", "solid-js/web", "solid-js/store"] },
-    outputOptions: { entryFileNames: "[name].js" },
+    outputOptions: { entryFileNames: "[name].js", banner: packageAttributionBanner },
   },
 });

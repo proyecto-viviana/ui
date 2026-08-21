@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
@@ -8,7 +9,10 @@ const upstreamRoot = path.join(root, "react-spectrum", "packages");
 const generatorPath = path.join(root, "scripts", "generate-solid-spectrum-icons.mjs");
 const jsonOutput = process.argv.includes("--json");
 const showAll = process.argv.includes("--all");
-const unknownArgs = process.argv.slice(2).filter((arg) => !["--json", "--all"].includes(arg));
+const checkHeaders = process.argv.includes("--check-headers");
+const writeHeaders = process.argv.includes("--write-headers");
+const knownArgs = ["--json", "--all", "--check-headers", "--write-headers"];
+const unknownArgs = process.argv.slice(2).filter((arg) => !knownArgs.includes(arg));
 
 const packages = [
   {
@@ -40,6 +44,10 @@ function fail(message) {
 
 if (unknownArgs.length > 0) {
   fail(`unknown argument${unknownArgs.length === 1 ? "" : "s"}: ${unknownArgs.join(", ")}`);
+}
+
+if (writeHeaders && (jsonOutput || showAll || checkHeaders)) {
+  fail("--write-headers cannot be combined with another output mode");
 }
 
 if (!existsSync(upstreamRoot)) {
@@ -81,6 +89,82 @@ function adobeHeader(content) {
     content.includes("Unless required by applicable law or agreed to in writing") &&
     content.includes("WITHOUT WARRANTIES OR REPRESENTATIONS");
   return { kind: full ? "full" : "short", year };
+}
+function fullAdobeHeaderBlock(content) {
+  return (
+    (content.match(/\/\*[\s\S]*?\*\//g) ?? []).find(
+      (comment) => adobeHeader(comment).kind === "full",
+    ) ?? null
+  );
+}
+
+function sha256(content) {
+  return createHash("sha256").update(content).digest("hex");
+}
+
+function portLineFor(upstreamPath) {
+  return `// Ported to SolidJS for Proyecto Viviana; based on ${upstreamPath}`;
+}
+
+function splitTsNocheck(content) {
+  const match = content.match(/^\/\/ @ts-nocheck[^\S\r\n]*(?:\r?\n|$)/);
+  if (!match) return { directive: null, body: content };
+
+  return {
+    directive: match[0].trim(),
+    body: content.slice(match[0].length).replace(/^\r?\n/, ""),
+  };
+}
+
+function attributionHeaderContract(content, source) {
+  const adobeBlock = fullAdobeHeaderBlock(source.content);
+  if (!adobeBlock) {
+    throw new Error(`${source.relativePath}: exact mapping has no full Adobe header`);
+  }
+
+  const portLine = portLineFor(source.relativePath);
+  const { directive, body } = splitTsNocheck(content);
+  const tsNocheckFirst = !content.includes("// @ts-nocheck") || directive !== null;
+  const expectedPrefix = `${adobeBlock}\n\n${portLine}\n\n`;
+  const satisfied = tsNocheckFirst && body.startsWith(expectedPrefix);
+  const hasManagedContent =
+    adobeHeader(content).kind !== "none" ||
+    content.includes("Ported to SolidJS for Proyecto Viviana; based on");
+
+  return {
+    status: satisfied ? "satisfied" : hasManagedContent ? "mismatch" : "missing",
+    upstreamPath: source.relativePath,
+    adobeHeaderSha256: sha256(adobeBlock),
+    portLine,
+    tsNocheckFirst,
+  };
+}
+
+function rewriteAttributionHeader(content, source) {
+  const adobeBlock = fullAdobeHeaderBlock(source.content);
+  if (!adobeBlock) {
+    throw new Error(`${source.relativePath}: exact mapping has no full Adobe header`);
+  }
+
+  const { directive, body: contentBody } = splitTsNocheck(content);
+  if (content.includes("// @ts-nocheck") && directive === null) {
+    throw new Error("a required // @ts-nocheck directive is not the first line");
+  }
+
+  let body = contentBody.replace(/^(?:\r?\n)+/, "");
+  const leadingBlock = body.match(/^\/\*[\s\S]*?\*\//)?.[0] ?? null;
+  if (leadingBlock && adobeHeader(leadingBlock).kind !== "none") {
+    body = body.slice(leadingBlock.length).replace(/^(?:\r?\n)+/, "");
+  } else if (adobeHeader(body).kind !== "none") {
+    throw new Error("an Adobe header exists outside the managed file prefix");
+  }
+
+  body = body.replace(
+    /^\/\/ Ported to SolidJS for Proyecto Viviana; based on [^\r\n]+(?:\r?\n)+/,
+    "",
+  );
+  const directivePrefix = directive ? `${directive}\n\n` : "";
+  return `${directivePrefix}${adobeBlock}\n\n${portLineFor(source.relativePath)}\n\n${body}`;
 }
 
 function comments(content) {
@@ -420,6 +504,7 @@ function classify(localFile, packageEntry) {
     status = "unmarked";
   }
 
+  const headerContract = status === "exact" ? attributionHeaderContract(content, sources[0]) : null;
   return {
     package: packageEntry.name,
     path: relativePath,
@@ -435,6 +520,7 @@ function classify(localFile, packageEntry) {
       path: source.relativePath,
       ...adobeHeader(source.content),
     })),
+    headerContract,
     reviewRequired: status !== "exact",
   };
 }
@@ -462,6 +548,7 @@ for (const packageEntry of packages) {
           upstreamPaths: spectrum.result.upstreamPaths,
           markerEvidence: spectrum.result.markerEvidence,
           headerSources: spectrum.result.headerSources,
+          headerContract: spectrum.result.headerContract,
           reviewRequired: false,
           mirrorOf: spectrum.result.path,
           inheritedStatus: spectrum.result.status,
@@ -479,9 +566,47 @@ for (const packageEntry of packages) {
   }
 }
 
+const managedHeaderResults = results.filter((result) => result.headerContract);
+
+if (writeHeaders) {
+  const pendingWrites = [];
+  for (const result of managedHeaderResults) {
+    const source = fileAt(result.headerContract.upstreamPath);
+    if (!source) {
+      fail(`${result.path}: mapped upstream file is missing`);
+    }
+
+    const absolutePath = path.join(root, result.path);
+    const content = readFileSync(absolutePath, "utf8");
+    let updated;
+    try {
+      updated = rewriteAttributionHeader(content, source);
+    } catch (error) {
+      fail(`${result.path}: ${error.message}`);
+    }
+    if (updated !== content) {
+      pendingWrites.push({ absolutePath, updated });
+    }
+  }
+
+  for (const pending of pendingWrites) {
+    writeFileSync(pending.absolutePath, pending.updated);
+  }
+  console.log(
+    `report:attribution-mappings — wrote ${pendingWrites.length} exact-source header contract${pendingWrites.length === 1 ? "" : "s"}`,
+  );
+  process.exit(0);
+}
+
 const statusCounts = {};
 for (const result of results) {
   statusCounts[result.status] = (statusCounts[result.status] ?? 0) + 1;
+}
+
+const headerStatusCounts = {};
+for (const result of managedHeaderResults) {
+  const status = result.headerContract.status;
+  headerStatusCounts[status] = (headerStatusCounts[status] ?? 0) + 1;
 }
 
 const report = {
@@ -499,6 +624,12 @@ const report = {
     statuses: Object.fromEntries(
       Object.entries(statusCounts).sort(([left], [right]) => left.localeCompare(right)),
     ),
+    headerContracts: {
+      files: managedHeaderResults.length,
+      statuses: Object.fromEntries(
+        Object.entries(headerStatusCounts).sort(([left], [right]) => left.localeCompare(right)),
+      ),
+    },
   },
   files: results,
 };
@@ -513,6 +644,11 @@ if (jsonOutput) {
   );
   console.log("Statuses:");
   for (const [status, count] of Object.entries(report.summary.statuses)) {
+    console.log(`- ${status}: ${count}`);
+  }
+
+  console.log("Exact-source header contracts:");
+  for (const [status, count] of Object.entries(report.summary.headerContracts.statuses)) {
     console.log(`- ${status}: ${count}`);
   }
 
@@ -545,4 +681,20 @@ if (jsonOutput) {
   }
 
   console.log("Use --json for the complete machine-readable inventory.");
+}
+
+if (checkHeaders) {
+  const incomplete = managedHeaderResults.filter(
+    (result) => result.headerContract.status !== "satisfied",
+  );
+  if (incomplete.length > 0) {
+    console.error("report:attribution-mappings — exact-source headers are incomplete:");
+    for (const result of incomplete) {
+      console.error(`- [${result.headerContract.status}] ${result.path}`);
+    }
+    process.exit(1);
+  }
+  console.log(
+    `report:attribution-mappings — PASS: ${managedHeaderResults.length} exact-source headers match their upstream blocks and port lines.`,
+  );
 }
