@@ -5,6 +5,16 @@
     "requiredText": ["Color types for color picker components.", "export interface Color"]
   },
   {
+    "localPath": "packages/solidaria/src/dnd/DropTargetKeyboardNavigation.ts",
+    "upstreamPath": "packages/react-aria/src/dnd/DropTargetKeyboardNavigation.ts",
+    "requiredText": ["Keyboard navigation between drop targets", "export function navigate"]
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/virtualFocus.ts",
+    "upstreamPath": "packages/react-aria/src/focus/virtualFocus.ts",
+    "requiredText": ["Virtual-focus event dispatch primitives.", "export function moveVirtualFocus"]
+  },
+  {
     "localPath": "packages/solidaria/src/datepicker/createDatePickerGroup.ts",
     "upstreamPath": "packages/react-aria/src/datepicker/useDatePickerGroup.ts",
     "requiredText": ["@react-aria/datepicker `useDatePickerGroup`"]

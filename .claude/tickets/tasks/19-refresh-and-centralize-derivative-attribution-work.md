@@ -67,6 +67,11 @@ history:
       at: 2026-08-21,
       note: "resolved all 13 previously unresolved Stately source markers and recorded seven additional composite source sets",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "resolved 22 Solidaria source markers through exact, headerless, and composite source reviews",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -87,7 +92,7 @@ package. It excludes declaration files.
 | Package                                  | TS/TSX | Adobe header | Source marker |
 | ---------------------------------------- | -----: | -----------: | ------------: |
 | `@proyecto-viviana/solid-stately`        |     93 |           35 |            47 |
-| `@proyecto-viviana/solidaria`            |    231 |          106 |           145 |
+| `@proyecto-viviana/solidaria`            |    231 |          125 |           145 |
 | `@proyecto-viviana/solidaria-components` |     74 |           31 |            44 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |           11 |            15 |
 | `@proyecto-viviana/ui`                   |    644 |           11 |            15 |
@@ -119,20 +124,20 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   191 |
-| `exact-no-header`           |     6 |
+| `exact`                     |   210 |
+| `exact-no-header`           |     8 |
 | `generated-exact-no-header` |   396 |
 | `generated-multiple`        |     2 |
 | `generated-stale-generator` |    12 |
 | `generated-unresolved`      |    13 |
-| `marker-unresolved`         |    52 |
+| `marker-unresolved`         |    30 |
 | `mirror`                    |   526 |
-| `multiple`                  |    13 |
+| `multiple`                  |    14 |
 | `unmarked`                  |   435 |
 
-The report scanned 1,646 files. It found 191 independent files with one exact
-source. It also found 193 exact-source header contracts, including inherited
-mirror cases. All 193 satisfy the confirmed contract. The report keeps 924
+The report scanned 1,646 files. It found 210 independent files with one exact
+source. It also found 212 exact-source header contracts, including inherited
+mirror cases. All 212 satisfy the confirmed contract. The report keeps 903
 independent mappings in review. The 526 byte-identical Viviana UI files inherit
 their Solid Spectrum mapping and do not create duplicate review work.
 
@@ -146,16 +151,20 @@ Four broad prose markers named a helper or consumer next to the primary upstream
 implementation. Those markers created false `multiple` results. Their verified
 exact paths remain recorded.
 
-The Stately review resolved all 13 previously unresolved source markers: five map to
-header-bearing exact sources, one maps to a headerless exact source, and seven
-are genuine composites. The report now finds 13 genuine composite files across
-the repository. Their complete source sets were read against the pinned upstream
-tree; the required multi-source header form is the remaining decision.
+The Stately review resolved all 13 previously unresolved source markers: five
+map to header-bearing exact sources, one maps to a headerless exact source, and
+seven are genuine composites.
 
-`scripts/attribution-composite-reviews.json` records 61 upstream paths and the
+The next Solidaria pass resolved 22 markers. Nineteen map to header-bearing
+exact sources, two map to headerless exact sources, and Breadcrumbs is a
+two-source composite. The report now finds 14 genuine composite files across
+the repository. Their complete source sets were read against the pinned
+upstream tree; the required multi-source header form is the remaining decision.
+
+`scripts/attribution-composite-reviews.json` records 63 upstream paths and the
 required local source text. The report compares each complete path set with the
 live marker result and exposes a review status in JSON. The header guard fails
-when a recorded set changes. All 13 records are satisfied.
+when a recorded set changes. All 14 records are satisfied.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -165,8 +174,10 @@ an exception to the guard.
 
 ### Exact mappings without a current Adobe header
 
-Five mappings have verified headerless exact sources. Four were checked across
-reachable exact-path history. Color types is confirmed in the pinned tree:
+Seven mappings have verified headerless exact sources. Four earlier mappings
+were checked across longer reachable exact-path histories. Color types is
+confirmed in the pinned tree. Drop Target Keyboard Navigation and virtual focus
+each have one reachable exact-path revision, which is headerless:
 
 | Local source                                    | Exact upstream source                            | Result                                                        |
 | ----------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------- |
@@ -174,9 +185,11 @@ reachable exact-path history. Color types is confirmed in the pinned tree:
 | `solidaria/datepicker/createDatePickerGroup.ts` | `react-aria/datepicker/useDatePickerGroup.ts`    | No Adobe header in any exact-path revision.                   |
 | `solidaria/interactions/createFocusRing.ts`     | `react-aria/focus/useFocusRing.ts`               | No Adobe header in any exact-path revision.                   |
 | `solidaria/utils/ShadowTreeWalker.ts`           | `react-aria/utils/shadowdom/ShadowTreeWalker.ts` | No Adobe header. Adobe names Microsoft Tabster as its source. |
+| `solidaria/dnd/DropTargetKeyboardNavigation.ts` | `react-aria/dnd/DropTargetKeyboardNavigation.ts` | The one reachable exact-path revision has no Adobe header.    |
+| `solidaria/focus/virtualFocus.ts`               | `react-aria/focus/virtualFocus.ts`               | The one reachable exact-path revision has no Adobe header.    |
 | `solidaria-components/Table.tsx`                | `react-aria-components/Table.tsx`                | No Adobe header in any exact-path revision.                   |
 
-`scripts/attribution-headerless-reviews.json` records these five decisions.
+`scripts/attribution-headerless-reviews.json` records these seven decisions.
 The guard fixes each local path to its exact upstream path and required source
 evidence. ShadowTreeWalker keeps Microsoft's exact short MIT block and source
 link. The root and package notices keep the complete Microsoft MIT notice.
@@ -247,19 +260,19 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 194 files with an Adobe license block. All 194 use
+The current source tree has 213 files with an Adobe license block. All 213 use
 the full upstream block. Ten blocks follow a required `// @ts-nocheck` first
 line. The formatter preserves these forms.
 
-All 193 exact-source header contracts with a usable upstream header are
-satisfied. Five exact mappings with no Adobe header satisfy their reviewed
+All 212 exact-source header contracts with a usable upstream header are
+satisfied. Seven exact mappings with no Adobe header satisfy their reviewed
 source-evidence contract. Package builds carry applicable headers into emitted
 JS and JSX. The two styled packages also copy exact headers to declaration-only
 outputs that have no runtime bundle. `guard:package-artifacts` reads runtime
-and declaration source maps. It proves 339 mapped source-to-output references
-and covers all 194 attributed source files in the five Adobe-derived packages.
+and declaration source maps. It proves 377 mapped source-to-output references
+and covers all 213 attributed source files in the five Adobe-derived packages.
 
-The 13 composite reviews cover 61 pinned upstream files. Twenty-five sources
+The 14 composite reviews cover 63 pinned upstream files. Twenty-seven sources
 carry a full Adobe header; 36 have no per-file Adobe header. Their dated headers
 span 2020 through 2026. The source-set evidence is settled. The correct local
 header form for mixed and differently dated sources is not.
@@ -298,8 +311,8 @@ Passed on 2026-08-21:
 - `vp run build:components`
 - `vp test run` for the Solidaria switch, checkbox-group, and radio-group
   suites; 55 tests passed
-- `vp run guard:package-artifacts`, including 339 mapped header references
-  across all 194 attributed source files and declaration-only styled-package
+- `vp run guard:package-artifacts`, including 377 mapped header references
+  across all 213 attributed source files and declaration-only styled-package
   outputs
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
@@ -316,9 +329,9 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 1. Resolve the Grid State historical/current-source header conflict before
    recording that mapping as reviewed.
-2. Decide and enforce the header form for the 13 verified composite mappings.
+2. Decide and enforce the header form for the 14 verified composite mappings.
    Their exact source sets are guarded.
-3. Review the 52 unresolved markers and 435 unmarked files. Separate derivative
+3. Review the 30 unresolved markers and 435 unmarked files. Separate derivative
    source from original Proyecto Viviana source.
 4. Review the generated groups and map each asset to an exact upstream input
    where possible.

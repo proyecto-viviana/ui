@@ -2,7 +2,9 @@
  * Breadcrumbs hooks for Solidaria
  *
  * Provides accessibility implementation for breadcrumb navigation.
- * Port of @react-aria/breadcrumbs.
+ * Ported from:
+ * - packages/react-aria/src/breadcrumbs/useBreadcrumbs.ts
+ * - packages/react-aria/src/breadcrumbs/useBreadcrumbItem.ts
  */
 
 import { createLink, type AriaLinkProps, type LinkAria } from "../link";

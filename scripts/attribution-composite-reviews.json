@@ -86,6 +86,17 @@
     "requiredText": ["Tree collection types for Tree components."]
   },
   {
+    "localPath": "packages/solidaria/src/breadcrumbs/createBreadcrumbs.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/breadcrumbs/useBreadcrumbItem.ts",
+      "packages/react-aria/src/breadcrumbs/useBreadcrumbs.ts"
+    ],
+    "requiredText": [
+      "Provides accessibility implementation for breadcrumb navigation.",
+      "createBreadcrumbItem"
+    ]
+  },
+  {
     "localPath": "packages/solidaria/src/color/intl/index.ts",
     "upstreamPaths": [
       "packages/react-aria/intl/color/ar-AE.json",
