@@ -57,6 +57,11 @@ history:
       at: 2026-08-21,
       note: "resolved four false multi-source mappings and synchronized their exact upstream headers",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "recorded and guarded the complete upstream source sets for all six composite mappings",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -139,6 +144,11 @@ Multiple Selection State, List Keyboard Delegate, and Selectable List. The
 report now finds six genuine composite files. Their complete source sets were
 read against the pinned upstream tree; the required multi-source header form
 is the remaining decision for that group.
+
+`scripts/attribution-composite-reviews.json` records all 44 upstream paths and
+the required local source text. The report compares each complete path set with
+the live marker result and exposes a review status in JSON. The header guard
+fails when a recorded set changes. All six records are satisfied.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -241,6 +251,11 @@ outputs that have no runtime bundle. `guard:package-artifacts` reads runtime
 and declaration source maps. It proves 334 mapped source-to-output references
 and covers all 189 attributed source files in the five Adobe-derived packages.
 
+The six composite reviews cover 44 pinned upstream files. Nine sources carry
+a full Adobe header; the Color Channel source and all 34 color locale JSON files
+have no per-file Adobe header. The source-set evidence is settled. The correct
+local header form for mixed and differently dated sources is not.
+
 The retired plan recorded this form as decided:
 
 - Copy the exact full Adobe block from the mapped upstream file.
@@ -265,8 +280,8 @@ Passed on 2026-08-21:
 - `vp run guard:attribution`
 - `vp run report:attribution-mappings`
 - `vp run test:ci-guard-contracts`, including the changed-NOTICE,
-  shared-marker-parser, exact-repository-path, ordinary-documentation, and
-  reviewed-headerless cases
+  shared-marker-parser, exact-repository-path, ordinary-documentation,
+  reviewed-headerless, reviewed-composite, and composite-source-set-drift cases
 - `vp run guard:attribution-headers`
 - `vp run sync:attribution-headers`; a second run wrote zero files
 - `vp run build:stately`

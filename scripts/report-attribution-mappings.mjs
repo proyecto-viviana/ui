@@ -9,6 +9,7 @@ const root = process.cwd();
 const upstreamRoot = path.join(root, "react-spectrum", "packages");
 const generatorPath = path.join(root, "scripts", "generate-solid-spectrum-icons.mjs");
 const headerlessReviewPath = path.join(root, "scripts", "attribution-headerless-reviews.json");
+const compositeReviewPath = path.join(root, "scripts", "attribution-composite-reviews.json");
 const jsonOutput = process.argv.includes("--json");
 const showAll = process.argv.includes("--all");
 const checkHeaders = process.argv.includes("--check-headers");
@@ -60,6 +61,9 @@ if (!existsSync(upstreamRoot)) {
 if (!existsSync(headerlessReviewPath)) {
   fail("scripts/attribution-headerless-reviews.json is missing");
 }
+if (!existsSync(compositeReviewPath)) {
+  fail("scripts/attribution-composite-reviews.json is missing");
+}
 
 let headerlessReviewEntries;
 try {
@@ -69,6 +73,16 @@ try {
 }
 if (!Array.isArray(headerlessReviewEntries)) {
   fail("scripts/attribution-headerless-reviews.json must contain an array");
+}
+
+let compositeReviewEntries;
+try {
+  compositeReviewEntries = JSON.parse(readFileSync(compositeReviewPath, "utf8"));
+} catch (error) {
+  fail(`scripts/attribution-composite-reviews.json is invalid JSON (${error.message})`);
+}
+if (!Array.isArray(compositeReviewEntries)) {
+  fail("scripts/attribution-composite-reviews.json must contain an array");
 }
 
 const reviewedHeaderlessMappings = new Map();
@@ -94,6 +108,40 @@ for (const [index, entry] of headerlessReviewEntries.entries()) {
   }
   reviewedHeaderlessMappings.set(entry.localPath, {
     upstreamPath: entry.upstreamPath,
+    requiredText: entry.requiredText,
+  });
+}
+
+const reviewedCompositeMappings = new Map();
+for (const [index, entry] of compositeReviewEntries.entries()) {
+  const label = `scripts/attribution-composite-reviews.json entry ${index + 1}`;
+  if (
+    !entry ||
+    typeof entry !== "object" ||
+    typeof entry.localPath !== "string" ||
+    entry.localPath.length === 0 ||
+    !Array.isArray(entry.upstreamPaths) ||
+    entry.upstreamPaths.length < 2 ||
+    entry.upstreamPaths.some(
+      (value) => typeof value !== "string" || value.length === 0 || !value.startsWith("packages/"),
+    ) ||
+    !Array.isArray(entry.requiredText) ||
+    entry.requiredText.length === 0 ||
+    entry.requiredText.some((value) => typeof value !== "string" || value.length === 0)
+  ) {
+    fail(
+      `${label} must contain localPath, at least two upstreamPaths, and an array of non-empty requiredText strings`,
+    );
+  }
+  const uniqueUpstreamPaths = [...new Set(entry.upstreamPaths)];
+  if (uniqueUpstreamPaths.length !== entry.upstreamPaths.length) {
+    fail(`${label} repeats an upstream path`);
+  }
+  if (reviewedCompositeMappings.has(entry.localPath)) {
+    fail(`${label} repeats localPath ${entry.localPath}`);
+  }
+  reviewedCompositeMappings.set(entry.localPath, {
+    upstreamPaths: uniqueUpstreamPaths.sort(),
     requiredText: entry.requiredText,
   });
 }
@@ -153,6 +201,30 @@ function headerlessReviewContract(relativePath, content, sources, localHeader, s
     actualUpstreamPath,
     upstreamHeader: upstreamHeader?.kind ?? null,
     localHeader: localHeader.kind,
+    missingText,
+  };
+}
+
+function compositeReviewContract(relativePath, content, sources, status) {
+  const review = reviewedCompositeMappings.get(relativePath);
+  if (!review) return null;
+
+  const actualUpstreamPaths = sources.map((source) => source.relativePath).sort();
+  const missingText = review.requiredText.filter((value) => !content.includes(value));
+  const satisfied =
+    status === "multiple" &&
+    actualUpstreamPaths.length === review.upstreamPaths.length &&
+    actualUpstreamPaths.every((value, index) => value === review.upstreamPaths[index]) &&
+    missingText.length === 0;
+
+  return {
+    status: satisfied ? "satisfied" : "mismatch",
+    upstreamPaths: review.upstreamPaths,
+    actualUpstreamPaths,
+    upstreamHeaders: sources.map((source) => ({
+      path: source.relativePath,
+      ...adobeHeader(source.content),
+    })),
     missingText,
   };
 }
@@ -564,6 +636,7 @@ function classify(localFile, packageEntry) {
     localHeader,
     status,
   );
+  const compositeReview = compositeReviewContract(relativePath, content, sources, status);
   return {
     package: packageEntry.name,
     path: relativePath,
@@ -582,6 +655,7 @@ function classify(localFile, packageEntry) {
     headerContract,
     headerlessReview,
     reviewRequired: status !== "exact" && headerlessReview?.status !== "satisfied",
+    compositeReview,
   };
 }
 
@@ -631,10 +705,19 @@ for (const localPath of reviewedHeaderlessMappings.keys()) {
     fail(`${localPath}: reviewed headerless mapping does not match a scanned source file`);
   }
 }
+for (const localPath of reviewedCompositeMappings.keys()) {
+  if (!results.some((result) => result.path === localPath && result.compositeReview)) {
+    fail(`${localPath}: reviewed composite mapping does not match a scanned source file`);
+  }
+}
 
 const managedHeaderlessResults = results.filter((result) => result.headerlessReview);
 const incompleteHeaderlessReviews = managedHeaderlessResults.filter(
   (result) => result.headerlessReview.status !== "satisfied",
+);
+const managedCompositeResults = results.filter((result) => result.compositeReview);
+const incompleteCompositeReviews = managedCompositeResults.filter(
+  (result) => result.compositeReview.status !== "satisfied",
 );
 
 const managedHeaderResults = results.filter((result) => result.headerContract);
@@ -643,6 +726,10 @@ if (writeHeaders) {
   if (incompleteHeaderlessReviews.length > 0) {
     const result = incompleteHeaderlessReviews[0];
     fail(`${result.path}: reviewed headerless mapping is ${result.headerlessReview.status}`);
+  }
+  if (incompleteCompositeReviews.length > 0) {
+    const result = incompleteCompositeReviews[0];
+    fail(`${result.path}: reviewed composite mapping is ${result.compositeReview.status}`);
   }
 
   const pendingWrites = [];
@@ -691,6 +778,12 @@ for (const result of managedHeaderlessResults) {
   headerlessReviewStatusCounts[status] = (headerlessReviewStatusCounts[status] ?? 0) + 1;
 }
 
+const compositeReviewStatusCounts = {};
+for (const result of managedCompositeResults) {
+  const status = result.compositeReview.status;
+  compositeReviewStatusCounts[status] = (compositeReviewStatusCounts[status] ?? 0) + 1;
+}
+
 const report = {
   scope: {
     localPackages: packages.map((entry) => entry.name),
@@ -720,6 +813,14 @@ const report = {
         ),
       ),
     },
+    compositeReviews: {
+      files: managedCompositeResults.length,
+      statuses: Object.fromEntries(
+        Object.entries(compositeReviewStatusCounts).sort(([left], [right]) =>
+          left.localeCompare(right),
+        ),
+      ),
+    },
   },
   files: results,
 };
@@ -743,6 +844,11 @@ if (jsonOutput) {
   }
   console.log("Reviewed exact mappings without Adobe source headers:");
   for (const [status, count] of Object.entries(report.summary.headerlessReviews.statuses)) {
+    console.log(`- ${status}: ${count}`);
+  }
+
+  console.log("Reviewed composite source sets:");
+  for (const [status, count] of Object.entries(report.summary.compositeReviews.statuses)) {
     console.log(`- ${status}: ${count}`);
   }
 
@@ -782,13 +888,20 @@ if (checkHeaders) {
   const incomplete = managedHeaderResults.filter(
     (result) => result.headerContract.status !== "satisfied",
   );
-  if (incomplete.length > 0 || incompleteHeaderlessReviews.length > 0) {
-    console.error("report:attribution-mappings — exact-source headers are incomplete:");
+  if (
+    incomplete.length > 0 ||
+    incompleteHeaderlessReviews.length > 0 ||
+    incompleteCompositeReviews.length > 0
+  ) {
+    console.error("report:attribution-mappings — attribution contracts are incomplete:");
     for (const result of incomplete) {
       console.error(`- [${result.headerContract.status}] ${result.path}`);
     }
     for (const result of incompleteHeaderlessReviews) {
       console.error(`- [${result.headerlessReview.status}] ${result.path}`);
+    }
+    for (const result of incompleteCompositeReviews) {
+      console.error(`- [${result.compositeReview.status}] ${result.path}`);
     }
     process.exit(1);
   }
@@ -797,5 +910,8 @@ if (checkHeaders) {
   );
   console.log(
     `report:attribution-mappings — PASS: ${managedHeaderlessResults.length} reviewed exact mappings remain headerless and match their recorded source evidence.`,
+  );
+  console.log(
+    `report:attribution-mappings — PASS: ${managedCompositeResults.length} reviewed composite mappings match their recorded upstream source sets.`,
   );
 }

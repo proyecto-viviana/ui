@@ -520,6 +520,21 @@ try {
       requiredText: ["@react-aria/focus useFocusRing"],
     },
   ]);
+  const reviewedDisclosure = {
+    localPath: "packages/solid-stately/src/disclosure/createDisclosureState.ts",
+    upstreamPaths: [
+      "packages/react-stately/src/disclosure/useDisclosureState.ts",
+      "packages/react-stately/src/disclosure/useDisclosureGroupState.ts",
+    ],
+    requiredText: ["useDisclosureState and useDisclosureGroupState"],
+  };
+  const compositeReviewPath = path.join(
+    mappingFixture,
+    "scripts",
+    "attribution-composite-reviews.json",
+  );
+  json(compositeReviewPath, [reviewedDisclosure]);
+
   for (const locale of ["en-US", "fr-FR"]) {
     writeFileSync(
       path.join(mappingFixture, `react-spectrum/packages/react-aria/intl/color/${locale}.json`),
@@ -667,10 +682,15 @@ try {
     mappingByPath.get("packages/solidaria/src/table/useTable.ts")?.status === "unmarked",
     "same-name source was promoted without an explicit marker",
   );
+  const reviewedComposite = mappingByPath.get(
+    "packages/solid-stately/src/disclosure/createDisclosureState.ts",
+  );
   assert(
-    mappingByPath.get("packages/solid-stately/src/disclosure/createDisclosureState.ts")?.status ===
-      "multiple",
-    "multiple upstream sources were not kept for review",
+    reviewedComposite?.status === "multiple" &&
+      reviewedComposite.reviewRequired === true &&
+      reviewedComposite.compositeReview?.status === "satisfied" &&
+      mappingReport.summary.compositeReviews.statuses.satisfied === 1,
+    "reviewed composite source set did not retain its guarded audit result",
   );
   assert(
     mappingByPath.get("packages/solid-stately/src/calendar/createCalendar.ts")?.status ===
@@ -775,6 +795,31 @@ try {
     completeHeaders.status === 0,
     `completed exact-source headers failed:\n${combined(completeHeaders)}`,
   );
+  json(compositeReviewPath, [
+    {
+      ...reviewedDisclosure,
+      upstreamPaths: [
+        ...reviewedDisclosure.upstreamPaths,
+        "packages/react-stately/src/disclosure/missing.ts",
+      ],
+    },
+  ]);
+  const contradictedCompositeReview = runSync(
+    "report-attribution-mappings.mjs",
+    mappingFixture,
+    {},
+    ["--check-headers"],
+  );
+  assert(
+    contradictedCompositeReview.status !== 0 &&
+      combined(contradictedCompositeReview).includes(
+        "[mismatch] packages/solid-stately/src/disclosure/createDisclosureState.ts",
+      ),
+    "reviewed composite mapping accepted a changed upstream source set",
+  );
+  json(compositeReviewPath, [reviewedDisclosure]);
+  console.log("PASS: reviewed composite mappings reject source-set drift.");
+
   writeFileSync(reviewedFocusRingPath, `${fullAdobeHeader}${reviewedFocusRing}`);
   const contradictedHeaderlessReview = runSync(
     "report-attribution-mappings.mjs",
