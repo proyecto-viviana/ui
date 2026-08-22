@@ -1,6 +1,41 @@
-// Color-name / channel-name intl catalog, ported verbatim from
-// @react-stately/color's intl/color/*.json (34 locales). Keep in sync
-// with the vendored react-spectrum source on every pin bump.
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/color/zh-TW.json
+
+// Color names and channel names. Ported from the @react-stately/color intl catalog.
+// The catalog has 34 locales. Keep it in sync with the vendored react-spectrum source on every
+// pin bump.
 
 export type ColorStringKey =
   | "hue"

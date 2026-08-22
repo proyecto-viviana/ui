@@ -468,8 +468,10 @@ try {
   const mappingFixture = path.join(fixtureRoot, "attribution-mappings");
   for (const directory of [
     "packages/solid-stately/src/calendar",
+    "packages/solid-stately/src/color/intl",
     "packages/solid-stately/src/disclosure",
     "packages/solid-stately/src/table",
+    "packages/solid-stately/src/utils",
     "packages/solidaria/src/color/intl",
     "packages/solidaria/src/focus",
     "packages/solidaria/src/local",
@@ -487,6 +489,7 @@ try {
     "react-spectrum/packages/react-aria/src/focus",
     "react-spectrum/packages/react-aria/src/utils",
     "react-spectrum/packages/react-aria/src/table",
+    "react-spectrum/packages/react-stately/intl/color",
     "react-spectrum/packages/react-stately/src/calendar",
     "react-spectrum/packages/react-stately/src/disclosure",
     "react-spectrum/packages/@react-spectrum/s2/ui-icons",
@@ -592,11 +595,21 @@ try {
   const reviewedLocalSource = "export { localValue } from './localValue';\n";
   const reviewedLocalPath = path.join(mappingFixture, "packages/solidaria/src/local/index.ts");
   writeFileSync(reviewedLocalPath, reviewedLocalSource);
+  const reviewedSolidHelperSource = "export function access(value) { return value; }\n";
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-stately/src/utils/reactivity.ts"),
+    reviewedSolidHelperSource,
+  );
   json(path.join(mappingFixture, "scripts", "attribution-local-reviews.json"), [
     {
       localPath: "packages/solidaria/src/local/index.ts",
       classification: "local-module-surface",
       contentSha256: createHash("sha256").update(reviewedLocalSource).digest("hex"),
+    },
+    {
+      localPath: "packages/solid-stately/src/utils/reactivity.ts",
+      classification: "local-solid-helper",
+      contentSha256: createHash("sha256").update(reviewedSolidHelperSource).digest("hex"),
     },
   ]);
 
@@ -604,6 +617,10 @@ try {
     writeFileSync(
       path.join(mappingFixture, `react-spectrum/packages/react-aria/intl/color/${locale}.json`),
       `{"colorPicker":"${locale}"}\n`,
+    );
+    writeFileSync(
+      path.join(mappingFixture, `react-spectrum/packages/react-stately/intl/color/${locale}.json`),
+      `{"colorName":"${locale}"}\n`,
     );
   }
 
@@ -648,6 +665,14 @@ try {
       "// Port of @react-aria/color intl catalog.",
       "// Consumed via useLocalizedStringFormatter.",
       "export const colorStrings = true;",
+      "",
+    ].join("\n"),
+  );
+  writeFileSync(
+    path.join(mappingFixture, "packages/solid-stately/src/color/intl/index.ts"),
+    [
+      "// Color names. Ported from the @react-stately/color intl catalog.",
+      "export const colorNames = true;",
       "",
     ].join("\n"),
   );
@@ -762,8 +787,14 @@ try {
     reviewedLocal?.status === "reviewed-local" &&
       reviewedLocal.reviewRequired === false &&
       reviewedLocal.localReview?.status === "satisfied" &&
-      mappingReport.summary.localReviews.statuses.satisfied === 1,
+      mappingReport.summary.localReviews.statuses.satisfied === 2,
     "reviewed local module surface did not retain its content contract",
+  );
+  const reviewedSolidHelper = mappingByPath.get("packages/solid-stately/src/utils/reactivity.ts");
+  assert(
+    reviewedSolidHelper?.status === "reviewed-local" &&
+      reviewedSolidHelper.localReview?.classification === "local-solid-helper",
+    "reviewed Solid helper did not retain its local classification",
   );
   const reviewedComposite = mappingByPath.get(
     "packages/solid-stately/src/disclosure/createDisclosureState.ts",
@@ -801,6 +832,15 @@ try {
       colorCatalog.upstreamPaths.length === 2 &&
       colorCatalog.upstreamPaths.every((source) => source.includes("/intl/color/")),
     "a scoped intl catalog marker fell back to an incidental cross-package hook",
+  );
+  const statelyColorCatalog = mappingByPath.get("packages/solid-stately/src/color/intl/index.ts");
+  assert(
+    statelyColorCatalog?.status === "multiple" &&
+      statelyColorCatalog.upstreamPaths.length === 2 &&
+      statelyColorCatalog.upstreamPaths.every((source) =>
+        source.includes("/react-stately/intl/color/"),
+      ),
+    "a React Stately intl catalog marker did not resolve its complete scoped source set",
   );
   assert(
     mappingByPath.get("packages/solidaria-components/src/orphan.ts")?.status === "header-unmapped",

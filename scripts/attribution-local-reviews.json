@@ -315,6 +315,11 @@
     "contentSha256": "6abca3c2ea41d8cffa66be0fa824edb5fd3dd987d08b4ff8f7d71fe2e654434f"
   },
   {
+    "localPath": "packages/solid-stately/src/selection/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "bfe3b3cadc46386fdd33e1b17c7f9caf48249272e0d6d406d986bfce093f79db"
+  },
+  {
     "localPath": "packages/solid-stately/src/slider/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "b3de5986a5f504302e6f4cb6eedc6aef146fe0e697067c66eb74230ee6ddaa29"
@@ -363,6 +368,11 @@
     "localPath": "packages/solid-stately/src/utils/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "9c1cd58a415c7adff6be923a76d794bf5d4cbc6f9ef8b3504b4c5638261026c6"
+  },
+  {
+    "localPath": "packages/solid-stately/src/utils/reactivity.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "5a37c73dde75716d5d76457b5d297302c1894ff8cd21a5a61cad962c1253791c"
   },
   {
     "localPath": "packages/solidaria-components/src/index.ts",

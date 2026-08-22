@@ -15,6 +15,7 @@ const requireFromComparison = createRequire(comparisonManifestPath);
 const headerlessReviewPath = path.join(root, "scripts", "attribution-headerless-reviews.json");
 const compositeReviewPath = path.join(root, "scripts", "attribution-composite-reviews.json");
 const localReviewPath = path.join(root, "scripts", "attribution-local-reviews.json");
+const localReviewClassifications = new Set(["local-module-surface", "local-solid-helper"]);
 const jsonOutput = process.argv.includes("--json");
 const showAll = process.argv.includes("--all");
 const checkHeaders = process.argv.includes("--check-headers");
@@ -216,12 +217,12 @@ for (const [index, entry] of localReviewEntries.entries()) {
     typeof entry !== "object" ||
     typeof entry.localPath !== "string" ||
     entry.localPath.length === 0 ||
-    entry.classification !== "local-module-surface" ||
+    !localReviewClassifications.has(entry.classification) ||
     typeof entry.contentSha256 !== "string" ||
     !/^[a-f0-9]{64}$/.test(entry.contentSha256)
   ) {
     fail(
-      `${label} must contain localPath, classification local-module-surface, and a lowercase SHA-256 content hash`,
+      `${label} must contain localPath, a supported local classification, and a lowercase SHA-256 content hash`,
     );
   }
   if (reviewedLocalSources.has(entry.localPath)) {
@@ -600,8 +601,11 @@ function explicitSources(markers) {
     ];
     for (const match of packageReferences) {
       const [, scope, packageName, pathSymbol] = match;
-      if (scope === "aria" && /\bintl (?:catalog|messages|strings)\b/i.test(marker)) {
-        const prefix = `packages/react-aria/intl/${packageName}/`;
+      if (
+        (scope === "aria" || scope === "stately") &&
+        /\bintl (?:catalog|messages|strings)\b/i.test(marker)
+      ) {
+        const prefix = `packages/react-${scope}/intl/${packageName}/`;
         resolved.push(...upstreamFiles.filter((file) => file.relativePath.startsWith(prefix)));
       }
 

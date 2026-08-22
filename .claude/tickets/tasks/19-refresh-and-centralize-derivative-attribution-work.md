@@ -107,6 +107,11 @@ history:
       at: 2026-08-21,
       note: "classified and hash-guarded 126 local module surfaces, leaving 313 unmarked files",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "completed the Solid Stately review with nine exact mappings, six composites, and two reviewed local files",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -126,7 +131,7 @@ package. It excludes declaration files.
 
 | Package                                  | TS/TSX | Adobe header | Source marker |
 | ---------------------------------------- | -----: | -----------: | ------------: |
-| `@proyecto-viviana/solid-stately`        |     93 |           45 |            47 |
+| `@proyecto-viviana/solid-stately`        |     93 |           58 |            62 |
 | `@proyecto-viviana/solidaria`            |    231 |          135 |           142 |
 | `@proyecto-viviana/solidaria-components` |     74 |           42 |            43 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |           15 |            15 |
@@ -159,22 +164,22 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   223 |
+| `exact`                     |   232 |
 | `exact-no-header`           |     8 |
 | `generated-exact`           |    11 |
 | `generated-exact-no-header` |   410 |
 | `generated-multiple`        |     2 |
 | `mirror`                    |   526 |
-| `multiple`                  |    27 |
-| `reviewed-local`            |   126 |
-| `unmarked`                  |   313 |
+| `multiple`                  |    33 |
+| `reviewed-local`            |   128 |
+| `unmarked`                  |   296 |
 
-The report scanned 1,646 files. It found 223 independent files with one exact
-source. It also found 227 exact-source header contracts, including inherited
-mirror cases. All 227 satisfy the confirmed contract. The generated groups
-have verified inputs. The report records 126 export-only module surfaces as
-reviewed local source and keeps 313 unmarked files in review. Each local review
-has an exact content hash. A content change reopens review. The 526
+The report scanned 1,646 files. It found 232 independent files with one exact
+source. It also found 236 exact-source header contracts, including inherited
+mirror cases. All 236 satisfy the confirmed contract. The generated groups
+have verified inputs. The report records 127 module surfaces and one Solid-only
+helper as reviewed local source. It keeps 296 unmarked files in review. Each
+local review has an exact content hash. A content change reopens review. The 526
 byte-identical Viviana UI files inherit their Solid Spectrum mapping and do not
 create duplicate review work.
 
@@ -211,23 +216,29 @@ Toast implementation and its headerless CSS module. Two byte-identical Viviana
 UI files inherit their Solid Spectrum mappings. The pass updated eight physical
 source files.
 
-The report now finds 27 genuine composite files across the repository. Their
+The implementation review then completed all 17 unmarked Solid Stately files.
+Nine files map to one exact upstream source. Six files have complete composite
+source sets. The selection entrypoint is a local module surface. The reactivity
+utility is a Solid-only helper. React Stately locale markers now resolve every
+file in the pinned locale catalog, and the regression fixture checks this rule.
+
+The report now finds 33 genuine composite files across the repository. Their
 complete source sets were read against the pinned upstream tree. Each local
 header now keeps every distinct full upstream Adobe block once and lists every
 exact upstream path. Headerless inputs get a source-path line without an
 invented Adobe block.
 
-`scripts/attribution-local-reviews.json` records 126 local module surfaces.
-A TypeScript syntax review confirmed that each file contains only export
-declarations. These files organize modules. Their exported implementation files
-own the upstream mappings. The guard fixes each decision to the exact content
-hash and rejects marker, header, or content drift.
+`scripts/attribution-local-reviews.json` records 127 local module surfaces and one
+Solid-only helper. Module surfaces organize exports. Their implementation files
+own the upstream mappings. The helper has no upstream implementation. The guard
+fixes each decision to the exact content hash and rejects marker, header, or
+content drift.
 
-`scripts/attribution-composite-reviews.json` records 152 upstream paths and the
+`scripts/attribution-composite-reviews.json` records 229 upstream paths and the
 required local source text. The report compares each complete path set with the
 live marker result. It also compares the local composite prefix with the exact
 upstream blocks and paths. The header guard fails when a recorded set, source
-marker, block, or path changes. All 27 source-set and header contracts are satisfied.
+marker, block, or path changes. All 33 source-set and header contracts are satisfied.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -332,26 +343,26 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 252 files with an Adobe license block. All 252 use
+The current source tree has 265 files with an Adobe license block. All 265 use
 the full upstream block. Ten blocks follow a required `// @ts-nocheck` first
 line. The formatter preserves these forms.
 
-All 227 exact-source header contracts with a usable upstream header are
+All 236 exact-source header contracts with a usable upstream header are
 satisfied. Eight exact mappings with no Adobe header satisfy their reviewed
 source-evidence contract. Package builds carry applicable headers into emitted
 JS and JSX. All five Adobe-derived package builds also copy exact headers to
 declaration-only outputs that have no runtime bundle. Declaration maps keep
 type-only source files connected to those outputs. `guard:package-artifacts`
-reads runtime and declaration source maps. It proves 441 mapped
-source-to-output references and covers all 252 attributed source files in the
+reads runtime and declaration source maps. It proves 454 mapped
+source-to-output references and covers all 265 attributed source files in the
 five Adobe-derived packages.
 
-The 27 composite reviews cover 152 pinned upstream files. Seventy-three sources
-carry a full Adobe header; 79 have no per-file Adobe header. Their dated headers
+The 33 composite reviews cover 229 pinned upstream files. Eighty-two sources
+carry a full Adobe header; 147 have no per-file Adobe header. Their dated headers
 span 2020 through 2026. Each local composite keeps every distinct full Adobe
 block once and records the exact path of every upstream input. A headerless
-input contributes its path but no invented block. Two composites have only
-headerless inputs and therefore have no Adobe block. All 27 composite source
+input contributes its path but no invented block. Four composites have only
+headerless inputs and therefore have no Adobe block. All 33 composite source
 sets and header contracts are satisfied.
 
 The retired plan recorded this form as decided:
@@ -394,8 +405,8 @@ Passed on 2026-08-21:
 - `vp test run` for the Solidaria switch, checkbox-group, and radio-group
   suites; 55 tests passed
 - focused Playwright Icons and SearchField certification; 44 tests passed
-- `vp run guard:package-artifacts`, including 441 mapped header references
-  across all 252 attributed source files and declaration-only outputs in all
+- `vp run guard:package-artifacts`, including 454 mapped header references
+  across all 265 attributed source files and declaration-only outputs in all
   five Adobe-derived packages
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
@@ -410,11 +421,11 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Review the 313 unmarked implementation and helper files. No unresolved
-   source markers, generated groups, or export-only module surfaces remain.
-   Separate derivative source from original Proyecto Viviana source.
-2. Extend the guard only where the source classification is deterministic. Do
-   not freeze today's incomplete counts as an accepted baseline.
+1. Review the 296 unmarked files: 39 in Solidaria, 30 in Solidaria Components,
+   122 in Solid Spectrum, and 105 in Viviana UI. Solid Stately is complete.
+2. Separate derivative source from original Proyecto Viviana source. Extend the
+   guard only when the source classification is deterministic.
+3. Do not freeze today's incomplete counts as an accepted baseline.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action
 would misattribute the source.
