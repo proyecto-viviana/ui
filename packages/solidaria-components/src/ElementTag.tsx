@@ -1,3 +1,8 @@
+/**
+ * Local Solid helper for safe dynamic HTML tags after hydration.
+ * The pinned React Aria Components source has no ElementTag counterpart.
+ */
+
 import { type JSX, createMemo, splitProps } from "solid-js";
 import { Dynamic } from "solid-js/web";
 

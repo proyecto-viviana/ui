@@ -3,6 +3,8 @@
  *
  * A composite component that combines ColorArea, ColorSlider, and ColorField
  * into a complete color editing UI. Pure composition — no new ARIA hooks needed.
+ * Based on @react-spectrum/color source:
+ * https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/color/ColorEditor.tsx.
  */
 
 import { type JSX, createSignal, For, Show, splitProps, createMemo } from "solid-js";

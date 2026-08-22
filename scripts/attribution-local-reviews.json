@@ -668,5 +668,35 @@
     "localPath": "packages/viviana-ui/src/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "fb3f55ed37b3b4925f59a954a82280cac98a180c9ef83a0a5e7abada052e1398"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Alert.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "a87c1a7bf89675fbf516f58a16a066b92b29d5352bf308fdf08ca0b691fb0485"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/DateRangePickerContext.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "01add22e84e83e99840322ed5c4c17b94190dca4598ebcd4de046c38450bee12"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/ElementTag.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "bf83363699f7d81fbe2615bb7284ed0f0db862fcffb3e4e1c9f59c1ec109390a"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Icon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "8cbfabe1562ebed2c9b9ab9b8a112cb8aeebc572a71c1f206e7dbf203872ff53"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Landmark.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "5bea630e465aabcebc86e37e5b2ee3d92c116f83e14e64009868020043875dda"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/contexts.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "83b613a6d6f0c2fb27112967d8167b34b5e6054528338e13d053bcc00f46ca8b"
   }
 ]

@@ -1,3 +1,7 @@
+/**
+ * Based on packages/react-aria/src/dnd/ListDropTargetDelegate.ts.
+ */
+
 import type { Accessor } from "solid-js";
 import type { DropTarget } from "@proyecto-viviana/solid-stately";
 

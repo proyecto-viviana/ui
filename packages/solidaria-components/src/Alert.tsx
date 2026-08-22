@@ -4,6 +4,9 @@
  * Minimal headless Alert that owns ARIA semantics (role="alert")
  * and provides render props for styling. The UI layer consumes this
  * for styling/composition only.
+ *
+ * This is a local Solid component. The pinned React Aria Components source
+ * has no Alert counterpart.
  */
 
 import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";

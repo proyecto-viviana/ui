@@ -3,6 +3,9 @@
  *
  * Pre-wired headless landmark component that combines aria hooks.
  * Enables F6 keyboard navigation between major page sections.
+ *
+ * This is a local Solid component. The pinned React Aria Components source
+ * has no Landmark counterpart; Solidaria owns the underlying ARIA behavior.
  */
 
 import { type JSX, createContext, createMemo, createSignal, splitProps } from "solid-js";

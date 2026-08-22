@@ -117,6 +117,11 @@ history:
       at: 2026-08-21,
       note: "completed the Solidaria review with 18 exact mappings, 15 composites, and six reviewed local helpers",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "completed the Solidaria Components review with 15 header-bearing exact mappings, two headerless exact mappings, seven composites, and six local helpers",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -129,7 +134,7 @@ compliance claim.
 ## Evidence snapshot
 
 The pre-header baseline revision is `03edb8e3` on 2026-08-21. The table below
-shows the current source counts after the Solidaria implementation review.
+shows the current source counts after the Solidaria Components implementation review.
 
 `vp run guard:attribution` counts TypeScript source under each Adobe-derived
 package. It excludes declaration files.
@@ -138,7 +143,7 @@ package. It excludes declaration files.
 | ---------------------------------------- | -----: | -----------: | ------------: |
 | `@proyecto-viviana/solid-stately`        |     93 |           58 |            62 |
 | `@proyecto-viviana/solidaria`            |    231 |          162 |           175 |
-| `@proyecto-viviana/solidaria-components` |     74 |           42 |            43 |
+| `@proyecto-viviana/solidaria-components` |     74 |           64 |            67 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |           15 |            15 |
 | `@proyecto-viviana/ui`                   |    644 |           15 |            15 |
 
@@ -169,24 +174,24 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   250 |
-| `exact-no-header`           |     8 |
+| `exact`                     |   265 |
+| `exact-no-header`           |    10 |
 | `generated-exact`           |    11 |
 | `generated-exact-no-header` |   410 |
 | `generated-multiple`        |     2 |
 | `mirror`                    |   526 |
-| `multiple`                  |    48 |
-| `reviewed-local`            |   134 |
-| `unmarked`                  |   257 |
+| `multiple`                  |    55 |
+| `reviewed-local`            |   140 |
+| `unmarked`                  |   227 |
 
-The report scanned 1,646 files. It found 250 independent files with one exact
-source. It also found 254 exact-source header contracts, including inherited
-mirror cases. All 254 satisfy the confirmed contract. The generated groups
-have verified inputs. The report records 127 module surfaces and seven local
-Solid helpers as reviewed local source. It keeps 257 unmarked files in review.
-Each local review has an exact content hash. A content change reopens review. The 526
-byte-identical Viviana UI files inherit their Solid Spectrum mapping and do not
-create duplicate review work.
+The report scanned 1,646 files. It found 265 independent files with one
+header-bearing exact source and ten files with a reviewed headerless exact
+source. All 269 exact-source header contracts pass, including inherited mirror
+cases. The generated groups have verified inputs. The report records 127 module
+surfaces and 13 local Solid helpers as reviewed local source. It keeps 227
+unmarked files in review. Each local review has an exact content hash. A content
+change reopens review. The 526 byte-identical Viviana UI files inherit their
+Solid Spectrum mapping and do not create duplicate review work.
 
 This pass mapped 23 previously header-bearing S2 and flags sources to exact
 upstream files. No file remains in `header-unmapped`. Multiline marker parsing
@@ -233,23 +238,30 @@ composite source sets. Six focus, disclosure, environment, and reactivity
 utilities are explicit local helpers with no direct upstream API. Solidaria now
 has no unmarked files.
 
-The report now finds 48 genuine composite files across the repository. Their
+The implementation review completed all 30 unmarked Solidaria Components
+files. Fifteen files map to one header-bearing source. ColorEditor and
+ListDropTargetDelegate map to reviewed headerless sources. Seven files combine
+complete upstream source sets. Six composition, context, and Solid runtime
+helpers have no direct upstream component counterpart. Solidaria Components now
+has no unmarked files.
+
+The report now finds 55 genuine composite files across the repository. Their
 complete source sets were read against the pinned upstream tree. Each local
 header now keeps every distinct full upstream Adobe block once and lists every
 exact upstream path. Headerless inputs get a source-path line without an
 invented Adobe block.
 
 `scripts/attribution-local-reviews.json` records 127 local module surfaces and
-seven local Solid helpers. Module surfaces organize exports. Their implementation
+13 local Solid helpers. Module surfaces organize exports. Their implementation
 files own the upstream mappings. The helpers have no direct upstream API. The
 guard fixes each decision to the exact content hash and rejects marker, header,
 or content drift.
 
-`scripts/attribution-composite-reviews.json` records 454 upstream paths and the
+`scripts/attribution-composite-reviews.json` records 476 upstream paths and the
 required local source text. The report compares each complete path set with the
 live marker result. It also compares the local composite prefix with the exact
 upstream blocks and paths. The header guard fails when a recorded set, source
-marker, block, or path changes. All 48 source-set and header contracts are satisfied.
+marker, block, or path changes. All 55 source-set and header contracts are satisfied.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -259,23 +271,26 @@ an exception to the guard.
 
 ### Exact mappings without a current Adobe header
 
-Eight mappings have verified headerless exact sources. Four earlier mappings
-were checked across longer reachable exact-path histories. Color types is
-confirmed in the pinned tree. Drop Target Keyboard Navigation and virtual focus
-each have one reachable exact-path revision, which is headerless:
+Ten mappings have verified headerless exact sources. Four earlier mappings
+were checked across longer reachable exact-path histories. Color types,
+ColorEditor, and ListDropTargetDelegate are confirmed in the pinned tree. Drop
+Target Keyboard Navigation and virtual focus each have one reachable exact-path
+revision, which is headerless:
 
-| Local source                                    | Exact upstream source                            | Result                                                        |
-| ----------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------- |
-| `solid-stately/color/types.ts`                  | `react-stately/color/types.ts`                   | No Adobe header in the pinned exact source.                   |
-| `solid-stately/grid/createGridState.ts`         | `react-stately/grid/useGridState.ts`             | Headerless at the port date and pinned revision.              |
-| `solidaria/datepicker/createDatePickerGroup.ts` | `react-aria/datepicker/useDatePickerGroup.ts`    | No Adobe header in any exact-path revision.                   |
-| `solidaria/interactions/createFocusRing.ts`     | `react-aria/focus/useFocusRing.ts`               | No Adobe header in any exact-path revision.                   |
-| `solidaria/utils/ShadowTreeWalker.ts`           | `react-aria/utils/shadowdom/ShadowTreeWalker.ts` | No Adobe header. Adobe names Microsoft Tabster as its source. |
-| `solidaria/dnd/DropTargetKeyboardNavigation.ts` | `react-aria/dnd/DropTargetKeyboardNavigation.ts` | The one reachable exact-path revision has no Adobe header.    |
-| `solidaria/focus/virtualFocus.ts`               | `react-aria/focus/virtualFocus.ts`               | The one reachable exact-path revision has no Adobe header.    |
-| `solidaria-components/Table.tsx`                | `react-aria-components/Table.tsx`                | No Adobe header in any exact-path revision.                   |
+| Local source                                     | Exact upstream source                            | Result                                                        |
+| ------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------- |
+| `solid-stately/color/types.ts`                   | `react-stately/color/types.ts`                   | No Adobe header in the pinned exact source.                   |
+| `solid-stately/grid/createGridState.ts`          | `react-stately/grid/useGridState.ts`             | Headerless at the port date and pinned revision.              |
+| `solidaria/datepicker/createDatePickerGroup.ts`  | `react-aria/datepicker/useDatePickerGroup.ts`    | No Adobe header in any exact-path revision.                   |
+| `solidaria/interactions/createFocusRing.ts`      | `react-aria/focus/useFocusRing.ts`               | No Adobe header in any exact-path revision.                   |
+| `solidaria/utils/ShadowTreeWalker.ts`            | `react-aria/utils/shadowdom/ShadowTreeWalker.ts` | No Adobe header. Adobe names Microsoft Tabster as its source. |
+| `solidaria/dnd/DropTargetKeyboardNavigation.ts`  | `react-aria/dnd/DropTargetKeyboardNavigation.ts` | The one reachable exact-path revision has no Adobe header.    |
+| `solidaria/focus/virtualFocus.ts`                | `react-aria/focus/virtualFocus.ts`               | The one reachable exact-path revision has no Adobe header.    |
+| `solidaria-components/Table.tsx`                 | `react-aria-components/Table.tsx`                | No Adobe header in any exact-path revision.                   |
+| `solidaria-components/ColorEditor.tsx`           | `@adobe/react-spectrum/color/ColorEditor.tsx`    | No Adobe header in the pinned exact source.                   |
+| `solidaria-components/ListDropTargetDelegate.ts` | `react-aria/dnd/ListDropTargetDelegate.ts`       | No Adobe header in the pinned exact source.                   |
 
-`scripts/attribution-headerless-reviews.json` records these eight decisions.
+`scripts/attribution-headerless-reviews.json` records these ten decisions.
 The guard fixes each local path to its exact upstream path and required source
 evidence. ShadowTreeWalker keeps Microsoft's exact short MIT block and source
 link. The root and package notices keep the complete Microsoft MIT notice.
@@ -354,27 +369,24 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 292 files with an Adobe license block. All 292 use
+The current source tree has 314 files with an Adobe license block. All 314 use
 the full upstream block. Ten blocks follow a required `// @ts-nocheck` first
 line. The formatter preserves these forms.
 
-All 254 exact-source header contracts with a usable upstream header are
-satisfied. Eight exact mappings with no Adobe header satisfy their reviewed
+All 269 exact-source header contracts with a usable upstream header are
+satisfied. Ten exact mappings with no Adobe header satisfy their reviewed
 source-evidence contract. Package builds carry applicable headers into emitted
 JS and JSX. All five Adobe-derived package builds also copy exact headers to
 declaration-only outputs that have no runtime bundle. Declaration maps keep
 type-only source files connected to those outputs. `guard:package-artifacts`
-reads runtime and declaration source maps. It proves 504 mapped
-source-to-output references and covers all 292 attributed source files in the
+reads runtime and declaration source maps. It proves 548 mapped
+source-to-output references and covers all 314 attributed source files in the
 five Adobe-derived packages.
 
-The 48 composite reviews cover 454 pinned upstream files. One hundred five
-sources carry a full Adobe header; 349 have no per-file Adobe header. Their dated headers
-span 2020 through 2026. Each local composite keeps every distinct full Adobe
-block once and records the exact path of every upstream input. A headerless
-input contributes its path but no invented block. Four composites have only
-headerless inputs and therefore have no Adobe block. All 48 composite source
-sets and header contracts are satisfied.
+The 55 composite reviews cover 476 pinned upstream files. Each local composite
+keeps every distinct full Adobe block once and records the exact path of every
+upstream input. A headerless input contributes its path but no invented block.
+All 55 composite source sets and header contracts are satisfied.
 
 The retired plan recorded this form as decided:
 
@@ -416,8 +428,8 @@ Passed on 2026-08-21:
 - `vp test run` for the Solidaria switch, checkbox-group, and radio-group
   suites; 55 tests passed
 - focused Playwright Icons and SearchField certification; 44 tests passed
-- `vp run guard:package-artifacts`, including 504 mapped header references
-  across all 292 attributed source files and declaration-only outputs in all
+- `vp run guard:package-artifacts`, including 548 mapped header references
+  across all 314 attributed source files and declaration-only outputs in all
   five Adobe-derived packages
 - `vp exec npm pack --dry-run --json` in each of the six public packages
 - `vp run docs:check`
@@ -432,8 +444,8 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Review the 257 unmarked files: 30 in Solidaria Components, 122 in Solid
-   Spectrum, and 105 in Viviana UI. Solid Stately and Solidaria are complete.
+1. Review the 227 unmarked files: 122 in Solid Spectrum and 105 in Viviana
+   UI. Solid Stately, Solidaria, and Solidaria Components are complete.
 2. Separate derivative source from original Proyecto Viviana source. Extend the
    guard only when the source classification is deterministic.
 3. Do not freeze today's incomplete counts as an accepted baseline.

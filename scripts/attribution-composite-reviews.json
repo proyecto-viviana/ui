@@ -783,5 +783,69 @@
       "This Solid module combines the pinned Toast component and transition stylesheet.",
       "const TOAST_ANIMATION_CSS"
     ]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/ActionBar.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/ActionBar.tsx",
+      "packages/@adobe/react-spectrum/src/actionbar/ActionBarContainer.tsx"
+    ],
+    "requiredText": ["ActionBarContainer ownership model", "selection count and clear"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/ActionGroup.tsx",
+    "upstreamPaths": [
+      "packages/react-aria/src/actiongroup/useActionGroup.ts",
+      "packages/react-aria/src/actiongroup/useActionGroupItem.ts"
+    ],
+    "requiredText": ["Components has no ActionGroup component", "wires the two hooks"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Collection.tsx",
+    "upstreamPaths": [
+      "packages/react-aria-components/src/Collection.tsx",
+      "packages/react-aria-components/src/Group.tsx",
+      "packages/react-aria-components/src/Header.tsx"
+    ],
+    "requiredText": ["Section / Header / Group. Based on:"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/StepList.tsx",
+    "upstreamPaths": [
+      "packages/react-aria/src/steplist/useStepList.ts",
+      "packages/react-aria/src/steplist/useStepListItem.ts",
+      "packages/react-stately/src/steplist/useStepListState.ts"
+    ],
+    "requiredText": ["ordered list of steps with completion tracking"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Virtualizer.tsx",
+    "upstreamPaths": [
+      "packages/react-aria-components/src/Virtualizer.tsx",
+      "packages/react-aria/src/virtualizer/ScrollView.tsx"
+    ],
+    "requiredText": ["React Aria Components API", "React Aria scroll-view"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/VirtualizerLayouts.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/layout/ListLayout.ts",
+      "packages/react-stately/src/layout/GridLayout.ts",
+      "packages/react-stately/src/layout/TableLayout.ts",
+      "packages/react-stately/src/layout/WaterfallLayout.ts"
+    ],
+    "requiredText": ["These layout contracts are based on:"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/virtualizer/Layout.ts",
+    "upstreamPaths": [
+      "packages/react-stately/src/virtualizer/Point.ts",
+      "packages/react-stately/src/virtualizer/Size.ts",
+      "packages/react-stately/src/virtualizer/Rect.ts",
+      "packages/react-stately/src/virtualizer/LayoutInfo.ts",
+      "packages/react-stately/src/virtualizer/Layout.ts",
+      "packages/react-stately/src/virtualizer/types.ts"
+    ],
+    "requiredText": ["Virtualizer geometry and layout contracts. Based on:"]
   }
 ]

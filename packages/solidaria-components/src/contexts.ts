@@ -3,6 +3,9 @@
  *
  * These are separated to avoid circular dependencies between
  * Dialog, Modal, Popover, and Button components.
+ *
+ * This is a local Solid module split. The owning overlay components record
+ * their upstream sources.
  */
 
 import { createContext, useContext } from "solid-js";

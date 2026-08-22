@@ -45,5 +45,15 @@
     "localPath": "packages/solidaria-components/src/Table.tsx",
     "upstreamPath": "packages/react-aria-components/src/Table.tsx",
     "requiredText": ["react-aria-components/src/Table.tsx"]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/ListDropTargetDelegate.ts",
+    "upstreamPath": "packages/react-aria/src/dnd/ListDropTargetDelegate.ts",
+    "requiredText": ["Based on packages/react-aria/src/dnd/ListDropTargetDelegate.ts."]
+  },
+  {
+    "localPath": "packages/solidaria-components/src/ColorEditor.tsx",
+    "upstreamPath": "packages/@adobe/react-spectrum/src/color/ColorEditor.tsx",
+    "requiredText": ["Based on @react-spectrum/color source:"]
   }
 ]
