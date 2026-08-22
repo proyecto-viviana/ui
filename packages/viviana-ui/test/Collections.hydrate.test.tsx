@@ -22,7 +22,7 @@ import {
   ListViewStaticInteractiveFixture,
   ListViewSlottedFixture,
 } from "./fixtures/collections";
-import { setupUser } from "../src/test-utils";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 function installHydrationGlobals(): void {
   (globalThis as unknown as { _$HY: unknown })._$HY = {

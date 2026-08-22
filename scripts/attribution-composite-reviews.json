@@ -140,17 +140,6 @@
     ]
   },
   {
-    "localPath": "packages/solid-spectrum/src/test-utils/index.ts",
-    "upstreamPaths": [
-      "packages/@react-aria/test-utils/src/userEventMaps.ts",
-      "packages/@react-aria/test-utils/src/user.ts"
-    ],
-    "requiredText": [
-      "packages/@react-aria/test-utils/src/userEventMaps.ts",
-      "packages/@react-aria/test-utils/src/user.ts"
-    ]
-  },
-  {
     "localPath": "packages/solid-spectrum/src/toast/index.tsx",
     "upstreamPaths": [
       "packages/@react-spectrum/s2/src/Toast.module.css",
@@ -1244,17 +1233,6 @@
     "requiredText": [
       "packages/@react-spectrum/s2/src/Skeleton.tsx",
       "packages/@react-spectrum/s2/src/SkeletonCollection.tsx"
-    ]
-  },
-  {
-    "localPath": "packages/viviana-ui/src/test-utils/index.ts",
-    "upstreamPaths": [
-      "packages/@react-aria/test-utils/src/userEventMaps.ts",
-      "packages/@react-aria/test-utils/src/user.ts"
-    ],
-    "requiredText": [
-      "packages/@react-aria/test-utils/src/userEventMaps.ts",
-      "packages/@react-aria/test-utils/src/user.ts"
     ]
   },
   {

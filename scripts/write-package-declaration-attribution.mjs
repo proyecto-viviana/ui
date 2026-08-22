@@ -30,18 +30,52 @@ function readSourceMap(codeFile) {
   }
 }
 
+function prependHeaders(codeFile, mapped, headers) {
+  const prefix = `${headers.join("\n\n")}\n\n`;
+  const lineOffset = prefix.split("\n").length - 1;
+
+  if (typeof mapped.sourceMap.mappings === "string") {
+    mapped.sourceMap.mappings = `${";".repeat(lineOffset)}${mapped.sourceMap.mappings}`;
+  } else if (Array.isArray(mapped.sourceMap.sections)) {
+    for (const section of mapped.sourceMap.sections) {
+      if (section?.offset && Number.isInteger(section.offset.line)) {
+        section.offset.line += lineOffset;
+      }
+    }
+  } else {
+    throw new Error(
+      `${path.relative(process.cwd(), mapped.mapFile)}: cannot shift an unsupported source map`,
+    );
+  }
+
+  writeFileSync(codeFile, `${prefix}${readFileSync(codeFile, "utf8")}`);
+  writeFileSync(mapped.mapFile, `${JSON.stringify(mapped.sourceMap)}\n`);
+}
+
 const runtimeSources = new Set();
+let wroteRuntime = 0;
 for (const codeFile of files(distDir, /\.(?:js|jsx)$/)) {
   const mapped = readSourceMap(codeFile);
   if (!mapped) continue;
+
+  const headers = new Set();
   for (const entry of sourceMapEntries(mapped.mapFile, mapped.sourceMap)) {
-    if (typeof entry.source === "string" && sourceAttributionHeader(entry.source)) {
-      runtimeSources.add(entry.sourceFile);
-    }
+    if (typeof entry.source !== "string") continue;
+    const header = sourceAttributionHeader(entry.source);
+    if (!header) continue;
+    runtimeSources.add(entry.sourceFile);
+    headers.add(header);
   }
+
+  const code = readFileSync(codeFile, "utf8");
+  const missing = [...headers].filter((header) => !builtCodeHasAttributionHeader(code, header));
+  if (missing.length === 0) continue;
+
+  prependHeaders(codeFile, mapped, missing);
+  wroteRuntime += 1;
 }
 
-let wrote = 0;
+let wroteDeclaration = 0;
 for (const declarationFile of files(distDir, /\.d\.ts$/)) {
   const mapped = readSourceMap(declarationFile);
   if (!mapped) continue;
@@ -61,9 +95,9 @@ for (const declarationFile of files(distDir, /\.d\.ts$/)) {
   if (missing.length === 0) continue;
 
   writeFileSync(declarationFile, `${missing.join("\n\n")}\n\n${declaration}`);
-  wrote += 1;
+  wroteDeclaration += 1;
 }
 
 console.log(
-  `write-package-declaration-attribution — wrote ${wrote} declaration attribution banner(s) in ${path.relative(process.cwd(), packageDir) || "."}`,
+  `write-package-declaration-attribution — wrote ${wroteRuntime} runtime and ${wroteDeclaration} declaration attribution banner(s) in ${path.relative(process.cwd(), packageDir) || "."}`,
 );

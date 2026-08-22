@@ -317,6 +317,65 @@ try {
     `preserved built attribution header failed:\n${combined(preservedBuiltHeader)}`,
   );
   console.log("PASS: package artifacts preserve mapped attribution headers after printing.");
+  const macroHeader = builtHeader.replace(
+    "packages/upstream/src/index.ts",
+    "packages/upstream/src/macro.ts",
+  );
+  const macroSource = `${macroHeader}\n\nexport const macro = true;\n`;
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "src", "macro.ts"),
+    macroSource,
+  );
+  writeFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "dist", "macro.js"),
+    "const macro = true;\n",
+  );
+  json(path.join(packageArtifactFixture, "packages", "example", "dist", "macro.js.map"), {
+    version: 3,
+    file: "macro.js",
+    sources: ["../src/macro.ts"],
+    sourcesContent: [macroSource],
+    names: [],
+    mappings: "AAAA",
+  });
+  const runtimeWrite = runSync(
+    "write-package-declaration-attribution.mjs",
+    packageArtifactFixture,
+    {},
+    ["packages/example"],
+  );
+  assert(
+    runtimeWrite.status === 0 &&
+      combined(runtimeWrite).includes("wrote 1 runtime and 0 declaration"),
+    `runtime attribution writer failed:\n${combined(runtimeWrite)}`,
+  );
+  const writtenMacro = readFileSync(
+    path.join(packageArtifactFixture, "packages", "example", "dist", "macro.js"),
+    "utf8",
+  );
+  assert(
+    writtenMacro.startsWith(`${macroHeader}\n\n`),
+    "runtime attribution writer did not restore the mapped source header",
+  );
+  const writtenMacroMap = JSON.parse(
+    readFileSync(
+      path.join(packageArtifactFixture, "packages", "example", "dist", "macro.js.map"),
+      "utf8",
+    ),
+  );
+  const macroLineOffset = `${macroHeader}\n\n`.split("\n").length - 1;
+  assert(
+    writtenMacroMap.mappings === `${";".repeat(macroLineOffset)}AAAA`,
+    "runtime attribution writer did not shift source-map lines with the inserted header",
+  );
+  const preservedRuntimeHeader = runSync("check-package-artifacts.mjs", packageArtifactFixture, {
+    VIVIANA_PUBLIC_PACKAGE_DIRS: "packages/example",
+  });
+  assert(
+    preservedRuntimeHeader.status === 0,
+    `restored runtime attribution header failed:\n${combined(preservedRuntimeHeader)}`,
+  );
+  console.log("PASS: source maps restore attribution for transformed runtime chunks.");
   const typeOnlyHeader = builtHeader.replace(
     "packages/upstream/src/index.ts",
     "packages/upstream/src/types.ts",
@@ -354,7 +413,8 @@ try {
     ["packages/example"],
   );
   assert(
-    declarationWrite.status === 0 && combined(declarationWrite).includes("wrote 1"),
+    declarationWrite.status === 0 &&
+      combined(declarationWrite).includes("wrote 0 runtime and 1 declaration"),
     `declaration attribution writer failed:\n${combined(declarationWrite)}`,
   );
   const preservedDeclarationHeader = runSync(
@@ -376,7 +436,7 @@ try {
   );
   assert(
     idempotentDeclarationWrite.status === 0 &&
-      combined(idempotentDeclarationWrite).includes("wrote 0"),
+      combined(idempotentDeclarationWrite).includes("wrote 0 runtime and 0 declaration"),
     "declaration attribution writer was not idempotent",
   );
   console.log("PASS: declaration-only attribution survives package builds.");
