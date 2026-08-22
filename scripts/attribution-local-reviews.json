@@ -30,6 +30,16 @@
     "contentSha256": "1ef9bd89db4f0af7fa901e63acc016a6d09a38cab085fb061ad18857c1e90fb5"
   },
   {
+    "localPath": "packages/solid-spectrum/src/button/spectrum-context.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "2c8dccb93471ca68b3a475893a3d036418a68a7969e18b738aa3f6927b7dd7b6"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/button/text-child.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "332da7d536e0ea06ce53623ee3ab9b622fe3e5b15082d5d99f8661a17bb630d0"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/Calendar.ts",
     "classification": "local-module-surface",
     "contentSha256": "cf03a421b389ada4194163847b608260f8198f5f72852ba8f44d9dc4e28ca6c9"
@@ -48,6 +58,11 @@
     "localPath": "packages/solid-spectrum/src/CenterBaseline.ts",
     "classification": "local-module-surface",
     "contentSha256": "06ba09ca426b881955d80c6276551e62396be961983369f639ca54ea3dbb2b71"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/color/ColorEditor.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "b8b5e6d920beb2bff8b270b452fdd26a4d4073e0d820d15083bd1c9430f2e73f"
   },
   {
     "localPath": "packages/solid-spectrum/src/ColorArea.ts",
@@ -110,6 +125,11 @@
     "contentSha256": "dac532114979598a6880970f87a440e361c468449579ae6546629f2752c80219"
   },
   {
+    "localPath": "packages/solid-spectrum/src/filetrigger/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "d8987a03814efd36c7f6ef36b4c4197475f0e93006ab69b18caf08cc4363ae30"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/GitHubIcon.ts",
     "classification": "local-module-surface",
     "contentSha256": "8003409e000859116452b985b122f0221e034d60a7bbe0d199a039b2cff259ed"
@@ -120,9 +140,29 @@
     "contentSha256": "5bbd59ba37e9e79c24134dc540f79911934444ca343a360a68795894c5d97c60"
   },
   {
+    "localPath": "packages/solid-spectrum/src/icon/icons/GitHubIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "8bdc7e78ea3400fa429e51eb0d1c610d99d0b1c05ab9155034af6bed69bc3752"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/icon/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "6f13d87fb2176761f310eb44b709020146d2a9c2af152fcd00451fedd745b80c"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "fd5fa9cf929092c44da603deeb09cdbc1132753facd1fd8ffed67a998e4a4dbf"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/intl/index.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "3a750aea81e40c1413dd942d471c438194716f27dfca3780b8744412d9965240"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/landmark/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "371fea4453e4f391a5cbdfeab3ea87cdd8ffa0d94cd9699573b357bb750677de"
   },
   {
     "localPath": "packages/solid-spectrum/src/layout/index.tsx",
@@ -190,9 +230,34 @@
     "contentSha256": "94218cee53a52fe40176a26bc528d8f23f4cc0f9b3ebeb793145c84112518946"
   },
   {
+    "localPath": "packages/solid-spectrum/src/shared-element/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "cca6d3529b0b791318a1337ef3998fb1e9cbf5e15fc76cc264761ffa839dadd9"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/story-utils/ErrorBoundary.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "6502ffa9ad74892c705a9144170c5a9941d72d7b3f8adb70a63c15682caf9cf6"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/story-utils/generatePowerset.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "9644c62908afc485339d80e0d2af45bfca54a3a48320aad354f648e989e87520"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/story-utils/index.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "05d20c643d25abc2543e1a99e5a4790d3257f31132a39534543b4ced7d89fc38"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/Switch.ts",
     "classification": "local-module-surface",
     "contentSha256": "cd3d3b96454fa5e66a75077f4177a81d5166ab0419e84add423b806d8521f1ea"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/switch/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "2c9bd16b48657eee23a719d20a0490ff4b7d5b1880915568484c289978344f33"
   },
   {
     "localPath": "packages/solid-spectrum/src/Tabs.ts",
@@ -218,6 +283,21 @@
     "localPath": "packages/solid-spectrum/src/TreeView.ts",
     "classification": "local-module-surface",
     "contentSha256": "6925f7e5c3c5893603670c2adde741a8add6ced0e221212eedd914cdca21cd68"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/view/Content.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "8283f2df16151e1c9125e537ed081d14a456b77197b4f05ca916bdc0b741e71e"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/view/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "8b744846633e2c136cdc942dd122436fd9a04729b098517d4967a12d5479abac"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/well/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "0879d1c52ad35cddb1e49bf217bcaab936ca9206efb695ea46375aaf5cfe1085"
   },
   {
     "localPath": "packages/solid-stately/src/autocomplete/index.ts",
@@ -375,9 +455,39 @@
     "contentSha256": "5a37c73dde75716d5d76457b5d297302c1894ff8cd21a5a61cad962c1253791c"
   },
   {
+    "localPath": "packages/solidaria-components/src/Alert.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "a87c1a7bf89675fbf516f58a16a066b92b29d5352bf308fdf08ca0b691fb0485"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/contexts.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "83b613a6d6f0c2fb27112967d8167b34b5e6054528338e13d053bcc00f46ca8b"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/DateRangePickerContext.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "01add22e84e83e99840322ed5c4c17b94190dca4598ebcd4de046c38450bee12"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/ElementTag.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "bf83363699f7d81fbe2615bb7284ed0f0db862fcffb3e4e1c9f59c1ec109390a"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Icon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "8cbfabe1562ebed2c9b9ab9b8a112cb8aeebc572a71c1f206e7dbf203872ff53"
+  },
+  {
     "localPath": "packages/solidaria-components/src/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "c8953104749b9ae84292d63c35a1099fc40e27ead11fb3ea633b4429d6e09034"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/Landmark.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "5bea630e465aabcebc86e37e5b2ee3d92c116f83e14e64009868020043875dda"
   },
   {
     "localPath": "packages/solidaria/src/actiongroup/index.ts",
@@ -430,6 +540,11 @@
     "contentSha256": "b50042d18d97f956fd25131d26a7f522c86d55a520d964a10b063c7b1e4b3b25"
   },
   {
+    "localPath": "packages/solidaria/src/disclosure/createDisclosureGroup.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "cfe572a90b56e86c0ff13f2a5085947e749cef54a23b5b1ef68070bdbb1bd30d"
+  },
+  {
     "localPath": "packages/solidaria/src/disclosure/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "e63aaa52801954c7ad1f0ad559d158421f20942acfe887270f74985656141a26"
@@ -438,6 +553,21 @@
     "localPath": "packages/solidaria/src/dnd/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "76dcf580057719548456ca583ddc014ea947139f17e64fb3fe13ebc3efc8b36b"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/createAutoFocus.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "946665f414032e50467a8c9be798f66536443a07adca0509ff1c40719084eadb"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/createFocusRestore.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "2149a29038d28dc185d47e5ff153b0430d8dda209f831a0a4c8fcd74701d4ccb"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/createVirtualFocus.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "e0d9cea735e666303e0b49de53958f25c1d4904de0bd494747dca0507bb2d07e"
   },
   {
     "localPath": "packages/solidaria/src/focus/index.ts",
@@ -620,44 +750,24 @@
     "contentSha256": "407282509c04c6a58e9b8800fedaf36b923a666fd16df2921f34b3a82aa337c4"
   },
   {
-    "localPath": "packages/solidaria/src/utils/index.ts",
-    "classification": "local-module-surface",
-    "contentSha256": "cc34a1b518561be34e74eedf48c7fceafc75dc720a38410a1e7cebe8fd6b3917"
-  },
-  {
-    "localPath": "packages/solidaria/src/visually-hidden/index.ts",
-    "classification": "local-module-surface",
-    "contentSha256": "316e2866459b2fd668d9900687e0fdfc3f78aeaf4123509eb803fadfbf9b8ee0"
-  },
-  {
-    "localPath": "packages/solidaria/src/disclosure/createDisclosureGroup.ts",
-    "classification": "local-solid-helper",
-    "contentSha256": "cfe572a90b56e86c0ff13f2a5085947e749cef54a23b5b1ef68070bdbb1bd30d"
-  },
-  {
-    "localPath": "packages/solidaria/src/focus/createAutoFocus.ts",
-    "classification": "local-solid-helper",
-    "contentSha256": "946665f414032e50467a8c9be798f66536443a07adca0509ff1c40719084eadb"
-  },
-  {
-    "localPath": "packages/solidaria/src/focus/createFocusRestore.ts",
-    "classification": "local-solid-helper",
-    "contentSha256": "2149a29038d28dc185d47e5ff153b0430d8dda209f831a0a4c8fcd74701d4ccb"
-  },
-  {
-    "localPath": "packages/solidaria/src/focus/createVirtualFocus.ts",
-    "classification": "local-solid-helper",
-    "contentSha256": "e0d9cea735e666303e0b49de53958f25c1d4904de0bd494747dca0507bb2d07e"
-  },
-  {
     "localPath": "packages/solidaria/src/utils/env.ts",
     "classification": "local-solid-helper",
     "contentSha256": "081aa321f411157b71ac76c470d3d7b38aa1a0d81c9fd7dc262e9ee2af8a5101"
   },
   {
+    "localPath": "packages/solidaria/src/utils/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "cc34a1b518561be34e74eedf48c7fceafc75dc720a38410a1e7cebe8fd6b3917"
+  },
+  {
     "localPath": "packages/solidaria/src/utils/reactivity.ts",
     "classification": "local-solid-helper",
     "contentSha256": "825fac25a54aeeaa262b3434d750aee06f23f3ca38e9c8f042870642c7b1a490"
+  },
+  {
+    "localPath": "packages/solidaria/src/visually-hidden/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "316e2866459b2fd668d9900687e0fdfc3f78aeaf4123509eb803fadfbf9b8ee0"
   },
   {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/index.ts",
@@ -668,35 +778,5 @@
     "localPath": "packages/viviana-ui/src/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "fb3f55ed37b3b4925f59a954a82280cac98a180c9ef83a0a5e7abada052e1398"
-  },
-  {
-    "localPath": "packages/solidaria-components/src/Alert.tsx",
-    "classification": "local-solid-helper",
-    "contentSha256": "a87c1a7bf89675fbf516f58a16a066b92b29d5352bf308fdf08ca0b691fb0485"
-  },
-  {
-    "localPath": "packages/solidaria-components/src/DateRangePickerContext.tsx",
-    "classification": "local-solid-helper",
-    "contentSha256": "01add22e84e83e99840322ed5c4c17b94190dca4598ebcd4de046c38450bee12"
-  },
-  {
-    "localPath": "packages/solidaria-components/src/ElementTag.tsx",
-    "classification": "local-solid-helper",
-    "contentSha256": "bf83363699f7d81fbe2615bb7284ed0f0db862fcffb3e4e1c9f59c1ec109390a"
-  },
-  {
-    "localPath": "packages/solidaria-components/src/Icon.tsx",
-    "classification": "local-solid-helper",
-    "contentSha256": "8cbfabe1562ebed2c9b9ab9b8a112cb8aeebc572a71c1f206e7dbf203872ff53"
-  },
-  {
-    "localPath": "packages/solidaria-components/src/Landmark.tsx",
-    "classification": "local-solid-helper",
-    "contentSha256": "5bea630e465aabcebc86e37e5b2ee3d92c116f83e14e64009868020043875dda"
-  },
-  {
-    "localPath": "packages/solidaria-components/src/contexts.ts",
-    "classification": "local-solid-helper",
-    "contentSha256": "83b613a6d6f0c2fb27112967d8167b34b5e6054528338e13d053bcc00f46ca8b"
   }
 ]

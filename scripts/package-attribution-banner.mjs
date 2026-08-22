@@ -9,7 +9,10 @@ export function sourceAttributionHeader(source) {
   if (
     !header?.includes("Adobe") ||
     !header.includes("Apache License, Version 2.0") ||
-    !header.includes("WITHOUT WARRANTIES OR REPRESENTATIONS")
+    !(
+      header.includes("WITHOUT WARRANTIES OR REPRESENTATIONS") ||
+      header.includes("WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND")
+    )
   ) {
     return null;
   }

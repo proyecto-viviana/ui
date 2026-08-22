@@ -273,7 +273,8 @@ function adobeHeader(content) {
   const year = content.match(/Copyright\s+(\d{4}(?:-\d{4})?)\s+Adobe/)?.[1] ?? null;
   const full =
     content.includes("Unless required by applicable law or agreed to in writing") &&
-    content.includes("WITHOUT WARRANTIES OR REPRESENTATIONS");
+    (content.includes("WITHOUT WARRANTIES OR REPRESENTATIONS") ||
+      content.includes("WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND"));
   return { kind: full ? "full" : "short", year };
 }
 
