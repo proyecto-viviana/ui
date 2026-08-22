@@ -199,6 +199,14 @@
     "requiredText": ["Tree collection types for Tree components."]
   },
   {
+    "localPath": "packages/solidaria/src/actiongroup/createActionGroup.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/actiongroup/useActionGroup.ts",
+      "packages/react-aria/src/actiongroup/useActionGroupItem.ts"
+    ],
+    "requiredText": ["export function createActionGroup", "export function createActionGroupItem"]
+  },
+  {
     "localPath": "packages/solidaria/src/breadcrumbs/createBreadcrumbs.ts",
     "upstreamPaths": [
       "packages/react-aria/src/breadcrumbs/useBreadcrumbItem.ts",
@@ -208,6 +216,17 @@
       "Provides accessibility implementation for breadcrumb navigation.",
       "createBreadcrumbItem"
     ]
+  },
+  {
+    "localPath": "packages/solidaria/src/color/types.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/color/useColorArea.ts",
+      "packages/react-aria/src/color/useColorField.ts",
+      "packages/react-aria/src/color/useColorSlider.ts",
+      "packages/react-aria/src/color/useColorSwatch.ts",
+      "packages/react-aria/src/color/useColorWheel.ts"
+    ],
+    "requiredText": ["AriaColorSliderOptions", "AriaColorSwatchOptions"]
   },
   {
     "localPath": "packages/solidaria/src/color/intl/index.ts",
@@ -397,6 +416,308 @@
       "runAfterPaint and the focusVisible option are local Solid adapters.",
       "export function focusSafely"
     ]
+  },
+  {
+    "localPath": "packages/solidaria/src/calendar/intl/index.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/calendar/ar-AE.json",
+      "packages/react-aria/intl/calendar/bg-BG.json",
+      "packages/react-aria/intl/calendar/cs-CZ.json",
+      "packages/react-aria/intl/calendar/da-DK.json",
+      "packages/react-aria/intl/calendar/de-DE.json",
+      "packages/react-aria/intl/calendar/el-GR.json",
+      "packages/react-aria/intl/calendar/en-US.json",
+      "packages/react-aria/intl/calendar/es-ES.json",
+      "packages/react-aria/intl/calendar/et-EE.json",
+      "packages/react-aria/intl/calendar/fi-FI.json",
+      "packages/react-aria/intl/calendar/fr-FR.json",
+      "packages/react-aria/intl/calendar/he-IL.json",
+      "packages/react-aria/intl/calendar/hr-HR.json",
+      "packages/react-aria/intl/calendar/hu-HU.json",
+      "packages/react-aria/intl/calendar/it-IT.json",
+      "packages/react-aria/intl/calendar/ja-JP.json",
+      "packages/react-aria/intl/calendar/ko-KR.json",
+      "packages/react-aria/intl/calendar/lt-LT.json",
+      "packages/react-aria/intl/calendar/lv-LV.json",
+      "packages/react-aria/intl/calendar/nb-NO.json",
+      "packages/react-aria/intl/calendar/nl-NL.json",
+      "packages/react-aria/intl/calendar/pl-PL.json",
+      "packages/react-aria/intl/calendar/pt-BR.json",
+      "packages/react-aria/intl/calendar/pt-PT.json",
+      "packages/react-aria/intl/calendar/ro-RO.json",
+      "packages/react-aria/intl/calendar/ru-RU.json",
+      "packages/react-aria/intl/calendar/sk-SK.json",
+      "packages/react-aria/intl/calendar/sl-SI.json",
+      "packages/react-aria/intl/calendar/sr-SP.json",
+      "packages/react-aria/intl/calendar/sv-SE.json",
+      "packages/react-aria/intl/calendar/tr-TR.json",
+      "packages/react-aria/intl/calendar/uk-UA.json",
+      "packages/react-aria/intl/calendar/zh-CN.json",
+      "packages/react-aria/intl/calendar/zh-TW.json"
+    ],
+    "requiredText": ["CalendarPromptKey", "CalendarLabelKey"]
+  },
+  {
+    "localPath": "packages/solidaria/src/combobox/intl/generated-locales.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/combobox/ar-AE.json",
+      "packages/react-aria/intl/combobox/bg-BG.json",
+      "packages/react-aria/intl/combobox/cs-CZ.json",
+      "packages/react-aria/intl/combobox/da-DK.json",
+      "packages/react-aria/intl/combobox/de-DE.json",
+      "packages/react-aria/intl/combobox/el-GR.json",
+      "packages/react-aria/intl/combobox/et-EE.json",
+      "packages/react-aria/intl/combobox/fi-FI.json",
+      "packages/react-aria/intl/combobox/fr-FR.json",
+      "packages/react-aria/intl/combobox/he-IL.json",
+      "packages/react-aria/intl/combobox/hr-HR.json",
+      "packages/react-aria/intl/combobox/hu-HU.json",
+      "packages/react-aria/intl/combobox/it-IT.json",
+      "packages/react-aria/intl/combobox/ja-JP.json",
+      "packages/react-aria/intl/combobox/ko-KR.json",
+      "packages/react-aria/intl/combobox/lt-LT.json",
+      "packages/react-aria/intl/combobox/lv-LV.json",
+      "packages/react-aria/intl/combobox/nb-NO.json",
+      "packages/react-aria/intl/combobox/nl-NL.json",
+      "packages/react-aria/intl/combobox/pl-PL.json",
+      "packages/react-aria/intl/combobox/pt-BR.json",
+      "packages/react-aria/intl/combobox/pt-PT.json",
+      "packages/react-aria/intl/combobox/ro-RO.json",
+      "packages/react-aria/intl/combobox/ru-RU.json",
+      "packages/react-aria/intl/combobox/sk-SK.json",
+      "packages/react-aria/intl/combobox/sl-SI.json",
+      "packages/react-aria/intl/combobox/sr-SP.json",
+      "packages/react-aria/intl/combobox/sv-SE.json",
+      "packages/react-aria/intl/combobox/tr-TR.json",
+      "packages/react-aria/intl/combobox/uk-UA.json",
+      "packages/react-aria/intl/combobox/zh-CN.json",
+      "packages/react-aria/intl/combobox/zh-TW.json"
+    ],
+    "requiredText": ["Generated verbatim", "en-US and es-ES are intentionally omitted"]
+  },
+  {
+    "localPath": "packages/solidaria/src/datepicker/intl.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/datepicker/ar-AE.json",
+      "packages/react-aria/intl/datepicker/bg-BG.json",
+      "packages/react-aria/intl/datepicker/cs-CZ.json",
+      "packages/react-aria/intl/datepicker/da-DK.json",
+      "packages/react-aria/intl/datepicker/de-DE.json",
+      "packages/react-aria/intl/datepicker/el-GR.json",
+      "packages/react-aria/intl/datepicker/en-US.json",
+      "packages/react-aria/intl/datepicker/es-ES.json",
+      "packages/react-aria/intl/datepicker/et-EE.json",
+      "packages/react-aria/intl/datepicker/fi-FI.json",
+      "packages/react-aria/intl/datepicker/fr-FR.json",
+      "packages/react-aria/intl/datepicker/he-IL.json",
+      "packages/react-aria/intl/datepicker/hr-HR.json",
+      "packages/react-aria/intl/datepicker/hu-HU.json",
+      "packages/react-aria/intl/datepicker/it-IT.json",
+      "packages/react-aria/intl/datepicker/ja-JP.json",
+      "packages/react-aria/intl/datepicker/ko-KR.json",
+      "packages/react-aria/intl/datepicker/lt-LT.json",
+      "packages/react-aria/intl/datepicker/lv-LV.json",
+      "packages/react-aria/intl/datepicker/nb-NO.json",
+      "packages/react-aria/intl/datepicker/nl-NL.json",
+      "packages/react-aria/intl/datepicker/pl-PL.json",
+      "packages/react-aria/intl/datepicker/pt-BR.json",
+      "packages/react-aria/intl/datepicker/pt-PT.json",
+      "packages/react-aria/intl/datepicker/ro-RO.json",
+      "packages/react-aria/intl/datepicker/ru-RU.json",
+      "packages/react-aria/intl/datepicker/sk-SK.json",
+      "packages/react-aria/intl/datepicker/sl-SI.json",
+      "packages/react-aria/intl/datepicker/sr-SP.json",
+      "packages/react-aria/intl/datepicker/sv-SE.json",
+      "packages/react-aria/intl/datepicker/tr-TR.json",
+      "packages/react-aria/intl/datepicker/uk-UA.json",
+      "packages/react-aria/intl/datepicker/zh-CN.json",
+      "packages/react-aria/intl/datepicker/zh-TW.json"
+    ],
+    "requiredText": ["DateField aria catalog", "34 locales"]
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/createDraggableCollection.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/dnd/useDraggableCollection.ts",
+      "packages/react-aria/src/dnd/utils.ts"
+    ],
+    "requiredText": ["export function createDraggableCollection", "globalDraggingCollectionRef"]
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/createDraggableItem.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/dnd/useDraggableItem.ts",
+      "packages/react-aria/src/dnd/useDrag.ts"
+    ],
+    "requiredText": ["export function createDraggableItem", "useDrag"]
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/createDroppableItem.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/dnd/useDroppableItem.ts",
+      "packages/react-aria/src/dnd/useDrop.ts"
+    ],
+    "requiredText": ["export function createDroppableItem", "DROP_ACTIVATE_TIMEOUT"]
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/intl/index.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/dnd/ar-AE.json",
+      "packages/react-aria/intl/dnd/bg-BG.json",
+      "packages/react-aria/intl/dnd/cs-CZ.json",
+      "packages/react-aria/intl/dnd/da-DK.json",
+      "packages/react-aria/intl/dnd/de-DE.json",
+      "packages/react-aria/intl/dnd/el-GR.json",
+      "packages/react-aria/intl/dnd/en-US.json",
+      "packages/react-aria/intl/dnd/es-ES.json",
+      "packages/react-aria/intl/dnd/et-EE.json",
+      "packages/react-aria/intl/dnd/fi-FI.json",
+      "packages/react-aria/intl/dnd/fr-FR.json",
+      "packages/react-aria/intl/dnd/he-IL.json",
+      "packages/react-aria/intl/dnd/hr-HR.json",
+      "packages/react-aria/intl/dnd/hu-HU.json",
+      "packages/react-aria/intl/dnd/it-IT.json",
+      "packages/react-aria/intl/dnd/ja-JP.json",
+      "packages/react-aria/intl/dnd/ko-KR.json",
+      "packages/react-aria/intl/dnd/lt-LT.json",
+      "packages/react-aria/intl/dnd/lv-LV.json",
+      "packages/react-aria/intl/dnd/nb-NO.json",
+      "packages/react-aria/intl/dnd/nl-NL.json",
+      "packages/react-aria/intl/dnd/pl-PL.json",
+      "packages/react-aria/intl/dnd/pt-BR.json",
+      "packages/react-aria/intl/dnd/pt-PT.json",
+      "packages/react-aria/intl/dnd/ro-RO.json",
+      "packages/react-aria/intl/dnd/ru-RU.json",
+      "packages/react-aria/intl/dnd/sk-SK.json",
+      "packages/react-aria/intl/dnd/sl-SI.json",
+      "packages/react-aria/intl/dnd/sr-SP.json",
+      "packages/react-aria/intl/dnd/sv-SE.json",
+      "packages/react-aria/intl/dnd/tr-TR.json",
+      "packages/react-aria/intl/dnd/uk-UA.json",
+      "packages/react-aria/intl/dnd/zh-CN.json",
+      "packages/react-aria/intl/dnd/zh-TW.json"
+    ],
+    "requiredText": ["All keys are plain ICU MessageFormat strings", "compileSimpleIcu"]
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/types.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/dnd/useDrag.ts",
+      "packages/react-aria/src/dnd/useDrop.ts"
+    ],
+    "requiredText": ["AriaDragOptions", "AriaDropOptions"]
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/utils.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/dnd/constants.ts",
+      "packages/react-aria/src/dnd/utils.ts"
+    ],
+    "requiredText": ["export enum DROP_OPERATION", "export function readFromDataTransfer"]
+  },
+  {
+    "localPath": "packages/solidaria/src/menu/intl/index.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/menu/ar-AE.json",
+      "packages/react-aria/intl/menu/bg-BG.json",
+      "packages/react-aria/intl/menu/cs-CZ.json",
+      "packages/react-aria/intl/menu/da-DK.json",
+      "packages/react-aria/intl/menu/de-DE.json",
+      "packages/react-aria/intl/menu/el-GR.json",
+      "packages/react-aria/intl/menu/en-US.json",
+      "packages/react-aria/intl/menu/es-ES.json",
+      "packages/react-aria/intl/menu/et-EE.json",
+      "packages/react-aria/intl/menu/fi-FI.json",
+      "packages/react-aria/intl/menu/fr-FR.json",
+      "packages/react-aria/intl/menu/he-IL.json",
+      "packages/react-aria/intl/menu/hr-HR.json",
+      "packages/react-aria/intl/menu/hu-HU.json",
+      "packages/react-aria/intl/menu/it-IT.json",
+      "packages/react-aria/intl/menu/ja-JP.json",
+      "packages/react-aria/intl/menu/ko-KR.json",
+      "packages/react-aria/intl/menu/lt-LT.json",
+      "packages/react-aria/intl/menu/lv-LV.json",
+      "packages/react-aria/intl/menu/nb-NO.json",
+      "packages/react-aria/intl/menu/nl-NL.json",
+      "packages/react-aria/intl/menu/pl-PL.json",
+      "packages/react-aria/intl/menu/pt-BR.json",
+      "packages/react-aria/intl/menu/pt-PT.json",
+      "packages/react-aria/intl/menu/ro-RO.json",
+      "packages/react-aria/intl/menu/ru-RU.json",
+      "packages/react-aria/intl/menu/sk-SK.json",
+      "packages/react-aria/intl/menu/sl-SI.json",
+      "packages/react-aria/intl/menu/sr-SP.json",
+      "packages/react-aria/intl/menu/sv-SE.json",
+      "packages/react-aria/intl/menu/tr-TR.json",
+      "packages/react-aria/intl/menu/uk-UA.json",
+      "packages/react-aria/intl/menu/zh-CN.json",
+      "packages/react-aria/intl/menu/zh-TW.json"
+    ],
+    "requiredText": ["Menu internationalization strings", "longPressMessage"]
+  },
+  {
+    "localPath": "packages/solidaria/src/spinbutton/intl.ts",
+    "upstreamPaths": [
+      "packages/react-aria/intl/spinbutton/ar-AE.json",
+      "packages/react-aria/intl/spinbutton/bg-BG.json",
+      "packages/react-aria/intl/spinbutton/cs-CZ.json",
+      "packages/react-aria/intl/spinbutton/da-DK.json",
+      "packages/react-aria/intl/spinbutton/de-DE.json",
+      "packages/react-aria/intl/spinbutton/el-GR.json",
+      "packages/react-aria/intl/spinbutton/en-US.json",
+      "packages/react-aria/intl/spinbutton/es-ES.json",
+      "packages/react-aria/intl/spinbutton/et-EE.json",
+      "packages/react-aria/intl/spinbutton/fi-FI.json",
+      "packages/react-aria/intl/spinbutton/fr-FR.json",
+      "packages/react-aria/intl/spinbutton/he-IL.json",
+      "packages/react-aria/intl/spinbutton/hr-HR.json",
+      "packages/react-aria/intl/spinbutton/hu-HU.json",
+      "packages/react-aria/intl/spinbutton/it-IT.json",
+      "packages/react-aria/intl/spinbutton/ja-JP.json",
+      "packages/react-aria/intl/spinbutton/ko-KR.json",
+      "packages/react-aria/intl/spinbutton/lt-LT.json",
+      "packages/react-aria/intl/spinbutton/lv-LV.json",
+      "packages/react-aria/intl/spinbutton/nb-NO.json",
+      "packages/react-aria/intl/spinbutton/nl-NL.json",
+      "packages/react-aria/intl/spinbutton/pl-PL.json",
+      "packages/react-aria/intl/spinbutton/pt-BR.json",
+      "packages/react-aria/intl/spinbutton/pt-PT.json",
+      "packages/react-aria/intl/spinbutton/ro-RO.json",
+      "packages/react-aria/intl/spinbutton/ru-RU.json",
+      "packages/react-aria/intl/spinbutton/sk-SK.json",
+      "packages/react-aria/intl/spinbutton/sl-SI.json",
+      "packages/react-aria/intl/spinbutton/sr-SP.json",
+      "packages/react-aria/intl/spinbutton/sv-SE.json",
+      "packages/react-aria/intl/spinbutton/tr-TR.json",
+      "packages/react-aria/intl/spinbutton/uk-UA.json",
+      "packages/react-aria/intl/spinbutton/zh-CN.json",
+      "packages/react-aria/intl/spinbutton/zh-TW.json"
+    ],
+    "requiredText": ["Spinbutton announcement catalog", "34 locales"]
+  },
+  {
+    "localPath": "packages/solidaria/src/collections/index.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/collections/BaseCollection.ts",
+      "packages/react-aria/src/collections/CollectionBuilder.tsx",
+      "packages/react-aria/src/collections/Hidden.tsx",
+      "packages/react-aria/src/collections/useCachedChildren.ts"
+    ],
+    "requiredText": [
+      "export function CollectionBuilder",
+      "export function createLeafComponent",
+      "export function createHideableComponent",
+      "export function useCachedChildren",
+      "export class BaseCollection"
+    ]
+  },
+  {
+    "localPath": "packages/solidaria/src/steplist/createStepList.ts",
+    "upstreamPaths": [
+      "packages/react-aria/src/steplist/useStepList.ts",
+      "packages/react-aria/src/steplist/useStepListItem.ts"
+    ],
+    "requiredText": ["export function createStepList", "export function createStep"]
   },
   {
     "localPath": "packages/solidaria-components/src/Color.tsx",

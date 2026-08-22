@@ -1,4 +1,38 @@
-// @ts-nocheck — generated verbatim from upstream compiled output.
+// @ts-nocheck
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/combobox/zh-TW.json
+
 // The announcement functions call the formatter's protected plural/number/select
 // helpers (as upstream's own compiled bundle does), which strict TS rejects from
 // outside the class. This file is not hand-maintained; regenerate from upstream.
@@ -14,6 +48,9 @@
  *
  * en-US and es-ES are intentionally omitted here — index.ts sources those from
  * the hand-authored ICU-string JSON so their proven output/tests stay intact.
+ *
+ * The complete 32-file source set is recorded in
+ * scripts/attribution-composite-reviews.json.
  */
 
 import type { LocalizedString, LocalizedStrings } from "@internationalized/string";

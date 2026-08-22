@@ -1,3 +1,39 @@
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/spinbutton/zh-TW.json
+
+// Ported from @react-aria/spinbutton intl catalog.
 // Spinbutton announcement catalog, ported verbatim from @react-aria/spinbutton's
 // intl/*.json (34 locales). Keep in sync with the vendored react-spectrum source on
 // every pin bump.

@@ -1,3 +1,39 @@
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/menu/zh-TW.json
+
+// Ported from @react-aria/menu intl catalog.
 /** Menu internationalization strings from the pinned React Aria source. */
 
 import type { LocalizedStrings } from "@internationalized/string";

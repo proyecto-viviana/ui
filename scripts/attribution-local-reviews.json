@@ -630,6 +630,36 @@
     "contentSha256": "316e2866459b2fd668d9900687e0fdfc3f78aeaf4123509eb803fadfbf9b8ee0"
   },
   {
+    "localPath": "packages/solidaria/src/disclosure/createDisclosureGroup.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "cfe572a90b56e86c0ff13f2a5085947e749cef54a23b5b1ef68070bdbb1bd30d"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/createAutoFocus.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "946665f414032e50467a8c9be798f66536443a07adca0509ff1c40719084eadb"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/createFocusRestore.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "2149a29038d28dc185d47e5ff153b0430d8dda209f831a0a4c8fcd74701d4ccb"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/createVirtualFocus.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "e0d9cea735e666303e0b49de53958f25c1d4904de0bd494747dca0507bb2d07e"
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/env.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "081aa321f411157b71ac76c470d3d7b38aa1a0d81c9fd7dc262e9ee2af8a5101"
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/reactivity.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "825fac25a54aeeaa262b3434d750aee06f23f3ca38e9c8f042870642c7b1a490"
+  },
+  {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "d509b6e0fca22bb55b90588751e52517095ad304cb430bacc5070e619b2ecafb"

@@ -1,3 +1,40 @@
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/calendar/zh-TW.json
+
+// Ported from @react-aria/calendar intl catalog.
+
 import {
   LocalizedStringDictionary,
   LocalizedStringFormatter,

@@ -10,6 +10,9 @@
  * - Large trees
  * - Autocomplete/combobox suggestions
  * - Grid/table navigation
+ *
+ * This is a local Solid helper. The pinned React Aria revision has no
+ * standalone virtual-focus controller with this API.
  */
 
 import { type Accessor, createSignal, createEffect, onCleanup } from "solid-js";

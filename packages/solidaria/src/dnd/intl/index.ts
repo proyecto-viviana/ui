@@ -1,3 +1,40 @@
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/dnd/zh-TW.json
+
+// Ported from @react-aria/dnd intl catalog.
+
 /**
  * Drag and Drop internationalization strings.
  *

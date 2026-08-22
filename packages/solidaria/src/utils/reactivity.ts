@@ -2,6 +2,8 @@
  * Reactivity utilities for Solidaria
  *
  * Provides type-safe utilities for working with SolidJS reactivity patterns.
+ * This is a local Solid helper. It has no direct React Aria
+ * counterpart.
  */
 
 import { Accessor } from "solid-js";
