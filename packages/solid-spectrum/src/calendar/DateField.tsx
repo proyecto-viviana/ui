@@ -15,7 +15,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/DateField.tsx
 
 // Port of packages/@react-spectrum/s2/src/DateField.tsx.
-// @ts-nocheck - style-system generics need the same dedicated pass as DatePicker.
+// Style-system generics need the same dedicated pass as DatePicker.
 import {
   createContext,
   createEffect,

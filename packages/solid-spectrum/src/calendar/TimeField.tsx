@@ -15,7 +15,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/TimeField.tsx
 
 // Port of packages/@react-spectrum/s2/src/TimeField.tsx.
-// @ts-nocheck - style-system generics need the same dedicated pass as DateField.
+// Style-system generics need the same dedicated pass as DateField.
 import {
   createContext,
   createEffect,

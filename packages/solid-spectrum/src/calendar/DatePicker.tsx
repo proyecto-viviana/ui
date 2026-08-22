@@ -15,7 +15,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/DatePicker.tsx
 
 // Port of packages/@react-spectrum/s2/src/DatePicker.tsx.
-// @ts-nocheck - style-system types need a dedicated pass; removing this would require
+// Style-system types need a dedicated pass; removing this would require
 // fixing ~20 style-definition type mismatches unrelated to component behavior.
 import {
   createContext,

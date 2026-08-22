@@ -180,7 +180,10 @@
       "packages/react-stately/src/calendar/useCalendarState.ts",
       "packages/react-stately/src/calendar/utils.ts"
     ],
-    "requiredText": ["RangeCalendarState for Solid-Stately", "selection alignment rules"]
+    "requiredText": [
+      "RangeCalendarState for Solid-Stately",
+      "selection alignment rules"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/calendar/intl/index.ts",
@@ -220,7 +223,10 @@
       "packages/react-stately/intl/datepicker/zh-CN.json",
       "packages/react-stately/intl/datepicker/zh-TW.json"
     ],
-    "requiredText": ["The catalog has 34 locales", "Hand-rolled resolver"]
+    "requiredText": [
+      "The catalog has 34 locales",
+      "Hand-rolled resolver"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/collections/createListState.ts",
@@ -228,7 +234,10 @@
       "packages/react-stately/src/list/useListState.ts",
       "packages/react-stately/src/list/useSingleSelectListState.ts"
     ],
-    "requiredText": ["Combines collection and selection state.", "UNSTABLE_useFilteredListState"]
+    "requiredText": [
+      "Combines collection and selection state.",
+      "UNSTABLE_useFilteredListState"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/collections/createSelectionState.ts",
@@ -236,7 +245,10 @@
       "packages/react-stately/src/selection/useMultipleSelectionState.ts",
       "packages/react-stately/src/selection/SelectionManager.ts"
     ],
-    "requiredText": ["Selection state management for collections.", "SelectionManager.select"]
+    "requiredText": [
+      "Selection state management for collections.",
+      "SelectionManager.select"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/collections/getChildNodes.ts",
@@ -244,7 +256,10 @@
       "packages/react-stately/src/collections/getChildNodes.ts",
       "packages/react-stately/src/collections/getItemCount.ts"
     ],
-    "requiredText": ["Helpers for traversing collection nodes", "aria-setsize"]
+    "requiredText": [
+      "Helpers for traversing collection nodes",
+      "aria-setsize"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/collections/ListCollection.ts",
@@ -252,7 +267,10 @@
       "packages/react-stately/src/list/ListCollection.ts",
       "packages/react-aria/src/collections/BaseCollection.ts"
     ],
-    "requiredText": ["A simple list collection implementation", "BaseCollection.filter"]
+    "requiredText": [
+      "A simple list collection implementation",
+      "BaseCollection.filter"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/collections/types.ts",
@@ -261,7 +279,10 @@
       "packages/@react-types/shared/src/selection.d.ts",
       "packages/react-aria/src/collections/BaseCollection.ts"
     ],
-    "requiredText": ["Core types for collection state management", "CollectionItemLike"]
+    "requiredText": [
+      "Core types for collection state management",
+      "CollectionItemLike"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/color/createColorFieldState.ts",
@@ -269,7 +290,9 @@
       "packages/react-stately/src/color/useColorFieldState.ts",
       "packages/react-stately/src/color/useColorChannelFieldState.ts"
     ],
-    "requiredText": ["useColorFieldState and useColorChannelFieldState"]
+    "requiredText": [
+      "useColorFieldState and useColorChannelFieldState"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/color/intl/index.ts",
@@ -309,7 +332,10 @@
       "packages/react-stately/intl/color/zh-CN.json",
       "packages/react-stately/intl/color/zh-TW.json"
     ],
-    "requiredText": ["The catalog has 34 locales", "transparentColorName"]
+    "requiredText": [
+      "The catalog has 34 locales",
+      "transparentColorName"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/data/createAsyncList.ts",
@@ -317,7 +343,10 @@
       "packages/react-stately/src/data/useAsyncList.ts",
       "packages/react-stately/src/data/useListData.ts"
     ],
-    "requiredText": ["immutable async loaded list data structure", "setFilterText"]
+    "requiredText": [
+      "immutable async loaded list data structure",
+      "setFilterText"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/disclosure/createDisclosureState.ts",
@@ -325,7 +354,9 @@
       "packages/react-stately/src/disclosure/useDisclosureState.ts",
       "packages/react-stately/src/disclosure/useDisclosureGroupState.ts"
     ],
-    "requiredText": ["useDisclosureState and useDisclosureGroupState"]
+    "requiredText": [
+      "useDisclosureState and useDisclosureGroupState"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/grid/types.ts",
@@ -333,7 +364,9 @@
       "packages/react-stately/src/grid/GridCollection.ts",
       "packages/react-stately/src/grid/useGridState.ts"
     ],
-    "requiredText": ["Grid collection types for Table and GridList components."]
+    "requiredText": [
+      "Grid collection types for Table and GridList components."
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/ssr/index.ts",
@@ -341,7 +374,10 @@
       "packages/react-aria/src/ssr/SSRProvider.tsx",
       "packages/react-aria/src/utils/useId.ts"
     ],
-    "requiredText": ["SolidJS has built-in SSR support", "createUniqueId"]
+    "requiredText": [
+      "SolidJS has built-in SSR support",
+      "createUniqueId"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/table/types.ts",
@@ -351,7 +387,10 @@
       "packages/react-stately/src/table/useTreeGridState.ts",
       "packages/@react-types/table/src/index.d.ts"
     ],
-    "requiredText": ["Table state types for Table components.", "UNSTABLE_useTreeGridState"]
+    "requiredText": [
+      "Table state types for Table components.",
+      "UNSTABLE_useTreeGridState"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/tree/types.ts",
@@ -359,7 +398,9 @@
       "packages/react-stately/src/tree/TreeCollection.ts",
       "packages/react-stately/src/tree/useTreeState.ts"
     ],
-    "requiredText": ["Tree collection types for Tree components."]
+    "requiredText": [
+      "Tree collection types for Tree components."
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/ActionBar.tsx",
@@ -367,7 +408,10 @@
       "packages/@react-spectrum/s2/src/ActionBar.tsx",
       "packages/@adobe/react-spectrum/src/actionbar/ActionBarContainer.tsx"
     ],
-    "requiredText": ["ActionBarContainer ownership model", "selection count and clear"]
+    "requiredText": [
+      "ActionBarContainer ownership model",
+      "selection count and clear"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/ActionGroup.tsx",
@@ -375,7 +419,10 @@
       "packages/react-aria/src/actiongroup/useActionGroup.ts",
       "packages/react-aria/src/actiongroup/useActionGroupItem.ts"
     ],
-    "requiredText": ["Components has no ActionGroup component", "wires the two hooks"]
+    "requiredText": [
+      "Components has no ActionGroup component",
+      "wires the two hooks"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/Collection.tsx",
@@ -384,7 +431,9 @@
       "packages/react-aria-components/src/Group.tsx",
       "packages/react-aria-components/src/Header.tsx"
     ],
-    "requiredText": ["Section / Header / Group. Based on:"]
+    "requiredText": [
+      "Section / Header / Group. Based on:"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/Color.tsx",
@@ -423,7 +472,9 @@
       "packages/react-aria/src/steplist/useStepListItem.ts",
       "packages/react-stately/src/steplist/useStepListState.ts"
     ],
-    "requiredText": ["ordered list of steps with completion tracking"]
+    "requiredText": [
+      "ordered list of steps with completion tracking"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/utils.tsx",
@@ -442,7 +493,10 @@
       "packages/react-aria-components/src/Virtualizer.tsx",
       "packages/react-aria/src/virtualizer/ScrollView.tsx"
     ],
-    "requiredText": ["React Aria Components API", "React Aria scroll-view"]
+    "requiredText": [
+      "React Aria Components API",
+      "React Aria scroll-view"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/virtualizer/Layout.ts",
@@ -454,7 +508,9 @@
       "packages/react-stately/src/virtualizer/Layout.ts",
       "packages/react-stately/src/virtualizer/types.ts"
     ],
-    "requiredText": ["Virtualizer geometry and layout contracts. Based on:"]
+    "requiredText": [
+      "Virtualizer geometry and layout contracts. Based on:"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/VirtualizerLayouts.ts",
@@ -464,7 +520,9 @@
       "packages/react-stately/src/layout/TableLayout.ts",
       "packages/react-stately/src/layout/WaterfallLayout.ts"
     ],
-    "requiredText": ["These layout contracts are based on:"]
+    "requiredText": [
+      "These layout contracts are based on:"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/actiongroup/createActionGroup.ts",
@@ -472,7 +530,10 @@
       "packages/react-aria/src/actiongroup/useActionGroup.ts",
       "packages/react-aria/src/actiongroup/useActionGroupItem.ts"
     ],
-    "requiredText": ["export function createActionGroup", "export function createActionGroupItem"]
+    "requiredText": [
+      "export function createActionGroup",
+      "export function createActionGroupItem"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/breadcrumbs/createBreadcrumbs.ts",
@@ -523,7 +584,10 @@
       "packages/react-aria/intl/calendar/zh-CN.json",
       "packages/react-aria/intl/calendar/zh-TW.json"
     ],
-    "requiredText": ["CalendarPromptKey", "CalendarLabelKey"]
+    "requiredText": [
+      "CalendarPromptKey",
+      "CalendarLabelKey"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/collections/index.ts",
@@ -579,7 +643,9 @@
       "packages/react-aria/intl/color/zh-CN.json",
       "packages/react-aria/intl/color/zh-TW.json"
     ],
-    "requiredText": ["all 34 upstream locales"]
+    "requiredText": [
+      "all 34 upstream locales"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/color/types.ts",
@@ -590,7 +656,10 @@
       "packages/react-aria/src/color/useColorSwatch.ts",
       "packages/react-aria/src/color/useColorWheel.ts"
     ],
-    "requiredText": ["AriaColorSliderOptions", "AriaColorSwatchOptions"]
+    "requiredText": [
+      "AriaColorSliderOptions",
+      "AriaColorSwatchOptions"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/combobox/intl/generated-locales.ts",
@@ -628,7 +697,10 @@
       "packages/react-aria/intl/combobox/zh-CN.json",
       "packages/react-aria/intl/combobox/zh-TW.json"
     ],
-    "requiredText": ["Generated verbatim", "en-US and es-ES are intentionally omitted"]
+    "requiredText": [
+      "Generated verbatim",
+      "en-US and es-ES are intentionally omitted"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/combobox/intl/index.ts",
@@ -668,7 +740,9 @@
       "packages/react-aria/intl/combobox/zh-CN.json",
       "packages/react-aria/intl/combobox/zh-TW.json"
     ],
-    "requiredText": ["all 34 upstream locales"]
+    "requiredText": [
+      "all 34 upstream locales"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/datepicker/intl.ts",
@@ -708,7 +782,10 @@
       "packages/react-aria/intl/datepicker/zh-CN.json",
       "packages/react-aria/intl/datepicker/zh-TW.json"
     ],
-    "requiredText": ["DateField aria catalog", "34 locales"]
+    "requiredText": [
+      "DateField aria catalog",
+      "34 locales"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/createDraggableCollection.ts",
@@ -716,7 +793,10 @@
       "packages/react-aria/src/dnd/useDraggableCollection.ts",
       "packages/react-aria/src/dnd/utils.ts"
     ],
-    "requiredText": ["export function createDraggableCollection", "globalDraggingCollectionRef"]
+    "requiredText": [
+      "export function createDraggableCollection",
+      "globalDraggingCollectionRef"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/createDraggableItem.ts",
@@ -724,7 +804,10 @@
       "packages/react-aria/src/dnd/useDraggableItem.ts",
       "packages/react-aria/src/dnd/useDrag.ts"
     ],
-    "requiredText": ["export function createDraggableItem", "useDrag"]
+    "requiredText": [
+      "export function createDraggableItem",
+      "useDrag"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/createDroppableItem.ts",
@@ -732,7 +815,10 @@
       "packages/react-aria/src/dnd/useDroppableItem.ts",
       "packages/react-aria/src/dnd/useDrop.ts"
     ],
-    "requiredText": ["export function createDroppableItem", "DROP_ACTIVATE_TIMEOUT"]
+    "requiredText": [
+      "export function createDroppableItem",
+      "DROP_ACTIVATE_TIMEOUT"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/intl/index.ts",
@@ -772,7 +858,10 @@
       "packages/react-aria/intl/dnd/zh-CN.json",
       "packages/react-aria/intl/dnd/zh-TW.json"
     ],
-    "requiredText": ["All keys are plain ICU MessageFormat strings", "compileSimpleIcu"]
+    "requiredText": [
+      "All keys are plain ICU MessageFormat strings",
+      "compileSimpleIcu"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/types.ts",
@@ -780,7 +869,10 @@
       "packages/react-aria/src/dnd/useDrag.ts",
       "packages/react-aria/src/dnd/useDrop.ts"
     ],
-    "requiredText": ["AriaDragOptions", "AriaDropOptions"]
+    "requiredText": [
+      "AriaDragOptions",
+      "AriaDropOptions"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/utils.ts",
@@ -788,7 +880,10 @@
       "packages/react-aria/src/dnd/constants.ts",
       "packages/react-aria/src/dnd/utils.ts"
     ],
-    "requiredText": ["export enum DROP_OPERATION", "export function readFromDataTransfer"]
+    "requiredText": [
+      "export enum DROP_OPERATION",
+      "export function readFromDataTransfer"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/grid/types.ts",
@@ -854,7 +949,10 @@
       "packages/react-aria/intl/menu/zh-CN.json",
       "packages/react-aria/intl/menu/zh-TW.json"
     ],
-    "requiredText": ["Menu internationalization strings", "longPressMessage"]
+    "requiredText": [
+      "Menu internationalization strings",
+      "longPressMessage"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/spinbutton/intl.ts",
@@ -894,7 +992,10 @@
       "packages/react-aria/intl/spinbutton/zh-CN.json",
       "packages/react-aria/intl/spinbutton/zh-TW.json"
     ],
-    "requiredText": ["Spinbutton announcement catalog", "34 locales"]
+    "requiredText": [
+      "Spinbutton announcement catalog",
+      "34 locales"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/ssr/index.tsx",
@@ -902,7 +1003,10 @@
       "packages/react-aria/src/ssr/SSRProvider.tsx",
       "packages/react-aria/src/utils/useId.ts"
     ],
-    "requiredText": ["SSR utilities for Solidaria.", "Solid-specific hydration"]
+    "requiredText": [
+      "SSR utilities for Solidaria.",
+      "Solid-specific hydration"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/steplist/createStepList.ts",
@@ -910,7 +1014,10 @@
       "packages/react-aria/src/steplist/useStepList.ts",
       "packages/react-aria/src/steplist/useStepListItem.ts"
     ],
-    "requiredText": ["export function createStepList", "export function createStep"]
+    "requiredText": [
+      "export function createStepList",
+      "export function createStep"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/table/types.ts",
@@ -923,7 +1030,10 @@
       "packages/react-aria/src/table/useTableRowGroup.ts",
       "packages/react-aria/src/table/useTableSelectionCheckbox.ts"
     ],
-    "requiredText": ["Table ARIA types for Table components.", "disabled-row checkbox field"]
+    "requiredText": [
+      "Table ARIA types for Table components.",
+      "disabled-row checkbox field"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/tabs/createTabs.ts",
@@ -934,7 +1044,10 @@
       "packages/react-aria/src/tabs/TabsKeyboardDelegate.ts",
       "packages/react-aria/src/tabs/utils.ts"
     ],
-    "requiredText": ["ARIA hooks for tab components.", "This Solid module combines"]
+    "requiredText": [
+      "ARIA hooks for tab components.",
+      "This Solid module combines"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/tree/types.ts",
@@ -943,7 +1056,10 @@
       "packages/react-aria/src/tree/useTreeItem.ts",
       "packages/react-aria/src/gridlist/useGridListSelectionCheckbox.ts"
     ],
-    "requiredText": ["Tree ARIA types.", "grid-list checkbox pattern"]
+    "requiredText": [
+      "Tree ARIA types.",
+      "grid-list checkbox pattern"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/utils/dom.ts",
@@ -973,7 +1089,10 @@
       "packages/react-aria/src/utils/chain.ts",
       "packages/react-aria/src/interactions/utils.ts"
     ],
-    "requiredText": ["createMouseEvent is a local event adapter.", "export function setEventTarget"]
+    "requiredText": [
+      "createMouseEvent is a local event adapter.",
+      "export function setEventTarget"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/utils/focus.ts",
@@ -985,6 +1104,157 @@
     "requiredText": [
       "runAfterPaint and the focusVisible option are local Solid adapters.",
       "export function focusSafely"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/actiongroup/index.tsx",
+    "upstreamPaths": [
+      "packages/@adobe/react-spectrum/src/actiongroup/ActionGroup.tsx",
+      "packages/@react-spectrum/s2/src/ActionButtonGroup.tsx",
+      "packages/@react-spectrum/s2/src/SegmentedControl.tsx",
+      "packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx"
+    ],
+    "requiredText": [
+      "packages/@adobe/react-spectrum/src/actiongroup/ActionGroup.tsx",
+      "packages/@react-spectrum/s2/src/ActionButtonGroup.tsx",
+      "packages/@react-spectrum/s2/src/SegmentedControl.tsx",
+      "packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/avatar/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Avatar.tsx",
+      "packages/@react-spectrum/s2/src/AvatarGroup.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/Avatar.tsx",
+      "packages/@react-spectrum/s2/src/AvatarGroup.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/button/context.ts",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/ActionButton.tsx",
+      "packages/@react-spectrum/s2/src/Button.tsx",
+      "packages/@react-spectrum/s2/src/ToggleButton.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/ActionButton.tsx",
+      "packages/@react-spectrum/s2/src/Button.tsx",
+      "packages/@react-spectrum/s2/src/ToggleButton.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/button/group-context.ts",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/ActionButtonGroup.tsx",
+      "packages/@react-spectrum/s2/src/ButtonGroup.tsx",
+      "packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/ActionButtonGroup.tsx",
+      "packages/@react-spectrum/s2/src/ButtonGroup.tsx",
+      "packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/calendar/RangeCalendar.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/RangeCalendar.tsx",
+      "packages/@react-spectrum/s2/src/Calendar.tsx",
+      "packages/@react-spectrum/s2/src/Field.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/RangeCalendar.tsx",
+      "packages/@react-spectrum/s2/src/Calendar.tsx",
+      "packages/@react-spectrum/s2/src/Field.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/checkbox/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Checkbox.tsx",
+      "packages/@react-spectrum/s2/src/CheckboxGroup.tsx",
+      "packages/@react-spectrum/s2/src/Field.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/Checkbox.tsx",
+      "packages/@react-spectrum/s2/src/CheckboxGroup.tsx",
+      "packages/@react-spectrum/s2/src/Field.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/color/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/ColorArea.tsx",
+      "packages/@react-spectrum/s2/src/ColorField.tsx",
+      "packages/@react-spectrum/s2/src/ColorHandle.tsx",
+      "packages/@react-spectrum/s2/src/ColorSlider.tsx",
+      "packages/@react-spectrum/s2/src/ColorSwatch.tsx",
+      "packages/@react-spectrum/s2/src/ColorWheel.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/ColorArea.tsx",
+      "packages/@react-spectrum/s2/src/ColorField.tsx",
+      "packages/@react-spectrum/s2/src/ColorHandle.tsx",
+      "packages/@react-spectrum/s2/src/ColorSlider.tsx",
+      "packages/@react-spectrum/s2/src/ColorSwatch.tsx",
+      "packages/@react-spectrum/s2/src/ColorWheel.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/dialog/Dialog.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Dialog.tsx",
+      "packages/@react-spectrum/s2/src/DialogTrigger.tsx",
+      "packages/@react-spectrum/s2/src/DialogContainer.tsx",
+      "packages/@react-spectrum/s2/src/CloseButton.tsx",
+      "packages/@react-spectrum/s2/src/FullscreenDialog.tsx",
+      "packages/@react-spectrum/s2/src/CustomDialog.tsx",
+      "packages/@react-spectrum/s2/src/Modal.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/Dialog.tsx",
+      "packages/@react-spectrum/s2/src/DialogTrigger.tsx",
+      "packages/@react-spectrum/s2/src/DialogContainer.tsx",
+      "packages/@react-spectrum/s2/src/CloseButton.tsx",
+      "packages/@react-spectrum/s2/src/FullscreenDialog.tsx",
+      "packages/@react-spectrum/s2/src/CustomDialog.tsx",
+      "packages/@react-spectrum/s2/src/Modal.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/image/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Image.tsx",
+      "packages/@react-spectrum/s2/src/ImageCoordinator.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/Image.tsx",
+      "packages/@react-spectrum/s2/src/ImageCoordinator.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/skeleton/index.tsx",
+    "upstreamPaths": [
+      "packages/@react-spectrum/s2/src/Skeleton.tsx",
+      "packages/@react-spectrum/s2/src/SkeletonCollection.tsx"
+    ],
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/Skeleton.tsx",
+      "packages/@react-spectrum/s2/src/SkeletonCollection.tsx"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/test-utils/index.ts",
+    "upstreamPaths": [
+      "packages/@react-aria/test-utils/src/userEventMaps.ts",
+      "packages/@react-aria/test-utils/src/user.ts"
+    ],
+    "requiredText": [
+      "packages/@react-aria/test-utils/src/userEventMaps.ts",
+      "packages/@react-aria/test-utils/src/user.ts"
     ]
   },
   {

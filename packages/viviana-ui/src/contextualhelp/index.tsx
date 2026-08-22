@@ -1,3 +1,5 @@
+// Port of packages/@react-spectrum/s2/src/ContextualHelp.tsx.
+
 import {
   type JSX,
   createContext,

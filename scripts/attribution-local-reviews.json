@@ -770,13 +770,233 @@
     "contentSha256": "316e2866459b2fd668d9900687e0fdfc3f78aeaf4123509eb803fadfbf9b8ee0"
   },
   {
+    "localPath": "packages/viviana-ui/src/color/ColorEditor.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "adb89806ca8928e19e3c521c0c2ea2d770be898b9c46dec5c9741578ee781d5a"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/field/suffix.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "c9eaf2e3c2beef6379ee2fecac14b670275900a552aa8803caf1195e906ddb23"
+  },
+  {
     "localPath": "packages/viviana-ui/src/icon/pixel-icons/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "d509b6e0fca22bb55b90588751e52517095ad304cb430bacc5070e619b2ecafb"
   },
   {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelChartIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "481d0ecf78a01b6013fb35bd6d70f9018e9b323ce09151ea7fdcff422a67e425"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCheckIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "669e665055bbc5eba7e73e24a40f882149c103cc3309c8ca1e12a041a3f5d5d6"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelChevronDownIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "9e4a5a20c5a34763f0f972e43a7ea828eac62f5242d2ebb327d59d7e60bc0e88"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelChevronRightIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "75f27eef2ca329d04da0e8d93c521e7c9ef226cf7ba9e8d74fb764e4bb550325"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelClockIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "b55784d12a5a2081a35f2f9b2737293978874d96279f6d66fecfd4632127febc"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCodeIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "cbc87bebdfdf4feacc3ee0ee02c4a531fe13768a37632ee969e0ad5d287348c8"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCommunityIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "7d5559b4cc2360fdb235ed30b1c3a6bb3c73962a895adceff62f8b9bf426c5d2"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelCubeIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "b45905ac12c789debd095e5f2fe157044c5d045a126ecbd2fdabcc28116dad8a"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelFlameIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "3aee7ba16c01eacd9f32415af29b396277509abe560da5a62bd322e232fbedbb"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelHomeIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "ead106275acea86e874c04558608423e6e3abc46d01cf4a25024848239f4688f"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelLayoutIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "c5436adc581c71b27bfe8c39c1cbce2f7d273cd70529d25bcb20074e838aa73f"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelMapIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "f9a94a0f83f65164b96873dde8bdd2d63602ca88c5df27bc5d7f1675e956049e"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelMessageIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "39fccee8a06c734f4ae294ac701e33554271c5883193a037d76af227b2895ca3"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavCommunityIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "31784918a8086b6b44611d3a565aeb951767e09a3aff004e1097f1db93b189b7"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavExploreIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "c19d6332949edc9698bd5afd88f06a5bb3608be8918c790f289ae295193354d2"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavLiveIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "354c5db91e3e50ef0363144f8ebd1ca1debc2badc0f770b2c405b1eebc739f6f"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavPathwaysIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "fa43986e6bafa750d61da63fbe8ce9444abfb460757fdf6c315b3394d6c1b54a"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavPlaygroundIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "6e7341ade5e2e59851c790d766dc54ba15f9edcca3f32c6d1e8f011c5277f5ea"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavProjectsIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "3abf3ddaa7cca2158aeacca412871a3afd4fa871d2502cd6a3d6cc3672455c80"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavReferenceIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "256bd103850eb099488f5b288eb4cdf531042b955333d7f43884f6d6c999877c"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavSettingsIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "062d2342939236fdf46317f9e44f5e8929a67429b9e6487aea55721abf88de06"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNavTopicsIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "b52710a6258c271beb604298789d0624c522949a3f34c09a1af7f19ad42ec028"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelNotificationIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "b6ddfb697c9ccf008d2ef533f2afd0ac3762ecae7e164211783e0924f960ba82"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelPathwaysIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "44c9f3a658740ec29ece6b32ca7ab0d3ce116a00231d1c0eab12b596f230981a"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelPlayIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "392b1eacc437f9a777b38d9bd9b18484507da101f33c071c49775082b9a5df71"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelPlusIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "259936de474d6056f6a9dc38e7411602ce8f376313af5daaeee5e8890be6d304"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelProjectsIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "857e7bfea8f9d4ea1ccebde0a0cae930c5c2196aec77bc2cb25b461a9bfe6040"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelReferenceIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "e5ba28d7e26487a21361d3e4dadd2bc752a03ae5aac40914d77cefc34acfa4e4"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelSearchIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "572f17bba1e694df87846c52b3e361112cd10168fcf66b11d90ff237f5c52b0d"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelSettingsIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "86779738a334f3f5bf3290c1f5c4cb942d830b4487fa180c54e45668ca2755f9"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelSparkleIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "864bac744f0e21aecdbbcccba61a78ca97315a9f1dbc03af25e75c45495a71c6"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelTopicsIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "57c4aff65caefe72b5364d91772f6a03baf71e294fe03edf1e1142ec2e4f6306"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelUserIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "8c0951154a6d95180408a4a1ccfd2668bf4688cd525c47e5c2933b3f51a6c79c"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/PixelZapIcon.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "a4a798e808e5c53eda47fd3a89a591563272eb46d7a11341f1b05ca2b018b5bf"
+  },
+  {
     "localPath": "packages/viviana-ui/src/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "fb3f55ed37b3b4925f59a954a82280cac98a180c9ef83a0a5e7abada052e1398"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/landmark/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "81ffd78b1aa3cc92a3ad61053fb910b10e5173e927dd99582b9d8874af04e7a1"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/story-utils/ErrorBoundary.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "99255dcbd8c72c07e7e2e3a955f998215b5581bcabf8229e4d4fffbe5810a0d0"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/style/glasselated-ramps.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "948201ab369f75aad9a2c3a1c74d39a91e8e482046c59da9f6392429e16d719c"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/style/meshStrip.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "42c36dc8540b9d22f9b442e9d60130c03b5ad5cf1ac860f6240b8e78f5632a36"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/switch/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "0896bbccd98f22ce8352db85587b744ace3f237a1bd8f989b76aabf4476c1bd3"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/text/type-roles.ts",
+    "classification": "local-solid-helper",
+    "contentSha256": "11c5b1d88f2e60875cf2056eeec19c394f468ef509b63fbb45a83aac96725c57"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/vite.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "48863d33e04622a1a35d241136b91dfa224ae957e6a938f6f6e1ab1a88071cfc"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/well/index.tsx",
+    "classification": "local-solid-helper",
+    "contentSha256": "49eba0d102502771005695203ef50780b93025d655ec1542b35509d375914ff2"
   }
 ]

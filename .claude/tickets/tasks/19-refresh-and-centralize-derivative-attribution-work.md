@@ -127,6 +127,11 @@ history:
       at: 2026-08-21,
       note: "completed the Solid Spectrum review with 95 single-source mappings, 11 composites, and 16 local helpers",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "completed the Viviana UI review with 94 header-bearing exact mappings, one headerless exact mapping, 11 composites, and 44 local files",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -139,7 +144,7 @@ compliance claim.
 ## Evidence snapshot
 
 The pre-header baseline revision is `03edb8e3` on 2026-08-21. The table below
-shows the current source counts after the Solid Spectrum implementation review.
+shows the current source counts after the five-package implementation review.
 
 `vp run guard:attribution` counts TypeScript source under each Adobe-derived
 package. It excludes declaration files.
@@ -150,7 +155,7 @@ package. It excludes declaration files.
 | `@proyecto-viviana/solidaria`            |    231 |          162 |           175 |
 | `@proyecto-viviana/solidaria-components` |     74 |           64 |            67 |
 | `@proyecto-viviana/solid-spectrum`       |    604 |          119 |           121 |
-| `@proyecto-viviana/ui`                   |    644 |           15 |            15 |
+| `@proyecto-viviana/ui`                   |    644 |          119 |           121 |
 
 These columns are discovery aids. A source marker is a `Based on`, `Port of`,
 or `Ported from` clause that names a React Aria, React Stately, React Spectrum,
@@ -179,25 +184,22 @@ The 2026-08-21 inventory has these results:
 
 | Status                      | Files |
 | --------------------------- | ----: |
-| `exact`                     |   359 |
-| `exact-no-header`           |    11 |
+| `exact`                     |   451 |
+| `exact-no-header`           |    12 |
 | `generated-exact`           |    11 |
 | `generated-exact-no-header` |   410 |
 | `generated-multiple`        |     2 |
-| `mirror`                    |   481 |
-| `multiple`                  |    66 |
-| `reviewed-local`            |   156 |
-| `unmarked`                  |   150 |
+| `mirror`                    |   483 |
+| `multiple`                  |    77 |
+| `reviewed-local`            |   200 |
 
-The report scanned 1,646 files. It found 359 independent files with one
-header-bearing exact source and eleven files with a reviewed headerless exact
-source. All 363 exact-source header contracts pass. The generated groups have
-verified inputs. The report records 127 module surfaces and 29 local Solid
-helpers as reviewed local source. It keeps 150 unmarked files in review. Each
-local review has an exact content hash. A content change reopens review. The 481
-byte-identical Viviana UI files still inherit their Solid Spectrum mapping.
-Adding explicit Spectrum notices changed 45 formerly identical files. The report
-reopened those Viviana UI files so they receive an independent review.
+The report scanned 1,646 files and has no independent mappings left for
+review. It found 451 independent files with one header-bearing exact source and
+12 files with a reviewed headerless exact source. All 457 exact-source header
+contracts pass. The generated groups have verified inputs. The report records
+128 module surfaces and 72 local Solid helpers. Each
+local review has an exact content hash. A content change reopens review. The 483
+byte-identical Viviana UI files inherit their Solid Spectrum review result.
 
 This pass mapped 23 previously header-bearing S2 and flags sources to exact
 upstream files. No file remains in `header-unmapped`. Multiline marker parsing
@@ -256,23 +258,30 @@ Ninety-five files map to one upstream source. Eleven files combine complete
 source sets. Sixteen local helpers have no direct upstream component
 counterpart. Solid Spectrum now has no unmarked files.
 
-The report now finds 66 genuine composite files across the repository. Their
+The implementation review completed all 150 unmarked Viviana UI files.
+Ninety-four files map to one header-bearing Spectrum source. ContextualHelp
+maps to a reviewed headerless Spectrum source. Eleven files combine complete
+source sets. Forty-four files are reviewed local project source. This local set
+includes the Pixel icon components and Glasselated design helpers. Viviana UI
+now has no unmarked files.
+
+The report now finds 77 genuine composite files across the repository. Their
 complete source sets were read against the pinned upstream tree. Each local
 header now keeps every distinct full upstream Adobe block once and lists every
 exact upstream path. Headerless inputs get a source-path line without an
 invented Adobe block.
 
-`scripts/attribution-local-reviews.json` records 127 local module surfaces and
-29 local Solid helpers. Module surfaces organize exports. Their implementation
+`scripts/attribution-local-reviews.json` records 128 local module surfaces and
+72 local Solid helpers. Module surfaces organize exports. Their implementation
 files own the upstream mappings. The helpers have no direct upstream API. The
 guard fixes each decision to the exact content hash and rejects marker, header,
 or content drift.
 
-`scripts/attribution-composite-reviews.json` records 513 upstream paths and the
+`scripts/attribution-composite-reviews.json` records 550 upstream paths and the
 required local source text. The report compares each complete path set with the
 live marker result. It also compares the local composite prefix with the exact
 upstream blocks and paths. The header guard fails when a recorded set, source
-marker, block, or path changes. All 66 source-set and header contracts are satisfied.
+marker, block, or path changes. All 77 source-set and header contracts are satisfied.
 
 The artifact guard found three attributed state files in `solidaria` that had
 no mapped build output. The public barrels already re-exported these helpers
@@ -282,7 +291,7 @@ an exception to the guard.
 
 ### Exact mappings without a current Adobe header
 
-Eleven mappings have verified headerless exact sources. Four earlier mappings
+Twelve mappings have verified headerless exact sources. Four earlier mappings
 were checked across longer reachable exact-path histories. Color types,
 ColorEditor, and ListDropTargetDelegate are confirmed in the pinned tree. Drop
 Target Keyboard Navigation and virtual focus each have one reachable exact-path
@@ -301,8 +310,9 @@ revision, which is headerless:
 | `solidaria-components/ColorEditor.tsx`           | `@adobe/react-spectrum/color/ColorEditor.tsx`    | No Adobe header in the pinned exact source.                   |
 | `solidaria-components/ListDropTargetDelegate.ts` | `react-aria/dnd/ListDropTargetDelegate.ts`       | No Adobe header in the pinned exact source.                   |
 | `solid-spectrum/contextualhelp/index.tsx`        | `@react-spectrum/s2/src/ContextualHelp.tsx`      | No Adobe header in the pinned exact source.                   |
+| `viviana-ui/contextualhelp/index.tsx`              | `@react-spectrum/s2/src/ContextualHelp.tsx`      | No Adobe header in the pinned exact source.                   |
 
-`scripts/attribution-headerless-reviews.json` records these eleven decisions.
+`scripts/attribution-headerless-reviews.json` records these twelve decisions.
 The guard fixes each local path to its exact upstream path and required source
 evidence. ShadowTreeWalker keeps Microsoft's exact short MIT block and source
 link. The root and package notices keep the complete Microsoft MIT notice.
@@ -381,12 +391,12 @@ The public wording does not say that the per-file mapping audit is complete.
 
 ## Header-form evidence
 
-The current source tree has 418 files with an Adobe license block. All 418 use
-a complete block from the mapped upstream source. Ten blocks follow a required
-`// @ts-nocheck` first line. The formatter preserves these forms.
+The current source tree has 522 files with an Adobe license block. All 522 use
+a complete block from the mapped upstream source. Fifty-eight blocks follow a
+required `// @ts-nocheck` first line. The formatter preserves these forms.
 
-All 363 exact-source header contracts with a usable upstream header are
-satisfied. Eleven exact mappings with no Adobe header satisfy their reviewed
+All 457 exact-source header contracts with a usable upstream header are
+satisfied. Twelve exact mappings with no Adobe header satisfy their reviewed
 source-evidence contract. The report and artifact parser recognize both complete
 Apache block forms used by the pinned Adobe source.
 
@@ -395,10 +405,10 @@ review. It proved 548 mapped source-to-output references and covered all 314
 attributed source files at that checkpoint. The final gate must rebuild all
 packages and refresh this evidence after the Viviana UI review.
 
-The 66 composite reviews cover 513 pinned upstream files. Each local composite
+The 77 composite reviews cover 550 pinned upstream files. Each local composite
 keeps every distinct full Adobe block once and records the exact path of every
 upstream input. A headerless input contributes its path but no invented block.
-All 66 composite source sets and header contracts are satisfied.
+All 77 composite source sets and header contracts are satisfied.
 
 The retired plan recorded this form as decided:
 
@@ -456,18 +466,21 @@ The Solid Spectrum checkpoint also passed
 `vp run guard:attribution`, and `git diff --check`. The contract suite includes
 a regression for both complete Apache block forms found in the pinned source.
 
+The Viviana UI checkpoint passed `vp run test:ci-guard-contracts`,
+`vp run guard:attribution`, `vp run guard:attribution-headers`,
+`vp run guard:ts-nocheck-budget`, and two header synchronization runs. The
+second synchronization wrote zero files.
+
 The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 `LICENSE-APACHE-2.0`, and `NOTICE`. Kumo contains `LICENSE` and
 `LICENSE-CLOUDFLARE`.
 
 ## Remaining work
 
-1. Review the 150 unmarked files in Viviana UI. The other four
-   Adobe-derived packages are complete.
-2. Separate derivative source from original Proyecto Viviana source. Extend the
-   guard only when the source classification is deterministic.
-3. Rebuild all packages and rerun the repository gates after the source review.
-4. Do not freeze today's incomplete counts as an accepted baseline.
+1. Rebuild all public packages so the artifact guard checks the completed
+   source review.
+2. Run the repository checks, documentation checks, and Changesets status.
+3. Record the final build evidence, close this task, and close initiative #35.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action
 would misattribute the source.

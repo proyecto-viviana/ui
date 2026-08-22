@@ -2,12 +2,17 @@
   {
     "localPath": "packages/solid-spectrum/src/contextualhelp/index.tsx",
     "upstreamPath": "packages/@react-spectrum/s2/src/ContextualHelp.tsx",
-    "requiredText": ["packages/@react-spectrum/s2/src/ContextualHelp.tsx"]
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/ContextualHelp.tsx"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/color/types.ts",
     "upstreamPath": "packages/react-stately/src/color/types.ts",
-    "requiredText": ["Color types for color picker components.", "export interface Color"]
+    "requiredText": [
+      "Color types for color picker components.",
+      "export interface Color"
+    ]
   },
   {
     "localPath": "packages/solid-stately/src/grid/createGridState.ts",
@@ -20,37 +25,53 @@
   {
     "localPath": "packages/solidaria-components/src/ColorEditor.tsx",
     "upstreamPath": "packages/@adobe/react-spectrum/src/color/ColorEditor.tsx",
-    "requiredText": ["Based on @react-spectrum/color source:"]
+    "requiredText": [
+      "Based on @react-spectrum/color source:"
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/ListDropTargetDelegate.ts",
     "upstreamPath": "packages/react-aria/src/dnd/ListDropTargetDelegate.ts",
-    "requiredText": ["Based on packages/react-aria/src/dnd/ListDropTargetDelegate.ts."]
+    "requiredText": [
+      "Based on packages/react-aria/src/dnd/ListDropTargetDelegate.ts."
+    ]
   },
   {
     "localPath": "packages/solidaria-components/src/Table.tsx",
     "upstreamPath": "packages/react-aria-components/src/Table.tsx",
-    "requiredText": ["react-aria-components/src/Table.tsx"]
+    "requiredText": [
+      "react-aria-components/src/Table.tsx"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/datepicker/createDatePickerGroup.ts",
     "upstreamPath": "packages/react-aria/src/datepicker/useDatePickerGroup.ts",
-    "requiredText": ["@react-aria/datepicker `useDatePickerGroup`"]
+    "requiredText": [
+      "@react-aria/datepicker `useDatePickerGroup`"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/DropTargetKeyboardNavigation.ts",
     "upstreamPath": "packages/react-aria/src/dnd/DropTargetKeyboardNavigation.ts",
-    "requiredText": ["Keyboard navigation between drop targets", "export function navigate"]
+    "requiredText": [
+      "Keyboard navigation between drop targets",
+      "export function navigate"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/focus/virtualFocus.ts",
     "upstreamPath": "packages/react-aria/src/focus/virtualFocus.ts",
-    "requiredText": ["Virtual-focus event dispatch primitives.", "export function moveVirtualFocus"]
+    "requiredText": [
+      "Virtual-focus event dispatch primitives.",
+      "export function moveVirtualFocus"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/interactions/createFocusRing.ts",
     "upstreamPath": "packages/react-aria/src/focus/useFocusRing.ts",
-    "requiredText": ["@react-aria/focus useFocusRing"]
+    "requiredText": [
+      "@react-aria/focus useFocusRing"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/utils/ShadowTreeWalker.ts",
@@ -59,6 +80,13 @@
       "Copyright (c) Microsoft Corporation. All rights reserved.",
       "Licensed under the MIT License.",
       "https://github.com/microsoft/tabster/blob/a89fc5d7e332d48f68d03b1ca6e344489d1c3898/src/Shadowdomize/ShadowTreeWalker.ts"
+    ]
+  },
+  {
+    "localPath": "packages/viviana-ui/src/contextualhelp/index.tsx",
+    "upstreamPath": "packages/@react-spectrum/s2/src/ContextualHelp.tsx",
+    "requiredText": [
+      "packages/@react-spectrum/s2/src/ContextualHelp.tsx"
     ]
   }
 ]
