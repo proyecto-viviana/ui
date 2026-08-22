@@ -3,12 +3,18 @@ id: 35
 type: initiative
 title: "Per-file Apache-2.0 attribution headers"
 created: 2026-08-20
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from roadmap item license-compliance" }
+  - {
+      state: verified,
+      at: 2026-08-22,
+      note: "ticket #19 completed the file review and verified notices in source and package output",
+    }
 ---
 
-Complete and guard derivative-source attribution.
+Derivative-source attribution is complete and guarded in source and package
+output.
 
 ## Done when
 

@@ -22,4 +22,4 @@ All 78 official entries have current, applicable evidence. The strict modeled-co
 
 Replaces roadmap item `component-certification`. Stable policy lives in
 `.claude/current/certification.md`. Tickets #11, #17, #18, #20, #87, #89,
-#91, #92, #93, and #96 preserve the open acceptance findings.
+#91, #92, #93, #96, and #134 preserve the open acceptance findings.
