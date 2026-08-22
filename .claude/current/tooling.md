@@ -79,8 +79,15 @@ once and adds one exact source-path line for every input. A headerless input
 gets a source-path line, not an invented Adobe block. Add a record only after
 you read every listed pinned source.
 
-`guard:attribution-headers` checks the confirmed header contract for each exact
-and reviewed composite mapping. `sync:attribution-headers` copies the exact
+Reviewed local module surfaces are recorded in
+`scripts/attribution-local-reviews.json`. Each record fixes the local path and
+the reviewed content hash. These files only organize exports. The exported
+implementation files own their source mappings. The guard reopens review if a
+recorded file changes, gains a source marker, or gains an Adobe header.
+
+`guard:attribution-headers` checks confirmed headers for exact and reviewed
+composite mappings. It also checks content contracts for reviewed local files.
+`sync:attribution-headers` copies the exact
 full Adobe blocks and adds the exact upstream paths. It keeps a required
 `// @ts-nocheck` directive first. It does not change unreviewed ambiguous,
 generated, or unmapped files. Run the guard after the sync.

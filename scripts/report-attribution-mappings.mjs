@@ -14,6 +14,7 @@ const upstreamPinPath = path.join(root, "scripts/upstream-pin.json");
 const requireFromComparison = createRequire(comparisonManifestPath);
 const headerlessReviewPath = path.join(root, "scripts", "attribution-headerless-reviews.json");
 const compositeReviewPath = path.join(root, "scripts", "attribution-composite-reviews.json");
+const localReviewPath = path.join(root, "scripts", "attribution-local-reviews.json");
 const jsonOutput = process.argv.includes("--json");
 const showAll = process.argv.includes("--all");
 const checkHeaders = process.argv.includes("--check-headers");
@@ -112,6 +113,9 @@ if (!existsSync(headerlessReviewPath)) {
 if (!existsSync(compositeReviewPath)) {
   fail("scripts/attribution-composite-reviews.json is missing");
 }
+if (!existsSync(localReviewPath)) {
+  fail("scripts/attribution-local-reviews.json is missing");
+}
 
 let headerlessReviewEntries;
 try {
@@ -131,6 +135,16 @@ try {
 }
 if (!Array.isArray(compositeReviewEntries)) {
   fail("scripts/attribution-composite-reviews.json must contain an array");
+}
+
+let localReviewEntries;
+try {
+  localReviewEntries = JSON.parse(readFileSync(localReviewPath, "utf8"));
+} catch (error) {
+  fail(`scripts/attribution-local-reviews.json is invalid JSON (${error.message})`);
+}
+if (!Array.isArray(localReviewEntries)) {
+  fail("scripts/attribution-local-reviews.json must contain an array");
 }
 
 const reviewedHeaderlessMappings = new Map();
@@ -191,6 +205,31 @@ for (const [index, entry] of compositeReviewEntries.entries()) {
   reviewedCompositeMappings.set(entry.localPath, {
     upstreamPaths: uniqueUpstreamPaths.sort(),
     requiredText: entry.requiredText,
+  });
+}
+
+const reviewedLocalSources = new Map();
+for (const [index, entry] of localReviewEntries.entries()) {
+  const label = `scripts/attribution-local-reviews.json entry ${index + 1}`;
+  if (
+    !entry ||
+    typeof entry !== "object" ||
+    typeof entry.localPath !== "string" ||
+    entry.localPath.length === 0 ||
+    entry.classification !== "local-module-surface" ||
+    typeof entry.contentSha256 !== "string" ||
+    !/^[a-f0-9]{64}$/.test(entry.contentSha256)
+  ) {
+    fail(
+      `${label} must contain localPath, classification local-module-surface, and a lowercase SHA-256 content hash`,
+    );
+  }
+  if (reviewedLocalSources.has(entry.localPath)) {
+    fail(`${label} repeats localPath ${entry.localPath}`);
+  }
+  reviewedLocalSources.set(entry.localPath, {
+    classification: entry.classification,
+    contentSha256: entry.contentSha256,
   });
 }
 
@@ -304,6 +343,22 @@ function fullAdobeHeaderBlock(content) {
 
 function sha256(content) {
   return createHash("sha256").update(content).digest("hex");
+}
+
+function localReviewContract(relativePath, content, status) {
+  const review = reviewedLocalSources.get(relativePath);
+  if (!review) return null;
+
+  const actualContentSha256 = sha256(content);
+  return {
+    status:
+      status === "unmarked" && actualContentSha256 === review.contentSha256
+        ? "satisfied"
+        : "mismatch",
+    classification: review.classification,
+    contentSha256: review.contentSha256,
+    actualContentSha256,
+  };
 }
 
 function portLineFor(upstreamPath) {
@@ -826,6 +881,9 @@ function classify(localFile, packageEntry) {
     status = "unmarked";
   }
 
+  const localReview = localReviewContract(relativePath, content, status);
+  if (localReview?.status === "satisfied") status = "reviewed-local";
+
   const headerContract = status === "exact" ? attributionHeaderContract(content, sources[0]) : null;
   const headerlessReview = headerlessReviewContract(
     relativePath,
@@ -852,9 +910,11 @@ function classify(localFile, packageEntry) {
     })),
     headerContract,
     headerlessReview,
+    localReview,
     reviewRequired:
       status !== "exact" &&
       headerlessReview?.status !== "satisfied" &&
+      localReview?.status !== "satisfied" &&
       !(
         compositeReview?.status === "satisfied" &&
         compositeReview.headerContract?.status === "satisfied"
@@ -914,6 +974,11 @@ for (const localPath of reviewedCompositeMappings.keys()) {
     fail(`${localPath}: reviewed composite mapping does not match a scanned source file`);
   }
 }
+for (const localPath of reviewedLocalSources.keys()) {
+  if (!results.some((result) => result.path === localPath && result.localReview)) {
+    fail(`${localPath}: reviewed local source does not match a scanned source file`);
+  }
+}
 
 const managedHeaderlessResults = results.filter((result) => result.headerlessReview);
 const incompleteHeaderlessReviews = managedHeaderlessResults.filter(
@@ -922,6 +987,10 @@ const incompleteHeaderlessReviews = managedHeaderlessResults.filter(
 const managedCompositeResults = results.filter((result) => result.compositeReview);
 const incompleteCompositeReviews = managedCompositeResults.filter(
   (result) => result.compositeReview.status !== "satisfied",
+);
+const managedLocalResults = results.filter((result) => result.localReview);
+const incompleteLocalReviews = managedLocalResults.filter(
+  (result) => result.localReview.status !== "satisfied",
 );
 
 const incompleteCompositeHeaders = managedCompositeResults.filter(
@@ -937,6 +1006,10 @@ if (writeHeaders) {
   if (incompleteCompositeReviews.length > 0) {
     const result = incompleteCompositeReviews[0];
     fail(`${result.path}: reviewed composite mapping is ${result.compositeReview.status}`);
+  }
+  if (incompleteLocalReviews.length > 0) {
+    const result = incompleteLocalReviews[0];
+    fail(`${result.path}: reviewed local source is ${result.localReview.status}`);
   }
 
   const pendingWrites = [];
@@ -1014,6 +1087,11 @@ for (const result of managedCompositeResults) {
   const status = result.compositeReview.headerContract?.status ?? "unavailable";
   compositeHeaderStatusCounts[status] = (compositeHeaderStatusCounts[status] ?? 0) + 1;
 }
+const localReviewStatusCounts = {};
+for (const result of managedLocalResults) {
+  const status = result.localReview.status;
+  localReviewStatusCounts[status] = (localReviewStatusCounts[status] ?? 0) + 1;
+}
 
 const report = {
   scope: {
@@ -1060,6 +1138,14 @@ const report = {
         ),
       ),
     },
+    localReviews: {
+      files: managedLocalResults.length,
+      statuses: Object.fromEntries(
+        Object.entries(localReviewStatusCounts).sort(([left], [right]) =>
+          left.localeCompare(right),
+        ),
+      ),
+    },
   },
   files: results,
 };
@@ -1092,6 +1178,10 @@ if (jsonOutput) {
   }
   console.log("Composite attribution header contracts:");
   for (const [status, count] of Object.entries(report.summary.compositeHeaderContracts.statuses)) {
+    console.log(`- ${status}: ${count}`);
+  }
+  console.log("Reviewed local source:");
+  for (const [status, count] of Object.entries(report.summary.localReviews.statuses)) {
     console.log(`- ${status}: ${count}`);
   }
 
@@ -1135,7 +1225,8 @@ if (checkHeaders) {
     incomplete.length > 0 ||
     incompleteHeaderlessReviews.length > 0 ||
     incompleteCompositeReviews.length > 0 ||
-    incompleteCompositeHeaders.length > 0
+    incompleteCompositeHeaders.length > 0 ||
+    incompleteLocalReviews.length > 0
   ) {
     console.error("report:attribution-mappings — attribution contracts are incomplete:");
     for (const result of incomplete) {
@@ -1152,6 +1243,9 @@ if (checkHeaders) {
         `- [${result.compositeReview.headerContract?.status ?? "unavailable"}] ${result.path}`,
       );
     }
+    for (const result of incompleteLocalReviews) {
+      console.error(`- [${result.localReview.status}] ${result.path}`);
+    }
     process.exit(1);
   }
   console.log(
@@ -1165,5 +1259,8 @@ if (checkHeaders) {
   );
   console.log(
     `report:attribution-mappings — PASS: ${managedCompositeResults.length} composite headers preserve every distinct upstream block and exact source path.`,
+  );
+  console.log(
+    `report:attribution-mappings — PASS: ${managedLocalResults.length} reviewed local files match their recorded content.`,
   );
 }

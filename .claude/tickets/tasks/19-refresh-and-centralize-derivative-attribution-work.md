@@ -102,6 +102,11 @@ history:
       at: 2026-08-21,
       note: "regenerated and guarded all S2 icon outputs from pinned shipped modules, leaving only 439 unmarked files",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "classified and hash-guarded 126 local module surfaces, leaving 313 unmarked files",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -161,14 +166,17 @@ The 2026-08-21 inventory has these results:
 | `generated-multiple`        |     2 |
 | `mirror`                    |   526 |
 | `multiple`                  |    27 |
-| `unmarked`                  |   439 |
+| `reviewed-local`            |   126 |
+| `unmarked`                  |   313 |
 
 The report scanned 1,646 files. It found 223 independent files with one exact
 source. It also found 227 exact-source header contracts, including inherited
 mirror cases. All 227 satisfy the confirmed contract. The generated groups
-have verified inputs. The report keeps only the 439 unmarked files in review.
-The 526 byte-identical Viviana UI files inherit their Solid Spectrum mapping
-and do not create duplicate review work.
+have verified inputs. The report records 126 export-only module surfaces as
+reviewed local source and keeps 313 unmarked files in review. Each local review
+has an exact content hash. A content change reopens review. The 526
+byte-identical Viviana UI files inherit their Solid Spectrum mapping and do not
+create duplicate review work.
 
 This pass mapped 23 previously header-bearing S2 and flags sources to exact
 upstream files. No file remains in `header-unmapped`. Multiline marker parsing
@@ -208,6 +216,12 @@ complete source sets were read against the pinned upstream tree. Each local
 header now keeps every distinct full upstream Adobe block once and lists every
 exact upstream path. Headerless inputs get a source-path line without an
 invented Adobe block.
+
+`scripts/attribution-local-reviews.json` records 126 local module surfaces.
+A TypeScript syntax review confirmed that each file contains only export
+declarations. These files organize modules. Their exported implementation files
+own the upstream mappings. The guard fixes each decision to the exact content
+hash and rejects marker, header, or content drift.
 
 `scripts/attribution-composite-reviews.json` records 152 upstream paths and the
 required local source text. The report compares each complete path set with the
@@ -367,8 +381,8 @@ Passed on 2026-08-21:
 - `vp run report:attribution-mappings`
 - `vp run test:ci-guard-contracts`, including the changed-NOTICE,
   shared-marker-parser, exact-repository-path, upstream-declaration-path,
-  ordinary-documentation, reviewed-headerless, reviewed-composite, and
-  composite-source-set-drift cases
+  ordinary-documentation, reviewed-headerless, reviewed-composite,
+  composite-source-set-drift, reviewed-local, and local-content-drift cases
 - `vp run guard:attribution-headers`
 - `vp run guard:generated-icons`; it verified all 846 owned output files
 - `vp run sync:attribution-headers`; a second run wrote zero files
@@ -396,9 +410,9 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Review the 439 unmarked files. No unresolved source markers or generated
-   groups remain. Separate derivative source from original Proyecto Viviana
-   source.
+1. Review the 313 unmarked implementation and helper files. No unresolved
+   source markers, generated groups, or export-only module surfaces remain.
+   Separate derivative source from original Proyecto Viviana source.
 2. Extend the guard only where the source classification is deterministic. Do
    not freeze today's incomplete counts as an accepted baseline.
 

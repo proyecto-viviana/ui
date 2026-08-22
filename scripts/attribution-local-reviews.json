@@ -1,0 +1,632 @@
+[
+  {
+    "localPath": "packages/solid-spectrum/src/ActionButton.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "883f1cd5c32fbcd21099d64923c1e8d6306596699a0557df8c28dac6ce6fe22c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ActionMenu.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "012d6b0a09fee462ce74365f4ccf2ce67ba581dffdc9c529f43d71be7b3a2579"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Breadcrumbs.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "284953f3ef436ec8d0f3fa57d3713e63f61830972976fddd82fdc91a6dbe60a8"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Button.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ba9130d2ead921ef44b042091f1d2f339696771aed8e8ebada07646b5cdd375b"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/button/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "5fffc08289abf045f6230c917afdfb841203bfe56dbb096f62061e169974ccd1"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/button/s2-progress-circle-animation.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1ef9bd89db4f0af7fa901e63acc016a6d09a38cab085fb061ad18857c1e90fb5"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Calendar.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "cf03a421b389ada4194163847b608260f8198f5f72852ba8f44d9dc4e28ca6c9"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Card.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "0db1a3d1a49545a0ce13849017a9aa89dd693807ddc763272748af34220cd1dc"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/CardView.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "47bb50e9547250932493f01b3c621bbaee0777e2b87641aa736679cdc509d1c7"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/CenterBaseline.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "06ba09ca426b881955d80c6276551e62396be961983369f639ca54ea3dbb2b71"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ColorArea.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "e7f1f78d173fe2ceff5207e2896002e0efd2bda4e662b32b8bcf6a8ad50cb0b5"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ColorField.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "9a50c6f969a03abd4dd0eb3ac71b33285826254d2e95c6b579214435ff246c3c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ColorSlider.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "8cb1cdc40031fae3a3576d5143cfc5cd57d0644fe414ef3cb4f7a1bf98a29abf"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ColorSwatch.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "a41254b7d4baee913063b5cc203da13959e6aa8e88bea4fef34a23cffb630145"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ColorSwatchPicker.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fad67eaa5799a801c32c45a440a2c057c243f2430dd06cf06c988b8b045e22ee"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ColorWheel.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "d1c081234ef52cb18583eac788b11a5f1a93e21691db1848743e580cf56561b1"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ContrastIcon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2cf1b1545d3f7cb9bee845d01c25ca09132e6e9649b651749aa4bdedcc2561af"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/datepicker/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "7f64918923dc33cb03473ce2fb57f30a63573d8bcb685779696f937c57a4a7a1"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/dialog/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "972bb7590e33324b22f06d30946586a3967d11ad02ea9d3c00758a266b7976a6"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/disclosure-export.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "472e4be3dfdff03da953acdd90567e76d734ad7f67da3d6a8ab6764feb4e8a49"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/dnd/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "1f1e02a5435ae59a9f20fc4f46cb825adf4b934bb76a8667beecdb6111eda791"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/FileTrigger.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "dac532114979598a6880970f87a440e361c468449579ae6546629f2752c80219"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/GitHubIcon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "8003409e000859116452b985b122f0221e034d60a7bbe0d199a039b2cff259ed"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/icon/icons/CrossIcon.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "5bbd59ba37e9e79c24134dc540f79911934444ca343a360a68795894c5d97c60"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fd5fa9cf929092c44da603deeb09cdbc1132753facd1fd8ffed67a998e4a4dbf"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/layout/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "024508d4d9e0350f438ce7a1d45d029a796af0fe59ffcb216aa477588f97c62d"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/LightenIcon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "75ce4a8092c8c575798f6777d166f003466dda83e9eddad6838a09f36ea13b07"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/LinkButton.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "aa1da146efd73f4b142cad51cca456d627537adbeb88da782c3dc8ddbfd4a681"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/list/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "085768c76ee53f4e0daf5d90b75f19f0c958896af37c8382cda27a1f69e8ccac"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ListView.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1e21b716f5907fc896b0b16672817d4a4f6ab3620d20b6825ce95afd464f04d0"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Menu.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "8d79a3fef73d4f3147144e9d6e9dbde002554af73862dc652e14489c39d3d652"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/overlays/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "aa7bc314f16be685ddcef23ae44bd55b41969001cfacecb718ac5e2c2aa3df95"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Picker.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "760bfc5a1edae086d4267fa0c39c4720d613f5c3e3a2b1d9a41148bbc01ac426"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/progress/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "d2dea8b1dbed5e14a63cc6250d434b91daa8c15ebe64ec6b80deb0d14527fe75"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Provider.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "8f6fc8f5b7c780eeb35ac50c906ef5022d5d88da39a4a0cdb5a75b1aeea2274b"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/RangeCalendar.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1affad11d99d18575ff0e7d0456bce5dd4504be4417a7d907747de6228292929"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/SearchField.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "b5e1e44c1dac789928eb6570ebe814ca4ba95e329e8a47b8858a4743a3b82429"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/SegmentedControl.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "94218cee53a52fe40176a26bc528d8f23f4cc0f9b3ebeb793145c84112518946"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Switch.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "cd3d3b96454fa5e66a75077f4177a81d5166ab0419e84add423b806d8521f1ea"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Tabs.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fd22fed0739043860e4806a4f9d047a628c0ea37427c17e560d5180dfee6abd1"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/tag/index.tsx",
+    "classification": "local-module-surface",
+    "contentSha256": "c2a911130b2de5204ab65d6af99db1a1d56f009fec7197dd4822f2e1fc1b0555"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/TextArea.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2e16fb0e18b4a269410d4723fc19e8086afbe6527bde5ed1d25b0519f7005ae1"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/TextField.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f414a6b1a16e851272d7d0a79845f85a94f4cde9d06eee81449c866d092f317c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/TreeView.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "6925f7e5c3c5893603670c2adde741a8add6ced0e221212eedd914cdca21cd68"
+  },
+  {
+    "localPath": "packages/solid-stately/src/autocomplete/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "179d30e23712c5a1be2d0bd5494464156323e25879eb829a83e4653178a7dc69"
+  },
+  {
+    "localPath": "packages/solid-stately/src/calendar/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "3de84550d329e6804a97c0e8eede92445c6bfb99d67d47e8cdd5dcab0d475a95"
+  },
+  {
+    "localPath": "packages/solid-stately/src/checkbox/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "895801c5bfc392bef90deef92b819fad8a4f51fabc8d1bb6463b69ad600c636b"
+  },
+  {
+    "localPath": "packages/solid-stately/src/collections/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "6165603a2d129ca26fa46f4adf7d16c440dc4a4eac8ad2da5a285c620cfe5375"
+  },
+  {
+    "localPath": "packages/solid-stately/src/color/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "736e539c39f437ec05337263b48a37d6ad821ff8031f8277a8e75ade0471603f"
+  },
+  {
+    "localPath": "packages/solid-stately/src/combobox/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c4ed750a31537dacf9ca7295eb44b36ac809b59bf499de76b0c0204b7892d8d6"
+  },
+  {
+    "localPath": "packages/solid-stately/src/data/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "44965dad85170101ebb2eb6da889f101d0eb2ab1d4593c0fbea19de41512bc38"
+  },
+  {
+    "localPath": "packages/solid-stately/src/datepicker/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "3a842635a9b0f6dfbff43982d18979ac5c2fa1957973a2108818ce14b65ee94d"
+  },
+  {
+    "localPath": "packages/solid-stately/src/disclosure/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f35c0a369e59289236bd736693dcfc1087705bf4b1b39f26c3917751dd0245e0"
+  },
+  {
+    "localPath": "packages/solid-stately/src/dnd/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2076ab4477ee9c60fa49af57f61a4ee4c974e2a379d8d6703f1091ccebb91a0e"
+  },
+  {
+    "localPath": "packages/solid-stately/src/form/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "b9db6a7956c65f8b5894534f01bf65e65cbcec36722b9c4394a602574e736248"
+  },
+  {
+    "localPath": "packages/solid-stately/src/grid/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "294880092bb992943b351b6f301423bc67589fbcb504cdc2b62f3f15970d2f70"
+  },
+  {
+    "localPath": "packages/solid-stately/src/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "4cd98002b948fd907a7f21b4d39ae930555997347c0a966f7a41c82ba1d12f3c"
+  },
+  {
+    "localPath": "packages/solid-stately/src/menu/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "13790acbd7d938724705829aeeefe765e190e069ce45eeb7a30214266e18f0e3"
+  },
+  {
+    "localPath": "packages/solid-stately/src/numberfield/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "46a4f917aee14b1708e15d18723855a7425928a616f9c030fe7ce378109afbba"
+  },
+  {
+    "localPath": "packages/solid-stately/src/overlays/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fcba9f0db315fd2299b0850a6b73e493972668b8be344a41873daa16e888b3a2"
+  },
+  {
+    "localPath": "packages/solid-stately/src/radio/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "511440fc1d04f91c5b8daaa3a171b41a91fc2f29463dd730a7c03762d0ff1f7c"
+  },
+  {
+    "localPath": "packages/solid-stately/src/searchfield/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "8c8aed3d3b509e651bed3beff0b33f5dfa124a978139bde59506cc66c66b4309"
+  },
+  {
+    "localPath": "packages/solid-stately/src/select/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "6abca3c2ea41d8cffa66be0fa824edb5fd3dd987d08b4ff8f7d71fe2e654434f"
+  },
+  {
+    "localPath": "packages/solid-stately/src/slider/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "b3de5986a5f504302e6f4cb6eedc6aef146fe0e697067c66eb74230ee6ddaa29"
+  },
+  {
+    "localPath": "packages/solid-stately/src/steplist/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "74a388778eb6a1c5109b42fb17920b4bee7db89a8930f5e56225d89fefaa605c"
+  },
+  {
+    "localPath": "packages/solid-stately/src/table/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "109d91e62ac1e712a4835f2c810e4cc7a419f47a2a4d50c4c5c1c4b153ca5cfe"
+  },
+  {
+    "localPath": "packages/solid-stately/src/tabs/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "113090c406acc44902c43fa7398d5aaf73037ed52e481304fdbe4ce5551cc66c"
+  },
+  {
+    "localPath": "packages/solid-stately/src/textfield/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "74a01553250f4a245dc57b3dcc1dd494be1ce5d34fb39f448aba5e5d2a4155e4"
+  },
+  {
+    "localPath": "packages/solid-stately/src/toast/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "47a9662fa9838154d29f36bcdbc5a1644cae6363f6e345cec3a004ea0c1da294"
+  },
+  {
+    "localPath": "packages/solid-stately/src/toggle/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "5d837868a272f0c7e745fd238d8c6f006b2646275060256578118d855a91ebe6"
+  },
+  {
+    "localPath": "packages/solid-stately/src/tooltip/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "d4d024addc286fb5b534aed54ac955367b18403e2e4656056353cb09380497da"
+  },
+  {
+    "localPath": "packages/solid-stately/src/tree/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "eecc976f5bd4caed305555a9fd9dbee69d1f33c2a5d2379508456fe6a9827f2f"
+  },
+  {
+    "localPath": "packages/solid-stately/src/utils/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "9c1cd58a415c7adff6be923a76d794bf5d4cbc6f9ef8b3504b4c5638261026c6"
+  },
+  {
+    "localPath": "packages/solidaria-components/src/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c8953104749b9ae84292d63c35a1099fc40e27ead11fb3ea633b4429d6e09034"
+  },
+  {
+    "localPath": "packages/solidaria/src/actiongroup/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "0114f962f77481216678adf88eb8c93d5f15faa04cc41b2623d82401c11fdfa6"
+  },
+  {
+    "localPath": "packages/solidaria/src/autocomplete/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "24153c36b16b4f925ed7327ba1a84f8ac6fe44d5aca7f081744f38f8b8c84f59"
+  },
+  {
+    "localPath": "packages/solidaria/src/breadcrumbs/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "d940196fcaa51acf7f5d1e64748c391982fd3ac348f8d5509d0d3df7ddd98952"
+  },
+  {
+    "localPath": "packages/solidaria/src/button/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "6558789e555d739d36c572eda5707a4773012bc3b092cf25dcb45f4c189bbfc6"
+  },
+  {
+    "localPath": "packages/solidaria/src/calendar/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "6d287f39db683aaebc9ab569a7a967f78bc16040784ae538f81e7ae629bc283a"
+  },
+  {
+    "localPath": "packages/solidaria/src/checkbox/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "513fbe36c2383d168fe2c2dded382b81716bbe2e56affef5bbdc42dce42efe09"
+  },
+  {
+    "localPath": "packages/solidaria/src/color/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "072d8288909ffcaee0a98b087f8fadf2e120b0067ccfae505a922b1082997b69"
+  },
+  {
+    "localPath": "packages/solidaria/src/combobox/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "869de36fd5767cdff8a8e50711f52a7b639cc80dd0b3fb14b4bd9a4750cfcf3a"
+  },
+  {
+    "localPath": "packages/solidaria/src/datepicker/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "9146bd387ed5b4d44950655c80a4fc5bdb5d63e1f0af84c0382811518eff5cdc"
+  },
+  {
+    "localPath": "packages/solidaria/src/dialog/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "b50042d18d97f956fd25131d26a7f522c86d55a520d964a10b063c7b1e4b3b25"
+  },
+  {
+    "localPath": "packages/solidaria/src/disclosure/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "e63aaa52801954c7ad1f0ad559d158421f20942acfe887270f74985656141a26"
+  },
+  {
+    "localPath": "packages/solidaria/src/dnd/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "76dcf580057719548456ca583ddc014ea947139f17e64fb3fe13ebc3efc8b36b"
+  },
+  {
+    "localPath": "packages/solidaria/src/focus/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "76dba3380f45b158e39d94ce6825965348b406d15318a02d6bcc559a7ed45610"
+  },
+  {
+    "localPath": "packages/solidaria/src/form/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "bb067ec2b9218056526e9a8c9cc0da8e81e1e085ba00ff9e9f2a48fe18c92b86"
+  },
+  {
+    "localPath": "packages/solidaria/src/grid/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "24a44b8e6eed0af256b491a4c31e6f7de1f1af77299c32159ecc0ff6b4893a47"
+  },
+  {
+    "localPath": "packages/solidaria/src/gridlist/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "843e5cbbfad1072adb9cbf2444f4d7ec8f1ad5813a50470e596b1550e23fb220"
+  },
+  {
+    "localPath": "packages/solidaria/src/i18n/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "91fd9dd70bc4525a471e64874f1bd80e8f7819c2d91b7c0a1378a7817060a905"
+  },
+  {
+    "localPath": "packages/solidaria/src/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c1086cd2c89e66aa7802eb68dca67ff504087023be7224f896a2af5e5e861780"
+  },
+  {
+    "localPath": "packages/solidaria/src/interactions/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c8923dd039a4976de39677b987ca188f7ebb021257e99c52fadfe489dd628104"
+  },
+  {
+    "localPath": "packages/solidaria/src/label/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f457c4b718d0c6e992b8ad5c2b8485ffb724f1e6701ea624950ccc19959edd89"
+  },
+  {
+    "localPath": "packages/solidaria/src/landmark/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f7cc2972d59502dc5f9ea05413d6eb30195ed317cf9c91f1f25d768f23138cb0"
+  },
+  {
+    "localPath": "packages/solidaria/src/link/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "28e179095aa03af762d2c9f15a6452c566b774b8da5cedf5a9d438e12b1a3766"
+  },
+  {
+    "localPath": "packages/solidaria/src/listbox/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "5f09429b1ee1344f360afbd9ea1aa1bd1782a501ac4a9a61133da3b4ce66400f"
+  },
+  {
+    "localPath": "packages/solidaria/src/live-announcer/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "287f25a9de8faa348ce9cb7cf75a1fb8890f8d35fac35c28c83d6663005e85fe"
+  },
+  {
+    "localPath": "packages/solidaria/src/menu/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1ca67c1a388e245dc34e37c285fd7bbedb08f48a8502ca281350dabc8d3c2947"
+  },
+  {
+    "localPath": "packages/solidaria/src/meter/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c23300134f70c3942c5fcc6c8004ccbb1dc343654d8f23467281ea48b99b6a26"
+  },
+  {
+    "localPath": "packages/solidaria/src/numberfield/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "a95afaa1e9db12e0a3c3a90096794550b499fd4429e32a0913a69890d2098b16"
+  },
+  {
+    "localPath": "packages/solidaria/src/overlays/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "0aa20d9475a0e8a5733051ec485322002573f25c82553d58093a6cb97d5fdebf"
+  },
+  {
+    "localPath": "packages/solidaria/src/popover/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "87e134953e640c068010cfe25d73b1cca0e53b73955de11508168ec4bde4f316"
+  },
+  {
+    "localPath": "packages/solidaria/src/progress/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "96b99e1c557bd65f9e1b0a8257ac0338368442925803105cd2341beec377af52"
+  },
+  {
+    "localPath": "packages/solidaria/src/radio/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f1d1b7e20cef2222b7fa7d1f20dea9acad07039abb773ddc970821b2016810d8"
+  },
+  {
+    "localPath": "packages/solidaria/src/searchfield/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c0dd495fadee40d2302fadc5b6a0303f1cb68fd98b0f55defdaa6a761263253a"
+  },
+  {
+    "localPath": "packages/solidaria/src/select/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "08763516aaabaafdf16ed8d74dbd1ce78757ce1306b3f20bc8cf0ecf3e184c33"
+  },
+  {
+    "localPath": "packages/solidaria/src/selection/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "dfa2d5c38e61b389d28d293b6a13bd18e0b83f62f918b86804150b7f9a98777d"
+  },
+  {
+    "localPath": "packages/solidaria/src/separator/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "37d94b340da4582f9b4d45f0bb0cd1a3fcbdd01ce6132fa21ea4a0efe90202a6"
+  },
+  {
+    "localPath": "packages/solidaria/src/slider/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "e0ce62d8e9afe491848be9666588495d132f0fd142cfef54dec0f952c8c12447"
+  },
+  {
+    "localPath": "packages/solidaria/src/spinbutton/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fef886b906ed85ed068e5f165e65ca64355d4348668b18ee93f990835da009f6"
+  },
+  {
+    "localPath": "packages/solidaria/src/steplist/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "a734b4cf3cfd4ef8bd6da5ae34e27bea20224ca55f54c21b983ccbc9cfda77e4"
+  },
+  {
+    "localPath": "packages/solidaria/src/switch/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2a464907ab006b3c38acb19f3c470a93f9cc504deaf2819a585ba3d09d242bd2"
+  },
+  {
+    "localPath": "packages/solidaria/src/table/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fcf1bcb1e33ac124515b1e833fe43598ed71b9c7788c534fc4b1600afcbf608a"
+  },
+  {
+    "localPath": "packages/solidaria/src/tabs/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "a2431864778fd771140087346888b1d86ccf0eea66bc0666ec815d0050ecf368"
+  },
+  {
+    "localPath": "packages/solidaria/src/tag/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "edd11bb870c8db87d39eb558c1990aecd79c6f28a86f49a5df9e399cb533ed41"
+  },
+  {
+    "localPath": "packages/solidaria/src/textfield/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f3bfbedd65224701e4e2699aa5c677efd450011d8ec7b98935ae8fff6652f299"
+  },
+  {
+    "localPath": "packages/solidaria/src/toast/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "86bc701641aab98f30b34d66b18d2979e50672f79e69a4d92f24dcdfef0f6357"
+  },
+  {
+    "localPath": "packages/solidaria/src/toggle/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1a15f7ac1bf835054cd5feb8efd692735f769af9a42f7c9b5bbd534263d43eac"
+  },
+  {
+    "localPath": "packages/solidaria/src/toolbar/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "623662aa4632438df138fcf2791308bc8f80f564bf4f69ab24aab3e4aa7dfc6b"
+  },
+  {
+    "localPath": "packages/solidaria/src/tooltip/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c927708986341953a24efb23ac4bac4beb29c1175e1026edb6b623213e1814cd"
+  },
+  {
+    "localPath": "packages/solidaria/src/tree/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "407282509c04c6a58e9b8800fedaf36b923a666fd16df2921f34b3a82aa337c4"
+  },
+  {
+    "localPath": "packages/solidaria/src/utils/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "cc34a1b518561be34e74eedf48c7fceafc75dc720a38410a1e7cebe8fd6b3917"
+  },
+  {
+    "localPath": "packages/solidaria/src/visually-hidden/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "316e2866459b2fd668d9900687e0fdfc3f78aeaf4123509eb803fadfbf9b8ee0"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/icon/pixel-icons/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "d509b6e0fca22bb55b90588751e52517095ad304cb430bacc5070e619b2ecafb"
+  },
+  {
+    "localPath": "packages/viviana-ui/src/index.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fb3f55ed37b3b4925f59a954a82280cac98a180c9ef83a0a5e7abada052e1398"
+  }
+]

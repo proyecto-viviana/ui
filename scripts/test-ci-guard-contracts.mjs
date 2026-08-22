@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -471,6 +472,7 @@ try {
     "packages/solid-stately/src/table",
     "packages/solidaria/src/color/intl",
     "packages/solidaria/src/focus",
+    "packages/solidaria/src/local",
     "packages/solidaria/src/utils",
     "packages/solidaria/src/table",
     "packages/solidaria-components/src",
@@ -587,6 +589,16 @@ try {
     "attribution-composite-reviews.json",
   );
   json(compositeReviewPath, [reviewedDisclosure]);
+  const reviewedLocalSource = "export { localValue } from './localValue';\n";
+  const reviewedLocalPath = path.join(mappingFixture, "packages/solidaria/src/local/index.ts");
+  writeFileSync(reviewedLocalPath, reviewedLocalSource);
+  json(path.join(mappingFixture, "scripts", "attribution-local-reviews.json"), [
+    {
+      localPath: "packages/solidaria/src/local/index.ts",
+      classification: "local-module-surface",
+      contentSha256: createHash("sha256").update(reviewedLocalSource).digest("hex"),
+    },
+  ]);
 
   for (const locale of ["en-US", "fr-FR"]) {
     writeFileSync(
@@ -745,6 +757,14 @@ try {
     mappingByPath.get("packages/solidaria/src/table/useTable.ts")?.status === "unmarked",
     "same-name source was promoted without an explicit marker",
   );
+  const reviewedLocal = mappingByPath.get("packages/solidaria/src/local/index.ts");
+  assert(
+    reviewedLocal?.status === "reviewed-local" &&
+      reviewedLocal.reviewRequired === false &&
+      reviewedLocal.localReview?.status === "satisfied" &&
+      mappingReport.summary.localReviews.statuses.satisfied === 1,
+    "reviewed local module surface did not retain its content contract",
+  );
   const reviewedComposite = mappingByPath.get(
     "packages/solid-stately/src/disclosure/createDisclosureState.ts",
   );
@@ -872,6 +892,19 @@ try {
     completeHeaders.status === 0,
     `completed exact-source headers failed:\n${combined(completeHeaders)}`,
   );
+  writeFileSync(reviewedLocalPath, `${reviewedLocalSource}export const behavior = true;\n`);
+  const contradictedLocalReview = runSync("report-attribution-mappings.mjs", mappingFixture, {}, [
+    "--check-headers",
+  ]);
+  assert(
+    contradictedLocalReview.status !== 0 &&
+      combined(contradictedLocalReview).includes(
+        "[mismatch] packages/solidaria/src/local/index.ts",
+      ),
+    "reviewed local source accepted content drift",
+  );
+  writeFileSync(reviewedLocalPath, reviewedLocalSource);
+  console.log("PASS: reviewed local source rejects content drift.");
   json(compositeReviewPath, [
     {
       ...reviewedDisclosure,
