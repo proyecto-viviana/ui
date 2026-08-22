@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Target.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Target.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -17,16 +19,19 @@ function TargetIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       {...rest}
       class={className}
     >
-      <circle cx="10" cy="10" r="1.5" fill="var(--iconPrimary, #222)" stroke-width="0" />
-      <path
-        d="M10,18.75c-4.82471,0-8.75-3.9248-8.75-8.75S5.17529,1.25,10,1.25s8.75,3.9248,8.75,8.75-3.92529,8.75-8.75,8.75ZM10,2.75c-3.99756,0-7.25,3.25195-7.25,7.25s3.25244,7.25,7.25,7.25,7.25-3.25195,7.25-7.25-3.25244-7.25-7.25-7.25Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+      <circle
+        cx="10"
+        cy="10"
+        r="1.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
       />
       <path
-        d="M10,15c-2.75684,0-5-2.24316-5-5s2.24316-5,5-5,5,2.24316,5,5-2.24316,5-5,5ZM10,6.5c-1.92969,0-3.5,1.57031-3.5,3.5s1.57031,3.5,3.5,3.5,3.5-1.57031,3.5-3.5-1.57031-3.5-3.5-3.5Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10 18.75c-4.825 0-8.75-3.925-8.75-8.75S5.175 1.25 10 1.25s8.75 3.925 8.75 8.75-3.925 8.75-8.75 8.75m0-16c-3.998 0-7.25 3.252-7.25 7.25s3.252 7.25 7.25 7.25 7.25-3.252 7.25-7.25S13.998 2.75 10 2.75"
+      />
+      <path
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10 15c-2.757 0-5-2.243-5-5s2.243-5 5-5 5 2.243 5 5-2.243 5-5 5m0-8.5c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5-1.57-3.5-3.5-3.5"
       />
     </svg>
   );

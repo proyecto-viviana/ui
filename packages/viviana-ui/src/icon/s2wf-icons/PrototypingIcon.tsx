@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Prototyping.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Prototyping.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function PrototypingIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       class={className}
     >
       <path
-        d="m17.72516,1h-.66809c-1.27625,0-2.44757.81665-2.79663,2h-.26025c-2.61914,0-4.75,2.13086-4.75,4.75v4.5c0,1.79199-1.45801,3.25-3.25,3.25h-.26514c-.32782-1.1521-1.37762-2-2.63489-2h-.82495c-.15192,0-.27502.12305-.27502.2749v4.95007c0,.15186.12311.27502.27502.27502h.66809c1.27625,0,2.44757-.81665,2.79663-2h.26025c2.61914,0,4.75-2.13086,4.75-4.75v-4.5c0-1.79199,1.45801-3.25,3.25-3.25h.26514c.32782,1.1521,1.37762,2,2.63489,2h.82495c.15192,0,.27502-.12317.27502-.27502V1.2749c0-.15186-.12311-.2749-.27502-.2749Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M17.725 1h-.668c-1.276 0-2.447.817-2.797 2H14c-2.619 0-4.75 2.13-4.75 4.75v4.5c0 1.792-1.458 3.25-3.25 3.25h-.265c-.328-1.152-1.378-2-2.635-2h-.825c-.152 0-.275.123-.275.275v4.95c0 .152.123.275.275.275h.668c1.277 0 2.448-.817 2.797-2H6c2.62 0 4.75-2.13 4.75-4.75v-4.5c0-1.792 1.458-3.25 3.25-3.25h.265c.328 1.152 1.378 2 2.635 2h.825c.152 0 .275-.123.275-.275v-4.95c0-.152-.123-.275-.275-.275"
       />
     </svg>
   );

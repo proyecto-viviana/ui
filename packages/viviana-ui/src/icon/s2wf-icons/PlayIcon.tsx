@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Play.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Play.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -10,8 +12,6 @@ function PlayIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, ...rest } = props;
   return (
     <svg
-      id="d"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="20"
       height="20"
@@ -20,8 +20,8 @@ function PlayIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="M4.74902,18.00391c-.39795,0-.79541-.10742-1.15332-.32129-.68604-.41016-1.0957-1.13281-1.0957-1.93164V4.24902c0-.79883.40967-1.52148,1.0957-1.93164.68555-.40918,1.51514-.42969,2.21924-.0498l10.70117,5.75098c.73047.39258,1.18408,1.15234,1.18408,1.98145s-.45361,1.58887-1.18408,1.98145l-10.70117,5.75098c-.33643.18164-.70166.27148-1.06592.27148ZM4.75244,3.49609c-.17822,0-.31836.06836-.38721.10938-.10986.06543-.36523.25977-.36523.64355v11.50195c0,.38379.25537.57812.36523.64355s.40137.19824.73975.01758l10.70068-5.75098c.35596-.19238.39453-.52637.39453-.66113s-.03857-.46875-.39453-.66113L5.10498,3.58789c-.12646-.06738-.24609-.0918-.35254-.0918Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M4.749 18.004c-.398 0-.795-.108-1.153-.321C2.91 17.273 2.5 16.55 2.5 15.75V4.249c0-.799.41-1.521 1.096-1.932.685-.409 1.515-.43 2.219-.05L16.516 8.02C17.246 8.41 17.7 9.17 17.7 10s-.453 1.589-1.184 1.981L5.815 17.732c-.336.182-.702.272-1.066.272m.003-14.508c-.178 0-.318.068-.387.11-.11.065-.365.26-.365.643v11.502c0 .384.255.578.365.644s.402.198.74.017l10.7-5.75c.357-.193.395-.527.395-.662s-.038-.469-.394-.661L5.105 3.588c-.126-.067-.246-.092-.353-.092"
       />
     </svg>
   );

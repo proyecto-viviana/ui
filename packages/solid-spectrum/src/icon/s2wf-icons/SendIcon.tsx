@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Send.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Send.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,9 +20,8 @@ function SendIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m18.64851,9.97351c-.00035-.29451-.1716-.56244-.44263-.68294L4.05753,2.93283c-.25619-.11532-.55623-.07699-.77581.0984-.21993.17643-.32282.46024-.26655.73611l1.27162,6.2407-1.2219,6.23034c-.04868.24687.03004.4996.20543.675.02037.02037.04247.03971.06491.058.22097.17401.51997.21061.77547.0946l14.09794-6.40816c.26862-.12222.44022-.38981.43987-.68432Zm-4.24251-.74634l-8.7416.02663-.88734-4.35295,9.62894,4.32632Zm-9.58888,5.8701l.85229-4.34432,8.76288-.02659-9.61517,4.37091Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M18.649 9.974c0-.295-.172-.563-.443-.683L4.058 2.933c-.257-.115-.557-.077-.776.098-.22.177-.323.46-.267.736l1.272 6.241-1.222 6.23c-.049.247.03.5.205.675q.031.03.065.058c.221.174.52.211.776.095l14.098-6.408c.268-.122.44-.39.44-.684m-4.243-.747-8.742.027L4.777 4.9zm-9.589 5.87.852-4.344 8.763-.027z"
       />
     </svg>
   );

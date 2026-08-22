@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ZoomOut.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ZoomOut.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,16 +20,16 @@ function ZoomOutIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element
       class={className}
     >
       <path
-        d="m10.7998,8.75h-5.59961c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h5.59961c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10.8 8.75H5.2c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h5.6c.414 0 .75.336.75.75s-.336.75-.75.75"
       />
       <path
-        d="m8,15c-3.85986,0-7-3.14062-7-7S4.14014,1,8,1s7,3.14062,7,7-3.14014,7-7,7Zm0-12.5c-3.03271,0-5.5,2.46777-5.5,5.5s2.46729,5.5,5.5,5.5,5.5-2.46777,5.5-5.5-2.46729-5.5-5.5-5.5Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M8 15c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7M8 2.5C4.967 2.5 2.5 4.968 2.5 8s2.467 5.5 5.5 5.5 5.5-2.468 5.5-5.5S11.033 2.5 8 2.5"
       />
       <path
-        d="m18.25,19c-.19189,0-.38379-.07324-.53027-.21973l-5.33301-5.33301c-.29297-.29297-.29297-.76758,0-1.06055s.76758-.29297,1.06055,0l5.33301,5.33301c.29297.29297.29297.76758,0,1.06055-.14648.14648-.33838.21973-.53027.21973Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M18.25 19c-.192 0-.384-.073-.53-.22l-5.333-5.333c-.293-.293-.293-.767 0-1.06s.767-.293 1.06 0l5.333 5.333c.293.293.293.767 0 1.06-.146.147-.338.22-.53.22"
       />
     </svg>
   );

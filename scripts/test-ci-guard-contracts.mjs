@@ -58,6 +58,37 @@ async function listen(server) {
 }
 
 try {
+  const rootManifest = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  const generatedIconGuard = rootManifest.scripts?.["guard:generated-icons"];
+  assert(
+    generatedIconGuard === "node scripts/generate-solid-spectrum-icons.mjs --check",
+    "the generated-icon guard must call the icon generator in read-only check mode",
+  );
+  const releaseReadiness = rootManifest.scripts?.["ci:release-readiness"] ?? "";
+  const generatedIconGuardIndex = releaseReadiness.indexOf("vp run guard:generated-icons");
+  const releaseBuildIndex = releaseReadiness.indexOf("vp run build");
+  assert(
+    generatedIconGuardIndex >= 0 &&
+      releaseBuildIndex >= 0 &&
+      generatedIconGuardIndex < releaseBuildIndex,
+    "release readiness must check generated icons before building packages",
+  );
+
+  const generatedIconSource = readFileSync(
+    path.join(ROOT, "scripts", "generate-solid-spectrum-icons.mjs"),
+    "utf8",
+  );
+  assert(
+    generatedIconSource.includes("const generatedIconRoots = [solidIconRoot, vivianaIconRoot];"),
+    "the icon generator must own both styled-package output trees",
+  );
+  assert(
+    generatedIconSource.includes('const checkOnly = args.includes("--check");') &&
+      generatedIconSource.includes("if (checkOnly && (changed.length || extra.length))"),
+    "the generated-icon guard must detect changed and unexpected output files",
+  );
+  console.log("PASS: release readiness checks both generated icon trees without writing them.");
+
   const changesetsWorkflow = readFileSync(
     path.join(ROOT, ".github", "workflows", "changesets-check.yml"),
     "utf8",

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextUnderline.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextUnderline.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,12 +20,8 @@ function TextUnderlineIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       class={className}
     >
       <path
-        d="m14.52246,2H5.47754c-1.22852,0-2.22754,1.00977-2.22754,2.25v1.11035c0,.41406.33594.75.75.75s.75-.33594.75-.75v-1.11035c0-.41309.32617-.75.72754-.75h3.77246v11h-1.57031c-.41406,0-.75.33594-.75.75s.33594.75.75.75h4.64062c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75h-1.57031V3.5h3.77246c.40137,0,.72754.33691.72754.75v1.11035c0,.41406.33594.75.75.75s.75-.33594.75-.75v-1.11035c0-1.24023-.99902-2.25-2.22754-2.25Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m16.25,19H3.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h12.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.522 2H5.478C4.249 2 3.25 3.01 3.25 4.25v1.11c0 .414.336.75.75.75s.75-.336.75-.75V4.25c0-.413.326-.75.728-.75H9.25v11H7.68c-.414 0-.75.336-.75.75s.336.75.75.75h4.64c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-1.57v-11h3.772c.402 0 .728.337.728.75v1.11c0 .414.336.75.75.75s.75-.336.75-.75V4.25c0-1.24-.999-2.25-2.228-2.25M16.25 19H3.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h12.5c.414 0 .75.336.75.75s-.336.75-.75.75"
       />
     </svg>
   );

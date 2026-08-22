@@ -29,3 +29,7 @@ upstream form at the local port date and the pinned revision.
 
 Preserve each distinct upstream Adobe block and every exact source path in the
 27 reviewed composite ports.
+
+Regenerate both styled packages' S2 UI and workflow icons from pinned shipped
+modules. Record exact generator inputs and reject stale, missing, or unexpected
+generated output before release builds.

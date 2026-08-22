@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/StrokeWidth.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/StrokeWidth.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,16 +20,8 @@ function StrokeWidthIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       class={className}
     >
       <path
-        d="m18.75,14.75c0-.96631-.78369-1.75-1.75-1.75H3c-.96631,0-1.75.78369-1.75,1.75s.78369,1.75,1.75,1.75h14c.96631,0,1.75-.78369,1.75-1.75Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m18,5.5H2c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h16c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m18.75,9.25c0-.69043-.55957-1.25-1.25-1.25H2.5c-.69043,0-1.25.55957-1.25,1.25s.55957,1.25,1.25,1.25h15c.69043,0,1.25-.55957,1.25-1.25Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M18.75 14.75c0-.966-.784-1.75-1.75-1.75H3c-.966 0-1.75.784-1.75 1.75S2.034 16.5 3 16.5h14c.966 0 1.75-.784 1.75-1.75M18 5.5H2c-.414 0-.75-.336-.75-.75S1.586 4 2 4h16c.414 0 .75.336.75.75s-.336.75-.75.75M18.75 9.25c0-.69-.56-1.25-1.25-1.25h-15c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25h15c.69 0 1.25-.56 1.25-1.25"
       />
     </svg>
   );

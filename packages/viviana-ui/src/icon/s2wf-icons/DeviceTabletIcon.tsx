@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/DeviceTablet.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/DeviceTablet.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -17,11 +19,15 @@ function DeviceTabletIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       {...rest}
       class={className}
     >
-      <circle cx="5" cy="9.99798" r="1" fill="var(--iconPrimary, #222)" stroke-width="0" />
+      <circle
+        cx="5"
+        cy="9.998"
+        r="1"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
       <path
-        d="M3.25,2.99805h13.5c1.24023,0,2.25,1.00977,2.25,2.25v9.5c0,1.24023-1.00977,2.25-2.25,2.25H3.25c-1.24023,0-2.25-1.00977-2.25-2.25V5.24805c0-1.24023,1.00977-2.25,2.25-2.25ZM16.75,15.49805c.41309,0,.75-.33691.75-.75V5.24805c0-.41309-.33691-.75-.75-.75H3.25c-.41309,0-.75.33691-.75.75v9.5c0,.41309.33691.75.75.75h13.5Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M3.25 2.998h13.5c1.24 0 2.25 1.01 2.25 2.25v9.5c0 1.24-1.01 2.25-2.25 2.25H3.25c-1.24 0-2.25-1.01-2.25-2.25v-9.5c0-1.24 1.01-2.25 2.25-2.25m13.5 12.5c.413 0 .75-.337.75-.75v-9.5c0-.413-.337-.75-.75-.75H3.25c-.413 0-.75.337-.75.75v9.5c0 .413.337.75.75.75z"
       />
     </svg>
   );

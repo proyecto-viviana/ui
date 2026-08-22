@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Crop.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Crop.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,12 +20,12 @@ function CropIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m15.25,13.19141c-.41406,0-.75-.33594-.75-.75v-6.19141c0-.41309-.33691-.75-.75-.75h-6.2373c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h6.2373c1.24023,0,2.25,1.00977,2.25,2.25v6.19141c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M15.25 13.191c-.414 0-.75-.336-.75-.75V6.25c0-.413-.337-.75-.75-.75H7.513c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h6.237C14.99 4 16 5.01 16 6.25v6.191c0 .414-.336.75-.75.75"
       />
       <path
-        d="m18.60156,14.5H6.25c-.41309,0-.75-.33691-.75-.75V1.39844c0-.41406-.33594-.75-.75-.75s-.75.33594-.75.75v2.60156H1.39844c-.41406,0-.75.33594-.75.75s.33594.75.75.75h2.60156v8.25c0,1.24023,1.00977,2.25,2.25,2.25h8.25v2.62305c0,.41406.33594.75.75.75s.75-.33594.75-.75v-2.62305h2.60156c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M18.602 14.5H6.25c-.413 0-.75-.337-.75-.75V1.398c0-.414-.336-.75-.75-.75S4 .984 4 1.398V4H1.398c-.414 0-.75.336-.75.75s.336.75.75.75H4v8.25C4 14.99 5.01 16 6.25 16h8.25v2.623c0 .414.336.75.75.75s.75-.336.75-.75V16h2.602c.414 0 .75-.336.75-.75s-.336-.75-.75-.75"
       />
     </svg>
   );

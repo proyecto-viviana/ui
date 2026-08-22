@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/TagUnderline.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/TagUnderline.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,12 +20,8 @@ function TagUnderlineIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="M16.25,19H3.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h12.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="M10,16c-2.61914,0-4.75-2.13086-4.75-4.75V2.75c0-.41406.33594-.75.75-.75s.75.33594.75.75v8.5c0,1.79199,1.45801,3.25,3.25,3.25s3.25-1.45801,3.25-3.25V2.75c0-.41406.33594-.75.75-.75s.75.33594.75.75v8.5c0,2.61914-2.13086,4.75-4.75,4.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.25 19H3.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h12.5c.414 0 .75.336.75.75s-.336.75-.75.75M10 16c-2.62 0-4.75-2.13-4.75-4.75v-8.5c0-.414.336-.75.75-.75s.75.336.75.75v8.5c0 1.792 1.458 3.25 3.25 3.25s3.25-1.458 3.25-3.25v-8.5c0-.414.336-.75.75-.75s.75.336.75.75v8.5c0 2.62-2.13 4.75-4.75 4.75"
       />
     </svg>
   );

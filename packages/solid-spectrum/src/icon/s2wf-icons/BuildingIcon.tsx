@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Building.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Building.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -17,13 +19,33 @@ function BuildingIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       {...rest}
       class={className}
     >
-      <circle cx="12" cy="5" r="1" fill="var(--iconPrimary, #222)" />
-      <circle cx="8" cy="8.00019" r="1" fill="var(--iconPrimary, #222)" />
-      <circle cx="8" cy="5" r="1" fill="var(--iconPrimary, #222)" />
-      <circle cx="12" cy="8.00019" r="1" fill="var(--iconPrimary, #222)" />
+      <circle
+        cx="12"
+        cy="5"
+        r="1"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="8"
+        cy="8"
+        r="1"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="8"
+        cy="5"
+        r="1"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="12"
+        cy="8"
+        r="1"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
       <path
-        d="M14.75,1H5.25c-1.24023,0-2.25,1.00977-2.25,2.25v12.5c0,1.24023,1.00977,2.25,2.25,2.25h9.5c1.24023,0,2.25-1.00977,2.25-2.25V3.25c0-1.24023-1.00977-2.25-2.25-2.25ZM11.49902,16.5h-2.49902v-3.25c0-.41309.33691-.75.75-.75h.99902c.41309,0,.75.33691.75.75v3.25ZM15.5,15.75c0,.41309-.33691.75-.75.75h-1.75098v-3.25c0-1.24023-1.00977-2.25-2.25-2.25h-.99902c-1.24023,0-2.25,1.00977-2.25,2.25v3.25h-2.25c-.41309,0-.75-.33691-.75-.75V3.25c0-.41309.33691-.75.75-.75h9.5c.41309,0,.75.33691.75.75v12.5Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.75 1h-9.5C4.01 1 3 2.01 3 3.25v12.5C3 16.99 4.01 18 5.25 18h9.5c1.24 0 2.25-1.01 2.25-2.25V3.25C17 2.01 15.99 1 14.75 1m-3.251 15.5H9v-3.25c0-.413.337-.75.75-.75h.999c.413 0 .75.337.75.75zm4.001-.75c0 .413-.337.75-.75.75h-1.751v-3.25c0-1.24-1.01-2.25-2.25-2.25H9.75c-1.24 0-2.25 1.01-2.25 2.25v3.25H5.25c-.413 0-.75-.337-.75-.75V3.25c0-.413.337-.75.75-.75h9.5c.413 0 .75.337.75.75z"
       />
     </svg>
   );

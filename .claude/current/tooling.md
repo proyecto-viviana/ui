@@ -46,6 +46,8 @@ vp run report:attribution-mappings
 vp run report:attribution-mappings --json
 vp run guard:attribution-headers
 vp run sync:attribution-headers
+vp run generate:solid-spectrum-icons
+vp run guard:generated-icons
 ```
 
 The report compares the five Adobe-derived source packages with the pinned,
@@ -53,6 +55,12 @@ git-ignored `react-spectrum/packages` tree. It uses explicit source markers and
 verified generated assets. It does not assume that equal filenames have the
 same source. The default output is a short review summary. Use `--json` for the
 complete inventory. These two report modes do not write files.
+
+The icon generator reads the pinned installed S2 package. It cross-checks ESM
+and CommonJS workflow paths, records exact inputs, and synchronizes the Solid
+Spectrum and Viviana UI generated trees. The generate command writes only
+changed owned files. The guard is read-only and rejects changed, missing, or
+unexpected output. Release readiness runs the guard before package builds.
 
 Reviewed exact mappings whose Adobe source has no Adobe header are recorded in
 `scripts/attribution-headerless-reviews.json`. Each record fixes the local

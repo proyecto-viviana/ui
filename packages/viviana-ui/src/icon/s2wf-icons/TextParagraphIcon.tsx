@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextParagraph.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextParagraph.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,9 +20,8 @@ function TextParagraphIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       class={className}
     >
       <path
-        d="m16.74121,2H7.125c-2.61914,0-4.75,2.13086-4.75,4.75s2.13086,4.75,4.75,4.75h.375v5.65137c0,.41406.33594.75.75.75s.75-.33594.75-.75V3.5h3v13.65137c0,.41406.33594.75.75.75s.75-.33594.75-.75V3.5h3.24121c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75ZM7.5,10h-.375c-1.79199,0-3.25-1.45801-3.25-3.25s1.45801-3.25,3.25-3.25h.375v6.5Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.741 2H7.125c-2.62 0-4.75 2.13-4.75 4.75s2.13 4.75 4.75 4.75H7.5v5.651c0 .414.336.75.75.75s.75-.336.75-.75V3.5h3v13.651c0 .414.336.75.75.75s.75-.336.75-.75V3.5h3.241c.414 0 .75-.336.75-.75s-.336-.75-.75-.75M7.5 10h-.375c-1.792 0-3.25-1.458-3.25-3.25S5.333 3.5 7.125 3.5H7.5z"
       />
     </svg>
   );

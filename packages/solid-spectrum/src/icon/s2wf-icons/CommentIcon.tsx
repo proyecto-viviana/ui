@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Comment.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Comment.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function CommentIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element
       class={className}
     >
       <path
-        d="m6.25,19c-.09912,0-.19873-.01953-.29346-.05957-.27686-.11816-.45654-.38965-.45654-.69043v-3.25h-.75c-2.06787,0-3.75-1.68262-3.75-3.75v-5.5c0-2.06738,1.68213-3.75,3.75-3.75h10.5c2.06787,0,3.75,1.68262,3.75,3.75v5.5c0,2.06738-1.68213,3.75-3.75,3.75h-4.54297l-3.93701,3.79004c-.14258.1377-.32959.20996-.52002.20996Zm-1.5-15.5c-1.24072,0-2.25,1.00977-2.25,2.25v5.5c0,1.24023,1.00928,2.25,2.25,2.25h1.5c.41406,0,.75.33594.75.75v2.2373l2.88477-2.77734c.13965-.13477.32617-.20996.52002-.20996h4.84521c1.24072,0,2.25-1.00977,2.25-2.25v-5.5c0-1.24023-1.00928-2.25-2.25-2.25H4.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M6.25 19q-.151 0-.293-.06c-.277-.118-.457-.39-.457-.69V15h-.75C2.682 15 1 13.317 1 11.25v-5.5C1 3.683 2.682 2 4.75 2h10.5C17.318 2 19 3.683 19 5.75v5.5c0 2.067-1.682 3.75-3.75 3.75h-4.543L6.77 18.79c-.143.138-.33.21-.52.21M4.75 3.5C3.51 3.5 2.5 4.51 2.5 5.75v5.5c0 1.24 1.01 2.25 2.25 2.25h1.5c.414 0 .75.336.75.75v2.237l2.885-2.777c.14-.135.326-.21.52-.21h4.845c1.24 0 2.25-1.01 2.25-2.25v-5.5c0-1.24-1.01-2.25-2.25-2.25z"
       />
     </svg>
   );

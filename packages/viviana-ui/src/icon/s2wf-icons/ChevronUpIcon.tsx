@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ChevronUp.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ChevronUp.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function ChevronUpIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       class={className}
     >
       <path
-        d="M3.54492,12.2373c0-.19629.07715-.39355.23047-.54004l5.70312-5.4873c.29004-.28027.74902-.28027,1.03906,0l5.7168,5.5c.29883.28711.30762.7627.02051,1.05957-.28711.29883-.76172.30859-1.05957.02051l-5.19727-4.99902-5.18359,4.98633c-.29785.28809-.77246.27832-1.05957-.02051-.14062-.14453-.20996-.33203-.20996-.51954Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M3.545 12.237c0-.196.077-.393.23-.54L9.48 6.21c.29-.28.749-.28 1.039 0l5.716 5.5c.3.287.308.763.02 1.06-.286.298-.76.308-1.059.02L9.998 7.791l-5.184 4.986c-.297.288-.772.279-1.06-.02-.14-.145-.21-.332-.21-.52"
       />
     </svg>
   );

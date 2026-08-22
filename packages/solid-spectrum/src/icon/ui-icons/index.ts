@@ -1,8 +1,7 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-
 export { default as Add, AddIcon } from "./Add";
 export type { AddProps } from "./Add";
 export { default as Arrow, ArrowIcon } from "./Arrow";

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ColorHarmony.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ColorHarmony.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,32 +20,23 @@ function ColorHarmonyIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="m15.75,2H4.25c-1.24023,0-2.25,1.00928-2.25,2.25v11.5c0,1.24072,1.00977,2.25,2.25,2.25h11.5c1.24023,0,2.25-1.00928,2.25-2.25V4.25c0-1.24072-1.00977-2.25-2.25-2.25Zm0,1.5c.41309,0,.75.33643.75.75v5h-5.75V3.5h5Zm-12.25.75c0-.41357.33691-.75.75-.75h5v5.75H3.5v-5Zm.75,12.25c-.41309,0-.75-.33643-.75-.75v-5h5.75v5.75h-5Zm12.25-.75c0,.41357-.33691.75-.75.75h-5v-5.75h5.75v5Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M15.75 2H4.25C3.01 2 2 3.01 2 4.25v11.5C2 16.99 3.01 18 4.25 18h11.5c1.24 0 2.25-1.01 2.25-2.25V4.25C18 3.01 16.99 2 15.75 2m0 1.5c.413 0 .75.336.75.75v5h-5.75V3.5zM3.5 4.25c0-.414.337-.75.75-.75h5v5.75H3.5zm.75 12.25c-.413 0-.75-.336-.75-.75v-5h5.75v5.75zm12.25-.75c0 .414-.337.75-.75.75h-5v-5.75h5.75z"
       />
-      <rect
-        x="10.0687"
-        y="3.11436"
-        width="6.95914"
-        height="6.69751"
-        fill="var(--iconPrimary, #222)"
-        opacity=".5"
+      <path
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10.069 3.114h6.959v6.698h-6.959z"
+        opacity="0.5"
       />
-      <rect
-        x="10.0687"
-        y="10.11436"
-        width="6.95914"
-        height="6.69751"
-        fill="var(--iconPrimary, #222)"
-        opacity=".12"
+      <path
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10.069 10.114h6.959v6.698h-6.959z"
+        opacity="0.12"
       />
-      <rect
-        x="3.0687"
-        y="10.11436"
-        width="6.95914"
-        height="6.69751"
-        fill="var(--iconPrimary, #222)"
-        opacity=".3"
+      <path
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M3.069 10.114h6.959v6.698H3.069z"
+        opacity="0.3"
       />
     </svg>
   );

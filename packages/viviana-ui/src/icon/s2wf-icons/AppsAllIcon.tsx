@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/AppsAll.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/AppsAll.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,85 +20,85 @@ function AppsAllIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element
       class={className}
     >
       <rect
+        width="3.5"
+        height="3.5"
         x="2.25"
         y="2.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="8.25"
         y="2.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="14.25"
         y="2.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="2.25"
         y="8.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="8.25"
         y="8.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="14.25"
         y="8.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="2.25"
         y="14.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
+        width="3.5"
+        height="3.5"
         x="8.25"
         y="14.25"
-        width="3.5"
-        height="3.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
       <rect
-        x="14.25"
-        y="14.25"
         width="3.5"
         height="3.5"
+        x="14.25"
+        y="14.25"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
         rx="1"
         ry="1"
-        fill="var(--iconPrimary, #222)"
       />
     </svg>
   );

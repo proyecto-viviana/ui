@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Bookmark.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Bookmark.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,9 +20,8 @@ function BookmarkIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       class={className}
     >
       <path
-        d="M5.25098,18.99974c-.16016,0-.32227-.03125-.47754-.0957-.46973-.19336-.77344-.64746-.77344-1.15527V4.24974c0-1.24023,1.00977-2.25,2.25-2.25h7.5c1.24023,0,2.25,1.00977,2.25,2.25v13.49902c0,.50781-.30371.96191-.77344,1.15527-.4707.19531-1.00488.08691-1.36328-.27441l-3.86328-3.88672-3.86328,3.88672c-.24023.24219-.55957.37012-.88574.37012ZM6.25,3.49974c-.41309,0-.75.33691-.75.75v12.89258l3.43555-3.45605c.57031-.57227,1.55957-.57129,2.12793-.00098l3.43652,3.45703V4.24974c0-.41309-.33691-.75-.75-.75h-7.5Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M5.251 19q-.242 0-.478-.096c-.47-.193-.773-.647-.773-1.155v-13.5C4 3.01 5.01 2 6.25 2h7.5C14.99 2 16 3.01 16 4.25v13.5c0 .508-.304.962-.773 1.155-.471.195-1.005.087-1.364-.274L10 14.743 6.137 18.63c-.24.242-.56.37-.886.37M6.25 3.5c-.413 0-.75.337-.75.75v12.892l3.436-3.456c.57-.572 1.56-.571 2.127 0l3.437 3.456V4.25c0-.413-.337-.75-.75-.75z"
       />
     </svg>
   );

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/StickyNote.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/StickyNote.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function StickyNoteIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elem
       class={className}
     >
       <path
-        d="m15.75,2H4.25c-1.24072,0-2.25,1.00977-2.25,2.25v11.5c0,1.24023,1.00928,2.25,2.25,2.25h7.87891c.59229,0,1.17188-.24023,1.59082-.65918l3.62109-3.62109c.41895-.41895.65918-.99902.65918-1.59082v-7.87891c0-1.24023-1.00928-2.25-2.25-2.25ZM3.5,15.75V4.25c0-.41309.33643-.75.75-.75h11.5c.41357,0,.75.33691.75.75v6.75h-3.25c-1.24072,0-2.25,1.00977-2.25,2.25v3.25h-6.75c-.41357,0-.75-.33691-.75-.75Zm9.15918.53027c-.04565.04565-.10382.07385-.15918.10596v-3.13623c0-.41309.33643-.75.75-.75h3.13629c-.03217.05542-.06036.11353-.10602.15918l-3.62109,3.62109Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M15.75 2H4.25C3.01 2 2 3.01 2 4.25v11.5C2 16.99 3.01 18 4.25 18h7.879c.592 0 1.172-.24 1.59-.66l3.622-3.62c.419-.42.659-1 .659-1.591V4.25C18 3.01 16.99 2 15.75 2M3.5 15.75V4.25c0-.413.336-.75.75-.75h11.5c.414 0 .75.337.75.75V11h-3.25C12.01 11 11 12.01 11 13.25v3.25H4.25c-.414 0-.75-.337-.75-.75m9.16.53c-.046.046-.105.074-.16.106V13.25c0-.413.336-.75.75-.75h3.136c-.032.055-.06.114-.106.16z"
       />
     </svg>
   );

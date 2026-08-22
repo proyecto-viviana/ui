@@ -2,12 +2,16 @@
 
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { comments, normalizedComment, sourceMarkers } from "./attribution-source-markers.mjs";
 
 const root = process.cwd();
 const upstreamRoot = path.join(root, "react-spectrum", "packages");
 const generatorPath = path.join(root, "scripts", "generate-solid-spectrum-icons.mjs");
+const comparisonManifestPath = path.join(root, "apps/comparison/package.json");
+const upstreamPinPath = path.join(root, "scripts/upstream-pin.json");
+const requireFromComparison = createRequire(comparisonManifestPath);
 const headerlessReviewPath = path.join(root, "scripts", "attribution-headerless-reviews.json");
 const compositeReviewPath = path.join(root, "scripts", "attribution-composite-reviews.json");
 const jsonOutput = process.argv.includes("--json");
@@ -45,6 +49,48 @@ function fail(message) {
   process.exit(1);
 }
 
+function readJson(filePath, label) {
+  try {
+    return JSON.parse(readFileSync(filePath, "utf8"));
+  } catch (error) {
+    fail(`${label} is invalid JSON (${error.message})`);
+  }
+}
+
+function loadInstalledS2Package() {
+  const comparisonManifest = readJson(comparisonManifestPath, "apps/comparison/package.json");
+  const upstreamPin = readJson(upstreamPinPath, "scripts/upstream-pin.json");
+  let manifestPath;
+  try {
+    manifestPath = requireFromComparison.resolve("@react-spectrum/s2/package.json");
+  } catch (error) {
+    fail(`the pinned @react-spectrum/s2 package is not installed (${error.message})`);
+  }
+  const installedManifest = readJson(manifestPath, "installed @react-spectrum/s2/package.json");
+  const declaredVersion = comparisonManifest.dependencies?.["@react-spectrum/s2"];
+  const pinnedVersion = upstreamPin.tags?.["@react-spectrum/s2"];
+  if (
+    !declaredVersion ||
+    declaredVersion !== pinnedVersion ||
+    declaredVersion !== installedManifest.version
+  ) {
+    fail(
+      `@react-spectrum/s2 version mismatch: comparison=${declaredVersion ?? "missing"}, pin=${pinnedVersion ?? "missing"}, installed=${installedManifest.version ?? "missing"}`,
+    );
+  }
+  if (installedManifest.license !== "Apache-2.0") {
+    fail(
+      `installed @react-spectrum/s2 has unexpected license ${installedManifest.license ?? "missing"}`,
+    );
+  }
+
+  return {
+    root: path.dirname(manifestPath),
+    version: installedManifest.version,
+    license: installedManifest.license,
+  };
+}
+
 if (unknownArgs.length > 0) {
   fail(`unknown argument${unknownArgs.length === 1 ? "" : "s"}: ${unknownArgs.join(", ")}`);
 }
@@ -58,6 +104,8 @@ if (!existsSync(upstreamRoot)) {
     "the pinned react-spectrum/packages tree is missing; exact source mappings cannot be reported",
   );
 }
+let installedS2Package;
+
 if (!existsSync(headerlessReviewPath)) {
   fail("scripts/attribution-headerless-reviews.json is missing");
 }
@@ -395,6 +443,9 @@ const generatorNotices = new Set(
     .filter(isS2GeneratedComment)
     .map(normalizedComment),
 );
+if (generatorNotices.size > 0) {
+  installedS2Package = loadInstalledS2Package();
+}
 
 const upstreamFiles = sourceFiles(upstreamRoot, /\.(?:ts|tsx|js|jsx|css|svg|json)$/, {
   includeDeclarations: true,
@@ -578,24 +629,58 @@ function safeIdentifier(name) {
   return /^[A-Za-z_]/.test(name) ? name : `Icon${name}`;
 }
 
+function installedS2Input(relativePath) {
+  return `@react-spectrum/s2@${installedS2Package.version}/${relativePath}`;
+}
+
+function generatedInputPaths(content) {
+  return [...content.matchAll(/^\/\/ Generator input: (.+)$/gm)].map((match) => match[1]);
+}
+
+function sameGeneratorInputSet(actual, expected) {
+  const actualSet = new Set(actual);
+  const expectedSet = new Set(expected);
+  return (
+    actualSet.size === actual.length &&
+    expectedSet.size === expected.length &&
+    actualSet.size === expectedSet.size &&
+    [...actualSet].every((value) => expectedSet.has(value))
+  );
+}
+
+function normalizedFallbackAsset(content) {
+  return content
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
+    .trimEnd();
+}
+
 const workflowGeneratedSources = new Map();
 const localWorkflowAssets = path.join(root, "packages/solid-spectrum/src/icon/assets/s2wf-icons");
-if (existsSync(localWorkflowAssets)) {
+if (installedS2Package && existsSync(localWorkflowAssets)) {
   for (const entry of readdirSync(localWorkflowAssets, { withFileTypes: true })) {
     if (!entry.isFile() || !entry.name.endsWith(".svg")) continue;
-    const outputName = `${safeIdentifier(
-      `${pascalFromAssetName(path.basename(entry.name, ".svg")) || path.basename(entry.name, ".svg")}Icon`,
-    )}.tsx`;
-    const upstream = fileAt(`packages/@react-spectrum/s2/s2wf-icons/${entry.name}`);
-    const localContent = readFileSync(path.join(localWorkflowAssets, entry.name), "utf8");
+    const inventoryName = path.basename(entry.name, ".svg");
+    const moduleName = pascalFromAssetName(inventoryName) || inventoryName;
+    const outputName = `${safeIdentifier(`${moduleName}Icon`)}.tsx`;
+    const moduleBase = `icons/${moduleName}`;
+    const expectedInputs = [
+      installedS2Input(`${moduleBase}.mjs`),
+      installedS2Input(`${moduleBase}.cjs`),
+    ];
     workflowGeneratedSources.set(outputName, {
-      upstream: upstream && upstream.content === localContent ? upstream : null,
-      asset: entry.name,
+      expectedInputs,
+      inputsExist: ["mjs", "cjs"].every((extension) =>
+        existsSync(path.join(installedS2Package.root, `${moduleBase}.${extension}`)),
+      ),
     });
   }
 }
 
-function generatedSources(relativeWithinPackage) {
+function generatedSources(relativeWithinPackage, content) {
+  const actualInputs = generatedInputPaths(content);
   const uiMatch = relativeWithinPackage.match(/^src\/icon\/ui-icons\/([^/]+)\.tsx$/);
   if (uiMatch) {
     const wrapper = fileAt(`packages/@react-spectrum/s2/ui-icons/${uiMatch[1]}.tsx`);
@@ -605,29 +690,55 @@ function generatedSources(relativeWithinPackage) {
       (match) => match[1],
     );
     const sources = [wrapper];
+    const expectedInputs = [];
     let verified = imports.length > 0;
     for (const asset of imports) {
       const upstream = fileAt(`packages/@react-spectrum/s2/ui-icons/${asset}`);
       const localAsset = path.join(root, "packages/solid-spectrum/src/icon/assets/ui-icons", asset);
-      if (
-        !upstream ||
-        !existsSync(localAsset) ||
-        readFileSync(localAsset, "utf8") !== upstream.content
-      ) {
+      const moduleBase = `dist/private/${path.basename(asset, ".svg")}`;
+      const packageInputs = [
+        installedS2Input(`${moduleBase}.mjs`),
+        installedS2Input(`${moduleBase}.cjs`),
+      ];
+      const packageFiles = ["mjs", "cjs"].map((extension) =>
+        path.join(installedS2Package.root, `${moduleBase}.${extension}`),
+      );
+      if (packageFiles.every(existsSync)) {
+        expectedInputs.push(...packageInputs);
+      } else if (packageFiles.some(existsSync)) {
         verified = false;
       } else {
-        sources.push(upstream);
+        expectedInputs.push(slash(path.relative(root, localAsset)));
+        if (
+          !upstream ||
+          !existsSync(localAsset) ||
+          normalizedFallbackAsset(readFileSync(localAsset, "utf8")) !==
+            normalizedFallbackAsset(upstream.content)
+        ) {
+          verified = false;
+        } else {
+          sources.push(upstream);
+        }
       }
     }
-    return { sources: unique(sources), verified };
+    return {
+      sources: unique(sources),
+      inputPaths: actualInputs,
+      expectedInputPaths: expectedInputs,
+      verified: verified && sameGeneratorInputSet(actualInputs, expectedInputs),
+    };
   }
 
   const workflowMatch = relativeWithinPackage.match(/^src\/icon\/s2wf-icons\/([^/]+\.tsx)$/);
   if (workflowMatch) {
     const evidence = workflowGeneratedSources.get(workflowMatch[1]);
     return {
-      sources: evidence?.upstream ? [evidence.upstream] : [],
-      verified: Boolean(evidence?.upstream),
+      sources: [],
+      inputPaths: actualInputs,
+      expectedInputPaths: evidence?.expectedInputs ?? [],
+      verified:
+        Boolean(evidence?.inputsExist) &&
+        sameGeneratorInputSet(actualInputs, evidence.expectedInputs),
     };
   }
 
@@ -635,10 +746,16 @@ function generatedSources(relativeWithinPackage) {
     relativeWithinPackage === "src/icon/ui-icons/index.ts" ||
     relativeWithinPackage === "src/icon/s2wf-icons/index.ts"
   ) {
-    return { sources: [], verified: true, multiple: true };
+    return {
+      sources: [],
+      inputPaths: actualInputs,
+      expectedInputPaths: [],
+      verified: actualInputs.length === 0,
+      multiple: true,
+    };
   }
 
-  return { sources: [], verified: false };
+  return { sources: [], inputPaths: actualInputs, expectedInputPaths: [], verified: false };
 }
 
 function classify(localFile, packageEntry) {
@@ -650,8 +767,10 @@ function classify(localFile, packageEntry) {
   const generatedNotice = comments(content).filter(isS2GeneratedComment).map(normalizedComment)[0];
 
   if (generatedNotice) {
-    const evidence = generatedSources(relativeWithinPackage);
     const generatorSupported = generatorNotices.has(generatedNotice);
+    const evidence = generatorSupported
+      ? generatedSources(relativeWithinPackage, content)
+      : { sources: [], inputPaths: generatedInputPaths(content), expectedInputPaths: [] };
     const headerSources = evidence.sources.filter(
       (source) => adobeHeader(source.content).kind !== "none",
     );
@@ -668,13 +787,15 @@ function classify(localFile, packageEntry) {
       localHeader,
       markers,
       upstreamPaths: evidence.sources.map((source) => source.relativePath),
+      generatorInputs: evidence.inputPaths,
+      expectedGeneratorInputs: evidence.expectedInputPaths,
       generatedNotice,
       generatorSupported,
       headerSources: headerSources.map((source) => ({
         path: source.relativePath,
         ...adobeHeader(source.content),
       })),
-      reviewRequired: status !== "generated-exact",
+      reviewRequired: !generatorSupported || !evidence.verified,
     };
   }
 

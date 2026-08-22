@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ArrowUpSend.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ArrowUpSend.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function ArrowUpSendIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       class={className}
     >
       <path
-        d="M14.52734,7.4668l-4.00293-3.99707c-.29395-.29395-.76855-.29199-1.06055,0l-3.99707,3.99707c-.29297.29297-.29297.76758,0,1.06055.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973l2.72363-2.72363v9.94629c0,.41406.33594.75.75.75s.75-.33594.75-.75V5.81616l2.71582,2.71118c.29395.29395.76855.29199,1.06055,0,.29297-.29297.29297-.76855,0-1.06055Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.527 7.467 10.524 3.47c-.294-.294-.768-.292-1.06 0L5.467 7.467c-.293.293-.293.767 0 1.06.146.147.338.22.53.22s.384-.073.53-.22l2.724-2.723v9.946c0 .414.336.75.75.75s.75-.336.75-.75V5.816l2.716 2.711c.294.294.768.292 1.06 0 .293-.293.293-.768 0-1.06"
       />
     </svg>
   );

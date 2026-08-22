@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Contrast.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Contrast.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,12 +20,12 @@ function ContrastIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       class={className}
     >
       <path
-        d="m10,18.7793c-4.8252,0-8.75-3.9248-8.75-8.75S5.1748,1.2793,10,1.2793s8.75,3.9248,8.75,8.75-3.9248,8.75-8.75,8.75Zm0-16c-3.99805,0-7.25,3.25195-7.25,7.25s3.25195,7.25,7.25,7.25,7.25-3.25195,7.25-7.25-3.25195-7.25-7.25-7.25Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10 18.78c-4.825 0-8.75-3.926-8.75-8.75S5.175 1.28 10 1.28s8.75 3.924 8.75 8.75-3.925 8.75-8.75 8.75m0-16c-3.998 0-7.25 3.251-7.25 7.25s3.252 7.25 7.25 7.25 7.25-3.253 7.25-7.25S13.998 2.78 10 2.78"
       />
       <path
-        d="m10.00001,14.38357c0,.65333.61464,1.12149,1.25098.97349,2.43486-.5663,4.24901-2.74982,4.24901-5.35705s-1.81415-4.79075-4.24901-5.35705c-.63635-.148-1.25098.32016-1.25098.97349v8.76713Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10 14.384c0 .653.615 1.121 1.251.973 2.435-.566 4.249-2.75 4.249-5.357s-1.814-4.79-4.249-5.357c-.636-.148-1.251.32-1.251.973z"
       />
     </svg>
   );

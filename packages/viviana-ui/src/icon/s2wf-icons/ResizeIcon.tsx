@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Resize.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Resize.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,19 +20,49 @@ function ResizeIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       class={className}
     >
       <path
-        d="m15.75,18H4.25c-1.24023,0-2.25-1.00977-2.25-2.25V4.25c0-1.24023,1.00977-2.25,2.25-2.25h6.75c.41406,0,.75.33594.75.75s-.33594.75-.75.75h-6.75c-.41309,0-.75.33691-.75.75v11.5c0,.41309.33691.75.75.75h11.5c.41309,0,.75-.33691.75-.75v-6.75c0-.41406.33594-.75.75-.75s.75.33594.75.75v6.75c0,1.24023-1.00977,2.25-2.25,2.25Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M15.75 18H4.25C3.01 18 2 16.99 2 15.75V4.25C2 3.01 3.01 2 4.25 2H11c.414 0 .75.336.75.75s-.336.75-.75.75H4.25c-.413 0-.75.337-.75.75v11.5c0 .413.337.75.75.75h11.5c.413 0 .75-.337.75-.75V9c0-.414.336-.75.75-.75s.75.336.75.75v6.75c0 1.24-1.01 2.25-2.25 2.25"
       />
       <path
-        d="m17.25,2h-3.25c-.41406,0-.75.33594-.75.75s.33594.75.75.75h1.43945l-4.46973,4.46973c-.29297.29297-.29297.76758,0,1.06055.14648.14648.33789.21973.53027.21973s.38379-.07324.53027-.21973l4.46973-4.46973v1.43945c0,.41406.33594.75.75.75s.75-.33594.75-.75v-3.25c0-.41406-.33594-.75-.75-.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M17.25 2H14c-.414 0-.75.336-.75.75s.336.75.75.75h1.44l-4.47 4.47c-.293.293-.293.767 0 1.06.146.147.338.22.53.22s.384-.073.53-.22l4.47-4.47V6c0 .414.336.75.75.75S18 6.414 18 6V2.75c0-.414-.336-.75-.75-.75"
       />
-      <circle cx="12.25" cy="15.25" r=".75" fill="var(--iconPrimary, #222)" />
-      <circle cx="12.25" cy="13" r=".75" fill="var(--iconPrimary, #222)" />
-      <circle cx="12.25" cy="10.75" r=".75" fill="var(--iconPrimary, #222)" />
-      <circle cx="4.75" cy="7.75" r=".75" fill="var(--iconPrimary, #222)" />
-      <circle cx="7" cy="7.75" r=".75" fill="var(--iconPrimary, #222)" />
-      <circle cx="9.25" cy="7.75" r=".75" fill="var(--iconPrimary, #222)" />
+      <circle
+        cx="12.25"
+        cy="15.25"
+        r="0.75"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="12.25"
+        cy="13"
+        r="0.75"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="12.25"
+        cy="10.75"
+        r="0.75"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="4.75"
+        cy="7.75"
+        r="0.75"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="7"
+        cy="7.75"
+        r="0.75"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
+      <circle
+        cx="9.25"
+        cy="7.75"
+        r="0.75"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
     </svg>
   );
 }

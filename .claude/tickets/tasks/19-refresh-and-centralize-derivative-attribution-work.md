@@ -97,6 +97,11 @@ history:
       at: 2026-08-21,
       note: "enforced exact upstream blocks and source paths for all 27 composite mappings",
     }
+  - {
+      state: in-progress,
+      at: 2026-08-21,
+      note: "regenerated and guarded all S2 icon outputs from pinned shipped modules, leaving only 439 unmarked files",
+    }
 ---
 
 The duplicate `docs/license-compliance-plan.md` was removed in `ca8c6b0c`.
@@ -151,19 +156,19 @@ The 2026-08-21 inventory has these results:
 | --------------------------- | ----: |
 | `exact`                     |   223 |
 | `exact-no-header`           |     8 |
-| `generated-exact-no-header` |   396 |
+| `generated-exact`           |    11 |
+| `generated-exact-no-header` |   410 |
 | `generated-multiple`        |     2 |
-| `generated-stale-generator` |    12 |
-| `generated-unresolved`      |    13 |
 | `mirror`                    |   526 |
 | `multiple`                  |    27 |
 | `unmarked`                  |   439 |
 
 The report scanned 1,646 files. It found 223 independent files with one exact
 source. It also found 227 exact-source header contracts, including inherited
-mirror cases. All 227 satisfy the confirmed contract. The report keeps 862
-independent mappings in review. The 526 byte-identical Viviana UI files inherit
-their Solid Spectrum mapping and do not create duplicate review work.
+mirror cases. All 227 satisfy the confirmed contract. The generated groups
+have verified inputs. The report keeps only the 439 unmarked files in review.
+The 526 byte-identical Viviana UI files inherit their Solid Spectrum mapping
+and do not create duplicate review work.
 
 This pass mapped 23 previously header-bearing S2 and flags sources to exact
 upstream files. No file remains in `header-unmapped`. Multiline marker parsing
@@ -251,12 +256,17 @@ which is headerless. The pinned source is also headerless. The review therefore
 records the exact source as headerless and does not copy the superseded 2020
 block. Root and package notices continue to carry Apache-2.0.
 
-The generated-file statuses need care. An exact generated asset can map to an
-upstream SVG that has no source header to copy. Those files stay in review. The
-report also found 12 generated outputs whose notice is not emitted by the
-current icon generator: 11 UI icons and `SearchIcon`. Do not run that generator
-until its inputs and notice are corrected. Another 13 workflow icons have no
-verified byte-identical upstream asset in the pinned tree.
+The icon generator verifies all generated S2 inputs against the pinned installed
+`@react-spectrum/s2@1.6.0` package. It checks the ESM and rendered CommonJS path
+data for all 410 workflow components. Eleven UI wrappers cover 44 variants:
+41 use shipped private modules, and two Arrow variants plus one Gripper variant
+use exact vendored raw SVGs. Every component records its exact `Generator input`
+lines. The report checks those lines against the same inventory.
+
+Solid Spectrum has 423 independently generated components. Viviana UI has 423
+byte-identical mirrors. Two barrels combine generated groups. The read-only
+`vp run guard:generated-icons` command rejects changed, missing, or unexpected
+output, and release readiness runs it before package builds.
 
 The regression fixture proves that a matching filename is not enough. An Adobe
 header without a source stays unmapped. Original Glasselated generated source
@@ -360,6 +370,7 @@ Passed on 2026-08-21:
   ordinary-documentation, reviewed-headerless, reviewed-composite, and
   composite-source-set-drift cases
 - `vp run guard:attribution-headers`
+- `vp run guard:generated-icons`; it verified all 846 owned output files
 - `vp run sync:attribution-headers`; a second run wrote zero files
 - `vp run build:stately`
 - `vp run build:solidaria`
@@ -368,6 +379,7 @@ Passed on 2026-08-21:
 - `vp run build:viviana-ui`
 - `vp test run` for the Solidaria switch, checkbox-group, and radio-group
   suites; 55 tests passed
+- focused Playwright Icons and SearchField certification; 44 tests passed
 - `vp run guard:package-artifacts`, including 441 mapped header references
   across all 252 attributed source files and declaration-only outputs in all
   five Adobe-derived packages
@@ -384,12 +396,10 @@ The tarball check confirms the five Adobe-derived packages contain `LICENSE`,
 
 ## Remaining work
 
-1. Review the 439 unmarked files. No unresolved source markers remain. Separate
-   derivative source from original Proyecto Viviana source.
-2. Review the generated groups and map each asset to an exact upstream input
-   where possible.
-3. Update the icon generator after the generated-file mappings are confirmed.
-4. Extend the guard only where the source classification is deterministic. Do
+1. Review the 439 unmarked files. No unresolved source markers or generated
+   groups remain. Separate derivative source from original Proyecto Viviana
+   source.
+2. Extend the guard only where the source classification is deterministic. Do
    not freeze today's incomplete counts as an accepted baseline.
 
 Do not add an Adobe notice to original Proyecto Viviana source. That action
@@ -402,8 +412,8 @@ would misattribute the source.
 - A file without an exact upstream mapping requires manual review.
 - Original source does not receive a blanket license header.
 
-The icon license and header form are no longer open questions. Change the
-generator only after its exact upstream inputs are mapped.
+The icon license, header form, and generator inputs are no longer open
+questions.
 
 ## Done when
 

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextAlignJustifyLastLeft.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextAlignJustifyLastLeft.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,20 +20,8 @@ function TextAlignJustifyLastLeftIconSvg(props: JSX.SvgSVGAttributes<SVGSVGEleme
       class={className}
     >
       <path
-        d="m16.25,4.5H3.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h12.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m16.25,8.5H3.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h12.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m16.25,12.5H3.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h12.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m11.25,16.5H3.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h7.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.25 4.5H3.75c-.414 0-.75-.336-.75-.75S3.336 3 3.75 3h12.5c.414 0 .75.336.75.75s-.336.75-.75.75M16.25 8.5H3.75c-.414 0-.75-.336-.75-.75S3.336 7 3.75 7h12.5c.414 0 .75.336.75.75s-.336.75-.75.75M16.25 12.5H3.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h12.5c.414 0 .75.336.75.75s-.336.75-.75.75M11.25 16.5h-7.5c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h7.5c.414 0 .75.336.75.75s-.336.75-.75.75"
       />
     </svg>
   );

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/SlowConnectionCircle.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/SlowConnectionCircle.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,24 +20,12 @@ function SlowConnectionCircleIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>)
       class={className}
     >
       <path
-        d="M10,18.75c-4.8252,0-8.75-3.9248-8.75-8.75S5.1748,1.25,10,1.25s8.75,3.9248,8.75,8.75-3.9248,8.75-8.75,8.75ZM10,2.75c-3.99805,0-7.25,3.25195-7.25,7.25s3.25195,7.25,7.25,7.25,7.25-3.25195,7.25-7.25-3.25195-7.25-7.25-7.25Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10 18.75c-4.825 0-8.75-3.925-8.75-8.75S5.175 1.25 10 1.25s8.75 3.925 8.75 8.75-3.925 8.75-8.75 8.75m0-16c-3.998 0-7.25 3.252-7.25 7.25s3.252 7.25 7.25 7.25 7.25-3.252 7.25-7.25S13.998 2.75 10 2.75"
       />
       <path
-        d="M9.75,13.5c-.41406,0-.75-.33594-.75-.75v-3.25c0-.41406.33594-.75.75-.75s.75.33594.75.75v3.25c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
-      />
-      <path
-        d="M6.75,13.5c-.41406,0-.75-.33594-.75-.75v-1c0-.41406.33594-.75.75-.75s.75.33594.75.75v1c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
-      />
-      <path
-        d="M12.75,13.5c-.41406,0-.75-.33594-.75-.75v-5.5c0-.41406.33594-.75.75-.75s.75.33594.75.75v5.5c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M9.75 13.5c-.414 0-.75-.336-.75-.75V9.5c0-.414.336-.75.75-.75s.75.336.75.75v3.25c0 .414-.336.75-.75.75M6.75 13.5c-.414 0-.75-.336-.75-.75v-1c0-.414.336-.75.75-.75s.75.336.75.75v1c0 .414-.336.75-.75.75M12.75 13.5c-.414 0-.75-.336-.75-.75v-5.5c0-.414.336-.75.75-.75s.75.336.75.75v5.5c0 .414-.336.75-.75.75"
       />
     </svg>
   );

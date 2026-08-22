@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Polygon4.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Polygon4.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function Polygon4IconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elemen
       class={className}
     >
       <path
-        d="M15.75,18H4.25c-1.24072,0-2.25-1.00928-2.25-2.25V4.25c0-1.24072,1.00928-2.25,2.25-2.25h11.5c1.24072,0,2.25,1.00928,2.25,2.25v11.5c0,1.24072-1.00928,2.25-2.25,2.25ZM4.25,3.5c-.41357,0-.75.33643-.75.75v11.5c0,.41357.33643.75.75.75h11.5c.41357,0,.75-.33643.75-.75V4.25c0-.41357-.33643-.75-.75-.75H4.25Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M15.75 18H4.25C3.01 18 2 16.99 2 15.75V4.25C2 3.01 3.01 2 4.25 2h11.5C16.99 2 18 3.01 18 4.25v11.5c0 1.24-1.01 2.25-2.25 2.25M4.25 3.5c-.414 0-.75.336-.75.75v11.5c0 .414.336.75.75.75h11.5c.414 0 .75-.336.75-.75V4.25c0-.414-.336-.75-.75-.75z"
       />
     </svg>
   );
