@@ -38,7 +38,10 @@ concurrency:
 jobs:
   certification-gates:
     runs-on: blacksmith-4vcpu-ubuntu-2404
-    timeout-minutes: 45
+    # Two release-qualification runs on 2026-08-20 reached 45 minutes after
+    # every earlier gate passed. Keep the full blocking evidence and give the
+    # serial certified and axe suites enough time to finish.
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
