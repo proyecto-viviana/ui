@@ -15,10 +15,10 @@ export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
   runId: 32485238975,
   jobId: 96780157126,
   completedAt: "2026-08-21T13:45:39Z",
-  total: 2176,
+  total: 2174,
   passed: 2170,
   failed: 0,
-  skipped: 6,
+  skipped: 4,
 };
 
 export function validateCertifiedSuiteEvidence(
