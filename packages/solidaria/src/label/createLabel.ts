@@ -84,7 +84,7 @@ export function createLabel(props: MaybeAccessor<LabelAriaProps>): LabelAria {
 
     return {
       id: labelId,
-      ...(labelElementType === "label" ? { for: id } : {}),
+      ...(labelElementType === "label" ? { htmlFor: id } : {}),
     };
   };
 

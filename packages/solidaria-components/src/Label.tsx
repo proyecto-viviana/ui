@@ -12,7 +12,7 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Label.tsx
 
-import { type JSX, createContext, splitProps } from "solid-js";
+import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
 import { ElementTag } from "./ElementTag";
 import { type ContextValue, type RefLike, type SlotProps, useContextProps } from "./utils";
 
@@ -21,6 +21,11 @@ export interface LabelProps
   /** The HTML element used to render the label. @default 'label' */
   elementType?: string;
   ref?: RefLike<HTMLElement>;
+  /**
+   * The id of the labelled element. Solid's `LabelHTMLAttributes` uses `for`;
+   * parents also pass `htmlFor` (the RAC/DOM name).
+   */
+  htmlFor?: string;
 }
 
 /** Props supplied to a Label by its parent component. */
@@ -31,13 +36,28 @@ export const LabelContext = createContext<ContextValue<LabelProps, HTMLElement>>
  * This is a Solid adaptation of the pinned Label component.
  */
 export function Label(props: LabelProps): JSX.Element {
+  const ctx = useContext(LabelContext);
   const [merged, ref] = useContextProps(props, props.ref, LabelContext);
   const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "slot", "ref"]);
+  const htmlFor = createMemo(() => {
+    const slotted =
+      ctx && typeof ctx === "object" && "slots" in ctx && ctx.slots
+        ? ctx.slots[(props.slot ?? "default") as string]
+        : ctx;
+    const fromContext = slotted as LabelProps | undefined;
+    return (
+      props.htmlFor ??
+      (props as { for?: string }).for ??
+      fromContext?.htmlFor ??
+      (fromContext as { for?: string } | undefined)?.for
+    );
+  });
 
   return (
     <ElementTag
       {...domProps}
       ref={ref}
+      htmlFor={htmlFor()}
       class={local.class ?? "solidaria-Label"}
       tag={local.elementType ?? "label"}
     >

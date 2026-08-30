@@ -565,11 +565,19 @@ export function TextField(props: TextFieldProps): JSX.Element {
     get id() {
       return (textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).id;
     },
+    get htmlFor() {
+      const labelProps = textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+        for?: string;
+      };
+      return inputIdOverride() ?? labelProps.htmlFor ?? labelProps.for;
+    },
     get for() {
-      return (
-        inputIdOverride() ??
-        (textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).for
-      );
+      const labelProps = textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+        for?: string;
+      };
+      return inputIdOverride() ?? labelProps.htmlFor ?? labelProps.for;
     },
   };
   // Resolve the render-prop children ONCE (untracked). Re-invoking it on a
