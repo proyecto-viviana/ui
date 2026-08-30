@@ -879,7 +879,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     useContext(GridListContext) as SpectrumContextValue<GridListProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  // Context first, then local/provider props. Matches ActionMenu: missing local
+  // keys (defaultSelectedKeys, aria-label, …) stay filled from context instead
+  // of being wiped by the component props proxy.
+  const mergedProps = mergeProps(contextProps ?? {}, providerProps);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "items",
@@ -1061,6 +1064,12 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
           getKey={getKey()}
           getTextValue={getTextValue()}
           getDisabled={getDisabled()}
+          selectionMode={
+            headlessProps.selectionMode ??
+            (headlessProps.defaultSelectedKeys != null || headlessProps.selectedKeys != null
+              ? "multiple"
+              : undefined)
+          }
           selectionBehavior={selectionStyle() === "highlight" ? "replace" : "toggle"}
           onSelectionChange={onSelectionChange}
           isLoading={isLoading()}
