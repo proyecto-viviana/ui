@@ -122,7 +122,7 @@ describe("Menu (solid-spectrum)", () => {
       ));
 
       const trigger = screen.getByRole("button", { name: "Layer actions" });
-      expect(trigger).toHaveAttribute("aria-haspopup", "true");
+      expect(trigger).toHaveAttribute("aria-haspopup", "menu");
       expect(trigger).toHaveAttribute("aria-expanded", "false");
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 

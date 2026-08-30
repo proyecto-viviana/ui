@@ -172,7 +172,7 @@ export function createMenuTrigger(
       const type = getProps().type ?? "menu";
       const trigger = getProps().trigger ?? "press";
       const baseProps: MenuTriggerInteractionProps = {
-        "aria-haspopup": type === "menu" ? true : "listbox",
+        "aria-haspopup": type === "menu" ? "menu" : "listbox",
         "aria-expanded": state.isOpen(),
         "aria-controls": state.isOpen() ? menuId : undefined,
         "aria-disabled": getProps().isDisabled || undefined,

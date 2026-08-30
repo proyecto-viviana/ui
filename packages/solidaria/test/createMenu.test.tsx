@@ -1229,7 +1229,7 @@ describe("createMenuTrigger", () => {
   it("links the trigger and menu with the upstream ARIA contract", () => {
     const { button, state, menuProps } = renderTrigger({ type: "menu" });
 
-    expect(button).toHaveAttribute("aria-haspopup", "true");
+    expect(button).toHaveAttribute("aria-haspopup", "menu");
     expect(button).toHaveAttribute("aria-expanded", "false");
     expect(button).not.toHaveAttribute("aria-controls");
     expect(menuProps["aria-labelledby"]).toBe(button.id);
