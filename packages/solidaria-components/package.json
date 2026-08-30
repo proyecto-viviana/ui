@@ -247,6 +247,12 @@
       "import": "./dist/Popover.js",
       "default": "./dist/Popover.js"
     },
+    "./PreviewTrigger": {
+      "types": "./dist/PreviewTrigger.d.ts",
+      "solid": "./dist/PreviewTrigger.jsx",
+      "import": "./dist/PreviewTrigger.js",
+      "default": "./dist/PreviewTrigger.js"
+    },
     "./Pressable": {
       "types": "./dist/Pressable.d.ts",
       "solid": "./dist/Pressable.jsx",
@@ -378,6 +384,12 @@
       "solid": "./dist/ToggleButtonGroup.jsx",
       "import": "./dist/ToggleButtonGroup.js",
       "default": "./dist/ToggleButtonGroup.js"
+    },
+    "./TokenField": {
+      "types": "./dist/TokenField.d.ts",
+      "solid": "./dist/TokenField.jsx",
+      "import": "./dist/TokenField.js",
+      "default": "./dist/TokenField.js"
     },
     "./Toolbar": {
       "types": "./dist/Toolbar.d.ts",

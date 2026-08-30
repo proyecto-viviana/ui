@@ -137,6 +137,19 @@ export {
   type TextAreaProps,
 } from "./TextField";
 
+export {
+  TokenField,
+  TokenInput,
+  Token,
+  TokenFieldContext,
+  type TokenFieldProps,
+  type TokenFieldRenderProps,
+  type TokenInputProps,
+  type TokenInputRenderProps,
+  type TokenProps,
+  type TokenRenderProps,
+} from "./TokenField";
+
 export { Text, TextContext, type TextProps } from "./Text";
 
 export { Link, LinkContext, type LinkProps, type LinkRenderProps } from "./Link";
@@ -153,6 +166,8 @@ export {
 } from "./FieldError";
 
 export { FileTrigger, type FileTriggerProps } from "./FileTrigger";
+
+export { PreviewTrigger, type PreviewTriggerProps } from "./PreviewTrigger";
 
 export {
   DropZone,

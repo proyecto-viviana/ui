@@ -307,6 +307,12 @@
       "import": "./dist/toggle/index.js",
       "default": "./dist/toggle/index.js"
     },
+    "./tokenfield": {
+      "types": "./dist/tokenfield/index.d.ts",
+      "solid": "./dist/tokenfield/index.jsx",
+      "import": "./dist/tokenfield/index.js",
+      "default": "./dist/tokenfield/index.js"
+    },
     "./toolbar": {
       "types": "./dist/toolbar/index.d.ts",
       "solid": "./dist/toolbar/index.jsx",

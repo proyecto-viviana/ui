@@ -59,6 +59,8 @@ export interface PopoverTriggerContextValue {
   triggerProps?: Record<string, unknown>;
   overlayProps?: Record<string, unknown>;
   trigger: string;
+  /** Lets a trigger capture the popover element (PreviewTrigger safe-area). */
+  setOverlayRef?: (el: HTMLElement | null) => void;
 }
 
 export const PopoverTriggerContext = createContext<PopoverTriggerContextValue | null>(null);
