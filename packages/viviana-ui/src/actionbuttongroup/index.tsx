@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionButtonGroup.tsx.
-
 import { type JSX, mergeProps, splitProps } from "solid-js";
 import { Toolbar as HeadlessToolbar } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";

@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Menu.tsx
 
 // Port of packages/@react-spectrum/s2/src/Menu.tsx.
-
 import { createContext } from "solid-js";
 import type { MenuTriggerType } from "@proyecto-viviana/solid-stately";
 import type { S2MenuSize } from "./s2-menu-styles";

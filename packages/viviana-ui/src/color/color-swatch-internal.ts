@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSwatch.tsx
 
 // Port of packages/@react-spectrum/s2/src/ColorSwatch.tsx.
-
 import { createContext, type Accessor, type JSX } from "solid-js";
 import type { Color } from "@proyecto-viviana/solid-stately";
 

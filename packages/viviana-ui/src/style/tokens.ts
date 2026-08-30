@@ -13,6 +13,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/style/tokens.ts
 
 // eslint-disable-next-line rulesdir/imports
+
 import originalTokens from "@adobe/spectrum-tokens/dist/json/variables.json";
 
 // Vite's test runner can expose JSON imports as `{default: ...}` while the

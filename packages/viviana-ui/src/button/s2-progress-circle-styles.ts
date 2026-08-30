@@ -15,6 +15,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ProgressCircle.tsx
 
 import { style } from "../style" with { type: "macro" };
+
 import { staticColor } from "../s2-internal/style-utils" with { type: "macro" };
 import type { StaticColor } from "./types";
 import type { ActionButtonSize } from "./group-context";

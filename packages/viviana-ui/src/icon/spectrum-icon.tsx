@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Icon.tsx
 
 // Port of packages/@react-spectrum/s2/src/Icon.tsx.
-
 import { type Component, type JSX, createContext, splitProps, useContext } from "solid-js";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };

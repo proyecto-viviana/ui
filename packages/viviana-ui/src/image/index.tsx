@@ -3,7 +3,6 @@
 
 // Port of packages/@react-spectrum/s2/src/Image.tsx.
 // Port of packages/@react-spectrum/s2/src/ImageCoordinator.tsx.
-
 import {
   createContext,
   createEffect,

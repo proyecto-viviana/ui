@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ProgressCircle.tsx
 
 // Port of packages/@react-spectrum/s2/src/ProgressCircle.tsx.
-
 import { keyframes } from "../style/style-macro" with { type: "macro" };
 
 const progressCircleRotationAnimation = keyframes(`

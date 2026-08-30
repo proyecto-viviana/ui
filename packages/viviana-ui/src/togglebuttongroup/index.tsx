@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx.
-
 import { type JSX, mergeProps, splitProps } from "solid-js";
 import {
   ToggleButtonGroup as HeadlessToggleButtonGroup,

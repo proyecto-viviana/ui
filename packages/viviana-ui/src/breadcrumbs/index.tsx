@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Breadcrumbs.tsx
 
 // Port of packages/@react-spectrum/s2/src/Breadcrumbs.tsx.
-
 import {
   type Accessor,
   For,

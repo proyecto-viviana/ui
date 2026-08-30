@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/overlays/Overlay.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/overlays/Overlay.tsx.
-
 import { type JSX, splitProps, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { useUNSAFE_PortalContext } from "@proyecto-viviana/solidaria";

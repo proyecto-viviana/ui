@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/AlertDialog.tsx
 
 // Port of packages/@react-spectrum/s2/src/AlertDialog.tsx.
-
 import { type JSX, Show, splitProps } from "solid-js";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { Button, type ButtonVariant } from "../button";

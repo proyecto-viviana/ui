@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/button/FieldButton.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/button/FieldButton.tsx.
-
 import { type JSX, splitProps } from "solid-js";
 import {
   Button as HeadlessButton,

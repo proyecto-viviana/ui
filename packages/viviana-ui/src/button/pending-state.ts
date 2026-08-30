@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Button.tsx
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
-
 import { createEffect, createSignal, onCleanup, type Accessor } from "solid-js";
 
 export function createPendingState(isPending: Accessor<boolean | undefined>) {

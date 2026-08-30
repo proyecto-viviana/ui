@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSwatchPicker.tsx
 
 // Port of packages/@react-spectrum/s2/src/ColorSwatchPicker.tsx.
-
 import { type JSX, createContext, mergeProps, Show, splitProps, useContext } from "solid-js";
 import {
   ColorSwatch as HeadlessColorSwatch,

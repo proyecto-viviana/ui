@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/layout/Grid.tsx
 
 // Port of @react-spectrum source: https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/layout/Grid.tsx.
-
 /**
  * Creates a CSS `fit-content()` value.
  * @param value - The max content size (e.g., '200px', '50%')

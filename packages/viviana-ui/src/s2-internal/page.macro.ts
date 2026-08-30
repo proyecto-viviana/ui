@@ -15,6 +15,7 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/page.macro.ts
 
 import tokens from "@adobe/spectrum-tokens/dist/json/variables.json";
+
 import type { MacroContext } from "@parcel/macros";
 
 function colorToken(token: (typeof tokens)["gray-25"]) {

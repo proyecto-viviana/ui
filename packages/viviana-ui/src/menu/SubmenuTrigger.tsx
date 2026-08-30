@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Menu.tsx
 
 // Port of packages/@react-spectrum/s2/src/Menu.tsx.
-
 import { type JSX } from "solid-js";
 import {
   SubmenuTrigger as HeadlessSubmenuTrigger,

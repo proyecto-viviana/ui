@@ -13,7 +13,6 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ClearButton.tsx
 
 // Port of packages/@react-spectrum/s2/src/ClearButton.tsx.
-
 import { type JSX, splitProps } from "solid-js";
 import {
   Button as HeadlessButton,

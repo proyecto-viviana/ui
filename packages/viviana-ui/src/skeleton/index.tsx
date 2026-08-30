@@ -15,7 +15,6 @@
 
 // Port of packages/@react-spectrum/s2/src/Skeleton.tsx.
 // Port of packages/@react-spectrum/s2/src/SkeletonCollection.tsx.
-
 import {
   createContext,
   createEffect,
