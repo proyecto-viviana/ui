@@ -103,20 +103,21 @@ function createEventHandler<T extends globalThis.KeyboardEvent>(
  * Based on react-aria's useKeyboard but adapted for SolidJS.
  */
 export function createKeyboard(props: CreateKeyboardProps = {}): KeyboardResult {
-  const { shortcuts, allowRepeats = false, allowComposing = false } = props;
-
   let onKeyDown: ((event: globalThis.KeyboardEvent) => void) | undefined;
   let onKeyUp: ((event: globalThis.KeyboardEvent) => void) | undefined;
 
-  if (shortcuts) {
-    const shortcutHandler = createKeyboardShortcutHandler(shortcuts);
+  if (props.shortcuts) {
+    const shortcutHandler = createKeyboardShortcutHandler(props.shortcuts);
     const shortcutOnKeyDown = createEventHandler((event) => {
       if (!nodeContains(event.currentTarget as Node | null, getEventTarget<Node>(event))) {
         event.continuePropagation();
         return;
       }
 
-      if ((event.repeat && !allowRepeats) || (event.isComposing && !allowComposing)) {
+      if (
+        (event.repeat && !(props.allowRepeats ?? false)) ||
+        (event.isComposing && !(props.allowComposing ?? false))
+      ) {
         event.continuePropagation();
         return;
       }
@@ -129,7 +130,10 @@ export function createKeyboard(props: CreateKeyboardProps = {}): KeyboardResult 
         return;
       }
 
-      if ((event.repeat && !allowRepeats) || (event.isComposing && !allowComposing)) {
+      if (
+        (event.repeat && !(props.allowRepeats ?? false)) ||
+        (event.isComposing && !(props.allowComposing ?? false))
+      ) {
         event.continuePropagation();
         return;
       }
