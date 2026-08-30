@@ -691,6 +691,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       "aria-expanded": _ariaExpanded,
       "aria-controls": _ariaControls,
       "aria-disabled": _ariaDisabled,
+      id: _triggerId,
       ...rest
     } = resolvedTriggerProps();
     return rest;
@@ -726,6 +727,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       type="button"
       class={renderProps.class()}
       style={renderProps.style()}
+      id={((domProps as { id?: string }).id ?? resolvedTriggerProps().id) as string | undefined}
       aria-haspopup={resolvedTriggerProps()["aria-haspopup"] as "menu" | "listbox" | undefined}
       aria-expanded={resolvedTriggerProps()["aria-expanded"] as boolean | undefined}
       aria-controls={resolvedTriggerProps()["aria-controls"] as string | undefined}
@@ -771,6 +773,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
 
   const triggerContext = useContext(MenuTriggerContext);
+  const popoverTriggerContext = useContext(PopoverTriggerContext);
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
@@ -1010,7 +1013,11 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       ...rest
     } = triggerContext.menuProps as Record<string, unknown>;
 
-    if (!ariaProps.label && !ariaProps["aria-label"] && !ariaProps["aria-labelledby"]) {
+    if (triggerLabelledBy && popoverTriggerContext?.trigger === "SubmenuTrigger") {
+      // SubmenuTrigger names the nested menu from the trigger item. That
+      // labelledby must win over a Menu-level aria-label.
+      rest["aria-labelledby"] = triggerLabelledBy;
+    } else if (!ariaProps.label && !ariaProps["aria-label"] && !ariaProps["aria-labelledby"]) {
       rest["aria-labelledby"] = triggerLabelledBy;
     }
 

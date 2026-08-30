@@ -813,13 +813,15 @@ export function MenuItem<T>(props: MenuItemProps<T>): JSX.Element {
 }
 
 export function UnavailableMenuItemTrigger(props: UnavailableMenuItemTriggerProps): JSX.Element {
-  const children = () =>
-    (Array.isArray(props.children) ? props.children : [props.children]) as JSX.Element[];
+  const firstChild = () => {
+    const value = props.children;
+    return Array.isArray(value) ? value[0] : value;
+  };
 
   return (
-    <Show when={props.isUnavailable} fallback={children()[0]}>
+    <Show when={props.isUnavailable} fallback={firstChild()}>
       <UnavailableMenuItemContext.Provider value>
-        <HeadlessSubmenuTrigger>{children()}</HeadlessSubmenuTrigger>
+        <HeadlessSubmenuTrigger>{props.children}</HeadlessSubmenuTrigger>
       </UnavailableMenuItemContext.Provider>
     </Show>
   );
