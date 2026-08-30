@@ -462,9 +462,37 @@ export function createSelectableCollection<T = unknown>(
   const onFocusOut = (e: FocusEvent) => {
     const currentTarget = e.currentTarget as Element;
     // Don't set blurred and then focused again if moving focus within the collection.
-    if (!nodeContains(currentTarget, e.relatedTarget as Node)) {
-      manager.setFocused(false);
+    if (nodeContains(currentTarget, e.relatedTarget as Node)) {
+      return;
     }
+
+    // Windowed collections remount the focused option when the slice/spacers
+    // change. Removing that node fires focusout with a null relatedTarget and
+    // would otherwise clear isFocused, so the remounted option never restores
+    // DOM focus (RAC keeps the persisted node, so this path does not run).
+    const focusedKey = manager.focusedKey;
+    if (e.relatedTarget == null && focusedKey != null) {
+      const lostTarget = e.target as Node;
+      requestAnimationFrame(() => {
+        if (manager.focusedKey !== focusedKey) {
+          return;
+        }
+        const item = getItemElement(ref, focusedKey);
+        if (item instanceof HTMLElement && item !== lostTarget) {
+          manager.setFocused(true);
+          if (!shouldUseVirtualFocus) {
+            focusWithoutScrolling(item);
+          }
+          return;
+        }
+        if (lostTarget.isConnected) {
+          manager.setFocused(false);
+        }
+      });
+      return;
+    }
+
+    manager.setFocused(false);
   };
 
   // Whether to auto-focus the first item once the collection updates (used by

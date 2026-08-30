@@ -958,7 +958,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                     </For>
                   ) : (
                     <>
-                      {virtualRange()?.offsetTop ? (
+                      {virtualRange() != null ? (
                         <div
                           role="presentation"
                           aria-hidden="true"
@@ -985,7 +985,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           );
                         }}
                       </For>
-                      {virtualRange()?.offsetBottom ? (
+                      {virtualRange() != null ? (
                         <div
                           role="presentation"
                           aria-hidden="true"
