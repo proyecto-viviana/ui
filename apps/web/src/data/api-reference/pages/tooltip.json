@@ -326,6 +326,17 @@
           "origin": "solid-stately"
         },
         {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the tooltip trigger is disabled.",
+          "origin": "solid-stately"
+        },
+        {
           "name": "defaultOpen",
           "type": "boolean",
           "values": [
@@ -353,17 +364,6 @@
           "required": false,
           "description": "Handler that is called when the overlay's open state changes.",
           "origin": "solid-stately"
-        },
-        {
-          "name": "isDisabled",
-          "type": "boolean",
-          "values": [
-            "false",
-            "true"
-          ],
-          "required": false,
-          "description": "Whether the tooltip should be disabled.",
-          "origin": "solidaria"
         },
         {
           "name": "trigger",
