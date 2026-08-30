@@ -2192,6 +2192,14 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     return rootDir === "rtl" ? "rtl" : "ltr";
   };
 
+  const isItemDisabled = (key: Key | null) => {
+    if (key == null) return false;
+    if (state.isDisabled(key)) return true;
+    // Collection disabledKeys can lag the first registration pass; the item
+    // map is the live source for ColorSwatchPickerItem `isDisabled`.
+    return !!itemMap().get(String(key))?.isDisabled;
+  };
+
   const findNextEnabledKey = (from: Key | null, direction: "next" | "prev") => {
     const collection = state.collection();
     const getAdjacent =
@@ -2202,7 +2210,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
 
     let key = from != null ? getAdjacent(from) : getBoundary();
-    while (key != null && state.isDisabled(key)) {
+    while (key != null && isItemDisabled(key)) {
       key = getAdjacent(key);
     }
 
@@ -2219,7 +2227,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
 
     let key = getBoundary();
-    while (key != null && state.isDisabled(key)) {
+    while (key != null && isItemDisabled(key)) {
       key = getAdjacent(key);
     }
 
@@ -2286,6 +2294,29 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       ? findNextEnabledKey(key, "next")
       : findNextEnabledKey(key, "prev");
 
+  const handleStackKeyDown = (e: KeyboardEvent): boolean => {
+    if ((local.layout ?? "grid") === "grid") return false;
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return false;
+
+    const focusedKey = state.focusedKey();
+    const initialKey =
+      focusedKey ??
+      (e.key === "ArrowUp" ? getBoundaryEnabledKey("prev") : getBoundaryEnabledKey("next"));
+    if (initialKey == null) return false;
+
+    const nextKey =
+      e.key === "ArrowDown"
+        ? findNextEnabledKey(initialKey, "next")
+        : findNextEnabledKey(initialKey, "prev");
+    if (nextKey != null) {
+      state.setFocusedKey(nextKey);
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
+  };
+
   const handleGridKeyDown = (e: KeyboardEvent): boolean => {
     if ((local.layout ?? "grid") !== "grid") return false;
     if (
@@ -2344,8 +2375,17 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   };
 
   const onColorSwatchPickerKeyDown: JSX.EventHandler<HTMLDivElement, KeyboardEvent> = (e) => {
-    if (handleGridKeyDown(e)) {
+    if (handleGridKeyDown(e) || handleStackKeyDown(e)) {
       return;
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      const key = state.focusedKey();
+      if (key != null && !isItemDisabled(key)) {
+        state.setSelectedKeys([key]);
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
     }
     getListBoxKeyDown()?.(e);
   };
