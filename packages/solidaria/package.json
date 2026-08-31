@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/solidaria",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "A 1-1 SolidJS port of React Aria - accessible UI primitives",
   "keywords": [
     "a11y",

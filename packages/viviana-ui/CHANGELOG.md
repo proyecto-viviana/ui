@@ -1,5 +1,87 @@
 # @proyecto-viviana/ui
 
+## 0.6.4
+
+### Patch Changes
+
+- f9b31aa: Add the exact upstream Adobe license header and source path to each reviewed
+  Solid port. Keep the applicable Microsoft Tabster notice for the shadow-tree
+  port. Remove three unused Solidaria state copies; the public exports already
+  use the implementations from Solid Stately.
+  
+  Record exact S2 and flags source paths, and replace their local Adobe blocks
+  with the exact headers from the pinned upstream files.
+  
+  Preserve exact source headers in runtime bundles and declaration-only outputs
+  for all five Adobe-derived packages. Emit declaration maps so type-only source
+  files stay connected to their published output.
+  
+  Replace four ambiguous source notes with exact primary paths, and apply their
+  upstream Adobe headers.
+  
+  Classify the remaining styled-package source markers as four exact source
+  adaptations and two guarded Toast composites.
+  
+  Record Grid State as a reviewed headerless exact mapping after checking its
+  upstream form at the local port date and the pinned revision.
+  
+  Preserve each distinct upstream Adobe block and every exact source path in the
+  27 reviewed composite ports.
+  
+  Regenerate both styled packages' S2 UI and workflow icons from pinned shipped
+  modules. Record exact generator inputs and reject stale, missing, or unexpected
+  generated output before release builds.
+- a2cf9f0: Match the pinned React Aria and React Spectrum menu-trigger behavior.
+  
+  Menu triggers now preserve first-item and last-item focus strategies. They also
+  match press timing, localized long-press instructions, disabled input,
+  context-menu activation and positioning, and the S2 long-press affordance.
+- 5b0f4f6: Wire Meter labels through the shared headless Label context. Styled Meters now
+  use the headless Meter and preserve explicit accessible-name precedence.
+- f952b16: Preserve accurate source maps when the package build removes generated macro
+  CSS imports from JSX output. Package builds now fail if a transform reports a
+  broken source map.
+- 38b18a3: Synchronize the shared style-macro and typography foundation with the pinned React Spectrum S2 1.6 oracle, including the `16` class postfix, prose cascade-layer reservation, conditional font weights, and reusable typography maps.
+- a9bfb8d: Match Spectrum 2 Dialog by copying the RAC description slot onto ContentContext so AlertDialog's Content is the accessible description.
+- 146d06a: Ship each package's local MIT license and its applicable upstream license or
+  notice in the published archive. Correct the project attribution list to
+  include the Spectrum-derived part of `@proyecto-viviana/ui`, and guard all six
+  package manifests and license files before release.
+- 91c7991: Match RAC Select All state transitions. The shared grid state now recognizes an
+  explicit full selection and can deselect a row from the `"all"` selection. The
+  native checkbox also reapplies `indeterminate` after `checked` writes so
+  Chromium keeps `[checked=mixed]`.
+- 18257e5: Match RAC ToastContent: the toast message is `role="alert"` (aria-atomic, hidden until mounted). S2 and Viviana render the headless ToastContent instead of a raw div.
+- ade6e8b: Put text-bearing Viviana chips, selected list options, and field errors on the register's AA ink and fill pairings (`--interactive-fill`, `--text-link`, `--text-secondary`, negative-1000). Stamp `data-disabled` on the RangeSlider root so inactive label/output text is the WCAG 1.4.3 incidental case, matching Slider.
+- Updated dependencies 38b18a3:
+- Updated dependencies facd76e:
+- Updated dependencies f5ae7b1:
+- Updated dependencies 34bc0eb:
+- Updated dependencies 6de6aa8:
+- Updated dependencies f9b31aa:
+- Updated dependencies 67a6659:
+- Updated dependencies 67a6659:
+- Updated dependencies 38b18a3:
+- Updated dependencies 622175f:
+- Updated dependencies a2cf9f0:
+- Updated dependencies 5b0f4f6:
+- Updated dependencies 67a6659:
+- Updated dependencies 03edb8e:
+- Updated dependencies 38b18a3:
+- Updated dependencies a149d53:
+- Updated dependencies 38b18a3:
+- Updated dependencies ab9a432:
+- Updated dependencies 38b18a3:
+- Updated dependencies 146d06a:
+- Updated dependencies 91c7991:
+- Updated dependencies 842cfdc:
+- Updated dependencies 18257e5:
+- Updated dependencies 7db95c5:
+- Updated dependencies 38b18a3:
+  - @proyecto-viviana/solidaria@0.4.4
+  - @proyecto-viviana/solidaria-components@0.5.2
+  - @proyecto-viviana/solid-stately@0.5.2
+
 ## 0.6.3
 
 ### Patch Changes
