@@ -1,5 +1,67 @@
 # @proyecto-viviana/solid-stately
 
+## 0.5.2
+
+### Patch Changes
+
+- f5ae7b1: Record exact upstream source paths for additional Stately ports. Preserve
+  supported Adobe headers and keep verified composite and headerless sources
+  explicit.
+- f9b31aa: Add the exact upstream Adobe license header and source path to each reviewed
+  Solid port. Keep the applicable Microsoft Tabster notice for the shadow-tree
+  port. Remove three unused Solidaria state copies; the public exports already
+  use the implementations from Solid Stately.
+  
+  Record exact S2 and flags source paths, and replace their local Adobe blocks
+  with the exact headers from the pinned upstream files.
+  
+  Preserve exact source headers in runtime bundles and declaration-only outputs
+  for all five Adobe-derived packages. Emit declaration maps so type-only source
+  files stay connected to their published output.
+  
+  Replace four ambiguous source notes with exact primary paths, and apply their
+  upstream Adobe headers.
+  
+  Classify the remaining styled-package source markers as four exact source
+  adaptations and two guarded Toast composites.
+  
+  Record Grid State as a reviewed headerless exact mapping after checking its
+  upstream form at the local port date and the pinned revision.
+  
+  Preserve each distinct upstream Adobe block and every exact source path in the
+  27 reviewed composite ports.
+  
+  Regenerate both styled packages' S2 UI and workflow icons from pinned shipped
+  modules. Record exact generator inputs and reject stale, missing, or unexpected
+  generated output before release builds.
+- 38b18a3: Prevent grid focus recovery from looping indefinitely when the focused row is
+  deleted and all remaining candidate rows are disabled.
+- a2cf9f0: Match the pinned React Aria and React Spectrum menu-trigger behavior.
+  
+  Menu triggers now preserve first-item and last-item focus strategies. They also
+  match press timing, localized long-press instructions, disabled input,
+  context-menu activation and positioning, and the S2 long-press affordance.
+- 67a6659: Focus overlay menus the way React Aria does: `createMenuTrigger` forwards `autoFocus`, `createMenu` focuses the menu after paint, and FocusScope re-collects children so contain/auto-focus still work when the overlay DOM lands after the first paint. Contain restore after `blur()` to body waits a frame, matching RAC `onBlur`, instead of pulling focus back on body `focusin`.
+- 38b18a3: Remove generated declaration artifacts from the source tree so package builds
+  and editors resolve the current TypeScript implementation as the only source of
+  truth.
+- 38b18a3: Match upstream Select multiple-selection behavior by routing option selection
+  through the lower-layer selection manager. Multiple Select options now toggle,
+  including deselecting the final selected option, while single Select continues
+  to replace the current value.
+- 38b18a3: Port React Aria's opt-in Shadow DOM flag and composed-tree overlay isolation, including nested shadow roots, live mutations, and top-layer preservation.
+- 146d06a: Ship each package's local MIT license and its applicable upstream license or
+  notice in the published archive. Correct the project attribution list to
+  include the Spectrum-derived part of `@proyecto-viviana/ui`, and guard all six
+  package manifests and license files before release.
+- 91c7991: Match RAC Select All state transitions. The shared grid state now recognizes an
+  explicit full selection and can deselect a row from the `"all"` selection. The
+  native checkbox also reapplies `indeterminate` after `checked` writes so
+  Chromium keeps `[checked=mixed]`.
+- 38b18a3: Move package build configuration into Vite+'s supported `vite.config.ts` `pack`
+  block so builds emit every declared public entry instead of silently falling
+  back to a single default `index.mjs` bundle.
+
 ## 0.5.1
 
 ### Patch Changes

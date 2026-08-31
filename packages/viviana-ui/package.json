@@ -1,6 +1,6 @@
 {
   "name": "@proyecto-viviana/ui",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "The Viviana design system for SolidJS: accessible, themeable components on a headless ARIA foundation",
   "keywords": [
     "a11y",
