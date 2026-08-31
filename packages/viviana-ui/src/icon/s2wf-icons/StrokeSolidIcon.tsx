@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/StrokeSolid.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/StrokeSolid.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function StrokeSolidIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       class={className}
     >
       <path
-        d="m18,10.75H2c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h16c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M18 10.75H2c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h16c.414 0 .75.336.75.75s-.336.75-.75.75"
       />
     </svg>
   );

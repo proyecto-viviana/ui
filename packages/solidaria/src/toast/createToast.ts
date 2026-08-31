@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/toast/useToast.ts
+
 /**
  * createToast hook for Solidaria
  *
@@ -6,7 +20,8 @@
  * Port of @react-aria/toast useToast.
  */
 
-import { type JSX, createMemo } from "solid-js";
+import { type JSX, createMemo, createRenderEffect, createSignal } from "solid-js";
+import { isServer } from "solid-js/web";
 import { type QueuedToast, type ToastState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 
@@ -73,6 +88,15 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     props.state.close(props.toast.key);
   };
 
+  // RAC useToast hides the alert until after layout so the live region
+  // announces on appear, not during SSR. `useLayoutEffect` → createRenderEffect.
+  const [isVisible, setIsVisible] = createSignal(false);
+  createRenderEffect(() => {
+    if (!isServer) {
+      setIsVisible(true);
+    }
+  });
+
   // Toast container - role="alertdialog" for screen readers
   const toastProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
     role: "alertdialog",
@@ -84,12 +108,17 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
     "data-key": props.toast.key,
   }));
 
-  // Content area with role="alert" for immediate announcement
-  const contentProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
+  // Content area. Match RAC useToast: role="alert" + aria-atomic; aria-hidden
+  // until mounted. Getters keep the object stable so slotted context still
+  // sees the post-layout visible state. role=alert is implicitly assertive —
+  // do not add aria-live (RAC does not).
+  const contentProps: JSX.HTMLAttributes<HTMLElement> = {
     role: "alert",
     "aria-atomic": "true",
-    "aria-live": "assertive",
-  }));
+    get "aria-hidden"() {
+      return isVisible() ? undefined : "true";
+    },
+  };
 
   // Title props
   const titleProps = createMemo<JSX.HTMLAttributes<HTMLElement>>(() => ({
@@ -112,7 +141,7 @@ export function createToast<T>(props: AriaToastProps<T>): ToastAria {
       return toastProps();
     },
     get contentProps() {
-      return contentProps();
+      return contentProps;
     },
     get titleProps() {
       return titleProps();

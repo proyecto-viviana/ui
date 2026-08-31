@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/tooltip/useTooltipTriggerState.ts
+
 /**
  * Manages state for a tooltip trigger.
  * Based on @react-stately/tooltip useTooltipTriggerState.
@@ -19,11 +33,18 @@ export interface TooltipTriggerProps extends OverlayTriggerProps {
   delay?: number;
   /** The delay time in milliseconds for the tooltip to close. */
   closeDelay?: number;
+  /** Whether the tooltip trigger is disabled. */
+  isDisabled?: boolean;
 }
 
 export interface TooltipTriggerState {
   /** Whether the tooltip is currently showing. */
   readonly isOpen: Accessor<boolean>;
+  /**
+   * Whether the tooltip is being shown or hidden without an animation. True while
+   * the global warmup timer is active, i.e. when quickly moving between tooltips.
+   */
+  readonly shouldSkipAnimation: Accessor<boolean>;
   /**
    * Shows the tooltip. By default, the tooltip becomes visible after a delay
    * depending on a global warmup timer. The `immediate` option shows the
@@ -35,7 +56,7 @@ export interface TooltipTriggerState {
 }
 
 // Global state for coordinating tooltips
-let tooltips: Record<string, (immediate?: boolean) => void> = {};
+let tooltips: Record<string, (immediate?: boolean, instant?: boolean) => void> = {};
 let tooltipId = 0;
 let globalWarmedUp = false;
 let globalWarmUpTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -70,6 +91,7 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
 
   const overlayState = createOverlayTriggerState(props);
   const id = `tooltip-${++tooltipId}`;
+  const [shouldSkipAnimation, setShouldSkipAnimation] = createSignal(false);
 
   let closeTimeout: ReturnType<typeof setTimeout> | null = null;
   const [closeCallback, setCloseCallback] = createSignal<() => void>(() => overlayState.close());
@@ -81,19 +103,20 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
   const closeOpenTooltips = () => {
     for (const hideTooltipId in tooltips) {
       if (hideTooltipId !== id) {
-        tooltips[hideTooltipId](true);
+        tooltips[hideTooltipId](true, true);
         delete tooltips[hideTooltipId];
       }
     }
   };
 
-  const showTooltip = () => {
+  const showTooltip = (instant?: boolean) => {
     if (closeTimeout) {
       clearTimeout(closeTimeout);
       closeTimeout = null;
     }
     closeOpenTooltips();
     ensureTooltipEntry();
+    setShouldSkipAnimation(!!instant);
     globalWarmedUp = true;
     overlayState.open();
 
@@ -107,7 +130,8 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
     }
   };
 
-  const hideTooltip = (immediate?: boolean) => {
+  const hideTooltip = (immediate?: boolean, instant?: boolean) => {
+    setShouldSkipAnimation(!!instant);
     if (immediate || closeDelay() <= 0) {
       if (closeTimeout) {
         clearTimeout(closeTimeout);
@@ -149,10 +173,10 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
       globalWarmUpTimeout = setTimeout(() => {
         globalWarmUpTimeout = null;
         globalWarmedUp = true;
-        showTooltip();
+        showTooltip(false);
       }, delay());
     } else if (!overlayState.isOpen()) {
-      showTooltip();
+      showTooltip(true);
     }
   };
 
@@ -171,12 +195,13 @@ export function createTooltipTriggerState(props: TooltipTriggerProps = {}): Tool
 
   return {
     isOpen: overlayState.isOpen,
+    shouldSkipAnimation,
     open: (immediate?: boolean) => {
       if (isServer) return;
       if (!immediate && delay() > 0 && !closeTimeout) {
         warmupTooltip();
       } else {
-        showTooltip();
+        showTooltip(true);
       }
     },
     close: hideTooltip,

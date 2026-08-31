@@ -2,7 +2,7 @@ import type { ElementHandle, Locator, Page } from "@playwright/test";
 
 /**
  * In-page oracle shared by the interaction drivers (D4 event sequence, D5
- * focus/keyboard trails — recertification.md Phase 1).
+ * focus/keyboard trails — see `.claude/current/certification.md`).
  *
  * `comparisonOracleInit` is serialized into the page (it must stay fully
  * self-contained: no imports, no outer closures). It installs
@@ -65,7 +65,7 @@ export interface OracleFocusSnapshot {
 
 /**
  * One in-scope animation reduced to stack-agnostic motion data (D2 motion —
- * recertification.md Phase 1). Everything here is derived from the WAAPI —
+ * `.claude/current/certification.md`). Everything here is derived from the WAAPI —
  * `getAnimations()` + `effect.getKeyframes()` + `getComputedTiming()` — and
  * normalized so React and Solid compare with plain JSON equality:
  * - the CSS `@keyframes` name is a hashed style-macro output that differs

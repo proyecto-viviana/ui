@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { TimeField } from "../src/calendar/TimeField";
 import { TimeClass as Time } from "@proyecto-viviana/solid-stately";

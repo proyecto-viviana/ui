@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createAutocomplete, type AutocompleteAria } from "../src/autocomplete";
 import { FOCUS_EVENT, CLEAR_FOCUS_EVENT } from "../src/selection/constants";

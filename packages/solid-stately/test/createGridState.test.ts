@@ -3,8 +3,8 @@
  * Based on @react-stately/grid tests.
  */
 
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createRoot } from "solid-js";
+import { describe, it, expect, beforeEach, vi } from "vite-plus/test";
+import { createRoot, createSignal } from "solid-js";
 import { createGridState, type GridCollection, type GridNode, type Key } from "../src";
 
 // Helper to create a mock grid collection
@@ -304,6 +304,38 @@ describe("createGridState", () => {
         dispose();
       });
     });
+
+    it("clears focus when a focused row is deleted and every remaining row is disabled", () => {
+      let state!: ReturnType<typeof createGridState>;
+      let setCollection!: (collection: GridCollection<unknown>) => void;
+      let remainingCollection!: GridCollection<unknown>;
+      const dispose = createRoot((dispose) => {
+        const initialCollection = createMockCollection([
+          { key: "row0", cells: [{ key: "cell0" }] },
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+        ]);
+        remainingCollection = createMockCollection([
+          { key: "row0", cells: [{ key: "cell0" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+        ]);
+        const [collection, setCollectionSignal] = createSignal(initialCollection);
+        state = createGridState(() => ({
+          collection: collection(),
+          disabledKeys: ["row0", "row2"],
+        }));
+        setCollection = setCollectionSignal;
+        return dispose;
+      });
+
+      // Let the collection-tracking effect cache the initial collection before
+      // simulating the user-visible deletion.
+      state.setFocusedKey("row1");
+      setCollection(remainingCollection);
+
+      expect(state.focusedKey).toBe(null);
+      dispose();
+    });
   });
 
   // ============================================
@@ -422,6 +454,54 @@ describe("createGridState", () => {
         expect(state.selectedKeys).toBe("all");
         expect(state.isSelected("row1")).toBe(true);
         expect(state.isSelected("row2")).toBe(true);
+        dispose();
+      });
+    });
+
+    it("should recognize a controlled set containing every selectable row as select all", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+          { key: "row3", cells: [{ key: "cell3" }] },
+        ]);
+        const [selectedKeys, setSelectedKeys] = createSignal<"all" | Set<Key>>(
+          new Set(["row1", "row3"]),
+        );
+        const state = createGridState(() => ({
+          collection,
+          selectionMode: "multiple",
+          disabledKeys: ["row2"],
+          selectedKeys: selectedKeys(),
+          onSelectionChange: (keys) => setSelectedKeys(keys),
+        }));
+
+        expect(state.isSelectAll).toBe(true);
+        state.toggleSelectAll();
+        expect(state.selectedKeys).toEqual(new Set());
+        expect(state.isEmpty).toBe(true);
+        expect(state.isSelectAll).toBe(false);
+        dispose();
+      });
+    });
+
+    it("should materialize select all before deselecting one row", () => {
+      createRoot((dispose) => {
+        const collection = createMockCollection([
+          { key: "row1", cells: [{ key: "cell1" }] },
+          { key: "row2", cells: [{ key: "cell2" }] },
+          { key: "row3", cells: [{ key: "cell3" }] },
+        ]);
+        const state = createGridState(() => ({
+          collection,
+          selectionMode: "multiple",
+          defaultSelectedKeys: "all",
+        }));
+
+        state.toggleSelection("row2");
+        expect(state.selectedKeys).toEqual(new Set(["row1", "row3"]));
+        expect(state.isSelectAll).toBe(false);
+        expect(state.isSelected("row2")).toBe(false);
         dispose();
       });
     });

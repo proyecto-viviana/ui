@@ -19,10 +19,11 @@ import { registerTargetSizeDriver } from "../drivers/target-size";
  *    surface has no hover/press affordances).
  * 2. `dialog` close button — full gesture walk on a control inside the open
  *    overlay. The dialog is opened with the keyboard so the input modality
- *    stays non-pointer and focus-visible can be driven; note React Aria's
- *    contained FocusScope restores focus after the focus-visible reset blur,
- *    so hover captures include the restored focus ring — in both panels
- *    alike if the port is faithful.
+ *    stays non-pointer and focus-visible can be driven. Contain restores
+ *    after the focus-visible reset blur; hover then pointermoves, which
+ *    flips RAC modality to pointer without notifying listeners.
+ *    `useFocusRing` re-samples `isFocusVisible()` on the restore focus
+ *    change, so the hover capture does **not** keep the keyboard ring.
  */
 
 const dialogTitle = "Review Changes";
@@ -97,7 +98,7 @@ const surfaceScenario: DriverScenario = {
   // CloseButton, the footer action buttons, AND RAC's injected screen-reader
   // "dismiss sentinel" (tabindex=-1, aria-label="Dismiss"), measured for its
   // hit box. The 24px/44px floors are reported. This pilot rediscovered +
-  // fixed a real port divergence (recertification.md CP8): the port had inlined
+  // fixed a real port divergence: the port had inlined
   // the visually-hidden reset onto the sentinel button (collapsing it to 1x1)
   // where upstream wraps a bare button (~16x6) in a VisuallyHidden div — now
   // mirrored faithfully in Modal.tsx, so the sentinel measures identically.

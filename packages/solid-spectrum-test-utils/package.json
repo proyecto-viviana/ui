@@ -20,7 +20,7 @@
     }
   },
   "scripts": {
-    "build": "rm -rf dist && tsdown",
+    "build": "rm -rf dist && vp pack",
     "dev": "tsup --watch"
   },
   "dependencies": {

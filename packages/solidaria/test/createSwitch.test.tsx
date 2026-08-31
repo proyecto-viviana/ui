@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { createSwitch, createToggleState } from "../src";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";

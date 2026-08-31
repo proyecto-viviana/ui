@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Meter.tsx
+
 /**
  * Meter component for solidaria-components
  *
@@ -10,13 +24,18 @@
 
 import { type JSX, createContext, createMemo, splitProps } from "solid-js";
 import { createMeter, type AriaMeterProps } from "@proyecto-viviana/solidaria";
+import { LabelContext, type LabelProps } from "./Label";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
+  type ContextValue,
+  type RefLike,
   type StyleOrFunction,
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  useContextProps,
+  useSlot,
 } from "./utils";
 
 export interface MeterRenderProps {
@@ -26,16 +45,18 @@ export interface MeterRenderProps {
   valueText: string | undefined;
 }
 
-export interface MeterProps extends AriaMeterProps, SlotProps {
+export interface MeterProps extends Omit<AriaMeterProps, "label">, SlotProps {
   /** The children of the component. A function may be provided to receive render props. */
   children?: RenderChildren<MeterRenderProps>;
   /** The CSS className for the element. */
   class?: ClassNameOrFunction<MeterRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<MeterRenderProps>;
+  /** A ref for the meter element. */
+  ref?: RefLike<HTMLDivElement>;
 }
 
-export const MeterContext = createContext<MeterProps | null>(null);
+export const MeterContext = createContext<ContextValue<MeterProps, HTMLDivElement>>(null);
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -64,11 +85,13 @@ function getSafeRange(min: number, max: number): number {
  * ```
  */
 export function Meter(props: MeterProps): JSX.Element {
-  const [local, ariaProps] = splitProps(props, ["children", "class", "style", "slot"]);
+  const [mergedProps, ref] = useContextProps(props, props.ref, MeterContext);
+  const [local, ariaProps] = splitProps(mergedProps, ["children", "class", "style", "slot", "ref"]);
 
   const value = () => ariaProps.value ?? 0;
   const minValue = () => ariaProps.minValue ?? 0;
   const maxValue = () => ariaProps.maxValue ?? 100;
+  const [labelRef, hasLabel] = useSlot(!ariaProps["aria-label"] && !ariaProps["aria-labelledby"]);
 
   const meterAria = createMeter({
     get value() {
@@ -87,7 +110,7 @@ export function Meter(props: MeterProps): JSX.Element {
       return ariaProps.formatOptions;
     },
     get label() {
-      return ariaProps.label;
+      return hasLabel();
     },
     get "aria-label"() {
       return ariaProps["aria-label"];
@@ -120,7 +143,7 @@ export function Meter(props: MeterProps): JSX.Element {
   const renderProps = useRenderProps(
     {
       get children() {
-        return props.children;
+        return mergedProps.children;
       },
       class: local.class,
       style: local.style,
@@ -130,6 +153,13 @@ export function Meter(props: MeterProps): JSX.Element {
   );
 
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
+  const labelContextValue: LabelProps = {
+    get id() {
+      return meterAria.labelProps.id as string | undefined;
+    },
+    ref: labelRef,
+    elementType: "span",
+  };
 
   return (
     <div
@@ -137,9 +167,12 @@ export function Meter(props: MeterProps): JSX.Element {
       {...meterAria.meterProps}
       class={renderProps.class()}
       style={renderProps.style()}
-      slot={local.slot}
+      slot={local.slot ?? undefined}
+      ref={ref}
     >
-      {renderProps.renderChildren()}
+      <LabelContext.Provider value={labelContextValue}>
+        {renderProps.renderChildren()}
+      </LabelContext.Provider>
     </div>
   );
 }

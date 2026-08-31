@@ -10,7 +10,10 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/style/runtime.ts
+
 import { StyleString } from "./types";
+
 // import {RuntimeStyleFunction, RenderProps} from './types';
 
 // Read process.env without depending on Node global types in the dts build

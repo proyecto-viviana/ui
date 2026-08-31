@@ -2,7 +2,7 @@
  * Tests for createFormValidationState
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
 import {
   createFormValidationState,

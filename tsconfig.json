@@ -22,6 +22,9 @@
     "paths": {
       "@solidaria/*": ["./packages/*/src"],
       "@proyecto-viviana/solid-stately": ["./packages/solid-stately/src/index.ts"],
+      "@proyecto-viviana/solid-stately/private/flags/flags": [
+        "./packages/solid-stately/src/flags/flags.ts"
+      ],
       "@proyecto-viviana/solidaria": ["./packages/solidaria/src/index.ts"],
       "@proyecto-viviana/solidaria-components": ["./packages/solidaria-components/src/index.ts"],
       "@proyecto-viviana/solid-spectrum": ["./packages/solid-spectrum/src/index.ts"],

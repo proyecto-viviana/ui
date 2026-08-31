@@ -1,6 +1,23 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/grid/GridCollection.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/grid/useGridState.ts
+
 /**
  * Grid collection types for Table and GridList components.
- * Based on @react-types/grid.
+ * Ported from:
+ * - packages/react-stately/src/grid/GridCollection.ts
+ * - packages/react-stately/src/grid/useGridState.ts
  */
 
 import type { Key, FocusStrategy, Selection, SelectionBehavior } from "../collections/types";
@@ -145,6 +162,10 @@ export interface GridState<T, C extends GridCollection<T> = GridCollection<T>> {
   readonly disallowEmptySelection: boolean;
   /** The currently selected keys. */
   readonly selectedKeys: "all" | Set<Key>;
+  /** Whether no rows are selected. */
+  readonly isEmpty: boolean;
+  /** Whether every selectable row is selected. */
+  readonly isSelectAll: boolean;
   /** Check if a key is selected. */
   isSelected(key: Key): boolean;
   /** Check if a key is disabled. */

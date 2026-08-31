@@ -2,7 +2,7 @@
  * Tests for Table component.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
@@ -2257,6 +2257,97 @@ describe("Table", () => {
         expect(checkbox).toBeChecked();
       }
     });
+
+    it.each(["controlled", "uncontrolled"] as const)(
+      "keeps Select All synchronized through %s selection transitions",
+      (selectionSource) => {
+        function Demo() {
+          const [selectedKeys, setSelectedKeys] = createSignal<Set<number>>(new Set([1]));
+
+          return (
+            <Table
+              items={testData}
+              columns={testColumns}
+              getKey={(item: any) => item.id}
+              aria-label="Pokemon"
+              selectionMode="multiple"
+              selectedKeys={selectionSource === "controlled" ? selectedKeys() : undefined}
+              defaultSelectedKeys={selectionSource === "uncontrolled" ? new Set([1]) : undefined}
+              onSelectionChange={
+                selectionSource === "controlled"
+                  ? (keys) =>
+                      setSelectedKeys(
+                        keys === "all"
+                          ? new Set(testData.map((item) => item.id))
+                          : new Set(Array.from(keys, Number)),
+                      )
+                  : undefined
+              }
+            >
+              {() => (
+                <>
+                  <TableHeader>
+                    <TableColumn id="select">{() => <TableSelectAllCheckbox />}</TableColumn>
+                    <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    {(item: any) => (
+                      <TableRow id={item.id} item={item}>
+                        {() => (
+                          <>
+                            <TableCell>
+                              {() => <TableSelectionCheckbox rowKey={item.id} />}
+                            </TableCell>
+                            <TableCell>{() => <>{item.name}</>}</TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </>
+              )}
+            </Table>
+          );
+        }
+
+        render(() => <Demo />);
+
+        const selectAll = () =>
+          screen.getByRole("checkbox", { name: "Select All" }) as HTMLInputElement;
+        const rowCheckbox = (key: number) =>
+          screen
+            .getByRole("grid", { name: "Pokemon" })
+            .querySelector<HTMLInputElement>(`tr[data-key="${key}"] input[type="checkbox"]`)!;
+        const expectSelectAll = (checked: boolean, indeterminate: boolean) => {
+          const checkbox = selectAll();
+          expect(checkbox.checked).toBe(checked);
+          expect(checkbox.indeterminate).toBe(indeterminate);
+          if (indeterminate) {
+            expect(checkbox).toHaveAttribute("data-indeterminate", "true");
+          } else {
+            expect(checkbox).not.toHaveAttribute("data-indeterminate");
+          }
+        };
+
+        expectSelectAll(false, true);
+
+        // mixed -> none -> mixed -> all -> mixed
+        fireEvent.click(rowCheckbox(1));
+        expectSelectAll(false, false);
+        fireEvent.click(rowCheckbox(2));
+        expectSelectAll(false, true);
+        fireEvent.click(selectAll());
+        expectSelectAll(true, false);
+        fireEvent.click(rowCheckbox(3));
+        expectSelectAll(false, true);
+
+        // Reduce the mixed set to one row, then prove mixed -> none.
+        fireEvent.click(rowCheckbox(1));
+        expectSelectAll(false, true);
+        fireEvent.click(rowCheckbox(2));
+        expectSelectAll(false, false);
+      },
+    );
 
     it('should prevent Esc from clearing selection if escapeKeyBehavior is "none"', () => {
       const onSelectionChange = vi.fn();

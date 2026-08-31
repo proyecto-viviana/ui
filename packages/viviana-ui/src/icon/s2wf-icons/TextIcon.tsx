@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Text.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Text.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function TextIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m14.58984,2H5.41016c-1.24072,0-2.25,1.00977-2.25,2.25v1.11035c0,.41406.33594.75.75.75s.75-.33594.75-.75v-1.11035c0-.41309.33643-.75.75-.75h3.83984v13h-1.56982c-.41406,0-.75.33594-.75.75s.33594.75.75.75h4.63965c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75h-1.56982V3.5h3.83984c.41357,0,.75.33691.75.75v1.11035c0,.41406.33594.75.75.75s.75-.33594.75-.75v-1.11035c0-1.24023-1.00928-2.25-2.25-2.25Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.59 2H5.41C4.17 2 3.16 3.01 3.16 4.25v1.11c0 .414.336.75.75.75s.75-.336.75-.75V4.25c0-.413.337-.75.75-.75h3.84v13H7.68c-.414 0-.75.336-.75.75s.336.75.75.75h4.64c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-1.57v-13h3.84c.413 0 .75.337.75.75v1.11c0 .414.336.75.75.75s.75-.336.75-.75V4.25c0-1.24-1.01-2.25-2.25-2.25"
       />
     </svg>
   );

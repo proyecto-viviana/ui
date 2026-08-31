@@ -3,7 +3,7 @@
  */
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { Picker, PickerItem } from "../src/picker";
 
 interface SectionItem {

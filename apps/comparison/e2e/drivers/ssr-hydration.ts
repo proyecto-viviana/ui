@@ -1,11 +1,11 @@
 import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
 
 /**
- * Driver D12 — SSR / hydration oracle (recertification.md Phase 1).
+ * Driver D12 — SSR / hydration oracle (see `.claude/current/certification.md`).
  *
  * Unlike D1–D11, D12 is not a Solid-vs-React byte diff: SSR/hydration
  * correctness is an ABSOLUTE self-consistency invariant, so the oracle is the
- * island's own server HTML. The contract (recertification.md): "Astro island
+ * island's own server HTML. The contract in `certification.md`: "Astro island
  * server HTML vs hydrated DOM; stable ids, no mismatch." The driver certifies,
  * for a pre-rendered `client:load` island surface (e.g. `/d12/button`):
  *
@@ -104,6 +104,20 @@ export interface SsrHydrationScenario {
   cases: readonly SsrHydrationCase[];
 }
 
+/**
+ * Astro emits directory index pages (`/d12/button/index.html`). Vite preview
+ * treats a slashless `/d12/button` as a missing file and SPA-falls back to
+ * `/`. A JS-disabled SSR capture cannot recover from that fallback, so D12
+ * routes must request the directory URL.
+ */
+function ssrPageRoute(route: string): string {
+  const url = new URL(route, "http://ssr.local");
+  if (!url.pathname.endsWith("/")) {
+    url.pathname += "/";
+  }
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 async function captureServerSnapshot(
   browser: Browser,
   baseURL: string | undefined,
@@ -114,7 +128,7 @@ async function captureServerSnapshot(
   const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
   try {
     const serverPage = await context.newPage();
-    await serverPage.goto(caseDef.route, { waitUntil: "domcontentloaded" });
+    await serverPage.goto(ssrPageRoute(caseDef.route), { waitUntil: "domcontentloaded" });
     const target = caseDef.target(serverPage);
     const snapshot = await snapshotTarget(target);
     return snapshot;
@@ -152,7 +166,7 @@ export function registerSsrHydrationDriver(scenario: SsrHydrationScenario) {
           consoleIssues.push(`[pageerror] ${err.message}`);
         });
 
-        await page.goto(caseDef.route, { waitUntil: "networkidle" });
+        await page.goto(ssrPageRoute(caseDef.route), { waitUntil: "networkidle" });
         // onMount (client-only, post-hydration) flips this marker on the wrapper.
         await expect(page.locator("[data-comparison-hydrated='true']")).toBeAttached({
           timeout: caseDef.hydrationTimeoutMs ?? defaultHydrationTimeoutMs,

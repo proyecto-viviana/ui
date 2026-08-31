@@ -1,8 +1,65 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorArea.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorField.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorPicker.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorSlider.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorSwatch.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorSwatchPicker.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorThumb.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ColorWheel.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/selection/ListKeyboardDelegate.ts
+
 /**
- * Color components for solidaria-components
+ * Color components for solidaria-components.
  *
  * Pre-wired headless color picker components that combine state + aria hooks.
- * Port of react-aria-components color components.
+ * Based on these pinned React Aria Components sources:
+ * - packages/react-aria-components/src/ColorArea.tsx
+ * - packages/react-aria-components/src/ColorField.tsx
+ * - packages/react-aria-components/src/ColorPicker.tsx
+ * - packages/react-aria-components/src/ColorSlider.tsx
+ * - packages/react-aria-components/src/ColorSwatch.tsx
+ * - packages/react-aria-components/src/ColorSwatchPicker.tsx
+ * - packages/react-aria-components/src/ColorThumb.tsx
+ * - packages/react-aria-components/src/ColorWheel.tsx
+ * - packages/react-aria/src/selection/ListKeyboardDelegate.ts
+ *
+ * This Solid module combines the upstream component files and grid keyboard behavior.
  */
 
 import {
@@ -2135,6 +2192,14 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     return rootDir === "rtl" ? "rtl" : "ltr";
   };
 
+  const isItemDisabled = (key: Key | null) => {
+    if (key == null) return false;
+    if (state.isDisabled(key)) return true;
+    // Collection disabledKeys can lag the first registration pass; the item
+    // map is the live source for ColorSwatchPickerItem `isDisabled`.
+    return !!itemMap().get(String(key))?.isDisabled;
+  };
+
   const findNextEnabledKey = (from: Key | null, direction: "next" | "prev") => {
     const collection = state.collection();
     const getAdjacent =
@@ -2145,7 +2210,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
 
     let key = from != null ? getAdjacent(from) : getBoundary();
-    while (key != null && state.isDisabled(key)) {
+    while (key != null && isItemDisabled(key)) {
       key = getAdjacent(key);
     }
 
@@ -2162,7 +2227,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       direction === "next" ? () => collection.getFirstKey() : () => collection.getLastKey();
 
     let key = getBoundary();
-    while (key != null && state.isDisabled(key)) {
+    while (key != null && isItemDisabled(key)) {
       key = getAdjacent(key);
     }
 
@@ -2229,6 +2294,29 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
       ? findNextEnabledKey(key, "next")
       : findNextEnabledKey(key, "prev");
 
+  const handleStackKeyDown = (e: KeyboardEvent): boolean => {
+    if ((local.layout ?? "grid") === "grid") return false;
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return false;
+
+    const focusedKey = state.focusedKey();
+    const initialKey =
+      focusedKey ??
+      (e.key === "ArrowUp" ? getBoundaryEnabledKey("prev") : getBoundaryEnabledKey("next"));
+    if (initialKey == null) return false;
+
+    const nextKey =
+      e.key === "ArrowDown"
+        ? findNextEnabledKey(initialKey, "next")
+        : findNextEnabledKey(initialKey, "prev");
+    if (nextKey != null) {
+      state.setFocusedKey(nextKey);
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
+  };
+
   const handleGridKeyDown = (e: KeyboardEvent): boolean => {
     if ((local.layout ?? "grid") !== "grid") return false;
     if (
@@ -2265,8 +2353,8 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
         break;
     }
 
-    // Mirror react-aria's grid keyboard delegate: an arrow in grid layout is
-    // always consumed (blocking the linear ListBox handler and page scroll),
+    // Match the pinned ListKeyboardDelegate: an arrow in grid layout is always
+    // consumed (blocking the linear ListBox handler and page scroll),
     // but focus only moves when the delegate yields a next key. With
     // shouldFocusWrap unset (upstream default false) there is no wrap, so arrows
     // stop dead at the grid's edges. Selection is not mutated on arrow — under
@@ -2287,8 +2375,17 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   };
 
   const onColorSwatchPickerKeyDown: JSX.EventHandler<HTMLDivElement, KeyboardEvent> = (e) => {
-    if (handleGridKeyDown(e)) {
+    if (handleGridKeyDown(e) || handleStackKeyDown(e)) {
       return;
+    }
+    if (e.key === "Enter" || e.key === " ") {
+      const key = state.focusedKey();
+      if (key != null && !isItemDisabled(key)) {
+        state.setSelectedKeys([key]);
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
     }
     getListBoxKeyDown()?.(e);
   };

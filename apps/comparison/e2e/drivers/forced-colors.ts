@@ -10,7 +10,7 @@ import {
 import { walkScenario } from "./walk";
 
 /**
- * Driver D9 — forced colors (recertification.md Phase 1).
+ * Driver D9 — forced colors (see `.claude/current/certification.md`).
  *
  * Re-runs the D1 state-matrix capture (`apps/comparison/e2e/drivers/state-matrix.ts`)
  * verbatim — same allowlist, same case × theme × state walk — with

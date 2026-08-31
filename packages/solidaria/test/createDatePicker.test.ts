@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createDatePicker } from "../src/datepicker/createDatePicker";
 import { createDateFieldState, createCalendarState } from "@proyecto-viviana/solid-stately";
 import { CalendarDate } from "@internationalized/date";

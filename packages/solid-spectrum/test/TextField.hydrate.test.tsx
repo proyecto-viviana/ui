@@ -6,7 +6,7 @@
  * not drift during the hydration walk.
  */
 import { hydrate } from "solid-js/web";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { Provider } from "../src/provider";

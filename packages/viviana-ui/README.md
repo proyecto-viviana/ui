@@ -2,10 +2,12 @@
 
 Viviana UI's design-system package, built on Solid.
 
-It builds on `@proyecto-viviana/solid-spectrum`, so Spectrum components are
-available from the root package and from deep component subpaths. It also ships
-Viviana components, tokens, and product patterns such as cards, chips,
-conversation, layout, logo, and timeline pieces.
+Viviana UI and `@proyecto-viviana/solid-spectrum` are sibling styled libraries
+over the same `solid-stately` → `solidaria` → `solidaria-components` foundation.
+Viviana keeps an owner-ratified reskinned source fork of Spectrum's component
+shape, with its own tokens, style-macro build, and product patterns such as
+cards, chips, conversation, layout, logo, and timeline pieces. It does not
+depend on `@proyecto-viviana/solid-spectrum` at runtime.
 
 This package is part of Viviana UI, an unofficial open-source Solid port and
 design-system suite built from Adobe's React Stately, React Aria, React Aria
@@ -115,10 +117,10 @@ import { vivianaMacros } from "@proyecto-viviana/ui/vite";
 export default defineConfig({
   plugins: [vivianaMacros(), solid({ ssr: true })],
   optimizeDeps: {
-    exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
+    exclude: ["@proyecto-viviana/ui"],
   },
   ssr: {
-    noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"],
+    noExternal: ["@proyecto-viviana/ui"],
   },
 });
 ```

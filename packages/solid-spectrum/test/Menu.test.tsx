@@ -1,11 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import type { JSX } from "solid-js";
-import { render, screen, waitFor, within } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { ActionButton } from "../src";
+import { ActionButton, ToggleButton } from "../src";
 import { Button } from "../src/button";
 import { Popover, PopoverTrigger } from "../src/popover";
 import * as MenuSubpath from "../src/Menu";
@@ -133,6 +133,71 @@ describe("Menu (solid-spectrum)", () => {
       expect(trigger).toHaveAttribute("aria-controls", menu.id);
       expect(menu.closest("[data-trigger='MenuTrigger']")).toBeInTheDocument();
       expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+    });
+
+    it("opens an ActionButton context menu only from a context-menu request", async () => {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger trigger="contextMenu">
+          <ActionButton>Layer actions</ActionButton>
+          <Menu aria-label="Layer actions">
+            <MenuItem id="copy" textValue="Copy">
+              Copy
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Layer actions" });
+      expect(trigger).not.toHaveAttribute("aria-haspopup");
+
+      await user.click(trigger);
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+
+      fireEvent.contextMenu(trigger, { clientX: 12, clientY: 18 });
+      expect(await screen.findByRole("menu", { name: "Layer actions" })).toBeInTheDocument();
+    });
+
+    it("shows the upstream hold affordance and uses the long-press key command", async () => {
+      const { container } = render(() => (
+        <MenuTrigger trigger="longPress">
+          <ActionButton>Layer actions</ActionButton>
+          <Menu aria-label="Layer actions">
+            <MenuItem id="copy" textValue="Copy">
+              Copy
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Layer actions" });
+      expect(trigger).toHaveAttribute("aria-describedby");
+      expect(container.querySelector('svg[viewBox="0 0 5 5"]')).toBeInTheDocument();
+
+      trigger.focus();
+      fireEvent.keyDown(trigger, { key: "ArrowDown", altKey: true });
+      expect(await screen.findByRole("menu", { name: "Layer actions" })).toBeInTheDocument();
+    });
+
+    it("provides the same long-press contract to ToggleButton triggers", async () => {
+      const { container } = render(() => (
+        <MenuTrigger trigger="longPress">
+          <ToggleButton>Layer mode</ToggleButton>
+          <Menu aria-label="Layer mode">
+            <MenuItem id="copy" textValue="Copy">
+              Copy
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Layer mode" });
+      expect(trigger).toHaveAttribute("aria-describedby");
+      expect(container.querySelector('svg[viewBox="0 0 5 5"]')).toBeInTheDocument();
+
+      trigger.focus();
+      fireEvent.keyDown(trigger, { key: "ArrowDown", altKey: true });
+      expect(await screen.findByRole("menu", { name: "Layer mode" })).toBeInTheDocument();
     });
 
     it("renders in its own popover when opened from inside a Popover", async () => {

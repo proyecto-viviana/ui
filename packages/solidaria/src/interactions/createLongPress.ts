@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/interactions/useLongPress.ts
+
 /**
  * createLongPress - Handles long press interactions across mouse and touch.
  *
@@ -8,7 +22,7 @@ import { JSX, onCleanup } from "solid-js";
 import { createPress, type PressEvent } from "./createPress";
 import { mergeProps, focusWithoutScrolling, createGlobalListeners } from "../utils";
 import { createDescription } from "../utils/createDescription";
-import { type MaybeAccessor } from "../utils/reactivity";
+import { access, type MaybeAccessor } from "../utils/reactivity";
 
 export interface LongPressEvent {
   /** The type of long press event being fired. */
@@ -55,7 +69,7 @@ export interface LongPressProps {
    * A description for assistive technology users indicating that a long press
    * action is available, e.g. "Long press to open menu".
    */
-  accessibilityDescription?: string;
+  accessibilityDescription?: MaybeAccessor<string | undefined>;
 }
 
 export interface LongPressResult {
@@ -151,7 +165,7 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
   });
 
   const descriptionProps = createDescription(() =>
-    onLongPress && !isDisabledValue(isDisabled) ? accessibilityDescription : undefined,
+    onLongPress && !isDisabledValue(isDisabled) ? access(accessibilityDescription) : undefined,
   );
 
   onCleanup(() => {

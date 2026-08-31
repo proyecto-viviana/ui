@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/selection/useTypeSelect.ts
+
 /**
  * createTypeSelect - Handles typeahead interactions with collections.
  * Based on @react-aria/selection useTypeSelect.
@@ -254,7 +268,8 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       // bubble-phase `onKeyDown` is the live path — and it also covers mid-search
       // Space because its bail check only rejects a *leading* Space. True capture
       // would need a ref-based addEventListener threaded through every consumer;
-      // see the typeahead follow-up in upstream-sync.md.
+      // A spread capture handler is inert in Solid; ticket #128 owns the real
+      // capture-phase binding.
       onKeyDownCapture,
       onKeyDown,
     } as JSX.HTMLAttributes<HTMLElement>,

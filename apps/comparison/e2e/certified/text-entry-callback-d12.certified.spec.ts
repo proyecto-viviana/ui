@@ -10,7 +10,7 @@ const cases = [
 
 const scenarios: SsrHydrationCase[] = cases.map((entry) => ({
   id: entry.id,
-  route: "/d12/text-entry-callback",
+  route: "/d12/text-entry-callback/",
   target: (page) => page.locator(`[data-callback-case='${entry.id}'] label`),
   expectTag: "label",
   expectText: entry.label,

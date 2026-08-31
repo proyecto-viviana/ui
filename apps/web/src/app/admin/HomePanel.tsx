@@ -1,7 +1,7 @@
 import { For, Show } from "solid-js";
 import { type DocsPayload, type GitPayload, reviewQueue } from "./api";
 
-const STATE_ORDER = ["in-progress", "next", "blocked", "open", "done"] as const;
+const STATE_ORDER = ["in-progress", "next", "open", "merged", "verified"] as const;
 
 export function HomePanel(props: {
   data: DocsPayload;
@@ -10,19 +10,19 @@ export function HomePanel(props: {
 }) {
   const counts = () => {
     const out: Record<string, number> = {};
-    for (const task of props.data.tasks) out[task.state] = (out[task.state] ?? 0) + 1;
+    for (const task of props.data.tasks) out[task.status] = (out[task.status] ?? 0) + 1;
     return out;
   };
   const queue = () => (props.git ? reviewQueue(props.data.docs, props.git.docDates) : []);
   const pendingReviews = () => queue().filter((entry) => entry.state !== "ok");
   const activeTasks = () =>
-    props.data.tasks.filter((task) => task.state === "in-progress" || task.state === "next");
+    props.data.tasks.filter((task) => task.status === "in-progress" || task.status === "next");
 
   return (
     <div class="panel home-panel">
       <Show
         when={props.data.problems.length > 0}
-        fallback={<div class="tracking-ok">tracking consistent — docs:check green</div>}
+        fallback={<div class="tracking-ok">ticket board and stable docs are consistent</div>}
       >
         <section class="card problems-strip">
           <h2>Tracking problems ({props.data.problems.length})</h2>
@@ -31,7 +31,7 @@ export function HomePanel(props: {
               {(problem) => (
                 <li>
                   <button class="link" onClick={() => props.onOpenDoc(problem.doc)}>
-                    {problem.doc.replace(".claude/current/", "")}
+                    {problem.doc.replace(/^\.claude\/(current|tickets)\//, "")}
                   </button>{" "}
                   — {problem.message}
                 </li>
@@ -50,6 +50,10 @@ export function HomePanel(props: {
           )}
         </For>
         <div class="card stat">
+          <div class="stat-num">{props.data.tasks.filter((task) => task.blocked).length}</div>
+          <div class="stat-label">blocked</div>
+        </div>
+        <div class="card stat">
           <div class="stat-num">{pendingReviews().length}</div>
           <div class="stat-label">docs to review</div>
         </div>
@@ -62,12 +66,15 @@ export function HomePanel(props: {
             <For each={activeTasks()}>
               {(task) => (
                 <li>
-                  <span class={`state-dot state-${task.state}`} />
-                  <button class="link" onClick={() => props.onOpenDoc(task.doc)}>
+                  <span class={`state-dot state-${task.status}`} />
+                  <button class="link" onClick={() => props.onOpenDoc(task.path)}>
                     {task.title}
                   </button>
-                  <Show when={task.roadmap}>
-                    <span class="chip">{task.roadmap}</span>
+                  <Show when={task.parent !== null}>
+                    <span class="chip">parent #{task.parent}</span>
+                  </Show>
+                  <Show when={task.blocked}>
+                    <span class="chip">blocked</span>
                   </Show>
                 </li>
               )}

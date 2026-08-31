@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { createSignal } from "solid-js";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { CollectionBuilder } from "@proyecto-viviana/solidaria-components";
 import { createIcon } from "../src/icon";

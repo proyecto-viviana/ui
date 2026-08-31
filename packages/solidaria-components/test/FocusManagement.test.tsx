@@ -5,7 +5,7 @@
  * for Menu, Select, and ComboBox components when used with triggers.
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Menu, MenuItem, MenuTrigger, MenuButton } from "../src/Menu";
 import { Select, SelectTrigger, SelectValue, SelectListBox, SelectOption } from "../src/Select";

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ArrowHeadTool.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ArrowHeadTool.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function ArrowHeadToolIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.E
       class={className}
     >
       <path
-        d="m17.25,2h-4.25c-.41406,0-.75.33594-.75.75s.33594.75.75.75h2.43945L2.34521,16.59424c-.29297.29297-.29297.76758,0,1.06055.14648.14648.33838.21973.53027.21973s.38379-.07324.53027-.21973l13.09424-13.09424v2.43945c0,.41406.33594.75.75.75s.75-.33594.75-.75V2.75c0-.41406-.33594-.75-.75-.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M17.25 2H13c-.414 0-.75.336-.75.75s.336.75.75.75h2.44L2.344 16.594c-.293.293-.293.768 0 1.06.147.147.339.22.53.22s.384-.073.53-.22L16.5 4.562V7c0 .414.336.75.75.75S18 7.414 18 7V2.75c0-.414-.336-.75-.75-.75"
       />
     </svg>
   );

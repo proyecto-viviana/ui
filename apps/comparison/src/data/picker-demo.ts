@@ -13,7 +13,7 @@ export const pickerDirectionOptions = ["bottom", "top"] as const;
 export const pickerAlignOptions = ["start", "end"] as const;
 export const pickerValidationBehaviorOptions = ["native", "aria"] as const;
 export const pickerLoadingStateOptions = ["idle", "loading", "loadingMore"] as const;
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // Picker fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
 // can re-run D1/D5 mirrored, matching the button/accordion locale wiring.
 export const pickerDemoLocaleOptions = ["en-US", "ar-AE"] as const;

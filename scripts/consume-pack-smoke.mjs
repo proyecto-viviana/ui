@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 // UC-00 out-of-workspace install smoke.
 //
-// Proves a real client can install `@proyecto-viviana/ui` from packed tarballs —
-// outside this workspace, with no pnpm symlinks — and build it for both the
-// browser (DOM) and the server (SSR) with the same vite-plugin-solid setup a
-// TanStack Start / solid-start app uses. The render assertion proves the
-// component's macro-expanded style classes survived the publish round-trip.
+// Proves a real client can install the public packages from packed tarballs.
+// The client lives outside this workspace and has no pnpm workspace symlinks.
+// It builds `@proyecto-viviana/ui` and `@proyecto-viviana/kumo` for the browser
+// and server with the same vite-plugin-solid setup that the web app uses.
 //
 // Prereq: run `vp run pack:local-chain` first (or `vp run ui:smoke`, which chains
 // both). This script consumes the tarballs that produced; it does not build them.
@@ -19,11 +18,12 @@ const repoRoot = resolve(scriptDir, "..");
 const packsDir = resolve(process.env.VIVIANA_PACK_OUT ?? "/tmp/viviana-ui-packs-chain");
 const consumerDir = resolve(process.env.VIVIANA_CONSUMER_DIR ?? "/tmp/viviana-ui-consume-smoke");
 
-// Same closure, same order as pack-local-chain.mjs.
+// Same public package set and order as pack-local-chain.mjs.
 const packages = [
   { name: "@proyecto-viviana/solid-stately", dir: "packages/solid-stately" },
   { name: "@proyecto-viviana/solidaria", dir: "packages/solidaria" },
   { name: "@proyecto-viviana/solidaria-components", dir: "packages/solidaria-components" },
+  { name: "@proyecto-viviana/kumo", dir: "packages/kumo" },
   { name: "@proyecto-viviana/solid-spectrum", dir: "packages/solid-spectrum" },
   { name: "@proyecto-viviana/ui", dir: "packages/viviana-ui" },
 ];
@@ -95,6 +95,7 @@ writeFileSync(
       private: true,
       type: "module",
       dependencies: {
+        "@proyecto-viviana/kumo": fileSpec("@proyecto-viviana/kumo"),
         "@proyecto-viviana/ui": fileSpec("@proyecto-viviana/ui"),
         "solid-js": "^1.9.0",
       },
@@ -122,6 +123,7 @@ import solid from "vite-plugin-solid";
 // SSR" wiring — the same shape apps/web uses for workspace sources.
 const pkgs = [
   "@proyecto-viviana/ui",
+  "@proyecto-viviana/kumo",
   "@proyecto-viviana/solid-spectrum",
   "@proyecto-viviana/solidaria-components",
   "@proyecto-viviana/solidaria",
@@ -151,9 +153,11 @@ export default defineConfig({
 
 // Deep subpath import (not the root barrel) — also exercises subpath resolution.
 const app = `import { Button } from "@proyecto-viviana/ui/Button";
+import { Button as KumoButton } from "@proyecto-viviana/kumo/components/button";
+import "@proyecto-viviana/kumo/styles.css";
 
 export function App() {
-  return <Button>Hello from packed ui</Button>;
+  return <><Button>Hello from packed ui</Button><KumoButton>Hello from packed Kumo</KumoButton></>;
 }
 `;
 writeFileSync(join(consumerDir, "src", "App.jsx"), app);
@@ -217,6 +221,10 @@ if (!/<button/i.test(html)) problems.push("rendered HTML has no <button> element
 if (!/class="/.test(html))
   problems.push("rendered <button> carries no class attribute (styles lost)");
 if (!/Hello from packed ui/.test(html)) problems.push("rendered HTML is missing the button label");
+if (!/data-kumo-component="Button"/.test(html))
+  problems.push("rendered HTML has no packed Kumo button marker");
+if (!/Hello from packed Kumo/.test(html))
+  problems.push("rendered HTML is missing the Kumo button label");
 
 if (problems.length > 0) {
   process.stderr.write(`\nSMOKE FAILED:\n  - ${problems.join("\n  - ")}\n`);
@@ -237,25 +245,33 @@ if (problems.length > 0) {
 //   2. Node's own resolver (import.meta.resolve) honors every JS subpath
 //      specifier — catches an export-map entry Node rejects (ERR_PACKAGE_*).
 process.stdout.write(`\n=== Export-map completeness + resolution ===\n`);
-const installedDir = join(consumerDir, "node_modules", "@proyecto-viviana", "ui");
-const installedPkg = readJson(join(installedDir, "package.json"));
+const installedPackages = ["ui", "kumo"].map((directory) => {
+  const installedDir = join(consumerDir, "node_modules", "@proyecto-viviana", directory);
+  return {
+    name: `@proyecto-viviana/${directory}`,
+    installedDir,
+    manifest: readJson(join(installedDir, "package.json")),
+  };
+});
 
 // (1) Every referenced file exists on disk.
 const missingFiles = [];
 let fileRefCount = 0;
-const checkFileRef = (subpath, condition, relPath) => {
+const checkFileRef = (pkg, subpath, condition, relPath) => {
   if (typeof relPath !== "string") return;
   fileRefCount += 1;
-  if (!existsSync(join(installedDir, relPath))) {
-    missingFiles.push(`${subpath} [${condition}] -> ${relPath}`);
+  if (!existsSync(join(pkg.installedDir, relPath))) {
+    missingFiles.push(`${pkg.name} ${subpath} [${condition}] -> ${relPath}`);
   }
 };
-for (const [subpath, target] of Object.entries(installedPkg.exports)) {
-  if (typeof target === "string") {
-    checkFileRef(subpath, "default", target);
-  } else if (target && typeof target === "object") {
-    for (const [condition, relPath] of Object.entries(target)) {
-      checkFileRef(subpath, condition, relPath);
+for (const pkg of installedPackages) {
+  for (const [subpath, target] of Object.entries(pkg.manifest.exports)) {
+    if (typeof target === "string") {
+      checkFileRef(pkg, subpath, "default", target);
+    } else if (target && typeof target === "object") {
+      for (const [condition, relPath] of Object.entries(target)) {
+        checkFileRef(pkg, subpath, condition, relPath);
+      }
     }
   }
 }
@@ -270,17 +286,19 @@ if (missingFiles.length > 0) {
 }
 
 // (2) Node resolves every JS subpath specifier (the import condition).
-const jsSubpaths = Object.entries(installedPkg.exports)
-  .filter(
-    ([key, value]) =>
-      key !== "./package.json" &&
-      value &&
-      typeof value === "object" &&
-      typeof value.import === "string" &&
-      value.import.endsWith(".js"),
-  )
-  .map(([key]) => key.replace(/^\.\/?/, ""))
-  .map((sub) => (sub === "" ? "@proyecto-viviana/ui" : `@proyecto-viviana/ui/${sub}`));
+const jsSubpaths = installedPackages.flatMap((pkg) =>
+  Object.entries(pkg.manifest.exports)
+    .filter(
+      ([key, value]) =>
+        key !== "./package.json" &&
+        value &&
+        typeof value === "object" &&
+        typeof value.import === "string" &&
+        value.import.endsWith(".js"),
+    )
+    .map(([key]) => key.replace(/^\.\/?/, ""))
+    .map((subpath) => (subpath === "" ? pkg.name : `${pkg.name}/${subpath}`)),
+);
 
 const probeSource = `import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -328,7 +346,11 @@ const walk = (subpath, target) => {
     for (const [, v] of Object.entries(target)) walk(subpath, v);
   }
 };
-for (const [subpath, target] of Object.entries(installedPkg.exports)) walk(subpath, target);
+for (const pkg of installedPackages) {
+  for (const [subpath, target] of Object.entries(pkg.manifest.exports)) {
+    walk(`${pkg.name} ${subpath}`, target);
+  }
+}
 if (srcTargets.length > 0) {
   cssProblems.push(
     `export map points into src/ (incomplete build sources):\n    ${srcTargets.join("\n    ")}`,
@@ -336,7 +358,9 @@ if (srcTargets.length > 0) {
 }
 
 // The dropped sidecar (UC-02): style.css must not ship.
-if (existsSync(join(installedDir, "dist", "style.css"))) {
+const uiDir = installedPackages.find((pkg) => pkg.name === "@proyecto-viviana/ui").installedDir;
+const kumoDir = installedPackages.find((pkg) => pkg.name === "@proyecto-viviana/kumo").installedDir;
+if (existsSync(join(uiDir, "dist", "style.css"))) {
   cssProblems.push(
     "dist/style.css sidecar is still shipped (should be dropped as redundant cruft)",
   );
@@ -349,15 +373,24 @@ if (existsSync(join(installedDir, "dist", "style.css"))) {
 // sheet). That script is gone: the macro now emits one flat atomic sheet
 // directly, so those markers are absent by design and checking for them tested
 // the implementation, not the contract. Assert the contract instead.
-const stylesCss = readFileSync(join(installedDir, "dist", "styles.css"), "utf8");
+const styleSheets = {
+  ui: readFileSync(join(uiDir, "dist", "styles.css"), "utf8"),
+  kumo: readFileSync(join(kumoDir, "dist", "styles.css"), "utf8"),
+};
 
 // (a) Self-contained: no bare @import survives. A nested bare specifier is
 //     followed when the sheet is pulled into a CSS graph but silently dropped
 //     when it is loaded as a URL asset (Vite `?url`, <link rel=stylesheet>) —
 //     which would ship every component unstyled.
-const bareImports = [...stylesCss.matchAll(/@import\s+(?:url\()?["']([^"']+)["']/g)]
-  .map((m) => m[1])
-  .filter((spec) => !spec.startsWith(".") && !spec.startsWith("/") && !spec.startsWith("http"));
+const bareImports = Object.entries(styleSheets).flatMap(([name, sheet]) =>
+  [...sheet.matchAll(/@import\s+(?:url\()?["']([^"']+)["']/g)]
+    .map((match) => match[1])
+    .filter(
+      (specifier) =>
+        !specifier.startsWith(".") && !specifier.startsWith("/") && !specifier.startsWith("http"),
+    )
+    .map((specifier) => `${name}: ${specifier}`),
+);
 if (bareImports.length > 0) {
   cssProblems.push(`dist/styles.css keeps unresolvable bare @import(s): ${bareImports.join(", ")}`);
 }
@@ -369,16 +402,18 @@ const renderedClasses = [...html.matchAll(/class="([^"]*)"/g)]
   .flatMap((m) => m[1].split(/\s+/))
   .filter(Boolean);
 const uniqueClasses = [...new Set(renderedClasses)];
-const unstyled = uniqueClasses.filter(
-  (cls) =>
-    !new RegExp(`\\.${cls.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&")}[\\s,{:.>~+]`).test(stylesCss),
-);
+const unstyled = uniqueClasses.filter((className) => {
+  const sheet = className.startsWith("pv-kumo-") ? styleSheets.kumo : styleSheets.ui;
+  return !new RegExp(`\\.${className.replace(/[-\\^$*+?.()|[\]{}]/g, "\\$&")}[\\s,{:.>~+]`).test(
+    sheet,
+  );
+});
 process.stdout.write(
   `rendered classes backed by a rule: ${uniqueClasses.length - unstyled.length}/${uniqueClasses.length}\n`,
 );
 if (unstyled.length > 0) {
   cssProblems.push(
-    `dist/styles.css has no rule for ${unstyled.length} rendered class(es): ${unstyled.slice(0, 8).join(", ")}`,
+    `the owning dist/styles.css has no rule for ${unstyled.length} rendered class(es): ${unstyled.slice(0, 8).join(", ")}`,
   );
 }
 
@@ -391,7 +426,7 @@ process.stdout.write(
 );
 
 process.stdout.write(
-  `\n✓ Smoke passed: @proyecto-viviana/ui installed from tarballs out-of-workspace, built DOM + SSR, ` +
-    `rendered a styled <button>; all ${fileRefCount} export-map files exist, all ${jsSubpaths.length} JS subpaths resolve, ` +
-    `and the CSS export contract holds (complete dist sheets, no src/ leak).\n`,
+  `\n✓ Smoke passed: the public package set installed from tarballs out-of-workspace; ` +
+    `Viviana and Kumo built and rendered in DOM + SSR; all ${fileRefCount} checked export-map files exist, ` +
+    `all ${jsSubpaths.length} checked JS subpaths resolve, and both CSS export contracts hold.\n`,
 );

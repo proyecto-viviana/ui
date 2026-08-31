@@ -74,9 +74,8 @@ const tabsScenario: DriverScenario = {
   },
   // D2: selecting an unselected tab slides the selection indicator
   // (`transition: [translate,width,height]`, 200ms, `out`) and cross-fades the
-  // tab labels' color (150ms). Certified green as of CP9.47, which closed the
-  // two port gaps that used to keep the metadata red (see
-  // `.claude/current/recertification.md` D2 findings T-A/T-B):
+  // tab labels' color (150ms). The following two fixes closed the former D2
+  // metadata differences:
   //   T-A — the indicator now FLIPs. `SharedElement` was storing its geometry
   //     snapshot in a component-disposal `onCleanup`, but per-tab indicators are
   //     never disposed on selection change (only their `isVisible` flips), so the

@@ -409,6 +409,13 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "trigger",
+          "type": "string",
+          "required": false,
+          "description": "The name of the component that triggered the popover.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "defaultOpen",
           "type": "boolean",
           "values": [
@@ -463,13 +470,6 @@
           "type": "number",
           "required": false,
           "description": "The max height of the popover.",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "trigger",
-          "type": "string",
-          "required": false,
-          "description": "The name of the component that triggered the popover.",
           "origin": "solidaria-components"
         },
         {

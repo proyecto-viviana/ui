@@ -1,3 +1,8 @@
+/**
+ * Local Solid context shared by the date-range picker fields.
+ * The owning DatePicker module records the upstream component source.
+ */
+
 import { createContext, useContext } from "solid-js";
 import { type createDateRangePicker } from "@proyecto-viviana/solidaria";
 import {

@@ -6,4 +6,6 @@ export {
   createMenuTrigger,
   type AriaMenuTriggerProps,
   type MenuTriggerAria,
+  type MenuTriggerMenuProps,
+  type MenuTriggerAutoFocus,
 } from "./createMenuTrigger";

@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { SegmentedControl, SegmentedControlContext, SegmentedControlItem } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";

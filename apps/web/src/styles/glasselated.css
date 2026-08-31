@@ -225,7 +225,9 @@
   letter-spacing: var(--type-micro-track);
   font-family: var(--font-mono);
   text-transform: uppercase;
-  color: var(--text-tertiary);
+  /* `--text-tertiary` is a ramp rung, not AA-pinned (light 2.36:1 on the
+     demo surface, dark 3.82:1). Secondary ink is the AA role. */
+  color: var(--text-secondary);
 }
 
 [data-glasselated] .gls-row {
@@ -269,7 +271,7 @@
   font: var(--type-micro);
   letter-spacing: var(--type-micro-track);
   font-family: var(--font-mono);
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   text-transform: uppercase;
 }
 
@@ -305,7 +307,7 @@
   letter-spacing: var(--type-micro-track);
   font-family: var(--font-mono);
   text-transform: uppercase;
-  color: var(--text-tertiary);
+  color: var(--text-secondary);
   padding: 0 4px;
 }
 

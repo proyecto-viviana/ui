@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/TextField.tsx
+
 /**
  * TextField component for solidaria-components
  *
@@ -42,6 +56,7 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
+import { LabelContext, type LabelProps } from "./Label";
 
 export interface TextFieldRenderProps {
   /** Whether the text field is disabled. */
@@ -86,7 +101,6 @@ export interface TextFieldContextValue {
 }
 
 export const TextFieldContext = createContext<TextFieldContextValue | null>(null);
-export const LabelContext = TextFieldContext;
 export const InputContext = TextFieldContext;
 export const TextAreaContext = TextFieldContext;
 export const FieldInputContext = TextFieldContext;
@@ -139,53 +153,6 @@ function withFormValidationBehavior(
       return undefined;
     },
   });
-}
-
-export interface LabelProps extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
-  children?: JSX.Element;
-}
-
-/**
- * A label element that automatically wires up to the parent TextField context.
- * This enables the proper htmlFor/id relationship between label and input.
- */
-export function Label(props: LabelProps): JSX.Element {
-  const context = useContext(TextFieldContext);
-
-  const localDOMProps = () => {
-    const result: Record<string, unknown> = {};
-    const propsRecord = props as Record<string, unknown>;
-
-    for (const key in propsRecord) {
-      if (key !== "children") {
-        result[key] = propsRecord[key];
-      }
-    }
-    return result;
-  };
-
-  // Merge context labelProps with local props (local props take precedence)
-  const mergedProps = () => {
-    const localProps = localDOMProps();
-    if (context) {
-      const { ref: _ref, ...contextLabelProps } = (context.labelProps ?? {}) as Record<
-        string,
-        unknown
-      >;
-      const merged = {
-        ...contextLabelProps,
-        ...(context.inputId ? { for: context.inputId } : {}),
-        ...localProps,
-      } as Record<string, unknown>;
-      if (merged.class == null) {
-        merged.class = "solidaria-Label";
-      }
-      return merged;
-    }
-    return localProps.class == null ? { ...localProps, class: "solidaria-Label" } : localProps;
-  };
-
-  return <label {...mergedProps()}>{props.children}</label>;
 }
 
 export interface InputProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "children"> {}
@@ -594,6 +561,25 @@ export function TextField(props: TextFieldProps): JSX.Element {
       setInputIdOverride(id);
     },
   };
+  const labelContextValue: LabelProps = {
+    get id() {
+      return (textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).id;
+    },
+    get htmlFor() {
+      const labelProps = textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+        for?: string;
+      };
+      return inputIdOverride() ?? labelProps.htmlFor ?? labelProps.for;
+    },
+    get for() {
+      const labelProps = textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+        for?: string;
+      };
+      return inputIdOverride() ?? labelProps.htmlFor ?? labelProps.for;
+    },
+  };
   // Resolve the render-prop children ONCE (untracked). Re-invoking it on a
   // reactive update re-clones its templates; if that lands mid-hydration it
   // throws a Hydration Mismatch (worst in dev, where slow unbundled modules widen
@@ -647,15 +633,19 @@ export function TextField(props: TextFieldProps): JSX.Element {
 
   return (
     <FieldErrorContext.Provider value={fieldErrorContext}>
-      <TextFieldContext.Provider value={contextValue}>
-        {local.render ? (
-          local.render(customRootProps(), renderValues())
-        ) : (
-          <div {...rootProps()}>
-            <FieldChildrenSlotted />
-          </div>
-        )}
-      </TextFieldContext.Provider>
+      <LabelContext.Provider value={labelContextValue}>
+        <TextFieldContext.Provider value={contextValue}>
+          {local.render ? (
+            local.render(customRootProps(), renderValues())
+          ) : (
+            <div {...rootProps()}>
+              <FieldChildrenSlotted />
+            </div>
+          )}
+        </TextFieldContext.Provider>
+      </LabelContext.Provider>
     </FieldErrorContext.Provider>
   );
 }
+
+export { Label, LabelContext, type LabelProps } from "./Label";

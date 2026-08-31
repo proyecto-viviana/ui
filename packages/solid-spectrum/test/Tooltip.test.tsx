@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { Tooltip, TooltipTrigger, SimpleTooltip } from "../src/tooltip";

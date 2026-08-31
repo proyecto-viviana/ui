@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Rename.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Rename.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,12 +20,8 @@ function RenameIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element 
       class={className}
     >
       <path
-        d="m13.7832,15.70801L8.7373,3.78027c-.23535-.55469-1.14648-.55469-1.38184,0L2.30908,15.70801c-.16113.38086.01709.82129.39893.98242.09521.04102.19434.05957.2915.05957.29248,0,.57031-.17188.69141-.45801l1.8158-4.29199h5.07904l1.81561,4.29199c.16113.38086.60156.5625.98291.39844.38184-.16113.56006-.60156.39893-.98242Zm-7.64185-5.20801l1.90503-4.50293,1.90485,4.50293h-3.80988Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m16.25,18.75c-.41406,0-.75-.33594-.75-.75V2c0-.41406.33594-.75.75-.75s.75.33594.75.75v16c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M13.783 15.708 8.737 3.78c-.235-.554-1.146-.554-1.382 0L2.31 15.708c-.161.38.017.821.399.982q.144.06.292.06c.292 0 .57-.172.69-.458L5.508 12h5.079l1.815 4.292c.162.38.602.562.983.398.382-.16.56-.601.4-.982M6.141 10.5l1.905-4.503L9.951 10.5zM16.25 18.75c-.414 0-.75-.336-.75-.75V2c0-.414.336-.75.75-.75s.75.336.75.75v16c0 .414-.336.75-.75.75"
       />
     </svg>
   );

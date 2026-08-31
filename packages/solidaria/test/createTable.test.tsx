@@ -9,7 +9,7 @@
  * These tests verify that the announcement infrastructure is properly set up.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
 import { cleanup } from "@solidjs/testing-library";
 import { announce, clearAnnouncer } from "../src/live-announcer";
 

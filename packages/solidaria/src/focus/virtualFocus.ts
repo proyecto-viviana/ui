@@ -1,7 +1,7 @@
 /**
  * Virtual-focus event dispatch primitives.
  *
- * A faithful port of @react-aria/focus's `virtualFocus` module. Under virtual
+ * A faithful port of packages/react-aria/src/focus/virtualFocus.ts. Under virtual
  * focus (e.g. Autocomplete), real DOM focus stays on an input while the
  * "focused" collection option is indicated by `aria-activedescendant`. Moving
  * that virtual cursor dispatches synthetic `focus`/`blur` events (with matching

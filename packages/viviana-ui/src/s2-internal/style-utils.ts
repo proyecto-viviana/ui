@@ -1,4 +1,5 @@
 // @ts-nocheck
+
 /*
  * Copyright 2024 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -11,7 +12,10 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/style-utils.ts
+
 import type { JSX } from "solid-js";
+
 import { fontRelative as internalFontRelative } from "../style/spectrum-theme";
 import { StyleString } from "../style/types";
 
@@ -108,7 +112,11 @@ export const fieldLabel = () =>
     fontFamily: "code",
     cursor: "default",
     color: {
-      default: "neutral-subdued",
+      /* `--text-secondary` is the register's AA secondary ink. `neutral-subdued`
+       * remaps to the same hex through the theme, but the CSS variable follows
+       * `data-color-scheme` at runtime (including nested Providers) and cannot
+       * drift from viviana-tokens.css. */
+      default: "[var(--text-secondary)]",
       isDisabled: "disabled",
       isStaticColor: "transparent-overlay-1000",
       forcedColors: "ButtonText",
@@ -146,7 +154,7 @@ export const fieldValue = () =>
     fontWeight: "normal",
     cursor: "default",
     color: {
-      default: "neutral-subdued",
+      default: "[var(--text-secondary)]",
       isDisabled: "disabled",
       isStaticColor: "transparent-overlay-1000",
       forcedColors: "ButtonText",

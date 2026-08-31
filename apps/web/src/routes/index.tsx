@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { Button, Badge, Flex, TextField, ToggleSwitch, typeRoles } from "@proyecto-viviana/ui";
+import {
+  Badge,
+  Button as VivianaButton,
+  Flex,
+  TextField,
+  ToggleSwitch,
+  typeRoles,
+} from "@proyecto-viviana/ui";
+import { Button as KumoButton } from "@proyecto-viviana/kumo";
+import "@proyecto-viviana/kumo/styles.css";
+import { createSignal, type JSX } from "solid-js";
 import { Header, SiteBackdrop } from "@/components";
 import {
   ACCENT_INK,
@@ -12,245 +22,251 @@ import {
   SiteFooter,
 } from "@/components/theme/primitives";
 import "@/components/theme/studio.css";
+import { repoPackageUrl, repoUrl } from "@/lib/site";
 import { seo } from "@/seo";
+import { useTheme } from "@/utils/theme";
 
 export const Route = createFileRoute("/")({
   head: () =>
     seo({
       title: "Proyecto Viviana",
       description:
-        "Two styled component systems on one accessible Solid foundation: solid-spectrum, a port of Adobe's React Spectrum, and Viviana UI's Glasselated register.",
+        "An open Solid UI experiment: one shared headless foundation, two published styled libraries, and an early Cloudflare Kumo Button study.",
       path: "/",
     }),
   component: LandingPage,
 });
 
-/** One of the two styled registers, presented as a peer on the landing: name,
- *  register tagline, one-line pitch, its own install string, and the CTA into
- *  that register's surface. */
+interface RegisterLink {
+  href: string;
+  label: string;
+  external?: boolean;
+}
+
 function RegisterCard(props: {
   name: string;
-  tagline: string;
+  status: string;
   blurb: string;
-  pkg: string;
-  ctaHref: string;
-  ctaLabel: string;
+  install?: string;
+  links: RegisterLink[];
+  experimental?: boolean;
 }) {
   return (
-    <div
-      class="pv-card"
-      style={{
-        flex: "1 1 260px",
-        display: "flex",
-        "flex-direction": "column",
-        gap: "14px",
-        padding: "28px",
-      }}
-    >
-      <div style={{ display: "flex", "flex-direction": "column", gap: "4px" }}>
-        <span
-          style={{
-            "font-family": FONT_DISPLAY,
-            "font-size": "20px",
-            "font-weight": "700",
-            "letter-spacing": "-0.01em",
-            color: "var(--docs-text)",
-          }}
-        >
-          {props.name}
-        </span>
-        <span
-          style={{
-            "font-family": FONT_BODY,
-            "font-size": "12px",
-            "font-weight": "600",
-            "letter-spacing": "0.04em",
-            "text-transform": "uppercase",
-            color: ACCENT_INK,
-          }}
-        >
-          {props.tagline}
-        </span>
+    <article class="pv-card pv-register-card" data-experimental={props.experimental || undefined}>
+      <div class="pv-register-card__heading">
+        <h3>{props.name}</h3>
+        <span class="pv-register-card__status">{props.status}</span>
       </div>
-      <p
-        style={{
-          flex: "1",
-          "font-family": FONT_BODY,
-          "font-size": "13.5px",
-          "line-height": "1.6",
-          color: "var(--docs-text-secondary)",
-          margin: "0",
-        }}
-      >
-        {props.blurb}
-      </p>
-      <a
-        href={`https://www.npmjs.com/package/${props.pkg}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class={typeRoles.terminal}
-        style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
-      >
-        npm i {props.pkg}
-      </a>
-      <CtaButton href={props.ctaHref} tone="primary">
-        {props.ctaLabel}
-      </CtaButton>
-    </div>
+      <p>{props.blurb}</p>
+      <div class="pv-register-card__footer">
+        {props.install ? (
+          <a
+            href={`https://www.npmjs.com/package/${props.install}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={typeRoles.terminal}
+          >
+            npm i {props.install}
+          </a>
+        ) : (
+          <span class="pv-register-card__unpublished">Not published to npm</span>
+        )}
+        <div class="pv-register-card__links">
+          {props.links.map((link) => (
+            <CtaButton href={link.href} external={link.external} tone="secondary">
+              {link.label}
+            </CtaButton>
+          ))}
+        </div>
+      </div>
+    </article>
   );
 }
 
-function LandingPage() {
+function ArchitectureMap() {
   return (
-    <div
-      style={{
-        "min-height": "100vh",
-        background: "transparent",
-        color: "var(--docs-text)",
-        display: "flex",
-        "flex-direction": "column",
-        "font-family": FONT_BODY,
-      }}
-    >
+    <section class="pv-architecture" aria-labelledby="architecture-title">
+      <div class="pv-architecture__copy">
+        <SectionLabel>Architecture</SectionLabel>
+        <h2 id="architecture-title">Share behavior. Keep each styled library independent.</h2>
+        <p>
+          State, accessibility, keyboard behavior, and composition live in the lower packages. Each
+          styled sibling owns its public API, theme, and release. You can use one without installing
+          the other two.
+        </p>
+      </div>
+      <div class="pv-architecture__map" aria-label="Proyecto Viviana package layers">
+        <ol class="pv-architecture__foundation">
+          <li>solid-stately</li>
+          <li>solidaria</li>
+          <li>solidaria-components</li>
+        </ol>
+        <ul class="pv-architecture__branches">
+          <li>@proyecto-viviana/ui</li>
+          <li>@proyecto-viviana/solid-spectrum</li>
+          <li data-experimental="true">
+            @proyecto-viviana/kumo <span>experiment</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function KumoExperiment() {
+  const [activationCount, setActivationCount] = createSignal(0);
+  const { theme } = useTheme();
+
+  return (
+    <section class="pv-kumo-lab" aria-labelledby="kumo-lab-title">
+      <div class="pv-kumo-lab__copy">
+        <span class="pv-kumo-lab__eyebrow">Early study · @cloudflare/kumo@2.11.0</span>
+        <h2 id="kumo-lab-title">A Kumo-shaped Button, running on the shared Solid foundation.</h2>
+        <p>
+          This is one experimental component, not a complete Kumo port. Its API and styling are
+          still rough. Browser behavior evidence and visual-state evidence are incomplete.
+        </p>
+        <ul>
+          <li>One Button only</li>
+          <li>Not published to npm</li>
+          <li>Not ported or certified</li>
+        </ul>
+        <div class="pv-kumo-lab__links">
+          <a href={repoPackageUrl("kumo")} target="_blank" rel="noopener noreferrer">
+            Source
+          </a>
+          <a
+            href={repoUrl("blob/main/packages/kumo/README.md#evidence-and-limits")}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Limits
+          </a>
+          <a
+            href={repoUrl("tree/main/apps/comparison/src/pages/experiments/kumo-button")}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Pair harness
+          </a>
+        </div>
+      </div>
+      <div
+        class="pv-kumo-lab__specimen"
+        data-theme="kumo"
+        data-mode={theme()}
+        aria-label="Interactive Kumo Button specimen"
+      >
+        <span class="pv-kumo-lab__specimen-label">Live Solid component</span>
+        <KumoButton
+          variant="primary"
+          size="lg"
+          onClick={() => setActivationCount((count) => count + 1)}
+        >
+          Deploy experiment
+        </KumoButton>
+        <output aria-live="polite" data-kumo-landing-output>
+          Activated {activationCount()} times
+        </output>
+      </div>
+    </section>
+  );
+}
+
+function LandingPage(): JSX.Element {
+  return (
+    <div class="pv-landing-shell">
       <SiteBackdrop variant="scene" />
       <Header />
 
-      <main
-        id="main-content"
-        class="pv-wrap pv-wrap--narrow"
-        style={{ flex: "1", "padding-inline": "1.5rem" }}
-      >
-        {/* Hero */}
-        <section
-          class="pv-hero"
-          style={{
-            display: "flex",
-            "flex-direction": "column",
-            "align-items": "center",
-            gap: "24px",
-            "text-align": "center",
-          }}
-        >
-          <PillTag>Two styled systems · One Solid foundation</PillTag>
-
-          <h1
-            style={{
-              "font-family": FONT_DISPLAY,
-              "font-size": "clamp(2.25rem, 7vw, 4.25rem)",
-              "font-weight": "700",
-              "line-height": "1.05",
-              "letter-spacing": "-0.02em",
-              "max-width": "18ch",
-              "margin-top": "0.25rem",
-            }}
-          >
-            Two styled component systems, one{" "}
-            <span style={{ color: ACCENT_INK }}>Solid foundation</span>.
+      <main id="main-content" class="pv-wrap pv-wrap--narrow pv-landing-main">
+        <section class="pv-hero pv-landing-hero">
+          <PillTag>One Solid foundation · Three styled libraries</PillTag>
+          <h1>
+            A Solid UI stack, <span>out in the open</span>.
           </h1>
-
-          <p
-            style={{
-              "max-width": "520px",
-              "font-size": "15px",
-              "line-height": "1.65",
-              color: "var(--docs-text-secondary)",
-            }}
-          >
-            Accessible SolidJS components, faithfully ported from Adobe&rsquo;s React Aria. Pick the
-            look — the Glasselated <strong>viviana-ui</strong> or pixel-faithful{" "}
-            <strong>solid-spectrum</strong> — both share the same certified-accessible core.
+          <p>
+            Proyecto Viviana is an ongoing experiment in translating established UI systems to
+            Solid. Some surfaces are useful today. Every parity claim still has to earn evidence.
+            Expect unfinished APIs and rough edges.
           </p>
+          <div class="pv-landing-hero__actions">
+            <CtaButton href="#libraries" tone="primary">
+              See the libraries ↓
+            </CtaButton>
+            <CtaButton
+              href={repoUrl("blob/main/.claude/current/certification.md")}
+              external
+              tone="secondary"
+            >
+              Read the evidence bar ↗
+            </CtaButton>
+          </div>
         </section>
 
-        {/* The two registers, side by side as peers */}
-        <section
-          class="pv-registers"
-          style={{
-            display: "flex",
-            "flex-wrap": "wrap",
-            gap: "20px",
-            "margin-top": "8px",
-          }}
-        >
-          <RegisterCard
-            name="viviana-ui"
-            tagline="Glasselated"
-            blurb="Our expressive register — frosted glass, pixel accents, the Geist trio. The house design system, live in the showcase."
-            pkg="@proyecto-viviana/ui"
-            ctaHref="/showcase"
-            ctaLabel="Explore the showcase →"
-          />
-          <RegisterCard
-            name="solid-spectrum"
-            tagline="Spectrum 2 parity"
-            blurb="Adobe Spectrum 2 for Solid — pixel-faithful to React Spectrum and certified cell-by-cell against the upstream pin."
-            pkg="@proyecto-viviana/solid-spectrum"
-            ctaHref="/solid-spectrum/docs"
-            ctaLabel="Read the docs →"
-          />
+        <section id="libraries" class="pv-library-section" aria-labelledby="libraries-title">
+          <div class="pv-section-heading">
+            <SectionLabel>Styled siblings</SectionLabel>
+            <h2 id="libraries-title">Three distinct public APIs. Unequal maturity.</h2>
+            <p>
+              The libraries share lower-level behavior, but they do not pretend to have the same
+              scope or evidence. The labels below are deliberately specific.
+            </p>
+          </div>
+          <div class="pv-registers">
+            <RegisterCard
+              name="@proyecto-viviana/ui"
+              status="Published · Viviana register"
+              blurb="Proyecto Viviana’s expressive component library. It has its own visual language, public API, showcase, and package release."
+              install="@proyecto-viviana/ui"
+              links={[{ href: "/showcase", label: "Open showcase →" }]}
+            />
+            <RegisterCard
+              name="@proyecto-viviana/solid-spectrum"
+              status="Published · Spectrum 2 register"
+              blurb="A component-by-component Solid translation of Adobe React Spectrum S2. Evidence is tracked per component; the whole package is not certified as one unit."
+              install="@proyecto-viviana/solid-spectrum"
+              links={[{ href: "/solid-spectrum/docs", label: "Read docs →" }]}
+            />
+            <RegisterCard
+              name="@proyecto-viviana/kumo"
+              status="Unpublished · one Button"
+              blurb="An early Cloudflare Kumo-shaped styled sibling. It currently tests one Button API on the shared headless layer. Treat it as a study, not a port."
+              experimental
+              links={[
+                { href: "#kumo-experiment", label: "Try the specimen ↓" },
+                { href: repoPackageUrl("kumo"), label: "View source ↗", external: true },
+              ]}
+            />
+          </div>
         </section>
 
-        {/* Shared foundation */}
-        <section
-          style={{
-            display: "flex",
-            "flex-wrap": "wrap",
-            "align-items": "center",
-            "justify-content": "center",
-            gap: "8px 16px",
-            "padding-block": "1.75rem",
-            "text-align": "center",
-          }}
-        >
-          <SectionLabel>Both built on</SectionLabel>
-          <Link
-            to="/solid-spectrum/ecosystem"
-            class={typeRoles.terminal}
-            style={{ color: "var(--docs-text-secondary)", "text-decoration": "none" }}
-          >
-            solidaria · solid-stately · solidaria-components
-          </Link>
-        </section>
+        <ArchitectureMap />
 
-        {/* Feature blocks */}
-        <section
-          class="pv-features"
-          style={{ "border-top": "1px solid var(--docs-border)", "padding-block": "2.5rem" }}
-        >
-          <FeatureBlock title="Token-driven">
-            Components read every color from{" "}
-            <code style={{ "font-family": "monospace" }}>--color-*</code> custom properties.
-            Override the vars and the whole library adopts your palette — no forks, no per-component
-            overrides.
+        <section class="pv-features pv-landing-features">
+          <FeatureBlock title="Shared behavior">
+            State belongs in solid-stately. ARIA, keyboard, and focus behavior belong in solidaria.
+            Component composition belongs in solidaria-components.
           </FeatureBlock>
-          <FeatureBlock title="Accessible">
-            Keyboard navigation, focus management, and screen-reader semantics are built in and
-            contrast-certified — the same behavior React Spectrum ships, ported faithfully to
-            SolidJS.
+          <FeatureBlock title="Evidence before labels">
+            A rendered export or a green axe run is only a floor. A component earns a parity label
+            when its observable upstream branches have regression evidence.
           </FeatureBlock>
-          <FeatureBlock title="Copy-paste">
-            The Theme Studio generates the exact{" "}
-            <code style={{ "font-family": "monospace" }}>:root</code> and light-scheme blocks. Paste
-            them after the library&rsquo;s stylesheet and you&rsquo;re done.
+          <FeatureBlock title="Independent paint">
+            Each styled sibling owns its design-system API and theme. The site can show them
+            together, but one library must not leak tokens or styles into another.
           </FeatureBlock>
         </section>
 
-        {/* Live sample strip */}
-        <section
-          class="pv-card"
-          style={{
-            display: "flex",
-            "flex-direction": "column",
-            gap: "24px",
-            "margin-bottom": "2.5rem",
-            padding: "28px",
-          }}
-        >
-          <SectionLabel>Real components, live</SectionLabel>
+        <section class="pv-card pv-viviana-sample" aria-labelledby="viviana-sample-title">
+          <div class="pv-section-heading pv-section-heading--compact">
+            <SectionLabel>Published Viviana UI sample</SectionLabel>
+            <h2 id="viviana-sample-title">The house register, live.</h2>
+          </div>
           <Flex wrap alignItems="center" gap={6}>
             <Flex wrap alignItems="center" gap={3}>
-              <Button variant="primary">Primary</Button>
-              <Button variant="accent">Accent</Button>
+              <VivianaButton variant="primary">Primary</VivianaButton>
+              <VivianaButton variant="accent">Accent</VivianaButton>
               <Badge count={3} variant="success" />
               <Badge count={7} variant="accent" />
             </Flex>
@@ -261,30 +277,23 @@ function LandingPage() {
           </Flex>
         </section>
 
-        {/* Bottom CTA */}
-        <section
-          style={{
-            display: "flex",
-            "flex-direction": "column",
-            "align-items": "center",
-            gap: "20px",
-            "text-align": "center",
-            "padding-block": "3rem 3.5rem",
-          }}
-        >
-          <h2
-            style={{
-              "font-family": FONT_DISPLAY,
-              "font-size": "clamp(1.5rem, 4vw, 2.25rem)",
-              "font-weight": "700",
-              "letter-spacing": "-0.01em",
-              margin: "0",
-            }}
-          >
-            Ready to make it yours?
-          </h2>
-          <CtaButton href="/theme" tone="primary">
-            Open the Theme Studio →
+        <div id="kumo-experiment">
+          <KumoExperiment />
+        </div>
+
+        <section class="pv-landing-closing">
+          <span class="pv-landing-closing__mark" aria-hidden="true">
+            ↳
+          </span>
+          <div>
+            <h2>Follow the experiment, including what fails.</h2>
+            <p>
+              The repository contains the source, tests, comparison harness, known gaps, and live
+              decisions. Claims should get narrower or stronger as that evidence changes.
+            </p>
+          </div>
+          <CtaButton href={repoUrl("tree/main/.claude/current")} external tone="primary">
+            Open the working record ↗
           </CtaButton>
         </section>
       </main>

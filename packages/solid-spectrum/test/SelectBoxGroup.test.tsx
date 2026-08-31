@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { SelectBox, SelectBoxGroup, SelectBoxGroupContext } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";

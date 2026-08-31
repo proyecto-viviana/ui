@@ -9,14 +9,16 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
+import { splitFrontmatter } from "./frontmatter";
 import {
-  type DocTask,
-  type RoadmapItem,
-  extractRoadmapItems,
-  extractTasks,
-  splitFrontmatter,
-} from "./frontmatter";
-import { type Problem, validateTracking } from "./validate";
+  TICKET_DIRECTORIES,
+  type Problem,
+  type WorkTicket,
+  isTicketPath,
+  parseTicket,
+  validateTicketBoard,
+} from "./tickets";
+import { validateStableDocs } from "./validate";
 
 // Filesystem/git/workspace access for the dev-only /admin API. Paths are
 // repo-root-relative throughout. Dev tooling — see the AGENTS.md exemption.
@@ -36,9 +38,14 @@ function findRepoRoot(start: string): string {
 
 const REPO_ROOT = findRepoRoot(process.cwd());
 
-const READABLE_PREFIXES = [".claude/current/", ".claude/research/", ".claude/archive/"];
+const READABLE_PREFIXES = [
+  ".claude/current/",
+  ".claude/research/",
+  ".claude/archive/",
+  ".claude/tickets/",
+];
 const READABLE_FILES = ["README.md", "AGENTS.md", "CLAUDE.md"];
-const WRITABLE_PREFIX = ".claude/current/";
+const GENERATED_VIEW_PATHS = new Set([".claude/current/roadmap.md", ".claude/current/status.md"]);
 
 export function isReadablePath(path: string): boolean {
   if (!path.endsWith(".md") || path.includes("..") || path.startsWith("/")) return false;
@@ -48,7 +55,11 @@ export function isReadablePath(path: string): boolean {
 }
 
 export function isWritablePath(path: string): boolean {
-  return isReadablePath(path) && path.startsWith(WRITABLE_PREFIX);
+  return (
+    isReadablePath(path) &&
+    !GENERATED_VIEW_PATHS.has(path) &&
+    (path.startsWith(".claude/current/") || isTicketPath(path))
+  );
 }
 
 /** Resolves a repo-relative doc path to an absolute one, or null if it escapes the repo. */
@@ -84,7 +95,7 @@ export function writeDoc(path: string, content: string): boolean {
 
 export interface DocEntry {
   path: string;
-  tier: "current" | "research" | "archive" | "repo";
+  tier: "current" | "ticket" | "research" | "archive" | "repo";
   writable: boolean;
   title: string;
   frontmatter: Record<string, unknown> | null;
@@ -92,8 +103,8 @@ export interface DocEntry {
 
 export interface DocsPayload {
   docs: DocEntry[];
-  tasks: (DocTask & { doc: string })[];
-  roadmap: RoadmapItem[];
+  tasks: WorkTicket[];
+  roadmap: WorkTicket[];
   problems: Problem[];
 }
 
@@ -118,8 +129,9 @@ function firstHeading(body: string): string | null {
 
 export function collectDocs(): DocsPayload {
   const docs: DocEntry[] = [];
-  const tasks: (DocTask & { doc: string })[] = [];
-  let roadmap: RoadmapItem[] = [];
+  const tickets: WorkTicket[] = [];
+  const ticketProblems: Problem[] = [];
+  const presentTicketDirectories = new Set<string>();
 
   const tiers: { tier: DocEntry["tier"]; root: string }[] = [
     { tier: "current", root: ".claude/current" },
@@ -132,9 +144,10 @@ export function collectDocs(): DocsPayload {
     walkMarkdown(join(REPO_ROOT, root), absolutePaths);
     for (const absolute of absolutePaths.sort()) {
       const path = absolute.slice(REPO_ROOT.length + 1);
-      const writable = tier === "current";
-      // Only the writable tier carries frontmatter/tasks; the rest is browse-only.
-      if (!writable) {
+      const writable = tier === "current" && isWritablePath(path);
+      // Current docs carry metadata even when a generated view is read-only.
+      // Research and archive docs are browse-only.
+      if (tier !== "current") {
         docs.push({ path, tier, writable, title: path.slice(root.length + 1), frontmatter: null });
         continue;
       }
@@ -152,8 +165,40 @@ export function collectDocs(): DocsPayload {
         title: firstHeading(body) ?? path.slice(root.length + 1),
         frontmatter: data,
       });
-      for (const task of extractTasks(data)) tasks.push({ ...task, doc: path });
-      if (path === ".claude/current/roadmap.md") roadmap = extractRoadmapItems(data);
+    }
+  }
+
+  for (const directory of TICKET_DIRECTORIES) {
+    const root = `.claude/tickets/${directory}`;
+    const absoluteRoot = join(REPO_ROOT, root);
+    try {
+      if (!statSync(absoluteRoot).isDirectory()) continue;
+      presentTicketDirectories.add(directory);
+    } catch {
+      continue;
+    }
+
+    const absolutePaths: string[] = [];
+    walkMarkdown(absoluteRoot, absolutePaths);
+    for (const absolute of absolutePaths.sort()) {
+      const path = absolute.slice(REPO_ROOT.length + 1);
+      let content: string;
+      try {
+        content = readFileSync(absolute, "utf-8");
+      } catch {
+        continue;
+      }
+      const { data, body } = splitFrontmatter(content);
+      const parsed = parseTicket(content, path);
+      docs.push({
+        path,
+        tier: "ticket",
+        writable: true,
+        title: parsed.ticket?.title ?? firstHeading(body) ?? path.slice(root.length + 1),
+        frontmatter: data,
+      });
+      if (parsed.ticket) tickets.push(parsed.ticket);
+      ticketProblems.push(...parsed.problems);
     }
   }
 
@@ -166,7 +211,16 @@ export function collectDocs(): DocsPayload {
     }
   }
 
-  return { docs, tasks, roadmap, problems: validateTracking({ docs, tasks, roadmap }) };
+  const problems = [
+    ...validateStableDocs(docs, true),
+    ...validateTicketBoard(tickets, ticketProblems, presentTicketDirectories),
+  ];
+  return {
+    docs,
+    tasks: tickets.filter((ticket) => ticket.type === "task"),
+    roadmap: tickets.filter((ticket) => ticket.type !== "task"),
+    problems,
+  };
 }
 
 export interface GitPayload {
@@ -204,6 +258,7 @@ export function collectGit(): GitPayload {
     "--name-only",
     "--",
     ".claude/current",
+    ".claude/tickets",
     "README.md",
     "AGENTS.md",
   ]);

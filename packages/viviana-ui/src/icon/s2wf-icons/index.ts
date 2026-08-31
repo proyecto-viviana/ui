@@ -1,8 +1,7 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-
 export { default as Icon3DAssetIcon } from "./Icon3DAssetIcon";
 export type { Icon3DAssetIconProps } from "./Icon3DAssetIcon";
 export { default as Icon3DMaterialIcon } from "./Icon3DMaterialIcon";

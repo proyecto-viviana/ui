@@ -25,9 +25,10 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  * `track()` + the `{S:4,M:6,L:8,XL:10}` height scale; `fillStyles` matches the
  * `lightDark` variant colour table (informative/positive/notice/negative); and
  * `valueStyles` / `labelStyles` match `fieldLabel()`. The label region is the same
- * `<div class=labelWrapper><span>` on both — upstream's `FieldLabel` renders its
- * text through RAC `Label` whose `LabelContext` sets `elementType: 'span'`, so the
- * label is a `<span>` (not a `<label>`) exactly like the port. `Text` renders
+ * `<div class=labelWrapper><span>` on both. Upstream S2 wraps RAC `Meter` and
+ * `Label`; the port wraps the corresponding headless Meter and Label. Both Label
+ * contexts set `elementType: 'span'`, so the label is a `<span>` (not a `<label>`).
+ * `Text` renders
  * `<span data-rsp-slot="text">` on both, and `SkeletonWrapper` emits no wrapper
  * element outside a `<Skeleton>` provider on both, so the track is a direct child.
  *
@@ -55,7 +56,7 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  * self-inflicted divergence; both token lists resolve to the same `meter` role in
  * the accessibility tree, so D6 is green either way, but the port should emit the
  * faithful `"meter progressbar"` and the fixture patch should be removed. That fix
- * is filed as `meter-role-fallback-token` (recertification.md deferred list) —
+ * is filed as ticket #104 —
  * it is deferred here only because it also touches solidaria's `createMeter` (a
  * dist rebuild) and must be re-validated against the web a11y/axe gate, which is
  * out of this unit's harness. Everything else below is honest byte-identical
@@ -130,8 +131,9 @@ const meterScenario: DriverScenario = {
       "z-index",
     ],
   },
-  // D6: pin role=meter + the aria-labelledby name wiring (the label span text
-  // becomes the meter's accessible name) + aria-valuenow/valuetext. `custom-range`
+  // D6: pin role=meter + the shared Label-context aria-labelledby wiring (the
+  // label span gets an ID and becomes the meter's accessible name) +
+  // aria-valuenow/valuetext. `custom-range`
   // proves the min/max triple + percentage math; `value-label` proves the override
   // wins in aria-valuetext — identically on both stacks. (The role *token* itself
   // is fixture-normalized per the header note; ariaSnapshot exposes the resolved

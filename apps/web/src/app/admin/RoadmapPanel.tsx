@@ -1,71 +1,38 @@
 import { For, Show, createSignal } from "solid-js";
-import { GanttChart, type GanttRow } from "./GanttChart";
-import { type DocsPayload, postRoadmapStatus } from "./api";
+import { type DocsPayload, type TicketStatus, postTicketBlocked, postTicketStatus } from "./api";
 
-const ITEM_STATUSES = ["open", "in-progress", "blocked", "done"];
+const TICKET_STATUSES: TicketStatus[] = ["open", "next", "in-progress", "merged", "verified"];
 
-// High-level axis: roadmap items from roadmap.md, each expandable to the tasks
-// that reference it (the two-level model — items are parents, tasks children).
 export function RoadmapPanel(props: {
   data: DocsPayload;
   onOpenDoc: (path: string) => void;
   onChanged: () => void;
 }) {
-  const [expanded, setExpanded] = createSignal<Set<string>>(new Set());
   const [busy, setBusy] = createSignal<string | null>(null);
 
-  const tasksFor = (itemId: string) => props.data.tasks.filter((task) => task.roadmap === itemId);
+  const items = () =>
+    [...props.data.roadmap].sort(
+      (a, b) => Number(b.type === "milestone") - Number(a.type === "milestone") || a.id - b.id,
+    );
+  const childrenFor = (id: number) => [
+    ...props.data.roadmap.filter((item) => item.parent === id),
+    ...props.data.tasks.filter((task) => task.parent === id),
+  ];
 
-  const actualFor = (itemId: string) => {
-    const finished = tasksFor(itemId)
-      .map((task) => task.finished)
-      .filter((date): date is string => !!date)
-      .sort();
-    const ongoing = tasksFor(itemId).some((task) => task.state === "in-progress");
-    if (finished.length === 0 && !ongoing) return null;
-    return {
-      start: finished[0] ?? null,
-      end: ongoing ? null : (finished[finished.length - 1] ?? null),
-    };
-  };
-
-  const rows = (): GanttRow[] => {
-    const out: GanttRow[] = [];
-    for (const item of props.data.roadmap) {
-      out.push({
-        id: item.id,
-        label: item.title,
-        state: item.status,
-        plan: item.window ? { start: item.window.start, end: item.window.target } : null,
-        actual: actualFor(item.id),
-      });
-      if (expanded().has(item.id)) {
-        for (const task of tasksFor(item.id)) {
-          out.push({
-            id: task.id,
-            label: task.title,
-            state: task.state,
-            level: 1,
-            plan: task.planned ? { start: task.planned.start, end: task.planned.target } : null,
-            finished: task.finished,
-          });
-        }
-      }
-    }
-    return out;
-  };
-
-  const toggle = (id: string) => {
-    const next = new Set(expanded());
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setExpanded(next);
-  };
-
-  const setStatus = async (id: string, status: string) => {
-    setBusy(id);
+  const setStatus = async (path: string, ticketId: number, status: TicketStatus) => {
+    setBusy(`status-${ticketId}`);
     try {
-      await postRoadmapStatus(id, status);
+      await postTicketStatus(path, ticketId, status);
+      props.onChanged();
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const setBlocked = async (path: string, ticketId: number, blocked: boolean) => {
+    setBusy(`blocked-${ticketId}`);
+    try {
+      await postTicketBlocked(path, ticketId, blocked);
       props.onChanged();
     } finally {
       setBusy(null);
@@ -75,32 +42,26 @@ export function RoadmapPanel(props: {
   return (
     <div class="panel">
       <section class="card">
-        <h2>Initiative timeline</h2>
-        <GanttChart rows={rows()} />
-      </section>
-
-      <section class="card">
-        <h2>Items</h2>
+        <h2>Roadmap tickets</h2>
         <table class="data-table">
           <thead>
             <tr>
-              <th />
-              <th>Initiative</th>
+              <th>Ticket</th>
+              <th>Type</th>
+              <th>Title</th>
               <th>Status</th>
-              <th>Window</th>
-              <th>Tasks</th>
-              <th>Docs</th>
+              <th>Blocked</th>
+              <th>Parent</th>
+              <th>Children</th>
+              <th>File</th>
             </tr>
           </thead>
           <tbody>
-            <For each={props.data.roadmap}>
+            <For each={items()}>
               {(item) => (
                 <tr>
-                  <td>
-                    <button class="link" onClick={() => toggle(item.id)}>
-                      {expanded().has(item.id) ? "▾" : "▸"}
-                    </button>
-                  </td>
+                  <td>#{item.id}</td>
+                  <td>{item.type}</td>
                   <td>
                     <span class={`state-dot state-${item.status}`} />
                     {item.title}
@@ -108,45 +69,48 @@ export function RoadmapPanel(props: {
                   <td>
                     <select
                       value={item.status}
-                      disabled={busy() === item.id}
-                      onChange={(event) => void setStatus(item.id, event.currentTarget.value)}
+                      disabled={busy() === `status-${item.id}`}
+                      onChange={(event) =>
+                        void setStatus(
+                          item.path,
+                          item.id,
+                          event.currentTarget.value as TicketStatus,
+                        )
+                      }
                     >
-                      <For each={ITEM_STATUSES}>
+                      <For each={TICKET_STATUSES}>
                         {(status) => <option value={status}>{status}</option>}
                       </For>
                     </select>
                   </td>
-                  <td class="muted">
-                    {item.window?.start ?? "—"} → {item.window?.target ?? "—"}
-                  </td>
                   <td>
-                    {tasksFor(item.id).filter((task) => task.state === "done").length}/
-                    {tasksFor(item.id).length}
+                    <input
+                      type="checkbox"
+                      checked={item.blocked}
+                      disabled={busy() === `blocked-${item.id}`}
+                      aria-label={`Set #${item.id} blocked`}
+                      onChange={(event) =>
+                        void setBlocked(item.path, item.id, event.currentTarget.checked)
+                      }
+                    />
                   </td>
+                  <td class="muted">{item.parent === null ? "—" : `#${item.parent}`}</td>
+                  <td class="muted">{childrenFor(item.id).length}</td>
                   <td>
-                    <For each={item.docs}>
-                      {(doc) => (
-                        <button
-                          class="link"
-                          onClick={() => props.onOpenDoc(`.claude/current/${doc}`)}
-                        >
-                          {doc}
-                        </button>
-                      )}
-                    </For>
+                    <button class="link" onClick={() => props.onOpenDoc(item.path)}>
+                      {item.path.split("/").pop()}
+                    </button>
                   </td>
                 </tr>
               )}
             </For>
           </tbody>
         </table>
-        <Show when={props.data.roadmap.length === 0}>
-          <p class="muted">No items in .claude/current/roadmap.md frontmatter.</p>
+        <Show when={items().length === 0}>
+          <p class="muted">
+            No initiative or milestone tickets exist. The task board remains available.
+          </p>
         </Show>
-        <p class="muted">
-          The initiative axis (roadmap.md): high-level items, each expandable to the tasks that
-          reference it.
-        </p>
       </section>
     </div>
   );

@@ -1,10 +1,9 @@
 /**
- * solidaria-components
+ * solidaria-components.
  *
- * Pre-wired headless components for SolidJS.
- * Port of react-aria-components.
- *
- * These components combine state management + accessibility hooks into
+ * This is the local package barrel. Each exported module owns its upstream
+ * source mapping.
+ * The components combine state management and accessibility hooks into
  * ready-to-style components using the render props pattern and data attributes.
  */
 
@@ -138,6 +137,19 @@ export {
   type TextAreaProps,
 } from "./TextField";
 
+export {
+  TokenField,
+  TokenInput,
+  Token,
+  TokenFieldContext,
+  type TokenFieldProps,
+  type TokenFieldRenderProps,
+  type TokenInputProps,
+  type TokenInputRenderProps,
+  type TokenProps,
+  type TokenRenderProps,
+} from "./TokenField";
+
 export { Text, TextContext, type TextProps } from "./Text";
 
 export { Link, LinkContext, type LinkProps, type LinkRenderProps } from "./Link";
@@ -154,6 +166,8 @@ export {
 } from "./FieldError";
 
 export { FileTrigger, type FileTriggerProps } from "./FileTrigger";
+
+export { PreviewTrigger, type PreviewTriggerProps } from "./PreviewTrigger";
 
 export {
   DropZone,
@@ -529,7 +543,8 @@ export {
   Toast as UNSTABLE_Toast,
   ToastRegion as UNSTABLE_ToastRegion,
   ToastRegion as UNSTABLE_ToastList,
-  Toast as UNSTABLE_ToastContent,
+  ToastContent as UNSTABLE_ToastContent,
+  ToastContentContext,
   ToastRegion,
   ToastProvider,
   ToastContext,
@@ -542,6 +557,7 @@ export {
   globalToastQueue,
   addToast,
   type ToastContent,
+  type ToastContentProps as UNSTABLE_ToastContentProps,
   type ToastProps,
   type ToastRenderProps,
   type ToastRegionProps,

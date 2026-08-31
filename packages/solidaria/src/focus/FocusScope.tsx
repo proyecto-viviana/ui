@@ -1,6 +1,20 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/focus/FocusScope.tsx
+
 /**
  * FocusScope component for managing focus containment, restoration, and auto-focus.
- * Based on @react-aria/focus FocusScope.
+ * Ported from packages/react-aria/src/focus/FocusScope.tsx.
  */
 
 import {
@@ -22,7 +36,7 @@ import {
   getFocusableTreeWalker,
   getActiveElement,
 } from "../utils";
-import { focusSafely } from "../utils/focus";
+import { focusSafely, runAfterPaint } from "../utils/focus";
 
 export interface FocusScopeProps {
   /** The contents of the focus scope. */
@@ -227,6 +241,59 @@ function isElementInScope(element: Element | null, scope: Element[]): boolean {
 }
 
 /**
+ * Auto-focus target for a scope. Mirrors @react-aria/focus `getFirstInScope`:
+ * prefer a tabbable node, then fall back to the first focusable node (e.g. a
+ * `tabIndex={-1}` overlay root) when nothing is tabbable yet.
+ */
+function firstInScope(scope: Element[]): HTMLElement | undefined {
+  return getFocusableElements(scope, true)[0] ?? getFocusableElements(scope, false)[0];
+}
+
+function focusFirstInScope(scope: Element[]): void {
+  const target = firstInScope(scope);
+  if (target) {
+    focusSafely(target);
+  }
+}
+
+/**
+ * Collects the element siblings between FocusScope sentinels. React's
+ * FocusScope re-runs this in `useLayoutEffect` on every render; Solid only
+ * re-runs the component body once, so callers must re-collect when the DOM
+ * between the sentinels changes (portaled overlay children, delayed collections).
+ */
+function collectScopeElements(
+  start: HTMLElement | null | undefined,
+  end: HTMLElement | null | undefined,
+): Element[] {
+  if (!start || !end) {
+    return [];
+  }
+
+  const nodes: Element[] = [];
+  let node: ChildNode | null = start.nextSibling;
+  while (node && node !== end) {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      nodes.push(node as Element);
+    }
+    node = node.nextSibling;
+  }
+  return nodes;
+}
+
+function sameElements(a: Element[], b: Element[]): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * A scope is identified by its (stable) scope-elements accessor; `null` is the
  * tree root. Mirrors @react-aria/focus's `ScopeRef`.
  */
@@ -331,9 +398,16 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     return <>{props.children}</>;
   }
 
-  let startRef: HTMLSpanElement | undefined;
-  let endRef: HTMLSpanElement | undefined;
+  const [startEl, setStartEl] = createSignal<HTMLSpanElement | null>(null);
+  const [endEl, setEndEl] = createSignal<HTMLSpanElement | null>(null);
   const [scopeElements, setScopeElements] = createSignal<Element[]>([]);
+
+  const syncScopeElements = () => {
+    const next = collectScopeElements(startEl(), endEl());
+    if (!sameElements(next, scopeElements())) {
+      setScopeElements(next);
+    }
+  };
 
   // The nearest enclosing FocusScope (through context, which Solid propagates
   // across portals) is this scope's parent in the focus-scope tree. Read it
@@ -446,19 +520,27 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     },
   };
 
-  // Collect scope elements after render
-  onMount(() => {
-    if (!startRef || !endRef) return;
-
-    const nodes: Element[] = [];
-    let node = startRef.nextSibling;
-    while (node && node !== endRef) {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        nodes.push(node as Element);
-      }
-      node = node.nextSibling;
+  // Re-collect when sentinels mount and when siblings between them change.
+  // A one-shot onMount miss (empty first paint, delayed collection) would leave
+  // auto-focus and contain permanently disabled even after the overlay exists.
+  createEffect(() => {
+    const start = startEl();
+    const end = endEl();
+    if (!start || !end) {
+      return;
     }
-    setScopeElements(nodes);
+
+    syncScopeElements();
+    const parent = start.parentNode;
+    if (!parent) {
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      syncScopeElements();
+    });
+    observer.observe(parent, { childList: true });
+    onCleanup(() => observer.disconnect());
   });
 
   // Register this scope in the focus-scope tree so containment can recognize a
@@ -476,7 +558,7 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     if (!props.restoreFocus) return;
 
     // Focus can be in the main document, or inside this iframe's document.
-    const scopeDoc = startRef ? getOwnerDocument(startRef) : document;
+    const scopeDoc = startEl() ? getOwnerDocument(startEl() as Element) : document;
     const scopeActive = getActiveElement(scopeDoc);
     const topActive = getActiveElement(document);
 
@@ -495,20 +577,33 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     nodeToRestore = getRestorableElement(topActive, document);
   });
 
-  // Auto-focus first element
+  // Match @react-aria/focus `useAutoFocus`: one-shot after paint so overlay
+  // auto-focus lands after `preventFocus`'s rAF capture window (and after the
+  // overlay has been laid out enough to be focusable). Do not start until a
+  // real target exists — otherwise a first empty/unfocusable paint would skip
+  // forever after children appear.
+  let autoFocusStarted = false;
+  let cancelAutoFocus: (() => void) | undefined;
   createEffect(() => {
-    if (!props.autoFocus) return;
+    if (!props.autoFocus || autoFocusStarted) return;
 
     const scope = scopeElements();
-    if (scope.length === 0) return;
+    if (scope.length === 0 || !firstInScope(scope)) return;
 
+    autoFocusStarted = true;
     const doc = getOwnerDocument(scope[0]);
-    const activeElement = getActiveElement(doc);
-
-    // Only auto-focus if focus is not already inside the scope
-    if (!isElementInScope(activeElement, scope)) {
-      focusManager.focusFirst();
-    }
+    cancelAutoFocus = runAfterPaint(() => {
+      cancelAutoFocus = undefined;
+      const currentScope = scopeElements();
+      if (currentScope.length === 0) return;
+      const activeElement = getActiveElement(doc);
+      if (!isElementInScope(activeElement, currentScope)) {
+        focusFirstInScope(currentScope);
+      }
+    }, doc);
+  });
+  onCleanup(() => {
+    cancelAutoFocus?.();
   });
 
   // Focus containment
@@ -559,6 +654,13 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
         // subtree. Track it but don't pull focus back, which would tear the
         // nested overlay down.
         focusedNode = target;
+      } else if (target === doc.body || target === doc.documentElement) {
+        // `element.blur()` sends focus to body and may fire focusin there.
+        // RAC restores that path from focusout + rAF (`onBlur`), not from
+        // this focusin. Pulling back synchronously would beat a following
+        // pointermove (certified hover after the focus-visible reset) and
+        // keep a stale keyboard ring.
+        return;
       } else if (focusedNode) {
         // Focus escaped the scope, bring it back
         focusSafely(focusedNode as HTMLElement);
@@ -623,7 +725,7 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       // Use requestAnimationFrame to ensure the element is still in the DOM
       win.requestAnimationFrame(() => {
         if (nodeToRestore && doc.body.contains(nodeToRestore as Node)) {
-          (nodeToRestore as HTMLElement).focus();
+          focusSafely(nodeToRestore as HTMLElement);
         }
       });
     }
@@ -631,9 +733,9 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
 
   return (
     <FocusScopeContext.Provider value={{ focusManager, scopeRef: scopeElements }}>
-      <span data-focus-scope-start hidden ref={startRef} />
+      <span data-focus-scope-start hidden ref={(el) => setStartEl(el ?? null)} />
       {props.children}
-      <span data-focus-scope-end hidden ref={endRef} />
+      <span data-focus-scope-end hidden ref={(el) => setEndEl(el ?? null)} />
     </FocusScopeContext.Provider>
   );
 };

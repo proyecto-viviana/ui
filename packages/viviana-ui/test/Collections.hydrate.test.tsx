@@ -8,7 +8,7 @@
  */
 import { hydrate } from "solid-js/web";
 import type { JSX } from "solid-js";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
@@ -22,7 +22,7 @@ import {
   ListViewStaticInteractiveFixture,
   ListViewSlottedFixture,
 } from "./fixtures/collections";
-import { setupUser } from "../src/test-utils";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 function installHydrationGlobals(): void {
   (globalThis as unknown as { _$HY: unknown })._$HY = {

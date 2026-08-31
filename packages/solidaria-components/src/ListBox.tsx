@@ -1,8 +1,22 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/ListBox.tsx
+
 /**
  * ListBox component for solidaria-components
  *
  * A pre-wired headless listbox that combines state + aria hooks.
- * Port of react-aria-components/src/ListBox.tsx
+ * Solid adaptation of the pinned ListBox component.
  */
 
 import {
@@ -408,17 +422,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     ref: () => listRef(),
   });
 
-  // Autocomplete bridge. createListBox reimplements navigation inline (it does
-  // not route through createSelectableCollection), so the virtual-focus event
-  // wiring the Autocomplete input relies on lives here, gated on the bridge
-  // context. This mirrors createSelectableCollection's FOCUS_EVENT/CLEAR_FOCUS_EVENT
-  // handlers and useSelectableItem's per-item moveVirtualFocus, at the component
-  // layer, without touching the shared hooks (protecting ComboBox/Picker).
+  // Autocomplete bridge. The shared selectable collection owns keyboard
+  // navigation and collection focus. This component keeps the Solid DOM handoff
+  // that mirrors the focused key to the input's active descendant. Ticket #100
+  // tracks moving the remaining virtual-focus work into the shared item layer.
   if (autocompleteCtx) {
     // Forward path: the input dispatches FOCUS_EVENT/CLEAR_FOCUS_EVENT onto the
     // collection element. FOCUS_EVENT marks the collection focused (and, when the
-    // user types forward, requests the first item); the actual arrow navigation
-    // arrives as a re-dispatched KeyboardEvent handled by createListBox's onKeyDown.
+    // user types forward, requests the first item). The shared collection handles
+    // the re-dispatched keyboard event.
     let shouldVirtualFocusFirst = false;
     createEffect(() => {
       const list = listRef();
@@ -564,10 +576,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         // (`navigate()` walks getKeyAfter/getKeyBefore) and post-drop focus
         // restoration. Reading it here re-registers the drop target when the
         // collection changes (mirrors upstream keying its effect on the state).
-        collection: state.collection(),
-        selectedKeys: state.selectionManager.selectedKeys,
+        get collection() {
+          return state.collection();
+        },
+        get selectedKeys() {
+          return state.selectionManager.selectedKeys;
+        },
         setSelectedKeys: (keys) => state.selectionManager.setSelectedKeys(keys),
         setFocusedKey: (key) => state.setFocusedKey(key),
+        setFocused: (isFocused) => state.setFocused(isFocused),
       },
       activeDropState,
       () => listRef(),
@@ -586,7 +603,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   };
 
   // ── Drop indicator (Fix B: labeled, self-focusing) ─────────────────────────
-  // The port of react-aria-components' ListBoxDropIndicatorWrapper +
+  // The upstream ListBoxDropIndicatorWrapper and
   // useDropIndicator. The droppable-collection state layer diverged to a minimal
   // reactive target-holder with no collection reference, so the label (which
   // needs the collection's text values) and the self-focus (which needs the live
@@ -941,7 +958,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                     </For>
                   ) : (
                     <>
-                      {virtualRange()?.offsetTop ? (
+                      {virtualRange() != null ? (
                         <div
                           role="presentation"
                           aria-hidden="true"
@@ -968,7 +985,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           );
                         }}
                       </For>
-                      {virtualRange()?.offsetBottom ? (
+                      {virtualRange() != null ? (
                         <div
                           role="presentation"
                           aria-hidden="true"
@@ -1147,6 +1164,9 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
  */
 export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Element {
   let sentinelRef: HTMLDivElement | undefined;
+  const setSentinelRef = (element: HTMLDivElement) => {
+    sentinelRef = element;
+  };
   const [isPending, setIsPending] = createSignal(false);
 
   const isLoading = () => !!props.isLoading || isPending();
@@ -1194,7 +1214,7 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={sentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
       </div>
       <div
         role="option"

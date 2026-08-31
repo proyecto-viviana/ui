@@ -15,11 +15,27 @@ comparison app.
   see in static screenshots.
 - `check-virtualizer-keyboard-parity.ts` guards virtualizer keyboard navigation
   invariants.
+- `check-package-macro-sourcemaps.mjs` transforms a fixed S2 style-macro fixture
+  and traces a generated binding to its authored line and column. Published
+  styled-package builds also fail if Rolldown reports `SOURCEMAP_BROKEN`.
+- `check-jsx-ref-dead-code.ts` rejects new direct JSX refs backed by local
+  `let` bindings. Its exact allowlist contains 12 styling refs whose reads
+  remain in emitted JSX callbacks. It also transforms the repaired dialog and
+  load-more sources plus a negative fixture, and fails if observable ref,
+  callback, focus, or close behavior disappears.
+- `check-package-attribution.mjs` checks the six public package manifests and
+  their shipped license files. It also reports the current Adobe header and
+  source-marker inventory without treating incomplete counts as an accepted
+  baseline.
 - `check-changeset-required.mjs` enforces changesets for releasable packages.
 - `check-layer-boundary.ts` freezes the solid-spectrum ↔ viviana-ui dual-tree
   inventory (ticket #2). New forks of baselined-identical Spectrum files into
   viviana-ui, or new unbaselined dual paths, exit 1. Rewrite the inventory with
   `--write-baseline` only after intentional dual-path review.
+- `report-layer-imports.ts` inventories type imports, runtime imports, and
+  re-exports from each styled library into the three headless layers. It is a
+  review aid, not a pass/fail guard: a runtime import can be legitimate
+  composition or misplaced behavior, and that distinction needs source review.
 
 ## Comparison App
 
@@ -56,10 +72,9 @@ workspace dependencies still have to be part of the packed chain.
 
 ## Out-of-workspace Consume Smoke (UC-00)
 
-`consume-pack-smoke.mjs` is the keystone of the client-readiness track
-(`.claude/current/ui-client-contract.md`). It proves a real external consumer can
-install `@proyecto-viviana/ui` from the packed tarballs — with no workspace
-symlinks — and build it for both targets:
+`consume-pack-smoke.mjs` is the out-of-workspace consumer contract. It proves
+that a real external consumer can install `@proyecto-viviana/ui` from packed
+tarballs without workspace symlinks. It then builds both targets:
 
 - Scaffolds a throwaway app under `/tmp/viviana-ui-consume-smoke`, depending on
   `@proyecto-viviana/ui` via a `file:` tarball, with `overrides` redirecting the

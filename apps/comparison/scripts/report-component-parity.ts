@@ -5,7 +5,22 @@ import ts from "typescript";
 import { componentControlGroups } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
+import {
+  inventoryVisualStateEvidence,
+  inventoryCertifiedObligations,
+  inventoryValidationNotes,
+  isCompleteAcceptanceNote,
+  isCurrentVisualState,
+  summarizeNoteInventory,
+  summarizeVisualStateEvidence,
+  unresolvedVisualStatePointers,
+} from "../src/data/acceptance-inventory";
+import {
+  lastFullCertifiedSuiteRun,
+  validateCertifiedSuiteEvidence,
+} from "../src/data/certified-suite-evidence";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
+import { parseParityReportOptions } from "./report-component-parity-options";
 
 interface Gap {
   slug: string;
@@ -13,19 +28,13 @@ interface Gap {
   detail?: string;
 }
 
-const strict = process.argv.includes("--strict");
-// `--strict-full` ignores the frozen backlog baseline and fails on every gap
-// (useful when working down the known 9). Default `--strict` fails only on
-// *new* gaps outside `parity-strict-baseline.json` (ticket #2).
-const strictFull = process.argv.includes("--strict-full");
-
+// `--strict-full` is the acceptance gate: it ignores the frozen catalogue
+// baseline and also fails on incomplete gate/evidence records. Default
+// `--strict` fails only on new catalogue gaps outside the baseline (ticket #2).
 // Optional per-component scope for the dev loop: `--slug=button` narrows every
 // gap section (and the strict exit code) to a single component, so porting one
 // docs page at a time has a focused gate to run.
-const slugFilter = (() => {
-  const arg = process.argv.find((value) => value.startsWith("--slug="));
-  return arg ? arg.slice("--slug=".length).trim().toLowerCase() : undefined;
-})();
+const { strict, strictFull, slugFilter } = parseParityReportOptions(process.argv.slice(2));
 
 interface StrictBaseline {
   version: number;
@@ -74,6 +83,24 @@ function printGapSection(label: string, gaps: readonly Gap[]): void {
   for (const gap of scoped) {
     console.log(formatGap(gap));
   }
+}
+
+function printCollapsedGapSection(label: string, gaps: readonly Gap[]): void {
+  const scoped = scope(gaps);
+  if (scoped.length === 0) {
+    console.log(`[pass] ${label}`);
+    return;
+  }
+
+  console.log(`[gap] ${label}: ${scoped.length}`);
+  if (slugFilter != null || scoped.length <= 20) {
+    for (const gap of scoped) {
+      console.log(formatGap(gap));
+    }
+    return;
+  }
+
+  console.log("- Run the acceptance report with --slug=<component> for state-level details.");
 }
 
 function objectKeyName(name: ts.PropertyName): string | undefined {
@@ -163,13 +190,8 @@ function hasCurrentVisualEvidence(slug: string): boolean {
     return false;
   }
 
-  return getVisualStateTargets(entry).some(
-    (state) =>
-      (state.react === "visual" || state.react === "asserted") &&
-      (state.solid === "visual" || state.solid === "asserted") &&
-      state.pairDiff !== "planned" &&
-      state.pairDiff !== "blocked",
-  );
+  // Label presence in visual-state-matrix, not a resolved spec run (A-002).
+  return getVisualStateTargets(entry).some(isCurrentVisualState);
 }
 
 // --- Docs-page gate (Stage 1: static structural faithfulness + integrity) ---
@@ -357,6 +379,99 @@ const noCurrentVisualEvidence = reactSpectrumCatalogue
   .filter((entry) => !hasCurrentVisualEvidence(entry.slug))
   .map((entry) => ({ slug: entry.slug, title: entry.title }));
 
+const comparisonRoot = fileURLToPath(new URL("..", import.meta.url));
+const repoRoot = fileURLToPath(new URL("../../..", import.meta.url));
+const noteInventory = inventoryValidationNotes(
+  fileURLToPath(new URL("../playbook/components/", import.meta.url)),
+);
+const noteSummary = summarizeNoteInventory(noteInventory);
+const unresolvedPointers = unresolvedVisualStatePointers({ comparisonRoot, repoRoot });
+const visualEvidenceInventory = inventoryVisualStateEvidence({ comparisonRoot, repoRoot });
+const visualEvidenceSummary = summarizeVisualStateEvidence(visualEvidenceInventory);
+const certifiedObligations = inventoryCertifiedObligations(
+  fileURLToPath(new URL("../e2e/certified/", import.meta.url)),
+);
+const certifiedSuiteProblems = validateCertifiedSuiteEvidence(
+  lastFullCertifiedSuiteRun,
+  certifiedObligations.expectedFixmes.length,
+);
+const unresolvedPointerGaps: Gap[] = unresolvedPointers.map((pointer) => ({
+  slug: pointer.slug,
+  title: titleForSlug(pointer.slug),
+  detail: `${pointer.stateId} → ${pointer.file}`,
+}));
+const invalidRunnablePointerGaps: Gap[] = visualEvidenceInventory.flatMap((record) =>
+  record.invalidPointers.map((pointer) => ({
+    slug: record.slug,
+    title: titleForSlug(record.slug),
+    detail: `${record.stateId} → ${pointer.file} :: ${pointer.title}`,
+  })),
+);
+const legacyVisualEvidenceGaps: Gap[] = visualEvidenceInventory
+  .filter((record) => record.status === "legacy")
+  .map((record) => ({
+    slug: record.slug,
+    title: titleForSlug(record.slug),
+    detail: `${record.stateId} uses file-only evidence`,
+  }));
+const missingStructuredEvidenceGaps: Gap[] = visualEvidenceInventory
+  .filter((record) => record.status === "missing")
+  .map((record) => ({
+    slug: record.slug,
+    title: titleForSlug(record.slug),
+    detail: `${record.stateId} has no evidence pointer`,
+  }));
+const certifiedSuiteEvidenceGaps: Gap[] = certifiedSuiteProblems.map((problem) => ({
+  slug: "certified-suite",
+  title: "Last full certified suite evidence",
+  detail: problem,
+}));
+
+const noteInventoryByFile = new Map(noteInventory.map((note) => [note.file, note]));
+const visualEvidenceBySlug = new Map<string, Map<string, string>>();
+for (const record of visualEvidenceInventory) {
+  const states = visualEvidenceBySlug.get(record.slug) ?? new Map<string, string>();
+  states.set(record.stateId, record.status);
+  visualEvidenceBySlug.set(record.slug, states);
+}
+
+const componentAcceptanceGaps: Gap[] = reactSpectrumCatalogue.flatMap((catalogueEntry) => {
+  const problems: string[] = [];
+  const note = noteCandidates(catalogueEntry.slug)
+    .map((filename) => noteInventoryByFile.get(filename))
+    .find((candidate) => candidate != null);
+  if (!isCompleteAcceptanceNote(note)) {
+    if (note == null || !note.hasOutcomeTable) {
+      problems.push("no ten-gate outcome table");
+    } else if (note.missingGates.length > 0 || note.rows.length !== 10) {
+      problems.push(`${note.rows.length}/10 gate rows present`);
+    } else {
+      const incomplete = note.rows.filter((row) => row.outcome.kind !== "complete").length;
+      problems.push(`${incomplete}/10 gate outcomes are not complete`);
+    }
+  }
+
+  const manifestEntry = comparisonEntriesBySlug.get(catalogueEntry.slug);
+  if (manifestEntry == null) {
+    problems.push("no comparison manifest entry");
+  } else {
+    const requiredStates = getVisualStateTargets(manifestEntry);
+    const stateEvidence = visualEvidenceBySlug.get(catalogueEntry.slug);
+    const unresolvedStates = requiredStates.filter(
+      (state) => !isCurrentVisualState(state) || stateEvidence?.get(state.id) !== "resolved",
+    );
+    if (unresolvedStates.length > 0) {
+      problems.push(
+        `${unresolvedStates.length}/${requiredStates.length} visual states lack resolved runnable evidence`,
+      );
+    }
+  }
+
+  return problems.length === 0
+    ? []
+    : [{ slug: catalogueEntry.slug, title: catalogueEntry.title, detail: problems.join("; ") }];
+});
+
 // Docs-page gate.
 const docsPagesMissing: Gap[] = [];
 const docsSectionDrift: Gap[] = [];
@@ -434,6 +549,9 @@ const alwaysBlockingSections = [
   // pages live in docsPagesMissing, which is tracked but non-blocking.)
   docsSectionDrift,
   docsIntegrityGaps,
+  unresolvedPointerGaps,
+  invalidRunnablePointerGaps,
+  certifiedSuiteEvidenceGaps,
 ] as const;
 
 const baselinedControlGaps = unbaselined(
@@ -456,14 +574,16 @@ const structuralBlockingGaps = alwaysBlockingSections.reduce(
 const baselinedNewGaps =
   baselinedControlGaps.length + baselinedValidationGaps.length + baselinedDepthGaps.length;
 // Full gap counts (including baselined backlog) for the report summary.
-const blockingGaps =
-  structuralBlockingGaps +
-  scope(missingControlGroups).length +
-  scope(missingValidationNotes).length;
 const depthGaps = scope(noCurrentVisualEvidence).length;
-const strictFailCount = structuralBlockingGaps + baselinedNewGaps;
+const strictFailCount =
+  structuralBlockingGaps +
+  baselinedNewGaps +
+  (strictFull ? scope(componentAcceptanceGaps).length : 0);
 
-console.log("Comparison component parity audit");
+console.log("Comparison component catalogue and acceptance inventory");
+console.log(
+  "The frozen strict gate checks catalogue drift. Full strict also requires complete gates and resolved runnable evidence.",
+);
 console.log(`Official S2 catalogue entries: ${reactSpectrumCatalogue.length}`);
 console.log(`Comparison manifest entries: ${comparisonEntries.length}`);
 console.log(
@@ -480,9 +600,25 @@ console.log(
   }`,
 );
 console.log(
-  `Official entries with current visual/asserted evidence: ${
+  `Official entries with visual-state-matrix labels (not resolved spec runs): ${
     reactSpectrumCatalogue.length - depthGaps
   }`,
+);
+console.log(
+  `Validation notes with ten canonical complete gates: ${noteSummary.allTenComplete} / ${noteSummary.notes}`,
+);
+console.log(`Unresolved visual-state spec pointers: ${unresolvedPointers.length}`);
+console.log(
+  `Current visual-state evidence: resolved=${visualEvidenceSummary.resolved} legacy=${visualEvidenceSummary.legacy} missing=${visualEvidenceSummary.missing} invalid=${visualEvidenceSummary.invalid}`,
+);
+console.log(
+  `Components meeting the full acceptance model: ${reactSpectrumCatalogue.length - componentAcceptanceGaps.length} / ${reactSpectrumCatalogue.length}`,
+);
+console.log(
+  `Certified expected fixmes: ${certifiedObligations.expectedFixmes.length}; deferred comments: ${certifiedObligations.deferredComments.length}`,
+);
+console.log(
+  `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`,
 );
 console.log(`Docs pages ported: ${docsPagesPorted} / ${vendoredMdxBySlug.size} vendored`);
 if (slugFilter) {
@@ -511,15 +647,58 @@ printGapSection(
 printGapSection("Live React styled entries missing React fixtures", missingReactStyledFixtures);
 printGapSection("Live Solid styled entries missing Solid fixtures", missingSolidStyledFixtures);
 printGapSection("Official entries missing validation-note coverage", missingValidationNotes);
+printGapSection("Official entries without visual-state-matrix labels", noCurrentVisualEvidence);
+printGapSection("Visual-state-matrix spec pointers that do not resolve", unresolvedPointerGaps);
 printGapSection(
-  "Official entries without current visual/asserted evidence",
-  noCurrentVisualEvidence,
+  "Structured visual evidence pointers that do not resolve to runnable test titles",
+  invalidRunnablePointerGaps,
+);
+printGapSection("Recorded full certified suite evidence is invalid", certifiedSuiteEvidenceGaps);
+
+console.log("");
+printCollapsedGapSection(
+  "Current visual states with legacy file-only evidence",
+  legacyVisualEvidenceGaps,
+);
+printGapSection("Current visual states missing structured evidence", missingStructuredEvidenceGaps);
+printCollapsedGapSection(
+  "Components that do not meet the full acceptance model",
+  componentAcceptanceGaps,
 );
 
 console.log("");
 printGapSection("Docs pages not yet ported (upstream MDX vendored)", docsPagesMissing);
 printGapSection("Docs pages drifting from upstream section structure", docsSectionDrift);
 printGapSection("Docs pages with ToC / anchor / parity integrity problems", docsIntegrityGaps);
+
+console.log("");
+console.log("Gate-outcome inventory (canonical outcomes: complete/partial/not-started)");
+console.log(`Notes: ${noteSummary.notes}`);
+console.log(`Ten-row current-gate tables: ${noteSummary.withTenCanonicalRows}`);
+console.log(`Nine-gate tables (pre-known-defect): ${noteSummary.nineGate}`);
+console.log(`Missing Gate Outcome Summary: ${noteSummary.missingTable}`);
+console.log(
+  `Outcome kinds: complete=${noteSummary.outcomeKindCounts.complete} partial=${noteSummary.outcomeKindCounts.partial} not-started=${noteSummary.outcomeKindCounts["not-started"]} unnormalized=${noteSummary.outcomeKindCounts.unnormalized} missing-row=${noteSummary.outcomeKindCounts.missing}`,
+);
+const noncanonicalSourceSummary = Object.entries(noteSummary.noncanonicalSourceCounts)
+  .sort(([left], [right]) => left.localeCompare(right))
+  .map(([source, count]) => `${source || "<empty>"}=${count}`)
+  .join(" ");
+console.log(`Noncanonical source text: ${noncanonicalSourceSummary || "none"}`);
+console.log(
+  `Components with every current gate complete: ${noteSummary.allTenComplete} (file presence is not complete)`,
+);
+
+console.log("");
+console.log("Certified suite obligations (A-005)");
+console.log(`Expected fixmes (knownDivergence): ${certifiedObligations.expectedFixmes.length}`);
+for (const fixme of certifiedObligations.expectedFixmes) {
+  console.log(`- ${fixme.spec} · ${fixme.caseId}`);
+}
+console.log(`Unregistered/deferred comment lines: ${certifiedObligations.deferredComments.length}`);
+console.log(
+  `Recorded full run: ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision}).`,
+);
 
 if (strict) {
   if (strictBaseline != null && !strictFull) {

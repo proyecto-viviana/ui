@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/selection/useSelectableCollection.ts
+
 /**
  * createSelectableCollection - keyboard, focus, and selection interactions for a
  * selectable collection. Based on @react-aria/selection's
@@ -16,9 +30,9 @@
  *  - The link branch opens the anchor directly (we have no router abstraction)
  *    and needs no `flushSync` — `setFocusedKey` is synchronous and the keyed
  *    item element already exists in the DOM.
- *  - Virtual-focus cursor movement (`moveVirtualFocus` / `dispatchVirtualFocus`)
- *    is not yet modeled — a documented gap, consistent with createSelectableItem.
- *    The focused-key bookkeeping around it is preserved.
+ *  - Ticket #100 tracks the missing virtual-focus cursor movement through
+ *    `moveVirtualFocus` and `dispatchVirtualFocus`. The focused-key bookkeeping
+ *    around it is preserved.
  */
 
 import { createEffect, on, onCleanup, type JSX } from "solid-js";
@@ -38,7 +52,13 @@ import {
 import { focusSafely, focusWithoutScrolling } from "../utils/focus";
 import { scrollIntoView, scrollIntoViewport } from "../utils/scrollIntoView";
 import { getInteractionModality } from "../interactions/createInteractionModality";
+import {
+  createKeyboard,
+  type KeyboardEvent as AriaKeyboardEvent,
+  type KeyboardShortcutBindings,
+} from "../interactions/createKeyboard";
 import { isCtrlKeyPressed } from "../utils/keyboard";
+import { isMac } from "../utils/platform";
 import { useLocale } from "../i18n";
 import { createTypeSelect } from "./createTypeSelect";
 import { getItemElement, isNonContiguousSelectionModifier, registerCollectionId } from "./utils";
@@ -112,26 +132,12 @@ export function createSelectableCollection<T = unknown>(
   const locale = useLocale();
   const direction = (): "ltr" | "rtl" => locale().direction;
 
-  const onKeyDown = (e: KeyboardEvent) => {
-    const d = delegate();
-    // Prevent option + tab from doing anything since it doesn't move focus to
-    // the cells, only buttons/checkboxes.
-    if (e.altKey && e.key === "Tab") {
-      e.preventDefault();
-    }
-
-    // Keyboard events bubble through portals. Don't handle keyboard events for
-    // elements outside the collection (e.g. menus).
-    const root = ref();
-    if (!root || !nodeContains(root, getEventTarget(e) as Element)) {
-      return;
-    }
-
-    const navigateToKey = (key: Key | undefined | null, childFocus?: FocusStrategy) => {
-      if (key == null) {
-        return;
-      }
-
+  const navigateToKey = (
+    e: AriaKeyboardEvent,
+    key: Key | undefined | null,
+    childFocus?: FocusStrategy,
+  ): boolean | void => {
+    if (key != null) {
       if (
         manager.isLink(key) &&
         linkBehavior === "selection" &&
@@ -142,190 +148,243 @@ export function createSelectableCollection<T = unknown>(
         const item = getItemElement(ref, key);
         if (item instanceof HTMLAnchorElement) {
           openLink(item, e);
+          return;
         }
-        return;
+
+        return false;
       }
 
       manager.setFocusedKey(key, childFocus);
 
       if (manager.isLink(key) && linkBehavior === "override") {
-        return;
+        return false;
       }
 
       if (e.shiftKey && manager.selectionMode === "multiple") {
         manager.extendSelection(key);
+        return;
       } else if (selectOnFocus() && !isNonContiguousSelectionModifier(e)) {
         manager.replaceSelection(key);
+        return;
       }
-    };
+    }
 
-    switch (e.key) {
-      case "ArrowDown": {
-        if (d.getKeyBelow) {
-          let nextKey =
-            manager.focusedKey != null ? d.getKeyBelow(manager.focusedKey) : d.getFirstKey?.();
-          if (nextKey == null && shouldFocusWrap) {
-            nextKey = d.getFirstKey?.(manager.focusedKey ?? undefined);
-          }
-          if (nextKey != null) {
-            e.preventDefault();
-            navigateToKey(nextKey);
-          }
-        }
-        break;
-      }
-      case "ArrowUp": {
-        if (d.getKeyAbove) {
-          let nextKey =
-            manager.focusedKey != null ? d.getKeyAbove(manager.focusedKey) : d.getLastKey?.();
-          if (nextKey == null && shouldFocusWrap) {
-            nextKey = d.getLastKey?.(manager.focusedKey ?? undefined);
-          }
-          if (nextKey != null) {
-            e.preventDefault();
-            navigateToKey(nextKey);
-          }
-        }
-        break;
-      }
-      case "ArrowLeft": {
-        if (d.getKeyLeftOf) {
-          let nextKey =
-            manager.focusedKey != null ? d.getKeyLeftOf(manager.focusedKey) : d.getFirstKey?.();
-          if (nextKey == null && shouldFocusWrap) {
-            nextKey =
-              direction() === "rtl"
-                ? d.getFirstKey?.(manager.focusedKey ?? undefined)
-                : d.getLastKey?.(manager.focusedKey ?? undefined);
-          }
-          if (nextKey != null) {
-            e.preventDefault();
-            navigateToKey(nextKey, direction() === "rtl" ? "first" : "last");
-          }
-        }
-        break;
-      }
-      case "ArrowRight": {
-        if (d.getKeyRightOf) {
-          let nextKey =
-            manager.focusedKey != null ? d.getKeyRightOf(manager.focusedKey) : d.getFirstKey?.();
-          if (nextKey == null && shouldFocusWrap) {
-            nextKey =
-              direction() === "rtl"
-                ? d.getLastKey?.(manager.focusedKey ?? undefined)
-                : d.getFirstKey?.(manager.focusedKey ?? undefined);
-          }
-          if (nextKey != null) {
-            e.preventDefault();
-            navigateToKey(nextKey, direction() === "rtl" ? "last" : "first");
-          }
-        }
-        break;
-      }
-      case "Home":
-        if (d.getFirstKey) {
-          if (manager.focusedKey == null && e.shiftKey) {
-            return;
-          }
+    return false;
+  };
 
-          e.preventDefault();
-          const firstKey = d.getFirstKey(manager.focusedKey ?? undefined, isCtrlKeyPressed(e));
-          manager.setFocusedKey(firstKey);
-          if (firstKey != null) {
-            if (isCtrlKeyPressed(e) && e.shiftKey && manager.selectionMode === "multiple") {
-              manager.extendSelection(firstKey);
-            } else if (selectOnFocus()) {
-              manager.replaceSelection(firstKey);
-            }
-          }
-        }
-        break;
-      case "End":
-        if (d.getLastKey) {
-          if (manager.focusedKey == null && e.shiftKey) {
-            return;
-          }
-          e.preventDefault();
-          const lastKey = d.getLastKey(manager.focusedKey ?? undefined, isCtrlKeyPressed(e));
-          manager.setFocusedKey(lastKey);
-          if (lastKey != null) {
-            if (isCtrlKeyPressed(e) && e.shiftKey && manager.selectionMode === "multiple") {
-              manager.extendSelection(lastKey);
-            } else if (selectOnFocus()) {
-              manager.replaceSelection(lastKey);
-            }
-          }
-        }
-        break;
-      case "PageDown":
-        if (d.getKeyPageBelow && manager.focusedKey != null) {
-          const nextKey = d.getKeyPageBelow(manager.focusedKey);
-          if (nextKey != null) {
-            e.preventDefault();
-            navigateToKey(nextKey);
-          }
-        }
-        break;
-      case "PageUp":
-        if (d.getKeyPageAbove && manager.focusedKey != null) {
-          const nextKey = d.getKeyPageAbove(manager.focusedKey);
-          if (nextKey != null) {
-            e.preventDefault();
-            navigateToKey(nextKey);
-          }
-        }
-        break;
-      case "a":
-        if (
-          isCtrlKeyPressed(e) &&
-          manager.selectionMode === "multiple" &&
-          disallowSelectAll !== true
-        ) {
-          e.preventDefault();
-          manager.selectAll();
-        }
-        break;
-      case "Escape":
-        if (
-          escapeKeyBehavior === "clearSelection" &&
-          !disallowEmptySelection &&
-          manager.selectedKeys.size !== 0
-        ) {
-          e.stopPropagation();
-          e.preventDefault();
-          manager.clearSelection();
-        }
-        break;
-      case "Tab": {
-        if (!allowsTabNavigation) {
-          // There may be elements that are "tabbable" inside a collection (e.g.
-          // a button in a grid cell). Collections are a single tab stop with
-          // internal arrow-key navigation, so on Tab we move focus to the
-          // first/last tabbable element so the browser default continues from
-          // there rather than the currently focused item.
-          if (e.shiftKey) {
-            root.focus();
-          } else {
-            const walker = getFocusableTreeWalker(root, { tabbable: true });
-            let next: HTMLElement | undefined;
-            let last: Node | null;
-            do {
-              last = walker.lastChild();
-              if (last) {
-                next = last as HTMLElement;
-              }
-            } while (last);
+  const arrowDown = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getKeyBelow) {
+      let nextKey =
+        manager.focusedKey != null ? d.getKeyBelow(manager.focusedKey) : d.getFirstKey?.();
+      if (nextKey == null && shouldFocusWrap) {
+        nextKey = d.getFirstKey?.(manager.focusedKey ?? undefined);
+      }
+      if (nextKey != null) {
+        navigateToKey(e, nextKey);
+        return;
+      }
+    }
+    return false;
+  };
 
-            const activeElement = getActiveElement();
-            if (next && (!isFocusWithin(next) || (activeElement && !isTabbable(activeElement)))) {
-              focusWithoutScrolling(next);
-            }
-          }
-          break;
+  const arrowUp = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getKeyAbove) {
+      let nextKey =
+        manager.focusedKey != null ? d.getKeyAbove(manager.focusedKey) : d.getLastKey?.();
+      if (nextKey == null && shouldFocusWrap) {
+        nextKey = d.getLastKey?.(manager.focusedKey ?? undefined);
+      }
+      if (nextKey != null) {
+        navigateToKey(e, nextKey);
+        return;
+      }
+    }
+    return false;
+  };
+
+  const home = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getFirstKey) {
+      if (manager.focusedKey == null && e.shiftKey) {
+        return false;
+      }
+      const firstKey = d.getFirstKey(manager.focusedKey ?? undefined, isCtrlKeyPressed(e));
+      manager.setFocusedKey(firstKey);
+      if (firstKey != null) {
+        if (isCtrlKeyPressed(e) && e.shiftKey && manager.selectionMode === "multiple") {
+          manager.extendSelection(firstKey);
+          return;
+        } else if (selectOnFocus()) {
+          manager.replaceSelection(firstKey);
+          return;
         }
       }
     }
+    return false;
   };
+
+  const arrowLeft = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getKeyLeftOf) {
+      let nextKey =
+        manager.focusedKey != null ? d.getKeyLeftOf(manager.focusedKey) : d.getFirstKey?.();
+      if (nextKey == null && shouldFocusWrap) {
+        nextKey =
+          direction() === "rtl"
+            ? d.getFirstKey?.(manager.focusedKey ?? undefined)
+            : d.getLastKey?.(manager.focusedKey ?? undefined);
+      }
+      if (nextKey != null) {
+        navigateToKey(e, nextKey, direction() === "rtl" ? "first" : "last");
+        return;
+      }
+    }
+    return false;
+  };
+
+  const arrowRight = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getKeyRightOf) {
+      let nextKey =
+        manager.focusedKey != null ? d.getKeyRightOf(manager.focusedKey) : d.getFirstKey?.();
+      if (nextKey == null && shouldFocusWrap) {
+        nextKey =
+          direction() === "rtl"
+            ? d.getLastKey?.(manager.focusedKey ?? undefined)
+            : d.getFirstKey?.(manager.focusedKey ?? undefined);
+      }
+      if (nextKey != null) {
+        navigateToKey(e, nextKey, direction() === "rtl" ? "last" : "first");
+        return;
+      }
+    }
+    return false;
+  };
+
+  const end = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getLastKey) {
+      if (manager.focusedKey == null && e.shiftKey) {
+        return false;
+      }
+      const lastKey = d.getLastKey(manager.focusedKey ?? undefined, isCtrlKeyPressed(e));
+      manager.setFocusedKey(lastKey);
+      if (lastKey != null) {
+        if (isCtrlKeyPressed(e) && e.shiftKey && manager.selectionMode === "multiple") {
+          manager.extendSelection(lastKey);
+          return;
+        } else if (selectOnFocus()) {
+          manager.replaceSelection(lastKey);
+          return;
+        }
+      }
+    }
+    return false;
+  };
+
+  const pageDown = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getKeyPageBelow && manager.focusedKey != null) {
+      const nextKey = d.getKeyPageBelow(manager.focusedKey);
+      if (nextKey != null) {
+        return navigateToKey(e, nextKey);
+      }
+    }
+    return false;
+  };
+
+  const pageUp = (e: AriaKeyboardEvent): boolean | void => {
+    const d = delegate();
+    if (d.getKeyPageAbove && manager.focusedKey != null) {
+      const nextKey = d.getKeyPageAbove(manager.focusedKey);
+      if (nextKey != null) {
+        return navigateToKey(e, nextKey);
+      }
+    }
+    return false;
+  };
+
+  const selectAll = (): boolean | void => {
+    if (manager.selectionMode === "multiple" && disallowSelectAll !== true) {
+      manager.selectAll();
+      return;
+    }
+    return false;
+  };
+
+  const escape = (): boolean | void => {
+    if (
+      escapeKeyBehavior === "clearSelection" &&
+      !disallowEmptySelection &&
+      manager.selectedKeys.size !== 0
+    ) {
+      manager.clearSelection();
+      return;
+    }
+    return false;
+  };
+
+  const tab = () => {
+    const root = ref();
+    if (!allowsTabNavigation && root) {
+      const walker = getFocusableTreeWalker(root, { tabbable: true });
+      let next: HTMLElement | undefined;
+      let last: Node | null;
+      do {
+        last = walker.lastChild();
+        if (last) {
+          next = last as HTMLElement;
+        }
+      } while (last);
+
+      const activeElement = getActiveElement();
+      if (next && (!isFocusWithin(next) || (activeElement && !isTabbable(activeElement)))) {
+        focusWithoutScrolling(next);
+      }
+    }
+    return { shouldContinuePropagation: true, shouldPreventDefault: false };
+  };
+
+  const shiftTab = () => {
+    const root = ref();
+    if (!allowsTabNavigation && root) {
+      root.focus();
+    }
+    return { shouldContinuePropagation: true, shouldPreventDefault: false };
+  };
+
+  type ShortcutAction = KeyboardShortcutBindings[string];
+  const withShiftSelection = (key: string, callback: ShortcutAction): KeyboardShortcutBindings => ({
+    [isMac() ? `${key}+Shift+Alt` : `${key}+Shift+Control`]: callback,
+    [`${key}+Shift`]: callback,
+    [isMac() ? `${key}+Alt` : `${key}+Control`]: callback,
+    [key]: callback,
+  });
+
+  const { keyboardProps: repeatKeyboardProps } = createKeyboard({
+    shortcuts: {
+      ...withShiftSelection("ArrowDown", arrowDown),
+      ...withShiftSelection("ArrowUp", arrowUp),
+      ...withShiftSelection("ArrowLeft", arrowLeft),
+      ...withShiftSelection("ArrowRight", arrowRight),
+      ...withShiftSelection("PageDown", pageDown),
+      ...withShiftSelection("PageUp", pageUp),
+    },
+    allowRepeats: true,
+  });
+
+  const { keyboardProps } = createKeyboard({
+    shortcuts: {
+      ...withShiftSelection("Home", home),
+      ...withShiftSelection("End", end),
+      "Mod+A": selectAll,
+      Escape: escape,
+      Tab: tab,
+      "Tab+Shift": shiftTab,
+    },
+  });
 
   // Store the scroll position so we can restore it later.
   const scrollPos = { top: 0, left: 0 };
@@ -403,9 +462,37 @@ export function createSelectableCollection<T = unknown>(
   const onFocusOut = (e: FocusEvent) => {
     const currentTarget = e.currentTarget as Element;
     // Don't set blurred and then focused again if moving focus within the collection.
-    if (!nodeContains(currentTarget, e.relatedTarget as Node)) {
-      manager.setFocused(false);
+    if (nodeContains(currentTarget, e.relatedTarget as Node)) {
+      return;
     }
+
+    // Windowed collections remount the focused option when the slice/spacers
+    // change. Removing that node fires focusout with a null relatedTarget and
+    // would otherwise clear isFocused, so the remounted option never restores
+    // DOM focus (RAC keeps the persisted node, so this path does not run).
+    const focusedKey = manager.focusedKey;
+    if (e.relatedTarget == null && focusedKey != null) {
+      const lostTarget = e.target as Node;
+      requestAnimationFrame(() => {
+        if (manager.focusedKey !== focusedKey) {
+          return;
+        }
+        const item = getItemElement(ref, focusedKey);
+        if (item instanceof HTMLElement && item !== lostTarget) {
+          manager.setFocused(true);
+          if (!shouldUseVirtualFocus) {
+            focusWithoutScrolling(item);
+          }
+          return;
+        }
+        if (lostTarget.isConnected) {
+          manager.setFocused(false);
+        }
+      });
+      return;
+    }
+
+    manager.setFocused(false);
   };
 
   // Whether to auto-focus the first item once the collection updates (used by
@@ -442,8 +529,8 @@ export function createSelectableCollection<T = unknown>(
         }
         if (firstKey == null) {
           // No focusable items: clear the virtual-focus intent once the
-          // collection is settled. We don't move an AT cursor here (the
-          // moveVirtualFocus / dispatchVirtualFocus gap noted above).
+          // collection is settled. Ticket #100 tracks the missing AT cursor
+          // reset for this branch.
           if (manager.collection.size > 0) {
             shouldVirtualFocusFirst = false;
           }
@@ -609,12 +696,15 @@ export function createSelectableCollection<T = unknown>(
         tabIndex = manager.focusedKey == null ? 0 : -1;
       }
 
-      let handlers: Record<string, unknown> = {
-        onKeyDown,
-        onFocusIn,
-        onFocusOut,
-        onMouseDown,
-      };
+      let handlers: Record<string, unknown> = mergeProps(
+        keyboardProps as Record<string, unknown>,
+        repeatKeyboardProps as Record<string, unknown>,
+        {
+          onFocusIn,
+          onFocusOut,
+          onMouseDown,
+        },
+      );
 
       if (!disallowTypeAhead) {
         handlers = mergeProps(typeSelectProps as Record<string, unknown>, handlers);

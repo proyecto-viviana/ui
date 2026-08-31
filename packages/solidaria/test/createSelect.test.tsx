@@ -2,7 +2,7 @@
  * Tests for createSelect and createHiddenSelect.
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
 import { render, fireEvent } from "@solidjs/testing-library";
 import { createSelect, createHiddenSelect, HiddenSelect } from "../src/select";

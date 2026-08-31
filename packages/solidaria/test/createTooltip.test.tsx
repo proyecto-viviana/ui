@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal, createRoot, Show } from "solid-js";
 import { createTooltipTriggerState, resetTooltipState } from "@proyecto-viviana/solid-stately";

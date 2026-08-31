@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
-import { afterEach } from "vitest";
+import { afterEach } from "vite-plus/test";
 import {
   setGlobalDraggingCollectionRef,
   setGlobalDraggingKeys,
@@ -232,6 +232,41 @@ describe("createDroppableCollection keyboard engine (DragManager seam)", () => {
     expect(descriptor.element).toBe(document.getElementById(id));
     expect(typeof descriptor.onKeyDown).toBe("function");
     expect(typeof descriptor.onDropEnter).toBe("function");
+  });
+
+  it("restores collection focus after an internal reorder", async () => {
+    const { state } = makeState();
+    const setFocused = vi.fn();
+    const target: DropTarget = { type: "item", key: 2, dropPosition: "after" };
+    const { descriptor } = mountHarness({
+      keys: [1, 2, 3],
+      state,
+      extra: {
+        setFocused,
+        onReorder: vi.fn(),
+      },
+    });
+
+    state.setTarget(target);
+    setGlobalDraggingCollectionRef(descriptor.element);
+    setGlobalDraggingKeys(new Set([1]));
+    descriptor.onDrop?.(
+      {
+        items: [
+          {
+            kind: "text",
+            types: new Set(["text/plain"]),
+            getText: () => Promise.resolve("1"),
+          },
+        ],
+        dropOperation: "move",
+        x: 0,
+        y: 0,
+      },
+      target,
+    );
+
+    await vi.waitFor(() => expect(setFocused).toHaveBeenCalledWith(true));
   });
 
   it("enters at the root, then ArrowDown walks before/on drop positions across items", () => {

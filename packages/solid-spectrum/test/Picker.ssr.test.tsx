@@ -9,7 +9,7 @@
  * first (the hydrate suite reads the file it writes).
  */
 import { renderToString, isServer } from "solid-js/web";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { Picker } from "../src/picker";

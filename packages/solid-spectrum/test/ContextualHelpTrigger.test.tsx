@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
@@ -58,6 +58,20 @@ describe("ContextualHelpTrigger (solid-spectrum)", () => {
     render(() => <ContextualHelpTrigger content="Help content" aria-label="More details" />);
 
     expect(screen.getByRole("button", { name: "More details" })).toBeInTheDocument();
+  });
+
+  it("names a titled trigger from its visible label, not a redundant aria-label", () => {
+    render(() => (
+      <ContextualHelpTrigger
+        title="Advanced Configuration"
+        content="This option is for advanced users."
+        variant="info"
+      />
+    ));
+
+    const trigger = screen.getByRole("button", { name: "Advanced Configuration" });
+    expect(trigger).toBeInTheDocument();
+    expect(trigger.getAttribute("aria-label")).toBeNull();
   });
 });
 

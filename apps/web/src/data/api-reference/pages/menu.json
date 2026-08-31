@@ -170,7 +170,7 @@
             "'last'"
           ],
           "required": false,
-          "description": "Whether to auto-focus the first item when the menu opens.",
+          "description": "Whether to auto-focus the menu root (`true`) or the first/last item.",
           "origin": "solidaria"
         },
         {
@@ -857,7 +857,7 @@
           "name": "id",
           "type": "string",
           "required": false,
-          "description": "An ID for the menu.",
+          "description": "An ID for the menu. This is a local Solid addition.",
           "origin": "solidaria"
         },
         {
@@ -879,7 +879,19 @@
             "'listbox'"
           ],
           "required": false,
-          "description": "The type of menu that the menu trigger opens.",
+          "description": "The type of menu that the trigger opens.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "trigger",
+          "type": "MenuTriggerType",
+          "values": [
+            "'contextMenu'",
+            "'press'",
+            "'longPress'"
+          ],
+          "required": false,
+          "description": "How the menu is triggered.",
           "origin": "solidaria"
         },
         {

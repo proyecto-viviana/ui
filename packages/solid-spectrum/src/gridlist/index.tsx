@@ -1,4 +1,21 @@
 // @ts-nocheck
+
+/*
+ * Copyright 2026 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ListView.tsx
+
+// Port of packages/@react-spectrum/s2/src/ListView.tsx.
+
 import {
   children as resolveChildren,
   createContext,
@@ -862,7 +879,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     useContext(GridListContext) as SpectrumContextValue<GridListProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  // Context first, then local/provider props. Matches ActionMenu: missing local
+  // keys (defaultSelectedKeys, aria-label, …) stay filled from context instead
+  // of being wiped by the component props proxy.
+  const mergedProps = mergeProps(contextProps ?? {}, providerProps);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "items",
@@ -1044,6 +1064,12 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
           getKey={getKey()}
           getTextValue={getTextValue()}
           getDisabled={getDisabled()}
+          selectionMode={
+            headlessProps.selectionMode ??
+            (headlessProps.defaultSelectedKeys != null || headlessProps.selectedKeys != null
+              ? "multiple"
+              : undefined)
+          }
           selectionBehavior={selectionStyle() === "highlight" ? "replace" : "toggle"}
           onSelectionChange={onSelectionChange}
           isLoading={isLoading()}

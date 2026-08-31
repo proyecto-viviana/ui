@@ -10,7 +10,7 @@
  * - ModalOverlay
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
 import { Modal, ModalOverlay } from "../src/Modal";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";

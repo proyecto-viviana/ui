@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Email.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Email.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,9 +20,8 @@ function EmailIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="M16.75,2.99316H3.25c-1.24023,0-2.25,1.00977-2.25,2.25v9.5c0,1.24023,1.00977,2.25,2.25,2.25h13.5c1.24023,0,2.25-1.00977,2.25-2.25V5.24316c0-1.24023-1.00977-2.25-2.25-2.25ZM16.32935,4.49316l-5.83716,5.08301c-.2793.24414-.7041.24414-.98535,0L3.67065,4.49316h12.65869ZM16.75,15.49316H3.25c-.41309,0-.75-.33691-.75-.75V5.46191l6.02148,5.24512c.42188.36719.9502.55078,1.47852.55078s1.05664-.18359,1.47754-.55078l6.02246-5.24512v9.28125c0,.41309-.33691.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.75 2.993H3.25C2.01 2.993 1 4.003 1 5.243v9.5c0 1.24 1.01 2.25 2.25 2.25h13.5c1.24 0 2.25-1.01 2.25-2.25v-9.5c0-1.24-1.01-2.25-2.25-2.25m-.42 1.5-5.838 5.083c-.28.244-.704.244-.985 0L3.67 4.493zm.42 11H3.25c-.413 0-.75-.337-.75-.75V5.462l6.021 5.245c.422.367.95.55 1.479.55s1.057-.183 1.478-.55L17.5 5.462v9.281c0 .413-.337.75-.75.75"
       />
     </svg>
   );

@@ -4,7 +4,7 @@
  * Tests for Landmark component and F6 navigation.
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { Landmark, useLandmarkController } from "../src/Landmark";
 

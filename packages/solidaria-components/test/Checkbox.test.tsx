@@ -4,8 +4,8 @@
  * These tests verify the headless Checkbox/CheckboxGroup components follow
  * react-aria-components patterns.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import {
   Checkbox,
   CheckboxContext,
@@ -328,6 +328,23 @@ describe("Checkbox", () => {
   });
 
   describe("controlled/uncontrolled", () => {
+    it("should clear pointer press state after clicking the native input", async () => {
+      render(() => (
+        <Checkbox class={({ isPressed }) => (isPressed ? "pressed" : "released")}>Test</Checkbox>
+      ));
+
+      const checkbox = screen.getByRole("checkbox");
+      const label = checkbox.closest("label")!;
+
+      await user.click(checkbox);
+
+      await waitFor(() => {
+        expect(label).not.toHaveAttribute("data-pressed");
+        expect(label).toHaveClass("released");
+        expect((checkbox as HTMLInputElement).style.userSelect).toBe("");
+      });
+    });
+
     it("should work as uncontrolled with defaultSelected", async () => {
       render(() => <Checkbox defaultSelected>Test</Checkbox>);
 

@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Popover.tsx
+
 /**
  * Popover component for solidaria-components
  *
@@ -384,7 +398,7 @@ export function Popover(props: PopoverProps): JSX.Element {
         return local.scrollRef;
       },
       get isNonModal() {
-        return local.isNonModal;
+        return local.isNonModal ?? resolvedTrigger() === "PreviewTrigger";
       },
       get isKeyboardDismissDisabled() {
         return local.isKeyboardDismissDisabled;
@@ -426,6 +440,7 @@ export function Popover(props: PopoverProps): JSX.Element {
           local.onOpenChange?.(true);
         }
       },
+      point: () => triggerContext?.state.point?.() ?? dialogTriggerContext?.state.point?.() ?? null,
     },
   );
 
@@ -583,6 +598,8 @@ export function Popover(props: PopoverProps): JSX.Element {
     onCleanup(() => document.removeEventListener("keydown", onKeyDown));
   });
 
+  const isNonModal = () => local.isNonModal ?? resolvedTrigger() === "PreviewTrigger";
+
   const overlay = () => (
     <PopoverContext.Provider
       value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
@@ -591,7 +608,11 @@ export function Popover(props: PopoverProps): JSX.Element {
         <div
           {...domProps()}
           {...cleanPopoverProps()}
-          ref={setPopoverRef}
+          {...(triggerContext?.overlayProps ?? {})}
+          ref={(el) => {
+            setPopoverRef(el);
+            triggerContext?.setOverlayRef?.(el);
+          }}
           id={overlayId()}
           role={shouldBeDialog() ? "dialog" : undefined}
           tabIndex={shouldBeDialog() ? -1 : undefined}
@@ -604,7 +625,7 @@ export function Popover(props: PopoverProps): JSX.Element {
           data-entering={dataAttr(local.isEntering)}
           data-exiting={dataAttr(local.isExiting)}
         >
-          <Show when={!local.isNonModal}>
+          <Show when={!isNonModal()}>
             <PopoverDismissButton onDismiss={close} />
           </Show>
           {renderProps.renderChildren()}
@@ -625,7 +646,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   return (
     <Show when={isHydrated() && (isOpen() || local.isExiting)}>
       <Portal mount={portalContainer()}>
-        <Show when={!local.isNonModal && !isSubPopover() && isOpen()}>{underlay()}</Show>
+        <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
         <Show
           when={isSubPopover()}
           fallback={

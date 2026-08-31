@@ -16,8 +16,8 @@
  * the matte terminal wells (`--surface-well`, `--well-*`), spacing / radii, and
  * the closed set of eight `--type-*` roles.
  *
- * This is the v2 register of the Viviana UI token layer (see
- * `.claude/current/visual-system-lane.md`). It keeps the amber accent (the single
+ * This is the v2 register of the Viviana UI token layer (see `CREDITS.md`). It
+ * keeps the amber accent (the single
  * warm, one-per-screen action color) and blue wayfinding/selection of the earlier
  * frosted-glass pass, and adds the pixel/terminal register onto it: matte wells,
  * the cyan/amber/sky-blue/red status channels, and eight type roles rendered in
@@ -28,9 +28,8 @@
  * a nested `<Provider colorScheme>` can flip a subtree back to night); light
  * overrides bind to `[data-color-scheme="light"]`, the same attribute
  * solid-spectrum's theme uses, so a single scheme switch flips both layers
- * together. `apps/web` still ships its own copy of the legacy palette until the
- * Tailwind-removal Phase 4 restyle consumes this file directly
- * (`.claude/current/tailwind-removal.md`).
+ * together. `apps/web` consumes these tokens through the package's
+ * `components.css` bundle.
  */
 
 :root,

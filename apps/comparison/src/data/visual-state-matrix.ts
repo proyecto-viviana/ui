@@ -5,6 +5,7 @@ import {
   type ComparisonEntry,
   type ComparisonSlug,
 } from "./comparison-manifest";
+import type { EvidencePointer } from "./acceptance-schema";
 
 export type VisualStateKind =
   | "static"
@@ -23,6 +24,9 @@ export interface VisualStateTarget {
   react: VisualStateSideStatus;
   solid: VisualStateSideStatus;
   pairDiff: PairDiffStatus;
+  /** Reviewed pointers to exact runnable tests. */
+  evidence?: readonly EvidencePointer[];
+  /** Legacy file-only evidence. It does not prove a current runnable test. */
   spec?: string;
   note: string;
 }
@@ -106,7 +110,32 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu controls match the S2 viewer axes and drive both implementations",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu omitted viewer props reset to default branch values",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu item actions fire with matching keys",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu keyboard state follows the APG menu-button contract",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu outside pointer press closes the open menu",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu focus leaving the overlay closes the open menu",
+        },
+      ],
       note: "ActionMenu route mounts both stacks with static JSX MenuItem composition and asserts the official S2 viewer controls plus the shouldFlip API axis, omitted-prop default reset, disabled trigger state, item action callback keys, keyboard menu-button ARIA state, Escape cleanup, focus restore, outside pointer dismissal, and focus-out dismissal.",
     },
     {
@@ -116,7 +145,12 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu semantic accessibility contracts pass on both stacks",
+        },
+      ],
       note: "Scoped browser axe scans and manual semantic assertions cover closed trigger and open menu states on both stacks, including menu-button ARIA, menu/menuitem roles, accessible names, portal labeling, and ARIA ID integrity.",
     },
     {
@@ -126,7 +160,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu virtual click lifecycle matches on both stacks",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu touch activation and disabled suppression match on both stacks",
+        },
+      ],
       note: "Browser contracts assert DOM virtual click activation, touch tap activation, menu item action dispatch, close-on-select cleanup, ARIA state reset, and disabled trigger touch suppression on both stacks.",
     },
     {
@@ -136,7 +179,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-contract.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu trigger target sizes match React Spectrum on both stacks",
+        },
+        {
+          file: "e2e/actionmenu-contract.spec.ts",
+          title: "ActionMenu color contrast has no scoped axe violations on both stacks",
+        },
+      ],
       note: "Scoped color-contrast axe scans cover closed and open states on both stacks; target-size checks compare all trigger sizes against React Spectrum and record the upstream XS 20px target while enforcing the 24px floor for non-XS sizes.",
     },
     {
@@ -146,7 +198,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu default trigger is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger computed styles match React Spectrum across viewer axes",
+        },
+      ],
       note: "Default closed ActionMenu trigger has strict zero-tolerance pair-diff evidence and computed trigger styles matching React Spectrum across default, XS, XL, quiet, and disabled viewer axes.",
     },
     {
@@ -156,7 +217,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu open menu is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu open menu computed styles match React Spectrum",
+        },
+      ],
       note: "Open ActionMenu menu surface has strict zero-tolerance pair-diff evidence and computed style/geometry parity for the static JSX menu, first item, icon, label, description, and keyboard shortcut slots.",
     },
     {
@@ -166,7 +236,12 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu popover transition lifecycle matches React Spectrum",
+        },
+      ],
       note: "Browser computed contracts compare ActionMenu popover entering and exiting opacity, translate, transition property/duration/timing, placement, pointer-events, and delayed cleanup against React Spectrum.",
     },
     {
@@ -176,7 +251,20 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger hover state is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger focus-visible state is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu trigger pressed state matches current React Spectrum",
+        },
+      ],
       note: "ActionMenu trigger hover and focus-visible states have strict padded pair-diff evidence, and pressed state matches React Spectrum's pressScale transform with a bounded transform antialias threshold plus package regression coverage.",
     },
     {
@@ -186,7 +274,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu placement axes match React Spectrum",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu shouldFlip=false keeps the requested placement",
+        },
+      ],
       note: "Settled overlay geometry matches React Spectrum for align start/end, direction top/bottom/left/right/start/end, and shouldFlip=false bottom placement.",
     },
     {
@@ -196,7 +293,16 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu forced-colors trigger is pixel-identical",
+        },
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu forced-colors open menu is pixel-identical",
+        },
+      ],
       note: "Forced-colors media emulation verifies the browser environment, compares trigger computed contracts for default, quiet, and disabled states, adds strict pair-diff evidence for the closed trigger, and adds backed open-menu visual evidence with a bounded threshold for Chromium forced-colors text subpixel rasterization.",
     },
     {
@@ -206,7 +312,12 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/actionmenu-visual.spec.ts",
+      evidence: [
+        {
+          file: "e2e/actionmenu-visual.spec.ts",
+          title: "ActionMenu accessibility media environments match React Spectrum",
+        },
+      ],
       note: "Reduced-motion media emulation verifies the browser environment and compares settled trigger and open-menu computed contracts across React Spectrum and Solid.",
     },
   ],
@@ -2222,7 +2333,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorarea-visual.spec.ts",
+      spec: "e2e/certified/colorarea.certified.spec.ts",
       note: "Default ColorArea screenshots compare the official controlled #9B80FF red/green example, and geometry assertions cover S2 root sizing, gradient background, thumb geometry, and hidden channel input state.",
     },
     {
@@ -2232,7 +2343,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts; e2e/colorarea-visual.spec.ts",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/certified/colorarea.certified.spec.ts",
       note: "The docs-style prop controls drive controlled/default value, colorSpace, x/y channel axes, form field names, ARIA labelling/details, disabled state, id, and slot into both stacks.",
     },
     {
@@ -2242,7 +2353,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorarea-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorarea.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Contracts assert the two hidden range inputs expose matching min/max/step/value, channel labels, form/name forwarding, keyboard value changes, and disabled state across React Spectrum and Solid.",
     },
     {
@@ -2252,7 +2363,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorarea-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorarea.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "RTL assertions compare thumb X-axis mirroring and gradient direction against React Spectrum; pointer contracts assert drag updates and onChangeEnd-style final value tracking on both stacks.",
     },
   ],
@@ -2264,7 +2375,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorslider-visual.spec.ts",
+      spec: "e2e/certified/colorslider.certified.spec.ts",
       note: "Default ColorSlider screenshots compare the official hue-channel example, and DOM contracts cover S2 root sizing, horizontal label/output layout, generated track gradient, thumb geometry, and hidden range input state.",
     },
     {
@@ -2274,7 +2385,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts; e2e/colorslider-visual.spec.ts",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/certified/colorslider.certified.spec.ts",
       note: "The docs-style prop controls drive controlled/default value, colorSpace, channel, orientation, form name, ARIA labelling/details, disabled state, id, and slot into both stacks.",
     },
     {
@@ -2284,7 +2395,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorslider-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorslider.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Contracts assert the hidden range input exposes matching min/max/step/value, aria-valuetext, channel label, form/name forwarding, keyboard value changes, and disabled state across React Spectrum and Solid.",
     },
     {
@@ -2294,7 +2405,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorslider-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorslider.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Vertical assertions cover the S2 24px x 192px track and vertical thumb axis; RTL assertions compare horizontal gradient direction and thumb mirroring; pointer contracts assert drag updates and final value tracking on both stacks.",
     },
   ],
@@ -2306,7 +2417,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorwheel-visual.spec.ts",
+      spec: "e2e/certified/colorwheel.certified.spec.ts",
       note: "Default ColorWheel screenshots compare the official 192px S2 hue ring, and DOM contracts cover root sizing, conic-gradient track, ring clipping, thumb geometry, and hidden range input state.",
     },
     {
@@ -2316,7 +2427,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts; e2e/colorwheel-visual.spec.ts",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/certified/colorwheel.certified.spec.ts",
       note: "The docs-style prop controls drive controlled/default value, numeric size, form name, ARIA labelling/details, disabled state, id, and slot into both stacks.",
     },
     {
@@ -2326,7 +2437,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorwheel-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorwheel.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Contracts assert the hidden range input exposes matching min/max/step/value, aria-valuetext, accessible label, form/name forwarding, keyboard value changes, and disabled state across React Spectrum and Solid.",
     },
     {
@@ -2336,7 +2447,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorwheel-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorwheel.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Ring pointer assertions cover center-hole suppression, ring-only activation, thumb movement, and final value tracking.",
     },
   ],
@@ -2348,7 +2459,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorswatch-visual.spec.ts",
+      spec: "e2e/certified/colorswatch.certified.spec.ts",
       note: "Default ColorSwatch screenshots compare the official #ff6600 S2 swatch, and DOM contracts cover role, accessible name, 32px default sizing, border/rounding, checkerboard alpha background, and forced-color-adjust.",
     },
     {
@@ -2358,7 +2469,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts; e2e/colorswatch-visual.spec.ts",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/certified/colorswatch.certified.spec.ts",
       note: "The docs-style prop controls drive color, colorName, S2 size/rounding, ARIA labelling/details, id, and slot into both stacks.",
     },
     {
@@ -2368,7 +2479,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorswatch-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorswatch.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Contracts assert colorName plus aria-label composition, role img, aria-roledescription, explicit id, aria-labelledby self-reference composition, aria-describedby, aria-details, and slot forwarding against React Spectrum.",
     },
     {
@@ -2378,7 +2489,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorswatch-visual.spec.ts; packages/solid-spectrum/test/Color.test.tsx",
+      spec: "e2e/certified/colorswatch.certified.spec.ts; packages/solid-spectrum/test/Color.test.tsx",
       note: "Transparent/no-color route state compares React Spectrum's red slash background and transparent accessible name against the Solid implementation.",
     },
   ],
@@ -2390,7 +2501,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorswatchpicker-visual.spec.ts",
+      spec: "e2e/certified/colorswatchpicker.certified.spec.ts",
       note: "Default ColorSwatchPicker screenshots compare the official seven-swatch palette, listbox/option contract, selected overlay, 32px default swatches, S2 regular density gap, and selected value serialization.",
     },
     {
@@ -2400,7 +2511,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts; e2e/colorswatchpicker-visual.spec.ts",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/certified/colorswatchpicker.certified.spec.ts",
       note: "The docs-style prop controls drive controlled/default value, density, size, rounding, ARIA labelling/details, id, and slot into both stacks, with styles and UNSAFE props recorded as API-only escape hatches.",
     },
     {
@@ -2410,7 +2521,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorswatchpicker-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorswatchpicker.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Click interaction asserts that onChange updates the controlled value path and selected option on both stacks while headless unit coverage keeps controlled value stable until the owning signal changes.",
     },
     {
@@ -2420,7 +2531,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "asserted",
-      spec: "e2e/colorswatchpicker-visual.spec.ts; packages/solid-spectrum/test/ColorSwatchPicker.test.tsx",
+      spec: "e2e/certified/colorswatchpicker.certified.spec.ts; packages/solid-spectrum/test/ColorSwatchPicker.test.tsx",
       note: "Contracts assert that S2-style ColorSwatch children become picker options with inherited picker size and rounding, color images, and the selected overlay without requiring callers to use the lower-level item wrapper.",
     },
   ],
@@ -2432,7 +2543,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/colorfield-visual.spec.ts",
+      spec: "e2e/certified/colorfield.certified.spec.ts",
       note: "Default ColorField screenshots compare the official S2 field layout with label, text input, and help text, while DOM contracts assert root data-channel, textbox semantics, value, placeholder, and computed field sizing.",
     },
     {
@@ -2442,7 +2553,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/modeled-controls-contract.spec.ts; e2e/colorfield-visual.spec.ts",
+      spec: "e2e/modeled-controls-contract.spec.ts; e2e/certified/colorfield.certified.spec.ts",
       note: "The docs-style prop controls drive hex/channel mode, controlled/default value, colorSpace, name/form, label/help/error text, validation behavior, size, label alignment, necessity indicator, ARIA labelling/details, id, and slot into both stacks.",
     },
     {
@@ -2452,7 +2563,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorfield-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorfield.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Channel-mode assertions compare spinbutton min/max/current value, localized value text shape, keyboard increments, and hidden form input name/form/value forwarding against React Spectrum.",
     },
     {
@@ -2462,7 +2573,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/colorfield-visual.spec.ts; packages/solidaria-components/test/Color.test.tsx",
+      spec: "e2e/certified/colorfield.certified.spec.ts; packages/solidaria-components/test/Color.test.tsx",
       note: "Invalid and required assertions compare aria-invalid, required/native-validation behavior, data-invalid/data-required, error icon presence, and help/error text wiring across React Spectrum and Solid.",
     },
   ],
@@ -3276,7 +3387,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/calendar-visual.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Standalone Calendar route renders the official unselected default Calendar example on both stacks, with seven-column grid width, no trailing ghost column, title typography, S2 nav icon sizing, and strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff asserted.",
     },
     {
@@ -3286,7 +3397,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/calendar-visual.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Two-month Calendar route with visibleMonths=2 and focusedValue=2025-02-15 keeps both month grids flush to the Calendar root, uses S2's intrinsic title/spacer flex math, prevents a trailing ghost column, and passes strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
     },
     {
@@ -3296,7 +3407,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Modeled controls dispatch the official viewer surface into both stacks: visibleMonths, pageBehavior, firstDayOfWeek, and isDisabled.",
     },
     {
@@ -3306,7 +3417,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Calendar route now asserts Provider locale inheritance for French month titles, narrow weekday headers, localized cell labels, serialized control props, Arabic RTL direction with horizontal day-key movement, and Indian calendar-system display/emitted-value parity.",
     },
     {
@@ -3316,7 +3427,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Route fixture passes a docs-style 4-5-4 createCalendar factory through both stacks and asserts matching fiscal month display.",
     },
     {
@@ -3326,7 +3437,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts; packages/solid-stately/test/createCalendarState.test.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts; packages/solid-stately/test/createCalendarState.test.ts",
       note: "focusedValue and selectionAlignment route states assert start, center, and end initial visible ranges plus controlled post-mount focusedValue updates. State tests also assert controlled focusedValue sync without callback emission, min/max focus clamping, callback ordering, and null value reset.",
     },
     {
@@ -3336,7 +3447,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts; packages/solidaria-components/test/Calendar.test.tsx",
+      spec: "e2e/certified/calendar.certified.spec.ts; packages/solidaria-components/test/Calendar.test.tsx",
       note: "ArrowRight updates the reported focused date through onFocusChange and Enter selects that focused date in both stacks. Package coverage also asserts Arrow keys, Home/End, PageUp/PageDown, Shift+PageUp/PageDown, and the React Aria distinction between keyboard month movement and visible-range button paging.",
     },
     {
@@ -3346,7 +3457,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Selection updates the controlled value on both implementations, while read-only, disabled, and unavailable dates keep value immutable.",
     },
     {
@@ -3356,7 +3467,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-contract.spec.ts; packages/solidaria-components/test/RangeCalendar.test.tsx",
+      spec: "e2e/certified/calendar.certified.spec.ts; packages/solidaria-components/test/RangeCalendar.test.tsx",
       note: "Calendar validation route asserts visible error text and selected-cell aria-invalid/aria-describedby linkage on both stacks. RangeCalendar unit coverage asserts localized start/finish range-selection prompt descriptions and invalid error-id composition, with prompt strings mirrored across React Aria's locale set.",
     },
     {
@@ -3366,7 +3477,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/calendar-visual.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Forced-colors media emulation verifies the browser environment and compares the actual selected paint node plus default foreground, unavailable foreground, unavailable strike geometry/color, and invalid help-text foreground between React Spectrum and Solid.",
     },
     {
@@ -3376,7 +3487,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/calendar-visual.spec.ts",
+      spec: "e2e/certified/calendar.certified.spec.ts",
       note: "Controlled selected-date route with value=2025-02-03 asserts the selected inner paint, focus-ring offset, focus-visible selected branch stability, and pressScale-backed glyph parity through strict zero-tolerance isolated Calendar-root React-vs-Solid pair diff.",
     },
   ],
@@ -3388,7 +3499,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/datefield-visual.spec.ts",
+      spec: "e2e/certified/datefield.certified.spec.ts",
       note: "Standalone DateField route mounts both stacks with S2 field shell styling, three editable date spinbuttons, visible label linkage, help text, contextual-help coverage, and strict zero-tolerance deterministic closed-field React/Solid pair-diff evidence.",
     },
     {
@@ -3398,7 +3509,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/datefield-visual.spec.ts",
+      spec: "e2e/certified/datefield.certified.spec.ts",
       note: "Route state drives controlled date-time values, granularity, hourCycle, leading-zero formatting, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale props through both DateField stacks.",
     },
     {
@@ -3408,7 +3519,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/datefield-visual.spec.ts",
+      spec: "e2e/certified/datefield.certified.spec.ts",
       note: "Invalid state, error text, native hidden required input semantics, aria hidden input semantics, min/max constraints, unavailable-date invalidation, required state, and disabled/read-only state are asserted. The React fixture marks route-derived built-in aria invalidity with data-comparison-react-builtin-invalid when it normalizes the comparison reference.",
     },
     {
@@ -3430,7 +3541,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/timefield-visual.spec.ts",
+      spec: "e2e/certified/timefield.certified.spec.ts",
       note: "Standalone TimeField route mounts both stacks with S2 field shell styling, editable time spinbuttons, visible label linkage, help text, exact-dimension deterministic closed-field React/Solid pair-diff evidence, bounded accessible segment paint drift, and panel-scoped axe coverage.",
     },
     {
@@ -3440,7 +3551,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/timefield-visual.spec.ts",
+      spec: "e2e/certified/timefield.certified.spec.ts",
       note: "Route state drives controlled time values, granularity, leading-zero formatting, hourCycle, hidden form owner/name serialization, validationBehavior, associated FormData, and Provider locale props through both TimeField stacks.",
     },
     {
@@ -3450,7 +3561,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/timefield-visual.spec.ts",
+      spec: "e2e/certified/timefield.certified.spec.ts",
       note: "Native validation keeps range errors hidden while preserving required text-input semantics; aria validation surfaces range errors immediately with hidden input semantics and no native min/max attributes on either stack.",
     },
     {
@@ -3472,7 +3583,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/datepicker-visual.spec.ts",
+      spec: "e2e/certified/datepicker.certified.spec.ts",
       note: "The deterministic selected-date closed field has strict normalized React-vs-Solid pair-diff evidence. Solid uses generated S2 field styling with explicit light/dark theme coverage and controlled/default open state parity.",
     },
     {
@@ -3482,7 +3593,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/datepicker-visual.spec.ts",
+      spec: "e2e/certified/datepicker.certified.spec.ts",
       note: "Covers settled open calendar geometry with exact-dimension React-vs-Solid pair-diff evidence after antialias/corner tolerance plus computed surface, inner, frame, and calendar token equality. The gate normalizes each root before opening so React's z-index-auto popover is not obscured by the comparison app topbar. Solid mirrors React S2's inner popover wrapper, keeps medium Calendar geometry across field sizes, preserves seven weekday columns with no extra blank day column, routes two visible months, first-day, min/max, unavailable, and paging state through the headless DatePicker calendar state, reads hover paint from the inner Calendar cell, and uses generated S2 styling with theme-reactive colors.",
     },
     {
@@ -3492,7 +3603,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/datepicker-visual.spec.ts",
+      spec: "e2e/certified/datepicker.certified.spec.ts",
       note: "Selection closes the popover and updates component value on both sides.",
     },
     {
@@ -3502,7 +3613,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/datepicker-visual.spec.ts",
+      spec: "e2e/certified/datepicker.certified.spec.ts",
       note: "Outside click dismissal is asserted for both implementations.",
     },
     {
@@ -3512,7 +3623,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/datepicker-visual.spec.ts",
+      spec: "e2e/certified/datepicker.certified.spec.ts",
       note: "Side-panel controls dispatch label, contextual help, size, controlled date/date-time values, granularity, leading-zero formatting, hourCycle, hideTimeZone, maxVisibleMonths, firstDayOfWeek, pageBehavior, name, form, validationBehavior, validate, locale/calendar-system, disabled/read-only, required, help text, min/max constraints, and unavailable-date props into both mounted styled stacks. Browser rows assert contextual help routing, forced leading-zero segments, hidden input values, and associated FormData for the routed form owner.",
     },
   ],
@@ -3524,7 +3635,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/rangecalendar-visual.spec.ts",
+      spec: "e2e/certified/rangecalendar.certified.spec.ts",
       note: "Strict zero-tolerance pair-diffs cover both rendered month grids in the deterministic two-month constrained route; the isolated selected-range root shell uses zero dimension tolerance with a small antialias channel threshold. Together these cover selected invalid range paint and unavailable-date strike treatment without a flaky full-root text raster requirement.",
     },
     {
@@ -3534,7 +3645,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/rangecalendar-visual.spec.ts",
+      spec: "e2e/certified/rangecalendar.certified.spec.ts",
       note: "Asserts two-month routing, seven column headers and seven structural cells per row, and no right-side gutter beyond the rendered month grids.",
     },
     {
@@ -3544,7 +3655,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/rangecalendar-visual.spec.ts",
+      spec: "e2e/certified/rangecalendar.certified.spec.ts",
       note: "Invalid error text, selected-cell invalid description linkage, unavailable-date disabled semantics, and non-contiguous range prop routing are asserted.",
     },
     {
@@ -3564,7 +3675,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/rangecalendar-visual.spec.ts",
+      spec: "e2e/certified/rangecalendar.certified.spec.ts",
       note: "Browser route rows assert Provider locale month titles, locale-default week starts, RTL keyboard focus movement, Unicode display calendar labels with Gregorian emitted values, and docs-style custom createCalendar display parity.",
     },
     {
@@ -3574,7 +3685,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "asserted",
       solid: "asserted",
       pairDiff: "na",
-      spec: "e2e/rangecalendar-visual.spec.ts",
+      spec: "e2e/certified/rangecalendar.certified.spec.ts",
       note: "Forced-colors media compares selected start paint, range background, range border, unavailable strike, and invalid helper text computed styles against React Spectrum.",
     },
   ],
@@ -3586,7 +3697,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "strict",
-      spec: "e2e/daterangepicker-visual.spec.ts",
+      spec: "e2e/certified/daterangepicker.certified.spec.ts",
       note: "Closed segmented DateRangePicker fields expose six spinbuttons across both stacks, use the S2 field shell with slotted start/end DateInputs, update Solid hidden start/end form inputs through segment editing, and have exact normalized React/Solid pair-diff coverage.",
     },
     {
@@ -3596,7 +3707,7 @@ const officialStateOverrides: Record<string, readonly VisualStateTarget[]> = {
       react: "visual",
       solid: "visual",
       pairDiff: "asserted",
-      spec: "e2e/daterangepicker-visual.spec.ts",
+      spec: "e2e/certified/daterangepicker.certified.spec.ts",
       note: "Open popover asserts two S2-styled month grids with seven-column rows, 224px grid widths, controlled range value, firstDayOfWeek/pageBehavior routing, unavailable-date disabled semantics, invalid error text, and bounded normalized React/Solid grid screenshots with zero dimension delta and a one-channel 1.3% raster threshold.",
     },
     {

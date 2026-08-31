@@ -1,6 +1,20 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/table/useTableSelectionCheckbox.ts
+
 /**
  * createTableSelectAllCheckbox - Provides accessibility for a table select-all checkbox.
- * Based on @react-aria/table/useTableSelectAllCheckbox.
+ * Ported from packages/react-aria/src/table/useTableSelectionCheckbox.ts.
  */
 
 import { createMemo, type Accessor } from "solid-js";
@@ -15,26 +29,24 @@ export function createTableSelectAllCheckbox<T extends object>(
   state: Accessor<TableState<T, TableCollection<T>>>,
 ): TableSelectAllCheckboxAria {
   const isSelectAll = createMemo(() => {
-    const s = state();
-    return s.selectedKeys === "all";
+    return state().isSelectAll;
   });
 
-  const isEmpty = createMemo(() => {
+  const isCollectionEmpty = createMemo(() => {
     const s = state();
     return s.collection.size === 0;
   });
 
-  const isIndeterminate = createMemo(() => {
-    const s = state();
-    const selectedKeys = s.selectedKeys;
-    if (selectedKeys === "all") return false;
-    if (selectedKeys.size === 0) return false;
-    return selectedKeys.size < s.collection.size;
+  const isEmpty = createMemo(() => {
+    return state().isEmpty;
   });
+
+  // RAC: `isIndeterminate: !isEmpty && !isSelectAll` (not selectedKeys.size vs collection.size).
+  const isIndeterminate = createMemo(() => !isEmpty() && !isSelectAll());
 
   const isDisabled = createMemo(() => {
     const s = state();
-    return s.selectionMode !== "multiple" || isEmpty();
+    return s.selectionMode !== "multiple" || isCollectionEmpty();
   });
 
   const onChange = () => {

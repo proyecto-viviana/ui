@@ -4,7 +4,7 @@
  * Measures component creation and state update performance in jsdom
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Button } from "@proyecto-viviana/solid-spectrum";

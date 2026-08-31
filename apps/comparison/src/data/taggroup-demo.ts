@@ -10,7 +10,7 @@ export const tagGroupLabelPositionOptions = ["top", "side"] as const;
 export const tagGroupLabelAlignOptions = ["start", "end"] as const;
 export const tagGroupItemCountOptions = ["0", "2", "4"] as const;
 export const tagGroupContentModeOptions = ["text", "icon"] as const;
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // TagGroup fixture routes `?locale` into the S2 `Provider` (React) / the
 // `SolidSpectrumProvider` (Solid) so the D10 RTL driver can re-run the D5 focus
 // walk mirrored, certifying the RTL-flipped inline-axis nav (TagGroup is an

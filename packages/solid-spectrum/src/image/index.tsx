@@ -1,3 +1,8 @@
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Image.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ImageCoordinator.tsx
+
+// Port of packages/@react-spectrum/s2/src/Image.tsx.
+// Port of packages/@react-spectrum/s2/src/ImageCoordinator.tsx.
 import {
   createContext,
   createEffect,

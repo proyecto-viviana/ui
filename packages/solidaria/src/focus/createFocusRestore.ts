@@ -3,6 +3,9 @@
  *
  * Provides enhanced focus restoration with retry logic, cross-scope tracking,
  * and safe restoration patterns.
+ *
+ * This is a local Solid helper. The pinned React Aria revision has no
+ * standalone retrying focus-restore stack API.
  */
 
 import { createEffect, onCleanup, onMount } from "solid-js";

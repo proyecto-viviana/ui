@@ -36,8 +36,8 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  * These are not port bugs; they are the downstream shadow of one deliberate
  * architecture choice (native `<table>` + spacer virtualizer). Reaching S2 paint
  * parity would require reversing that foundation to adopt RAC's absolutely-
- * positioned `Virtualizer`/`TableLayout` — tracked as tech-debt
- * `tableview-div-grid-paint`, out of scope for this recertification unit. (A
+ * positioned `Virtualizer`/`TableLayout`. Ticket #89 owns that boundary; it is
+ * out of scope for this recertification unit. (A
  * future BEHAVIOR cert could instead pair-diff against RAC's *non-virtualized*
  * `Table`, whose native-`<table>` DOM matches this port tag-for-tag, restoring
  * D5/D10; that wants new RAC-Table comparison fixtures and is deferred.)

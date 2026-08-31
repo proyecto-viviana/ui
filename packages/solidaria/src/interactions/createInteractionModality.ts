@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/interactions/useFocusVisible.ts
+
 /**
  * createInteractionModality + focus-visible tracking for solidaria
  *
@@ -8,7 +22,9 @@
 
 import { type Accessor, createSignal, createEffect, onCleanup } from "solid-js";
 import { isServer } from "solid-js/web";
-import { getOwnerDocument, getOwnerWindow, isMac, isVirtualClick, openLink } from "../utils";
+import { getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
+import { isVirtualClick } from "../utils/events";
+import { isMac } from "../utils/platform";
 
 export type Modality = "keyboard" | "pointer" | "virtual";
 export type PointerType = "mouse" | "pen" | "touch" | "keyboard" | "virtual";
@@ -338,9 +354,12 @@ function isKeyboardFocusEvent(isTextInput: boolean, modality: Modality, e: Handl
  */
 export function createFocusVisibleListener(
   handler: FocusVisibleHandler,
-  opts?: { isTextInput?: boolean },
+  opts?: { isTextInput?: boolean; enabled?: boolean },
 ): () => void {
   setupGlobalFocusEvents();
+  if (opts?.enabled === false) {
+    return () => {};
+  }
   const listener: Handler = (modality: Modality, e: HandlerEvent) => {
     if (!isKeyboardFocusEvent(!!opts?.isTextInput, modality, e)) {
       return;

@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/GridList.tsx
+
 /**
  * GridList component for solidaria-components
  *
@@ -888,6 +902,9 @@ export function GridListSelectionCheckbox(props: {
 
 export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Element {
   let sentinelRef: HTMLDivElement | undefined;
+  const setSentinelRef = (element: HTMLDivElement) => {
+    sentinelRef = element;
+  };
   const [isPending, setIsPending] = createSignal(false);
   const isLoading = () => !!props.isLoading || isPending();
 
@@ -932,7 +949,7 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={sentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
       </div>
       <div
         role="row"

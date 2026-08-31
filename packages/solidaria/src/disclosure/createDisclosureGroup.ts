@@ -1,9 +1,8 @@
 /**
  * createDisclosureGroup hook for Solidaria
  *
- * Provides accessibility implementation for a group of disclosures (accordion).
- *
- * Port of @react-aria/disclosure.
+ * This is a local Solidaria composition helper. The pinned React Aria revision
+ * has no disclosure-group ARIA hook.
  */
 
 import { type JSX } from "solid-js";

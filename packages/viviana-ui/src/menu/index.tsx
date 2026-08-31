@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Menu.tsx
+
+// Port of packages/@react-spectrum/s2/src/Menu.tsx.
+
 import {
   type JSX,
   Show,
@@ -88,6 +104,7 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { ActionButtonContext, ToggleButtonContext } from "../button/context";
 
 export type MenuSize = S2MenuSize | "sm" | "md" | "lg";
 export type { MenuAlign, MenuDirection };
@@ -306,6 +323,8 @@ function menuPlacementAxis(
  */
 export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
   const mergedProps = useProviderProps(props);
+  const actionButtonContext = useContext(ActionButtonContext);
+  const toggleButtonContext = useContext(ToggleButtonContext);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "align",
@@ -314,20 +333,35 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
     "class",
   ]);
   const size = () => normalizeMenuSize(local.size);
+  const actionButtonContextValue = mergeProps(actionButtonContext ?? {}, {
+    get holdAffordance() {
+      return headlessProps.trigger === "longPress";
+    },
+  });
+  const toggleButtonContextValue = mergeProps(toggleButtonContext ?? {}, {
+    get holdAffordance() {
+      return headlessProps.trigger === "longPress";
+    },
+  });
 
   return (
     <MenuSizeContext.Provider value={size()}>
-      <div class={[triggerWrapperStyles, local.class].filter(Boolean).join(" ")}>
-        <HeadlessMenuTrigger {...headlessProps}>
-          <MenuTriggerOverlayContext
-            align={() => local.align}
-            direction={() => local.direction}
-            shouldFlip={() => local.shouldFlip}
-          >
-            {props.children}
-          </MenuTriggerOverlayContext>
-        </HeadlessMenuTrigger>
-      </div>
+      <ActionButtonContext.Provider value={actionButtonContextValue}>
+        <ToggleButtonContext.Provider value={toggleButtonContextValue}>
+          <div class={[triggerWrapperStyles, local.class].filter(Boolean).join(" ")}>
+            <HeadlessMenuTrigger {...headlessProps}>
+              <MenuTriggerOverlayContext
+                align={() => local.align}
+                direction={() => local.direction}
+                shouldFlip={() => local.shouldFlip}
+                trigger={() => headlessProps.trigger}
+              >
+                {props.children}
+              </MenuTriggerOverlayContext>
+            </HeadlessMenuTrigger>
+          </div>
+        </ToggleButtonContext.Provider>
+      </ActionButtonContext.Provider>
     </MenuSizeContext.Provider>
   );
 }
@@ -337,6 +371,7 @@ interface MenuTriggerOverlayContextProps {
   align: () => MenuAlign | undefined;
   direction: () => MenuDirection | undefined;
   shouldFlip: () => boolean | undefined;
+  trigger: () => HeadlessMenuTriggerProps["trigger"];
 }
 
 function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.Element {
@@ -350,6 +385,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
       open: () => triggerContext?.state.open(),
       close: () => triggerContext?.state.close(),
       toggle: () => triggerContext?.state.toggle(),
+      point: () => triggerContext?.state.point() ?? null,
     },
     triggerRef: () => triggerElement(),
     setTriggerRef: (element: HTMLElement | null) => {
@@ -360,6 +396,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
       const current = triggerElement();
       if (!current || !current.isConnected) {
         setTriggerElement(element);
+        triggerContext?.setTriggerRef?.(element);
       }
     },
     triggerId,
@@ -372,6 +409,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
         align: props.align,
         direction: props.direction,
         shouldFlip: props.shouldFlip,
+        trigger: props.trigger,
       }}
     >
       <PopoverTriggerContext.Provider value={popoverTriggerContext}>
@@ -552,7 +590,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
           trigger="MenuTrigger"
           triggerRef={() => popoverTrigger?.triggerRef() ?? null}
           placement={popoverPlacement() as never}
-          offset={8}
+          offset={triggerOptions?.trigger() === "contextMenu" ? 0 : 8}
           shouldFlip={popoverShouldFlip()}
           autoFocus={false}
           class={getPopoverClassName}

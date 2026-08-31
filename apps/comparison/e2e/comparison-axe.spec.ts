@@ -10,6 +10,15 @@ import { clearPointer, pinComparisonTheme } from "./visual-diff";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 
 const comparisonAxeTags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] as const;
+// WCAG 2.2 `target-size` (2.5.8) flags S2 compact tokens that are faithfully
+// under 24px: ActionGroup compact items measure 40×21, date/time segments are
+// ~20px, and the fixture trampoline Before/After buttons inherit UA chrome at
+// ~21px tall. The playground WCAG 2.2 AA scan already disables this rule for
+// S2 date segments. Raising those controls to 24px would invent a size (Rule
+// #2 / ADR 0001). D8 pair-diff is the target-size authority: an undersized
+// control that matches upstream is an upstream note, not a port defect. Axe
+// is smoke (Rule #7).
+const comparisonAxeDisabledRules = ["target-size"] as const;
 const routeFilter = new Set(
   (process.env.COMPARISON_AXE_ROUTES ?? "")
     .split(",")
@@ -77,7 +86,7 @@ async function markAxeScope(target: Locator, scope: string) {
 
 async function runAxe(page: Page, selector: string) {
   return page.evaluate(
-    async ({ contextSelector, tags }) => {
+    async ({ contextSelector, tags, disabledRules }) => {
       const axeRunner = (
         window as unknown as {
           axe: {
@@ -85,6 +94,7 @@ async function runAxe(page: Page, selector: string) {
               context: string,
               options: {
                 runOnly: { type: "tag"; values: string[] };
+                rules: Record<string, { enabled: boolean }>;
               },
             ) => Promise<{
               violations: Array<{
@@ -100,6 +110,7 @@ async function runAxe(page: Page, selector: string) {
 
       const results = await axeRunner.run(contextSelector, {
         runOnly: { type: "tag", values: tags },
+        rules: Object.fromEntries(disabledRules.map((id) => [id, { enabled: false }])),
       });
 
       return results.violations.map((violation) => ({
@@ -116,6 +127,7 @@ async function runAxe(page: Page, selector: string) {
     {
       contextSelector: selector,
       tags: [...comparisonAxeTags],
+      disabledRules: [...comparisonAxeDisabledRules],
     },
   );
 }

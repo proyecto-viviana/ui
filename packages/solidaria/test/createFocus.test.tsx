@@ -5,7 +5,7 @@
  * Focus events on child elements are ignored.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
 import { createFocus } from "../src/interactions/createFocus";
 import { createSignal, type Component } from "solid-js";

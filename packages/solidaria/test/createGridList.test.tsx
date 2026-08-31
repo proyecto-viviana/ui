@@ -7,7 +7,7 @@
  * under `"selection"` they stay focusable (just not selectable).
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { cleanup } from "@solidjs/testing-library";
 import {

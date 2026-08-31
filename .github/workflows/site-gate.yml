@@ -4,9 +4,8 @@ name: Site Gate
 # and the all-routes render sweep. Mirrors `vp run ci:site`.
 #
 # Runs on PRs AND on push-to-main: work on this repo lands direct to main, so a
-# PR-only trigger meant this gate had never once run on the branch it was
-# protecting. The 2026-07-24 audit found 12 a11y failures sitting on a green
-# main for exactly that reason (`launch.md` → B8).
+# PR-only trigger meant this gate did not run on the branch it protected. The
+# 2026-07-24 audit found 12 accessibility failures on a green main branch.
 on:
   push:
     branches: [main]

@@ -2,7 +2,7 @@
  * Tests for GridList component.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import {

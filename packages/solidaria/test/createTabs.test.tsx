@@ -3,7 +3,7 @@
  * Based on @react-spectrum/tabs tests.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { render, fireEvent, screen } from "@solidjs/testing-library";
 import { createRoot, createSignal, For, Show, type Accessor } from "solid-js";
 import {
@@ -234,6 +234,36 @@ describe("createTabs", () => {
       const tabs = screen.getAllByRole("tab");
       tabs[0].focus();
 
+      fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
+      expect(document.activeElement).toBe(tabs[1]);
+    });
+
+    it("ArrowRight moves DOM focus even if tablist isFocused was cleared", () => {
+      // Playwright `.focus()` can land DOM focus on a tab without the tablist
+      // bubbling focusin setting isFocused. Keyboard nav must still move focus.
+      let state: TabListState<(typeof defaultItems)[number]> | undefined;
+      function Harness() {
+        state = createTabListState({
+          items: defaultItems,
+          getKey: (item) => item.key,
+          getTextValue: (item) => item.label,
+        });
+        const { tabListProps } = createTabList({ orientation: "horizontal" }, state);
+        return (
+          <div {...tabListProps} data-testid="tablist">
+            <For each={defaultItems}>
+              {(item) => <TestTab key={item.key} state={state!} label={item.label} />}
+            </For>
+          </div>
+        );
+      }
+
+      render(() => <Harness />);
+      const tabs = screen.getAllByRole("tab");
+      tabs[0].focus();
+      expect(document.activeElement).toBe(tabs[0]);
+
+      state!.setFocused(false);
       fireEvent.keyDown(tabs[0], { key: "ArrowRight" });
       expect(document.activeElement).toBe(tabs[1]);
     });

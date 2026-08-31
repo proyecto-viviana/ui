@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextStrikeThrough.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/TextStrikeThrough.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,12 +20,8 @@ function TextStrikeThroughIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): J
       class={className}
     >
       <path
-        d="m14.5,2H5.5c-1.24023,0-2.25,1.00977-2.25,2.25v1.11035c0,.41406.33594.75.75.75s.75-.33594.75-.75v-1.11035c0-.41309.33691-.75.75-.75h3.75v3.75c0,.41406.33594.75.75.75s.75-.33594.75-.75v-3.75h3.75c.41309,0,.75.33691.75.75v1.11035c0,.41406.33594.75.75.75s.75-.33594.75-.75v-1.11035c0-1.24023-1.00977-2.25-2.25-2.25Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="m16.25,9.25H3.75c-.41406,0-.75.33594-.75.75s.33594.75.75.75h5.5v5.75h-1.5498c-.41406,0-.75.33594-.75.75s.33594.75.75.75h4.63965c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75h-1.58984v-5.75h5.5c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.5 2h-9C4.26 2 3.25 3.01 3.25 4.25v1.11c0 .414.336.75.75.75s.75-.336.75-.75V4.25c0-.413.337-.75.75-.75h3.75v3.75c0 .414.336.75.75.75s.75-.336.75-.75V3.5h3.75c.413 0 .75.337.75.75v1.11c0 .414.336.75.75.75s.75-.336.75-.75V4.25C16.75 3.01 15.74 2 14.5 2M16.25 9.25H3.75c-.414 0-.75.336-.75.75s.336.75.75.75h5.5v5.75H7.7c-.414 0-.75.336-.75.75s.336.75.75.75h4.64c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-1.59v-5.75h5.5c.414 0 .75-.336.75-.75s-.336-.75-.75-.75"
       />
     </svg>
   );

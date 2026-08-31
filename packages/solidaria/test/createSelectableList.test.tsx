@@ -10,11 +10,12 @@
  * its items.
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { createListState, type ListState, type ListStateProps } from "../../solid-stately/src";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import {
   createSelectableList,
+  type CreateSelectableListOptions,
   type SelectableListAria,
 } from "../src/selection/createSelectableList";
 
@@ -34,8 +35,14 @@ afterEach(() => {
   cleanup();
 });
 
+type ListOptions = Partial<Omit<CreateSelectableListOptions<Item>, "selectionManager" | "ref">>;
+
 /** Render a <ul> wired with listProps and <li> items carrying data-key/data-collection. */
-function renderList(stateProps: Partial<ListStateProps<Item>> = {}) {
+function renderList(
+  stateProps: Partial<ListStateProps<Item>> = {},
+  listOptions: ListOptions = {},
+  onParentKeyDown?: () => void,
+) {
   let state!: ListState<Item>;
   let api!: SelectableListAria;
   let container!: HTMLUListElement;
@@ -46,19 +53,22 @@ function renderList(stateProps: Partial<ListStateProps<Item>> = {}) {
       ...stateProps,
     });
     api = createSelectableList<Item>({
+      ...listOptions,
       selectionManager: state.selectionManager,
       ref: () => container,
     });
     const listProps = api.listProps as Record<string, unknown>;
     const collectionId = listProps["data-collection"] as string;
     return (
-      <ul ref={container} {...api.listProps}>
-        {items.map((item) => (
-          <li data-key={item.key} data-collection={collectionId}>
-            {item.label}
-          </li>
-        ))}
-      </ul>
+      <div onKeyDown={onParentKeyDown}>
+        <ul ref={container} {...api.listProps}>
+          {items.map((item) => (
+            <li data-key={item.key} data-collection={collectionId}>
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      </div>
     );
   });
   return {
@@ -103,9 +113,100 @@ describe("createSelectableList — keyboard navigation", () => {
   it("skips disabled keys while navigating", () => {
     const { manager, container } = renderList({ disabledKeys: ["b"] });
 
-    fireEvent.keyDown(container, { key: "ArrowDown" }); // → a
-    fireEvent.keyDown(container, { key: "ArrowDown" }); // skips b → c
+    fireEvent.keyDown(container, { key: "ArrowDown", repeat: true }); // → a
+    fireEvent.keyDown(container, { key: "ArrowDown", repeat: true }); // skips b → c
     expect(manager.focusedKey).toBe("c");
+  });
+
+  it("accepts repeated PageDown and PageUp events", () => {
+    const { manager, container } = renderList(
+      {},
+      {
+        keyboardDelegate: {
+          getKeyPageBelow: (key) => (key === "a" ? "c" : null),
+          getKeyPageAbove: (key) => (key === "c" ? "a" : null),
+        },
+      },
+    );
+    manager.setFocusedKey("a");
+
+    fireEvent.keyDown(container, { key: "PageDown", repeat: true });
+    expect(manager.focusedKey).toBe("c");
+
+    fireEvent.keyDown(container, { key: "PageUp", repeat: true });
+    expect(manager.focusedKey).toBe("a");
+  });
+
+  it("rejects repeated Home and End events", () => {
+    const { manager, container } = renderList();
+    manager.setFocusedKey("b");
+
+    fireEvent.keyDown(container, { key: "End", repeat: true });
+    expect(manager.focusedKey).toBe("b");
+
+    fireEvent.keyDown(container, { key: "End" });
+    expect(manager.focusedKey).toBe("d");
+
+    fireEvent.keyDown(container, { key: "Home", repeat: true });
+    expect(manager.focusedKey).toBe("d");
+
+    fireEvent.keyDown(container, { key: "Home" });
+    expect(manager.focusedKey).toBe("a");
+  });
+
+  it("rejects composing navigation events", () => {
+    const { manager, container } = renderList();
+
+    fireEvent.keyDown(container, { key: "ArrowDown", isComposing: true });
+    expect(manager.focusedKey).toBeNull();
+
+    fireEvent.keyDown(container, { key: "ArrowDown" });
+    expect(manager.focusedKey).toBe("a");
+  });
+
+  it("matches navigation modifiers exactly", () => {
+    const { manager, container } = renderList();
+
+    fireEvent.keyDown(container, { key: "ArrowDown", altKey: true });
+    expect(manager.focusedKey).toBeNull();
+
+    fireEvent.keyDown(container, { key: "ArrowDown", ctrlKey: true });
+    expect(manager.focusedKey).toBe("a");
+  });
+
+  it("extends multiple selection with Shift+ArrowDown", () => {
+    const { manager, container } = renderList({ selectionMode: "multiple" });
+    manager.setFocusedKey("a");
+    manager.replaceSelection("a");
+
+    fireEvent.keyDown(container, { key: "ArrowDown", shiftKey: true });
+
+    expect(manager.focusedKey).toBe("b");
+    expect(manager.isSelected("a")).toBe(true);
+    expect(manager.isSelected("b")).toBe(true);
+  });
+
+  it("prevents and stops handled movement but propagates an unavailable movement", () => {
+    let bubbleCount = 0;
+    const { manager, container } = renderList({}, {}, () => bubbleCount++);
+    const handled = new window.KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(handled);
+    expect(handled.defaultPrevented).toBe(true);
+    expect(bubbleCount).toBe(0);
+
+    manager.setFocusedKey("d");
+    const unavailable = new window.KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      bubbles: true,
+      cancelable: true,
+    });
+    container.dispatchEvent(unavailable);
+    expect(unavailable.defaultPrevented).toBe(false);
+    expect(bubbleCount).toBe(1);
   });
 });
 
@@ -130,8 +231,15 @@ describe("createSelectableList — selection shortcuts", () => {
   it("selects all with Ctrl+A in multiple mode", () => {
     const { manager, container } = renderList({ selectionMode: "multiple" });
 
-    fireEvent.keyDown(container, { key: "a", ctrlKey: true, metaKey: true });
+    fireEvent.keyDown(container, { key: "a", ctrlKey: true });
     expect(manager.isSelectAll).toBe(true);
+  });
+
+  it("rejects repeated select-all events", () => {
+    const { manager, container } = renderList({ selectionMode: "multiple" });
+
+    fireEvent.keyDown(container, { key: "a", ctrlKey: true, repeat: true });
+    expect(manager.isSelectAll).toBe(false);
   });
 
   it("clears selection with Escape", () => {
@@ -143,6 +251,37 @@ describe("createSelectableList — selection shortcuts", () => {
 
     fireEvent.keyDown(container, { key: "Escape" });
     expect(manager.isSelected("b")).toBe(false);
+  });
+
+  it("rejects repeated and composing Escape events", () => {
+    const { manager, container } = renderList({
+      selectionMode: "multiple",
+      defaultSelectedKeys: ["b"],
+    });
+
+    fireEvent.keyDown(container, { key: "Escape", repeat: true });
+    expect(manager.isSelected("b")).toBe(true);
+
+    fireEvent.keyDown(container, { key: "Escape", isComposing: true });
+    expect(manager.isSelected("b")).toBe(true);
+  });
+
+  it("lets Tab and unlisted Alt+Tab events continue without prevention", () => {
+    let bubbleCount = 0;
+    const { container } = renderList({}, {}, () => bubbleCount++);
+    for (const init of [
+      { key: "Tab", repeat: true },
+      { key: "Tab", altKey: true },
+    ]) {
+      const event = new window.KeyboardEvent("keydown", {
+        ...init,
+        bubbles: true,
+        cancelable: true,
+      });
+      container.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(bubbleCount).toBe(2);
   });
 });
 

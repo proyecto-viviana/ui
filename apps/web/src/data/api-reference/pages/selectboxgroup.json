@@ -150,6 +150,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "disallowEmptySelection",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether Escape and other collection-level interactions may clear the selection. This is an ARIA behavior override and does not change whether an option press may toggle the final selected item.",
+          "origin": "solidaria"
+        },
+        {
           "name": "selectedKeys",
           "type": "\"all\" | Iterable<Key>",
           "required": false,

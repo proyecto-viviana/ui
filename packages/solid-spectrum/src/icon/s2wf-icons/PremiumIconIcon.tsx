@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/PremiumIcon.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/PremiumIcon.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function PremiumIconIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       class={className}
     >
       <path
-        d="M3.37791,15.20416L1.36038,5.87794c-.2076-.95967.98828-1.60554,1.72487-.93156l3.33146,3.04828,2.64717-5.42114c.3734-.76469,1.49885-.76469,1.87225,0l2.64717,5.42114,3.33146-3.04828c.73659-.67398,1.93247-.02811,1.72487.93156l-2.01753,9.32622c-.10031.46368-.52321.79584-1.01326.79584H4.39117c-.49004,0-.91295-.33216-1.01326-.79584Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M3.378 15.204 1.36 5.878c-.207-.96.989-1.606 1.725-.932l3.332 3.049 2.647-5.421c.373-.765 1.499-.765 1.872 0l2.647 5.42 3.332-3.048c.736-.674 1.932-.028 1.725.932l-2.018 9.326c-.1.464-.523.796-1.013.796H4.39c-.49 0-.913-.332-1.013-.796"
       />
     </svg>
   );

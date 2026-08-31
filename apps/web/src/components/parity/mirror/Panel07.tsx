@@ -91,7 +91,8 @@ export function MirrorPanel07(): JSX.Element {
               one — an indeterminate ProgressCircle is the only live-state affordance it
               offers and it reads as loading, not as awaiting input. The line is dropped
               rather than faked, so the twin runs one row shorter than the spec.
-              (lab-shell exports a shared <Caret> if pixel parity is wanted back.) */}
+              (lab-shell exports a shared <Caret> if pixel parity is wanted back.)
+              Tracked by ticket #103. */}
         </Well>
 
         {/* GAP (ink), whole readout: the spec keys each row by painting its LABEL in a
@@ -99,7 +100,8 @@ export function MirrorPanel07(): JSX.Element {
             prop of any kind, so all four labels come out on the same neutral ink and the
             readout loses the channel coding that is most of its meaning. StatusLight could
             carry the fault row's red, but not in a label/value layout, so the rows are kept
-            uniform and the loss is reported once rather than papered over on one row. */}
+            uniform and the loss is reported once rather than papered over on one row.
+            Tracked by ticket #103. */}
         <Well style={{ padding: "13px 15px" }}>
           <div style={{ display: "flex", "flex-direction": "column", gap: "6px" }}>
             {/* Meter is the library's gauge, and label/valueLabel land where the spec puts

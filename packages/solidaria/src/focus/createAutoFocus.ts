@@ -3,6 +3,9 @@
  *
  * Provides priority-based auto-focus with deferred execution
  * and conflict resolution for multiple auto-focus elements.
+ *
+ * This is a local Solid helper. The pinned React Aria revision has no
+ * priority-based auto-focus queue API.
  */
 
 import { createEffect, onCleanup, onMount } from "solid-js";

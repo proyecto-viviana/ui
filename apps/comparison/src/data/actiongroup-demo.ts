@@ -1,6 +1,6 @@
 export const actionGroupSelectionModeOptions = ["none", "single", "multiple"] as const;
 export const actionGroupOrientationOptions = ["horizontal", "vertical"] as const;
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // ActionGroup fixture routes `?locale` into the S2 `Provider` so the D10 RTL
 // driver can re-run D5 mirrored, certifying the RTL-flipped Left/Right nav in a
 // horizontal group (v3 `useActionGroup` `flipDirection = rtl && horizontal`).

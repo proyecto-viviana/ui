@@ -5,7 +5,7 @@
  * markup. The companion TextField.hydrate.test.tsx hydrates over this output.
  */
 import { renderToString, isServer } from "solid-js/web";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { Provider } from "../src/provider";

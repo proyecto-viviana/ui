@@ -1,10 +1,9 @@
 /*
- * Auto-generated from the shipped @react-spectrum/s2 dist assets (SVGO-
- * optimized — pixel parity requires the shipped path data, not the raw
- * vendored .svg sources). Variants absent from the dist (Arrow, Gripper)
- * fall back to the vendored sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_ArrowSize100.svg
+// Generator input: packages/solid-spectrum/src/icon/assets/ui-icons/S2_ArrowSize400.svg
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

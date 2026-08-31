@@ -5,7 +5,7 @@
  * with adaptations for SolidJS patterns.
  */
 
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vite-plus/test";
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal, createEffect, createRoot } from "solid-js";
 import {

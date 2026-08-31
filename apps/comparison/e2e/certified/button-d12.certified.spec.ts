@@ -22,7 +22,7 @@ const buttonSsrScenario: SsrHydrationScenario = {
   cases: [
     {
       id: "baseline",
-      route: "/d12/button",
+      route: "/d12/button/",
       target: (page) => page.getByRole("button", { name: "Save" }),
       expectTag: "button",
       expectText: "Save",

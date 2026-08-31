@@ -78,7 +78,7 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
  *     does not internally drive `isEntering` (it is a prop, not a
  *     `useEnterAnimation`-style state machine), so the port has no default
  *     enter animation to compare frame-for-frame. Tracked as the shared
- *     headless-overlay realignment follow-up in recertification.md.
+ *     headless-overlay work in ticket #68.
  *   - D4/D5 (events/focus): open-on-press, close-on-Escape/interact-outside,
  *     underlay dismiss, and focus containment/restoration are
  *     `PopoverTrigger`/`DialogTrigger` behaviors, not the surface's; they belong

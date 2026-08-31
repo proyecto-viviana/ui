@@ -2,6 +2,8 @@
  * Environment detection utilities.
  * These avoid direct references to process.env which can cause TypeScript issues in browser environments.
  * Compatible with Node.js and Vite environments.
+ *
+ * This is a local runtime helper. It has no direct React Aria counterpart.
  */
 
 type ImportMetaWithEnv = ImportMeta & {

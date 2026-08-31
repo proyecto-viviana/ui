@@ -95,7 +95,8 @@ test.describe("Playground accessibility (axe scan)", () => {
   // own segments are the same size and adjacency, so they fail this check too.
   // They are inline parts of a single composite date widget (the WCAG 2.5.8
   // "inline" exception); widening or spacing them to 24px would diverge from
-  // S2. Keep the rule active elsewhere; exclude it only for this scan.
+  // S2. comparison-axe disables the same rule (S2 compact ActionGroup is 21px
+  // tall). D8 pair-diff is the target-size authority; axe is smoke.
   const aa22DisabledRules = [...aaDisabledRules, "target-size"];
 
   for (const theme of ["dark", "light"] as const) {

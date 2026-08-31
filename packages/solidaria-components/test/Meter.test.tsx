@@ -10,9 +10,10 @@
  * - Labels
  */
 
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
-import { Meter } from "../src/Meter";
+import { Label } from "../src/Label";
+import { Meter, MeterContext } from "../src/Meter";
 import {
   assertNoA11yViolations,
   assertAriaIdIntegrity,
@@ -245,6 +246,61 @@ describe("Meter", () => {
   // ============================================
 
   describe("labels", () => {
+    it("uses a child Label as the accessible name", () => {
+      render(() => (
+        <Meter value={25}>
+          <Label>Storage space</Label>
+        </Meter>
+      ));
+
+      const meter = screen.getByRole("meter", { name: "Storage space" });
+      const label = screen.getByText("Storage space");
+      expect(label.tagName).toBe("SPAN");
+      expect(label).toHaveAttribute("id");
+      expect(meter).toHaveAttribute("aria-labelledby", label.id);
+    });
+
+    it("gives an explicit aria-label precedence over a child Label", () => {
+      render(() => (
+        <Meter aria-label="Explicit meter name" value={25}>
+          {() => <Label>Visible label</Label>}
+        </Meter>
+      ));
+
+      const meter = screen.getByRole("meter");
+      const label = screen.getByText("Visible label");
+      expect(meter).toHaveAttribute("aria-label", "Explicit meter name");
+      expect(meter).not.toHaveAttribute("aria-labelledby");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("gives an explicit aria-labelledby precedence over a child Label", () => {
+      render(() => (
+        <>
+          <span id="external-meter-label">External label</span>
+          <Meter aria-labelledby="external-meter-label" value={25}>
+            {() => <Label>Visible label</Label>}
+          </Meter>
+        </>
+      ));
+
+      const meter = screen.getByRole("meter");
+      const label = screen.getByText("Visible label");
+      expect(meter).toHaveAttribute("aria-labelledby", "external-meter-label");
+      expect(label).not.toHaveAttribute("id");
+    });
+
+    it("lets explicit props override MeterContext props", () => {
+      render(() => (
+        <MeterContext.Provider value={{ "aria-label": "Context name", value: 10 }}>
+          <Meter aria-label="Local name" value={25} />
+        </MeterContext.Provider>
+      ));
+
+      const meter = screen.getByRole("meter", { name: "Local name" });
+      expect(meter).toHaveAttribute("aria-valuenow", "25");
+    });
+
     it("should support valueLabel", () => {
       render(() => (
         <Meter aria-label="Test Meter" value={75} valueLabel="75% used">

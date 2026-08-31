@@ -37,16 +37,75 @@ export function parsePropTable(markdown: string): PropRow[] {
   return rows;
 }
 
+function escapeText(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeAttribute(text: string): string {
+  return escapeText(text).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function safeLinkTarget(href: string): string | null {
+  const trimmed = href.trim();
+  if (
+    [...trimmed].some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint <= 0x20 || codePoint === 0x7f;
+    }) ||
+    /%(?:0[0-9a-f]|1[0-9a-f]|20|7f)/i.test(trimmed) ||
+    /["'<>]/.test(trimmed)
+  ) {
+    return null;
+  }
+  if (trimmed.startsWith("#")) {
+    return trimmed;
+  }
+  if (trimmed.startsWith("/") && trimmed[1] !== "/" && trimmed[1] !== "\\") {
+    return trimmed;
+  }
+
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "http:" || url.protocol === "https:" ? trimmed : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderTextMarkup(text: string): string {
+  const code: string[] = [];
+  const withCodePlaceholders = text.replace(/`([^`]+)`/g, (_match, value) => {
+    code.push(`<code>${escapeText(value)}</code>`);
+    return `\uE000${code.length - 1}\uE000`;
+  });
+
+  return escapeText(withCodePlaceholders)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\uE000(\d+)\uE000/g, (_match, index) => code[Number(index)] ?? "");
+}
+
 // Render the inline markdown found in a description cell (`code`, [links](url),
-// **bold**) to HTML. Input is trusted, vendored, build-time data, but HTML
-// metacharacters are still escaped before the allowed inline forms are applied.
+// **bold**) to HTML. The source is vendored build-time data, but vendoring is a
+// supply-chain boundary rather than a reason to trust markup. Escape both text
+// and attributes. Permit explicit HTTP(S) URLs, fragments, and local paths with
+// exactly one leading slash. Reject characters that can change URL or attribute
+// parsing, including their percent-encoded control forms.
 export function renderPropDescription(text: string): string {
-  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return escaped
-    .replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      (_match, label, href) => `<a href="${href}" target="_blank" rel="noreferrer">${label}</a>`,
-    )
-    .replace(/`([^`]+)`/g, "<code>$1</code>")
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  const links: string[] = [];
+  const withLinkPlaceholders = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, href) => {
+    const target = safeLinkTarget(href);
+    if (target == null) {
+      return match;
+    }
+
+    links.push(
+      `<a href="${escapeAttribute(target)}" target="_blank" rel="noreferrer">${renderTextMarkup(label)}</a>`,
+    );
+    return `\uE001${links.length - 1}\uE001`;
+  });
+
+  return renderTextMarkup(withLinkPlaceholders).replace(
+    /\uE001(\d+)\uE001/g,
+    (_match, index) => links[Number(index)] ?? "",
+  );
 }

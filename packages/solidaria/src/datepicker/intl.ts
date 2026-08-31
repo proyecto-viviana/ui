@@ -1,3 +1,39 @@
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/intl/datepicker/zh-TW.json
+
+// Ported from @react-aria/datepicker intl catalog.
 // DateField aria catalog, ported verbatim from @react-aria/datepicker's intl/*.json
 // (34 locales). Covers the field-type display names (era/year/month/day/hour/minute/
 // second/dayPeriod/...) used by the DisplayNames polyfill fallback plus the

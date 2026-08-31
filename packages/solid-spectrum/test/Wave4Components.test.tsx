@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render } from "@solidjs/testing-library";
 import { Heading } from "../src/text/Heading";
 import { Keyboard } from "../src/text/Keyboard";

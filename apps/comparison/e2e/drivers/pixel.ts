@@ -12,7 +12,7 @@ import {
 import { walkScenario, type WalkStepContext } from "./walk";
 
 /**
- * Driver D3 — strict pixel pair diff (recertification.md Phase 1). Rides the
+ * Driver D3 — strict pixel pair diff (see `.claude/current/certification.md`). Rides the
  * same panel-major walk as D1: screenshots the pixel target in every gesture
  * state on each panel, then diffs React vs Solid per state. Zero tolerance
  * (`exactPairDiff`) unless the scenario carries a waiver, and every waiver

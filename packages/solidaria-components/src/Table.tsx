@@ -10,6 +10,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createUniqueId,
   createSignal,
   onCleanup,
@@ -1479,6 +1480,9 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
 
 export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
   let sentinelRef: HTMLDivElement | undefined;
+  const setSentinelRef = (element: HTMLDivElement) => {
+    sentinelRef = element;
+  };
   const [isPending, setIsPending] = createSignal(false);
   const isLoading = () => !!props.isLoading || isPending();
 
@@ -1525,7 +1529,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
       <tr style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
         <td>
           <div
-            ref={sentinelRef}
+            ref={setSentinelRef}
             data-testid="loadMoreSentinel"
             style={{ position: "absolute", height: "1px", width: "1px" }}
           />
@@ -2210,16 +2214,27 @@ export function TableSelectAllCheckbox(props: TableSelectAllCheckboxProps = {}):
     () => state as TableState<object, TableCollection<object>>,
   );
 
-  let inputRef: HTMLInputElement | undefined;
-  createEffect(() => {
-    if (inputRef) {
-      inputRef.indeterminate = selectAllCheckboxAria.isIndeterminate;
+  const [inputEl, setInputEl] = createSignal<HTMLInputElement | null>(null);
+
+  // Chromium clears the `indeterminate` IDL whenever `checked` is written.
+  // Re-apply after that write so mixed Select All stays mixed in the AX tree.
+  const applyIndeterminate = (input: HTMLInputElement | null) => {
+    if (input) {
+      input.indeterminate = selectAllCheckboxAria.isIndeterminate;
     }
+  };
+
+  createRenderEffect(() => {
+    void selectAllCheckboxAria.checkboxProps.checked;
+    applyIndeterminate(inputEl());
   });
 
   return (
     <input
-      ref={inputRef}
+      ref={(el) => {
+        setInputEl(el);
+        applyIndeterminate(el);
+      }}
       {...selectAllCheckboxAria.checkboxProps}
       class={props.class}
       style={props.style}

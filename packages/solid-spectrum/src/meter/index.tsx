@@ -1,13 +1,23 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Meter.tsx
+
+// Port of packages/@react-spectrum/s2/src/Meter.tsx.
+import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
 import {
-  type JSX,
-  createContext,
-  createMemo,
-  createUniqueId,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
-import { createMeter } from "@proyecto-viviana/solidaria";
+  Label as HeadlessLabel,
+  Meter as HeadlessMeter,
+} from "@proyecto-viviana/solidaria-components";
 import { SkeletonWrapper } from "../skeleton";
 import { Text } from "../text";
 import type { StyleString } from "../style";
@@ -201,10 +211,6 @@ const fillStyles = style<MeterStyleState>({
   },
 });
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
-
 function stringValueLabel(value: JSX.Element | undefined): string | undefined {
   if (typeof value === "string" || typeof value === "number") {
     return String(value);
@@ -262,7 +268,6 @@ export function Meter(props: MeterProps): JSX.Element {
     "showValueLabel",
     "children",
   ]);
-  const labelId = createUniqueId();
   const size = () => local.size ?? "M";
   const variant = () => local.variant ?? "informative";
   const labelPosition = () => local.labelPosition ?? "top";
@@ -275,60 +280,23 @@ export function Meter(props: MeterProps): JSX.Element {
     labelAlign,
     isStaticColor: isStaticColor(),
   });
-  const accessibleLabelledBy = () =>
-    local["aria-labelledby"] ?? (!local["aria-label"] && local.label ? labelId : undefined);
-
-  const meterAria = createMeter({
-    get id() {
-      return local.id;
-    },
-    get value() {
-      return local.value;
-    },
-    get minValue() {
-      return local.minValue;
-    },
-    get maxValue() {
-      return local.maxValue;
-    },
-    get valueLabel() {
-      return stringValueLabel(local.valueLabel);
-    },
-    get formatOptions() {
-      return local.formatOptions;
-    },
-    get "aria-label"() {
-      return local["aria-label"];
-    },
-    get "aria-labelledby"() {
-      return accessibleLabelledBy();
-    },
-    get "aria-describedby"() {
-      return local["aria-describedby"];
-    },
-    get "aria-details"() {
-      return local["aria-details"];
-    },
-  });
-
-  const percentage = createMemo(() => {
-    const minValue = local.minValue ?? 0;
-    const maxValue = local.maxValue ?? 100;
-    const value = clamp(local.value ?? 0, minValue, maxValue);
-    return ((value - minValue) / (maxValue - minValue)) * 100;
-  });
-  const valueText = () =>
-    local.valueLabel ?? (meterAria.meterProps["aria-valuetext"] as string | undefined);
-  const showValue = () => !!local.label;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
 
   return (
-    <div
+    <HeadlessMeter
       {...getDataAttributes(merged)}
-      {...meterAria.meterProps}
-      role="meter"
+      id={local.id}
+      value={local.value}
+      minValue={local.minValue}
+      maxValue={local.maxValue}
+      valueLabel={stringValueLabel(local.valueLabel)}
+      formatOptions={local.formatOptions}
+      aria-label={local["aria-label"]}
+      aria-labelledby={local["aria-labelledby"]}
+      aria-describedby={local["aria-describedby"]}
+      aria-details={local["aria-details"]}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
@@ -339,19 +307,23 @@ export function Meter(props: MeterProps): JSX.Element {
       style={mergedUnsafeStyle()}
       slot={local.slot ?? undefined}
     >
-      {local.label && (
-        <div class={labelWrapperStyles(state("start"))}>
-          <span id={labelId} class={labelStyles(state("start"))}>
-            {local.label}
-          </span>
-        </div>
+      {({ percentage, valueText }) => (
+        <>
+          {local.label && (
+            <div class={labelWrapperStyles(state("start"))}>
+              <HeadlessLabel class={labelStyles(state("start"))}>{local.label}</HeadlessLabel>
+            </div>
+          )}
+          {local.label && (
+            <Text styles={valueStyles(state("end"))}>{local.valueLabel ?? valueText}</Text>
+          )}
+          <SkeletonWrapper>
+            <div class={trackStyles(state())}>
+              <div class={fillStyles(state())} style={{ width: `${percentage}%` }} />
+            </div>
+          </SkeletonWrapper>
+        </>
       )}
-      {showValue() && <Text styles={valueStyles(state("end"))}>{valueText()}</Text>}
-      <SkeletonWrapper>
-        <div class={trackStyles(state())}>
-          <div class={fillStyles(state())} style={{ width: `${percentage()}%` }} />
-        </div>
-      </SkeletonWrapper>
-    </div>
+    </HeadlessMeter>
   );
 }

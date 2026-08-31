@@ -7,6 +7,9 @@
  * - Interactive (onPress): wraps content in headless Button
  *
  * The UI layer consumes this for styling/composition only.
+ *
+ * This is a local Solid component. The pinned React Aria Components source
+ * has no Icon counterpart.
  */
 
 import { type JSX, createContext, createMemo, Show, splitProps } from "solid-js";

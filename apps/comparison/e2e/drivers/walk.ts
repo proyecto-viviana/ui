@@ -15,7 +15,7 @@ import {
 } from "./scenario";
 
 /**
- * Shared walk engine for the pair-oracle drivers (recertification.md Phase 1).
+ * Shared walk engine for the pair-oracle drivers (see `.claude/current/certification.md`).
  *
  * Walks one scenario case through both framework panels, driving each gesture
  * state with real inputs and invoking `collect` once per (panel, state) so a

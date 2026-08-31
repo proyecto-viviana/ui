@@ -10,7 +10,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { Breadcrumbs, BreadcrumbItem } from "../src/Breadcrumbs";
 import { I18nProvider } from "@proyecto-viviana/solidaria";

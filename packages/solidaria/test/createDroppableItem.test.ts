@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { createDroppableItem } from "../src/dnd/createDroppableItem";
 import type { DroppableCollectionState } from "@proyecto-viviana/solid-stately";

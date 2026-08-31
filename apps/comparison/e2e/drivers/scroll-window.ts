@@ -3,8 +3,8 @@ import { driverCases, scenarioThemes, type DriverScenario, type PanelFramework }
 import { forEachScenarioPanel } from "./walk";
 
 /**
- * Driver D-scroll — virtualized scroll-window behavior (recertification.md,
- * CP9.56 Virtualizer).
+ * Driver D-scroll — virtualized scroll-window behavior (see
+ * `.claude/current/certification.md`).
  *
  * The Virtualizer has no standalone styled S2 oracle, and its two ports diverge
  * by design in *how* they window: react-aria-components positions rows via

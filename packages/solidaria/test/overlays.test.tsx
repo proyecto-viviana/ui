@@ -2,11 +2,12 @@
  * Tests for overlay hooks and utilities
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
 // Import from source path for proper module resolution in tests
 import { createOverlayTriggerState } from "../../solid-stately/src";
+import { enableShadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
 import {
   createOverlayTrigger,
   createOverlay,
@@ -407,6 +408,83 @@ describe("ariaHideOutside", () => {
     expect(target2.getAttribute("aria-hidden")).toBeNull();
 
     revert();
+  });
+});
+
+describe("ariaHideOutside with Shadow DOM enabled", () => {
+  let container: HTMLDivElement;
+
+  beforeAll(() => {
+    enableShadowDOM();
+  });
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    container.remove();
+  });
+
+  it("keeps the target's composed ancestors visible and hides siblings inside its shadow root", () => {
+    const outside = document.createElement("div");
+    const shadowHost = document.createElement("div");
+    container.append(outside, shadowHost);
+
+    const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+    const shadowSibling = document.createElement("div");
+    const nestedHost = document.createElement("div");
+    shadowRoot.append(shadowSibling, nestedHost);
+
+    const nestedRoot = nestedHost.attachShadow({ mode: "open" });
+    const modal = document.createElement("div");
+    modal.setAttribute("role", "dialog");
+    nestedRoot.appendChild(modal);
+
+    const revert = ariaHideOutside([modal]);
+
+    expect(outside).toHaveAttribute("aria-hidden", "true");
+    expect(shadowHost).not.toHaveAttribute("aria-hidden");
+    expect(nestedHost).not.toHaveAttribute("aria-hidden");
+    expect(shadowSibling).toHaveAttribute("aria-hidden", "true");
+    expect(modal).not.toHaveAttribute("aria-hidden");
+
+    revert();
+    expect(outside).not.toHaveAttribute("aria-hidden");
+    expect(shadowSibling).not.toHaveAttribute("aria-hidden");
+  });
+
+  it("hides content added later inside an enclosing shadow root", async () => {
+    const shadowHost = document.createElement("div");
+    container.appendChild(shadowHost);
+    const shadowRoot = shadowHost.attachShadow({ mode: "open" });
+    const modal = document.createElement("div");
+    shadowRoot.appendChild(modal);
+
+    const revert = ariaHideOutside([modal]);
+    const addedLater = document.createElement("div");
+    shadowRoot.appendChild(addedLater);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(addedLater).toHaveAttribute("aria-hidden", "true");
+    revert();
+    expect(addedLater).not.toHaveAttribute("aria-hidden");
+  });
+
+  it("keeps a dynamically added top-layer element visible by attribute presence", async () => {
+    const target = document.createElement("div");
+    container.appendChild(target);
+    const revert = ariaHideOutside([target]);
+
+    const topLayer = document.createElement("div");
+    topLayer.setAttribute("data-solidaria-top-layer", "");
+    document.body.appendChild(topLayer);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(topLayer).not.toHaveAttribute("aria-hidden");
+    revert();
+    topLayer.remove();
   });
 });
 

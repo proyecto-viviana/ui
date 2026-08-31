@@ -25,9 +25,9 @@
 //
 //   export default defineConfig({
 //     plugins: [vivianaMacros(), solid({ ssr: true })],
-//     // Keep our Solid packages out of the optimizer and bundle them into SSR:
-//     optimizeDeps: { exclude: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"] },
-//     ssr: { noExternal: ["@proyecto-viviana/ui", "@proyecto-viviana/solid-spectrum"] },
+//     // Keep the linked Solid package out of the optimizer and bundle it into SSR:
+//     optimizeDeps: { exclude: ["@proyecto-viviana/ui"] },
+//     ssr: { noExternal: ["@proyecto-viviana/ui"] },
 //   });
 //
 // Plugin order: place `vivianaMacros()` before `vite-plugin-solid` (the macro

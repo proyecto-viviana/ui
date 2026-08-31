@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ListBox, ListBoxOption } from "../src/listbox";
 import { setupUser, firePointerDown } from "@proyecto-viviana/solid-spectrum-test-utils";

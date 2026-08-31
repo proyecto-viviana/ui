@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/dialog/useDialog.ts
+
 /**
  * Ported from React Aria:
  * https://github.com/adobe/react-spectrum/blob/main/packages/@react-aria/dialog/src/useDialog.ts
@@ -24,6 +26,7 @@ import {
   onCleanup,
 } from "solid-js";
 import { filterDOMProps, focusSafely } from "../utils";
+import { runAfterPaint } from "../utils/focus";
 import type { AriaLabelingProps, DOMProps } from "./types";
 
 export interface AriaDialogProps extends DOMProps, AriaLabelingProps {
@@ -40,6 +43,9 @@ export interface DialogAria {
 
   /** Props for the dialog title element. */
   titleProps: Accessor<Record<string, unknown>>;
+
+  /** Props for the dialog content/description element. Used for aria-describedby on alertdialogs. */
+  contentProps: Accessor<Record<string, unknown>>;
 }
 
 /**
@@ -55,41 +61,60 @@ export function createDialog(
 
   const role = () => getProps().role ?? "dialog";
   const generatedTitleId = createUniqueId();
+  const generatedContentId = createUniqueId();
   const [isRefocusing, setIsRefocusing] = createSignal(false);
 
   const titleId = createMemo(() => {
     const p = getProps();
-    // Use provided aria-labelledby, or generated ID if no aria-label
-    if (p["aria-labelledby"]) return undefined;
     return p["aria-label"] ? undefined : generatedTitleId;
   });
 
-  // Focus the dialog itself on mount, unless a child element is already focused.
-  // Only run on the client (SSR-safe)
+  const contentId = createMemo(() => {
+    const p = getProps();
+    return role() === "alertdialog" && !p["aria-describedby"] ? generatedContentId : undefined;
+  });
+
+  // Match @react-aria/dialog `useDialog`: initial focus is `useEffect`-timed
+  // (after paint), not a sync `createEffect` inside the opening click flush.
+  let didScheduleInitialFocus = false;
+  let cancelInitialFocus: (() => void) | undefined;
+  let safariTimeout: ReturnType<typeof setTimeout> | undefined;
   createEffect(() => {
-    // Guard against SSR - document is not available on the server
     if (typeof document === "undefined") return;
+    if (didScheduleInitialFocus) return;
 
     const dialogEl = ref();
-    if (dialogEl && !dialogEl.contains(document.activeElement)) {
-      focusSafely(dialogEl);
+    if (!dialogEl) return;
+
+    didScheduleInitialFocus = true;
+    const doc = dialogEl.ownerDocument;
+    cancelInitialFocus = runAfterPaint(() => {
+      cancelInitialFocus = undefined;
+      const el = ref();
+      if (!el || el.contains(doc.activeElement)) {
+        return;
+      }
+
+      focusSafely(el);
 
       // Safari on iOS does not move the VoiceOver cursor to the dialog
       // or announce that it has opened until it has rendered. A workaround
       // is to wait for half a second, then blur and re-focus the dialog.
-      const timeout = setTimeout(() => {
-        // Check that the dialog is still focused, or focused was lost to the body.
-        if (document.activeElement === dialogEl || document.activeElement === document.body) {
+      safariTimeout = setTimeout(() => {
+        safariTimeout = undefined;
+        if (doc.activeElement === el || doc.activeElement === doc.body) {
           setIsRefocusing(true);
-          dialogEl.blur();
-          focusSafely(dialogEl);
+          el.blur();
+          focusSafely(el);
           setIsRefocusing(false);
         }
       }, 500);
-
-      onCleanup(() => {
-        clearTimeout(timeout);
-      });
+    }, doc);
+  });
+  onCleanup(() => {
+    cancelInitialFocus?.();
+    if (safariTimeout !== undefined) {
+      clearTimeout(safariTimeout);
     }
   });
 
@@ -103,8 +128,8 @@ export function createDialog(
       role: role(),
       tabIndex: -1,
       "aria-label": p["aria-label"],
-      "aria-labelledby": p["aria-labelledby"] || titleId(),
-      "aria-describedby": p["aria-describedby"],
+      "aria-labelledby": p["aria-labelledby"] ?? titleId(),
+      "aria-describedby": p["aria-describedby"] ?? contentId(),
       // Prevent blur events from reaching createOverlay, which may cause
       // popovers to close. Since focus is contained within the dialog,
       // we don't want this to occur due to the above createEffect.
@@ -120,8 +145,13 @@ export function createDialog(
     id: titleId(),
   }));
 
+  const contentPropsValue = createMemo(() => ({
+    id: contentId(),
+  }));
+
   return {
     dialogProps,
     titleProps: titlePropsValue,
+    contentProps: contentPropsValue,
   };
 }

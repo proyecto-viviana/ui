@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Select.tsx
+
 /**
  * Select component for solidaria-components
  *
@@ -405,16 +419,10 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return clean as typeof ariaProps;
   });
 
-  const {
-    labelProps,
-    triggerProps,
-    valueProps,
-    menuProps,
-    isFocused,
-    isFocusVisible,
-    isOpen,
-    isPressed,
-  } = createSelect<T>(selectAriaProps, state);
+  // Keep the hook result intact. Its DOM prop surfaces are getters; destructuring
+  // them freezes the initial closed-state attributes and event composition.
+  const selectHook = createSelect<T>(selectAriaProps, state);
+  const { isFocused, isFocusVisible, isOpen, isPressed } = selectHook;
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
@@ -476,7 +484,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return rest;
   };
   const cleanLabelProps = () => {
-    const { ref: _ref, ...rest } = labelProps as Record<string, unknown>;
+    const { ref: _ref, ...rest } = selectHook.labelProps as Record<string, unknown>;
     return rest;
   };
   const setRootRef = (el: HTMLDivElement) => {
@@ -497,7 +505,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   const isInvalid = createMemo(() => validation().isInvalid);
   const triggerDescribedBy = () => {
     const ids = [
-      (triggerProps as { "aria-describedby"?: string })["aria-describedby"],
+      (selectHook.triggerProps as { "aria-describedby"?: string })["aria-describedby"],
       isInvalid() ? errorMessageId : undefined,
     ]
       .filter(Boolean)
@@ -508,7 +516,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   };
   const triggerPropsWithValidation = () =>
     ({
-      ...triggerProps,
+      ...selectHook.triggerProps,
       "aria-describedby": triggerDescribedBy(),
     }) as JSX.HTMLAttributes<HTMLElement>;
   const fieldErrorContext: FieldErrorContextValue = {
@@ -732,9 +740,15 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           get triggerProps() {
             return triggerPropsWithValidation();
           },
-          valueProps,
-          labelProps,
-          menuProps,
+          get valueProps() {
+            return selectHook.valueProps;
+          },
+          get labelProps() {
+            return selectHook.labelProps;
+          },
+          get menuProps() {
+            return selectHook.menuProps;
+          },
           get errorMessageProps() {
             return { id: errorMessageId };
           },
@@ -1005,6 +1019,9 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       ...(menuProps as unknown as AriaListBoxProps),
       shouldSelectOnPressUp: true,
       shouldFocusOnHover: true,
+      // Upstream useSelect keeps Escape for closing the popup even though a
+      // multiple Select may toggle its final selected option off.
+      disallowEmptySelection: true,
       shouldSelectOnFocus: local.isInPopover === true ? false : undefined,
       get isDisabled() {
         return state.isDisabled;
@@ -1366,9 +1383,9 @@ function createSelectListStateAdapter<T>(state: SelectState<T>): ListState<T> {
     focusedKey: state.focusedKey,
     setFocusedKey: (key) => state.setFocusedKey(key ?? null),
     childFocusStrategy: () => null,
-    selectionMode: () => state.selectionMode(),
-    selectionBehavior: () => "replace",
-    disallowEmptySelection: () => true,
+    selectionMode: () => state.selectionManager.selectionMode,
+    selectionBehavior: () => state.selectionManager.selectionBehavior,
+    disallowEmptySelection: () => state.selectionManager.disallowEmptySelection,
     selectedKeys,
     disabledKeys,
     disabledBehavior: () => "all",
@@ -1376,33 +1393,15 @@ function createSelectListStateAdapter<T>(state: SelectState<T>): ListState<T> {
     isSelectAll: () => state.selectedKeys() === "all",
     isSelected: (key) => selectedKeys().has(key),
     isDisabled: state.isKeyDisabled,
-    setSelectionBehavior: () => {},
-    toggleSelection: (key) => {
-      if (state.selectionMode() !== "multiple") {
-        state.setSelectedKey(key);
-        return;
-      }
-      const keys = state.selectedKeys();
-      if (keys === "all") return;
-      const next = new Set(keys);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      state.setSelectedKeys(next);
-    },
-    replaceSelection: (key) => state.setSelectedKey(key),
-    setSelectedKeys: (keys) => state.setSelectedKeys(keys),
-    selectAll: () => {},
-    clearSelection: () =>
-      state.selectionMode() === "multiple" ? state.setSelectedKeys([]) : state.setSelectedKey(null),
-    toggleSelectAll: () => {},
-    extendSelection: (toKey) => state.setSelectedKey(toKey),
-    select: (key) =>
-      state.selectionMode() === "multiple"
-        ? state.setSelectedKeys([
-            ...(state.selectedKeys() === "all" ? [] : (state.selectedKeys() as Set<Key>)),
-            key,
-          ])
-        : state.setSelectedKey(key),
+    setSelectionBehavior: (behavior) => state.selectionManager.setSelectionBehavior(behavior),
+    toggleSelection: (key) => state.selectionManager.toggleSelection(key),
+    replaceSelection: (key) => state.selectionManager.replaceSelection(key),
+    setSelectedKeys: (keys) => state.selectionManager.setSelectedKeys(keys),
+    selectAll: () => state.selectionManager.selectAll(),
+    clearSelection: () => state.selectionManager.clearSelection(),
+    toggleSelectAll: () => state.selectionManager.toggleSelectAll(),
+    extendSelection: (toKey) => state.selectionManager.extendSelection(toKey),
+    select: (key, event) => state.selectionManager.select(key, event),
   };
 }
 

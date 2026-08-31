@@ -1,5 +1,40 @@
-// DateField validation-message catalog, ported verbatim from @react-stately/datepicker's
-// intl/*.json (34 locales). Keep in sync with the vendored react-spectrum source on every
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/ar-AE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/bg-BG.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/cs-CZ.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/da-DK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/de-DE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/el-GR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/en-US.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/es-ES.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/et-EE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/fi-FI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/fr-FR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/he-IL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/hr-HR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/hu-HU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/it-IT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/ja-JP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/ko-KR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/lt-LT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/lv-LV.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/nb-NO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/nl-NL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/pl-PL.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/pt-BR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/pt-PT.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/ro-RO.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/ru-RU.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/sk-SK.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/sl-SI.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/sr-SP.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/sv-SE.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/tr-TR.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/uk-UA.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/zh-CN.json
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/intl/datepicker/zh-TW.json
+
+// DateField validation messages. Ported from the @react-stately/datepicker intl catalog.
+// The catalog has 34 locales. Keep it in sync with the vendored react-spectrum source on every
 // pin bump. Hand-rolled resolver so solid-stately needs no @internationalized/string dep.
 
 export type DateFieldErrorKey =

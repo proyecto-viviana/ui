@@ -4,7 +4,7 @@
  * These tests verify the headless RadioGroup/Radio components follow
  * react-aria-components patterns.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import {
   Radio,

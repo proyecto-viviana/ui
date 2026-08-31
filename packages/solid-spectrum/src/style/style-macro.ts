@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/style/style-macro.ts
+
 import type {
   Condition,
   CSSProperties,
@@ -37,11 +39,11 @@ const env: Record<string, string | undefined> =
 
 // Postfix all class names with the pinned S2 version, matching upstream, which
 // derives it as `json.version.replace(/[0.]/g, '')` from @react-spectrum/s2's
-// package.json. Our current pin is @react-spectrum/s2@1.5.1 (scripts/upstream-pin.json),
-// so 1.5.1 → "151". Hardcoded because this module is also loaded in the dts/dom
+// package.json. Our current pin is @react-spectrum/s2@1.6.0 (scripts/upstream-pin.json),
+// so 1.6.0 → "16". Hardcoded because this module is also loaded in the dts/dom
 // builds that omit Node globals (no fs.readFileSync). `guard:style-macro-parity`
 // enforces that this tracks the pin — bump it in lockstep with any S2 pin bump.
-const POSTFIX = "151";
+const POSTFIX = "16";
 
 export class ArbitraryProperty<T extends Value> implements Property<T> {
   property: string;
@@ -376,13 +378,19 @@ export function createTheme<T extends Theme>(
     let css = "";
 
     // Declare layers for each priority ahead of time so the order is always correct.
+    // The `prose` layer is declared first so that it is always lower priority than
+    // the rest of the style macro layers. Reserving here will make more sense when
+    // prose eventually moves to live here after the API settles.
+    // See the prose macro in @react-spectrum/ai.
     css += "@layer ";
     let first = true;
     for (let i = 0; i <= usedPriorities; i++) {
+      if (!first) {
+        css += ", ";
+      }
       if (first) {
         first = false;
-      } else {
-        css += ", ";
+        css += "_.prose, ";
       }
       css += layerName(generateName(i, true));
     }

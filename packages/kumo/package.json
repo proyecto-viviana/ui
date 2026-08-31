@@ -1,0 +1,63 @@
+{
+  "name": "@proyecto-viviana/kumo",
+  "version": "0.0.0",
+  "description": "Experimental Kumo-shaped styled components for Solid",
+  "keywords": [
+    "cloudflare",
+    "components",
+    "design-system",
+    "kumo",
+    "solid",
+    "solidjs"
+  ],
+  "homepage": "https://ui.proyectoviviana.org",
+  "bugs": "https://github.com/proyecto-viviana/ui/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proyecto-viviana/ui.git",
+    "directory": "packages/kumo"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "LICENSE-CLOUDFLARE"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "solid": "./dist/index.jsx",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./components/button": {
+      "types": "./dist/components/button.d.ts",
+      "solid": "./dist/components/button.jsx",
+      "import": "./dist/components/button.js",
+      "default": "./dist/components/button.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rm -rf dist && vp pack && mkdir -p dist && cp src/styles.css dist/styles.css && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
+  },
+  "dependencies": {
+    "@proyecto-viviana/solidaria-components": "workspace:*"
+  },
+  "devDependencies": {
+    "solid-js": "^1.9.15"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  }
+}

@@ -1,3 +1,30 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/DateField.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/HiddenDateInput.tsx
+
 /**
  * DateField component for solidaria-components
  *
@@ -447,8 +474,8 @@ interface RootHiddenDateInputProps {
 
 /**
  * The always-rendered hidden date input at the DateField root — a faithful port
- * of react-aria-components' HiddenDateInput (private/HiddenDateInput.mjs). It is
- * NOT a validation input: it is a clipped, aria-hidden, tabIndex={-1} native
+ * of react-aria-components/src/HiddenDateInput.tsx. It is NOT a validation
+ * input: it is a clipped, aria-hidden, tabIndex={-1} native
  * date input that mirrors the current value for browser autofill. `form=""`
  * detaches it from form submission (the DateInput's <Input> submits), so it
  * never double-counts in FormData. RAC renders it unconditionally, which is why

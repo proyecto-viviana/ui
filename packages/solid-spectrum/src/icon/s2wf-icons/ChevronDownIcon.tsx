@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ChevronDown.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ChevronDown.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function ChevronDownIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Ele
       class={className}
     >
       <path
-        d="M3.75488,7.24316c.28711-.29883.76172-.3086,1.05957-.02051l5.18359,4.98633,5.19727-4.99902c.29785-.28808.77246-.27832,1.05957.02051.28711.29687.27832.77246-.02051,1.05957l-5.7168,5.5c-.29004.28027-.74902.28027-1.03906,0l-5.70312-5.4873c-.15332-.14649-.23047-.34375-.23047-.54004,0-.18751.06934-.37501.20996-.51954Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M3.755 7.243c.287-.299.762-.308 1.06-.02l5.183 4.986 5.197-4.999c.298-.288.773-.278 1.06.02.287.297.278.773-.02 1.06l-5.717 5.5c-.29.28-.75.28-1.04 0L3.776 8.303c-.153-.147-.23-.344-.23-.54 0-.188.07-.375.21-.52"
       />
     </svg>
   );

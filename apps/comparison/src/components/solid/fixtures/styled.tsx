@@ -1223,16 +1223,26 @@ function SolidSpectrumProviderDemo() {
     },
     [
       hc("div", { class: "comparison-provider-stack" }, [
-        hc("div", { class: "comparison-provider-caption" }, [
-          () => `Outer provider: ${demoProps().colorScheme} / ${demoProps().background}`,
-        ]),
+        hc(
+          "div",
+          {
+            class: "comparison-provider-caption",
+            get "data-comparison-caption-scheme"() {
+              return demoProps().colorScheme;
+            },
+          },
+          [() => `Outer provider: ${demoProps().colorScheme} / ${demoProps().background}`],
+        ),
         h(SolidSpectrumButton, { variant: "primary" }, "Inherited Action"),
         h(
           SolidSpectrumProvider,
           { colorScheme: "light", background: "base", style: nestedProviderStyle },
           h(
             "div",
-            { class: "comparison-provider-caption" },
+            {
+              class: "comparison-provider-caption",
+              "data-comparison-caption-scheme": "light",
+            },
             "Nested provider: local light override",
           ),
           h(SolidSpectrumButton, { variant: "accent" }, "Nested Override"),
@@ -6677,13 +6687,15 @@ function SolidSpectrumDialogDemo() {
                       },
                       [
                         () => [
-                          hc(
-                            SolidSpectrumHeading,
-                            {
-                              slot: "title",
-                            },
-                            [() => demoProps().title],
-                          ),
+                          demoProps().hasTitle
+                            ? hc(
+                                SolidSpectrumHeading,
+                                {
+                                  slot: "title",
+                                },
+                                [() => demoProps().title],
+                              )
+                            : null,
                           hc(SolidSpectrumContent, {}, [
                             () => hc(SolidSpectrumText, {}, [() => demoProps().body]),
                           ]),

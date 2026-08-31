@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ChartBarVert.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ChartBarVert.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,34 +20,8 @@ function ChartBarVertIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="M17.25,18H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #292929)"
-        stroke-width="0"
-      />
-      <path
-        d="M6.75,15c-.41406,0-.75-.33594-.75-.75v-4.25c0-.41406.33594-.75.75-.75s.75.33594.75.75v4.25c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #292929)"
-        stroke-width="0"
-      />
-      <path
-        d="M3.75,15c-.41406,0-.75-.33594-.75-.75v-2c0-.41406.33594-.75.75-.75s.75.33594.75.75v2c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #292929)"
-        stroke-width="0"
-      />
-      <path
-        d="M9.75,15c-.41406,0-.75-.33594-.75-.75v-6.75c0-.41406.33594-.75.75-.75s.75.33594.75.75v6.75c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #292929)"
-        stroke-width="0"
-      />
-      <path
-        d="M12.75,15c-.41406,0-.75-.33594-.75-.75V5c0-.41406.33594-.75.75-.75s.75.33594.75.75v9.25c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #292929)"
-        stroke-width="0"
-      />
-      <path
-        d="M15.75,15c-.41406,0-.75-.33594-.75-.75V2.75c0-.41406.33594-.75.75-.75s.75.33594.75.75v11.5c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #292929)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M17.25 18H2.75c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h14.5c.414 0 .75.336.75.75s-.336.75-.75.75M6.75 15c-.414 0-.75-.336-.75-.75V10c0-.414.336-.75.75-.75s.75.336.75.75v4.25c0 .414-.336.75-.75.75M3.75 15c-.414 0-.75-.336-.75-.75v-2c0-.414.336-.75.75-.75s.75.336.75.75v2c0 .414-.336.75-.75.75M9.75 15c-.414 0-.75-.336-.75-.75V7.5c0-.414.336-.75.75-.75s.75.336.75.75v6.75c0 .414-.336.75-.75.75M12.75 15c-.414 0-.75-.336-.75-.75V5c0-.414.336-.75.75-.75s.75.336.75.75v9.25c0 .414-.336.75-.75.75M15.75 15c-.414 0-.75-.336-.75-.75V2.75c0-.414.336-.75.75-.75s.75.336.75.75v11.5c0 .414-.336.75-.75.75"
       />
     </svg>
   );

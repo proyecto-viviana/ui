@@ -3,6 +3,9 @@
  *
  * These are separated to avoid circular dependencies between
  * Dialog, Modal, Popover, and Button components.
+ *
+ * This is a local Solid module split. The owning overlay components record
+ * their upstream sources.
  */
 
 import { createContext, useContext } from "solid-js";
@@ -48,6 +51,7 @@ export interface PopoverTriggerContextValue {
     open: () => void;
     close: () => void;
     toggle: () => void;
+    point?: () => { x: number; y: number } | null;
   };
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (el: HTMLElement | null) => void;
@@ -55,6 +59,8 @@ export interface PopoverTriggerContextValue {
   triggerProps?: Record<string, unknown>;
   overlayProps?: Record<string, unknown>;
   trigger: string;
+  /** Lets a trigger capture the popover element (PreviewTrigger safe-area). */
+  setOverlayRef?: (el: HTMLElement | null) => void;
 }
 
 export const PopoverTriggerContext = createContext<PopoverTriggerContextValue | null>(null);

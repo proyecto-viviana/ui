@@ -1,14 +1,24 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Meter.tsx
+
+// Port of packages/@react-spectrum/s2/src/Meter.tsx.
+
+import { type JSX, For, createContext, mergeProps, splitProps, useContext } from "solid-js";
 import {
-  type JSX,
-  For,
-  createContext,
-  createMemo,
-  createUniqueId,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
-import { createMeter } from "@proyecto-viviana/solidaria";
+  Label as HeadlessLabel,
+  Meter as HeadlessMeter,
+} from "@proyecto-viviana/solidaria-components";
 import { SkeletonWrapper } from "../skeleton";
 import { Text } from "../text";
 import type { StyleString } from "../style";
@@ -376,7 +386,6 @@ export function Meter(props: MeterProps): JSX.Element {
     "showValueLabel",
     "children",
   ]);
-  const labelId = createUniqueId();
   const size = () => local.size ?? "M";
   const variant = () => normalizeVariant(local.variant);
   const labelPosition = () => local.labelPosition ?? "top";
@@ -390,70 +399,33 @@ export function Meter(props: MeterProps): JSX.Element {
     isStaticColor: isStaticColor(),
     isSegmented: segmentCount() != null,
   });
-  const accessibleLabelledBy = () =>
-    local["aria-labelledby"] ?? (!local["aria-label"] && local.label ? labelId : undefined);
-
-  const meterAria = createMeter({
-    get id() {
-      return local.id;
-    },
-    get value() {
-      return local.value;
-    },
-    get minValue() {
-      return local.minValue;
-    },
-    get maxValue() {
-      return local.maxValue;
-    },
-    get valueLabel() {
-      return stringValueLabel(local.valueLabel);
-    },
-    get formatOptions() {
-      return local.formatOptions;
-    },
-    get "aria-label"() {
-      return local["aria-label"];
-    },
-    get "aria-labelledby"() {
-      return accessibleLabelledBy();
-    },
-    get "aria-describedby"() {
-      return local["aria-describedby"];
-    },
-    get "aria-details"() {
-      return local["aria-details"];
-    },
-  });
-
-  const percentage = createMemo(() => {
-    const minValue = local.minValue ?? 0;
-    const maxValue = local.maxValue ?? 100;
-    const value = clamp(local.value ?? 0, minValue, maxValue);
-    return ((value - minValue) / (maxValue - minValue)) * 100;
-  });
-  const valueText = () =>
-    local.valueLabel ?? (meterAria.meterProps["aria-valuetext"] as string | undefined);
   const segmentCount = () => {
     const segments = local.segments;
     return segments != null && Number.isFinite(segments) && segments >= 1
       ? Math.floor(segments)
       : null;
   };
-  const filledCount = createMemo(() => {
+  const filledCount = (percentage: number) => {
     const segments = segmentCount();
-    return segments == null ? 0 : clamp(Math.round((percentage() / 100) * segments), 0, segments);
-  });
-  const showValue = () => !!local.label;
+    return segments == null ? 0 : clamp(Math.round((percentage / 100) * segments), 0, segments);
+  };
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
 
   return (
-    <div
+    <HeadlessMeter
       {...getDataAttributes(merged)}
-      {...meterAria.meterProps}
-      role="meter"
+      id={local.id}
+      value={local.value}
+      minValue={local.minValue}
+      maxValue={local.maxValue}
+      valueLabel={stringValueLabel(local.valueLabel)}
+      formatOptions={local.formatOptions}
+      aria-label={local["aria-label"]}
+      aria-labelledby={local["aria-labelledby"]}
+      aria-describedby={local["aria-describedby"]}
+      aria-details={local["aria-details"]}
       ref={mergeContextRefs(
         (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
         props.ref,
@@ -464,30 +436,39 @@ export function Meter(props: MeterProps): JSX.Element {
       style={mergedUnsafeStyle()}
       slot={local.slot ?? undefined}
     >
-      {local.label && (
-        <div class={labelWrapperStyles(state("start"))}>
-          <span id={labelId} class={labelStyles(state("start"))}>
-            {local.label}
-          </span>
-        </div>
+      {({ percentage, valueText }) => (
+        <>
+          {local.label && (
+            <div class={labelWrapperStyles(state("start"))}>
+              <HeadlessLabel class={labelStyles(state("start"))}>{local.label}</HeadlessLabel>
+            </div>
+          )}
+          {local.label && (
+            <Text styles={valueStyles(state("end"))}>{local.valueLabel ?? valueText}</Text>
+          )}
+          <SkeletonWrapper>
+            {segmentCount() != null ? (
+              <div class={segmentRowStyles} aria-hidden="true">
+                <For each={Array.from({ length: segmentCount() ?? 0 })}>
+                  {(_, index) => (
+                    <div
+                      class={segmentStyles({
+                        ...state(),
+                        isFilled: index() < filledCount(percentage),
+                      })}
+                    />
+                  )}
+                </For>
+              </div>
+            ) : (
+              <div class={trackStyles(state())}>
+                <div class={fillStyles(state())} style={{ width: `${percentage}%` }} />
+                <div aria-hidden="true" class={trackRimStyles} />
+              </div>
+            )}
+          </SkeletonWrapper>
+        </>
       )}
-      {showValue() && <Text styles={valueStyles(state("end"))}>{valueText()}</Text>}
-      <SkeletonWrapper>
-        {segmentCount() != null ? (
-          <div class={segmentRowStyles} aria-hidden="true">
-            <For each={Array.from({ length: segmentCount() ?? 0 })}>
-              {(_, index) => (
-                <div class={segmentStyles({ ...state(), isFilled: index() < filledCount() })} />
-              )}
-            </For>
-          </div>
-        ) : (
-          <div class={trackStyles(state())}>
-            <div class={fillStyles(state())} style={{ width: `${percentage()}%` }} />
-            <div aria-hidden="true" class={trackRimStyles} />
-          </div>
-        )}
-      </SkeletonWrapper>
-    </div>
+    </HeadlessMeter>
   );
 }

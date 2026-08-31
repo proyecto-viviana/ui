@@ -110,7 +110,7 @@ export function MirrorPanel06(): JSX.Element {
                 ImageContext. GAP (proportion): the spec fixes the thumbnail at 110px tall;
                 3/2 is not exposed as a prop, so the preview is taller here. Left alone —
                 forcing a height would hide exactly the kind of difference this panel is
-                built to surface. */}
+                built to surface. Tracked by ticket #103. */}
             <Image src="/glasselated/thumb-1.png" alt="" />
             {/* The spec's overlay is a translucent, backdrop-blurred chip. Badge carries
                 the label faithfully, but it paints no backdrop-filter of its own — that

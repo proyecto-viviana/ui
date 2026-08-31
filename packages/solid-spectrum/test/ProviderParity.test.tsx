@@ -4,7 +4,7 @@
 
 import { createSignal } from "solid-js";
 import { render, screen } from "@solidjs/testing-library";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vite-plus/test";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { useModalProvider } from "@proyecto-viviana/solidaria";
 import { Provider, useProvider, useProviderProps } from "../src/provider";

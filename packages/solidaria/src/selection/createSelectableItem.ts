@@ -1,3 +1,17 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/selection/useSelectableItem.ts
+
 /**
  * createSelectableItem - handles interactions with an item in a selectable
  * collection. Port of `@react-aria/selection`'s `useSelectableItem`.
@@ -20,11 +34,11 @@
  *   `disabledBehavior: 'selection'` keeps actions enabled while selection stays
  *   blocked.
  * - **Virtual focus** guards real DOM focus and updates the focused key on
- *   press; we have no `moveVirtualFocus`, so no AT cursor move is dispatched.
- * - **`onDragStart`** is bubble phase (upstream uses capture to beat `useDrag`);
- *   wired to capture when drag-and-drop integration lands.
- * - **`getItemProps` press-handler chaining** (collection-provided press
- *   handlers) is omitted — our nodes don't carry them.
+ *   press. Ticket #100 tracks the missing AT cursor move.
+ * - **`onDragStart`** uses the bubble phase. Ticket #84 owns the capture-phase
+ *   integration with drag and drop.
+ * - **`getItemProps` press-handler chaining** is omitted because our nodes do
+ *   not carry collection-provided press handlers. Ticket #97 owns this boundary.
  */
 
 import { createEffect, createUniqueId, type Accessor, type JSX } from "solid-js";
@@ -319,7 +333,7 @@ export function createSelectableItem<T>(
         }
       }
     }
-    // Virtual focus: no moveVirtualFocus equivalent in our port (documented gap).
+    // Ticket #100 tracks the missing moveVirtualFocus call for this branch.
   });
 
   const { pressProps, isPressed } = createPress({
@@ -445,8 +459,8 @@ export function createSelectableItem<T>(
   };
 
   // Prevent native drag and drop on long press when we also select on long
-  // press. Upstream uses a capturing listener to beat useDrag; we use bubble
-  // until drag-and-drop integration lands (documented adaptation).
+  // press. Upstream uses a capturing listener to beat useDrag. Ticket #84 owns
+  // the capture-phase integration with drag and drop.
   const onDragStart = (e: DragEvent) => {
     if (modality === "touch" && longPressEnabledOnPressStart) {
       e.preventDefault();

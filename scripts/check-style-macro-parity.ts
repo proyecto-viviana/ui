@@ -27,7 +27,7 @@
  *
  * A faithful port yields byte-identical output. The one legitimate difference is
  * the version POSTFIX appended to every class name (upstream derives it from the
- * pinned S2 version — "151" for 1.5.1 — so the port must match that exact pin);
+ * pinned S2 version — "16" for 1.6.0 — so the port must match that exact pin);
  * this guard does NOT normalize it away, so it also catches POSTFIX drift when
  * the upstream pin is bumped without updating the port.
  *

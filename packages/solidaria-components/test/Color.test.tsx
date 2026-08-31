@@ -4,7 +4,7 @@
  * Tests for ColorSlider, ColorArea, ColorWheel, ColorField, and ColorSwatch.
  */
 
-import { describe, it, expect, afterEach, vi } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { createSignal } from "solid-js";
@@ -1452,7 +1452,7 @@ describe("Color Components", () => {
       }
     });
 
-    it("should keep ArrowRight/ArrowLeft inert in stack layout", () => {
+    it("should use vertical roving focus without selecting in stack layout", () => {
       const onChange = vi.fn();
       render(() => (
         <TestColorSwatchPicker onChange={onChange} aria-label="Palette" layout="stack" />
@@ -1468,10 +1468,16 @@ describe("Color Components", () => {
 
       expect(getSelectedIndex()).toBe(0);
       fireEvent.keyDown(listbox, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
       expect(getSelectedIndex()).toBe(0);
       expect(onChange).not.toHaveBeenCalled();
 
       fireEvent.keyDown(listbox, { key: "ArrowDown" });
+      expect(focusedIndex()).toBe(1);
+      expect(getSelectedIndex()).toBe(0);
+      expect(onChange).not.toHaveBeenCalled();
+
+      fireEvent.keyDown(listbox, { key: "Enter" });
       expect(getSelectedIndex()).toBe(1);
       expect(onChange).toHaveBeenCalledTimes(1);
     });

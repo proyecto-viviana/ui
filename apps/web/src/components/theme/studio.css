@@ -176,6 +176,13 @@
 
 /* ── /home ─────────────────────────────────────────────────────────────── */
 
+/* The landing shell is not `[data-glasselated]`, so it does not inherit
+   showcase body ink. Without this, dark theme paints `#000` on `#0c0d10`.
+   Layout for the in-progress landing BEM stays with that rewrite. */
+.pv-landing-shell {
+  color: var(--text-primary);
+}
+
 /* Hero vertical rhythm */
 .pv-hero {
   padding-block: 3.25rem 3.5rem;

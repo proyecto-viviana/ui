@@ -7,7 +7,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
 import { fireEvent, render, waitFor, cleanup } from "@solidjs/testing-library";
 import { FocusScope } from "../src/focus/FocusScope";
 import { Portal } from "solid-js/web";
@@ -162,7 +162,9 @@ describe("FocusScope (ownerDocument)", () => {
       const input1 = iframeDocument.querySelector(
         'input[data-testid="input1"]',
       ) as HTMLInputElement;
-      expect(iframeDocument.activeElement).toBe(input1);
+      await waitFor(() => {
+        expect(iframeDocument.activeElement).toBe(input1);
+      });
 
       setShow(false);
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";
@@ -46,7 +46,7 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(circles).toEqual(["10", "4", "4", "16", "16"]);
     expect(trigger.querySelector("path")).toHaveAttribute(
       "d",
-      "m10,8.5c-.82843,0-1.5.67157-1.5,1.5s.67157,1.5,1.5,1.5,1.5-.67157,1.5-1.5-.67157-1.5-1.5-1.5Z",
+      "M10 8.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5 1.5-.672 1.5-1.5-.672-1.5-1.5-1.5",
     );
   });
 

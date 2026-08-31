@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { vi, afterEach } from "vitest";
+import { vi, afterEach } from "vite-plus/test";
 
 // ============================================
 // POLYFILLS

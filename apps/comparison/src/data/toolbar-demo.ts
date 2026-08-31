@@ -8,7 +8,7 @@ export const toolbarOrientationOptions = ["horizontal", "vertical"] as const;
 // Toolbar, which upstream downgrades to `role="group"` while STILL emitting
 // `aria-orientation` — the D6 case that certifies the nested-orientation fix.
 export const toolbarContentOptions = ["flat", "nested"] as const;
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // Toolbar fixture routes `?locale` into the S2 `Provider` (React) /
 // SolidSpectrumProvider (Solid) so the D10 RTL driver can re-run the horizontal
 // D5 walk mirrored, certifying `useToolbar`'s `shouldReverse = rtl && horizontal`

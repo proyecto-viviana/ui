@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Dialog.tsx
+
 /**
  * Dialog component for solidaria-components
  *
@@ -6,6 +20,7 @@
  */
 
 import {
+  type Context,
   type JSX,
   createContext,
   createEffect,
@@ -28,8 +43,10 @@ import {
 } from "@proyecto-viviana/solid-stately";
 import { DialogTriggerContext, useOverlayTriggerState } from "./contexts";
 import { ButtonContext } from "./Button";
+import { TextContext } from "./Text";
 import {
   DEFAULT_SLOT,
+  Provider,
   type RenderChildren,
   type ClassNameOrFunction,
   type StyleOrFunction,
@@ -132,6 +149,8 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
         restoreFocusToTrigger();
       }
     },
+    point: state.point,
+    setPoint: state.setPoint,
   };
 
   const setTriggerRef = (el: HTMLElement | null) => {
@@ -169,13 +188,17 @@ export function Dialog(props: DialogProps): JSX.Element {
     ["role", "aria-label", "aria-labelledby", "aria-describedby"],
   );
 
-  let dialogRef!: HTMLElement;
+  let dialogRef: HTMLElement | undefined;
+  const setDialogRef = (element: HTMLElement) => {
+    dialogRef = element;
+  };
 
   // Get trigger context for aria-labelledby fallback
   const triggerContext = useContext(DialogTriggerContext);
 
-  // createDialog returns dialogProps AND titleProps (with the id for the Heading)
-  const { dialogProps, titleProps } = createDialog(
+  // createDialog returns the props that wire the dialog to its title and, for
+  // alertdialogs, its description content.
+  const { dialogProps, titleProps, contentProps } = createDialog(
     {
       get role() {
         return ariaProps.role;
@@ -244,16 +267,31 @@ export function Dialog(props: DialogProps): JSX.Element {
       <section
         {...dialogProps()}
         {...domProps()}
-        ref={dialogRef}
+        ref={setDialogRef}
         class={renderProps.class()}
         style={renderProps.style()}
         slot={local.slot}
       >
-        <ButtonContext.Provider
-          value={{ slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } }}
+        <Provider
+          values={
+            [
+              [
+                TextContext,
+                {
+                  slots: {
+                    [DEFAULT_SLOT]: {},
+                    get description() {
+                      return contentProps();
+                    },
+                  },
+                },
+              ],
+              [ButtonContext, { slots: { [DEFAULT_SLOT]: {}, close: { onPress: () => close() } } }],
+            ] as Array<[Context<unknown>, unknown]>
+          }
         >
           {renderProps.renderChildren()}
-        </ButtonContext.Provider>
+        </Provider>
       </section>
     </DialogContext.Provider>
   );
@@ -279,6 +317,9 @@ export function Heading(props: HeadingProps): JSX.Element {
   const level = () => props.level ?? 2;
   const id = () => dialogContext?.titleId;
   let headingRef: HTMLHeadingElement | undefined;
+  const setHeadingRef = (element: HTMLHeadingElement) => {
+    headingRef = element;
+  };
 
   createEffect(() => {
     const el = headingRef;
@@ -302,32 +343,32 @@ export function Heading(props: HeadingProps): JSX.Element {
   return (
     <Switch>
       <Match when={level() === 1}>
-        <h1 ref={headingRef} id={id()} class={props.class}>
+        <h1 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h1>
       </Match>
       <Match when={level() === 2}>
-        <h2 ref={headingRef} id={id()} class={props.class}>
+        <h2 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h2>
       </Match>
       <Match when={level() === 3}>
-        <h3 ref={headingRef} id={id()} class={props.class}>
+        <h3 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h3>
       </Match>
       <Match when={level() === 4}>
-        <h4 ref={headingRef} id={id()} class={props.class}>
+        <h4 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h4>
       </Match>
       <Match when={level() === 5}>
-        <h5 ref={headingRef} id={id()} class={props.class}>
+        <h5 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h5>
       </Match>
       <Match when={level() === 6}>
-        <h6 ref={headingRef} id={id()} class={props.class}>
+        <h6 ref={setHeadingRef} id={id()} class={props.class}>
           {props.children}
         </h6>
       </Match>

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ImageBackgroundRemove.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ImageBackgroundRemove.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -17,26 +19,18 @@ function ImageBackgroundRemoveIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>
       {...rest}
       class={className}
     >
-      <rect x="2" y="4" width="4" height="4" fill="var(--iconPrimary, #222)" opacity=".35" />
-      <polygon
-        points="10 12 9.30741 12 6 9 6 8 10 8 10 12"
-        fill="var(--iconPrimary, #222)"
-        opacity=".35"
-      />
-      <rect x="10" y="4" width="4" height="4" fill="var(--iconPrimary, #222)" opacity=".35" />
-      <rect x="14" y="8" width="4" height="4" fill="var(--iconPrimary, #222)" opacity=".35" />
-      <polygon
-        points="14 12.28454 10 13.45999 10 12 14 12 14 12.28454"
-        fill="var(--iconPrimary, #222)"
-        opacity=".35"
+      <path
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M2 4h4v4H2zM10 12h-.693L6 9V8h4zM10 4h4v4h-4zM14 8h4v4h-4zM14 12.285l-4 1.175V12h4z"
+        opacity="0.35"
       />
       <path
-        d="m14.5,7.52114c0,.82843-.67157,1.5-1.5,1.5-.82843,0-1.5-.67157-1.5-1.5,0-.82843.67157-1.5,1.5-1.5s1.5.67157,1.5,1.5h0"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.5 7.521c0 .829-.672 1.5-1.5 1.5s-1.5-.671-1.5-1.5c0-.828.672-1.5 1.5-1.5s1.5.672 1.5 1.5"
       />
       <path
-        d="m16.75,3H3.25c-1.24072,0-2.25,1.00977-2.25,2.25v9.5c0,1.24023,1.00928,2.25,2.25,2.25h13.5c1.24072,0,2.25-1.00977,2.25-2.25V5.25c0-1.24023-1.00928-2.25-2.25-2.25Zm-13.5,1.5h13.5c.41357,0,.75.33691.75.75v8.21069l-1.90869-1.90894c-.84961-.84961-2.3335-.84961-3.18213,0l-1.23193,1.23145c-.09717.09766-.25684.09668-.354.00098l-3.23193-3.23242c-.84961-.84961-2.3335-.84961-3.18213,0l-1.90918,1.90918v-6.21094c0-.41309.33643-.75.75-.75Zm0,11c-.41357,0-.75-.33691-.75-.75v-1.16797l2.97021-2.96973c.28223-.2832.77686-.2832,1.06006,0l3.23291,3.2334c.68164.67969,1.7915.68262,2.47412-.00098l1.23291-1.23242c.28223-.2832.77686-.2832,1.06006,0l2.70074,2.70068c-.1311.11206-.29553.18701-.48102.18701H3.25Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.75 3H3.25C2.01 3 1 4.01 1 5.25v9.5C1 15.99 2.01 17 3.25 17h13.5c1.24 0 2.25-1.01 2.25-2.25v-9.5C19 4.01 17.99 3 16.75 3M3.25 4.5h13.5c.414 0 .75.337.75.75v8.21l-1.909-1.908c-.85-.85-2.333-.85-3.182 0l-1.232 1.231c-.097.098-.257.097-.354.001L7.591 9.552c-.85-.85-2.333-.85-3.182 0L2.5 11.46V5.25c0-.413.336-.75.75-.75m0 11c-.414 0-.75-.337-.75-.75v-1.168l2.97-2.97c.282-.283.777-.283 1.06 0l3.233 3.234c.682.68 1.792.682 2.474-.001l1.233-1.233c.282-.283.777-.283 1.06 0l2.701 2.701c-.131.112-.296.187-.481.187z"
       />
     </svg>
   );

@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/File.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/File.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,8 +20,8 @@ function FileIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m16.34131,5.28027l-3.62207-3.62109c-.4248-.4248-.98975-.65918-1.59033-.65918h-5.87891c-1.24072,0-2.25,1.00977-2.25,2.25v12.5c0,1.24023,1.00928,2.25,2.25,2.25h9.5c1.24072,0,2.25-1.00977,2.25-2.25V6.87109c0-.5918-.23975-1.17188-.65869-1.59082Zm-1.06104,1.06055c.04565.04565.07385.10376.10602.15918h-3.13629c-.41357,0-.75-.33691-.75-.75v-3.13599c.05518.03223.11316.06018.15869.10571l3.62158,3.62109Zm-.53027,10.15918H5.25c-.41357,0-.75-.33691-.75-.75V3.25c0-.41309.33643-.75.75-.75h4.75v3.25c0,1.24023,1.00928,2.25,2.25,2.25h3.25v7.75c0,.41309-.33643.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.341 5.28 12.72 1.66c-.425-.426-.99-.66-1.59-.66H5.25C4.01 1 3 2.01 3 3.25v12.5C3 16.99 4.01 18 5.25 18h9.5c1.24 0 2.25-1.01 2.25-2.25V6.871c0-.592-.24-1.172-.659-1.59m-1.06 1.06c.045.046.073.105.105.16H12.25c-.414 0-.75-.337-.75-.75V2.614c.055.032.113.06.159.106zM14.75 16.5h-9.5c-.414 0-.75-.337-.75-.75V3.25c0-.413.336-.75.75-.75H10v3.25C10 6.99 11.01 8 12.25 8h3.25v7.75c0 .413-.336.75-.75.75"
       />
     </svg>
   );

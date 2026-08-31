@@ -15,7 +15,7 @@ import {
 import { forEachScenarioPanel } from "./walk";
 
 /**
- * Driver D4 — event-sequence oracle (recertification.md Phase 1).
+ * Driver D4 — event-sequence oracle (see `.claude/current/certification.md`).
  *
  * Replays the same scripted input gesture against both framework panels and
  * diffs the ordered log of DOM events plus fixture-re-emitted component

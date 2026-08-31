@@ -12,7 +12,7 @@
   ],
   "homepage": "https://ui.proyectoviviana.org/solid-spectrum",
   "bugs": "https://github.com/proyecto-viviana/ui/issues",
-  "license": "MIT",
+  "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/proyecto-viviana/ui.git",
@@ -20,7 +20,10 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "LICENSE",
+    "LICENSE-APACHE-2.0",
+    "NOTICE"
   ],
   "type": "module",
   "sideEffects": [
@@ -261,7 +264,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
+    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
     "dev": "vp pack --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },
@@ -275,7 +278,8 @@
   },
   "devDependencies": {
     "@proyecto-viviana/solid-spectrum-test-utils": "workspace:*",
-    "solid-js": "^1.9.11"
+    "solid-js": "^1.9.15",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"

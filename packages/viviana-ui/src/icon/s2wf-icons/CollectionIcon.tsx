@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Collection.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Collection.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,9 +20,8 @@ function CollectionIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elem
       class={className}
     >
       <path
-        d="M16.75,3H3.25c-1.24023,0-2.25,1.00977-2.25,2.25v9.5c0,1.24023,1.00977,2.25,2.25,2.25h13.5c1.24023,0,2.25-1.00977,2.25-2.25V5.25c0-1.24023-1.00977-2.25-2.25-2.25ZM17.5,5.25v4h-4v-4.75h3.25c.41309,0,.75.33691.75.75ZM8,9.25v-4.75h4v4.75h-4ZM12,10.75v4.75h-4v-4.75h4ZM3.25,4.5h3.25v4.75H2.5v-4c0-.41309.33691-.75.75-.75ZM2.5,14.75v-4h4v4.75h-3.25c-.41309,0-.75-.33691-.75-.75ZM16.75,15.5h-3.25v-4.75h4v4c0,.41309-.33691.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.75 3H3.25C2.01 3 1 4.01 1 5.25v9.5C1 15.99 2.01 17 3.25 17h13.5c1.24 0 2.25-1.01 2.25-2.25v-9.5C19 4.01 17.99 3 16.75 3m.75 2.25v4h-4V4.5h3.25c.413 0 .75.337.75.75m-9.5 4V4.5h4v4.75zm4 1.5v4.75H8v-4.75zM3.25 4.5H6.5v4.75h-4v-4c0-.413.337-.75.75-.75M2.5 14.75v-4h4v4.75H3.25c-.413 0-.75-.337-.75-.75m14.25.75H13.5v-4.75h4v4c0 .413-.337.75-.75.75"
       />
     </svg>
   );

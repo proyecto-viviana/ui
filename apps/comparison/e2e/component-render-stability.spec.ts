@@ -171,14 +171,12 @@ async function collectFirstRenderState(page: Page) {
     return {
       fontFaces: Array.from(document.fonts)
         .filter((fontFace) => fontFace.family === "adobe-clean-spectrum-vf")
-        .map(
-          (fontFace): FontFaceSample => ({
-            family: fontFace.family,
-            status: fontFace.status,
-            style: fontFace.style,
-            weight: fontFace.weight,
-          }),
-        ),
+        .map((fontFace): FontFaceSample => ({
+          family: fontFace.family,
+          status: fontFace.status,
+          style: fontFace.style,
+          weight: fontFace.weight,
+        })),
       fontPreload: fontPreload
         ? {
             crossorigin: fontPreload.getAttribute("crossorigin"),

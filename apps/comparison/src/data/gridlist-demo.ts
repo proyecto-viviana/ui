@@ -7,7 +7,7 @@ export const gridListOrientationOptions = ["vertical", "horizontal"] as const;
 // orientation-aware Left/Right nav must run in "tab" mode. Mirrors RAC's
 // `keyboardNavigationBehavior` (GridList → useSelectableCollection).
 export const gridListKeyboardNavigationOptions = ["arrow", "tab"] as const;
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // GridList fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
 // can re-run D5 mirrored, certifying the RTL-flipped Left/Right nav in a
 // horizontal grid (createGridList.ts ArrowRight/ArrowLeft direction branch).

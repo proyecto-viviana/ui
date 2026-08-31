@@ -4,7 +4,7 @@ import { forEachScenarioPanel } from "./walk";
 
 /**
  * Driver D-reorder — keyboard drag-and-drop reordering, certified through a
- * ListBox host (recertification.md, CP9.57 keyboard DnD).
+ * ListBox host (see `.claude/current/certification.md`).
  *
  * Drag-and-drop has no standalone ARIA contract of its own — it is a behavior a
  * collection host mounts (like the Virtualizer's scroll-window, CP9.56). So it is

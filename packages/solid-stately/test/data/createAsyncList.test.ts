@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { createRoot, createEffect } from "solid-js";
 import { createAsyncList } from "../../src/data/createAsyncList";
 

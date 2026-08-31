@@ -14,7 +14,7 @@
  * semantics; the bare-h wiring is kept here as `it.fails` documentation of the
  * upstream limitation.
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { createComponent, createMemo, createSignal, Show, type JSX } from "solid-js";
 import h from "solid-js/h";

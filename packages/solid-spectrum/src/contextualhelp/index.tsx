@@ -1,3 +1,4 @@
+// Port of packages/@react-spectrum/s2/src/ContextualHelp.tsx.
 import {
   type JSX,
   createContext,
@@ -6,7 +7,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { MenuTriggerContext } from "@proyecto-viviana/solidaria-components";
+import { MenuTriggerContext, PopoverTriggerContext } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { Popover, type PopoverProps, type PopoverTriggerProps } from "../popover";
 import { PopoverTrigger } from "../popover";
@@ -149,6 +150,13 @@ const contextualHelpFooter = style({
 export function ContextualHelpPopover(props: ContextualHelpPopoverProps): JSX.Element {
   const [local, popoverProps] = splitProps(props, ["children", "class"]);
   const menuTriggerContext = useContext(MenuTriggerContext);
+  const popoverTriggerContext = useContext(PopoverTriggerContext);
+  // UnavailableMenuItemTrigger renders only the item when available. Solid still
+  // evaluates the second child when reading `props.children`, so this popover
+  // must no-op unless it is actually composed inside a SubmenuTrigger.
+  if (popoverTriggerContext?.trigger !== "SubmenuTrigger") {
+    return null;
+  }
   const titleId = createUniqueId();
   const menuTriggerMenuProps = () => menuTriggerContext?.menuProps as { id?: string } | undefined;
   const popoverId = () => popoverProps.id ?? menuTriggerMenuProps()?.id;

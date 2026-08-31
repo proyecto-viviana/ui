@@ -17,6 +17,31 @@ async function waitForPageReady(page: Page) {
 }
 
 test.describe("Menu roving focus", () => {
+  test("trigger arrows enter at the first and last items and Escape restores focus", async ({
+    page,
+  }) => {
+    await page.goto(routes.docsComponent("menu"));
+    await waitForPageReady(page);
+
+    const trigger = page.getByRole("button", { name: "Actions" }).first();
+    await trigger.focus();
+    await page.keyboard.press("ArrowDown");
+
+    const menu = page.getByRole("menu");
+    await expect(menu.getByRole("menuitem", { name: "New file" })).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+
+    await page.keyboard.press("ArrowUp");
+    await expect(page.getByRole("menu").getByRole("menuitem", { name: "Save" })).toBeFocused();
+
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("menu")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
   test("arrow/Home/End move real DOM focus to the focused menu item", async ({ page }) => {
     await page.goto(routes.docsComponent("menu"));
     await waitForPageReady(page);

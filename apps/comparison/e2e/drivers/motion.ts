@@ -20,7 +20,7 @@ import { forEachScenarioPanel } from "./walk";
 import { compareScreenshots, type ScreenshotDiffThreshold } from "../visual-diff";
 
 /**
- * Driver D2 — motion (recertification.md Phase 1).
+ * Driver D2 — motion (see `.claude/current/certification.md`).
  *
  * The animation tier the steady-state drivers (D1 styles, D3 pixels) cannot
  * see: every screenshot spec passes `animations: "disabled"`, so enter/exit

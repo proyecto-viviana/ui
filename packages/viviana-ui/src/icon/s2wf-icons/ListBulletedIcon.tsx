@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/ListBulleted.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/ListBulleted.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,20 +20,27 @@ function ListBulletedIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="m17.25,16.52148H7.25c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h10c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M17.25 16.521h-10c-.414 0-.75-.335-.75-.75s.336-.75.75-.75h10c.414 0 .75.336.75.75s-.336.75-.75.75M17.25 10.521h-10c-.414 0-.75-.335-.75-.75s.336-.75.75-.75h10c.414 0 .75.336.75.75s-.336.75-.75.75M17.25 4.521h-10c-.414 0-.75-.335-.75-.75s.336-.75.75-.75h10c.414 0 .75.336.75.75s-.336.75-.75.75"
       />
-      <path
-        d="m17.25,10.52148H7.25c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h10c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+      <circle
+        cx="3.5"
+        cy="3.771"
+        r="1.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
       />
-      <path
-        d="m17.25,4.52148H7.25c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h10c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+      <circle
+        cx="3.5"
+        cy="9.771"
+        r="1.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
       />
-      <circle cx="3.5" cy="3.77108" r="1.5" fill="var(--iconPrimary, #222)" />
-      <circle cx="3.5" cy="9.77108" r="1.5" fill="var(--iconPrimary, #222)" />
-      <circle cx="3.5" cy="15.77108" r="1.5" fill="var(--iconPrimary, #222)" />
+      <circle
+        cx="3.5"
+        cy="15.771"
+        r="1.5"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+      />
     </svg>
   );
 }

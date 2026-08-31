@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { Skeleton } from "../src/skeleton";
 import { StatusLight, StatusLightContext, type StatusLightProps } from "../src/statuslight";

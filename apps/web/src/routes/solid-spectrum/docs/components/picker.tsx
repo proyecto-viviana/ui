@@ -4,8 +4,8 @@
  * `<PickerItem>` children with no `items`, and a `title` prop on
  * `<PickerSection>`. Neither exists. Both typechecked red and rendered nothing,
  * and the page had shipped that way. Picker's collection is items-driven and
- * flat — see `tech-debt.md` → `picker-static-children-and-sections`. If you add
- * an example here, open it in a browser and count the options.
+ * flat. Ticket #43 owns static children and sections. If you add an example
+ * here, open it in a browser and count the options.
  */
 import { createFileRoute } from "@tanstack/solid-router";
 import { Picker, PickerItem } from "@proyecto-viviana/solid-spectrum";

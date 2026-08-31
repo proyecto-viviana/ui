@@ -1,3 +1,28 @@
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Toast.module.css
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Toast.tsx
+
+/**
+ * S2 Toast for solid-spectrum.
+ *
+ * Based on these pinned React Spectrum S2 sources:
+ * - packages/@react-spectrum/s2/src/Toast.module.css
+ * - packages/@react-spectrum/s2/src/Toast.tsx
+ *
+ * This Solid module combines the pinned Toast component and transition stylesheet.
+ */
+
 import {
   type JSX,
   type Accessor,
@@ -24,6 +49,7 @@ import {
   ToastRegion as HeadlessToastRegion,
   ToastProvider as HeadlessToastProvider,
   ToastContext,
+  UNSTABLE_ToastContent as HeadlessToastContent,
   ToastTitle as HeadlessToastTitle,
   ToastDescription as HeadlessToastDescription,
   globalToastQueue,
@@ -59,7 +85,7 @@ type ToastEdge = "top" | "bottom";
 type ToastAlign = "center" | "end";
 
 // --- S2 Toast view transitions -------------------------------------------------
-// Ported from @react-spectrum/s2's Toast.module.css and the startViewTransition /
+// The transition rules match the pinned Toast.module.css and startViewTransition /
 // global reduce-motion machinery in Toast.tsx. Upstream ships these rules as a CSS
 // module that the bundler injects; the `::view-transition-group()` pseudo-elements,
 // `html.toast-*` global selectors and `@keyframes` cannot be expressed by the atomic
@@ -973,9 +999,8 @@ export function Toast(props: ToastProps): JSX.Element {
           }
         >
           <div role="presentation" class={toastBody({ isSingle: shouldRenderAsSingle() })}>
-            <div
+            <HeadlessToastContent
               class={useComponentTransition() ? `${toastContent} toast-content` : toastContent}
-              data-solidaria-toast-content=""
             >
               <Show when={getVariantIcon(variant())}>
                 {(icon) => <CenterBaseline>{icon()}</CenterBaseline>}
@@ -990,7 +1015,7 @@ export function Toast(props: ToastProps): JSX.Element {
                   </HeadlessToastDescription>
                 </Show>
               </div>
-            </div>
+            </HeadlessToastContent>
             <Show when={local.canExpand && !isExpanded() && visibleToasts().length > 1}>
               <ActionButton
                 isQuiet

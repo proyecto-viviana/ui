@@ -9,7 +9,14 @@ import {
   today,
   writeDoc,
 } from "./data";
-import { type TaskState, markReviewed, setRoadmapItemStatus, setTaskState } from "./frontmatter";
+import { markReviewed } from "./frontmatter";
+import {
+  TICKET_STATUSES,
+  type TicketStatus,
+  isTicketPath,
+  setTicketBlocked,
+  setTicketStatus,
+} from "./tickets";
 
 // /api/admin is served by this dev-server middleware in the plain Node process,
 // NOT a TanStack server route: the ssr environment runs inside the Cloudflare
@@ -17,9 +24,6 @@ import { type TaskState, markReviewed, setRoadmapItemStatus, setTaskState } from
 // middleware only exists under `vite dev` (apply: 'serve' + configureServer),
 // so none of this can ship to production. See .claude/current/admin-dashboard.md
 // and the AGENTS.md tooling exemption.
-
-const ROADMAP_PATH = ".claude/current/roadmap.md";
-const TASK_STATES: TaskState[] = ["open", "next", "in-progress", "done", "blocked"];
 
 function sendJson(res: ServerResponse, status: number, payload: unknown): void {
   res.statusCode = status;
@@ -105,22 +109,32 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     const body = await readJsonBody(req);
     if (!body) return badRequest(res, "expected a JSON body");
 
-    if (url === "task-state") {
-      const { path, taskId, state } = body;
-      if (typeof taskId !== "string" || !TASK_STATES.includes(state as TaskState)) {
-        return badRequest(res, "expected { path, taskId, state }");
+    if (url === "ticket-status") {
+      const { path, ticketId, status } = body;
+      if (
+        typeof path !== "string" ||
+        !isTicketPath(path) ||
+        typeof ticketId !== "number" ||
+        !TICKET_STATUSES.includes(status as TicketStatus)
+      ) {
+        return badRequest(res, "expected { path, ticketId, status }");
       }
       return rewriteDoc(res, path, (content) =>
-        setTaskState(content, taskId, state as TaskState, today()),
+        setTicketStatus(content, ticketId, status as TicketStatus, today()),
       );
     }
 
-    if (url === "roadmap-status") {
-      const { id, status } = body;
-      if (typeof id !== "string" || typeof status !== "string") {
-        return badRequest(res, "expected { id, status }");
+    if (url === "ticket-blocked") {
+      const { path, ticketId, blocked } = body;
+      if (
+        typeof path !== "string" ||
+        !isTicketPath(path) ||
+        typeof ticketId !== "number" ||
+        typeof blocked !== "boolean"
+      ) {
+        return badRequest(res, "expected { path, ticketId, blocked }");
       }
-      return rewriteDoc(res, ROADMAP_PATH, (content) => setRoadmapItemStatus(content, id, status));
+      return rewriteDoc(res, path, (content) => setTicketBlocked(content, ticketId, blocked));
     }
 
     if (url === "mark-reviewed") {

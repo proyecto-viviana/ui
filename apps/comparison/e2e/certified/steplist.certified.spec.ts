@@ -71,14 +71,14 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  *   - D10 (RTL) — StepList navigation is native-Tab + vertical; it has no
  *     RTL-flipped arrow axis. The only localized surface is the container's
  *     DEFAULT `aria-label` ("Step List"), which both fixtures bypass with a fixed
- *     label, so there is nothing RTL-specific to diff. Localized state-prefix
- *     naming is tracked as tech-debt, not certified here.
+ *     label, so there is nothing RTL-specific to diff. Ticket #98 owns the
+ *     localized state-prefix evidence.
  *   - Container Home/End/typeahead (`useSelectableList` under `allowsTabNavigation`)
  *     — the port's `createStepListState` is hand-rolled (no selection-manager /
  *     collection), so it wires no container key nav; the walks press only Tab, the
  *     documented StepList interaction (the vendored @adobe/react-spectrum StepList
- *     tests exercise Tab + Enter only). Porting container key-nav is a state-layer
- *     rewrite deferred as tech-debt.
+ *     tests exercise Tab + Enter only). Ticket #99 owns the state-layer rewrite
+ *     and its container-key evidence.
  *
  * FIXTURE (`steplist-demo.ts`) — a `Before` button, a StepList labelled "Checkout
  * steps" with four steps (Details / Select offers / Fallback offer / Summary),

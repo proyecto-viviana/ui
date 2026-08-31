@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Tabs.tsx
+
 /**
  * Tabs component for solidaria-components
  *
@@ -524,7 +538,7 @@ function TabInner(props: {
   ariaProps: Omit<TabProps, "children" | "class" | "style" | "slot" | "id">;
   children?: RenderChildren<TabRenderProps>;
 }): JSX.Element {
-  let tabRef: HTMLDivElement | undefined;
+  const [tabRef, setTabRef] = createSignal<HTMLDivElement | null>(null);
   const textValue = () => {
     if (props.ariaProps["aria-label"]) return props.ariaProps["aria-label"];
     return typeof props.children === "string" ? props.children : undefined;
@@ -557,7 +571,7 @@ function TabInner(props: {
       },
     },
     props.state,
-    () => tabRef ?? null,
+    tabRef,
   );
 
   const { isHovered, hoverProps } = createHover({
@@ -594,7 +608,7 @@ function TabInner(props: {
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       <div
-        ref={tabRef}
+        ref={setTabRef}
         id={tabAria.tabProps.id}
         role={tabAria.tabProps.role}
         aria-selected={tabAria.isSelected()}

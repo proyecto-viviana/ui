@@ -1,5 +1,5 @@
 import { createSignal } from "solid-js";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { cleanup, fireEvent, render, screen, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
@@ -184,10 +184,25 @@ describe("TableView (solid-spectrum)", () => {
       "true",
     );
 
-    const selectAll = screen.getByRole("checkbox", { name: "Select All" });
-    expect(selectAll).toHaveAttribute("data-indeterminate", "true");
-    expect(selectAll).not.toHaveAttribute("aria-checked");
-    expect((selectAll as HTMLInputElement).indeterminate).toBe(true);
+    const selectAll = () =>
+      screen.getByRole("checkbox", { name: "Select All" }) as HTMLInputElement;
+    const expectSelectAll = (checked: boolean, indeterminate: boolean) => {
+      const checkbox = selectAll();
+      expect(checkbox.checked).toBe(checked);
+      expect(checkbox.indeterminate).toBe(indeterminate);
+      expect(checkbox).not.toHaveAttribute("aria-checked");
+      if (indeterminate) {
+        expect(checkbox).toHaveAttribute("data-indeterminate", "true");
+      } else {
+        expect(checkbox).not.toHaveAttribute("data-indeterminate");
+      }
+    };
+    const rowCheckbox = (name: RegExp, accessibleName: string) =>
+      within(screen.getByRole("row", { name })).getByRole("checkbox", {
+        name: accessibleName,
+      });
+
+    expectSelectAll(false, true);
 
     const alice = screen.getByRole("row", { name: /Alice/ });
     const bob = screen.getByRole("row", { name: /Bob/ });
@@ -196,6 +211,18 @@ describe("TableView (solid-spectrum)", () => {
     // row's row-header cell ("Alice"), matching useTableSelectionCheckbox.
     expect(within(alice).getByRole("checkbox", { name: "Select Alice" })).toBeChecked();
     expect(bob).toHaveAttribute("aria-disabled", "true");
+
+    // The styled wrapper must preserve the headless reactive mixed-state updates.
+    fireEvent.click(rowCheckbox(/Alice/, "Select Alice"));
+    expectSelectAll(false, false);
+    fireEvent.click(rowCheckbox(/Carol/, "Select Carol"));
+    expectSelectAll(false, true);
+    fireEvent.click(selectAll());
+    expectSelectAll(true, false);
+    fireEvent.click(rowCheckbox(/Alice/, "Select Alice"));
+    expectSelectAll(false, true);
+    fireEvent.click(rowCheckbox(/Carol/, "Select Carol"));
+    expectSelectAll(false, false);
   });
 
   it("maps S2 density, quiet, and overflow props onto the table", () => {

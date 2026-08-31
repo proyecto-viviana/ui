@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { Meter, MeterContext } from "../src/meter";
 import { Skeleton } from "../src/skeleton";
@@ -61,10 +61,34 @@ describe("Meter (solid-spectrum)", () => {
     ));
 
     const meter = screen.getByRole("meter", { name: "Storage" });
+    const label = screen.getByText("Storage");
     expect(meter).toHaveAttribute("aria-valuetext", "75 GB");
-    expect(screen.getByText("Storage")).toBeInTheDocument();
+    expect(label.tagName).toBe("SPAN");
+    expect(label).toHaveAttribute("id");
+    expect(meter).toHaveAttribute("aria-labelledby", label.id);
     expect(screen.getByText("75 GB")).toHaveAttribute("data-rsp-slot", "text");
     expect(screen.getByText("Half full")).toBeInTheDocument();
+  });
+
+  it("gives explicit accessible-name props precedence over a visible label", () => {
+    render(() => (
+      <>
+        <span id="external-meter-name">External meter name</span>
+        <Meter label="Visible label" value={40} aria-label="Explicit name" />
+        <Meter label="Second visible label" value={60} aria-labelledby="external-meter-name" />
+      </>
+    ));
+
+    const explicitlyNamed = screen.getByRole("meter", { name: /Explicit name/ });
+    const externallyNamed = screen.getByRole("meter", { name: /External meter name/ });
+    const visibleLabel = screen.getByText("Visible label");
+    const secondVisibleLabel = screen.getByText("Second visible label");
+
+    expect(explicitlyNamed).toHaveAttribute("aria-label", "Explicit name");
+    expect(explicitlyNamed).not.toHaveAttribute("aria-labelledby");
+    expect(visibleLabel).not.toHaveAttribute("id");
+    expect(externallyNamed).toHaveAttribute("aria-labelledby", "external-meter-name");
+    expect(secondVisibleLabel).not.toHaveAttribute("id");
   });
 
   it("supports S2 variants, static color, sizes, and label position", () => {

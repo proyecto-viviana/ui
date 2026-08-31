@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionButton.tsx
+
+// Port of packages/@react-spectrum/s2/src/ActionButton.tsx.
+
 import {
   children as resolveChildren,
   createEffect,
@@ -16,8 +32,12 @@ import {
   MenuTriggerContext,
   PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import {
+  createStringFormatter,
+  mergeProps as mergeAriaProps,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
+import { fontRelative, space, style } from "../style" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";
@@ -55,6 +75,7 @@ import {
   type RefLike,
 } from "./spectrum-context";
 import { getSingleTextChild } from "./text-child";
+import CornerTriangle from "../icon/ui-icons/CornerTriangle";
 
 export type { ActionButtonSize } from "./group-context";
 
@@ -78,6 +99,7 @@ type StyledActionButtonBaseProps = Omit<
 
 type RuntimeActionButtonProps = ActionButtonProps & {
   onHoverChange?: (isHovered: boolean) => void;
+  holdAffordance?: boolean;
 };
 
 const avatarSize: Record<ActionButtonSize, number> = {
@@ -162,6 +184,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     "UNSAFE_className",
     "UNSAFE_style",
     "children",
+    "holdAffordance",
     "ref",
     "onPress",
     "onPressChange",
@@ -176,6 +199,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   const menuTriggerContext = useContext(MenuTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
+  const locale = useLocale();
   let buttonElement: HTMLButtonElement | undefined;
   const [resolvedButtonElement, setResolvedButtonElement] = createSignal<HTMLButtonElement | null>(
     null,
@@ -186,6 +210,10 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   );
 
   const size = (): ActionButtonSize => local.size ?? "M";
+  const cornerTriangleSize = (): "S" | "M" | "L" | "XL" => {
+    const currentSize = size();
+    return currentSize === "XS" ? "S" : currentSize;
+  };
   const density = (): ActionButtonDensity => local.density ?? "regular";
   const orientation = (): ActionButtonOrientation => local.orientation ?? "horizontal";
   const isOverlayTriggerOpen = () =>
@@ -248,29 +276,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       return {};
     }
 
-    return {
-      get "aria-haspopup"() {
-        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-haspopup"] as
-          | "menu"
-          | true
-          | undefined;
-      },
-      get "aria-expanded"() {
-        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-expanded"] as
-          | boolean
-          | undefined;
-      },
-      get "aria-controls"() {
-        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-controls"] as
-          | string
-          | undefined;
-      },
-      get "aria-disabled"() {
-        return (menuTriggerContext.triggerProps as Record<string, unknown>)["aria-disabled"] as
-          | boolean
-          | undefined;
-      },
-    };
+    const { onKeyDown: _onKeyDown, ...triggerProps } = menuTriggerContext.triggerProps;
+    return mergeAriaProps(
+      triggerProps as Partial<HeadlessButtonProps>,
+      {
+        onPressStart: menuTriggerContext.onPressStart,
+      } as Partial<HeadlessButtonProps>,
+    );
   };
   const syncMenuTriggerAttribute = (element: HTMLButtonElement, name: string, value: unknown) => {
     if (value == null) {
@@ -283,7 +295,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
 
   createEffect(() => {
     const element = resolvedButtonElement();
-    if (!element || !menuTriggerContext) {
+    if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
       return;
     }
 
@@ -295,15 +307,11 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
   });
   createEffect(() => {
     const element = resolvedButtonElement();
-    if (!element || !menuTriggerContext) {
+    if (!element || !menuTriggerContext || menuTriggerContext.triggerRef?.() !== element) {
       return;
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
-        return;
-      }
-
       (menuTriggerContext.triggerProps as { onKeyDown?: (e: KeyboardEvent) => void }).onKeyDown?.(
         event,
       );
@@ -312,7 +320,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     element.addEventListener("keydown", onKeyDown);
     onCleanup(() => element.removeEventListener("keydown", onKeyDown));
   });
-
   const pendingAccessibleLabel = () => {
     const existingLabel = (headlessProps as Record<string, unknown>)["aria-label"];
     if (existingLabel != null) {
@@ -432,6 +439,37 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
                       />
                     </div>
                   ) : null}
+                  {local.holdAffordance ? (
+                    <CornerTriangle
+                      size={cornerTriangleSize()}
+                      class={style({
+                        position: "absolute",
+                        insetEnd: {
+                          size: {
+                            XS: space(3),
+                            S: space(3),
+                            M: 4,
+                            L: space(5),
+                            XL: space(6),
+                          },
+                        },
+                        bottom: {
+                          size: {
+                            XS: space(3),
+                            S: space(3),
+                            M: 4,
+                            L: space(5),
+                            XL: space(6),
+                          },
+                        },
+                        scaleX: {
+                          direction: {
+                            rtl: -1,
+                          },
+                        },
+                      })({ direction: locale().direction, size: size() })}
+                    />
+                  ) : null}
                 </NotificationBadgeContext.Provider>
               </ImageContext.Provider>
             </AvatarContext.Provider>
@@ -460,6 +498,11 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
         local.onPressChange?.(pressed);
       }}
       onPress={(event) => {
+        if (menuTriggerContext?.triggerRef?.() === buttonElement) {
+          const menuOnPress = (menuTriggerContext!.triggerProps as Partial<HeadlessButtonProps>)
+            .onPress;
+          menuOnPress?.(event);
+        }
         if (!local.isPending) {
           local.onPress?.(event);
         }

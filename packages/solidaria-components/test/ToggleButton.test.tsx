@@ -1,7 +1,7 @@
 /**
  * Tests for solidaria-components ToggleButton
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
 import { ToggleButton, type ToggleButtonRenderProps } from "../src/ToggleButton";
 import { ToggleButtonGroup } from "../src/ToggleButtonGroup";

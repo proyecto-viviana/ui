@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
 import { scrollIntoView } from "../src/utils/scrollIntoView";
 
 // Mirrors react-aria/test/utils/scrollIntoView.test.ts, adapted to Vitest. The

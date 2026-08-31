@@ -8,14 +8,27 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [solidPlugin()],
   optimizeDeps: {
-    entries: ["packages/**/test/**/*.test.{ts,tsx}", "benchmarks/**/*.bench.{ts,tsx}"],
+    // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
+    // discovery before Vitest applies its file include. That crosses ignored
+    // build output and the vendored React Spectrum oracle, where JSX-in-.js is
+    // intentionally valid for upstream's own toolchain but not ours.
+    noDiscovery: true,
+    entries: [
+      "packages/**/test/**/*.test.{ts,tsx}",
+      "apps/comparison/src/data/**/*.test.ts",
+      "benchmarks/**/*.bench.{ts,tsx}",
+    ],
   },
   test: {
     environment: "jsdom",
     globals: true,
     pool: "vmThreads",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["packages/**/test/**/*.test.{ts,tsx}", "benchmarks/**/*.bench.{ts,tsx}"],
+    include: [
+      "packages/**/test/**/*.test.{ts,tsx}",
+      "apps/comparison/src/data/**/*.test.ts",
+      "benchmarks/**/*.bench.{ts,tsx}",
+    ],
     // SSR-compiled tests run under vitest.ssr.config.ts (node env, generate:"ssr");
     // hydration tests run under vitest.hydrate.config.ts (jsdom, dom+hydratable).
     exclude: ["**/node_modules/**", "**/dist/**", "**/*.{ssr,hydrate}.test.{ts,tsx}"],
@@ -36,6 +49,10 @@ export default defineConfig({
   resolve: {
     conditions: ["development", "browser"],
     alias: {
+      "@proyecto-viviana/solid-stately/private/flags/flags": resolve(
+        __dirname,
+        "packages/solid-stately/src/flags/flags.ts",
+      ),
       "@proyecto-viviana/solid-stately": resolve(__dirname, "packages/solid-stately/src/index.ts"),
       "@proyecto-viviana/solidaria": resolve(__dirname, "packages/solidaria/src/index.ts"),
       "@proyecto-viviana/solidaria-components": resolve(

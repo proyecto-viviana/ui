@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Microphone.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Microphone.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,14 +20,12 @@ function MicrophoneIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Elem
       class={className}
     >
       <path
-        d="m10,12.75c-2.20557,0-4-1.79395-4-4v-3.75c0-2.20605,1.79443-4,4-4s4,1.79395,4,4v3.75c0,2.20605-1.79443,4-4,4Zm0-10.25c-1.37842,0-2.5,1.12109-2.5,2.5v3.75c0,1.37891,1.12158,2.5,2.5,2.5s2.5-1.12109,2.5-2.5v-3.75c0-1.37891-1.12158-2.5-2.5-2.5Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M10 12.75c-2.206 0-4-1.794-4-4V5c0-2.206 1.794-4 4-4s4 1.794 4 4v3.75c0 2.206-1.794 4-4 4M10 2.5C8.622 2.5 7.5 3.621 7.5 5v3.75c0 1.379 1.122 2.5 2.5 2.5s2.5-1.121 2.5-2.5V5c0-1.379-1.122-2.5-2.5-2.5"
       />
       <path
-        d="m16.25,7.31641c-.41406,0-.75.33594-.75.75v.68359c0,3.03223-2.46729,5.5-5.5,5.5s-5.5-2.46777-5.5-5.5v-.68359c0-.41406-.33594-.75-.75-.75s-.75.33594-.75.75v.68359c0,3.60596,2.7417,6.58276,6.25,6.9585v1.7915h-3.25c-.41406,0-.75.33594-.75.75s.33594.75.75.75h8c.41406,0,.75-.33594.75-.75s-.33594-.75-.75-.75h-3.25v-1.7915c3.5083-.37573,6.25-3.35254,6.25-6.9585v-.68359c0-.41406-.33594-.75-.75-.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.25 7.316c-.414 0-.75.336-.75.75v.684c0 3.032-2.467 5.5-5.5 5.5s-5.5-2.468-5.5-5.5v-.684c0-.414-.336-.75-.75-.75s-.75.336-.75.75v.684c0 3.606 2.742 6.583 6.25 6.959V17.5H6c-.414 0-.75.336-.75.75s.336.75.75.75h8c.414 0 .75-.336.75-.75s-.336-.75-.75-.75h-3.25v-1.791C14.258 15.333 17 12.356 17 8.75v-.684c0-.414-.336-.75-.75-.75"
       />
     </svg>
   );

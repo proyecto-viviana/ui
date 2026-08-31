@@ -4405,6 +4405,12 @@ const dialogControls: ComponentControlGroup = {
       defaultValue: dialogDemoDefaults.body,
     },
     {
+      name: "hasTitle",
+      label: "hasTitle",
+      kind: "switch",
+      defaultValue: dialogDemoDefaults.hasTitle,
+    },
+    {
       name: "size",
       label: "size",
       kind: "radio",

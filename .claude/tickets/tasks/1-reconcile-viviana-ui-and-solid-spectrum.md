@@ -3,6 +3,7 @@ id: 1
 type: task
 title: "Govern the solid-spectrum to viviana-ui derivative boundary"
 created: 2026-08-01
+parent: 32
 status: open
 history:
   - { state: open, at: 2026-08-01, note: "opened from the 2026-08-01 ecosystem audit" }
@@ -51,3 +52,6 @@ Findings `L1-ui-is-a-fork-not-a-layer` (CONFIRMED),
 `L8-design-system-forked-inside-its-own-repo`. Those names preserve the
 2026-08-01 audit record; this ticket corrects their implied collapse boundary.
 Consolidation row R2.6. Blocked in practice by #2.
+This ticket also replaces legacy task `upper-layer-convergence` from
+`.claude/current/tech-debt.md`; both records describe the same owner-steered
+upper-layer boundary work.

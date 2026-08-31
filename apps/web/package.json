@@ -11,26 +11,27 @@
     "deploy": "node ../../scripts/check-deploy-target.mjs && vp build && vp exec wrangler deploy"
   },
   "dependencies": {
+    "@proyecto-viviana/kumo": "workspace:*",
     "@proyecto-viviana/solid-spectrum": "workspace:*",
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",
     "@proyecto-viviana/solidaria-components": "workspace:*",
     "@proyecto-viviana/ui": "workspace:*",
-    "@tanstack/router-core": "1.171.13",
-    "@tanstack/solid-router": "1.170.15",
-    "@tanstack/solid-start": "1.168.25",
+    "@tanstack/router-core": "1.171.26",
+    "@tanstack/solid-router": "1.170.29",
+    "@tanstack/solid-start": "1.168.46",
     "solid-icons": "^1.2.0",
-    "solid-js": "^1.9.11",
-    "vite": "^7.3.1",
-    "yaml": "^2.8.3"
+    "solid-js": "^1.9.15",
+    "vite": "catalog:",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.1",
-    "@cloudflare/vite-plugin": "^1.40.2",
-    "@playwright/test": "^1.58.2",
-    "playwright": "^1.58.2",
-    "typescript": "^5.9.3",
-    "vite-plugin-solid": "^2.11.12",
-    "wrangler": "^4.100.0"
+    "@axe-core/playwright": "^4.13.0",
+    "@cloudflare/vite-plugin": "^1.53.0",
+    "@playwright/test": "^1.62.1",
+    "playwright": "^1.62.1",
+    "typescript": "6.0.3",
+    "vite-plugin-solid": "^2.11.14",
+    "wrangler": "^4.124.0"
   }
 }

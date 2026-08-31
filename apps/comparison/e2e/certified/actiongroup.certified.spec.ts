@@ -61,8 +61,8 @@ import type { DriverScenario, TargetResolver } from "../drivers/scenario";
  * DRIVERS SCOPED OUT (documented, not silent):
  *   - D1 (state-matrix) / D3 (pixel) / D7 (contrast) / D8 (target size) — there
  *     is no styled S2 ActionGroup oracle to pixel-diff against (S2 removed the
- *     component). The styled Solid layer is restyled off invented Tailwind onto
- *     the S2 macro as part of this unit (tailwind-removal.md Phase 0) and
+ *     component). The styled Solid layer was moved off invented utilities and
+ *     onto the S2 macro as part of this unit (verified by tickets #46 and #59), and
  *     verified for self-containment, not pixel-diffed against a missing oracle.
  *   - D2 (motion) — no enter/exit animation.
  *   - D4 (events) — the press/selection event model is exercised through the

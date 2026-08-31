@@ -1,3 +1,31 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/CloseButton.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/CustomDialog.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Dialog.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/DialogContainer.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/DialogTrigger.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/FullscreenDialog.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Modal.tsx
+
+// Port of packages/@react-spectrum/s2/src/Dialog.tsx.
+// Port of packages/@react-spectrum/s2/src/DialogTrigger.tsx.
+// Port of packages/@react-spectrum/s2/src/DialogContainer.tsx.
+// Port of packages/@react-spectrum/s2/src/CloseButton.tsx.
+// Port of packages/@react-spectrum/s2/src/FullscreenDialog.tsx.
+// Port of packages/@react-spectrum/s2/src/CustomDialog.tsx.
+// Port of packages/@react-spectrum/s2/src/Modal.tsx.
+
 import { type JSX, Show, createContext, splitProps, useContext } from "solid-js";
 import {
   Button as HeadlessButton,
@@ -8,6 +36,7 @@ import {
   Heading as HeadlessDialogHeading,
   Modal as HeadlessModal,
   ModalOverlay as HeadlessModalOverlay,
+  TextContext as RACTextContext,
   useDialogTrigger,
   type ButtonRenderProps,
   type DialogProps as HeadlessDialogProps,
@@ -665,13 +694,34 @@ function DialogHeaderSlots(props: { children: JSX.Element }): JSX.Element {
   );
 }
 
+function descriptionIdFromRacText(
+  racText: unknown,
+): Pick<ContentProps, "id"> | Record<string, never> {
+  if (!racText || typeof racText !== "object" || !("slots" in racText)) {
+    return {};
+  }
+
+  const description = (racText as { slots?: { description?: unknown } }).slots?.description;
+  if (!description || typeof description !== "object") {
+    return {};
+  }
+
+  const id = "id" in description ? description.id : undefined;
+  return typeof id === "string" ? { id } : {};
+}
+
 function DialogContentSlots(props: { children: JSX.Element }): JSX.Element {
+  // Upstream S2 Dialog copies RAC TextContext `slots.description` onto
+  // ContentContext so AlertDialog's `<Content>` receives the generated
+  // aria-describedby target id.
+  const racText = useContext(RACTextContext);
+
   return (
     <SlotProviders
       image={{ hidden: true }}
       heading={{ slots: { title: { isHidden: true } } }}
       header={{ isHidden: true }}
-      content={{ styles: dialogContent }}
+      content={{ styles: dialogContent, ...descriptionIdFromRacText(racText) }}
       footer={{ isHidden: true }}
       buttonGroup={{ isHidden: true }}
     >

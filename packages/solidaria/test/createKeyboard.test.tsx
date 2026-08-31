@@ -5,9 +5,13 @@
  * Verifies event handling, propagation control, and disabled state.
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createKeyboard, type KeyboardEvent } from "../src/interactions/createKeyboard";
+import {
+  createKeyboard,
+  type KeyboardEvent,
+  type KeyboardShortcutBindings,
+} from "../src/interactions/createKeyboard";
 import type { Component } from "solid-js";
 
 // Test component that uses createKeyboard
@@ -15,6 +19,9 @@ interface ExampleProps {
   isDisabled?: boolean;
   onKeyDown?: (e: KeyboardEvent) => void;
   onKeyUp?: (e: KeyboardEvent) => void;
+  shortcuts?: KeyboardShortcutBindings;
+  allowRepeats?: boolean;
+  allowComposing?: boolean;
   children?: string;
 }
 
@@ -23,6 +30,9 @@ const Example: Component<ExampleProps> = (props) => {
     isDisabled: props.isDisabled,
     onKeyDown: props.onKeyDown,
     onKeyUp: props.onKeyUp,
+    shortcuts: props.shortcuts,
+    allowRepeats: props.allowRepeats,
+    allowComposing: props.allowComposing,
   });
 
   return (
@@ -35,6 +45,7 @@ const Example: Component<ExampleProps> = (props) => {
 describe("createKeyboard", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   // ============================================
@@ -395,6 +406,276 @@ describe("createKeyboard", () => {
           metaKey: true,
         }),
       );
+    });
+  });
+
+  describe("shortcuts", () => {
+    it("matches a shortcut, prevents the default action, and stops propagation", () => {
+      const action = vi.fn();
+      const parentKeyDown = vi.fn();
+
+      render(() => (
+        <div onKeyDown={parentKeyDown}>
+          <Example shortcuts={{ Escape: action }} />
+        </div>
+      ));
+
+      const event = new window.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+        cancelable: true,
+      });
+      screen.getByTestId("example").dispatchEvent(event);
+
+      expect(action).toHaveBeenCalledTimes(1);
+      expect(event.defaultPrevented).toBe(true);
+      expect(parentKeyDown).not.toHaveBeenCalled();
+    });
+
+    it("continues propagation when no shortcut matches", () => {
+      const action = vi.fn();
+      const parentKeyDown = vi.fn();
+
+      render(() => (
+        <div onKeyDown={parentKeyDown}>
+          <Example shortcuts={{ Escape: action }} />
+        </div>
+      ));
+
+      fireEvent.keyDown(screen.getByTestId("example"), { key: "Enter" });
+
+      expect(action).not.toHaveBeenCalled();
+      expect(parentKeyDown).toHaveBeenCalledTimes(1);
+    });
+
+    it("maps Mod to Meta on macOS and Control on other platforms", () => {
+      const macAction = vi.fn();
+      vi.spyOn(window.navigator, "platform", "get").mockReturnValue("MacIntel");
+      const macKeyboard = createKeyboard({ shortcuts: { "Mod+s": macAction } });
+      const macTarget = document.createElement("button");
+      macTarget.addEventListener("keydown", macKeyboard.keyboardProps.onKeyDown as EventListener);
+
+      macTarget.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "s", metaKey: true, bubbles: true }),
+      );
+      macTarget.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "s", ctrlKey: true, bubbles: true }),
+      );
+      expect(macAction).toHaveBeenCalledTimes(1);
+
+      vi.restoreAllMocks();
+      const windowsAction = vi.fn();
+      vi.spyOn(window.navigator, "platform", "get").mockReturnValue("Win32");
+      const windowsKeyboard = createKeyboard({ shortcuts: { "Mod+s": windowsAction } });
+      const windowsTarget = document.createElement("button");
+      windowsTarget.addEventListener(
+        "keydown",
+        windowsKeyboard.keyboardProps.onKeyDown as EventListener,
+      );
+
+      windowsTarget.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "s", ctrlKey: true, bubbles: true }),
+      );
+      windowsTarget.dispatchEvent(
+        new window.KeyboardEvent("keydown", { key: "s", metaKey: true, bubbles: true }),
+      );
+      expect(windowsAction).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores repeated keydown events unless allowRepeats is true", () => {
+      const ignoredAction = vi.fn();
+      const allowedAction = vi.fn();
+      render(() => (
+        <>
+          <Example shortcuts={{ a: ignoredAction }}>ignored</Example>
+          <Example shortcuts={{ a: allowedAction }} allowRepeats>
+            allowed
+          </Example>
+        </>
+      ));
+
+      const examples = screen.getAllByTestId("example");
+      fireEvent.keyDown(examples[0], { key: "a", repeat: true });
+      fireEvent.keyDown(examples[1], { key: "a", repeat: true });
+
+      expect(ignoredAction).not.toHaveBeenCalled();
+      expect(allowedAction).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores composing keydown events unless allowComposing is true", () => {
+      const ignoredAction = vi.fn();
+      const allowedAction = vi.fn();
+      render(() => (
+        <>
+          <Example shortcuts={{ a: ignoredAction }}>ignored</Example>
+          <Example shortcuts={{ a: allowedAction }} allowComposing>
+            allowed
+          </Example>
+        </>
+      ));
+
+      const examples = screen.getAllByTestId("example");
+      fireEvent.keyDown(examples[0], { key: "a", isComposing: true });
+      fireEvent.keyDown(examples[1], { key: "a", isComposing: true });
+
+      expect(ignoredAction).not.toHaveBeenCalled();
+      expect(allowedAction).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not run shortcuts on keyup", () => {
+      const action = vi.fn();
+      render(() => <Example shortcuts={{ a: action }} />);
+
+      const example = screen.getByTestId("example");
+      fireEvent.keyUp(example, { key: "a" });
+      fireEvent.keyUp(example, { key: "a", repeat: true });
+      fireEvent.keyUp(example, { key: "a", isComposing: true });
+
+      expect(action).not.toHaveBeenCalled();
+    });
+
+    it("runs user handlers before shortcuts", () => {
+      const calls: string[] = [];
+      render(() => (
+        <Example
+          onKeyDown={() => calls.push("user keydown")}
+          onKeyUp={() => calls.push("user keyup")}
+          shortcuts={{ a: () => calls.push("shortcut") }}
+        />
+      ));
+
+      const example = screen.getByTestId("example");
+      fireEvent.keyDown(example, { key: "a" });
+      fireEvent.keyUp(example, { key: "a" });
+
+      expect(calls).toEqual(["user keydown", "shortcut", "user keyup"]);
+    });
+
+    it("does not install shortcut handlers when disabled", () => {
+      const action = vi.fn();
+      const result = createKeyboard({ isDisabled: true, shortcuts: { a: action } });
+
+      expect(result.keyboardProps).toEqual({});
+    });
+
+    it("validates shortcut bindings before it removes handlers for a disabled target", () => {
+      expect(() => createKeyboard({ isDisabled: true, shortcuts: { Mod: vi.fn() } })).toThrow(
+        /Invalid keyboard shortcut/,
+      );
+    });
+
+    it("stops propagation when the first composed shortcut handles the key", () => {
+      const parentKeyDown = vi.fn();
+
+      const Component = () => {
+        const first = createKeyboard({ shortcuts: { ArrowLeft: () => undefined } });
+        const second = createKeyboard({
+          shortcuts: { Enter: () => undefined },
+          ...first.keyboardProps,
+        });
+        return <button {...second.keyboardProps}>Save</button>;
+      };
+
+      render(() => (
+        <div onKeyDown={parentKeyDown}>
+          <Component />
+        </div>
+      ));
+      fireEvent.keyDown(screen.getByRole("button", { name: "Save" }), { key: "ArrowLeft" });
+
+      expect(parentKeyDown).not.toHaveBeenCalled();
+    });
+
+    it("continues propagation when the only matching composed shortcut continues", () => {
+      const parentKeyDown = vi.fn();
+
+      const Component = () => {
+        const first = createKeyboard({
+          shortcuts: { ArrowLeft: () => ({ shouldContinuePropagation: true }) },
+        });
+        const second = createKeyboard({
+          shortcuts: { Enter: () => undefined },
+          ...first.keyboardProps,
+        });
+        return <button {...second.keyboardProps}>Save</button>;
+      };
+
+      render(() => (
+        <div onKeyDown={parentKeyDown}>
+          <Component />
+        </div>
+      ));
+      fireEvent.keyDown(screen.getByRole("button", { name: "Save" }), { key: "ArrowLeft" });
+
+      expect(parentKeyDown).toHaveBeenCalledTimes(1);
+    });
+
+    it("stops propagation when the second composed shortcut handles the key", () => {
+      const parentKeyDown = vi.fn();
+
+      const Component = () => {
+        const first = createKeyboard({
+          shortcuts: { ArrowLeft: () => ({ shouldContinuePropagation: true }) },
+        });
+        const second = createKeyboard({
+          shortcuts: { ArrowLeft: () => undefined },
+          ...first.keyboardProps,
+        });
+        return <button {...second.keyboardProps}>Save</button>;
+      };
+
+      render(() => (
+        <div onKeyDown={parentKeyDown}>
+          <Component />
+        </div>
+      ));
+      fireEvent.keyDown(screen.getByRole("button", { name: "Save" }), { key: "ArrowLeft" });
+
+      expect(parentKeyDown).not.toHaveBeenCalled();
+    });
+
+    it("continues propagation when all composed shortcuts continue", () => {
+      const parentKeyDown = vi.fn();
+
+      const Component = () => {
+        const first = createKeyboard({
+          shortcuts: { ArrowLeft: () => ({ shouldContinuePropagation: true }) },
+        });
+        const second = createKeyboard({
+          shortcuts: { ArrowLeft: () => ({ shouldContinuePropagation: true }) },
+          ...first.keyboardProps,
+        });
+        return <button {...second.keyboardProps}>Save</button>;
+      };
+
+      render(() => (
+        <div onKeyDown={parentKeyDown}>
+          <Component />
+        </div>
+      ));
+      fireEvent.keyDown(screen.getByRole("button", { name: "Save" }), { key: "ArrowLeft" });
+
+      expect(parentKeyDown).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores events whose target is outside the current target", () => {
+      const action = vi.fn();
+      const currentTarget = document.createElement("div");
+      const outsideTarget = document.createElement("button");
+      const stopPropagation = vi.fn();
+      const event = {
+        key: "a",
+        currentTarget,
+        target: outsideTarget,
+        composedPath: () => [outsideTarget],
+        stopPropagation,
+      } as unknown as globalThis.KeyboardEvent;
+      const result = createKeyboard({ shortcuts: { a: action } });
+
+      (result.keyboardProps.onKeyDown as (event: globalThis.KeyboardEvent) => void)(event);
+
+      expect(action).not.toHaveBeenCalled();
+      expect(stopPropagation).not.toHaveBeenCalled();
     });
   });
 

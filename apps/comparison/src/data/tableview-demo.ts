@@ -10,7 +10,7 @@ export const tableViewItemCountOptions = ["3", "2", "0"] as const;
 export const tableViewColumnSetOptions = ["all", "withoutOwner", "nameStatus"] as const;
 export const tableViewSortColumnOptions = ["none", "name", "type", "owner", "status"] as const;
 export const tableViewSortDirectionOptions = ["ascending", "descending"] as const;
-// ar-AE is the D10 (RTL/i18n) driver's pinned locale (recertification.md). The
+// ar-AE is the D10 (RTL/i18n) driver's pinned locale (see certification.md). The
 // TableView fixture routes `?locale` into the S2 `Provider` so the D10 RTL driver
 // gets `dir="rtl"` (mirrored column order + flipped ArrowLeft/ArrowRight cell nav).
 export const tableViewDemoLocaleOptions = ["en-US", "ar-AE"] as const;

@@ -1,14 +1,26 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/selection/useMultipleSelectionState.ts
+
 /**
  * Raw multiple-selection + focus state for a collection.
  *
  * The lower of the two selection layers ported from upstream
- * (`@react-stately/selection`'s `useMultipleSelectionState`): it owns the
+ * (`packages/react-stately/src/selection/useMultipleSelectionState.ts`): it owns the
  * selected keys, focus, selection behavior, and disabled keys, but is NOT
  * collection-aware. The collection-aware operations (toggle, extend, select
  * all, range, etc.) live in {@link SelectionManager}, which is built on top of
  * this state.
- *
- * Based on @react-stately/selection.
  */
 
 import { createSignal, createMemo, createComputed, untrack, type Accessor } from "solid-js";

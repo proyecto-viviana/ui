@@ -1,6 +1,6 @@
 /**
  * Color types for color picker components.
- * Based on @react-stately/color.
+ * Ported from packages/react-stately/src/color/types.ts.
  */
 
 /**

@@ -10,7 +10,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Time } from "@internationalized/date";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -496,11 +496,13 @@ describe("TimeField", () => {
       });
     });
 
-    // Skipped: typed digits (including full-width) reach the value model through
-    // the contenteditable's onBeforeInput → onInput path (matching upstream
-    // useDateSegment), not onKeyDown. jsdom does not fire beforeinput on
-    // contenteditable, so a bare keyDown never reaches the parser. Certified in
-    // the real-browser pair-oracle spec.
+    // Skipped here: typed digits (including full-width) reach the value model
+    // through the contenteditable's onBeforeInput → onInput path (matching
+    // upstream useDateSegment), not onKeyDown. jsdom does not synthesize that
+    // contenteditable path from a keyDown. The parser branch is held by
+    // solidaria's createDateSegment beforeinput regression, while the certified
+    // browser pair proves the component's ASCII typed-input wiring. There is no
+    // browser-level full-width integration claim yet.
     it.skip("should accept full-width digits in numeric input", async () => {
       const onChange = vi.fn();
       render(() => <TestTimeField fieldProps={{ defaultValue: new Time(10, 30), onChange }} />);

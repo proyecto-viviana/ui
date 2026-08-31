@@ -1,18 +1,43 @@
+import { spawnSync } from "node:child_process";
 import { promises as fs } from "node:fs";
+import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 
 const repoRoot = process.cwd();
 const solidIconRoot = path.join(repoRoot, "packages/solid-spectrum/src/icon");
+const vivianaIconRoot = path.join(repoRoot, "packages/viviana-ui/src/icon");
+const generatedIconRoots = [solidIconRoot, vivianaIconRoot];
 const uiSourceDir = path.join(solidIconRoot, "assets/ui-icons");
-const wfSourceDir = path.join(solidIconRoot, "assets/s2wf-icons");
-const uiOutDir = path.join(solidIconRoot, "ui-icons");
-const wfOutDir = path.join(solidIconRoot, "s2wf-icons");
+const wfInventoryDir = path.join(solidIconRoot, "assets/s2wf-icons");
+const uiOutDirs = generatedIconRoots.map((iconRoot) => path.join(iconRoot, "ui-icons"));
+const wfOutDirs = generatedIconRoots.map((iconRoot) => path.join(iconRoot, "s2wf-icons"));
+const outputDirs = [...uiOutDirs, ...wfOutDirs];
+const comparisonManifestPath = path.join(repoRoot, "apps/comparison/package.json");
+const upstreamPinPath = path.join(repoRoot, "scripts/upstream-pin.json");
+const requireFromRoot = createRequire(path.join(repoRoot, "package.json"));
+const requireFromComparison = createRequire(comparisonManifestPath);
+const { JSDOM } = requireFromRoot("jsdom");
 
-const license = `/*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+// The shipped CJS modules import CSS. Code generation needs only their rendered SVG.
+requireFromComparison.extensions[".css"] = () => {};
+const React = requireFromComparison("react");
+const { renderToStaticMarkup } = requireFromComparison("react-dom/server");
+const SvgParser = new JSDOM("").window.DOMParser;
+const parser = new SvgParser();
+
+const generatedNotice = `/*
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
 `;
+const ignoredWorkflowRootAttributes = new Set([
+  "aria-hidden",
+  "class",
+  "data-slot",
+  "focusable",
+  "role",
+]);
 
 function pascalFromAssetName(name) {
   return name
@@ -27,18 +52,6 @@ function pascalFromAssetName(name) {
 
 function safeIdentifier(name) {
   return /^[A-Za-z_]/.test(name) ? name : `Icon${name}`;
-}
-
-function escapeText(text) {
-  return text.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${");
-}
-
-function indent(text, spaces) {
-  const pad = " ".repeat(spaces);
-  return text
-    .split("\n")
-    .map((line) => (line.length ? pad + line : line))
-    .join("\n");
 }
 
 const uiIconSpecs = [
@@ -141,108 +154,184 @@ const uiIconSpecs = [
   },
 ];
 
-async function readSvgSource(svgPath) {
-  const raw = await fs.readFile(svgPath, "utf8");
-  const match = raw.match(/<svg\b([^>]*)>([\s\S]*?)<\/svg>/i);
-  if (!match) {
-    throw new Error(`Unable to parse SVG file: ${svgPath}`);
+function slash(value) {
+  return value.split(path.sep).join("/");
+}
+
+async function readJson(filePath) {
+  return JSON.parse(await fs.readFile(filePath, "utf8"));
+}
+
+async function loadS2Package() {
+  const [comparisonManifest, upstreamPin] = await Promise.all([
+    readJson(comparisonManifestPath),
+    readJson(upstreamPinPath),
+  ]);
+  const declaredVersion = comparisonManifest.dependencies?.["@react-spectrum/s2"];
+  const pinnedVersion = upstreamPin.tags?.["@react-spectrum/s2"];
+  const manifestPath = requireFromComparison.resolve("@react-spectrum/s2/package.json");
+  const installedManifest = await readJson(manifestPath);
+
+  if (
+    !declaredVersion ||
+    declaredVersion !== pinnedVersion ||
+    declaredVersion !== installedManifest.version
+  ) {
+    throw new Error(
+      `@react-spectrum/s2 version mismatch: comparison=${declaredVersion ?? "missing"}, pin=${pinnedVersion ?? "missing"}, installed=${installedManifest.version ?? "missing"}`,
+    );
   }
 
+  return { root: path.dirname(manifestPath), version: installedManifest.version };
+}
+
+function toTree(element) {
   return {
-    attrs: match[1].trim(),
-    inner: match[2].trim(),
+    tag: element.tagName,
+    attributes: Array.from(element.attributes, ({ name, value }) => ({ name, value })),
+    children: Array.from(element.children, toTree),
   };
 }
 
-async function ensureCleanDir(dir) {
-  await fs.rm(dir, { recursive: true, force: true });
-  await fs.mkdir(dir, { recursive: true });
+function parseSvg(source, sourceName) {
+  const document = parser.parseFromString(source, "image/svg+xml");
+  const parseError = document.querySelector("parsererror");
+  const svg = document.documentElement;
+  if (parseError || svg.tagName !== "svg") {
+    throw new Error(`Unable to parse SVG from ${sourceName}`);
+  }
+  return toTree(svg);
 }
 
-function extractUiImports(source) {
-  const imports = [];
-  const re = /^import\s+(\w+)\s+from\s+'\.\/(S2_[^']+\.svg)';$/gm;
+function escapeAttribute(value) {
+  return value.replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+}
+
+function renderTree(tree, level = 3, isRoot = true) {
+  const indentation = "  ".repeat(level);
+  const attributes = tree.attributes
+    .filter(({ name }) => !isRoot || !ignoredWorkflowRootAttributes.has(name))
+    .map(({ name, value }) => `${name}="${escapeAttribute(value)}"`);
+  if (isRoot) {
+    attributes.push("{...rest}", "class={className}");
+  }
+
+  const compactOpen = `<${tree.tag}${attributes.length ? ` ${attributes.join(" ")}` : ""}`;
+  if (tree.children.length === 0 && indentation.length + compactOpen.length + 3 <= 100) {
+    return `${indentation}${compactOpen} />`;
+  }
+
+  const opening = attributes.length
+    ? `${indentation}<${tree.tag}\n${attributes.map((attribute) => `${indentation}  ${attribute}`).join("\n")}\n${indentation}`
+    : `${indentation}<${tree.tag}`;
+  if (tree.children.length === 0) {
+    return `${opening}/>`;
+  }
+
+  const children = tree.children.map((child) => renderTree(child, level + 1, false)).join("\n");
+  return `${opening}>\n${children}\n${indentation}</${tree.tag}>`;
+}
+
+function treePathData(tree) {
+  const data = [];
+  if (tree.tag === "path") {
+    const pathData = tree.attributes.find(({ name }) => name === "d")?.value;
+    if (pathData !== undefined) data.push(pathData);
+  }
+  for (const child of tree.children) data.push(...treePathData(child));
+  return data;
+}
+
+function modulePathData(source) {
+  const data = [];
+  const re = /\bd:\s*("(?:[^"\\]|\\.)*")/g;
   let match;
-  while ((match = re.exec(source))) {
-    imports.push({ localName: match[1], asset: match[2] });
-  }
-  return imports;
+  while ((match = re.exec(source))) data.push(JSON.parse(match[1]));
+  return data;
 }
 
-function extractSizeMap(source) {
-  const widthMatch = source.match(/width:\s*\{\s*size:\s*\{([\s\S]*?)\}\s*\}\s*,\s*height:/);
-  if (!widthMatch) {
-    throw new Error("Unable to find ui-icon size map");
+async function readShippedSvg(s2Package, relativeBase) {
+  const esmPath = path.join(s2Package.root, `${relativeBase}.mjs`);
+  const cjsPath = path.join(s2Package.root, `${relativeBase}.cjs`);
+  const [esmSource] = await Promise.all([fs.readFile(esmPath, "utf8"), fs.access(cjsPath)]);
+  const loaded = requireFromComparison(cjsPath);
+  const Component = loaded.default ?? loaded;
+  const tree = parseSvg(renderToStaticMarkup(React.createElement(Component)), cjsPath);
+  const esmPaths = modulePathData(esmSource);
+  const renderedPaths = treePathData(tree);
+  if (
+    esmPaths.length !== renderedPaths.length ||
+    esmPaths.some((value, index) => value !== renderedPaths[index])
+  ) {
+    throw new Error(`ESM and rendered CJS path data differ for ${relativeBase}`);
   }
 
-  const entries = [];
-  const re = /([A-Z]+):\s*(\d+)/g;
-  let match;
-  while ((match = re.exec(widthMatch[1]))) {
-    entries.push({ size: match[1], value: Number(match[2]) });
-  }
-  return entries;
+  return {
+    tree,
+    inputs: [
+      `@react-spectrum/s2@${s2Package.version}/${slash(`${relativeBase}.mjs`)}`,
+      `@react-spectrum/s2@${s2Package.version}/${slash(`${relativeBase}.cjs`)}`,
+    ],
+  };
 }
 
-function sizeKeyFromImport(localName, asset) {
-  const suffix = localName.slice(localName.lastIndexOf("_") + 1);
-  if (suffix && /^[A-Z]+$/.test(suffix)) {
-    return suffix;
+async function readUiVariant(s2Package, file) {
+  const relativeBase = `dist/private/${path.basename(file, ".svg")}`;
+  try {
+    return await readShippedSvg(s2Package, relativeBase);
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+    const assetPath = path.join(uiSourceDir, file);
+    return {
+      tree: parseSvg(await fs.readFile(assetPath, "utf8"), assetPath),
+      inputs: [slash(path.relative(repoRoot, assetPath))],
+    };
   }
-
-  const assetMatch = asset.match(/Size(\d+)/);
-  if (assetMatch) {
-    return assetMatch[1];
-  }
-
-  throw new Error(`Unable to infer size key for ${localName} (${asset})`);
 }
 
-function buildVariantComponent(name, sizeKey, svgAttrs, svgInner) {
+function provenanceLines(inputs) {
+  return inputs.map((input) => `// Generator input: ${input}`).join("\n");
+}
+
+function buildVariantComponent(name, sizeKey, tree) {
   return `
 function ${name}_${sizeKey}Svg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, width: _width, height: _height, ...rest } = props;
   return (
-    <svg ${svgAttrs} {...rest} class={className}>
-${indent(svgInner, 6)}
-    </svg>
+${renderTree(tree)}
   );
 }
 `.trim();
 }
 
-function buildWorkflowIconComponent(name, svgAttrs, svgInner) {
+function buildWorkflowIconComponent(name, tree) {
   return `
 function ${name}Svg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
   const { class: className, ...rest } = props;
   return (
-    <svg ${svgAttrs} {...rest} class={className}>
-${indent(svgInner, 6)}
-    </svg>
+${renderTree(tree)}
   );
 }
 `.trim();
 }
 
-async function generateUiIcon(spec, outPath) {
+async function generateUiIcon(spec, s2Package) {
   const baseName = spec.name;
   const propsType = `${baseName}Props`;
-  const sizeUnion = spec.variants.map((entry) => `'${entry.size}'`).join(" | ");
+  const sizeUnion = spec.variants.map((entry) => `"${entry.size}"`).join(" | ");
 
   const svgVariants = [];
   for (const { size, file } of spec.variants) {
-    const svgPath = path.join(uiSourceDir, file);
-    const { attrs, inner } = await readSvgSource(svgPath);
-    svgVariants.push({ size, attrs, inner });
+    svgVariants.push({ size, ...(await readUiVariant(s2Package, file)) });
   }
 
   const variantComponents = svgVariants
-    .map((variant) => buildVariantComponent(baseName, variant.size, variant.attrs, variant.inner))
+    .map((variant) => buildVariantComponent(baseName, variant.size, variant.tree))
     .join("\n\n");
 
   const cases = svgVariants
     .map(
-      (variant) => `    case '${variant.size}':
+      (variant) => `    case "${variant.size}":
       return <${baseName}_${variant.size} {...rest} class={className} />;`,
     )
     .join("\n");
@@ -251,9 +340,10 @@ async function generateUiIcon(spec, outPath) {
     ? "M"
     : spec.variants[0].size;
 
-  const file = `${license}
+  return `${generatedNotice}${provenanceLines(svgVariants.flatMap(({ inputs }) => inputs))}
+
 import { type JSX } from "solid-js";
-import { createIcon } from "../spectrum-icon";
+import { createUIIcon } from "../spectrum-icon";
 
 export type ${propsType} = JSX.SvgSVGAttributes<SVGSVGElement> & {
   size?: ${sizeUnion};
@@ -263,12 +353,13 @@ ${variantComponents}
 
 ${svgVariants
   .map(
-    (variant) => `const ${baseName}_${variant.size} = createIcon(${baseName}_${variant.size}Svg);`,
+    (variant) =>
+      `const ${baseName}_${variant.size} = createUIIcon(${baseName}_${variant.size}Svg);`,
   )
   .join("\n")}
 
 export default function ${baseName}(props: ${propsType}): JSX.Element {
-  const { size = '${defaultSize}', class: className, width: _width, height: _height, ...rest } = props;
+  const { size = "${defaultSize}", class: className, width: _width, height: _height, ...rest } = props;
   switch (size) {
 ${cases}
     default:
@@ -278,75 +369,157 @@ ${cases}
 
 export const ${baseName}Icon = ${baseName};
 `;
-
-  await fs.writeFile(outPath, file);
 }
 
-async function generateWorkflowIcon(sourcePath, outPath) {
-  const baseName = path.basename(sourcePath, ".svg");
-  const iconName = safeIdentifier(`${pascalFromAssetName(baseName) || baseName}Icon`);
-  const { attrs, inner } = await readSvgSource(sourcePath);
+async function generateWorkflowIcon(inventoryFile, s2Package) {
+  const inventoryName = path.basename(inventoryFile, ".svg");
+  const moduleName = pascalFromAssetName(inventoryName) || inventoryName;
+  const iconName = safeIdentifier(`${moduleName}Icon`);
+  const { tree, inputs } = await readShippedSvg(s2Package, `icons/${moduleName}`);
 
-  const file = `${license}
+  return {
+    iconName,
+    content: `${generatedNotice}${provenanceLines(inputs)}
+
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
 
-function ${iconName}Svg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
-  const { class: className, ...rest } = props;
-  return (
-    <svg ${attrs} {...rest} class={className}>
-${indent(inner, 6)}
-    </svg>
-  );
-}
+${buildWorkflowIconComponent(iconName, tree)}
 
 export type ${iconName}Props = JSX.SvgSVGAttributes<SVGSVGElement>;
 export const ${iconName} = createIcon(${iconName}Svg);
 export default ${iconName};
-`;
-
-  await fs.writeFile(outPath, file);
-  return iconName;
+`,
+  };
 }
 
-async function writeUiBarrel(files) {
-  const lines = [license];
+function buildUiBarrel(files) {
+  const lines = [generatedNotice.trimEnd()];
   for (const file of files) {
     const name = path.basename(file, ".tsx");
     lines.push(`export { default as ${name}, ${name}Icon } from "./${name}";`);
     lines.push(`export type { ${name}Props } from "./${name}";`);
   }
-  await fs.writeFile(path.join(uiOutDir, "index.ts"), `${lines.join("\n")}\n`);
+  return `${lines.join("\n")}\n`;
 }
 
-async function writeWorkflowBarrel(names) {
-  const lines = [license];
+function buildWorkflowBarrel(names) {
+  const lines = [generatedNotice.trimEnd()];
   for (const name of names) {
     lines.push(`export { default as ${name} } from "./${name}";`);
     lines.push(`export type { ${name}Props } from "./${name}";`);
   }
-  await fs.writeFile(path.join(wfOutDir, "index.ts"), `${lines.join("\n")}\n`);
+  return `${lines.join("\n")}\n`;
+}
+
+async function formatExpected(expected) {
+  const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "viviana-generated-icons-"));
+  try {
+    const temporaryFiles = new Map();
+    for (const [filePath, content] of expected) {
+      const temporaryPath = path.join(temporaryRoot, path.relative(repoRoot, filePath));
+      await fs.mkdir(path.dirname(temporaryPath), { recursive: true });
+      await fs.writeFile(temporaryPath, content);
+      temporaryFiles.set(filePath, temporaryPath);
+    }
+
+    const formatResult = spawnSync(
+      "vp",
+      ["fmt", ...outputDirs.map((dir) => path.join(temporaryRoot, path.relative(repoRoot, dir)))],
+      { cwd: repoRoot, encoding: "utf8" },
+    );
+    if (formatResult.error || formatResult.status !== 0) {
+      const details = [formatResult.stdout, formatResult.stderr].filter(Boolean).join("\n");
+      throw new Error(`Unable to format generated icons${details ? `:\n${details}` : ""}`, {
+        cause: formatResult.error,
+      });
+    }
+
+    return new Map(
+      await Promise.all(
+        [...temporaryFiles].map(async ([filePath, temporaryPath]) => [
+          filePath,
+          await fs.readFile(temporaryPath, "utf8"),
+        ]),
+      ),
+    );
+  } finally {
+    await fs.rm(temporaryRoot, { recursive: true, force: true });
+  }
+}
+
+async function synchronize(expected, checkOnly) {
+  const changed = [];
+  for (const [filePath, content] of expected) {
+    let current;
+    try {
+      current = await fs.readFile(filePath, "utf8");
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+    if (current !== content) changed.push(filePath);
+  }
+
+  const extra = [];
+  for (const dir of outputDirs) {
+    for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+      const filePath = path.join(dir, entry.name);
+      if (entry.isFile() && !expected.has(filePath)) extra.push(filePath);
+    }
+  }
+
+  if (checkOnly && (changed.length || extra.length)) {
+    const details = [
+      ...changed.map((filePath) => `  change: ${slash(path.relative(repoRoot, filePath))}`),
+      ...extra.map((filePath) => `  remove: ${slash(path.relative(repoRoot, filePath))}`),
+    ];
+    throw new Error(`Generated icon output is stale:\n${details.join("\n")}`);
+  }
+
+  if (!checkOnly) {
+    await Promise.all(outputDirs.map((dir) => fs.mkdir(dir, { recursive: true })));
+    await Promise.all(changed.map((filePath) => fs.writeFile(filePath, expected.get(filePath))));
+    await Promise.all(extra.map((filePath) => fs.unlink(filePath)));
+  }
+
+  return { changed: changed.length, removed: extra.length };
 }
 
 async function main() {
-  await ensureCleanDir(uiOutDir);
-  await ensureCleanDir(wfOutDir);
+  const args = process.argv.slice(2);
+  if (args.some((arg) => arg !== "--check")) {
+    throw new Error("Usage: node scripts/generate-solid-spectrum-icons.mjs [--check]");
+  }
+  const checkOnly = args.includes("--check");
+  const s2Package = await loadS2Package();
+  const expected = new Map();
 
   for (const spec of uiIconSpecs) {
-    await generateUiIcon(spec, path.join(uiOutDir, `${spec.name}.tsx`));
+    const content = await generateUiIcon(spec, s2Package);
+    for (const dir of uiOutDirs) expected.set(path.join(dir, `${spec.name}.tsx`), content);
   }
 
-  const wfFiles = (await fs.readdir(wfSourceDir)).filter((file) => file.endsWith(".svg")).sort();
+  const wfFiles = (await fs.readdir(wfInventoryDir)).filter((file) => file.endsWith(".svg")).sort();
   const wfNames = [];
   for (const file of wfFiles) {
-    const outName = `${safeIdentifier(`${pascalFromAssetName(path.basename(file, ".svg")) || path.basename(file, ".svg")}Icon`)}.tsx`;
-    wfNames.push(
-      await generateWorkflowIcon(path.join(wfSourceDir, file), path.join(wfOutDir, outName)),
-    );
+    const generated = await generateWorkflowIcon(file, s2Package);
+    wfNames.push(generated.iconName);
+    for (const dir of wfOutDirs) {
+      expected.set(path.join(dir, `${generated.iconName}.tsx`), generated.content);
+    }
   }
 
-  await writeUiBarrel(uiIconSpecs.map((spec) => `${spec.name}.tsx`));
-  await writeWorkflowBarrel(wfNames);
+  const uiBarrel = buildUiBarrel(uiIconSpecs.map((spec) => `${spec.name}.tsx`));
+  const workflowBarrel = buildWorkflowBarrel(wfNames);
+  for (const dir of uiOutDirs) expected.set(path.join(dir, "index.ts"), uiBarrel);
+  for (const dir of wfOutDirs) expected.set(path.join(dir, "index.ts"), workflowBarrel);
+
+  const formattedExpected = await formatExpected(expected);
+  const result = await synchronize(formattedExpected, checkOnly);
+  const action = checkOnly ? "Verified" : "Synchronized";
+  console.log(
+    `${action} ${expected.size} generated icon files (${result.changed} changed, ${result.removed} removed).`,
+  );
 }
 
 main().catch((error) => {

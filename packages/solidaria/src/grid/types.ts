@@ -1,6 +1,29 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-types/shared/src/collections.d.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/grid/useGrid.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/grid/useGridCell.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/grid/useGridRow.ts
+
 /**
  * Grid ARIA types for Table and GridList components.
- * Based on @react-aria/grid types.
+ * Based on these pinned React Aria sources:
+ * - packages/@react-types/shared/src/collections.d.ts
+ * - packages/react-aria/src/grid/useGrid.ts
+ * - packages/react-aria/src/grid/useGridRow.ts
+ * - packages/react-aria/src/grid/useGridCell.ts
+ *
+ * The key-based row and cell props adapt the upstream node-based API to Solid state.
  */
 
 import type { JSX } from "solid-js";

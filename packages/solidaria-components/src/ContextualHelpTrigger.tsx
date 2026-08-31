@@ -1,19 +1,28 @@
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@adobe/react-spectrum/src/menu/ContextualHelpTrigger.tsx
+
 /**
  * ContextualHelpTrigger headless component
  *
  * A button trigger that opens contextual help in a popover or dialog.
  * Uses existing overlay infrastructure.
+ * Based on @react-spectrum/menu source:
+ * https://github.com/adobe/react-spectrum/blob/5ecb3333001313e83898cd07644227897e3bae1f/packages/@adobe/react-spectrum/src/menu/ContextualHelpTrigger.tsx.
  */
 
-import {
-  type JSX,
-  createSignal,
-  splitProps,
-  Show,
-  onCleanup,
-  createEffect,
-  createUniqueId,
-} from "solid-js";
+import { type JSX, createSignal, splitProps, Show, createEffect, createUniqueId } from "solid-js";
+import { createInteractOutside } from "@proyecto-viviana/solidaria";
 
 export interface ContextualHelpTriggerProps extends Omit<
   JSX.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -61,8 +70,12 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
   const [isOpen, setIsOpen] = createSignal(false);
   const triggerId = createUniqueId();
   const contentId = createUniqueId();
-  let triggerRef: HTMLButtonElement | undefined;
-  let contentRef: HTMLDivElement | undefined;
+  // Signal refs, not `let` refs: the jsx-preserving package build DCE's reads of
+  // `let` refs as always-undefined (JSX `ref={el}` is not a JS write), which
+  // deleted the outside-dismiss `close()` and the focus restores.
+  const [rootEl, setRootEl] = createSignal<HTMLDivElement | null>(null);
+  const [triggerEl, setTriggerEl] = createSignal<HTMLButtonElement | null>(null);
+  const [contentEl, setContentEl] = createSignal<HTMLDivElement | null>(null);
 
   const isUnavailable = () => local.isUnavailable ?? false;
   const isDisabled = () => local.isDisabled ?? false;
@@ -110,36 +123,25 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
       e.preventDefault();
       e.stopPropagation();
       close();
-      triggerRef?.focus();
+      triggerEl()?.focus();
     }
   };
 
-  // Close on outside click
-  const handleDocumentClick = (e: MouseEvent) => {
-    if (
-      isOpen() &&
-      triggerRef &&
-      contentRef &&
-      !triggerRef.contains(e.target as Node) &&
-      !contentRef.contains(e.target as Node)
-    ) {
+  // Root wraps trigger + dialog, so a trigger click is not an outside
+  // interaction (otherwise pointerdown-close + click-toggle would reopen).
+  createInteractOutside({
+    ref: rootEl,
+    onInteractOutside: () => {
       close();
-    }
-  };
-
-  createEffect(() => {
-    if (!isOpen()) return;
-    document.addEventListener("mousedown", handleDocumentClick);
-    onCleanup(() => {
-      document.removeEventListener("mousedown", handleDocumentClick);
-    });
+    },
+    get isDisabled() {
+      return !isOpen();
+    },
   });
 
-  // Focus trap: return focus to trigger on close
   createEffect(() => {
     if (!isOpen()) return;
-    // Focus the content on open
-    contentRef?.focus();
+    contentEl()?.focus();
   });
 
   const children = () => local.children ?? ([null, null] as [JSX.Element, JSX.Element]);
@@ -148,6 +150,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
 
   return (
     <div
+      ref={setRootEl}
       class={`solidaria-ContextualHelpTrigger ${local.class ?? ""}`}
       style={{ position: "relative", display: "inline-block" }}
     >
@@ -155,7 +158,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
         {...triggerProps}
         type="button"
         id={triggerId}
-        ref={triggerRef}
+        ref={setTriggerEl}
         aria-haspopup="dialog"
         aria-expanded={isOpen()}
         aria-controls={isOpen() ? contentId : undefined}
@@ -172,7 +175,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
       <Show when={isOpen()}>
         <div
           id={contentId}
-          ref={contentRef}
+          ref={setContentEl}
           role="dialog"
           aria-labelledby={triggerId}
           tabIndex={-1}
@@ -183,7 +186,7 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
               e.preventDefault();
               e.stopPropagation();
               close();
-              triggerRef?.focus();
+              triggerEl()?.focus();
             }
           }}
         >

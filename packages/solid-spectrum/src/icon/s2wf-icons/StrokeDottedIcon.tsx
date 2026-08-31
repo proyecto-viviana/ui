@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/StrokeDotted.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/StrokeDotted.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -10,8 +12,6 @@ function StrokeDottedIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
   const { class: className, ...rest } = props;
   return (
     <svg
-      id="e"
-      data-name="ICONS"
       xmlns="http://www.w3.org/2000/svg"
       width="20"
       height="20"
@@ -20,28 +20,8 @@ function StrokeDottedIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.El
       class={className}
     >
       <path
-        d="M18.08719,10.875c-.48323,0-.875-.39176-.875-.875s.39177-.875.875-.875.875.39175.875.875-.39177.875-.875.875Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="M14.84475,10.875c-.48323,0-.875-.39176-.875-.875s.39177-.875.875-.875.875.39175.875.875-.39177.875-.875.875Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="M11.60231,10.875c-.48324,0-.875-.39176-.875-.875s.39176-.875.875-.875.875.39175.875.875-.39176.875-.875.875Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="M8.35987,10.875c-.48324,0-.875-.39176-.875-.875s.39176-.875.875-.875.875.39175.875.875-.39176.875-.875.875Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="M1.875,10.875c-.48324,0-.875-.39176-.875-.875s.39176-.875.875-.875.875.39175.875.875-.39176.875-.875.875Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <path
-        d="M5.11744,10.875c-.48324,0-.875-.39176-.875-.875s.39176-.875.875-.875.875.39175.875.875-.39176.875-.875.875Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M18.087 10.875c-.483 0-.875-.392-.875-.875s.392-.875.875-.875.875.392.875.875-.392.875-.875.875M14.845 10.875c-.483 0-.875-.392-.875-.875s.392-.875.875-.875.875.392.875.875-.392.875-.875.875M11.602 10.875c-.483 0-.875-.392-.875-.875s.392-.875.875-.875.875.392.875.875-.391.875-.875.875M8.36 10.875c-.483 0-.875-.392-.875-.875s.392-.875.875-.875.875.392.875.875-.392.875-.875.875M1.875 10.875C1.392 10.875 1 10.483 1 10s.392-.875.875-.875.875.392.875.875-.392.875-.875.875M5.117 10.875c-.483 0-.875-.392-.875-.875s.392-.875.875-.875.875.392.875.875-.391.875-.875.875"
       />
     </svg>
   );

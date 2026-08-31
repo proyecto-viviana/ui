@@ -14,6 +14,7 @@ const releasablePackages = [
   { path: "packages/solid-stately/", name: "@proyecto-viviana/solid-stately" },
   { path: "packages/solidaria/", name: "@proyecto-viviana/solidaria" },
   { path: "packages/solidaria-components/", name: "@proyecto-viviana/solidaria-components" },
+  { path: "packages/kumo/", name: "@proyecto-viviana/kumo" },
   { path: "packages/solid-spectrum/", name: "@proyecto-viviana/solid-spectrum" },
   { path: "packages/viviana-ui/", name: "@proyecto-viviana/ui" },
 ];

@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/Menu.tsx
+
 /**
  * Menu component for solidaria-components
  *
@@ -22,6 +36,7 @@ import {
   createMenu,
   createMenuItem,
   createMenuTrigger,
+  type MenuTriggerMenuProps,
   createFocusRing,
   createHover,
   createButton,
@@ -39,7 +54,7 @@ import {
   createMenuTriggerState,
   type MenuState,
   type MenuStateProps,
-  type OverlayTriggerState,
+  type MenuTriggerState,
   type Key,
   type DropTarget,
   type SelectionMode,
@@ -52,6 +67,8 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  assignRef,
+  type RefLike,
 } from "./utils";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
@@ -259,9 +276,12 @@ interface MenuContextValue<T> {
 type MenuSelectionEvent = { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean };
 
 interface MenuTriggerContextValue {
-  state: OverlayTriggerState;
+  state: MenuTriggerState;
   triggerProps: JSX.HTMLAttributes<HTMLElement>;
-  menuProps: JSX.HTMLAttributes<HTMLElement>;
+  menuProps: MenuTriggerMenuProps;
+  triggerRef?: () => HTMLElement | null;
+  setTriggerRef?: (element: HTMLElement | null) => void;
+  isDisabled?: () => boolean;
   isPressed?: () => boolean;
   onPressStart?: (e: { pointerType?: string }) => void;
 }
@@ -307,21 +327,13 @@ interface MenuItemCloseRegistryContextValue {
 export const MenuContext = createContext<MenuContextValue<unknown> | null>(null);
 export const MenuStateContext = createContext<MenuState<unknown> | null>(null);
 export const MenuTriggerContext = createContext<MenuTriggerContextValue | null>(null);
-export const RootMenuTriggerStateContext = createContext<OverlayTriggerState | null>(null);
+export const RootMenuTriggerStateContext = createContext<MenuTriggerState | null>(null);
 const MenuItemContext = createContext<MenuItemContextValue | null>(null);
 const StaticMenuCollectionContext = createContext<StaticMenuCollectionContextValue | null>(null);
 const MenuSectionSelectionContext = createContext<MenuSectionSelectionContextValue | null>(null);
 const MenuSectionSelectionRegistryContext =
   createContext<MenuSectionSelectionRegistryContextValue | null>(null);
 const MenuItemCloseRegistryContext = createContext<MenuItemCloseRegistryContextValue | null>(null);
-
-type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
-
-function assignRef<T>(ref: RefLike<T>, el: T): void {
-  if (!ref) return;
-  if (typeof ref === "function") ref(el);
-  else ref.current = el;
-}
 
 function resolveBoolean(value: unknown): boolean {
   return typeof value === "function" ? Boolean((value as () => unknown)()) : Boolean(value);
@@ -343,7 +355,12 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
     get onOpenChange() {
       return stateProps.onOpenChange;
     },
+    get trigger() {
+      return stateProps.trigger;
+    },
   });
+
+  const [triggerRef, setTriggerRef] = createSignal<HTMLElement | null>(null);
 
   const [isMousePressed, setMousePressed] = createSignal(false);
   const onPressStart = (e: { pointerType?: string }) => {
@@ -366,8 +383,15 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
       get isDisabled() {
         return stateProps.isDisabled;
       },
+      get type() {
+        return stateProps.type;
+      },
+      get trigger() {
+        return stateProps.trigger;
+      },
     },
     state,
+    triggerRef,
   );
 
   return (
@@ -381,11 +405,24 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
           get menuProps() {
             return menuTrigger.menuProps;
           },
+          triggerRef,
+          setTriggerRef,
+          isDisabled: () => Boolean(stateProps.isDisabled),
           isPressed: isMousePressed,
           onPressStart,
         }}
       >
-        {props.children}
+        <PopoverTriggerContext.Provider
+          value={{
+            state,
+            triggerRef,
+            setTriggerRef,
+            triggerId: String(menuTrigger.menuTriggerProps.id),
+            trigger: "MenuTrigger",
+          }}
+        >
+          {props.children}
+        </PopoverTriggerContext.Provider>
       </MenuTriggerContext.Provider>
     </RootMenuTriggerStateContext.Provider>
   );
@@ -578,23 +615,40 @@ export interface MenuSectionProps
 }
 
 export function MenuButton(props: MenuButtonProps): JSX.Element {
-  const [local, domProps] = splitProps(props, ["class", "style", "slot", "isDisabled", "children"]);
+  const [local, domProps] = splitProps(props, [
+    "class",
+    "style",
+    "slot",
+    "isDisabled",
+    "children",
+    "ref",
+  ]);
 
   const context = useContext(MenuTriggerContext);
   if (!context) {
     throw new Error("MenuButton must be used within a MenuTrigger");
   }
   const { state } = context;
+  const resolvedTriggerProps = () => context.triggerProps as Record<string, unknown>;
+  const isDisabled = () => Boolean(local.isDisabled || context.isDisabled?.());
 
   const buttonAria = createButton({
     get isDisabled() {
-      return local.isDisabled;
+      return isDisabled();
+    },
+    get preventFocusOnPress() {
+      return resolvedTriggerProps().preventFocusOnPress as boolean | undefined;
     },
     onPressStart(e) {
       context.onPressStart?.(e);
+      const handler = resolvedTriggerProps().onPressStart as
+        | ((event: typeof e) => void)
+        | undefined;
+      handler?.(e);
     },
-    onPress() {
-      state.toggle();
+    onPress(e) {
+      const handler = resolvedTriggerProps().onPress as ((event: typeof e) => void) | undefined;
+      handler?.(e);
     },
   });
 
@@ -602,7 +656,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
 
   const { isHovered, hoverProps } = createHover({
     get isDisabled() {
-      return local.isDisabled;
+      return isDisabled();
     },
   });
 
@@ -612,7 +666,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     isFocusVisible: isFocusVisible(),
     isPressed: context.isPressed?.() || buttonAria.isPressed(),
     isHovered: isHovered(),
-    isDisabled: !!local.isDisabled,
+    isDisabled: isDisabled(),
   }));
 
   const renderProps = useRenderProps(
@@ -627,14 +681,17 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     renderValues,
   );
 
-  const resolvedTriggerProps = () => context.triggerProps as Record<string, unknown>;
   const cleanTriggerProps = () => {
     const {
       ref: _ref1,
+      onPress: _onPress,
+      onPressStart: _onPressStart,
+      preventFocusOnPress: _preventFocusOnPress,
       "aria-haspopup": _ariaHasPopup,
       "aria-expanded": _ariaExpanded,
       "aria-controls": _ariaControls,
       "aria-disabled": _ariaDisabled,
+      id: _triggerId,
       ...rest
     } = resolvedTriggerProps();
     return rest;
@@ -651,17 +708,26 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     const { ref: _ref4, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
   };
+  const mergedDOMProps = () =>
+    mergeProps(
+      domProps as Record<string, unknown>,
+      cleanTriggerProps(),
+      cleanButtonProps(),
+      cleanFocusProps(),
+      cleanHoverProps(),
+    );
 
   return (
     <button
-      {...domProps}
-      {...cleanTriggerProps()}
-      {...cleanButtonProps()}
-      {...cleanFocusProps()}
-      {...cleanHoverProps()}
+      {...mergedDOMProps()}
+      ref={(element) => {
+        context.setTriggerRef?.(element);
+        assignRef(local.ref, element);
+      }}
       type="button"
       class={renderProps.class()}
       style={renderProps.style()}
+      id={((domProps as { id?: string }).id ?? resolvedTriggerProps().id) as string | undefined}
       aria-haspopup={resolvedTriggerProps()["aria-haspopup"] as "menu" | "listbox" | undefined}
       aria-expanded={resolvedTriggerProps()["aria-expanded"] as boolean | undefined}
       aria-controls={resolvedTriggerProps()["aria-controls"] as string | undefined}
@@ -671,7 +737,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
       data-focus-visible={isFocusVisible() || undefined}
       data-pressed={context.isPressed?.() || buttonAria.isPressed() || undefined}
       data-hovered={isHovered() || undefined}
-      data-disabled={local.isDisabled || undefined}
+      data-disabled={isDisabled() || undefined}
     >
       {renderProps.renderChildren()}
     </button>
@@ -707,6 +773,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
 
   const triggerContext = useContext(MenuTriggerContext);
+  const popoverTriggerContext = useContext(PopoverTriggerContext);
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
@@ -861,11 +928,18 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       get label() {
         return ariaProps.label;
       },
+      get autoFocus() {
+        return ariaProps.autoFocus ?? triggerContext?.menuProps.autoFocus;
+      },
       get onAction() {
         return handleAction;
       },
       get onClose() {
-        return stateProps.onClose ?? (() => triggerContext?.state.close());
+        return (
+          stateProps.onClose ??
+          triggerContext?.menuProps.onClose ??
+          (() => triggerContext?.state.close())
+        );
       },
       get shouldCloseOnSelect() {
         return (
@@ -884,6 +958,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       },
     },
     state,
+    () => menuRef(),
   );
 
   // Reveal the activedescendant-focused item on keyboard navigation. The menu
@@ -930,7 +1005,22 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   };
   const cleanTriggerMenuProps = () => {
     if (!triggerContext) return {};
-    const { ref: _ref2, ...rest } = triggerContext.menuProps as Record<string, unknown>;
+    const {
+      ref: _ref2,
+      autoFocus: _autoFocus,
+      onClose: _onClose,
+      "aria-labelledby": triggerLabelledBy,
+      ...rest
+    } = triggerContext.menuProps as Record<string, unknown>;
+
+    if (triggerLabelledBy && popoverTriggerContext?.trigger === "SubmenuTrigger") {
+      // SubmenuTrigger names the nested menu from the trigger item. That
+      // labelledby must win over a Menu-level aria-label.
+      rest["aria-labelledby"] = triggerLabelledBy;
+    } else if (!ariaProps.label && !ariaProps["aria-label"] && !ariaProps["aria-labelledby"]) {
+      rest["aria-labelledby"] = triggerLabelledBy;
+    }
+
     return rest;
   };
   const cleanFocusProps = () => {
@@ -1318,9 +1408,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   return (
     <Show when={shouldRender()}>
       <Show when={triggerContext} fallback={menuContent()}>
-        <FocusScope restoreFocus autoFocus>
-          {menuContent()}
-        </FocusScope>
+        <FocusScope restoreFocus>{menuContent()}</FocusScope>
       </Show>
     </Show>
   );

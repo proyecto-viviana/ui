@@ -5,7 +5,7 @@
  * to ensure 1:1 parity with React-Aria's implementation.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { JSX, createRoot } from "solid-js";
 import {

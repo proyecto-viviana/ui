@@ -15,6 +15,7 @@ const packages = [
   { name: "@proyecto-viviana/solid-stately", dir: "packages/solid-stately" },
   { name: "@proyecto-viviana/solidaria", dir: "packages/solidaria" },
   { name: "@proyecto-viviana/solidaria-components", dir: "packages/solidaria-components" },
+  { name: "@proyecto-viviana/kumo", dir: "packages/kumo" },
   { name: "@proyecto-viviana/solid-spectrum", dir: "packages/solid-spectrum" },
   { name: "@proyecto-viviana/ui", dir: "packages/viviana-ui" },
 ];
@@ -136,6 +137,9 @@ printJson("Packed tarballs", tarballs);
 printJson("pnpm.overrides for consumers", overrideSpecs);
 printJson("Pokeforos dependency", {
   "@proyecto-viviana/ui": fileSpec(tarballs["@proyecto-viviana/ui"]),
+});
+printJson("Kumo dependency", {
+  "@proyecto-viviana/kumo": fileSpec(tarballs["@proyecto-viviana/kumo"]),
 });
 printJson("Comparison dependencies", {
   "@proyecto-viviana/solid-stately": fileSpec(tarballs["@proyecto-viviana/solid-stately"]),

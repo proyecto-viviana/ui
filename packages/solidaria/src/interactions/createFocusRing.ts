@@ -62,13 +62,18 @@ export function createFocusRing(props: FocusRingProps = {}): FocusRingResult {
       (visible) => {
         setFocusVisibleFlag(visible);
       },
-      { isTextInput },
+      { isTextInput, enabled: isFocused() },
     );
     onCleanup(cleanup);
   });
 
   const onFocusChange = (focused: boolean) => {
     setIsFocused(focused);
+    // Match RAC `useFocusRing`: re-sample global modality on every focus
+    // change. `pointermove` sets currentModality to pointer without notifying
+    // listeners; a FocusScope contain-restore after hover must not keep a
+    // stale keyboard ring.
+    setFocusVisibleFlag(isGlobalFocusVisible());
   };
 
   const focusResult = createFocus({

@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { ListDropTargetDelegate } from "../src/ListDropTargetDelegate";
 import type { DropTarget } from "@proyecto-viviana/solid-stately";
 

@@ -25,7 +25,7 @@
         },
         {
           "name": "visibleToasts",
-          "type": "Accessor<QueuedToast<ToastContent>[]>",
+          "type": "Accessor<QueuedToast<HeadlessToastContent>[]>",
           "required": false,
           "description": "Internal visible toasts accessor used by ToastRegion for S2 stack rendering.",
           "origin": "viviana-ui"

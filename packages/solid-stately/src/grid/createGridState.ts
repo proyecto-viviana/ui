@@ -1,6 +1,6 @@
 /**
  * Grid state management for Table and GridList components.
- * Based on @react-stately/grid/useGridState.
+ * Based on packages/react-stately/src/grid/useGridState.ts.
  */
 
 import { createSignal, createEffect, createMemo, on, type Accessor } from "solid-js";
@@ -126,21 +126,25 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
           );
 
           let newRow: GridNode<T> | null = null;
-          while (index >= 0) {
-            const row = rows[index];
+
+          // Search forward once from the deleted position, then backward once.
+          // The previous direction-switching loop could bounce forever between
+          // two disabled rows when the focused row was deleted.
+          for (let i = Math.max(0, index); i < rows.length; i++) {
+            const row = rows[i];
             if (!disabledKeys().has(row.key) && row.type !== "headerrow") {
               newRow = row;
               break;
             }
-            // Find next, not disabled row
-            if (index < rows.length - 1) {
-              index++;
-            } else {
-              // Otherwise, find previous, not disabled row
-              if (index > parentNode.index) {
-                index = parentNode.index;
+          }
+
+          if (newRow === null) {
+            for (let i = index - 1; i >= 0; i--) {
+              const row = rows[i];
+              if (!disabledKeys().has(row.key) && row.type !== "headerrow") {
+                newRow = row;
+                break;
               }
-              index--;
             }
           }
 
@@ -162,10 +166,62 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   );
 
   // Selection methods
-  const isSelected = (key: Key): boolean => {
+  const getSelectionKey = (key: Key): Key | null => {
+    const collection = getOptions().collection;
+    let item = collection.getItem(key);
+
+    if (!item) {
+      return key;
+    }
+
+    // Cells and other child nodes select their parent row.
+    while (item && item.type !== "item" && item.parentKey != null) {
+      item = collection.getItem(item.parentKey);
+    }
+
+    return item?.type === "item" ? item.key : null;
+  };
+
+  const canSelectItem = (key: Key): boolean => {
+    if (selectionMode() === "none" || disabledKeys().has(key)) {
+      return false;
+    }
+
+    const item = getOptions().collection.getItem(key);
+    return !!item && item.type === "item" && !item.isDisabled && !item.props?.isDisabled;
+  };
+
+  const getSelectAllKeys = (): Key[] => {
+    return getOptions()
+      .collection.rows.filter((row) => row.type === "item" && canSelectItem(row.key))
+      .map((row) => row.key);
+  };
+
+  const isEmpty = createMemo(() => {
     const keys = selectedKeys();
-    if (keys === "all") return true;
-    return keys.has(key);
+    return keys !== "all" && keys.size === 0;
+  });
+
+  const isSelectAll = createMemo(() => {
+    const keys = selectedKeys();
+    if (isEmpty()) return false;
+
+    if (keys === "all") {
+      return true;
+    }
+
+    return getSelectAllKeys().every((key) => keys.has(key));
+  });
+
+  const isSelected = (key: Key): boolean => {
+    if (selectionMode() === "none") return false;
+
+    const selectionKey = getSelectionKey(key);
+    if (selectionKey == null) return false;
+
+    const keys = selectedKeys();
+    if (keys === "all") return canSelectItem(selectionKey);
+    return keys.has(selectionKey);
   };
 
   const isDisabled = (key: Key): boolean => {
@@ -196,49 +252,62 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   };
 
   const toggleSelection = (key: Key) => {
-    if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
+
+    const selectionKey = getSelectionKey(key);
+    if (selectionKey == null) return;
 
     const current = selectedKeys();
 
     if (selectionMode() === "single") {
-      if (isSelected(key) && !disallowEmptySelection()) {
+      if (isSelected(selectionKey) && !disallowEmptySelection()) {
         updateSelection(new Set());
-      } else {
-        updateSelection(new Set([key]));
+      } else if (canSelectItem(selectionKey)) {
+        updateSelection(new Set([selectionKey]));
       }
       return;
     }
 
     // Multiple selection
-    if (current === "all") {
-      // Can't toggle when all selected without knowing all keys
-      return;
-    }
-
-    const newSelection = new Set(current);
-    if (newSelection.has(key)) {
+    const newSelection = new Set(current === "all" ? getSelectAllKeys() : current);
+    if (newSelection.has(selectionKey)) {
       if (newSelection.size > 1 || !disallowEmptySelection()) {
-        newSelection.delete(key);
+        newSelection.delete(selectionKey);
       }
-    } else {
-      newSelection.add(key);
+    } else if (canSelectItem(selectionKey)) {
+      newSelection.add(selectionKey);
     }
 
     updateSelection(newSelection);
-    setAnchorKey(key);
+    setAnchorKey(selectionKey);
   };
 
   const replaceSelection = (key: Key) => {
-    if (isDisabled(key)) return;
     if (selectionMode() === "none") return;
 
-    updateSelection(new Set([key]));
-    setAnchorKey(key);
+    const selectionKey = getSelectionKey(key);
+    if (selectionKey == null) return;
+
+    updateSelection(canSelectItem(selectionKey) ? new Set([selectionKey]) : new Set());
+    setAnchorKey(selectionKey);
   };
 
   const setSelectedKeys = (keys: Selection | Iterable<Key>) => {
-    updateSelection(normalizeSelection(keys));
+    if (selectionMode() === "none") return;
+    if (keys === "all") {
+      updateSelection("all");
+      return;
+    }
+
+    const selection = new Set<Key>();
+    for (const key of keys) {
+      const selectionKey = getSelectionKey(key);
+      if (selectionKey != null) {
+        selection.add(selectionKey);
+        if (selectionMode() === "single") break;
+      }
+    }
+    updateSelection(selection);
   };
 
   const extendSelection = (toKey: Key) => {
@@ -274,7 +343,9 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
 
   const selectAll = () => {
     if (selectionMode() !== "multiple") return;
-    updateSelection("all");
+    if (!isSelectAll()) {
+      updateSelection("all");
+    }
   };
 
   const clearSelection = () => {
@@ -285,7 +356,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
   const toggleSelectAll = () => {
     if (selectionMode() !== "multiple") return;
 
-    if (selectedKeys() === "all") {
+    if (isSelectAll()) {
       clearSelection();
     } else {
       selectAll();
@@ -325,6 +396,12 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
     },
     get selectedKeys() {
       return selectedKeys();
+    },
+    get isEmpty() {
+      return isEmpty();
+    },
+    get isSelectAll() {
+      return isSelectAll();
     },
     isSelected,
     isDisabled,

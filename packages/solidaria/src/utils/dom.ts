@@ -1,6 +1,89 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2021 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2025 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/focus/FocusScope.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/interactions/usePress.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/domHelpers.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/getScrollParent.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/getScrollParents.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/isElementVisible.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/isFocusable.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/isScrollable.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/keyboard.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/openLink.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/shadowdom/DOMFunctions.ts
+
 /**
  * DOM utilities for cross-browser compatibility.
- * Based on @react-aria/utils DOM utilities.
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/utils/domHelpers.ts
+ * - packages/react-aria/src/utils/shadowdom/DOMFunctions.ts
+ * - packages/react-aria/src/utils/isElementVisible.ts
+ * - packages/react-aria/src/utils/isFocusable.ts
+ * - packages/react-aria/src/interactions/usePress.ts
+ * - packages/react-aria/src/utils/openLink.tsx
+ * - packages/react-aria/src/utils/isScrollable.ts
+ * - packages/react-aria/src/utils/getScrollParent.ts
+ * - packages/react-aria/src/utils/getScrollParents.ts
+ * - packages/react-aria/src/utils/keyboard.tsx
+ * - packages/react-aria/src/focus/FocusScope.tsx
  */
 
 /**
@@ -26,20 +109,20 @@ export function nodeContains(parent: Node | null, child: Node | null): boolean {
     return false;
   }
 
-  // Standard contains check
-  if (parent.contains(child)) {
-    return true;
-  }
-
-  // Check if child is in a shadow root
+  // Walk the composed tree so slotted elements and nodes in nested shadow roots
+  // are treated as descendants of their rendered ancestors.
   let node: Node | null = child;
   while (node) {
     if (node === parent) {
       return true;
     }
 
-    // Check shadow root host
-    if ((node as ShadowRoot).host) {
+    if (
+      typeof (node as HTMLSlotElement).assignedElements !== "function" &&
+      (node as HTMLSlotElement).assignedSlot?.parentNode
+    ) {
+      node = (node as HTMLSlotElement).assignedSlot!.parentNode;
+    } else if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && (node as ShadowRoot).host) {
       node = (node as ShadowRoot).host;
     } else {
       node = node.parentNode;

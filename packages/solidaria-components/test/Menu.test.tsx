@@ -10,8 +10,8 @@
  * - MenuTrigger integration
  */
 
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
+import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton } from "../src/Menu";
 import { Separator } from "../src/Separator";
@@ -1719,6 +1719,16 @@ describe("MenuTrigger", () => {
       expect(button).toHaveAttribute("data-disabled");
     });
 
+    it("should disable the button from MenuTrigger", async () => {
+      render(() => <TestMenuTrigger triggerProps={{ isDisabled: true }} />);
+
+      const button = screen.getByRole("button");
+      expect(button).toBeDisabled();
+
+      await user.click(button);
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    });
+
     it("should set data-focused on button focus", async () => {
       render(() => <TestMenuTrigger />);
 
@@ -1748,13 +1758,15 @@ describe("MenuTrigger", () => {
   });
 
   describe("keyboard interactions", () => {
-    it("should open menu on Enter", async () => {
+    it("should open menu on Enter and focus the first item", async () => {
       render(() => <TestMenuTrigger />);
 
       await user.tab();
       await user.keyboard("{Enter}");
 
-      expect(screen.getByRole("menu")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Cat" }));
+      });
     });
 
     it("should open menu on Space", async () => {
@@ -1766,16 +1778,46 @@ describe("MenuTrigger", () => {
       expect(screen.getByRole("menu")).toBeInTheDocument();
     });
 
-    it("should handle Escape key", async () => {
-      render(() => <TestMenuTrigger triggerProps={{ defaultOpen: true }} />);
+    it("should open ArrowDown at the first item", async () => {
+      render(() => <TestMenuTrigger />);
 
-      expect(screen.getByRole("menu")).toBeInTheDocument();
+      const trigger = screen.getByRole("button");
+      trigger.focus();
+      await user.keyboard("{ArrowDown}");
 
-      // Pressing Escape should trigger close behavior
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Cat" }));
+      });
+    });
+
+    it("should open ArrowUp at the last item", async () => {
+      render(() => <TestMenuTrigger />);
+
+      const trigger = screen.getByRole("button");
+      trigger.focus();
+      await user.keyboard("{ArrowUp}");
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Kangaroo" }));
+      });
+    });
+
+    it("should close on Escape and restore focus to the trigger", async () => {
+      render(() => <TestMenuTrigger />);
+
+      const trigger = screen.getByRole("button");
+      trigger.focus();
+      await user.keyboard("{ArrowDown}");
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Cat" }));
+      });
+
       await user.keyboard("{Escape}");
 
-      // Verify no errors occur and the test completes
-      expect(screen.getByRole("button")).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+        expect(document.activeElement).toBe(trigger);
+      });
     });
   });
 
@@ -1784,34 +1826,29 @@ describe("MenuTrigger", () => {
   // ============================================
 
   describe("a11y focus & ARIA integrity", () => {
-    it("should focus first menuitem on open", async () => {
+    it("should focus the menu root after a mouse press", async () => {
       render(() => <TestMenuTrigger />);
 
       const trigger = screen.getByRole("button");
       await user.click(trigger);
 
       const menu = screen.getByRole("menu");
-      const items = within(menu).getAllByRole("menuitem");
-      expect(items.length).toBeGreaterThan(0);
-      // Focus should be within the menu
-      expect(menu.contains(document.activeElement)).toBe(true);
+      await waitFor(() => {
+        expect(document.activeElement).toBe(menu);
+      });
     });
 
-    it("should restore focus to trigger when closed via Escape", async () => {
-      render(() => <TestMenuTrigger />);
+    it("should open a context menu without popup ARIA on the target", () => {
+      render(() => <TestMenuTrigger triggerProps={{ trigger: "contextMenu" }} />);
 
-      const trigger = screen.getByRole("button");
-      await user.click(trigger);
+      const target = screen.getByRole("button");
+      expect(target).not.toHaveAttribute("aria-haspopup");
+      expect(target).not.toHaveAttribute("aria-expanded");
+
+      fireEvent.contextMenu(target, { clientX: 120, clientY: 80 });
 
       expect(screen.getByRole("menu")).toBeInTheDocument();
-
-      await user.keyboard("{Escape}");
-
-      // After Escape, the trigger should still be in the document and focusable.
-      // In jsdom, focus restore can be asynchronous, so verify the trigger is
-      // still accessible rather than asserting strict activeElement equality.
-      expect(trigger).toBeInTheDocument();
-      expect(trigger.tabIndex).toBeGreaterThanOrEqual(0);
+      expect(target).not.toHaveAttribute("aria-controls");
     });
 
     it("ARIA ID integrity: trigger aria-controls resolves to menu when open", async () => {

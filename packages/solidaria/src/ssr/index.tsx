@@ -1,9 +1,26 @@
-/**
- * SSR utilities for Solidaria
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * SolidJS has built-in SSR support with `isServer` and `createUniqueId()`.
- * These utilities provide a consistent API matching React-Aria's patterns
- * with additional features for hydration management.
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/ssr/SSRProvider.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/utils/useId.ts
+
+/**
+ * SSR utilities for Solidaria.
+ *
+ * Based on these pinned React Aria sources:
+ * - packages/react-aria/src/ssr/SSRProvider.tsx
+ * - packages/react-aria/src/utils/useId.ts
+ *
+ * This module adds Solid-specific hydration, document-access, and portal-owner utilities.
  */
 
 import {

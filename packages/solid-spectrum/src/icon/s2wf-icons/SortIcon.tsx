@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Sort.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Sort.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,19 +20,8 @@ function SortIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Element {
       class={className}
     >
       <path
-        d="m9.25,15.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h6.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
-      />
-      <path
-        d="m13.25,10.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h10.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
-      />
-      <path
-        d="m17.25,5.5H2.75c-.41406,0-.75-.33594-.75-.75s.33594-.75.75-.75h14.5c.41406,0,.75.33594.75.75s-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
-        stroke-width="0"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M9.25 15.5h-6.5c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h6.5c.414 0 .75.336.75.75s-.336.75-.75.75M13.25 10.5H2.75c-.414 0-.75-.336-.75-.75S2.336 9 2.75 9h10.5c.414 0 .75.336.75.75s-.336.75-.75.75M17.25 5.5H2.75c-.414 0-.75-.336-.75-.75S2.336 4 2.75 4h14.5c.414 0 .75.336.75.75s-.336.75-.75.75"
       />
     </svg>
   );

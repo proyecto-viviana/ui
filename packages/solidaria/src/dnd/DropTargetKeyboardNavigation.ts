@@ -1,8 +1,8 @@
 /**
  * Keyboard navigation between drop targets within a droppable collection.
  *
- * Faithful port of @react-aria/dnd `DropTargetKeyboardNavigation` (react-aria
- * 3.50). Given a keyboard delegate, the collection, and the current drop target,
+ * Faithful port of packages/react-aria/src/dnd/DropTargetKeyboardNavigation.ts.
+ * Given a keyboard delegate, the collection, and the current drop target,
  * returns the next/previous drop target in a given direction — cycling through
  * the `before`/`on`/`after` drop positions on each item and descending into
  * nested items.

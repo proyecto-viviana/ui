@@ -2,7 +2,7 @@
  * Tests for createTypeSelect
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, fireEvent, cleanup } from "@solidjs/testing-library";
 import { createTypeSelect } from "../src/selection/createTypeSelect";
 import { createSignal } from "solid-js";

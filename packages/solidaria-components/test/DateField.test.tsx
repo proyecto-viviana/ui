@@ -9,7 +9,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { DateField, DateFieldErrorMessage, DateInput, DateSegment } from "../src/DateField";
 import { Text } from "../src/Text";
@@ -270,28 +270,40 @@ describe("DateField", () => {
   // ============================================
 
   describe("segment editing", () => {
-    // Note: Keyboard interactions in date segments use contenteditable
-    // and complex event handling that doesn't work reliably in jsdom.
-    // These tests verify basic segment structure instead.
-
-    it.skip("should increment segment on Arrow Up", async () => {
-      // Skipped: contenteditable keyboard events don't fire handlers in jsdom
-      render(() => <TestDateField fieldProps={{ defaultValue: new CalendarDate(2024, 6, 15) }} />);
+    it("should increment segment on Arrow Up", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateField fieldProps={{ defaultValue: new CalendarDate(2024, 6, 15), onChange }} />
+      ));
       await waitForDateFieldHydration();
 
       const segments = screen.getAllByRole("spinbutton");
       const daySegment = segments.find((s) => s.textContent === "15");
       expect(daySegment).toBeInTheDocument();
+      daySegment!.focus();
+      await user.keyboard("{ArrowUp}");
+
+      await waitFor(() => {
+        expect(onChange).toHaveBeenLastCalledWith(new CalendarDate(2024, 6, 16));
+      });
     });
 
-    it.skip("should decrement segment on Arrow Down", async () => {
-      // Skipped: contenteditable keyboard events don't fire handlers in jsdom
-      render(() => <TestDateField fieldProps={{ defaultValue: new CalendarDate(2024, 6, 15) }} />);
+    it("should decrement segment on Arrow Down", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateField fieldProps={{ defaultValue: new CalendarDate(2024, 6, 15), onChange }} />
+      ));
       await waitForDateFieldHydration();
 
       const segments = screen.getAllByRole("spinbutton");
       const daySegment = segments.find((s) => s.textContent === "15");
       expect(daySegment).toBeInTheDocument();
+      daySegment!.focus();
+      await user.keyboard("{ArrowDown}");
+
+      await waitFor(() => {
+        expect(onChange).toHaveBeenLastCalledWith(new CalendarDate(2024, 6, 14));
+      });
     });
 
     it("should navigate to next segment with Arrow Right", async () => {
@@ -306,22 +318,32 @@ describe("DateField", () => {
       expect(segments[1]).toHaveFocus();
     });
 
-    it.skip("should navigate to previous segment with Arrow Left", async () => {
-      // Skipped: focus management in contenteditable doesn't work in jsdom
+    it("should navigate to previous segment with Arrow Left", async () => {
       render(() => <TestDateField fieldProps={{ defaultValue: new CalendarDate(2024, 6, 15) }} />);
       await waitForDateFieldHydration();
 
       const segments = screen.getAllByRole("spinbutton");
       expect(segments.length).toBe(3);
+      segments[1].focus();
+      fireEvent.keyDown(segments[1], { key: "ArrowLeft" });
+      expect(segments[0]).toHaveFocus();
     });
 
-    it.skip("should accept numeric input", async () => {
-      // Skipped: contenteditable input events don't work in jsdom
-      render(() => <TestDateField />);
+    it("should accept numeric input", async () => {
+      const onChange = vi.fn();
+      render(() => (
+        <TestDateField fieldProps={{ defaultValue: new CalendarDate(2024, 6, 15), onChange }} />
+      ));
       await waitForDateFieldHydration();
 
       const segments = screen.getAllByRole("spinbutton");
       expect(segments.length).toBe(3);
+      segments[0].focus();
+      await user.keyboard("5");
+
+      await waitFor(() => {
+        expect(onChange).toHaveBeenLastCalledWith(new CalendarDate(2024, 5, 15));
+      });
     });
 
     it("should expose the segment type via data-type", async () => {

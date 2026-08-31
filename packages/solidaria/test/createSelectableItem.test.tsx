@@ -8,7 +8,7 @@
  * BEFORE any consumer migrates onto it.
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
 import { render, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
@@ -327,8 +327,8 @@ describe("createSelectableItem — press path", () => {
     const onAction = vi.fn();
     const { state, el } = renderItem(
       { key: "a", onAction },
-      // selectionBehavior is controlled here (our state has no uncontrolled
-      // 'replace' default), so assert the switch via the manager call.
+      // The state now permits this internal switch. Ticket #101 owns direct
+      // evidence for the state reset and prop-sync branches.
       { selectionMode: "multiple", selectionBehavior: "replace" },
     );
     const setSelectionBehavior = vi.spyOn(state, "setSelectionBehavior");

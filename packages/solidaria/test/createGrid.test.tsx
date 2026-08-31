@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createGrid, getGridData } from "../src/grid/createGrid";
 import { I18nProvider } from "../src/i18n";

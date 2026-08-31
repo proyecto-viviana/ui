@@ -20,6 +20,7 @@ export interface DialogDemoProps {
   triggerLabel: string;
   title: string;
   body: string;
+  hasTitle: boolean;
   size: DialogDemoSize;
   role: DialogDemoRole;
   /** AlertDialog visual variant (only meaningful when `role` is `alertdialog`). */
@@ -39,6 +40,7 @@ export const dialogDemoDefaults: DialogDemoProps = {
   triggerLabel: "Open Dialog",
   title: "Review Changes",
   body: "Dialog focus and dismissal are compared from this island.",
+  hasTitle: true,
   size: "M",
   role: "dialog",
   variant: "confirmation",
@@ -69,6 +71,7 @@ export function normalizeDialogDemoProps(props: Partial<DialogDemoProps> = {}): 
         : dialogDemoDefaults.triggerLabel,
     title: typeof props.title === "string" && props.title ? props.title : dialogDemoDefaults.title,
     body: typeof props.body === "string" && props.body ? props.body : dialogDemoDefaults.body,
+    hasTitle: props.hasTitle !== false,
     size: isOneOf(props.size, dialogSizeOptions) ? props.size : dialogDemoDefaults.size,
     role: isOneOf(props.role, dialogRoleOptions) ? props.role : dialogDemoDefaults.role,
     variant: isOneOf(props.variant, dialogVariantOptions)
@@ -100,6 +103,9 @@ export function dialogDemoPropsFromSearch(search: string): DialogDemoProps {
     triggerLabel: params.get("triggerLabel") || dialogDemoDefaults.triggerLabel,
     title: params.get("title") || dialogDemoDefaults.title,
     body: params.get("body") || dialogDemoDefaults.body,
+    hasTitle: params.has("hasTitle")
+      ? booleanParam(params.get("hasTitle"))
+      : dialogDemoDefaults.hasTitle,
     size: isOneOf(size, dialogSizeOptions) ? size : dialogDemoDefaults.size,
     role: isOneOf(role, dialogRoleOptions) ? role : dialogDemoDefaults.role,
     variant: isOneOf(variant, dialogVariantOptions) ? variant : dialogDemoDefaults.variant,

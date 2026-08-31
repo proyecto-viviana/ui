@@ -2,7 +2,7 @@ import path from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
-import { getContainerRenderer } from "@astrojs/react";
+import { getContainerRenderer } from "@astrojs/react/container-renderer";
 import solid from "@astrojs/solid-js";
 import reactVitePlugin from "@vitejs/plugin-react";
 import macros from "unplugin-parcel-macros";
@@ -122,6 +122,7 @@ const localSolidPackages = [
   "@proyecto-viviana/solid-stately",
   "@proyecto-viviana/solidaria",
   "@proyecto-viviana/solidaria-components",
+  "@proyecto-viviana/kumo",
   "@proyecto-viviana/solid-spectrum",
 ];
 const reactNoExternalPackages = ["@mui/material", "@mui/base", "@babel/runtime", "use-immer"];
@@ -408,7 +409,11 @@ export default defineConfig({
         "src/components/solid/**/*",
         "../../packages/solid-stately/src/**/*",
         "../../packages/solidaria/src/**/*",
+        "../../packages/solidaria/dist/**/*.jsx",
         "../../packages/solidaria-components/src/**/*",
+        "../../packages/solidaria-components/dist/**/*.jsx",
+        "../../packages/kumo/src/**/*",
+        "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/viviana-ui/src/**/*",
         "../../packages/viviana-ui/archive/**/*",
@@ -419,7 +424,11 @@ export default defineConfig({
         "src/components/solid/**/*",
         "../../packages/solid-stately/src/**/*",
         "../../packages/solidaria/src/**/*",
+        "../../packages/solidaria/dist/**/*.jsx",
         "../../packages/solidaria-components/src/**/*",
+        "../../packages/solidaria-components/dist/**/*.jsx",
+        "../../packages/kumo/src/**/*",
+        "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/viviana-ui/src/**/*",
         // The custom Viviana surfaces the fixtures render for certification live
@@ -456,11 +465,26 @@ export default defineConfig({
         },
         {
           find: /^@proyecto-viviana\/solidaria$/,
-          replacement: path.resolve(repoRoot, "packages/solidaria/dist/index.js"),
+          // Preserve JSX so Astro's Solid integration can select its SSR or DOM
+          // transform. The compiled `.js` fallback contains browser templates
+          // and throws when the D12 hydration oracle prerenders on the server.
+          replacement: path.resolve(repoRoot, "packages/solidaria/dist/index.jsx"),
         },
         {
           find: /^@proyecto-viviana\/solidaria-components$/,
-          replacement: path.resolve(repoRoot, "packages/solidaria-components/dist/index.js"),
+          replacement: path.resolve(repoRoot, "packages/solidaria-components/dist/index.jsx"),
+        },
+        {
+          find: /^@proyecto-viviana\/kumo$/,
+          replacement: path.resolve(repoRoot, "packages/kumo/dist/index.jsx"),
+        },
+        {
+          find: /^@proyecto-viviana\/kumo\/components\/button$/,
+          replacement: path.resolve(repoRoot, "packages/kumo/dist/components/button.jsx"),
+        },
+        {
+          find: /^@proyecto-viviana\/kumo\/styles\.css$/,
+          replacement: path.resolve(repoRoot, "packages/kumo/dist/styles.css"),
         },
         {
           find: /^@proyecto-viviana\/solid-spectrum$/,

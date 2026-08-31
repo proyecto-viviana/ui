@@ -10,7 +10,7 @@
  * - ARIA attributes
  */
 
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { DatePicker, DatePickerButton, DatePickerContent } from "../src/DatePicker";
@@ -264,6 +264,38 @@ describe("DatePicker", () => {
       await waitFor(() => {
         const popup = document.querySelector(".solidaria-DatePickerContent");
         expect(popup).not.toBeInTheDocument();
+      });
+    });
+
+    it("keeps the calendar mounted and marks it exiting until its animation settles", async () => {
+      render(() => <TestDatePicker />);
+      await waitForDatePickerHydration();
+
+      const button = document.querySelector(".solidaria-DatePickerButton") as HTMLElement;
+      await user.click(button);
+      const content = await waitFor(() => {
+        const node = document.querySelector(".solidaria-DatePickerContent") as HTMLElement | null;
+        expect(node).toBeInTheDocument();
+        return node!;
+      });
+
+      let finishExit!: () => void;
+      const finished = new Promise<void>((resolve) => {
+        finishExit = resolve;
+      });
+      Object.defineProperty(content, "getAnimations", {
+        configurable: true,
+        value: () => [{ finished } as Animation],
+      });
+
+      fireEvent.keyDown(content, { key: "Escape" });
+
+      expect(content).toBeInTheDocument();
+      expect(content).toHaveAttribute("data-exiting");
+      finishExit();
+
+      await waitFor(() => {
+        expect(document.querySelector(".solidaria-DatePickerContent")).not.toBeInTheDocument();
       });
     });
 

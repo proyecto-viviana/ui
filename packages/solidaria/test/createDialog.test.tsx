@@ -3,7 +3,7 @@
  * Ported from @react-aria/dialog useDialog.test.js
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup } from "@solidjs/testing-library";
 import { createDialog } from "../src";
 
@@ -37,6 +37,7 @@ function TestDialog(props: {
 describe("createDialog", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
   });
 
   it('should have role="dialog" by default', () => {
@@ -85,6 +86,75 @@ describe("createDialog", () => {
     expect(dialog).toHaveAttribute("aria-describedby", "dialog-desc");
   });
 
+  it("links an alertdialog to its generated content description", () => {
+    let dialogRef: HTMLDivElement | null = null;
+
+    render(() => {
+      const { dialogProps, contentProps } = createDialog(
+        () => ({ role: "alertdialog", "aria-label": "Delete item" }),
+        () => dialogRef,
+      );
+      return (
+        <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog">
+          <p {...contentProps()}>This action cannot be undone.</p>
+        </div>
+      );
+    });
+
+    const dialog = screen.getByRole("alertdialog", { name: "Delete item" });
+    const descriptionId = dialog.getAttribute("aria-describedby");
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId!)).toHaveTextContent(
+      "This action cannot be undone.",
+    );
+    expect(dialog).toHaveAccessibleDescription("This action cannot be undone.");
+  });
+
+  it("does not generate content description wiring for a regular dialog", () => {
+    let dialogRef: HTMLDivElement | null = null;
+    let capturedContentProps: Record<string, unknown> | undefined;
+
+    render(() => {
+      const { dialogProps, contentProps } = createDialog(
+        () => ({ "aria-label": "Information" }),
+        () => dialogRef,
+      );
+      capturedContentProps = contentProps();
+      return <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog" />;
+    });
+
+    expect(screen.getByRole("dialog")).not.toHaveAttribute("aria-describedby");
+    expect(capturedContentProps?.id).toBeUndefined();
+  });
+
+  it("preserves an explicit alertdialog description instead of generating one", () => {
+    let dialogRef: HTMLDivElement | null = null;
+    let capturedContentProps: Record<string, unknown> | undefined;
+
+    render(() => {
+      const { dialogProps, contentProps } = createDialog(
+        () => ({
+          role: "alertdialog",
+          "aria-label": "Delete item",
+          "aria-describedby": "explicit-description",
+        }),
+        () => dialogRef,
+      );
+      capturedContentProps = contentProps();
+      return (
+        <div ref={(el) => (dialogRef = el)} {...dialogProps()} data-testid="dialog">
+          <p id="explicit-description">Explicit description</p>
+        </div>
+      );
+    });
+
+    expect(screen.getByRole("alertdialog")).toHaveAttribute(
+      "aria-describedby",
+      "explicit-description",
+    );
+    expect(capturedContentProps?.id).toBeUndefined();
+  });
+
   it("should render children", () => {
     render(() => (
       <TestDialog>
@@ -94,15 +164,28 @@ describe("createDialog", () => {
     expect(screen.getByText("Dialog content")).toBeInTheDocument();
   });
 
-  it("should focus the dialog on mount when no focusable children", async () => {
+  it("focuses the dialog only after the frame-to-timer paint boundary", () => {
+    let frame: FrameRequestCallback | undefined;
+    const timers: TimerHandler[] = [];
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      frame = callback;
+      return 81;
+    });
+    vi.spyOn(window, "setTimeout").mockImplementation(((callback: TimerHandler) => {
+      timers.push(callback);
+      return 82 + timers.length;
+    }) as typeof window.setTimeout);
+
     render(() => <TestDialog aria-label="Test" />);
     const dialog = screen.getByTestId("dialog");
+    expect(document.activeElement).toBe(document.body);
 
-    // Wait for focus effect to run
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    frame?.(0);
+    expect(document.activeElement).toBe(document.body);
 
-    // Dialog should be focusable (has tabIndex=-1)
-    expect(dialog).toHaveAttribute("tabIndex", "-1");
+    const focusTimer = timers.shift();
+    if (typeof focusTimer === "function") focusTimer();
+    expect(document.activeElement).toBe(dialog);
   });
 
   it("should not steal focus from autofocused children", async () => {

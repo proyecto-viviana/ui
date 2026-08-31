@@ -74,11 +74,14 @@ export {
   createLongPress,
   createMove,
   createFocusable,
+  FocusableProvider,
   createFocusRing,
   createFocusVisible,
   createFocusVisibleListener,
   addWindowFocusTracking,
   isFocusVisible,
+  getInteractionModality,
+  setInteractionModality,
   createHover,
   type CreatePressProps,
   type LongPressProps,
@@ -152,6 +155,18 @@ export {
   type ToggleStateOptions,
   type ToggleState,
 } from "./toggle";
+
+export {
+  createToken,
+  createTokenField,
+  getSelection as getTokenFieldSelection,
+  setTokenFieldSelection,
+  tokenFieldPositionToDOMRange,
+  type TokenProps,
+  type TokenAria,
+  type AriaTokenFieldProps,
+  type TokenFieldAria,
+} from "./tokenfield";
 
 export { createSwitch, type AriaSwitchProps, type SwitchAria } from "./switch";
 
@@ -238,6 +253,8 @@ export {
   type MenuItemAria,
   type AriaMenuTriggerProps,
   type MenuTriggerAria,
+  type MenuTriggerMenuProps,
+  type MenuTriggerAutoFocus,
 } from "./menu";
 
 export {
@@ -285,10 +302,14 @@ export { createSlider, type AriaSliderProps, type SliderAria } from "./slider";
 export {
   createTooltip,
   createTooltipTrigger,
+  createPreviewTrigger,
   type TooltipProps,
   type TooltipAria,
   type TooltipTriggerProps,
   type TooltipTriggerAria,
+  type AriaPreviewTriggerProps,
+  type AriaPreviewTriggerOptions,
+  type PreviewTriggerAria,
 } from "./tooltip";
 
 export {

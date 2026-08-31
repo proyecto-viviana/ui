@@ -1,8 +1,27 @@
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/steplist/useStepList.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/steplist/useStepListItem.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/steplist/useStepListState.ts
+
 /**
  * StepList component for solidaria-components
  *
  * A pre-wired headless step list component that combines state + aria hooks.
- * Renders an ordered list of steps with completion tracking.
+ * Renders an ordered list of steps with completion tracking. Based on:
+ * - packages/react-aria/src/steplist/useStepList.ts
+ * - packages/react-aria/src/steplist/useStepListItem.ts
+ * - packages/react-stately/src/steplist/useStepListState.ts
  */
 
 import { type JSX, createContext, createMemo, splitProps, useContext, For } from "solid-js";

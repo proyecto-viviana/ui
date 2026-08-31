@@ -1,9 +1,28 @@
-/**
- * State management for menu components.
- * Based on @react-stately/menu.
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
  */
 
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/menu/useMenuTriggerState.ts
+
+/**
+ * State management for menu components.
+ *
+ * createMenuTriggerState is ported from
+ * packages/react-stately/src/menu/useMenuTriggerState.ts.
+ * createMenuState is a local composition of the separately attributed list state.
+ */
+
+import { createSignal } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
+import { createOverlayTriggerState, type OverlayTriggerProps } from "../overlays";
 import { createListState, type ListState, type ListStateProps } from "./createListState";
 import type { Key } from "./types";
 
@@ -84,32 +103,58 @@ export function createMenuState<T = unknown>(
   };
 }
 
-export interface MenuTriggerStateProps {
-  /** Whether the menu is open (controlled). */
-  isOpen?: boolean;
-  /** Default open state (uncontrolled). */
-  defaultOpen?: boolean;
-  /** Handler called when the open state changes. */
-  onOpenChange?: (isOpen: boolean) => void;
+export type MenuTriggerType = "press" | "longPress" | "contextMenu";
+
+export interface MenuTriggerProps extends OverlayTriggerProps {
+  /** How the menu is triggered. */
+  trigger?: MenuTriggerType;
 }
+
+/** @deprecated Use `MenuTriggerProps`. */
+export interface MenuTriggerStateProps extends MenuTriggerProps {}
 
 export interface MenuTriggerState {
   /** Whether the menu is open. */
   readonly isOpen: () => boolean;
+  /** Sets whether the menu is open. */
+  setOpen(isOpen: boolean): void;
   /** Open the menu. */
-  open(): void;
+  open(focusStrategy?: "first" | "last" | null): void;
   /** Close the menu. */
   close(): void;
   /** Toggle the menu. */
-  toggle(): void;
+  toggle(focusStrategy?: "first" | "last" | null): void;
   /** Focus strategy for when the menu opens. */
   readonly focusStrategy: () => "first" | "last" | null;
   /** Set the focus strategy. */
   setFocusStrategy(strategy: "first" | "last" | null): void;
+  /** Cursor position relative to the window viewport. */
+  readonly point: () => { x: number; y: number } | null;
+  /** Sets the cursor position relative to the window viewport. */
+  setPoint(point: { x: number; y: number }): void;
 }
 
 /**
- * Creates state for a menu trigger (button that opens a menu).
- * This is essentially the same as overlay trigger state but with focus strategy.
+ * Creates state for a menu trigger. Mirrors `@react-stately/menu` `useMenuTriggerState`:
+ * overlay open state plus the focus strategy passed through to `createMenu`.
  */
-export { createOverlayTriggerState as createMenuTriggerState } from "../overlays";
+export function createMenuTriggerState(
+  props: MaybeAccessor<MenuTriggerProps> = {},
+): MenuTriggerState {
+  const overlay = createOverlayTriggerState(props);
+  const [focusStrategy, setFocusStrategy] = createSignal<"first" | "last" | null>(null);
+
+  return {
+    ...overlay,
+    focusStrategy,
+    setFocusStrategy,
+    open(strategy: "first" | "last" | null = null) {
+      setFocusStrategy(strategy);
+      overlay.open();
+    },
+    toggle(strategy: "first" | "last" | null = null) {
+      setFocusStrategy(strategy);
+      overlay.toggle();
+    },
+  };
+}

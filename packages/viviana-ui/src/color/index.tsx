@@ -1,3 +1,29 @@
+/*
+ * Copyright 2024 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorArea.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorField.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorHandle.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSlider.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSwatch.tsx
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorWheel.tsx
+
+// Port of packages/@react-spectrum/s2/src/ColorArea.tsx.
+// Port of packages/@react-spectrum/s2/src/ColorField.tsx.
+// Port of packages/@react-spectrum/s2/src/ColorHandle.tsx.
+// Port of packages/@react-spectrum/s2/src/ColorSlider.tsx.
+// Port of packages/@react-spectrum/s2/src/ColorSwatch.tsx.
+// Port of packages/@react-spectrum/s2/src/ColorWheel.tsx.
+
 import {
   type JSX,
   splitProps,
@@ -1152,7 +1178,7 @@ function createColorFieldStyles() {
       color: {
         default: "neutral-subdued",
         isInvalid: {
-          default: "negative",
+          default: "negative-1000",
           forcedColors: "Mark",
         },
         isDisabled: {
@@ -1179,7 +1205,7 @@ function createColorFieldStyles() {
       "--iconPrimary": {
         type: "fill",
         value: {
-          default: "negative",
+          default: "negative-1000",
           forcedColors: "Mark",
         },
       },

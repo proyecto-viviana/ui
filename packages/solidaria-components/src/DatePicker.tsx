@@ -1,3 +1,17 @@
+/*
+ * Copyright 2022 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-aria-components/src/DatePicker.tsx
+
 /**
  * DatePicker component for solidaria-components
  *
@@ -23,6 +37,7 @@ import {
   createDateField,
   createDateRangePicker,
   createEnterAnimation,
+  createExitAnimation,
   createFocusRing,
   createHover,
   createPopover,
@@ -1350,17 +1365,15 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
 
   createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
 
-  // Mirror S2's `<Popover>` enter transition (RAC `useEnterAnimation`): the
-  // surface mounts carrying `data-entering` (opacity 0 + a small placement-ward
-  // translate), which an effect removes on the next frame so the CSS transition
-  // plays. The exit half is out of scope for this unit — the popover unmounts on
-  // close (no `isOpen || isExiting` gate), so `isExiting` stays false; only the
-  // enter motion is certified (D2).
+  // Mirror RAC Popover's enter and exit state. Keep the surface mounted while
+  // it exits so the Escape keyup stays on the calendar. This also lets the S2
+  // exit tokens run before FocusScope restores the trigger.
   const isEntering = createEnterAnimation(contentRef, () => context.overlayState.isOpen);
+  const isExiting = createExitAnimation(contentRef, () => context.overlayState.isOpen);
 
   const renderProps = (): DatePickerContentRenderProps => ({
     isEntering: isEntering(),
-    isExiting: false,
+    isExiting: isExiting(),
     // Seed the base placement so the ENTER frame already carries the
     // placement-ward `translate` (S2's popover motion is placement-gated:
     // `translateY: { placement: { bottom: { isEntering: -4 } } }`). RAC resolves
@@ -1405,9 +1418,9 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
   // painting a phantom focus ring at rest.
 
   return (
-    <Show when={context.overlayState.isOpen}>
+    <Show when={context.overlayState.isOpen || isExiting()}>
       <Portal mount={portalContainer()}>
-        <FocusScope contain restoreFocus>
+        <FocusScope contain={!isExiting()} restoreFocus>
           {/* Un-folded to mirror S2's `<Popover>` DOM. The OUTER role-null `<div>`
            * is the positioned surface that carries the enter motion + chrome —
            * this is the element RAC/S2 animate (`AriaPopover`'s div: role null, no
@@ -1424,6 +1437,7 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
             style={mergedStyle()}
             data-placement={popoverAria.placement() ?? "bottom"}
             data-entering={dataAttr(isEntering())}
+            data-exiting={dataAttr(isExiting())}
           >
             {/* RAC's `Dialog` renders a `<section role="dialog">` by default — the
              * D5 roving trail records this element's tag, so it must be `section`
@@ -1466,15 +1480,13 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
 
   createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
 
-  // Mirror S2's `<Popover>` enter transition (RAC `useEnterAnimation`): the
-  // surface mounts carrying `data-entering` (opacity 0 + a small placement-ward
-  // translate), which an effect removes on the next frame so the CSS transition
-  // plays. Only the enter half is certified (D2) — the popover unmounts on close.
+  // Use the same enter and exit state as DatePickerContent.
   const isEntering = createEnterAnimation(contentRef, () => context.overlayState.isOpen);
+  const isExiting = createExitAnimation(contentRef, () => context.overlayState.isOpen);
 
   const renderProps = (): DatePickerContentRenderProps => ({
     isEntering: isEntering(),
-    isExiting: false,
+    isExiting: isExiting(),
     // Seed the base placement so the ENTER frame already carries the
     // placement-ward `translate` (see the single DatePickerContent note).
     placement: popoverAria.placement() ?? "bottom",
@@ -1510,9 +1522,9 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
   // ad-hoc effect fired on mount and painted a phantom focus ring at rest.
 
   return (
-    <Show when={context.overlayState.isOpen}>
+    <Show when={context.overlayState.isOpen || isExiting()}>
       <Portal mount={portalContainer()}>
-        <FocusScope contain restoreFocus>
+        <FocusScope contain={!isExiting()} restoreFocus>
           {/* Un-folded to mirror S2's `<Popover>` DOM (see DatePickerContent).
            * OUTER role-null `<div>` = positioned surface carrying the enter
            * motion + chrome (the element RAC/S2 animate; pruned from the AX
@@ -1526,6 +1538,7 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
             style={mergedStyle()}
             data-placement={popoverAria.placement() ?? "bottom"}
             data-entering={dataAttr(isEntering())}
+            data-exiting={dataAttr(isExiting())}
           >
             <section {...context.pickerAria.dialogProps} tabIndex={-1}>
               {props.children}

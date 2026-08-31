@@ -3,7 +3,7 @@
  * Ported from @react-aria/searchfield useSearchField.test.js
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSearchField } from "../src/searchfield/createSearchField";
 import { createSearchFieldState } from "@proyecto-viviana/solid-stately";

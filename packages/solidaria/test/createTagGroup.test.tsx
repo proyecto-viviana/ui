@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { For } from "solid-js";
 import { createListState, type Key, type SelectionMode } from "@proyecto-viviana/solid-stately";

@@ -1,6 +1,39 @@
+/*
+ * Copyright 2020 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+/*
+ * Copyright 2023 Adobe. All rights reserved.
+ * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy
+ * of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+ * OF ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+// Ported to SolidJS for Proyecto Viviana; based on packages/@react-types/table/src/index.d.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/table/TableCollection.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/table/useTableState.ts
+// Ported to SolidJS for Proyecto Viviana; based on packages/react-stately/src/table/useTreeGridState.ts
+
 /**
  * Table state types for Table components.
- * Based on @react-stately/table and @react-types/table.
+ * Ported from:
+ * - packages/react-stately/src/table/TableCollection.ts
+ * - packages/react-stately/src/table/useTableState.ts
+ * - packages/react-stately/src/table/useTreeGridState.ts
+ * - packages/@react-types/table/src/index.d.ts
  */
 
 import type { Key, FocusStrategy } from "../collections/types";

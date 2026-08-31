@@ -1,7 +1,9 @@
 /*
- * Auto-generated from vendored React Spectrum S2 icon sources.
+ * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
+// Generator input: @react-spectrum/s2@1.6.0/icons/Briefcase.mjs
+// Generator input: @react-spectrum/s2@1.6.0/icons/Briefcase.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";
@@ -18,21 +20,20 @@ function BriefcaseIconSvg(props: JSX.SvgSVGAttributes<SVGSVGElement>): JSX.Eleme
       class={className}
     >
       <path
-        d="m14.97266,5.05371h-1.5v-1.73926c0-.41895-.39551-.81445-.81445-.81445h-5.4707c-.39844,0-.6875.31543-.6875.75v1.74023h-1.5v-1.74023c0-1.26172.96094-2.25,2.1875-2.25h5.4707c1.2334,0,2.31445,1.08105,2.31445,2.31445v1.73926Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M14.973 5.054h-1.5v-1.74c0-.419-.396-.814-.815-.814h-5.47c-.399 0-.688.315-.688.75v1.74H5V3.25C5 1.988 5.96 1 7.188 1h5.47c1.234 0 2.315 1.081 2.315 2.314z"
       />
       <path
-        d="m16.75,17H3.25c-1.24023,0-2.25-1.00977-2.25-2.25V6.25c0-1.24023,1.00977-2.25,2.25-2.25h13.5c1.24023,0,2.25,1.00977,2.25,2.25v8.5c0,1.24023-1.00977,2.25-2.25,2.25ZM3.25,5.5c-.41309,0-.75.33691-.75.75v8.5c0,.41309.33691.75.75.75h13.5c.41309,0,.75-.33691.75-.75V6.25c0-.41309-.33691-.75-.75-.75H3.25Z"
-        fill="var(--iconPrimary, #222)"
-      />
-      <rect x="2" y="9.25" width="16" height="1.5" fill="var(--iconPrimary, #222)" />
-      <path
-        d="m5.75,12.25c-.41406,0-.75-.33594-.75-.75v-2.5c0-.41406.33594-.75.75-.75s.75.33594.75.75v2.5c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M16.75 17H3.25C2.01 17 1 15.99 1 14.75v-8.5C1 5.01 2.01 4 3.25 4h13.5C17.99 4 19 5.01 19 6.25v8.5c0 1.24-1.01 2.25-2.25 2.25M3.25 5.5c-.413 0-.75.337-.75.75v8.5c0 .413.337.75.75.75h13.5c.413 0 .75-.337.75-.75v-8.5c0-.413-.337-.75-.75-.75z"
       />
       <path
-        d="m14.25,12.25c-.41406,0-.75-.33594-.75-.75v-2.5c0-.41406.33594-.75.75-.75s.75.33594.75.75v2.5c0,.41406-.33594.75-.75.75Z"
-        fill="var(--iconPrimary, #222)"
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M2 9.25h16v1.5H2z"
+      />
+      <path
+        fill="var(--iconPrimary, light-dark(rgb(41, 41, 41), rgb(219, 219, 219)))"
+        d="M5.75 12.25c-.414 0-.75-.336-.75-.75V9c0-.414.336-.75.75-.75s.75.336.75.75v2.5c0 .414-.336.75-.75.75M14.25 12.25c-.414 0-.75-.336-.75-.75V9c0-.414.336-.75.75-.75s.75.336.75.75v2.5c0 .414-.336.75-.75.75"
       />
     </svg>
   );

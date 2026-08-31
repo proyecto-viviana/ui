@@ -4,7 +4,7 @@
  * Measures rendering and updating large lists
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vite-plus/test";
 import { render, cleanup } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { ListBox, ListBoxOption } from "@proyecto-viviana/solid-spectrum";

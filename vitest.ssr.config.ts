@@ -22,6 +22,10 @@ export default defineConfig({
   resolve: {
     conditions: ["solid", "development"],
     alias: {
+      "@proyecto-viviana/solid-stately/private/flags/flags": resolve(
+        __dirname,
+        "packages/solid-stately/src/flags/flags.ts",
+      ),
       "@proyecto-viviana/solid-stately": resolve(__dirname, "packages/solid-stately/src/index.ts"),
       "@proyecto-viviana/solidaria": resolve(__dirname, "packages/solidaria/src/index.ts"),
       "@proyecto-viviana/solidaria-components": resolve(
