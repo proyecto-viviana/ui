@@ -59,6 +59,20 @@ describe("ContextualHelpTrigger (solid-spectrum)", () => {
 
     expect(screen.getByRole("button", { name: "More details" })).toBeInTheDocument();
   });
+
+  it("names a titled trigger from its visible label, not a redundant aria-label", () => {
+    render(() => (
+      <ContextualHelpTrigger
+        title="Advanced Configuration"
+        content="This option is for advanced users."
+        variant="info"
+      />
+    ));
+
+    const trigger = screen.getByRole("button", { name: "Advanced Configuration" });
+    expect(trigger).toBeInTheDocument();
+    expect(trigger.getAttribute("aria-label")).toBeNull();
+  });
 });
 
 describe("ContextualHelp (solid-spectrum)", () => {

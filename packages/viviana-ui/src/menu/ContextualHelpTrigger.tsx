@@ -87,18 +87,22 @@ export interface ContextualHelpTriggerProps extends Omit<
 const helpIcon = (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
     <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
-    <text x="8" y="12" text-anchor="middle" fill="currentColor" font-size="10" font-weight="bold">
-      ?
-    </text>
+    <path
+      d="M6.2 6.15c0-1.25 1.05-2.15 1.95-2.15.95 0 1.95.85 1.95 2.05 0 1.15-1.05 1.55-1.55 2.05-.4.4-.55.85-.55 1.45"
+      stroke="currentColor"
+      stroke-width="1.4"
+      stroke-linecap="round"
+      fill="none"
+    />
+    <circle cx="8" cy="12.15" r="0.85" fill="currentColor" />
   </svg>
 );
 
 const infoIcon = (
   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
     <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
-    <text x="8" y="12" text-anchor="middle" fill="currentColor" font-size="10" font-weight="bold">
-      i
-    </text>
+    <circle cx="8" cy="5.15" r="1" fill="currentColor" />
+    <rect x="7.25" y="7.15" width="1.5" height="5" rx="0.6" fill="currentColor" />
   </svg>
 );
 
@@ -149,7 +153,9 @@ export function ContextualHelpTrigger(props: ContextualHelpTriggerProps): JSX.El
   return (
     <HeadlessContextualHelpTrigger
       {...headlessProps}
-      aria-label={local["aria-label"] ?? local.title ?? "Contextual help"}
+      aria-label={
+        local["aria-label"] ?? (local.children || local.title ? undefined : "Contextual help")
+      }
       class={[triggerStyles, local.class].filter(Boolean).join(" ")}
     >
       {children()}
