@@ -1,8 +1,19 @@
 import { createSignal } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
-import { SegmentedControl, SegmentedControlContext, SegmentedControlItem } from "../src";
+import {
+  SegmentedControl,
+  SegmentedControlContext,
+  SegmentedControlItem,
+  createIcon,
+} from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+
+const TestIcon = createIcon((props) => (
+  <svg viewBox="0 0 20 20" {...props}>
+    <path d="M4 4h12v12H4z" />
+  </svg>
+));
 
 describe("SegmentedControl (solid-spectrum)", () => {
   it("defaults selection to the first item", () => {
@@ -189,10 +200,10 @@ describe("SegmentedControl (solid-spectrum)", () => {
     render(() => (
       <SegmentedControl aria-label="View mode" defaultSelectedKey="grid">
         <SegmentedControlItem id="list" aria-label="List">
-          <svg aria-hidden="true" />
+          <TestIcon />
         </SegmentedControlItem>
         <SegmentedControlItem id="grid" aria-label="Grid">
-          <svg aria-hidden="true" />
+          <TestIcon />
         </SegmentedControlItem>
       </SegmentedControl>
     ));
@@ -201,6 +212,10 @@ describe("SegmentedControl (solid-spectrum)", () => {
     const grid = screen.getByRole("radio", { name: "Grid" });
     expect(list).toHaveAttribute("aria-checked", "false");
     expect(grid).toHaveAttribute("aria-checked", "true");
-    expect(grid.querySelector("svg")).toBeInTheDocument();
+    const icon = grid.querySelector("svg");
+    expect(icon).toHaveAttribute("data-slot", "icon");
+    expect(icon?.parentElement).toHaveAttribute("slot", "icon");
+    expect(icon?.parentElement?.tagName).toBe("DIV");
+    expect(grid.querySelector('[data-rsp-slot="text"]')).not.toBeInTheDocument();
   });
 });
