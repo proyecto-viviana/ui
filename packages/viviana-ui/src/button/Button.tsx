@@ -14,13 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import {
-  children as resolveChildren,
-  type JSX,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { type JSX, createMemo, mergeProps, splitProps, useContext } from "solid-js";
 import {
   Button as HeadlessButton,
   type ButtonRenderProps,
@@ -153,7 +147,10 @@ export function Button(props: ButtonProps): JSX.Element {
         styles: () =>
           style({
             order: 0,
-          }),
+            visibility: {
+              isProgressVisible: "hidden",
+            },
+          })({ isProgressVisible: isProgressVisible() }),
       }),
       styles: () =>
         style({
@@ -166,10 +163,7 @@ export function Button(props: ButtonProps): JSX.Element {
           size: fontRelative(16),
           marginStart: "--iconMargin",
           flexShrink: 0,
-          visibility: {
-            isProgressVisible: "hidden",
-          },
-        })({ isProgressVisible: isProgressVisible() }),
+        }),
     };
     const textContextValue = {
       styles: () => s2ButtonText({ isProgressVisible: isProgressVisible() }),
@@ -177,8 +171,10 @@ export function Button(props: ButtonProps): JSX.Element {
     };
 
     function ResolvedContent() {
-      const resolvedChildren = resolveChildren(() => local.children);
-      const content = () => resolvedChildren();
+      // Cache the authored child value without recursively resolving dynamic members.
+      // Solid's children() helper turns mixed text into a snapshot that goes stale
+      // when this branch is hydrated.
+      const content = createMemo(() => local.children);
       const textChild = () => getSingleTextChild(content());
 
       return textChild() !== undefined ? (

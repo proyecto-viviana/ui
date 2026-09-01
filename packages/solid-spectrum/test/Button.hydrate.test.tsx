@@ -6,13 +6,8 @@
  * rebuilds the whole Button subtree. This suite hydrates each SSR fixture over
  * its server markup and then flips the signal, asserting:
  *  - RECREATION re-binds after hydration (the property the fixture relies on).
- *  - FINE-GRAINED reactive text passed directly as Button children does NOT
- *    re-bind — Button.ResolvedContent resolves children in a once-evaluated
- *    ternary, so a multi-node dynamic child never re-tracks (a general Button
- *    limitation, not hydration-specific). This is why the fixture wraps its
- *    label in a span and recreates the Button instead of interpolating. If a
- *    future Button change makes fine-grained children reactive, this assertion
- *    fails loudly and should be updated to expect the improved behavior.
+ *  - FINE-GRAINED reactive text passed directly as Button children re-binds
+ *    without recreating the Button subtree.
  * Both shapes must hydrate with no throw and no console.error (no mismatch).
  */
 import { hydrate } from "solid-js/web";
@@ -101,13 +96,11 @@ describe("Button hydration reactivity", () => {
     expect(r.after).toContain("count: 1");
   });
 
-  it("documents: fine-grained children do NOT re-bind (fixture uses recreation)", () => {
+  it("re-binds fine-grained direct text children after hydration", () => {
     const r = hydrateAndFlip("button-finegrained-ssr.html", FineGrainedFixture);
     expect(r.thrown).toBeUndefined();
     expect(r.errors).toEqual([]);
     expect(r.before).toContain("count: 0");
-    // Known limitation — see the file header. If this flips to "count: 1", the
-    // Button gained reactive multi-node children; update this expectation.
-    expect(r.after).toContain("count: 0");
+    expect(r.after).toContain("count: 1");
   });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { Button, ButtonContext } from "../src/button";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import CrossIcon from "../src/icon/ui-icons/Cross";
@@ -73,6 +74,20 @@ describe("Button", () => {
 
     const text = screen.getByText("Click Me");
     expect(text).not.toBeNull();
+  });
+
+  it("updates direct reactive text children", () => {
+    let setLabel!: (value: string) => void;
+
+    render(() => {
+      const [label, updateLabel] = createSignal("Save");
+      setLabel = updateLabel;
+      return <Button>{label()}</Button>;
+    });
+
+    expect(screen.getByRole("button")).toHaveTextContent("Save");
+    setLabel("Saved");
+    expect(screen.getByRole("button")).toHaveTextContent("Saved");
   });
 
   it("supports press events", async () => {

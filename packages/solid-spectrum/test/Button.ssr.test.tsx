@@ -8,8 +8,8 @@
  *                data-rsp-slot="text" span. A control event swaps demoProps, the
  *                memo rebuilds the whole subtree. This is the shape a browser
  *                D12 pair-oracle will drive.
- *  - finegrained: reactive text passed directly as Button children. Documented
- *                 here only to guard the known limitation (see the hydrate half).
+ *  - finegrained: reactive text passed directly as Button children. The
+ *                 hydrate half proves this text re-binds without recreation.
  *
  * Runs under vitest.ssr.config.ts (renderToString, hydratable). The companion
  * Button.hydrate.test.tsx hydrates over this output.
