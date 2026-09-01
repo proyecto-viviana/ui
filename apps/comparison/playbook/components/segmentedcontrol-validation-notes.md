@@ -94,15 +94,16 @@ Updated: 2026-09-01
 - `vp run --filter @proyecto-viviana/comparison build`
   - passed in about `180s` and produced `100` static pages, including
     `/components/segmentedcontrol/`.
-- `COMPARISON_BASE_URL=http://127.0.0.1:4333 vp exec --filter @proyecto-viviana/comparison playwright test e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --grep SegmentedControl --reporter=line --workers=1`
-  - completed `7` tests with `1` worker in `52.3s`: `6` passed and `1` failed.
-  - the changed icon-only item/disabled parity case passed, including every
-    direct React/Solid radio-width comparison at the unchanged one-pixel
-    tolerance.
-  - the single red is the unchanged `SegmentedControl interactive prop controls
-drive both stacks` case. Its `.check()` call is intercepted by the styled
-    label in the comparison controls harness. The correction is independently
-    prepared under ticket #182; ticket #183 does not alter that harness.
+- The initial two-file, `--grep SegmentedControl`, one-worker selection
+  completed in `52.3s`. The changed icon-only item/disabled parity case passed,
+  including every direct React/Solid radio-width comparison at the unchanged
+  one-pixel tolerance. Its only red classified the independent styled-label
+  interaction defect later corrected by ticket #182.
+- The final six-spec Button family passed `189/189` in `355.155s` with
+  `4` workers and `--retries=0`, including all SegmentedControl visual and
+  behavior cases. It recorded zero skipped, zero unexpected, and zero flaky
+  cases. Machine-readable result:
+  `/tmp/viviana-ui-button-family-strict-189-final-20260901/results.json`.
 - `vp run check`
   - formatting (`3040` files), lint (`2736` files, no warnings or errors), and
     typecheck passed in about `101.4s`.
@@ -119,15 +120,11 @@ drive both stacks` case. Its `.check()` call is intercepted by the styled
 - `git diff --check`
   - passed.
 
-## Remaining Gaps
+## Follow-Ups (Not Blockers)
 
-- Ticket #183 source, unit, build, direct icon geometry, and repository evidence
-  is green. The documented combined browser selection remains `6/7` because the
-  unchanged `SegmentedControl interactive prop controls drive both stacks` case
-  hits the known `.check()`/styled-label interception in the comparison controls
-  harness. Its correction is independently prepared under ticket #182; ticket
-  #183 does not change the harness. Re-run the combined selection after #182
-  lands before declaring the full browser gate green.
+- Ticket #183 source, unit, build, direct icon geometry, repository, and full
+  combined browser evidence is green. Ticket #182 separately owns the harness
+  correction that removed the final browser blocker.
 - Assistive-technology transcript rows are not yet captured for
   SegmentedControl.
 - Hover/focus/pressed visual states are covered through shared ToggleButton

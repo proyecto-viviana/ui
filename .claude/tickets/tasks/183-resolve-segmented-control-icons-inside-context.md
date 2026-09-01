@@ -4,7 +4,7 @@ type: task
 title: "Resolve SegmentedControl icons inside their context"
 created: 2026-09-01
 parent: 24
-status: in-progress
+status: closed
 history:
   - {
       state: open,
@@ -21,12 +21,17 @@ history:
       at: 2026-09-01,
       note: "source, unit, build, changed browser case, and repository gates passed; the unchanged interactive-controls browser case remains pending the independently prepared ticket #182 harness correction",
     }
+  - {
+      state: closed,
+      at: 2026-09-01,
+      note: "ticket #182 removed the comparison-harness blocker and the full six-spec Button family passed 189/189 at four workers with zero retries",
+    }
 ---
 
-Solid resolves a `SegmentedControlItem` child before entering its local
-`IconContext.Provider`. A Spectrum `createIcon` child therefore misses the
+Solid resolved a `SegmentedControlItem` child before entering its local
+`IconContext.Provider`. A Spectrum `createIcon` child therefore missed the
 `icon` slot, center-baseline wrapper, and context-owned sizing. The comparison
-family observes the resulting icon-only radio width difference from current
+family observed the resulting icon-only radio width difference from current
 React Spectrum S2.
 
 ## Work
@@ -60,14 +65,16 @@ React Spectrum S2.
 - `vp run --filter @proyecto-viviana/solid-spectrum build` passed in `67.1s`.
 - `vp run --filter @proyecto-viviana/comparison build` passed in about `180s`
   and produced `100` static pages, including SegmentedControl.
-- The documented two-file, `--grep SegmentedControl`, one-worker browser
-  selection completed in `52.3s`: `6/7` tests passed. The changed icon-only
-  geometry case passed, including every React/Solid radio-width comparison at
-  the unchanged one-pixel tolerance. The single red was the unchanged
-  `SegmentedControl interactive prop controls drive both stacks` case: its
-  `.check()` call was intercepted by the styled label. That comparison-harness
-  correction is independently prepared under ticket #182 and is not part of
-  this isolated producer patch.
+- The initial two-file, `--grep SegmentedControl`, one-worker browser selection
+  completed in `52.3s`: the changed icon-only geometry case and all direct
+  React/Solid radio-width comparisons passed at the unchanged one-pixel
+  tolerance. Its only red classified the independent styled-label interaction
+  defect subsequently corrected by ticket #182.
+- After that harness correction, the final six-spec Button family passed
+  `189/189` in `355.155s` with `4` workers and `--retries=0`, including all
+  SegmentedControl visual and behavior cases. It recorded zero skipped, zero
+  unexpected, and zero flaky cases. Machine-readable result:
+  `/tmp/viviana-ui-button-family-strict-189-final-20260901/results.json`.
 - `vp run check` passed formatting (`3040` files), lint (`2736` files, no
   warnings or errors), and typecheck in about `101.4s`.
 - `vp run comparison:report:parity:strict` passed in `4.08s`: `78`
@@ -83,6 +90,7 @@ React Spectrum S2.
 
 ## Relationship
 
-Initiative #24 owns component acceptance. Ticket #182 repairs the Button
-comparison harness that exposed this separate producer defect; ticket #135
-must not use this correction as a waiver for its own required comparison gate.
+Initiative #24 owns component acceptance. Ticket #182 closed the Button
+comparison-harness defect that exposed this separate producer defect; ticket
+#135 still requires its own strict comparison evidence and receives no waiver
+from either correction.
