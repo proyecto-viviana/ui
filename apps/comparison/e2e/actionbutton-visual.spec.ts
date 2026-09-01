@@ -7,8 +7,8 @@ import {
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import {
-  expectExactPreparedInPlaceScreenshotPair,
   clearPointer,
+  expectExactPreparedClonedScreenshotPair,
   expectExactPreparedScreenshotPair,
   expectExactScreenshotPair,
   pinComparisonTheme,
@@ -432,7 +432,7 @@ test.describe("comparison ActionButton visual parity", () => {
   test("ActionButton hover state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectExactPreparedInPlaceScreenshotPair(
+    await expectExactPreparedClonedScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
@@ -470,7 +470,7 @@ test.describe("comparison ActionButton visual parity", () => {
   test("ActionButton pressed state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectExactPreparedInPlaceScreenshotPair(
+    await expectExactPreparedClonedScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
