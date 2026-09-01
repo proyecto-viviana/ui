@@ -414,6 +414,8 @@ test.describe("comparison collection button controls visual parity", () => {
 
     const reactItems = await segmentedControlItemComposition(fixtures.reactRoot);
     const solidItems = await segmentedControlItemComposition(fixtures.solidRoot);
+    const reactGeometry = await segmentedControlGeometry(fixtures.reactRoot);
+    const solidGeometry = await segmentedControlGeometry(fixtures.solidRoot);
     const reactGrid = reactItems.find((item) => item.label === "Grid");
     const solidGrid = solidItems.find((item) => item.label === "Grid");
     const reactBoard = reactItems.find((item) => item.label === "Board");
@@ -450,6 +452,15 @@ test.describe("comparison collection button controls visual parity", () => {
       1,
       "disabled Board icon width",
     );
+    expect(solidGeometry.itemWidths).toHaveLength(reactGeometry.itemWidths.length);
+    for (const [index, reactWidth] of reactGeometry.itemWidths.entries()) {
+      expectNear(
+        solidGeometry.itemWidths[index] ?? null,
+        reactWidth,
+        1,
+        `icon-only radio ${index + 1} width`,
+      );
+    }
 
     await fixtures.reactRoot.getByRole("radio", { name: "Board" }).click({ force: true });
     await fixtures.solidRoot.getByRole("radio", { name: "Board" }).click({ force: true });
