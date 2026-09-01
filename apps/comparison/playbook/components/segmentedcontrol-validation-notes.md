@@ -1,6 +1,6 @@
 # SegmentedControl Validation Notes
 
-Updated: 2026-05-20
+Updated: 2026-09-01
 
 ## Target
 
@@ -76,8 +76,58 @@ Updated: 2026-05-20
 - `vp run check`
   - formatting, lint, and typecheck passed.
 
+## Ticket #183 Validation
+
+- `vp install --frozen-lockfile`
+  - passed in `22.4s` with no tracked manifest or lockfile drift.
+- `vp test run packages/solid-spectrum/test/SegmentedControl.test.tsx`
+  - `1` file and `8/8` tests passed in `46.55s`, including the `createIcon`
+    slot, baseline-wrapper, and no-text-slot regression.
+- Clean-worktree declaration prerequisites:
+  - `vp run --filter @proyecto-viviana/solid-stately build` passed in `14.2s`.
+  - `vp run --filter @proyecto-viviana/solidaria build` passed in `19.1s`.
+  - `vp run --filter @proyecto-viviana/solidaria-components build` passed in
+    `27.4s`.
+  - no tracked drift followed the prerequisite builds.
+- `vp run --filter @proyecto-viviana/solid-spectrum build`
+  - passed in `67.1s`.
+- `vp run --filter @proyecto-viviana/comparison build`
+  - passed in about `180s` and produced `100` static pages, including
+    `/components/segmentedcontrol/`.
+- `COMPARISON_BASE_URL=http://127.0.0.1:4333 vp exec --filter @proyecto-viviana/comparison playwright test e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --grep SegmentedControl --reporter=line --workers=1`
+  - completed `7` tests with `1` worker in `52.3s`: `6` passed and `1` failed.
+  - the changed icon-only item/disabled parity case passed, including every
+    direct React/Solid radio-width comparison at the unchanged one-pixel
+    tolerance.
+  - the single red is the unchanged `SegmentedControl interactive prop controls
+drive both stacks` case. Its `.check()` call is intercepted by the styled
+    label in the comparison controls harness. The correction is independently
+    prepared under ticket #182; ticket #183 does not alter that harness.
+- `vp run check`
+  - formatting (`3040` files), lint (`2736` files, no warnings or errors), and
+    typecheck passed in about `101.4s`.
+- `vp run comparison:report:parity:strict`
+  - passed in `4.08s`: `78` official/manifest/sidebar entries, `69` modeled
+    controls/notes/visual labels, zero unresolved visual-state pointers, zero
+    missing or invalid evidence, and no new catalogue gaps.
+- `vp run guard:layer-boundary`
+  - passed in `1.14s` with zero new forks and zero unbaselined dual paths.
+- `vp run changeset:status`
+  - passed in `3.18s` after temporarily staging the otherwise-untracked
+    changeset, reporting only a patch bump for
+    `@proyecto-viviana/solid-spectrum`; the index was restored immediately.
+- `git diff --check`
+  - passed.
+
 ## Remaining Gaps
 
+- Ticket #183 source, unit, build, direct icon geometry, and repository evidence
+  is green. The documented combined browser selection remains `6/7` because the
+  unchanged `SegmentedControl interactive prop controls drive both stacks` case
+  hits the known `.check()`/styled-label interception in the comparison controls
+  harness. Its correction is independently prepared under ticket #182; ticket
+  #183 does not change the harness. Re-run the combined selection after #182
+  lands before declaring the full browser gate green.
 - Assistive-technology transcript rows are not yet captured for
   SegmentedControl.
 - Hover/focus/pressed visual states are covered through shared ToggleButton
