@@ -4,9 +4,19 @@ type: task
 title: "Resolve viviana-ui SegmentedControl icons inside their context"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-01,
+      note: "fix and failing-first test landed; pending orchestrator verification",
+    }
+  - {
+      state: verified,
+      at: 2026-09-01,
+      note: "orchestrator re-ran the failing-first test (null data-slot on HEAD, passes after), both SegmentedControl suites (9), typecheck, layer-boundary (532/76/0 new forks), check; committed with changeset ui-segment-icon-context",
+    }
 ---
 
 ## Cause
