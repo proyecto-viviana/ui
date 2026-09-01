@@ -59,6 +59,15 @@ export interface MotionTriggerContext extends PanelContext {
   target: Locator;
 }
 
+export interface MotionSnapshotExpectation {
+  /** Exact CSS transition properties reported by the Web Animations API. */
+  transitionProperties: readonly string[];
+  /** Exact duration, in milliseconds, for every reported transition. */
+  durationMs: number;
+  /** Absolute ceiling for every in-scope animation, including non-transitions. */
+  maxAnimationDurationMs?: number;
+}
+
 /**
  * A scripted interaction that drives an animation into existence for the D2
  * motion driver: opening an overlay (enter transition), selecting a tab (the
@@ -83,6 +92,20 @@ export interface MotionTrigger {
   /** Element screenshot for the filmstrip diagnostic; defaults to `pixelTarget`. */
   filmstripTarget?: TargetResolver;
   /**
+   * Optional absolute Web Animations API contracts. Normal mode retains the
+   * React-vs-Solid pair assertion after checking the shared expectation;
+   * reduced mode checks separate React and Solid contracts so owner policy can
+   * intentionally improve on pinned upstream. Scenarios without expectations
+   * retain pair equality in both modes.
+   */
+  expectedMotion?: {
+    normal: MotionSnapshotExpectation;
+    reduced: {
+      react: MotionSnapshotExpectation;
+      solid: MotionSnapshotExpectation;
+    };
+  };
+  /**
    * A documented, tracked port gap that keeps this trigger's exact metadata
    * assertion red. When set, the D2b/D2d metadata tests register as
    * `test.fixme` with this reason (visible in reports, excluded from the
@@ -93,9 +116,10 @@ export interface MotionTrigger {
 }
 
 /**
- * D2 motion driver config. Metadata (keyframes + computed timing) is the exact
- * pair-oracle assertion; the same capture re-runs under reduced motion. Runs
- * the first scenario theme only — motion tokens are theme-independent.
+ * D2 motion driver config. Normal metadata retains the exact pair-oracle
+ * assertion; reduced metadata may use explicit per-stack contracts, while
+ * scenarios without them retain pair equality. Runs the first scenario theme
+ * only — motion tokens are theme-independent.
  */
 export interface MotionConfig {
   cases?: readonly string[];
