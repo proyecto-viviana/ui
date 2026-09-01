@@ -1,19 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
-import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/data/theme";
-
-async function requestTheme(page: Page, theme: ComparisonThemeChoice) {
-  await page.evaluate(
-    ({ eventName, nextTheme }) => {
-      window.dispatchEvent(
-        new CustomEvent(eventName, {
-          detail: { theme: nextTheme },
-        }),
-      );
-    },
-    { eventName: comparisonThemeRequestEvent, nextTheme: theme },
-  );
-}
+import { requestComparisonTheme } from "./visual-diff";
 
 test.describe("comparison component theme contract", () => {
   for (const item of reactSpectrumCatalogue) {
@@ -29,7 +16,7 @@ test.describe("comparison component theme contract", () => {
       await expect(themeToggle).toBeVisible();
       await expect(themeToggle).toHaveAttribute("aria-label", /Using .* mode \(press to switch\)/);
 
-      await requestTheme(page, "system");
+      await requestComparisonTheme(page, "system");
       await themeToggle.click();
       await expect(body).toHaveAttribute("data-theme", "light");
       await expect(body).toHaveAttribute("data-resolved-theme", "light");

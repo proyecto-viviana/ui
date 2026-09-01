@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/data/theme";
 
 export type ComparisonColorScheme = "light" | "dark";
 
@@ -50,6 +51,19 @@ export async function pinComparisonTheme(page: Page, colorScheme: ComparisonColo
   await page.addInitScript((theme) => {
     window.localStorage.setItem("solid-spectrum-theme", theme);
   }, colorScheme);
+}
+
+export async function requestComparisonTheme(page: Page, theme: ComparisonThemeChoice) {
+  await page.evaluate(
+    ({ eventName, nextTheme }) => {
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { theme: nextTheme },
+        }),
+      );
+    },
+    { eventName: comparisonThemeRequestEvent, nextTheme: theme },
+  );
 }
 
 export async function clearPointer(page: Page) {
