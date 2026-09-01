@@ -790,7 +790,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
 
   createEffect(() => {
     const fonts = typeof document === "undefined" ? undefined : document.fonts;
-    fonts?.ready.then(queueOverflowUpdate);
+    void fonts?.ready.then(queueOverflowUpdate);
   });
 
   return (

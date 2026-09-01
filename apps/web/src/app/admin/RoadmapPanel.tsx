@@ -70,6 +70,7 @@ export function RoadmapPanel(props: {
                     <select
                       value={item.status}
                       disabled={busy() === `status-${item.id}`}
+                      aria-label={`Set #${item.id} status`}
                       onChange={(event) =>
                         void setStatus(
                           item.path,

@@ -28,3 +28,7 @@ are explicitly partial.
 ## Relationship
 
 F-TEST-004. Ranking is in `output/audit-2026-09/testing.md`.
+
+## Round-2 note (2026-09-01)
+
+Correction: round 1 said Button was the only certified D12 spec; Meter and text-entry-callback D12 specs also exist. Meter D12 has no `interact`, so it does not meet `certification.md`'s post-hydration requirement. The collection/label-composite gap stands.

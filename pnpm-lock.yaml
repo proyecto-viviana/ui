@@ -28,9 +28,6 @@ importers:
 
   .:
     dependencies:
-      brotli-size:
-        specifier: ^4.0.0
-        version: 4.0.0
       gzip-size:
         specifier: ^7.0.0
         version: 7.0.0
@@ -3243,10 +3240,6 @@ packages:
     resolution: {integrity: sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==}
     engines: {node: 20 || >=22}
 
-  brotli-size@4.0.0:
-    resolution: {integrity: sha512-uA9fOtlTRC0iqKfzff1W34DXUA3GyVqbUaeo3Rw3d4gd1eavKVCETXrn3NzO74W+UVkG3UHu8WxUi+XvKI/huA==}
-    engines: {node: '>= 10.16.0'}
-
   browserslist@4.28.1:
     resolution: {integrity: sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
@@ -3463,9 +3456,6 @@ packages:
     peerDependenciesMeta:
       oxc-resolver:
         optional: true
-
-  duplexer@0.1.1:
-    resolution: {integrity: sha512-sxNZ+ljy+RA1maXoUReeqBBpBC6RLKmg5ewzV+x+mSETmWNoKdZN6vcQjpFROemza23hGFskJtFNoUWUaQ+R4Q==}
 
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
@@ -7612,10 +7602,6 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
-  brotli-size@4.0.0:
-    dependencies:
-      duplexer: 0.1.1
-
   browserslist@4.28.1:
     dependencies:
       baseline-browser-mapping: 2.10.11
@@ -7791,8 +7777,6 @@ snapshots:
   dset@3.1.4: {}
 
   dts-resolver@3.0.0: {}
-
-  duplexer@0.1.1: {}
 
   duplexer@0.1.2: {}
 

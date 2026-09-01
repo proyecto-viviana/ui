@@ -38,7 +38,15 @@ export const LabelContext = createContext<ContextValue<LabelProps, HTMLElement>>
 export function Label(props: LabelProps): JSX.Element {
   const ctx = useContext(LabelContext);
   const [merged, ref] = useContextProps(props, props.ref, LabelContext);
-  const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "slot", "ref"]);
+  const [local, domProps] = splitProps(merged, [
+    "elementType",
+    "class",
+    "children",
+    "slot",
+    "ref",
+    "for",
+    "htmlFor",
+  ]);
   const htmlFor = createMemo(() => {
     const slotted =
       ctx && typeof ctx === "object" && "slots" in ctx && ctx.slots

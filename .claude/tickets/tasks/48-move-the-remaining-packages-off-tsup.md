@@ -22,3 +22,7 @@ artifact checks pass for all public packages.
 Replaces `pkg-build-remaining`. Depends on #47. Production builds already use
 `vp pack`; leftover `tsup --watch` `dev` scripts were replaced with
 `vp pack --watch`.
+
+## Round-2 note (2026-09-01)
+
+Done-when is met: no package build depends on `tsup`; `dev` scripts are `vp pack --watch`. Owner: close as merged/verified or rewrite the title. Remaining declaration work is #47.

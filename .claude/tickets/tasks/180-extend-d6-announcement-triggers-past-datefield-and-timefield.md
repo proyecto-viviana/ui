@@ -28,3 +28,7 @@ omission.
 ## Relationship
 
 F-A11Y-007. #79 / #80 stay for Toast and ComboBox.
+
+## Round-2 note (2026-09-01)
+
+Additional `announce()` call site: RAC `Button` announces on pending enter/exit while focused (`packages/solidaria-components/src/Button.tsx:499-510`). Not a Button recertification; another site outside the DateField/TimeField oracle.

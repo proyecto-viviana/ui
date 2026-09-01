@@ -1114,11 +1114,23 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
 
   return (
     <HeadlessTreeItemContent {...headlessProps}>
-      {(renderProps: HeadlessTreeItemContentRenderProps) => (
-        <span class={[treeViewItemCell, local.class].filter(Boolean).join(" ")} style={local.style}>
-          {typeof local.children === "function" ? local.children(renderProps) : local.children}
-        </span>
-      )}
+      {(renderProps: HeadlessTreeItemContentRenderProps) => {
+        const content = () => {
+          // Read `local.children` once — a repeated props-children read re-instantiates child
+          // components on the server only, desynchronizing Solid's hydration keys and aborting
+          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          const rawChildren = local.children;
+          return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
+        };
+        return (
+          <span
+            class={[treeViewItemCell, local.class].filter(Boolean).join(" ")}
+            style={local.style}
+          >
+            {content()}
+          </span>
+        );
+      }}
     </HeadlessTreeItemContent>
   );
 }

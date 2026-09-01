@@ -2,7 +2,7 @@
  * Checks parity of selected react-aria-components exports against
  * solidaria-components exports.
  *
- * Scope is intentionally narrow to the explicitly tracked backlog symbols.
+ * Scope is intentionally narrow to the explicitly tracked symbols.
  */
 
 import { readFile } from "node:fs/promises";
@@ -27,13 +27,9 @@ const REQUIRED_SYMBOLS = [
   "DropZone",
   "SharedElementTransition",
   "Virtualizer",
+  "TreeHeader",
+  "TreeSection",
 ] as const;
-
-// solidaria-only additions not exported by upstream RAC — tracked here
-// to preserve visibility without generating misleading parity warnings.
-const BACKLOG_SYMBOLS = ["TreeHeader", "TreeSection"] as const;
-
-const TRACKED_SYMBOLS = [...REQUIRED_SYMBOLS, ...BACKLOG_SYMBOLS] as const;
 
 function parseNamedValueExports(source: string): Set<string> {
   const symbols = new Set<string>();
@@ -76,12 +72,11 @@ const [racSource, solidariaSource] = await Promise.all([
 const racExports = parseNamedValueExports(racSource);
 const solidariaExports = parseNamedValueExports(solidariaSource);
 
-const missingInRac = TRACKED_SYMBOLS.filter((symbol) => !racExports.has(symbol));
+const missingInRac = REQUIRED_SYMBOLS.filter((symbol) => !racExports.has(symbol));
 const missingRequiredInSolidaria = REQUIRED_SYMBOLS.filter(
   (symbol) => !solidariaExports.has(symbol),
 );
-const missingBacklogInSolidaria = BACKLOG_SYMBOLS.filter((symbol) => !solidariaExports.has(symbol));
-const presentInSolidaria = TRACKED_SYMBOLS.filter((symbol) => solidariaExports.has(symbol));
+const presentInSolidaria = REQUIRED_SYMBOLS.filter((symbol) => solidariaExports.has(symbol));
 
 console.log("RAC parity check (tracked symbols)");
 console.log(`- RAC index: ${RAC_INDEX}`);
@@ -92,9 +87,6 @@ console.log(formatList(presentInSolidaria));
 console.log("");
 console.log("Missing required symbols in solidaria-components:");
 console.log(formatList(missingRequiredInSolidaria));
-console.log("");
-console.log("Backlog symbols still missing in solidaria-components:");
-console.log(formatList(missingBacklogInSolidaria));
 
 if (missingInRac.length > 0) {
   console.log("");

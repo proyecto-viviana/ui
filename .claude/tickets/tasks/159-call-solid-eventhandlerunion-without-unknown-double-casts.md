@@ -29,3 +29,7 @@ RadioGroup, Checkbox, DateField, DatePicker, and TimeField do not
 ## Relationship
 
 F-TS-010.
+
+## Round-2 note (2026-09-01)
+
+New evidence: the two extracted callers disagree on Solid's bound-tuple order. Installed `BoundEventHandler` is `{0: fn, 1: data}`; ComboBox does `handler[0](handler[1], e)` (correct), ContextualHelpTrigger does `handler[1].call(handler[0], e)` (inverted, throws on a real bound tuple). One shared typed caller fixes the inversion.

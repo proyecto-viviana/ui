@@ -35,18 +35,16 @@ authority.
 
 ### Working tree
 
-Nothing from this audit is committed. The tree is mixed:
+Round 1 landed in `6a0af4d7 audit: land 2026-09 findings and drop the
+viviana-native archive` on `main`, together with the #135 Button hydration
+work (`abafbd4d`), the SegmentedControl icon fix (`72ec9157`), and the
+Button-harness commits (`2b560c42`, `9af12739`, `a47c6f3b`). The Button
+files are committed and **under review** (#187 lists the missing evidence),
+not protected WIP. #182 / #183 used an invalid `closed` state that was mapped
+to `verified`; their bodies were not rewritten at the time (#182 now carries
+a round-2 correction note).
 
-- This audit (tickets #136–#181, docs, trivial fixes, owner-decision
-  follow-through, archive deletion).
-- Preserved **#135 Button hydration WIP**. Do not reset, restore, or edit
-  `packages/solid-spectrum/src/button/Button.tsx`,
-  `packages/viviana-ui/src/button/Button.tsx`, related Button tests,
-  `apps/comparison/playbook/components/button-validation-notes.md`, or
-  changeset `reactive-button-children.md`.
-- Concurrent Button harness tickets **#182** and **#183** (verified). They
-  used an invalid `closed` state; that was mapped to `verified` so
-  `docs:generate` could run. Their bodies were not rewritten.
+Round 2 (below) is uncommitted in the working tree at handoff time.
 
 Branch is `main`, ahead of `origin/main`. Do not push unless the owner asks.
 
@@ -86,8 +84,9 @@ Trivial audit fixes:
   ActionButton/ToggleButton/LinkButton/Badge/Radio/SegmentedControl/TagGroup
   is **#168** — do not fold into #135.
 - Docs: architecture `solid` export points at dist; certification snapshot
-  vs ticket-state split; relationship lines no longer point at deleted
-  `tech-debt.md`.
+  vs ticket-state split; the Relationship lines on #47, #56, and #81 no
+  longer point at deleted `tech-debt.md` (42 other ticket files still cite
+  it as provenance — #215).
 - Hygiene: deleted tracked empty `.codex`; deleted
   `packages/solid-spectrum/archive/alert/index.tsx`; stopped exporting unused
   `create*Tester` from solidaria test-utils.
@@ -129,37 +128,172 @@ These are the audit children a reviewer should not miss:
 
 ### Child rollup
 
-45 children (#137–#181). 7 verified, 1 in-progress, 37 open.
+81 children (#137–#181 from round 1, #184–#219 from round 2). 7 verified,
+1 in-progress, 73 open.
 
 Verified: #140, #143, #145, #148, #152, #156, #167.
 
-In progress: #177 (notes remaining).
+In progress: #177 (notes remaining; round 2 asks the owner to correct the
+ColorEditor label to composition first).
 
-Open, by theme:
+Open, by theme (round-1 children first, then round-2):
 
 - Security / CI: #137, #138, #139
-- Architecture / packaging: #141, #142, #144, #146, #147, #149, #150
-- Docs process: #151
-- TypeScript: #153, #154, #155, #157, #158, #159
-- Testing / gates: #160, #161, #162, #163, #164, #165, #166
-- Solid hydration / behavior: #168, #169, #170, #171, #172, #173, #174, #175
-- A11y notes: #176, #178, #179, #180, #181
+- Architecture / packaging: #141, #142, #144, #146, #147, #149, #150; #211, #212, #213
+- Docs process: #151; #210, #215
+- TypeScript: #153, #154, #155, #157, #158, #159; #214
+- Testing / gates: #160, #161, #162, #163, #164, #165, #166; #191, #193, #194, #195, #196, #197, #203, #204, #205
+- Solid hydration / behavior: #168, #169, #170, #171, #172, #173, #174, #175; #184, #185, #186, #187, #188, #189, #190, #192
+- A11y notes / i18n: #176, #178, #179, #180, #181; #198, #199, #200, #201, #202
+- Upstream API parity: #206, #207, #208, #209
+- Owner decisions: #216, #217, #218, #219
 
-### Gates run in this tree
+## Round 2 (2026-09-01) — adversarial re-audit
 
-Passed: `vp run check`, `vp run docs:check`, `vp run guard:spectrum-tokens-pin`,
-`vp run test:web` (39, earlier in this tree), `vp run test:comparison-data`,
-`git diff --check`.
+Orchestrator plus fourteen investigators red-teamed every round-1 finding
+and verdict, reviewed the six commits above, and opened axes round 1 did not
+cover (i18n/RTL, upstream drift and guard semantics, SSR/hydration, public
+API/DX, harness integrity, perf/bundle). Evidence:
+`output/audit-2026-09/round-2/` (`TRIAGE.md` is the index; one file per
+axis; `gates/` holds every log). That directory is gitignored working
+evidence; this ticket and the child tickets are the durable record.
 
-Not run: package unit/SSR/hydrate, comparison Playwright, a11y,
-`vp run build`. Old comparison `dist/` pages for the deleted custom slugs
-will disappear on the next comparison build.
+### Gates run in round 2 (full ladder, once)
 
-`apps/comparison/src/data/acceptance-schema.test.ts` currently fails
-`names the six certified knownDivergence fixmes` (datepicker /
-daterangepicker placeholder rows). That failure is unrelated to the archive
-deletion. Do not "fix" it as part of reviewing this audit unless you own
-that inventory.
+Green: `check`, `typecheck:all` (includes `build`), every `guard:*` except
+the two below, `docs:check`, `ci:changesets`, `test:run` (272 files, 5683
+passed, 1 expected fail, 6 skipped), SSR suite (24), `test:web` (39),
+`test:comparison-data` (12), `build`, `guard:jsx-deopt-size`, `ui:smoke`
+(159/159 export files, 38/38 subpaths, 68/68 CSS rules), `comparison:build`,
+`report:parity:strict`, `comparison:test:contract` (93),
+`comparison:test:pair` (6), `comparison:test:certified` (**2120 passed, 4
+skipped**, 28 min), `a11y:full` (10 + 80 + 45), `guard:upstream-test-parity`.
+
+Red:
+
+- `guard:attribution-headers` — red since `19ed5c48` (2026-08-30) and in no
+  workflow. Fixed in round 2 (mirror results inherit review contracts) and
+  wired into Certification Gates.
+- hydrate suite — 2 failed / 24: #134 ListView (known) and **Form+TextField
+  (profile shape)**, a hydration-key desync when a TextField has a
+  `description`. New blocker → **#184**. This is the concrete cost of #160.
+- `guard:upstream-freshness` — advisory; RAC 1.21.0 / S2 1.7.0 exist → #216.
+
+### Corrections to round 1
+
+- F-SOLID-012 was a wrong finding: `createToggleState` re-accesses props; no
+  freeze. The lying comments and the `patterns.md` freeze story are the
+  defect → #192.
+- F-TEST-009's floor-test half was wrongly dropped as #91 → #193.
+- F-TS-006's thenable evidence did not belong on #49; `void` landed.
+- F-PACKAGING-003: `guard:package-artifacts` _is_ in CI via `build`; the
+  hole is the check (#147 note).
+- F-TEST-004: Meter and text-entry-callback D12 specs exist; gap stands (#162
+  note).
+- F-TEST-011 raised to high: React portals to `document.body`, Solid to the
+  island (#166 note).
+- F-A11Y-002: ColorEditor is not S2 parity; the source and vendored S2 say
+  composition (#177 note).
+- F-DOCS-004 and F-QUALITY-004 fix-nows closed three instances of a class,
+  not the class (42 ticket files; `testers.ts` still tracked) → #215; module
+  deleted in round 2.
+- Round-1 quality census: #1 already carried 995 / 33,036; only the line
+  total drifts (32,588 today).
+- #145's done-when was not fully closed: archive globs and the viviana-ui
+  README sentence survived; removed in round 2.
+
+### The six commits under review
+
+- `abafbd4d` Button `createMemo(() => local.children)`: right adapter, both
+  copies match. Missing evidence → #187; the wrapper-visibility move patches
+  a non-reactive `createIcon` context read → #186.
+- `72ec9157` fixed SegmentedControl icons-in-context in `solid-spectrum`
+  only; **`@proyecto-viviana/ui` still resolves children before the
+  provider** → #185 (high; published defect).
+- `2b560c42` / `9af12739`: label-click repair is right; `checkControl` went
+  page-global and ActionButton hover/pressed moved to cloned capture, which
+  cannot see `:hover`/`:active` → #197; #182 body corrected by note.
+
+### Landed in round 2 (behavior-preserving, verified per set)
+
+- `scripts/report-attribution-mappings.mjs`: byte-mirror results inherit
+  headerless / composite / local review contracts. That unmasked seven
+  contract failures from `1217ad39` (TokenField + PreviewTrigger port) that
+  the orphan abort had hidden: the two TokenField headers were synced to
+  Adobe's truncated upstream block verbatim (`sync:attribution-headers`;
+  owner may prefer a corrected notice — that needs a guard exception class,
+  not a hand edit), and five local barrels/contexts were re-reviewed
+  (re-export-only diffs) and re-hashed in `attribution-local-reviews.json`.
+  Guard green: 465 exact, 12 headerless, 75 composite, 200 local.
+- `packages/solidaria-components/src/Label.tsx`: single `for` in SSR output
+  (regression assertion in Form SSR test; changeset).
+- Breadcrumbs measure id via `createUniqueId` (both copies); `void` on the
+  four `fonts.ready.then` sites; one-read `children` on Table column/cell
+  (styled and headless), BreadcrumbItem, TreeItemContent (changeset).
+- `vitest.hydrate.config.ts` / `vitest.ssr.config.ts`: `optimizeDeps.noDiscovery`
+  so the hydrate scan stops walking `output/*.html` and the oracle.
+- Archive leftovers: comparison Astro globs, `report-layer-imports` skip,
+  viviana-ui README sentence.
+- Guards: `check-doc-routes` exact path match; `check-rac-parity` stale
+  backlog removed; `check-upstream-oracle` compares comparison versions to
+  the pin; `neverBundle` regexes on styled and solidaria pack configs.
+- CI: `guard:attribution-headers` and `guard:jsx-ref-dead-code` on
+  Certification Gates; `test:web` on `ci:release-readiness`; tokens-pin
+  comment names both packages. `brotli-size` dependency removed.
+- Admin: RoadmapPanel status select labeled; encoded-control href cases on
+  the admin markdown test.
+- Deleted `packages/solidaria/test-utils/testers.ts`.
+
+### Gates after the round-2 fixes (final tree)
+
+Logs: `output/audit-2026-09/round-2/gates/post-fix/`.
+
+Green: `check` (after formatting nine files), `build`, `guard:package-artifacts`
+(816 targets, 956 header references), `guard:jsx-deopt-size`,
+`guard:jsx-ref-dead-code`, `guard:attribution-headers` (465 exact, 12
+headerless, 75 composite, 200 local), `guard:layer-boundary` (532 identical,
+76 diverged, 0 new forks), `guard:docs-routes`, `guard:rac-parity`,
+`guard:upstream-oracle` (now includes the comparison manifest),
+`guard:spectrum-tokens-pin`, `guard:generated-icons`, `guard:idiomatic-solid`,
+`guard:invented-utilities`, `ci:changesets`, `docs:check`, `test:run` (272
+files, 5683 passed, 1 expected fail, 6 skipped), SSR (24), `test:web` (40),
+scoped `comparison:test:certified` over the 25 specs whose components
+changed — Label consumers, TableView, Breadcrumbs, Tabs, TreeView — **885
+passed, 4 skipped, 0 failed** (9.1 min), `git diff --check`.
+
+Still red, by design: hydrate 2 failed / 24 passed — #134 ListView and #184
+Form+TextField. Nothing in round 2 changed those two results; the Breadcrumbs
+hydrate case stayed green after the `createUniqueId` change.
+
+Not re-run after the fixes: the full certified suite (the scoped run covers
+every component whose source changed), `a11y:full`, `ui:smoke`,
+`comparison:test:pair` / `contract` (no comparison-app source changed except
+the Astro globs, and `comparison:build` is green).
+
+### Owner decisions requested (round 2)
+
+| Ticket   | Question                                                                                                                                                   |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #216     | Open the RAC 1.21.0 / S2 1.7.0 train now, or after #82?                                                                                                    |
+| #217     | May `guard:upstream-freshness` exit 0 when GitHub is unreachable?                                                                                          |
+| #218     | Classify unlabeled barrel extras (S2 barrel, MenuButton, VU `Well`/`Pixel*`/`typeRoles`/`meshStrip`, Option/Item canonical names, `class` vs `className`). |
+| #219     | Size oracle, solid-stately entries, `./Button` surface, locale splitting.                                                                                  |
+| #177     | Correct ColorEditor from S2 parity to composition before writing the note.                                                                                 |
+| #48, #81 | Done-when met / resume-here stale — close or rewrite.                                                                                                      |
+
+### Highest-signal remaining work after round 2
+
+- **#184** Form+TextField hydration abort (blocker; consumer route shape).
+- **#185** viviana-ui SegmentedControl icons before the provider (published).
+- **#160** now has a demonstrated cost and prerequisites (#191).
+- **#198–#202** the i18n spine above the headless layer is two locales and
+  English literals; D10 cannot see it.
+- **#194 / #195 / #196** the comparison CI jobs labelled pair/contract are
+  floors in front of the certified suite.
+- **#203 / #204** the guards that print "parity" are name matches and a
+  frozen ratchet.
+- **#206–#209** silent Rule #2 inventions on the five high-traffic
+  components (accessors, size aliases, Heading, render props).
 
 ## Done when
 

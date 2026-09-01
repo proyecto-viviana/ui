@@ -28,3 +28,7 @@ A failing hydrate test fails Certification Gates.
 ## Relationship
 
 F-TEST-001 and F-TEST-014. #134 / #131 / #135 own the component bugs.
+
+## Round-2 note (2026-09-01)
+
+Round-2 cost: with the suites run once, hydrate is red on `Form+TextField (profile shape)` (#184) as well as #134. Prerequisites before this gate can be blocking: `noDiscovery` on the hydrate/ssr configs (landed round 2), shared `sharedConfig` reset and the Kumo reader (#191), and tickets for both reds.

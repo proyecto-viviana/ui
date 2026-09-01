@@ -29,3 +29,7 @@ A Spectrum CSS `default` pointing at `src/` fails CI.
 
 F-PACKAGING-002. Delta on #32. The Spectrum CSS default itself was fixed in
 the audit pass.
+
+## Round-2 note (2026-09-01)
+
+Round 2: `pack-local-chain` packs six tarballs but the consumer depends only on `ui` and `kumo`; the solid-spectrum tarball is never extracted and solid-stately/solidaria/solidaria-components export maps are not walked. Done-when should read: any public export target containing `/src/` fails CI. The Spectrum CSS example in Cause is already fixed. #212 adds a DCE assertion to the same smoke.

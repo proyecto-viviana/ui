@@ -119,3 +119,7 @@ closeout.
 This harness prerequisite is complete, so ticket #135 can use the strict
 Button comparison family as producer evidence without a harness waiver.
 Initiative #24 still owns component acceptance.
+
+## Round-2 note (2026-09-01)
+
+Round-2 review (F-LAND-001/002, #197): `9af12739` switched ActionButton hover/pressed to the cloned capture path, which by the helper's own comment does not carry `:hover`/`:active`; the body's claim that the clone photographs the live gesture is not what the code does. `checkControl` also widened control locators from the form to the page. No thresholds, retries, or snapshots changed.

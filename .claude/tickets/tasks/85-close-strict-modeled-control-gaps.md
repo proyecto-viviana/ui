@@ -26,3 +26,7 @@ work.
 
 Replaces `labeledvalue-strict-parity` from `.claude/current/tech-debt.md`.
 GitHub issue #24 holds the original external scope.
+
+## Round-2 note (2026-09-01)
+
+`parity-strict-baseline.json` has no shrink-only guard and the certified record is pinned to an August SHA; #194 owns that ratchet. This ticket keeps the nine slugs.

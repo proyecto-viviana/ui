@@ -28,3 +28,7 @@ reactive after hydration.
 ## Relationship
 
 F-SOLID-008. Same class as #102 (Tree/GridList), different component.
+
+## Round-2 note (2026-09-01)
+
+Runtime delta shared with #102 (F-PERF-008): `applySlotClasses` walks the subtree on every render-props change per item.

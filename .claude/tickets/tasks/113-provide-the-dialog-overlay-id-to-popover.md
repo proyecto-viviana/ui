@@ -18,3 +18,7 @@ does not provide `overlayProps.id` through `PopoverContext`.
 
 The overlay id reaches the composed Popover, DOM and ARIA references match
 upstream, and SSR, hydration, and browser regressions pass. Part of #82.
+
+## Round-2 note (2026-09-01)
+
+Round 2 (F-UP-010, #208): local DialogTrigger also uses `createOverlayTriggerState` where RAC uses `useMenuTriggerState` and provides four contexts; the overlay id is one of several gaps. `Heading` default level and Dialog-only scope are in #208.

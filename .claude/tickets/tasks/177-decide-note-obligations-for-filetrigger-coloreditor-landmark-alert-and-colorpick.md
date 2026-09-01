@@ -49,3 +49,7 @@ Each name has a note or a recorded support-export exception.
 
 F-A11Y-002. Owner decision (Rule #3). Architecture records the support-export
 bucket.
+
+## Round-2 note (2026-09-01)
+
+Round 2 challenge: the owner table calls ColorEditor S2 `parity`; `packages/solid-spectrum/src/color/ColorEditor.tsx:13-21` says there is no S2 upstream for ColorEditor and vendored S2 `src/` has none (it is a v3 composition). Owner: correct the label to composition before the note is written. The exceptions for FileTrigger/Landmark/Alert stand.

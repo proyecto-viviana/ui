@@ -109,3 +109,7 @@ behavior evidence:
 Initiative #24 owns component acceptance. This ticket records producer blocker
 VUI-006; consumer-side wrappers are not evidence that the styled Button defect
 is closed.
+
+## Round-2 note (2026-09-01)
+
+Round-2 review (`round-2/review-button-segmented.md`): the `createMemo(() => local.children)` adapter is right and both public copies match. Missing evidence is filed as #187 (pending-icon hide, mixed-text hydrate twin for viviana-ui, host identity, icon stability); the wrapper-visibility move is a patch for a non-reactive `createIcon` context read, #186.

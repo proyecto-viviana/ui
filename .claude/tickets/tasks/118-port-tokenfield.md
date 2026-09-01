@@ -19,3 +19,9 @@ types. Reuse the shared collection, selection, keyboard, and focus spine.
 
 All four exports and every observable branch have strict API, ARIA, keyboard,
 focus, forms, validation, SSR, hydration, and browser evidence. Part of #82.
+
+## Round-2 note (2026-09-01)
+
+Delta (F-API-008): RAC also publishes `TokenFieldValue` (from `react-stately/useTokenFieldState`); solid-stately barrels it, solidaria-components does not re-export it. Add to done-when. Gate blindness to sibling re-exports is #203.
+
+Delta (F-GATE-001 addendum): `1217ad39` landed with `guard:attribution-headers` red and unseen — the two `createToken.ts` / `createTokenField.ts` headers did not match the pinned upstream block (Adobe's own `useToken.ts` / `useTokenField.ts` headers are truncated after `governing`), and the five barrels/contexts it touched drifted from their local-review hashes. Round 2 synced the headers verbatim and re-recorded the hashes; the guard is now on Certification Gates so the next port cannot repeat this.

@@ -1105,8 +1105,10 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
     return { ...base, ...widthStyle };
   });
 
-  const columnChildren = () =>
-    typeof local.children === "function" ? local.children(renderValues()) : local.children;
+  const columnChildren = () => {
+    const rawChildren = local.children;
+    return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
+  };
   const columnProps = () =>
     ({
       ref: (el: HTMLTableCellElement) => {
@@ -2097,8 +2099,10 @@ export function TableCell(props: TableCellProps): JSX.Element {
     return rest;
   };
 
-  const cellChildren = () =>
-    typeof local.children === "function" ? local.children(renderValues()) : local.children;
+  const cellChildren = () => {
+    const rawChildren = local.children;
+    return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
+  };
   const tableCellProps = () =>
     ({
       ref: (el: HTMLTableCellElement) => {

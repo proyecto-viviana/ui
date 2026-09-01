@@ -416,7 +416,6 @@ export default defineConfig({
         "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/viviana-ui/src/**/*",
-        "../../packages/viviana-ui/archive/**/*",
       ],
     }),
     solid({
@@ -431,11 +430,6 @@ export default defineConfig({
         "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/viviana-ui/src/**/*",
-        // The custom Viviana surfaces the fixtures render for certification live
-        // under archive/ (moved out of the built surface by 721555c4); they are
-        // still Solid components and need Solid's JSX transform, not the default
-        // React-automatic one (which emits a bad `solid-js/jsx-runtime` import).
-        "../../packages/viviana-ui/archive/**/*",
       ],
       exclude: ["src/components/react/**/*"],
     }),

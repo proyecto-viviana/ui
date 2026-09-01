@@ -22,7 +22,7 @@ interface Reference {
 
 function walk(directory: string, files: string[] = []): string[] {
   for (const entry of readdirSync(directory)) {
-    if (entry === "archive" || entry === "dist" || entry === "node_modules") continue;
+    if (entry === "dist" || entry === "node_modules") continue;
     const absolute = path.join(directory, entry);
     if (statSync(absolute).isDirectory()) {
       walk(absolute, files);

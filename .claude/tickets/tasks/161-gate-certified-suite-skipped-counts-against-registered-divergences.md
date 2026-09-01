@@ -29,3 +29,7 @@ A drift between recorded skipped counts and registered divergences fails CI.
 ## Relationship
 
 F-TEST-002.
+
+## Round-2 note (2026-09-01)
+
+Round 2: `report-component-parity-options.test.ts` is also excluded from `test:comparison-data`; the certified record (2170/2174 at `0f1e1198`) is 86 commits behind and today's run is 2120/2124; `test.fixme` inside drivers is invisible to the inventory. Ratchet and HEAD pin are #194.

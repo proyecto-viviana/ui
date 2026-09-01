@@ -1365,22 +1365,27 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
 
   return (
     <HeadlessTableColumn {...headlessProps} class={className} style={local.UNSAFE_style}>
-      {(renderProps: TableColumnRenderProps) => (
-        <>
-          <span class={tableColumnContent({ align: align(), overflowMode: context.overflowMode })}>
-            {renderProps.isSortable && renderProps.sortDirection ? (
-              <SortIcon direction={renderProps.sortDirection} />
-            ) : null}
-            <span>
-              {typeof local.children === "function" ? local.children(renderProps) : local.children}
+      {(renderProps: TableColumnRenderProps) => {
+        const rawChildren = local.children;
+        return (
+          <>
+            <span
+              class={tableColumnContent({ align: align(), overflowMode: context.overflowMode })}
+            >
+              {renderProps.isSortable && renderProps.sortDirection ? (
+                <SortIcon direction={renderProps.sortDirection} />
+              ) : null}
+              <span>
+                {typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren}
+              </span>
+              {renderProps.allowsResizing && props.id != null ? (
+                <ColumnResizer column={{ key: props.id }} />
+              ) : null}
             </span>
-            {renderProps.allowsResizing && props.id != null ? (
-              <ColumnResizer column={{ key: props.id }} />
-            ) : null}
-          </span>
-          {renderProps.isFocusVisible ? <CellFocusRing /> : null}
-        </>
-      )}
+            {renderProps.isFocusVisible ? <CellFocusRing /> : null}
+          </>
+        );
+      }}
     </HeadlessTableColumn>
   );
 }
@@ -1571,8 +1576,10 @@ export function TableCell(props: TableCellProps): JSX.Element {
       .filter(Boolean)
       .join(" ");
 
-  const renderChildren = (renderProps: TableCellRenderProps) =>
-    typeof local.children === "function" ? local.children(renderProps) : local.children;
+  const renderChildren = (renderProps: TableCellRenderProps) => {
+    const rawChildren = local.children;
+    return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
+  };
   const content = (renderProps: TableCellRenderProps) => (
     <div class={tableCellContent({ align: align(), overflowMode: context.overflowMode })}>
       {renderChildren(renderProps)}

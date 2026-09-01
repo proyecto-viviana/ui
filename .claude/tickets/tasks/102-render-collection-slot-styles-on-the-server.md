@@ -42,3 +42,7 @@ the first painted frame. Hydration and post-hydration interaction remain green.
 
 Ticket #44 owns collection node-shape and children-evaluation hydration bugs.
 Ticket #103 owns register-specific ListView design decisions.
+
+## Round-2 note (2026-09-01)
+
+Runtime delta (F-PERF-008): every mounted GridListItem/TreeItem runs five `querySelectorAll` walks per render-props change in `createEffect`; without windowing (#65/#66) the tax is O(n) per selection/hover update. The fix is still slot classes at render.

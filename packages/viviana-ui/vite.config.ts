@@ -102,7 +102,7 @@ const deps = {
     "solid-js",
     "solid-js/web",
     "solid-js/store",
-    "@proyecto-viviana/solidaria-components",
+    /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
     // src/vite.ts imports unplugin-parcel-macros; it's an (optional) peer that
     // must stay external so dist/vite.js uses the app's installed instance (the
     // macro runs at the app's build, not ours).

@@ -92,7 +92,7 @@ const deps = {
     "solid-js",
     "solid-js/web",
     "solid-js/store",
-    "@proyecto-viviana/solidaria-components",
+    /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
   ],
   onlyBundle: false,
 };

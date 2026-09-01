@@ -14,4 +14,11 @@ describe("admin markdown hrefs", () => {
     expect(safeAdminLinkTarget("//evil.example/path")).toBeNull();
     expect(safeAdminLinkTarget("/\\evil.example")).toBeNull();
   });
+
+  it("leaves encoded control characters inert", () => {
+    expect(safeAdminLinkTarget("https://example.com/%00path")).toBeNull();
+    expect(safeAdminLinkTarget("https://example.com/%0Apath")).toBeNull();
+    expect(safeAdminLinkTarget("/docs/%1fpath")).toBeNull();
+    expect(safeAdminLinkTarget("#section%7F")).toBeNull();
+  });
 });

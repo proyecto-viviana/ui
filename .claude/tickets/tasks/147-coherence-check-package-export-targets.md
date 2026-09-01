@@ -26,3 +26,7 @@ fail the guard.
 ## Relationship
 
 F-PACKAGING-003. #47 remains the Vite Plus dts migration.
+
+## Round-2 note (2026-09-01)
+
+Correction: `guard:package-artifacts` does run in CI because `pnpm run build` ends with it (round 1 said it was absent). The hole is the check (existence only), not the hook.

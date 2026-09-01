@@ -62,3 +62,7 @@ Consolidation row R2.6. Blocked in practice by #2.
 This ticket also replaces legacy task `upper-layer-convergence` from
 `.claude/current/tech-debt.md`; both records describe the same owner-steered
 upper-layer boundary work.
+
+## Round-2 note (2026-09-01)
+
+Line total is 32,588 today (995 identical files unchanged); combobox/picker/statuslight/tabs/style-macro shrank together in `6a0af4d7`. `guard:layer-boundary` cannot see a repair applied to one copy of an already-diverged file — see #185.

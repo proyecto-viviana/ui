@@ -18,3 +18,7 @@ Solid surface. Keep state, ARIA, focus, and composition in their owning layers.
 
 Implementation, exports, types, docs, SSR, hydration, keyboard, pointer, focus,
 accessibility, and browser evidence match upstream. Part of #82.
+
+## Round-2 note (2026-09-01)
+
+Delta (F-UP-011): the export exists, so `guard:rac-export-gap` is green, but local PreviewTrigger provides `PopoverTriggerContext` only with a thin overlay object (no `setOpen` / `point`) and no `PopoverContext` / `OverlayTriggerStateContext`. Do not close on the barrel name.

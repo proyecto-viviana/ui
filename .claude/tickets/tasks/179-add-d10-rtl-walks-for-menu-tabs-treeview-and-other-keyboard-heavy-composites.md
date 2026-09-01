@@ -27,3 +27,7 @@ Every keyboard-heavy note that claims i18n complete has a D10 walk.
 ## Relationship
 
 F-A11Y-006. Not #98 (StepList prefixes).
+
+## Round-2 note (2026-09-01)
+
+Round 2: registering D10 on Menu/Tabs/TreeView/ColorSwatchPicker will not go green until the mappers read `useLocale` (#201) and the demos accept `?locale` (#202); D10 as written compares direction and focus trails, not catalog strings or RTL paint (#202).

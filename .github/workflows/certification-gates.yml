@@ -96,6 +96,10 @@ jobs:
         id: lint
         run: pnpm exec vp check
 
+      - name: guard attribution-headers
+        id: guard_attribution_headers
+        run: pnpm run guard:attribution-headers
+
       - name: guard rac-parity
         id: guard_rac_parity
         run: pnpm run guard:rac-parity
@@ -112,8 +116,8 @@ jobs:
         id: guard_virtualizer_keyboard
         run: pnpm run guard:virtualizer-keyboard-parity
 
-      # Keeps solid-spectrum's @adobe/spectrum-tokens on the exact version the
-      # pinned, materialized S2 oracle builds against.
+      # Keeps solid-spectrum and viviana-ui's @adobe/spectrum-tokens on the
+      # exact version the pinned, materialized S2 oracle builds against.
       - name: guard spectrum-tokens-pin
         id: guard_tokens_pin
         run: pnpm run guard:spectrum-tokens-pin
@@ -174,6 +178,10 @@ jobs:
       - name: guard jsx-deopt-size
         id: guard_jsx_deopt_size
         run: pnpm run guard:jsx-deopt-size
+
+      - name: guard jsx-ref-dead-code
+        id: guard_jsx_ref_dead_code
+        run: pnpm run guard:jsx-ref-dead-code
 
       - name: guard upstream-test-parity
         id: guard_upstream_test_parity
@@ -250,6 +258,7 @@ jobs:
           O_GUARD_TS_NOCHECK_BUDGET: ${{ steps.guard_ts_nocheck_budget.outcome }}
           O_CI_GUARD_CONTRACTS: ${{ steps.ci_guard_contracts.outcome }}
           O_LINT: ${{ steps.lint.outcome }}
+          O_GUARD_ATTRIBUTION_HEADERS: ${{ steps.guard_attribution_headers.outcome }}
           O_GUARD_RAC_PARITY: ${{ steps.guard_rac_parity.outcome }}
           O_GUARD_RAC_EXPORT_GAP: ${{ steps.guard_rac_export_gap.outcome }}
           O_GUARD_DND: ${{ steps.guard_dnd_keyboard.outcome }}
@@ -266,6 +275,7 @@ jobs:
           O_GUARD_OUTBOUND_LINKS: ${{ steps.guard_outbound_links.outcome }}
           O_BUILD_PACKAGE_EVIDENCE: ${{ steps.build_package_evidence.outcome }}
           O_GUARD_JSX_DEOPT: ${{ steps.guard_jsx_deopt_size.outcome }}
+          O_GUARD_JSX_REF_DEAD_CODE: ${{ steps.guard_jsx_ref_dead_code.outcome }}
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
@@ -297,6 +307,7 @@ jobs:
             echo "| \`guard:ts-nocheck-budget\` | $(icon "$O_GUARD_TS_NOCHECK_BUDGET") |"
             echo "| CI guard negative fixtures | $(icon "$O_CI_GUARD_CONTRACTS") |"
             echo "| \`vp check\` (lint) | $(icon "$O_LINT") |"
+            echo "| \`guard:attribution-headers\` | $(icon "$O_GUARD_ATTRIBUTION_HEADERS") |"
             echo "| \`guard:rac-parity\` | $(icon "$O_GUARD_RAC_PARITY") |"
             echo "| \`guard:rac-export-gap\` | $(icon "$O_GUARD_RAC_EXPORT_GAP") |"
             echo "| \`guard:dnd-keyboard-parity\` | $(icon "$O_GUARD_DND") |"
@@ -312,6 +323,7 @@ jobs:
             echo "| \`guard:outbound-links\` | $(icon "$O_GUARD_OUTBOUND_LINKS") |"
             echo "| \`build\` (package evidence) | $(icon "$O_BUILD_PACKAGE_EVIDENCE") |"
             echo "| \`guard:jsx-deopt-size\` | $(icon "$O_GUARD_JSX_DEOPT") |"
+            echo "| \`guard:jsx-ref-dead-code\` | $(icon "$O_GUARD_JSX_REF_DEAD_CODE") |"
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
