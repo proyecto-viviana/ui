@@ -262,7 +262,11 @@ export function Button(props: ButtonProps): JSX.Element {
     return !!disabled;
   };
 
-  const resolvePending = (): boolean => !!local.isPending;
+  // Own lazy JSX prop resolution before native interaction handlers run.
+  // Solid compiles compound expressions into a memo that is created on first
+  // access, so resolving it directly from hover/press paths can otherwise
+  // create that computation after the render owner has ended.
+  const resolvePending = createMemo(() => !!local.isPending);
   const isPendingFocusable = () => local.isPendingFocusable !== false;
 
   const [resolvedButtonEl, setResolvedButtonEl] = createSignal<HTMLButtonElement | null>(null);
