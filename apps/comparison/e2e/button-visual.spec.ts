@@ -775,11 +775,33 @@ test.describe("comparison Button visual parity", () => {
     const variants = ["primary", "secondary", "accent", "negative", "premium", "genai"] as const;
     const fillStyles = ["fill", "outline"] as const;
     const staticColors = ["white", "black"] as const;
+    const fixtures = await buttonFixtures(page);
+    const form = page.locator('[data-comparison-controls="button"]').first();
+    const reactRoot = fixtures.reactCanvas.locator("[data-comparison-button-props]").first();
+    const solidRoot = fixtures.solidCanvas.locator("[data-comparison-button-props]").first();
 
     for (const staticColor of staticColors) {
       for (const fillStyle of fillStyles) {
         for (const variant of variants) {
-          const fixtures = await buttonFixtures(page, { variant, fillStyle, staticColor });
+          await form.locator('select[name="variant"]').selectOption(variant);
+          await checkControl(page, "fillStyle", fillStyle);
+          await checkControl(page, "staticColor", staticColor);
+
+          const expected = JSON.stringify({
+            children: "Save",
+            variant,
+            fillStyle,
+            size: "M",
+            staticColor,
+            iconPlacement: "none",
+            isDisabled: false,
+            isPending: false,
+          });
+          await Promise.all([
+            expect(reactRoot).toHaveAttribute("data-comparison-button-props", expected),
+            expect(solidRoot).toHaveAttribute("data-comparison-button-props", expected),
+          ]);
+          await expectButtonParitySettled(fixtures.reactButton, fixtures.solidButton);
 
           await expectComputedButtonParity(fixtures.reactButton, fixtures.solidButton);
           if (variant === "premium" || variant === "genai") {
@@ -797,10 +819,29 @@ test.describe("comparison Button visual parity", () => {
     const fillStyles = ["fill", "outline"] as const;
     let fillPendingBaseline: Awaited<ReturnType<typeof buttonPendingVisualContract>> | undefined;
     let outlinePendingBaseline: Awaited<ReturnType<typeof buttonPendingVisualContract>> | undefined;
+    const fixtures = await buttonFixtures(page, { isPending: true });
+    const form = page.locator('[data-comparison-controls="button"]').first();
+    const reactRoot = fixtures.reactCanvas.locator("[data-comparison-button-props]").first();
+    const solidRoot = fixtures.solidCanvas.locator("[data-comparison-button-props]").first();
 
     for (const fillStyle of fillStyles) {
       for (const variant of variants) {
-        const fixtures = await buttonFixtures(page, { variant, fillStyle, isPending: true });
+        await form.locator('select[name="variant"]').selectOption(variant);
+        await checkControl(page, "fillStyle", fillStyle);
+
+        const expected = JSON.stringify({
+          children: "Save",
+          variant,
+          fillStyle,
+          size: "M",
+          iconPlacement: "none",
+          isDisabled: false,
+          isPending: true,
+        });
+        await Promise.all([
+          expect(reactRoot).toHaveAttribute("data-comparison-button-props", expected),
+          expect(solidRoot).toHaveAttribute("data-comparison-button-props", expected),
+        ]);
 
         await expect(fixtures.reactRow.getByRole("progressbar", { name: "pending" })).toBeVisible();
         await expect(fixtures.solidRow.getByRole("progressbar", { name: "pending" })).toBeVisible();

@@ -435,6 +435,21 @@ export async function capturePreparedInPlaceScreenshotPair(
   return { reactPng, solidPng };
 }
 
+async function preparedClonedElementScreenshot(
+  page: Page,
+  target: Locator,
+  prepare: () => Promise<void>,
+) {
+  await page.mouse.move(4, 4);
+  try {
+    await prepare();
+    return await clonedElementScreenshot(target);
+  } finally {
+    await page.mouse.up();
+    await page.mouse.move(4, 4);
+  }
+}
+
 export async function expectExactPreparedScreenshotPair(
   page: Page,
   reactTarget: Locator,
@@ -490,6 +505,23 @@ export async function expectExactPreparedInPlaceScreenshotPair(
     prepareReact,
     prepareSolid,
   );
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
+
+  return { ...pair, diff };
+}
+
+export async function expectExactPreparedClonedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairResult> {
+  const pair = {
+    reactPng: await preparedClonedElementScreenshot(page, reactTarget, prepareReact),
+    solidPng: await preparedClonedElementScreenshot(page, solidTarget, prepareSolid),
+  };
   const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
 
   return { ...pair, diff };
