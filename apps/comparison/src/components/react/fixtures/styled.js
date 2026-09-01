@@ -4491,7 +4491,14 @@ function renderReactTabPanels(demoProps) {
       {
         id: item.id,
         shouldForceMount: demoProps.shouldForceMount,
-        children: item.content,
+        children: jsxs(Fragment, {
+          children: [
+            item.content,
+            demoProps.shouldForceMount
+              ? jsx(SpectrumTextArea, { "aria-label": `${item.label} notes` })
+              : null,
+          ],
+        }),
       },
       item.id,
     ),

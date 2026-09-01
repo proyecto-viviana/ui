@@ -18,6 +18,7 @@ import {
   Provider,
   Tab,
   TabList,
+  TabPanel,
   Tabs,
   Text,
 } from "../../src";
@@ -100,6 +101,37 @@ export function TabsCompFixture(): JSX.Element {
           )}
         </TabList>
       </Tabs>
+    </Provider>
+  );
+}
+
+/** A selected panel with a native control exercises post-hydration focus-order settlement. */
+export function TabsFocusablePanelFixture(): JSX.Element {
+  const items = [
+    { id: "draft", label: "Draft" },
+    { id: "review", label: "Review" },
+  ];
+
+  return (
+    <Provider background="base" colorScheme="dark">
+      <button type="button">Before tabs</button>
+      <Tabs
+        aria-label="Writing sections"
+        items={items}
+        getTextValue={(item) => item.label}
+        defaultSelectedKey="draft"
+      >
+        <TabList>{(item) => <Tab id={item.id}>{item.label}</Tab>}</TabList>
+        <TabPanel id="draft" shouldForceMount>
+          <textarea aria-label="Synopsis" />
+        </TabPanel>
+        <TabPanel id="review" shouldForceMount>
+          <button type="button" data-testid="review-control">
+            Continue
+          </button>
+        </TabPanel>
+      </Tabs>
+      <button type="button">After tabs</button>
     </Provider>
   );
 }

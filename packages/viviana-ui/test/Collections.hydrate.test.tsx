@@ -9,12 +9,14 @@
 import { hydrate } from "solid-js/web";
 import type { JSX } from "solid-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { waitFor } from "@solidjs/testing-library";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   TabsFixture,
   TabsPlainFixture,
   TabsCompFixture,
+  TabsFocusablePanelFixture,
   TabsBadgeFixture,
   TabsIconFixture,
   ListViewFixture,
@@ -94,6 +96,50 @@ describe("collection components hydrate over SSR markup", () => {
     const r = hydrateOverSsr("tabs-comp-ssr.html", TabsCompFixture);
     expect(r.mismatches).toEqual([]);
     expect(r.thrown).toBeUndefined();
+  });
+
+  it("Tabs settles focus order after hydrating a panel with a tabbable child", async () => {
+    const r = hydrateOverSsr("tabs-focusable-panel-ssr.html", TabsFocusablePanelFixture);
+    expect(r.mismatches).toEqual([]);
+    expect(r.thrown).toBeUndefined();
+
+    const panel = r.container.querySelector<HTMLElement>('[role="tabpanel"]');
+    const before = r.container.querySelector<HTMLButtonElement>("button");
+    const tabs = r.container.querySelectorAll<HTMLElement>('[role="tab"]');
+    const textarea = r.container.querySelector<HTMLTextAreaElement>("textarea");
+    const reviewControl = r.container.querySelector<HTMLButtonElement>(
+      '[data-testid="review-control"]',
+    );
+    const reviewPanel = reviewControl?.parentElement;
+    expect(panel).not.toBeNull();
+    expect(before).not.toBeNull();
+    expect(tabs).toHaveLength(2);
+    expect(textarea).not.toBeNull();
+    expect(reviewControl).not.toBeNull();
+    expect(reviewPanel).toHaveAttribute("data-inert", "true");
+
+    await waitFor(() => expect(panel).not.toHaveAttribute("tabindex"));
+
+    const user = setupUser();
+    before!.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(tabs[0]);
+    await user.tab();
+    expect(document.activeElement).toBe(textarea);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(tabs[0]);
+
+    await user.click(tabs[1]);
+    await waitFor(() => {
+      expect(reviewPanel).not.toHaveAttribute("data-inert");
+      expect(reviewPanel).not.toHaveAttribute("tabindex");
+    });
+
+    tabs[1].focus();
+    await user.tab();
+    expect(document.activeElement).toBe(reviewControl);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(tabs[1]);
   });
 
   it("Tabs with a mixed string + element (badge) child hydrates with no mismatch", () => {

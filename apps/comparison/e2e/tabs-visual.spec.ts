@@ -388,7 +388,7 @@ test.describe("comparison Tabs visual parity", () => {
         display: "block",
         hasId: true,
         hasAriaLabelledBy: true,
-        tabIndex: "0",
+        tabIndex: null,
       },
       {
         text: comparisonTabItems[2].content,
@@ -409,6 +409,31 @@ test.describe("comparison Tabs visual parity", () => {
 
     expect(reactPanels).toEqual(expectedPanels);
     expect(solidPanels).toEqual(expectedPanels);
+  });
+
+  test("Solid Tabs enters a force-mounted panel control in both focus directions after selection", async ({
+    page,
+  }) => {
+    const fixtures = await tabsFixtures(page, {
+      selectedKey: "overview",
+      shouldForceMount: true,
+    });
+
+    for (const root of [fixtures.solidRoot]) {
+      const tabs = root.getByRole("tab");
+      await tabs.nth(1).click();
+      await expect(root).toHaveAttribute("data-comparison-selected-key", "parity");
+
+      const panel = root.getByRole("tabpanel");
+      const notes = panel.getByRole("textbox", { name: "Parity notes" });
+      await expect(panel).not.toHaveAttribute("tabindex");
+
+      await tabs.nth(1).focus();
+      await page.keyboard.press("Tab");
+      await expect(notes).toBeFocused();
+      await page.keyboard.press("Shift+Tab");
+      await expect(tabs.nth(1)).toBeFocused();
+    }
   });
 
   test("Tabs non-overflow S2 style contract matches React Spectrum", async ({ page }) => {

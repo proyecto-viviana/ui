@@ -5851,7 +5851,12 @@ function solidTabPanels(props: TabsDemoProps) {
           return props.shouldForceMount;
         },
       },
-      [item.content],
+      [
+        item.content,
+        props.shouldForceMount
+          ? h(SolidSpectrumTextArea, { "aria-label": `${item.label} notes` })
+          : null,
+      ],
     ),
   );
 }

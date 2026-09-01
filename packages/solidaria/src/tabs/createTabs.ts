@@ -34,6 +34,7 @@ import { createPress } from "../interactions";
 import { createHover } from "../interactions";
 import { createId } from "../ssr";
 import { useLocale } from "../i18n";
+import { createHasTabbableChild } from "../focus/createHasTabbableChild";
 import type { Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 
 export type TabOrientation = "horizontal" | "vertical";
@@ -149,7 +150,7 @@ export interface TabPanelAria {
     "aria-labelledby"?: string;
     "aria-label"?: string;
     "aria-describedby"?: string;
-    tabIndex: number;
+    tabIndex: number | undefined;
   };
   /** Whether this panel is the selected one. */
   isSelected: Accessor<boolean>;
@@ -556,6 +557,7 @@ export function createTab<T>(
 export function createTabPanel<T>(
   props: AriaTabPanelProps,
   state: TabListState<T> | null,
+  ref: Accessor<Element | null | undefined> = () => null,
 ): TabPanelAria {
   const fallbackId = createId();
 
@@ -573,6 +575,12 @@ export function createTabPanel<T>(
       return state.selectedKey() !== null;
     }
     return state.selectedKey() === props.id;
+  });
+  const hasTabbableChild = createHasTabbableChild(ref, {
+    // Inactive force-mounted panels are inert, so their descendants are not
+    // tabbable. Recompute and observe only when a panel becomes active; this
+    // also disconnects an observer if a force-mounted panel is detached.
+    isDisabled: () => !isSelected(),
   });
 
   return {
@@ -595,8 +603,12 @@ export function createTabPanel<T>(
       },
       "aria-label": props["aria-label"],
       "aria-describedby": props["aria-describedby"],
-      // Make panel focusable if no tabbable children
-      tabIndex: 0,
+      // Tabbing from the selected tab should enter the first tabbable child.
+      // Keep the panel itself in sequential focus order only when it is empty
+      // of tabbable descendants.
+      get tabIndex() {
+        return hasTabbableChild() ? undefined : 0;
+      },
     },
     isSelected,
   };
