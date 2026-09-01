@@ -108,6 +108,7 @@ export function DocsPanel(props: {
         <input
           class="doc-filter"
           placeholder="filter docs…"
+          aria-label="Filter docs"
           value={filter()}
           onInput={(event) => setFilter(event.currentTarget.value)}
         />
@@ -189,6 +190,7 @@ export function DocsPanel(props: {
                     value={draft()}
                     onInput={(event) => setDraft(event.currentTarget.value)}
                     spellcheck={false}
+                    aria-label="Edit document"
                   />
                   <div class="doc-preview">
                     <Markdown content={draft()} />

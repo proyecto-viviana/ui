@@ -90,7 +90,7 @@ export function installResizeObserverPolyfill(): void {
     }
   }
 
-  // @ts-ignore
+  // @ts-ignore jsdom has no ResizeObserver; tests install this stub.
   window.ResizeObserver = FakeResizeObserver;
 }
 
@@ -147,7 +147,7 @@ export function installIntersectionObserverPolyfill(): void {
     }
   }
 
-  // @ts-ignore
+  // @ts-ignore jsdom has no IntersectionObserver; tests install this stub.
   window.IntersectionObserver = FakeIntersectionObserver;
 }
 

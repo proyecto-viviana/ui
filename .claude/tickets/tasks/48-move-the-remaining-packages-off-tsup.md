@@ -19,5 +19,6 @@ artifact checks pass for all public packages.
 
 ## Relationship
 
-Replaces `pkg-build-remaining` from `.claude/current/tech-debt.md`. Depends on
-#47.
+Replaces `pkg-build-remaining`. Depends on #47. Production builds already use
+`vp pack`; leftover `tsup --watch` `dev` scripts were replaced with
+`vp pack --watch`.

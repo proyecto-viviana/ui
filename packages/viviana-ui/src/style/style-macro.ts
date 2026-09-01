@@ -474,7 +474,8 @@ export function createTheme<T extends Theme>(
       css += rules.join("\n\n");
       css += "}\n\n";
     }
-    // @ts-expect-error
+    // Macro `this` is untyped on the compiled call site.
+    // @ts-expect-error MacroContext loc is injected by the style compiler.
     let loc = this?.loc?.filePath + ":" + this?.loc?.line + ":" + this?.loc?.col;
     if (isStatic && env.NODE_ENV !== "production") {
       let id = toBase62(hash(className + loc));
@@ -1113,7 +1114,7 @@ export function css(this: MacroContext | void, content: string, layer = "_.a"): 
   // Check if `this` is undefined, which means style was not called as a macro but as a normal function.
   // We also check if this is globalThis, which happens in non-strict mode bundles.
   // Also allow style to be called as a normal function in tests.
-  // @ts-ignore
+  // @ts-ignore Macro `this` is not in the public css() signature.
 
   let className = generateArbitraryValueSelector(content, true);
   content = `@layer ${layer} {
@@ -1140,7 +1141,7 @@ export function keyframes(this: MacroContext | void, css: string): string {
   // Check if `this` is undefined, which means style was not called as a macro but as a normal function.
   // We also check if this is globalThis, which happens in non-strict mode bundles.
   // Also allow style to be called as a normal function in tests.
-  // @ts-ignore
+  // @ts-ignore Macro `this` is not in the public keyframes() signature.
 
   let name = generateArbitraryValueSelector(css, true);
   css = `@keyframes ${name} {

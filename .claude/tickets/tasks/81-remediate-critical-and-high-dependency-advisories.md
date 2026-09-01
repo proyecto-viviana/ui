@@ -54,6 +54,5 @@ conflicting override.
 
 ## Relationship
 
-Replaces `dependency-advisory-remediation` from
-`.claude/current/tech-debt.md`. GitHub issue #22 holds the original external
+Replaces `dependency-advisory-remediation`. GitHub issue #22 holds the original external
 scope.

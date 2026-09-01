@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "rm -rf dist && vp pack",
-    "dev": "tsup --watch"
+    "dev": "vp pack --watch"
   },
   "peerDependencies": {
     "@solidjs/testing-library": "^0.8.10",

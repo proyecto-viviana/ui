@@ -79,7 +79,8 @@ docs/adr/                architecture decision records (ADR 0001 = S2 styling bo
 - The Adobe port project uses code under Apache-2.0. That direct-license
   attribution is in [`NOTICE`](NOTICE) and
   [`LICENSE-APACHE-2.0`](LICENSE-APACHE-2.0). Each Adobe-derived package ships
-  copies of those files. Exact source-file mappings remain under audit.
+  copies of those files. Per-file mappings are guarded by
+  `guard:attribution-headers`.
 - [`CREDITS.md`](CREDITS.md) credits everything sourced, referenced, or
   inspired-by — add to it in the change that introduces new such material.
 - Kumo-derived material keeps the Cloudflare MIT notice in

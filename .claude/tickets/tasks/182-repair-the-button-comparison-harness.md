@@ -4,7 +4,7 @@ type: task
 title: "Repair the Button comparison harness interactions"
 created: 2026-09-01
 parent: 24
-status: closed
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from VUI-006 comparison-gate triage" }
   - {
@@ -13,7 +13,7 @@ history:
       note: "centralized live theme requests and replaced stale control interactions in the Button browser family",
     }
   - {
-      state: closed,
+      state: verified,
       at: 2026-09-01,
       note: "the strict six-spec Button family passed 189/189 at four workers with zero retries, and the separate component-theme contract passed 78/78 at one worker with zero retries",
     }

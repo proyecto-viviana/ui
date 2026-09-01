@@ -226,7 +226,8 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
   const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
     .process?.env?.NODE_ENV;
 
-  if (!local.children && !local["aria-label"] && nodeEnv !== "production") {
+  const rawChildren = local.children;
+  if (!rawChildren && !local["aria-label"] && nodeEnv !== "production") {
     console.warn("If no children are provided, an aria-label must be specified");
   }
 
@@ -265,7 +266,7 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
             <circle r="50%" cx="50%" cy="50%" />
           </svg>
         </CenterBaseline>
-        <Text>{local.children}</Text>
+        <Text>{rawChildren}</Text>
       </div>
     </TextContext.Provider>
   );

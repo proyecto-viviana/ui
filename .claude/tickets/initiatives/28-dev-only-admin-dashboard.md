@@ -3,9 +3,19 @@ id: 28
 type: initiative
 title: "Dev-only admin dashboard"
 created: 2026-08-20
-status: in-progress
+status: verified
 history:
   - { state: in-progress, at: 2026-08-20, note: "migrated from roadmap item admin-dashboard" }
+  - {
+      state: merged,
+      at: 2026-09-01,
+      note: "done-when is met: /admin projects .claude/tickets with no second writable store; generated views use that board; children #12, #14, and #36 are verified",
+    }
+  - {
+      state: verified,
+      at: 2026-09-01,
+      note: "owner 2026-09-01; leftover admin production-graph work is #137, not remaining #28 scope",
+    }
 ---
 
 Project and edit the repository work board through the development-only dashboard.
@@ -17,3 +27,4 @@ Project and edit the repository work board through the development-only dashboar
 ## Relationship
 
 Replaces roadmap item `admin-dashboard`. Ticket #12 controls the task-state cutover.
+Further admin production-graph work is #137, a child of #136, not leftover #28 scope.

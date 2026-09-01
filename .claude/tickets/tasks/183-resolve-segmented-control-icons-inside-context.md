@@ -4,7 +4,7 @@ type: task
 title: "Resolve SegmentedControl icons inside their context"
 created: 2026-09-01
 parent: 24
-status: closed
+status: verified
 history:
   - {
       state: open,
@@ -22,7 +22,7 @@ history:
       note: "source, unit, build, changed browser case, and repository gates passed; the unchanged interactive-controls browser case remains pending the independently prepared ticket #182 harness correction",
     }
   - {
-      state: closed,
+      state: verified,
       at: 2026-09-01,
       note: "ticket #182 removed the comparison-harness blocker and the full six-spec Button family passed 189/189 at four workers with zero retries",
     }

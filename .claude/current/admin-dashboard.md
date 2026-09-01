@@ -13,7 +13,8 @@ state. It does not ship in the production worker.
 
 The route loads only when `import.meta.env.DEV` is true. A Vite development
 server middleware provides the API. The production worker has no access to the
-repository file system.
+repository file system. Ticket #137 owns keeping admin chunks out of the
+production asset graph.
 
 ## Source of truth
 

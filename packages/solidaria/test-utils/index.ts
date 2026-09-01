@@ -72,26 +72,6 @@ export {
 } from "./focus";
 
 export {
-  // Component testers
-  createButtonTester,
-  createCheckboxTester,
-  createRadioGroupTester,
-  createListBoxTester,
-  createMenuTester,
-  createSelectTester,
-  createTabsTester,
-  createDialogTester,
-  type ButtonTester,
-  type CheckboxTester,
-  type RadioGroupTester,
-  type ListBoxTester,
-  type MenuTester,
-  type SelectTester,
-  type TabsTester,
-  type DialogTester,
-} from "./testers";
-
-export {
   // Test setup utilities
   installPointerEventPolyfill,
   installResizeObserverPolyfill,

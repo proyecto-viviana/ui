@@ -101,7 +101,7 @@ vp run guard:rac-export-gap
 vp run guard:dnd-keyboard-parity
 vp run guard:virtualizer-keyboard-parity
 vp run guard:upstream-test-parity   # baselined contract-vocabulary hard edge vs pinned tests
-vp run guard:spectrum-tokens-pin    # @adobe/spectrum-tokens matches the pinned S2's exact version
+vp run guard:spectrum-tokens-pin    # both styled packages match the pinned S2 exact version
 vp run guard:style-macro-parity     # generated S2 styles match the pinned source corpus
 vp run guard:ts-nocheck-budget      # public-package suppression inventory may only decrease
 ```
@@ -180,4 +180,6 @@ or D6 is `partial`, not `accepted`.
 
 ## Refresh
 
-Commands and reports refresh status. The snapshot lives in `status.md`.
+Commands and reports refresh status. Ticket state lives in `status.md`.
+Acceptance evidence lives in validation notes, certified-suite records, and the
+playbook reports.

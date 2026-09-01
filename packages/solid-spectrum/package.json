@@ -227,19 +227,19 @@
     },
     "./theme.css": {
       "import": "./dist/theme.css",
-      "default": "./src/theme.css"
+      "default": "./dist/theme.css"
     },
     "./font-faces.css": {
       "import": "./dist/font-faces.css",
-      "default": "./src/font-faces.css"
+      "default": "./dist/font-faces.css"
     },
     "./styles.css": {
       "import": "./dist/styles.css",
-      "default": "./src/styles.css"
+      "default": "./dist/styles.css"
     },
     "./components.css": {
       "import": "./dist/components.css",
-      "default": "./src/components.css"
+      "default": "./dist/components.css"
     },
     "./style": {
       "types": "./dist/style/index.d.ts",
@@ -258,7 +258,8 @@
       "solid": "./dist/GitHubIcon.jsx",
       "import": "./dist/GitHubIcon.js",
       "default": "./dist/GitHubIcon.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"

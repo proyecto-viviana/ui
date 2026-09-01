@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "rm -rf dist && vp pack",
-    "dev": "tsup --watch"
+    "dev": "vp pack --watch"
   },
   "dependencies": {
     "@proyecto-viviana/solidaria-test-utils": "workspace:*"

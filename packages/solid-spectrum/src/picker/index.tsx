@@ -1119,6 +1119,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   const size = useContext(PickerSizeContext);
   const insideValue = useContext(InsidePickerValueContext);
   const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
+  const rawChildren = local.children;
 
   // Trigger/value mode: mirror upstream, where `SelectValue`'s default children
   // are the selected item's *content* (`item.props.children`), not a rendered
@@ -1129,12 +1130,12 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   if (insideValue) {
     return (
       <>
-        {isTextOnlyChildren(local.children) ? (
+        {isTextOnlyChildren(rawChildren) ? (
           <span slot="label" class={pickerValueText} data-rsp-slot="text">
-            {local.children}
+            {rawChildren}
           </span>
         ) : (
-          local.children
+          rawChildren
         )}
       </>
     );
@@ -1184,12 +1185,12 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
             // are pruned from the tree automatically — matching the React oracle.
           />
-          {isTextOnlyChildren(local.children) ? (
+          {isTextOnlyChildren(rawChildren) ? (
             <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
-              {local.children}
+              {rawChildren}
             </span>
           ) : (
-            local.children
+            rawChildren
           )}
         </>
       )}

@@ -7,6 +7,11 @@ parent: 31
 status: open
 history:
   - { state: open, at: 2026-08-20, note: "migrated from upstream Train 8 item T-62" }
+  - {
+      state: open,
+      at: 2026-09-01,
+      note: "owner 2026-09-01: FileTrigger is a DropZone support export; it does not get a separate 10-gate catalogue page (#177)",
+    }
 ---
 
 Port the current FileTrigger and DropZone focus fixes.

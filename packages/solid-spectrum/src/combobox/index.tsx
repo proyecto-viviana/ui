@@ -1060,11 +1060,12 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
+  const rawChildren = local.children;
   const textLabel = () =>
-    isTextOnlyChildren(local.children)
-      ? Array.isArray(local.children)
-        ? local.children.join("")
-        : String(local.children)
+    isTextOnlyChildren(rawChildren)
+      ? Array.isArray(rawChildren)
+        ? rawChildren.join("")
+        : String(rawChildren)
       : undefined;
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
@@ -1103,12 +1104,12 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             class={checkClass(renderProps)}
             style={comboBoxCheckmarkIconStyle(size)}
           />
-          {isTextOnlyChildren(local.children) ? (
+          {isTextOnlyChildren(rawChildren) ? (
             <span slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
-              {local.children}
+              {rawChildren}
             </span>
           ) : (
-            local.children
+            rawChildren
           )}
         </>
       )}

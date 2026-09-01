@@ -211,8 +211,9 @@ export function Button(props: ButtonProps): JSX.Element {
     ) : local.icon ? (
       <Icon value={local.icon} />
     ) : null;
+  const rawChildren = local.children;
   const label = () =>
-    local.children == null ? null : <span class="pv-kumo-Button__label">{local.children}</span>;
+    rawChildren == null ? null : <span class="pv-kumo-Button__label">{rawChildren}</span>;
   const content = () => (
     <Show
       when={isEmphasis()}

@@ -720,6 +720,24 @@ that may be a render-prop **or** hold a nested component (`<Text>`, an icon):
 
 ---
 
+## Bare `solid-js/h` Sibling Reactivity (upstream limit)
+
+The published Solid contract is compiled JSX. The comparison harness uses `hc`,
+which mirrors compiled-JSX creation. Bare `solid-js/h` is not a supported
+consumer path.
+
+`solid-js/h` creates sibling components inside one tracked insert effect.
+When a sibling `Show` flips, that effect re-runs, disposes every sibling it
+owns, and `h` hands back dead nodes. Tabs wired with bare `h` therefore leave
+zombie DOM after a panel change. This is an upstream hyperscript limitation,
+not a Tabs state-machine defect.
+
+Keep `packages/solid-spectrum/test/TabsFixtureRepro.test.tsx` as `it.fails`
+documentation. Do not count that case as Tabs evidence. Ticket #167 records
+the owner decision.
+
+---
+
 ## Overlay Positioning Pattern (IMPORTANT)
 
 Overlay components (Popover, Tooltip, Dialog) need careful positioning to work correctly.

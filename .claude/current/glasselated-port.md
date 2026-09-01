@@ -18,7 +18,7 @@ The owner set this boundary on 2026-07-22:
 - `viviana-ui` is the Viviana design system. It uses the shared headless stack
   and owns the Glasselated register.
 - `apps/comparison` verifies S2 parity. It is not a styling source or the home of
-  the Viviana showcase.
+  the Viviana showcase. The former `packages/viviana-ui/archive/` tree is deleted.
 - `apps/web` hosts the Viviana showcase and the frozen-register comparison.
 
 See `architecture.md` for the complete layer model.

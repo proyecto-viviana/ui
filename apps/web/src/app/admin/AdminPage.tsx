@@ -41,7 +41,11 @@ export function AdminPage() {
         <nav>
           <For each={TABS}>
             {(entry) => (
-              <button classList={{ active: tab() === entry.id }} onClick={() => setTab(entry.id)}>
+              <button
+                classList={{ active: tab() === entry.id }}
+                aria-current={tab() === entry.id ? "page" : undefined}
+                onClick={() => setTab(entry.id)}
+              >
                 {entry.label}
               </button>
             )}

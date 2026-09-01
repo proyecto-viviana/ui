@@ -12,6 +12,10 @@ history:
 Use the native Vite Plus package build to emit and validate `solid-spectrum`
 declarations. The former 2026-06-20 target is stale.
 
+2026-09-01 audit: every public pack block still sets `dts: false` and every
+public `build` script still runs `tsc -p tsconfig.build.json`. solid-stately
+pack emits `dist/private/flags/flags.js` while tsc emits `dist/flags/flags.d.ts`.
+
 ## Done when
 
 The package build emits the declared public types without the former packaging
@@ -19,4 +23,4 @@ path, and the package artifact checks pass.
 
 ## Relationship
 
-Replaces `pkg-build-spectrum-dts` from `.claude/current/tech-debt.md`.
+Replaces `pkg-build-spectrum-dts`. The former packaging path is retired.

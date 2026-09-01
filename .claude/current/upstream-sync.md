@@ -24,8 +24,8 @@ parity evidence and is never imported by a package.
 
 The checkout is shallow and stays at the exact commit in that file. The
 comparison app must use the same exact upstream package versions. The
-`@adobe/spectrum-tokens` version in `solid-spectrum` must equal the exact version
-used by the pinned S2 source.
+`@adobe/spectrum-tokens` version in `solid-spectrum` and in `viviana-ui` must
+equal the exact version used by the pinned S2 source.
 
 Pin alignment is not behavior absorption. A train is absorbed only after each
 source and release-note delta is classified, ported or proved not applicable,
@@ -43,7 +43,8 @@ Keep these checks separate:
 3. **Comparison dependencies against pin.** The exact versions in
    `apps/comparison/package.json` must equal `scripts/upstream-pin.json`.
 4. **Spectrum tokens against pinned S2.** `guard:spectrum-tokens-pin` verifies
-   the declared, installed, and vendored token versions.
+   the declared, installed, and vendored token versions for both styled
+   packages.
 
 Missing source evidence is a failure. A guard must not silently skip because the
 ignored checkout is absent.

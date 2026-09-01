@@ -21,6 +21,10 @@ can break theme bootstrap scripts, fonts, or comparison fixture frames.
 - Decide whether to host fonts locally.
 - Preserve only the frame relationships required by the comparison harness.
 - Test local responses and verify deployed responses.
+- Account for the S2 style macro's `new Function("props", js)` runtime compiler.
+  A CSP without `'unsafe-eval'` will forbid the browser fallback if a style
+  call is not macro-expanded. Workerd SSR already forbids that path unless
+  `s2Macros()` expands `with { type: "macro" }` at build time.
 
 Do not add headers to an unused server entry and claim coverage.
 

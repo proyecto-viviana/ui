@@ -67,6 +67,10 @@ focus rings, or visual states.
 Kumo styling lives in `packages/kumo`. Copy Kumo values from the pinned
 Cloudflare source. Do not use S2 styles for Kumo.
 
+`solid-spectrum` and `viviana-ui` both pin `@adobe/spectrum-tokens` to the S2
+oracle version. Viviana theming lives in `viviana-tokens.css`, not in a
+different Adobe token JSON.
+
 ## Styled-component status
 
 Track each styled export as one of:
@@ -75,7 +79,8 @@ Track each styled export as one of:
 - `composition` — an S2-like productized API assembled from multiple headless
   primitives.
 - `viviana-native` — a first-class Viviana component with no upstream S2
-  counterpart.
+  counterpart. None are on the public barrel today. Do not add one until the
+  owner reopens that surface (#62 / #145).
 - `tracked-gap` — a known missing parity component or comparison route.
 
 The Kumo package uses the same evidence rule. Its first Button slice is an
@@ -83,7 +88,10 @@ experiment, not a parity component.
 
 React Aria Components does not expose every Spectrum component 1:1. Spectrum
 adds productized wrappers above RAC, and the styled layers may do the same. A
-`composition` or `viviana-native` component is not an upstream gap.
+`composition` or `viviana-native` component is not an upstream gap. A public
+barrel export that is not an S2 catalogue component is composition,
+viviana-native, or a support export. Support exports do not get a 10-gate
+catalogue page. Ticket #177 records the current exceptions.
 
 ## Build order
 
@@ -99,12 +107,13 @@ solid-stately → solidaria → solidaria-components
 
 Source manifests use `workspace:*`. The release process writes registry versions.
 
-## Why ship source via the `solid` export condition
+## Why ship the `solid` export condition
 
-Each package exposes a `solid` export condition pointing at `src` so Solid
-bundlers compile JSX for the consumer's target (client vs SSR), with an `import`
-fallback of pre-compiled output for non-Solid bundlers. Pre-compiling only would
-lock consumers to one target. This is the approach official Solid libraries use.
+Each package exposes a `solid` export condition pointing at compiled `dist`
+JSX so Solid bundlers keep JSX for the consumer's target (client vs SSR), with
+an `import` fallback of pre-compiled output for non-Solid bundlers.
+Pre-compiling only would lock consumers to one target. This is the approach
+official Solid libraries use.
 
 ## The comparison harness
 
@@ -113,7 +122,9 @@ the real upstream React component and the ported Solid component side by side
 under the same route props, and proves parity through pair diffs, computed
 contracts, and focused interaction tests. It is governed by
 `apps/comparison/COMPONENT_PLAYBOOK.md` and may dogfood `solid-spectrum`, but
-component-internal styling belongs in the package, never the app.
+component-internal styling belongs in the package, never the app. Current work
+is the Solid Spectrum API. The comparison app is not the Viviana showcase and
+must not import unpublished package internals.
 
 ## Solid idioms
 

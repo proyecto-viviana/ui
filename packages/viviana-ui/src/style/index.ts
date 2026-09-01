@@ -191,6 +191,6 @@ export function iconStyle(
 
   (styles as Record<string, unknown>)["size"] = iconSizes[size];
 
-  // @ts-ignore
+  // @ts-ignore Macro `this` is not on the public style() signature.
   return style.call(this, styles);
 }

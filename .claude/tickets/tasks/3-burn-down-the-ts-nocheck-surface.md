@@ -12,6 +12,11 @@ history:
       at: 2026-08-08,
       note: "froze the exact 59-file inventory; blocking CI budget now permits only removals",
     }
+  - {
+      state: open,
+      at: 2026-09-01,
+      note: "owner 2026-09-01: do not enable noUncheckedIndexedAccess or exactOptionalPropertyTypes repo-wide until this burn-down shrinks; that is a later phase of this ticket, public API first",
+    }
 ---
 
 **59 files carrying `@ts-nocheck`, covering 38,091 lines** — in the design system every product
@@ -29,10 +34,15 @@ The current inventory is tracked path-by-path in
 `scripts/ts-nocheck-baseline.json`. `guard:ts-nocheck-budget` runs blocking in
 Certification Gates: deleting a pragma is allowed; adding or moving one fails.
 This is containment, not resolution — the 59 baselined files remain unchecked.
+Removals are logged; the path list does not shrink, so putting `@ts-nocheck`
+back on a cleaned path still passes. A ratchet (drop the path from `allowed`
+on removal) is the remaining gate work.
 
 ## Done when
 
 The count only decreases, and no file in the public API surface carries the pragma.
+`noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` are a later phase
+after that shrink, not a parallel type war (#156).
 
 ## Relationship
 
