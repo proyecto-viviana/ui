@@ -47,11 +47,14 @@ function int(rng: Rng, min: number, max: number): number {
 
 export type StepGenerator = (rng: Rng) => Step;
 
-export function overlayJourneyAlphabet(resolvers: {
-  trigger: TargetResolver;
-  input?: TargetResolver;
-  optionNames: readonly string[];
-}): StepGenerator[] {
+export function overlayJourneyAlphabet(
+  resolvers: {
+    trigger: TargetResolver;
+    input?: TargetResolver;
+    optionNames: readonly string[];
+  },
+  options: { withFixtureProtocol?: boolean } = {},
+): StepGenerator[] {
   const optionOf = (name: string): TargetResolver => overlay.option(name);
   const listbox = overlay.listbox();
   const keys = [
@@ -137,6 +140,57 @@ export function overlayJourneyAlphabet(resolvers: {
       const ms = int(rng, 0, 600);
       return { type: "clock", ms, label: `clock ${ms}ms` };
     },
+    (_rng) => ({
+      type: "focus",
+      target: resolvers.trigger,
+      label: "focus trigger",
+      targetId: "trigger",
+    }),
+    (rng) => {
+      const key = pick(rng, keys);
+      const repeat = int(rng, 0, 3);
+      return {
+        type: "keyDown",
+        key,
+        ...(repeat > 0 ? { repeat } : {}),
+        label: `keyDown ${key}`,
+      };
+    },
+    (rng) => {
+      const key = pick(rng, keys);
+      return { type: "keyUp", key, label: `keyUp ${key}` };
+    },
+    (_rng) => ({
+      type: "touchDown",
+      target: resolvers.trigger,
+      label: "touchDown trigger",
+      targetId: "trigger",
+    }),
+    (_rng) => ({
+      type: "touchUp",
+      target: resolvers.trigger,
+      label: "touchUp trigger",
+      targetId: "trigger",
+    }),
+    (rng) => ({
+      type: "tapAt",
+      target: resolvers.trigger,
+      xFraction: rng(),
+      yFraction: rng(),
+      label: "tapAt trigger",
+      targetId: "trigger",
+    }),
+    (_rng) => ({
+      type: "dispatch",
+      target: listbox,
+      eventType: "scroll",
+      label: "dispatch scroll",
+      targetId: "listbox",
+    }),
+    (rng) => {
+      const name = pick(rng, resolvers.optionNames);
+      return { type: "selectOption", name, label: `selectOption ${name}` };
+    },
   ];
 
   if (resolvers.input) {
@@ -147,6 +201,24 @@ export function overlayJourneyAlphabet(resolvers: {
       label: "click input",
       targetId: "input",
     }));
+    generators.push((_rng) => ({
+      type: "focus",
+      target: input,
+      label: "focus input",
+      targetId: "input",
+    }));
+  }
+
+  if (options.withFixtureProtocol) {
+    generators.push(
+      (rng) => {
+        const name = pick(rng, ["isDisabled", "isReadOnly", "isRequired"] as const);
+        const value = pick(rng, [true, false]);
+        return { type: "control", name, value, label: `control ${name}` };
+      },
+      (_rng) => ({ type: "submit", label: "submit" }),
+      (_rng) => ({ type: "reset", label: "reset" }),
+    );
   }
 
   return generators;

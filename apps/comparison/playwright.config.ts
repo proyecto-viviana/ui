@@ -19,6 +19,9 @@ reporter.push(["./e2e/reporters/certified-summary.ts"]);
 
 export default defineConfig({
   testDir: "./e2e",
+  // Driver unit tests live beside the drivers as `*.unit.test.ts` and run under
+  // Vitest (root vitest.config.ts include); only `*.spec.ts` are browser specs.
+  testMatch: "**/*.spec.ts",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

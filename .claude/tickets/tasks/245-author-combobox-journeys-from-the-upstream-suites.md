@@ -57,3 +57,20 @@ owning suite. Prerequisites listed at the top of the file and owned here:
 
 Child of #243. Depends on #244. Findings that are Solid defects become
 tickets under #136 or the component's own ticket.
+
+## Driver extensions landed
+
+Driver half is in `apps/comparison/e2e/drivers/journeys*.ts` (this ticket stays
+`open` — journey authoring has not started). Verbs: `focus`, `keyDown`/`keyUp`
+(optional `repeat`), `touchDown`/`touchUp`/`tapAt` (CDP touch; `hasTouch` already
+on `registerJourneyDriver`), `dispatch`, `control`/`submit`/`reset` (fail if the
+fixture protocol below is absent), `selectOption(name)`. Targets: `before`/`after`,
+`field`, `label`, `helpButton`, `section(n)`, `dialogBackdrop`. Classes: `motion`
+(phase, not exact opacity, until `settle`), `timing` (`page.clock.install` before
+navigation), `ua:apple` (`navigator.platform = MacIntel` via `addInitScript`
+before both stacks load), `unit-only` (not registrable). `events.callbacks` reads
+`data-comparison-events` (empty array until fixtures expose it). Fuzz alphabet
+gains the new verbs; `control`/`submit`/`reset` stay behind
+`withFixtureProtocol: false` by default.
+
+Fixture protocol the driver expects (both stacks, same change): the fixture root carries `data-comparison-controls` (JSON of current control values) and `data-comparison-events` (JSON array of `{name, args}` callback records); the page exposes `window.__comparisonSetControl(stack, name, value): Promise<void>` resolving after re-render, after which the driver waits for `data-islands-mounted="true"`; `submit` / `reset` click `[data-comparison-submit]` / `[data-comparison-reset]` inside the driven panel. Source of truth: the header comment of `apps/comparison/e2e/drivers/journeys-steps.ts`. Missing pieces throw with the missing name — a journey never passes by omission.

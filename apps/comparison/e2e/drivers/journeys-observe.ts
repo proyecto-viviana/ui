@@ -39,6 +39,10 @@ export interface OverlayGeometry {
   transform: string;
   pointerEvents: string;
   zIndex: string;
+  /** RAC `data-entering` presence on the overlay root. */
+  dataEntering: boolean;
+  /** RAC `data-exiting` presence on the overlay root. */
+  dataExiting: boolean;
 }
 
 export interface ListObservation {
@@ -68,6 +72,48 @@ export interface EventObservation {
   defaultPrevented: boolean;
 }
 
+export interface CallbackObservation {
+  name: string;
+  args: unknown;
+}
+
+export interface EventsObservation {
+  /** DOM events captured by the oracle this step (`defaultPrevented` included). */
+  recorded: EventObservation[];
+  /**
+   * Fixture callback log from `[data-comparison-events]` (`JSON` array of
+   * `{ name, args }`). Missing attribute → `[]`. Absence is expected until
+   * fixtures expose the attribute; both stacks empty still compare equal.
+   * This is the one place absence is tolerated.
+   */
+  callbacks: CallbackObservation[];
+}
+
+export type OverlayMotionPhase = "entering" | "settled" | "exiting";
+
+/**
+ * Motion-class overlay comparison derives a phase instead of comparing exact
+ * opacity (except after `settle(ms)`). `data-exiting` wins; `data-entering`
+ * is entering (including opacity 0 at enter start); neither attribute is
+ * settled (including opacity 1 at rest).
+ */
+export function overlayMotionPhase({
+  dataEntering,
+  dataExiting,
+}: {
+  dataEntering?: boolean;
+  dataExiting?: boolean;
+  opacity: string;
+}): OverlayMotionPhase {
+  if (dataExiting) {
+    return "exiting";
+  }
+  if (dataEntering) {
+    return "entering";
+  }
+  return "settled";
+}
+
 export interface AxObservation {
   tree: string | null;
   live: Array<{ live: string; role: string | null; text: string }>;
@@ -93,7 +139,7 @@ export interface StepObservation {
   focus: FocusObservation;
   overlay: OverlayGeometry[];
   list: ListObservation | null;
-  events: EventObservation[];
+  events: EventsObservation;
   ax: AxObservation;
   document: DocumentObservation;
   pixel: PixelObservation | null;
@@ -138,6 +184,30 @@ function projectEvents(events: OracleRecordedEvent[]): EventObservation[] {
   }));
 }
 
+async function readFixtureCallbacks(ctx: PanelContext): Promise<CallbackObservation[]> {
+  const raw = await ctx.canvas.evaluate((el) => {
+    const host =
+      (el.hasAttribute("data-comparison-events") ? el : null) ??
+      el.querySelector("[data-comparison-events]") ??
+      el.closest("[data-comparison-events]");
+    return host?.getAttribute("data-comparison-events") ?? null;
+  });
+  if (raw == null || raw === "") {
+    return [];
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch (caught) {
+    const detail = caught instanceof Error ? caught.message : String(caught);
+    throw new Error(`Fixture data-comparison-events is not valid JSON: ${detail}`);
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error("Fixture data-comparison-events must be a JSON array of { name, args }");
+  }
+  return parsed as CallbackObservation[];
+}
+
 export async function collectStepObservation(
   ctx: PanelContext,
   trigger: Locator,
@@ -147,6 +217,7 @@ export async function collectStepObservation(
   allowlist: readonly string[],
 ): Promise<{ observation: StepObservation; png: Buffer | null }> {
   const events = projectEvents(await flushEventLog(ctx.page));
+  const callbacks = await readFixtureCallbacks(ctx);
   const canvasHandle = await ctx.canvas.elementHandle();
   const triggerHandle = await trigger.elementHandle();
   if (!canvasHandle) {
@@ -375,6 +446,8 @@ export async function collectStepObservation(
           transform: style.transform,
           pointerEvents: style.pointerEvents,
           zIndex: style.zIndex,
+          dataEntering: root.hasAttribute("data-entering"),
+          dataExiting: root.hasAttribute("data-exiting"),
         };
       });
 
@@ -571,7 +644,7 @@ export async function collectStepObservation(
       },
       overlay: inPage.overlay,
       list: inPage.list,
-      events,
+      events: { recorded: events, callbacks },
       ax: { tree: axTree, live: inPage.live },
       document: inPage.document,
       pixel,
@@ -596,7 +669,7 @@ export function emptyObservation(index: number, label: string, error: string): S
     focus: { active: null, activeDescendant: null, focusVisible: false },
     overlay: [],
     list: null,
-    events: [],
+    events: { recorded: [], callbacks: [] },
     ax: { tree: null, live: [] },
     document: { overflow: "", paddingRight: "", ariaHiddenSiblingCount: 0 },
     pixel: null,

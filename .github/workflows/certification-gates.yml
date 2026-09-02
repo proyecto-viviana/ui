@@ -401,6 +401,9 @@ jobs:
       - name: certified waiver unit tests
         run: pnpm run comparison:test:certified-waivers
 
+      - name: D13 journey driver unit tests
+        run: pnpm run comparison:test:journeys-driver
+
       - name: build packages
         run: pnpm run build
 

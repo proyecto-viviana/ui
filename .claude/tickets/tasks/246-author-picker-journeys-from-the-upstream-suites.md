@@ -51,3 +51,13 @@ over all 312 rows of `journeys/facts/picker.md`. Prerequisites owned here:
 ## Relationship
 
 Child of #243. Depends on #244.
+
+## Driver extensions landed
+
+Same driver half as #245 (`apps/comparison/e2e/drivers/journeys*.ts`; this ticket
+stays `open`). `selectOption(name)` clicks the open listbox option by accessible
+name (`overlay.option`). Hidden-select autofill (`selectOption(hiddenSelect,
+value)` in PK-FM-02) still needs the native `<select>` path when journey
+authoring starts. Touch press-up vs mouse press-start can be expressed with
+`touchDown`/`touchUp` vs `mouseDown`/`mouseUp`. Fixture `control`/`submit`/`reset`
+fail until this ticket lands the fixture protocol (same shape as #245).

@@ -6,8 +6,9 @@ import { installOracle, startEventRecording } from "./dom-oracle";
 import {
   collectStepObservation,
   emptyObservation,
-  overlayRootLocator,
+  overlayMotionPhase,
   type CollectedPanel,
+  type OverlayGeometry,
   type StepObservation,
 } from "./journeys-observe";
 import { performStep, serializeStep, type Step } from "./journeys-steps";
@@ -30,12 +31,15 @@ export type {
   InputObservation,
   FocusObservation,
   EventObservation,
+  EventsObservation,
+  CallbackObservation,
   AxObservation,
   DocumentObservation,
   PixelObservation,
+  OverlayMotionPhase,
 } from "./journeys-observe";
-export { overlayRootLocator } from "./journeys-observe";
-export { serializeStep, performStep } from "./journeys-steps";
+export { overlayRootLocator, overlayMotionPhase } from "./journeys-observe";
+export { serializeStep, performStep, overlay, targets } from "./journeys-steps";
 
 /**
  * RAC state `data-*` attributes compared in every D13 DOM snapshot.
@@ -94,30 +98,63 @@ export const RAC_STATE_DATA_ATTRIBUTES = [
   "data-pending",
 ] as const;
 
+export type JourneyClass = "default" | "motion" | "timing" | "ua:apple" | "unit-only";
+
 export interface Journey {
   id: string;
   label: string;
+  /** Defaults to `"default"`. `"unit-only"` is ledger-only and not registrable. */
+  class?: JourneyClass;
   setup?: (ctx: PanelContext) => Promise<void>;
   steps: Step[];
 }
 
-/** Overlay-scoped resolvers. Targets are roles/names, never ids. */
-export const overlay = {
-  root(): TargetResolver {
-    return ({ page }) => overlayRootLocator(page).first();
-  },
-  option(name: string): TargetResolver {
-    return ({ page }) => page.getByRole("listbox").getByRole("option", { name, exact: true });
-  },
-  listbox(): TargetResolver {
-    return ({ page }) => page.getByRole("listbox").first();
-  },
-};
-
 const postStepSettleMs = 220;
 
+function journeyClass(journey: Journey): JourneyClass {
+  return journey.class ?? "default";
+}
+
 function journeyNeedsClock(journey: Journey): boolean {
-  return journey.steps.some((step) => step.type === "clock");
+  return journeyClass(journey) === "timing" || journey.steps.some((step) => step.type === "clock");
+}
+
+/**
+ * `unit-only` journeys are inventory ledger rows, not Playwright tests.
+ * `registerJourneyDriver` must throw rather than register them.
+ */
+export function assertJourneysRegistrable(journeys: readonly Journey[]): void {
+  const blocked = journeys.filter((journey) => journeyClass(journey) === "unit-only");
+  if (blocked.length > 0) {
+    throw new Error(
+      `unit-only journeys cannot be registered as Playwright tests (ledger only): ${blocked
+        .map((journey) => journey.id)
+        .join(", ")}`,
+    );
+  }
+}
+
+function overlayForCompare(entries: OverlayGeometry[], exactOpacity: boolean) {
+  return entries.map((entry) => {
+    const phase = overlayMotionPhase(entry);
+    if (exactOpacity) {
+      return { ...entry, phase };
+    }
+    return {
+      dx: entry.dx,
+      dy: entry.dy,
+      placement: entry.placement,
+      widthDelta: entry.widthDelta,
+      insideViewport: entry.insideViewport,
+      visibility: entry.visibility,
+      transform: entry.transform,
+      pointerEvents: entry.pointerEvents,
+      zIndex: entry.zIndex,
+      dataEntering: entry.dataEntering,
+      dataExiting: entry.dataExiting,
+      phase,
+    };
+  });
 }
 const observationFields = [
   "error",
@@ -203,6 +240,13 @@ export async function compareJourneyObservations(
     const solidObs = solid.observations[i]!;
     const label = reactObs.step.label;
     for (const field of observationFields) {
+      if (field === "overlay" && journeyClass(journey) === "motion") {
+        const exactOpacity = journey.steps[i]?.type === "settle";
+        expect(overlayForCompare(solidObs.overlay, exactOpacity), prefix(i, label, field)).toEqual(
+          overlayForCompare(reactObs.overlay, exactOpacity),
+        );
+        continue;
+      }
       if (field === "pixel") {
         expect(solidObs.pixel, prefix(i, label, "pixel")).toEqual(reactObs.pixel);
         const reactPng = react.pixels[i];
@@ -234,6 +278,8 @@ export async function compareJourneyObservations(
 }
 
 export function registerJourneyDriver(scenario: DriverScenario, journeys: readonly Journey[]) {
+  assertJourneysRegistrable(journeys);
+
   test.describe(`D13 journeys — ${scenario.title}`, () => {
     test.use({ hasTouch: true });
 
@@ -243,6 +289,16 @@ export function registerJourneyDriver(scenario: DriverScenario, journeys: readon
         const caseDef = driverCases(scenario)[0]!;
         if (journeyNeedsClock(journey)) {
           await page.clock.install();
+        }
+        if (journeyClass(journey) === "ua:apple") {
+          await page.addInitScript(() => {
+            Object.defineProperty(navigator, "platform", {
+              configurable: true,
+              get() {
+                return "MacIntel";
+              },
+            });
+          });
         }
 
         const panels: Partial<Record<PanelFramework, CollectedPanel>> = {};
