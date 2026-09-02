@@ -709,6 +709,65 @@ describe("Popover", () => {
       }
     });
 
+    it("keeps render-prop children mounted and focused when the enter animation resolves", async () => {
+      // RAC re-runs a render-prop child on every render-state change and React
+      // reconciles the result onto the same DOM. Solid has no reconciliation:
+      // re-invoking the function recreates the subtree, so a Menu inside an S2
+      // Popover lost its tree state and DOM focus ~200ms after opening, when
+      // `isEntering` flipped (CI, web e2e menu-focus: ArrowDown focused the
+      // first item, then the settled popover remounted the menu with no key).
+      let finishEnter!: () => void;
+      const finished = new Promise<void>((resolve) => {
+        finishEnter = resolve;
+      });
+      const restore = mockGetAnimations(() => [{ finished }] as unknown as Animation[]);
+
+      try {
+        const user = setupUser();
+        let renders = 0;
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              {(rp) => {
+                renders += 1;
+                return (
+                  <div data-testid="popover-content" data-placement-view={rp.placement}>
+                    <button data-testid="inner">Inner</button>
+                  </div>
+                );
+              }}
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveAttribute("data-entering");
+        await waitFor(() => expect(dialog).toHaveAttribute("data-placement"));
+        const content = screen.getByTestId("popover-content");
+        const inner = screen.getByTestId("inner");
+        inner.focus();
+        expect(inner).toHaveFocus();
+        expect(renders).toBe(1);
+
+        finishEnter();
+        await waitFor(() => expect(dialog).not.toHaveAttribute("data-entering"));
+
+        expect(screen.getByTestId("popover-content")).toBe(content);
+        expect(screen.getByTestId("inner")).toBe(inner);
+        expect(inner).toHaveFocus();
+        expect(renders).toBe(1);
+        // The getter view still tracks the settled placement.
+        expect(content).toHaveAttribute(
+          "data-placement-view",
+          dialog.getAttribute("data-placement")!,
+        );
+      } finally {
+        restore();
+      }
+    });
+
     it("keeps the popover mounted with data-exiting until the exit animation finished promise resolves", async () => {
       let resolveCurrent!: () => void;
       let currentFinished = new Promise<void>((resolve) => {

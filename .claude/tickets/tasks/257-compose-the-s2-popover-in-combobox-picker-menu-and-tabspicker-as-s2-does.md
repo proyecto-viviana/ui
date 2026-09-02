@@ -200,3 +200,40 @@ and trigger cases **green** (the 21 `--trigger-width` checks). Remaining
 picker red is D13 journeys (2) — step-0 `data-focus-visible` wrapper /
 `aria-hidden` Dismiss / form-vs-template, owned by #209 / #248 / #254, not
 this width fix.
+
+### Wave-3 regression — Menu remount when the enter animation settles (2026-09-02)
+
+Certification Gates `a11y:full` → `apps/web/e2e/menu-focus.spec.ts:45`
+(3/3 on CI, `c74beba8`): pointer open, ArrowDown, then `"New file"` never
+focused. Trace snapshot at failure: menu root `tabindex="0"` and
+`data-focused="true"`, every item `tabindex="-1"` — a fresh Menu instance with
+`focusedKey` null. Keyboard open (`autoFocus="first"`) passed because the
+fresh instance autofocuses the same item.
+
+Root cause: S2 `Popover` hands the headless Popover a render-prop child
+(`{(renderProps) => <>arrow … {props.children}</>}`, as upstream `PopoverBase`
+does with `composeRenderProps`). RAC re-invokes it on every render-state change
+and React reconciles onto the same DOM; the headless port called
+`renderProps.renderChildren()`, so the insertion effect tracked the
+`renderValues` memo and re-created the whole subtree when `isEntering`
+flipped at animation end (~200 ms on CI) and again when `placement` was
+measured. The Menu inside was rebuilt: tree state gone, DOM focus dropped.
+Locally the flip landed before the keypress, so the e2e passed.
+
+Fix in headless `Popover.tsx`: `renderProps.renderChildrenStable()` — the
+render prop runs once over a getter view of the values (Tabs precedent,
+`aab498f6`); `renderProps.placement` in a prop position stays reactive.
+Regression tests: `solidaria-components/test/Popover.test.tsx` "keeps
+render-prop children mounted and focused when the enter animation resolves"
+(render count 1, same nodes, focus kept, placement view updated) and
+`solid-spectrum/test/Menu.test.tsx` "keeps the keyboard-focused item and menu
+instance when the popover's enter animation settles" (the CI scenario in jsdom
+with a controlled `getAnimations().finished`). Both red on the unfixed tree.
+Changeset `.changeset/popover-render-prop-children-stable.md`.
+
+Found alongside, not fixed here: `<MenuTrigger><Button>…</Button>` (S2 `Button`,
+not `ActionButton`/`MenuButton`) does not open the menu on click in jsdom —
+S2 `ActionButton` wires `MenuTriggerContext` explicitly, S2 `Button` does not,
+and the headless Button consumes only the dialog/popover trigger contexts,
+whereas RAC's `MenuTrigger` uses `PressResponder` so any `usePress` child
+works. Needs its own ticket.

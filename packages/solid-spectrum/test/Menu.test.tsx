@@ -829,6 +829,74 @@ describe("Menu (solid-spectrum)", () => {
     });
   });
 
+  it("keeps the keyboard-focused item and menu instance when the popover's enter animation settles", async () => {
+    // web e2e menu-focus (CI, 2026-09-02): pointer open, ArrowDown focused
+    // "New file", then ~200ms later the S2 Popover's isEntering flip re-ran its
+    // render-prop child and remounted the Menu — focusedKey null, menu root
+    // focused, the item never regained focus.
+    const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+    let finishEnter!: () => void;
+    const finished = new Promise<void>((resolve) => {
+      finishEnter = resolve;
+    });
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished }] as unknown as Animation[],
+    });
+
+    try {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger>
+          <ActionButton>Actions</ActionButton>
+          <Menu aria-label="Actions">
+            <MenuItem id="new" textValue="New file">
+              New file
+            </MenuItem>
+            <MenuItem id="open" textValue="Open">
+              Open
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Actions" }));
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      const overlay = menu.closest("[data-placement]") as HTMLElement;
+      expect(overlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(menu).toHaveFocus());
+
+      await user.keyboard("{ArrowDown}");
+      const newFile = screen.getByRole("menuitem", { name: "New file" });
+      expect(newFile).toHaveFocus();
+
+      finishEnter();
+      await waitFor(() => expect(overlay).not.toHaveAttribute("data-entering"));
+
+      expect(screen.getByRole("menu")).toBe(menu);
+      expect(screen.getByRole("menuitem", { name: "New file" })).toBe(newFile);
+      expect(newFile).toHaveFocus();
+      expect(newFile).toHaveAttribute("tabindex", "0");
+
+      await user.keyboard("{ArrowDown}");
+      expect(screen.getByRole("menuitem", { name: "Open" })).toHaveFocus();
+    } finally {
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+      if (previousCssTransition === undefined) {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+      }
+    }
+  });
+
   it("composes the S2 Popover surface, including entering motion, matching a bare Popover", async () => {
     const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
     if (typeof CSSTransition === "undefined") {

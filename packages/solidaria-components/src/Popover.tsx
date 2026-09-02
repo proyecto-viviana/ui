@@ -744,7 +744,13 @@ export function Popover(props: PopoverProps): JSX.Element {
               <Show when={!isNonModal()}>
                 <PopoverDismissButton onDismiss={close} />
               </Show>
-              {renderProps.renderChildren()}
+              {/* A render-prop child runs once over a getter view of the render
+                  values. RAC re-invokes it on every placement / isEntering /
+                  isExiting change and React reconciles onto the same DOM; Solid
+                  would recreate the subtree, discarding a Menu's tree state and
+                  DOM focus when the enter animation settles (Tabs has the same
+                  contract for press flips). */}
+              {renderProps.renderChildrenStable()}
               <PopoverDismissButton onDismiss={close} />
             </div>
           </FocusScope>
