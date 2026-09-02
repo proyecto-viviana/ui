@@ -29,6 +29,30 @@ All inventory rows are journeys; each fails when its expectation is broken
 on the Solid panel (prove one per axis in /tmp); the certified suite is green
 or every red step is a ticket with source evidence.
 
+## Inventory (orchestrator, 2026-09-02)
+
+`apps/comparison/playbook/journeys/combobox.md` is written: 50 journeys
+(CB-OC-01…CB-TCH-01) in the #244 step vocabulary, each step with the React
+expectation and the upstream fact ids it proves; a coverage ledger maps all 345
+rows of `journeys/facts/combobox.md` to a journey or to `unit-only` with the
+owning suite. Prerequisites listed at the top of the file and owned here:
+
+- fixture controls to add on **both** stacks: `selectedKey=none`,
+  `itemsSource` (`defaultItems` default — today the fixture passes `items`, so
+  typing filters nothing on either stack), `itemsPreset`
+  (three/sections/many/empty/link/textValue/relabel), `layout`
+  (default/nearBottom/inScroller/inDialog), `sentinels`, `withForm` (+ submit
+  count, FormData snapshot), `loadingState` incl. `filtering` (+ load-more
+  count), `autoFocus`, `shouldFocusWrap`, `shouldCloseOnBlur`, `prefix`,
+  `eventLog` (`data-comparison-events`; fully-controlled handlers must follow
+  the SEL047 contract).
+- driver extensions (with #246, in `journeys-steps.ts`): `focus`,
+  `keyDown/keyUp`, `touchDown/touchUp`, `dispatch`, `control`, `submit`,
+  `reset`, `tapAt`, `ua(profile)`; a `motion` class that compares the
+  enter/settled/exiting **phase**; live-region capture for `ua:apple`.
+- ledger correction: OV020 is wrong (trailing DismissButton is always rendered,
+  `Popover.tsx:353-357`).
+
 ## Relationship
 
 Child of #243. Depends on #244. Findings that are Solid defects become

@@ -86,6 +86,15 @@ settle`, `close → reopen before exit finishes → opacity==1, no second enter`
   present before placement and cleared after; reopen during exit returns to
   open without a second enter (mirror RAC `Popover.test.js` cases).
 
+## Journeys that prove it (2026-09-02)
+
+`CB-OV-05` and `PK-OV-04` in `apps/comparison/playbook/journeys/` (phase
+`entering` → `settled` → `exiting` → unmounted; reopen during exit returns to
+`settled` with no second enter; top placement translates +4 px) plus
+`CB-OC-15` (last collection frozen while exiting). The upstream contract is in
+`shared-overlay.md` "Geometry contract" and rows anim-src-enter / anim-src-exit
+/ anim-src-reopen / anim-s2-keyframes of `journeys/facts/shared-overlay-selection.md`.
+
 ## Relationship
 
 Child of #136. Suspected root of #248; #248's journey is the proof. Related:

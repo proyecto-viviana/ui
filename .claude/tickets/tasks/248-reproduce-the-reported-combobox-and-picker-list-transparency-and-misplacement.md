@@ -39,6 +39,36 @@ regression test.
 The journey that reproduces it fails before the fix and passes after, on both
 styled packages; ticket names the root cause with file:line.
 
+## Hypotheses and the journeys that decide them (2026-09-02)
+
+From the shared overlay ledger (`apps/comparison/playbook/journeys/shared-overlay.md`,
+"Geometry contract"):
+
+1. **Transparent list** = `isEntering` / `isExiting` stuck. Upstream
+   `useEnterAnimation` returns `isEntering && isReady` with `isReady = !!placement`,
+   and both hooks complete on `element.getAnimations().finished` (no timers).
+   S2 styles `opacity: 0` while either flag is set and `pointer-events: none`
+   while exiting. The port's `Popover` has no such state and `ActionMenu`
+   hand-rolls it with `setTimeout`/rAF (#251) — a stale flag leaves a mounted
+   list at opacity 0. Decided by `CB-OV-05` / `PK-OV-04` steps 1–5 and the 20×
+   open/close fuzz (never a settled overlay with opacity < 1).
+2. **List somewhere else** = the pre-placement frame
+   (`position: fixed; top: 0; left: 0`, `useOverlayPosition.ts:400-409`)
+   painted, or a stale position after a portal-container change. Decided by
+   `CB-OV-05` / `PK-OV-04` step 1 (never observed at the viewport origin),
+   `CB-OC-12` / `PK-OC-15` (portal into a dialog container), `CB-OV-02` /
+   `PK-OV-02` (resize recompute), `CB-OV-06` / `PK-OV-05` (maxHeight + scroll
+   anchor).
+
+Before either can run, step 0 must pass: the #244 seed runs already diverge on
+option ARIA (`aria-label` + `aria-describedby="(missing)"` vs `aria-labelledby`
+
+- `aria-posinset`/`aria-setsize`), missing `data-layout`/`data-orientation`,
+  Solid input `aria-haspopup`, `data-focused` vs `data-focus-within`, Picker
+  overlay `aria-labelledby` missing, an extra nameless hidden `input`. Those are
+  the first fixes on this ticket (lowest layer: `solidaria` `useOption` /
+  `useListBox` / `useComboBox` / `useSelect`).
+
 ## Relationship
 
 Child of #243. Feeds #245 / #246. Related: #135 / #184 (post-hydration
