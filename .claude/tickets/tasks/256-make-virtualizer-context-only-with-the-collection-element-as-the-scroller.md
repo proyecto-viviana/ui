@@ -303,7 +303,7 @@ Tests (red → green, both remounted against the unfixed tree):
   writes one tile per option.
 - `packages/solidaria-components/test/Virtualizer.hydrate.test.tsx` — hydrates
   the server window with a 320px stubbed `clientHeight` and asserts the range
-  grows to ≥ 10 rows *after* hydration (red: `Hydration Mismatch … 00000003000200132030`);
+  grows to ≥ 10 rows _after_ hydration (red: `Hydration Mismatch … 00000003000200132030`);
   element-children options hydrate and the tile keeps the server `data-hk`
   (red: `Hydration Mismatch … 0030002000203100`).
 
