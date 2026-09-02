@@ -392,6 +392,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Legacy validation state. Kept as a `createSlotId` dependency so a description/error slot is re-probed when this flips, matching RAC `useField` (`useField.ts:38-48`).",
+          "origin": "solidaria"
+        },
+        {
           "name": "defaultValue",
           "type": "string",
           "required": false,
@@ -896,6 +907,17 @@
           "type": "(isFocused: boolean) => void",
           "required": false,
           "description": "Handler that is called when the element's focus status changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "Legacy validation state. Kept as a `createSlotId` dependency so a description/error slot is re-probed when this flips, matching RAC `useField` (`useField.ts:38-48`).",
           "origin": "solidaria"
         },
         {

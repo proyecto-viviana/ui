@@ -328,6 +328,17 @@
           "required": false,
           "description": "Whether the popover is exiting (for animations).",
           "origin": "solidaria-components"
+        },
+        {
+          "name": "shouldSkipAnimation",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the popover should appear and disappear without an entry or exit animation. Used by PreviewTrigger to skip animations when quickly swapping between overlays.",
+          "origin": "solidaria-components"
         }
       ]
     },

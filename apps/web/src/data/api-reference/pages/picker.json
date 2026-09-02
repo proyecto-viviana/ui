@@ -72,14 +72,14 @@
           "name": "description",
           "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
           "required": false,
-          "description": "",
+          "description": "A description for the select. Provides a hint such as specific requirements for what to choose.",
           "origin": "viviana-ui"
         },
         {
           "name": "errorMessage",
           "type": "number | boolean | Node | JSX.ArrayElement | (string & {})",
           "required": false,
-          "description": "",
+          "description": "An error message for the select.",
           "origin": "viviana-ui"
         },
         {
