@@ -19,10 +19,11 @@
  * Based on @react-aria/calendar useRangeCalendar
  */
 
-import { createMemo } from "solid-js";
+import { createMemo, createEffect, onCleanup, type Accessor } from "solid-js";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { mergeProps } from "../utils/mergeProps";
+import { getEventTarget, isFocusWithin, nodeContains } from "../utils/dom";
 import type { RangeCalendarState } from "@proyecto-viviana/solid-stately";
 import {
   formatSelectedDateDescription,
@@ -52,6 +53,17 @@ export interface AriaRangeCalendarProps {
   errorMessage?: string;
   /** ID of the rendered error message element. */
   errorMessageId?: string;
+  /**
+   * Controls the behavior when a pointer is released outside the calendar or a blur occurs mid
+   * selection:
+   *
+   * - `clear`: clear the currently selected range of dates.
+   * - `reset`: reset the selection to the previously selected range of dates.
+   * - `select`: select the currently hovered range of dates.
+   *
+   * @default "select"
+   */
+  commitBehavior?: "clear" | "reset" | "select";
 }
 
 export interface RangeCalendarAria {
@@ -75,6 +87,7 @@ export interface RangeCalendarAria {
 export function createRangeCalendar<T extends RangeCalendarState>(
   props: MaybeAccessor<AriaRangeCalendarProps>,
   state: T,
+  ref?: Accessor<Element | null>,
 ): RangeCalendarAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
@@ -171,6 +184,80 @@ export function createRangeCalendar<T extends RangeCalendarState>(
       "aria-label": calendarLabel(),
       "aria-describedby": p["aria-describedby"],
       "aria-details": p["aria-details"],
+    });
+  });
+
+  // Execute method corresponding to `commitBehavior` when pressing or releasing a pointer
+  // outside the calendar body, except when pressing the next or previous buttons to switch months.
+  // Also commit on blur (e.g. tabbing away). Reads `getEventTarget` so shadow-DOM retargeting
+  // still sees the inner node (`e.target` would be the shadow host).
+  createEffect(() => {
+    const element = ref?.();
+    if (!element) {
+      return;
+    }
+
+    const commitBehavior = getProps().commitBehavior ?? "select";
+    const commitBehaviorMapping = {
+      clear: () => {
+        state.setAnchorDate(null);
+        state.setValue(null);
+      },
+      reset: () => state.setAnchorDate(null),
+      select: () => state.selectDate(state.focusedDate()),
+    };
+
+    let isVirtualClick = false;
+    const onPointerDown = (e: PointerEvent) => {
+      isVirtualClick = e.width === 0 && e.height === 0;
+    };
+
+    const endDragging = (e: PointerEvent) => {
+      if (isVirtualClick) {
+        isVirtualClick = false;
+        return;
+      }
+
+      state.setDragging(false);
+      if (!state.anchorDate()) {
+        return;
+      }
+
+      const target = getEventTarget(e) as Element;
+      if (
+        isFocusWithin(element) &&
+        (!nodeContains(element, target) || !target.closest("button, [role='button']"))
+      ) {
+        commitBehaviorMapping[commitBehavior]();
+      }
+    };
+
+    const onBlur = (e: Event) => {
+      const focusEvent = e as FocusEvent;
+      if (
+        (!focusEvent.relatedTarget || !nodeContains(element, focusEvent.relatedTarget as Node)) &&
+        state.anchorDate()
+      ) {
+        commitBehaviorMapping[commitBehavior]();
+      }
+    };
+
+    const onTouchMove = (e: Event) => {
+      if (state.isDragging()) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointerup", endDragging);
+    element.addEventListener("blur", onBlur, true);
+    element.addEventListener("touchmove", onTouchMove, { passive: false, capture: true });
+
+    onCleanup(() => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", endDragging);
+      element.removeEventListener("blur", onBlur, true);
+      element.removeEventListener("touchmove", onTouchMove, true);
     });
   });
 

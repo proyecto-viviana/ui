@@ -4,9 +4,14 @@ type: task
 title: "Guard FocusScope restore against a null first-in-scope target"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "ported null first-in-scope skip and parent-scope restore walk; tests red-then-green",
+    }
 ---
 
 ## Cause
@@ -35,3 +40,15 @@ throw and focus lands on the parent scope's first focusable, matching
 ## Relationship
 
 Child of #220. Distinct from #190.
+
+## Landed
+
+`react-spectrum/packages/react-aria/src/focus/FocusScope.tsx:541-558`
+→ `packages/solidaria/src/focus/FocusScope.tsx:250` (`firstInScope` returns `HTMLElement | null`)
+
+`react-spectrum/packages/react-aria/src/focus/FocusScope.tsx:814-820`
+→ `packages/solidaria/src/focus/FocusScope.tsx:785-798` (`if (first)` skip, walk parent)
+→ `does not throw when there is no focusable element to restore focus to`
+→ `restores to the parent scope's first focusable when nodeToRestore is disconnected`
+
+Red-then-green: reverted restore to the old `nodeToRestore`/`body.contains` path; parent-first test failed (focus stayed on `body`); restored, green.

@@ -22,7 +22,7 @@
 
 import { type Accessor, createSignal, createEffect, onCleanup } from "solid-js";
 import { isServer } from "solid-js/web";
-import { getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
+import { getEventTarget, getOwnerDocument, getOwnerWindow, openLink } from "../utils/dom";
 import { isVirtualClick } from "../utils/events";
 import { isMac } from "../utils/platform";
 
@@ -60,7 +60,13 @@ export let hasSetupGlobalListeners: Map<
 > = new Map();
 let hasEventBeforeFocus = false;
 let hasBlurredWindowRecently = false;
-let ignoreFocusEvent = false;
+/** @private Set by `preventFocus` so programmatic refocus is not treated as a modality change. */
+export let ignoreFocusEvent = false;
+
+/** @private */
+export function setIgnoreFocusEvent(value: boolean): void {
+  ignoreFocusEvent = value;
+}
 
 const FOCUS_VISIBLE_INPUT_KEYS: Record<string, boolean> = {
   Tab: true,
@@ -117,19 +123,34 @@ function handleClickEvent(e: MouseEvent) {
 }
 
 function handleFocusEvent(e: FocusEvent) {
-  if (!e.isTrusted || ignoreFocusEvent) {
+  if (ignoreFocusEvent) {
     return;
   }
 
-  const target = e.target as EventTarget | null;
-  const targetElement = target && (target as Element).nodeType ? (target as Element) : null;
-  const ownerWindow = targetElement ? getOwnerWindow(targetElement) : window;
-  const ownerDocument = targetElement ? getOwnerDocument(targetElement) : document;
+  const target = getEventTarget(e);
+  const ownerWindow = getOwnerWindow(target);
+  const ownerDocument = getOwnerDocument(target);
 
-  if (target === ownerWindow || target === ownerDocument) {
+  // When the window regains focus, the browser restores focus to the element that was focused
+  // before, firing a focus event the user did not initiate. handleWindowBlur sets
+  // hasBlurredWindowRecently so restored focus doesn't switch to virtual modality below, but
+  // Safari fires the window/element focus pair twice when returning to a tab or app and the first
+  // element focus event clears the flag, so re-arm it whenever the window itself is focused.
+  // Like handleWindowBlur, this intentionally doesn't check isTrusted.
+  if (target === ownerWindow) {
+    hasBlurredWindowRecently = true;
     return;
   }
 
+  // Firefox fires two extra focus events when the user first clicks into an iframe:
+  // first on the window, then on the document. We ignore these events so they don't
+  // cause keyboard focus rings to appear.
+  if (target === ownerDocument || !e.isTrusted) {
+    return;
+  }
+
+  // If a focus event occurs without a preceding keyboard or pointer event, switch to virtual modality.
+  // This occurs, for example, when navigating a form with the next/previous buttons on iOS.
   if (!hasEventBeforeFocus && !hasBlurredWindowRecently) {
     currentModality = "virtual";
     currentPointerType = "virtual";

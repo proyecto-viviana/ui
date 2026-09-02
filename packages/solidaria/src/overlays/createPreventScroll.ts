@@ -18,7 +18,17 @@
  */
 
 import { createEffect, onCleanup } from "solid-js";
-import { isIOS, getScrollParent, isScrollable, willOpenKeyboard, chain } from "../utils";
+import {
+  chain,
+  getActiveElement,
+  getEventTarget,
+  getScrollParent,
+  isIOS,
+  isScrollable,
+  isWebKit,
+  willOpenKeyboard,
+} from "../utils";
+import { addEvent, setStyle } from "../utils/dom";
 
 export interface PreventScrollOptions {
   /** Whether the scroll lock is disabled. */
@@ -46,7 +56,7 @@ export function createPreventScroll(options: PreventScrollOptions = {}): void {
 
     preventScrollCount++;
     if (preventScrollCount === 1) {
-      if (isIOS()) {
+      if (isIOS() && isWebKit()) {
         restore = preventScrollMobileSafari();
       } else {
         restore = preventScrollStandard();
@@ -67,22 +77,15 @@ export function createPreventScroll(options: PreventScrollOptions = {}): void {
 // add some padding to prevent the page from shifting when the scrollbar is hidden.
 function preventScrollStandard(): () => void {
   const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-  const restoreFns: Array<() => void> = [];
-
+  const restoreOverflow = setStyle(document.documentElement, "overflow", "hidden");
+  let restoreGutter: (() => void) | undefined;
   if (scrollbarWidth > 0) {
-    // Use scrollbar-gutter when supported because it also works for fixed positioned elements.
-    if ("scrollbarGutter" in document.documentElement.style) {
-      restoreFns.push(setStyle(document.documentElement, "scrollbarGutter", "stable"));
-    } else {
-      restoreFns.push(setStyle(document.documentElement, "paddingRight", `${scrollbarWidth}px`));
-    }
+    restoreGutter =
+      "scrollbarGutter" in document.documentElement.style
+        ? setStyle(document.documentElement, "scrollbar-gutter", "stable")
+        : setStyle(document.documentElement, "padding-right", `${scrollbarWidth}px`);
   }
-
-  restoreFns.push(setStyle(document.documentElement, "overflow", "hidden"));
-
-  return () => {
-    restoreFns.forEach((fn) => fn());
-  };
+  return chain(restoreGutter, restoreOverflow);
 }
 
 // Mobile Safari is a whole different beast. Even with overflow: hidden,
@@ -109,18 +112,27 @@ function preventScrollStandard(): () => void {
 //    Safari from scrolling the page. After a small delay, focus the real input and scroll it into view
 //    ourselves, without scrolling the whole page.
 function preventScrollMobileSafari(): () => void {
+  // Set overflow hidden so scrollIntoViewport() sees isScrollPrevented and
+  // scrolls only scroll parents instead of calling native scrollIntoView() which moves the window.
+  const restoreOverflow = setStyle(document.documentElement, "overflow", "hidden");
+
   let scrollable: Element;
   let allowTouchMove = false;
 
   const onTouchStart = (e: TouchEvent) => {
     // Store the nearest scrollable parent element from the element that the user touched.
-    const target = e.target as Element;
+    const target = getEventTarget(e) as Element;
     scrollable = isScrollable(target) ? target : getScrollParent(target, true);
     allowTouchMove = false;
 
     // If the target is selected, don't preventDefault in touchmove to allow user to adjust selection.
     const selection = target.ownerDocument.defaultView!.getSelection();
     if (selection && !selection.isCollapsed && selection.containsNode(target, true)) {
+      allowTouchMove = true;
+    }
+
+    // If this is a range input, allow touch move to allow user to adjust the slider value
+    if (e.composedPath().some((el) => el instanceof HTMLInputElement && el.type === "range")) {
       allowTouchMove = true;
     }
 
@@ -175,7 +187,7 @@ function preventScrollMobileSafari(): () => void {
   };
 
   const onBlur = (e: FocusEvent) => {
-    const target = e.target as HTMLElement;
+    const target = getEventTarget(e) as HTMLElement;
     const relatedTarget = e.relatedTarget as HTMLElement | null;
     if (relatedTarget && willOpenKeyboard(relatedTarget)) {
       // Focus without scrolling the whole page, and then scroll into view manually.
@@ -194,54 +206,44 @@ function preventScrollMobileSafari(): () => void {
 
   // Override programmatic focus to scroll into view without scrolling the whole page.
   const focus = HTMLElement.prototype.focus;
-  HTMLElement.prototype.focus = function (opts) {
-    // Track whether the keyboard was already visible before.
-    const wasKeyboardVisible =
-      document.activeElement != null && willOpenKeyboard(document.activeElement);
+  Reflect.defineProperty(HTMLElement.prototype, "focus", {
+    configurable: true,
+    writable: true,
+    value: function (opts?: FocusOptions) {
+      // Track whether the keyboard was already visible before.
+      const activeElement = getActiveElement();
+      const wasKeyboardVisible = activeElement != null && willOpenKeyboard(activeElement);
 
-    // Focus the element without scrolling the page.
-    focus.call(this, { ...opts, preventScroll: true });
+      // Focus the element without scrolling the page.
+      focus.call(this, { ...opts, preventScroll: true });
 
-    if (!opts || !opts.preventScroll) {
-      scrollIntoViewWhenReady(this, wasKeyboardVisible);
-    }
-  };
+      if (!opts || !opts.preventScroll) {
+        scrollIntoViewWhenReady(this, wasKeyboardVisible);
+      }
+    },
+  });
 
   const removeEvents = chain(
-    addEvent(document, "touchstart", onTouchStart, { passive: false, capture: true }),
-    addEvent(document, "touchmove", onTouchMove, { passive: false, capture: true }),
-    addEvent(document, "blur", onBlur, true),
+    addEvent(document, "touchstart", onTouchStart as EventListener, {
+      passive: false,
+      capture: true,
+    }),
+    addEvent(document, "touchmove", onTouchMove as EventListener, {
+      passive: false,
+      capture: true,
+    }),
+    addEvent(document, "blur", onBlur as EventListener, true),
   );
 
   return () => {
+    restoreOverflow();
     removeEvents();
     style.remove();
-    HTMLElement.prototype.focus = focus;
-  };
-}
-
-// Sets a CSS property on an element, and returns a function to revert it to the previous value.
-function setStyle(element: HTMLElement, styleName: string, value: string): () => void {
-  const cur =
-    element.style.getPropertyValue(styleName) ||
-    (element.style as unknown as Record<string, string>)[styleName];
-  (element.style as unknown as Record<string, string>)[styleName] = value;
-
-  return () => {
-    (element.style as unknown as Record<string, string>)[styleName] = cur;
-  };
-}
-
-// Adds an event listener to an element, and returns a function to remove it.
-function addEvent<K extends keyof GlobalEventHandlersEventMap>(
-  target: Document | Window,
-  event: K,
-  handler: (this: Document | Window, ev: GlobalEventHandlersEventMap[K]) => void,
-  options?: boolean | AddEventListenerOptions,
-): () => void {
-  target.addEventListener(event, handler as EventListener, options);
-  return () => {
-    target.removeEventListener(event, handler as EventListener, options);
+    Reflect.defineProperty(HTMLElement.prototype, "focus", {
+      configurable: true,
+      writable: true,
+      value: focus,
+    });
   };
 }
 

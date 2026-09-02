@@ -4,9 +4,14 @@ type: task
 title: "Keep interaction modality on window refocus"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "ported window-target re-arm; Safari tests red-then-green. RAC barrel re-export is out of lane (solidaria-components/src/index.ts).",
+    }
 ---
 
 ## Cause
@@ -39,3 +44,15 @@ blur flag.
 ## Relationship
 
 Child of #220. Adjacent to #111 (virtual pointer).
+
+## Landed
+
+`react-spectrum/packages/react-aria/src/interactions/useFocusVisible.ts:127-129`
+→ `packages/solidaria/src/interactions/createInteractionModality.ts:140-142`
+→ `returns negative isFocusVisible after toggling browser tabs in Safari without prior keyboard navigation`
+(also `returns positive isFocusVisible after toggling browser tabs in Safari after keyboard navigation`).
+Red-then-green: temporarily skipped the `hasBlurredWindowRecently = true` re-arm; the negative Safari test failed (pointer modality became virtual/focus-visible); restored, green.
+
+## Out of lane
+
+Re-export `setInteractionModality` from `packages/solidaria-components/src/index.ts` (RAC barrel). Already exported from solidaria (`packages/solidaria/src/index.ts`).

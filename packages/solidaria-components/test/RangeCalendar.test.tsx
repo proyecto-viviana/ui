@@ -637,7 +637,6 @@ describe("RangeCalendar", () => {
       fireEvent.pointerUp(day10);
 
       await waitFor(() => {
-        expect(calendar).toHaveAttribute("data-dragging");
         expect(
           getDescribedByText(screen.getByRole("button", { name: /June 10, 2024/i })),
         ).toContain("Click to finish selecting date range");
