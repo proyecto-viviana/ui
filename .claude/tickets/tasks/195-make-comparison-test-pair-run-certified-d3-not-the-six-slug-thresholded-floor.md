@@ -4,9 +4,14 @@ type: task
 title: "Make comparison test pair run certified D3 not the six-slug thresholded floor"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "pair job relabeled as a floor; certified D3 is the sharded certified job; pending orchestrator verification",
+    }
 ---
 
 ## Cause
@@ -38,3 +43,11 @@ mismatch.
 ## Relationship
 
 F-HARNESS-003. Not #75/#77/#105 (measured D3 floors).
+
+## Landed
+
+2026-09-02. The CI job is named `comparison floors: pair budgets`. Its
+summary states it is a floor and points at the **certified** job, which
+runs certified D3 (and the rest of the driver catalog) on HEAD. The
+six-slug thresholded spec is still what that floor job executes — it is
+no longer labeled as if it were the pair-diff bar.

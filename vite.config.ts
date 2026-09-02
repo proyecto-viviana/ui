@@ -8,6 +8,7 @@ const ignoredPaths = [
   "dist/**",
   "coverage/**",
   "playwright-report/**",
+  "blob-report/**",
   "test-results/**",
   "react-spectrum/**",
   "apps/comparison/vendor/s2-docs/**",

@@ -38,9 +38,9 @@ concurrency:
 jobs:
   certification-gates:
     runs-on: blacksmith-4vcpu-ubuntu-2404
-    # Two release-qualification runs on 2026-08-20 reached 45 minutes after
-    # every earlier gate passed. Keep the full blocking evidence and give the
-    # serial certified and axe suites enough time to finish.
+    # Certified comparison no longer runs in this serial job (see the sharded
+    # `certified` jobs below). Keep the remaining blocking evidence, including
+    # the full axe audit, inside one hour.
     timeout-minutes: 60
     steps:
       - name: Checkout
@@ -64,6 +64,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml', 'apps/comparison/package.json') }}
 
       - name: Install Playwright Chromium
         run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
@@ -207,21 +213,9 @@ jobs:
         id: parity_strict
         run: pnpm run comparison:report:parity:strict
 
-      - name: comparison contract suite
-        id: contract
-        run: pnpm run comparison:test:contract
-
-      - name: comparison pair-diff suite
-        id: pair
-        run: pnpm run comparison:test:pair
-
-      # The recertification bar itself: 2176 tests, ~18 min. Re-verified
-      # 2026-08-08 (2170 passed, 6 skipped, exit 0), which
-      # also settles the deferred D4 event-ordering worry empirically — whatever
-      # is deferred is not producing reds.
-      - name: comparison certified suite
-        id: certified
-        run: pnpm run comparison:test:certified
+      # Pair, contract, and certified comparison suites run as separate jobs
+      # in this workflow. Pair and contract are floors (tickets #195 / #196);
+      # certified is the recertification bar (tickets #194 / #195 / #196).
 
       # Promoted 2026-08-08 after a complete clean run. AA and best-practice
       # findings are strict. The only attached report classes are AAA enhanced
@@ -302,9 +296,6 @@ jobs:
           O_GUARD_UPSTREAM_TEST_PARITY: ${{ steps.guard_upstream_test_parity.outcome }}
           O_DOCS_CHECK: ${{ steps.docs_check.outcome }}
           O_PARITY_STRICT: ${{ steps.parity_strict.outcome }}
-          O_CONTRACT: ${{ steps.contract.outcome }}
-          O_PAIR: ${{ steps.pair.outcome }}
-          O_CERTIFIED: ${{ steps.certified.outcome }}
           O_AXE_FULL: ${{ steps.axe_full.outcome }}
         run: |
           icon() {
@@ -360,10 +351,17 @@ jobs:
             echo "| \`guard:upstream-test-parity\` | $(icon "$O_GUARD_UPSTREAM_TEST_PARITY") |"
             echo "| \`docs:check\` | $(icon "$O_DOCS_CHECK") |"
             echo "| \`comparison:report:parity:strict\` | $(icon "$O_PARITY_STRICT") |"
-            echo "| \`comparison:test:contract\` | $(icon "$O_CONTRACT") |"
-            echo "| \`comparison:test:pair\` | $(icon "$O_PAIR") |"
-            echo "| \`comparison:test:certified\` | $(icon "$O_CERTIFIED") |"
             echo "| \`a11y:full\` | $(icon "$O_AXE_FULL") |"
+            echo ""
+            echo "### Comparison evidence (separate jobs in this workflow)"
+            echo ""
+            echo "Pair and contract are **floors**, not acceptance. The recertification bar is the **certified** job."
+            echo ""
+            echo "| Job | Role |"
+            echo "| --- | --- |"
+            echo "| \`comparison floors: pair budgets\` | Floor — six-slug default-state pair-diff with mismatch budgets. Not certified D3. |"
+            echo "| \`comparison floors: contracts\` | Floor — styled-contract + Button-family fixtures. Not consumed-prop certification. |"
+            echo "| \`certified\` / \`certified report\` | Recertification bar. Sharded \`comparison:test:certified\`. Blocking. Waivers in \`apps/comparison/e2e/certified-waivers.json\`. |"
             echo ""
             echo "_\`typecheck\` still has a baselined 59-file \`@ts-nocheck\` blind spot across the public packages; the budget forbids additions and the burn-down ticket owns removals._"
             echo ""
@@ -377,3 +375,280 @@ jobs:
             echo ""
             echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # One package + comparison-app build, consumed by the floor jobs and every
+  # certified shard. Do not rebuild inside those jobs.
+  comparison-build:
+    name: comparison evidence build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: certified waiver unit tests
+        run: pnpm run comparison:test:certified-waivers
+
+      - name: build packages
+        run: pnpm run build
+
+      - name: build comparison app
+        run: pnpm run comparison:build
+
+      - name: Upload comparison dist
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: comparison-dist-${{ github.run_id }}
+          path: |
+            packages/solid-stately/dist
+            packages/solidaria/dist
+            packages/solidaria-components/dist
+            packages/solid-spectrum/dist
+            packages/kumo/dist
+            packages/viviana-ui/dist
+            apps/comparison/dist
+
+  comparison-floors-pair:
+    name: "comparison floors: pair budgets"
+    needs: comparison-build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml', 'apps/comparison/package.json') }}
+
+      - name: Install Playwright Chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
+
+      - name: Restore comparison dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: comparison-dist-${{ github.run_id }}
+          path: .
+
+      - name: comparison floors pair
+        working-directory: apps/comparison
+        run: pnpm exec playwright test e2e/default-state-pair-diff.spec.ts --reporter=line
+
+      - name: Upload pair reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: comparison-floors-pair-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            apps/comparison/playwright-report
+            apps/comparison/test-results
+
+      - name: Publish floor summary
+        if: always()
+        run: |
+          {
+            echo "## Comparison floors: pair budgets"
+            echo ""
+            echo "This job is a **floor**, not acceptance. It runs the six-slug default-state pair-diff with asserted mismatch budgets (ticket #195)."
+            echo ""
+            echo "A 40% mismatch budget here does not certify a component. The recertification bar is the **certified** job in this workflow (sharded \`comparison:test:certified\`, D3 at exact pair-diff)."
+            echo ""
+            echo "Floors are necessary and nowhere near sufficient. See \`.claude/current/certification.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  comparison-floors-contract:
+    name: "comparison floors: contracts"
+    needs: comparison-build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml', 'apps/comparison/package.json') }}
+
+      - name: Install Playwright Chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
+
+      - name: Restore comparison dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: comparison-dist-${{ github.run_id }}
+          path: .
+
+      - name: comparison floors contract
+        working-directory: apps/comparison
+        run: pnpm exec playwright test e2e/styled-contract.spec.ts e2e/button-family-contract.spec.ts --reporter=line
+
+      - name: Upload contract reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: comparison-floors-contract-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            apps/comparison/playwright-report
+            apps/comparison/test-results
+
+      - name: Publish floor summary
+        if: always()
+        run: |
+          {
+            echo "## Comparison floors: contracts"
+            echo ""
+            echo "This job is a **floor**, not acceptance. It runs the styled-contract smoke plus the Button-family fixtures (ticket #196)."
+            echo ""
+            echo "Canvas visibility and \`data-comparison-contract\` are plumbing. The recertification bar is the **certified** job in this workflow (sharded \`comparison:test:certified\`)."
+            echo ""
+            echo "Floors are necessary and nowhere near sufficient. See \`.claude/current/certification.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Shard estimate (2026-09-02): the full certified suite is 72 specs / ~2124
+  # tests / ~28 min at 8 workers locally. Shard 1/8 with --workers=2 ran in
+  # 9.8 minutes on this host (201 passed / 64 failed / 1 skipped — failures
+  # are the ticketed React 1.7.0 pin until #240). 4 vCPU (ubuntu-latest and
+  # blacksmith-4vcpu) caps workers at 2 beside the preview server. n=8 keeps
+  # each shard at or under 10 minutes.
+  certified:
+    name: certified (${{ matrix.shard }}/8)
+    needs: comparison-build
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('pnpm-lock.yaml', 'apps/comparison/package.json') }}
+
+      - name: Install Playwright Chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
+
+      - name: Restore comparison dist
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: comparison-dist-${{ github.run_id }}
+          path: .
+
+      - name: certified shard
+        id: certified_shard
+        continue-on-error: true
+        working-directory: apps/comparison
+        run: pnpm exec playwright test e2e/certified --shard=${{ matrix.shard }}/8 --workers=2
+
+      - name: Upload certified shard reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: certified-shard-${{ matrix.shard }}
+          if-no-files-found: error
+          path: |
+            apps/comparison/blob-report
+            apps/comparison/test-results/certified-summary.json
+            apps/comparison/test-results/certified-summary.*.json
+
+  certified-report:
+    name: certified report
+    needs: [comparison-build, certified]
+    if: ${{ always() && needs.comparison-build.result == 'success' }}
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env:
+      CERTIFIED_SHARD_TOTAL: "8"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download certified shards
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: certified-shard-*
+          path: certified-shards
+
+      - name: Merge certified reports
+        run: pnpm exec tsx apps/comparison/scripts/merge-certified-reports.ts certified-shards
+
+      - name: Upload certified HTML report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: certified-html-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            apps/comparison/playwright-report
+            apps/comparison/test-results/certified-summary.json
+            apps/comparison/test-results/certified-summary.md

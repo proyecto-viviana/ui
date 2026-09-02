@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 
 if (process.env.NO_COLOR != null) {
   // Playwright forces color in worker and web-server child processes. Dropping
@@ -11,15 +11,22 @@ const host = process.env.COMPARISON_HOST ?? "127.0.0.1";
 const baseURL = process.env.COMPARISON_BASE_URL ?? `http://${host}:${port}`;
 const managesPreviewServer = process.env.COMPARISON_BASE_URL == null;
 
+const reporter: ReporterDescription[] = [["line"], ["./e2e/reporters/wcag-aaa-report.ts"]];
+if (process.env.CI) {
+  reporter.push(["blob", { outputDir: "blob-report" }]);
+}
+reporter.push(["./e2e/reporters/certified-summary.ts"]);
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // `line` for the console; the WCAG AAA reporter self-gates on `WCAG_REPORT`
-  // (a no-op otherwise) and, when enabled, publishes the AAA report aggregated
-  // from the D7/D8 driver annotations.
-  reporter: [["line"], ["./e2e/reporters/wcag-aaa-report.ts"]],
+  workers: process.env.CI ? 2 : undefined,
+  // `line` for the console; certified-summary writes component × driver JSON
+  // (local and CI share that file). The WCAG AAA reporter self-gates on
+  // `WCAG_REPORT`. Blob reporter is CI-only so shards can merge-reports.
+  reporter,
   use: {
     baseURL,
     trace: "on-first-retry",

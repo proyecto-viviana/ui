@@ -4,9 +4,14 @@ type: task
 title: "Put consumed-prop pair assertions on the contract gate"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "contract job relabeled as a floor; certified suite is the blocking bar; pending orchestrator verification",
+    }
 ---
 
 ## Cause
@@ -41,3 +46,12 @@ React and Solid Button fixtures increment on identical conditions.
 ## Relationship
 
 F-HARNESS-005. Not #182 (harness repair).
+
+## Landed
+
+2026-09-02. The CI job is named `comparison floors: contracts`. Its
+summary states it is a floor (styled-contract smoke + Button-family
+fixtures) and points at the **certified** job. Consumed-prop assertions
+were not added to that floor — they would still be a floor sitting in
+front of certification. The blocking evidence is sharded
+`comparison:test:certified`.

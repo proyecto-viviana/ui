@@ -20,6 +20,7 @@ import {
   validateCertifiedSuiteEvidence,
 } from "../src/data/certified-suite-evidence";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
+import { formatCertifiedSummaryMarkdown, readCertifiedSummaryFile } from "./certified-summary";
 import { parseParityReportOptions } from "./report-component-parity-options";
 
 interface Gap {
@@ -620,6 +621,17 @@ console.log(
 console.log(
   `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`,
 );
+const liveCertifiedSummary = readCertifiedSummaryFile(
+  fileURLToPath(new URL("../test-results/certified-summary.json", import.meta.url)),
+);
+if (liveCertifiedSummary == null) {
+  console.log(
+    "[info] no test-results/certified-summary.json; run comparison:test:certified for the live component × driver table",
+  );
+} else {
+  console.log("");
+  console.log(formatCertifiedSummaryMarkdown(liveCertifiedSummary).trimEnd());
+}
 console.log(`Docs pages ported: ${docsPagesPorted} / ${vendoredMdxBySlug.size} vendored`);
 if (slugFilter) {
   console.log(`Scoped to slug: ${slugFilter}`);

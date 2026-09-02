@@ -12,6 +12,7 @@ coverage/
 e2e-screenshots/
 test-results/
 playwright-report/
+blob-report/
 
 # IDE
 .vscode/
