@@ -23,6 +23,7 @@ import {
   createRenderEffect,
   createSignal,
   onCleanup,
+  sharedConfig,
   type Accessor,
   type JSX,
 } from "solid-js";
@@ -101,6 +102,17 @@ export function createScrollView(options: CreateScrollViewOptions): ScrollViewAr
     if (!element) return;
     // RAC `useScrollView` `ScrollView.tsx:305-315` initializes viewport size
     // in a layout effect so the first visible-rect emit has a real size.
+    //
+    // React runs that layout effect after the hydrated commit; Solid runs
+    // render effects while the hydration walk is still live (`sharedConfig.context`
+    // set, `done` unset — dom-expressions' `isHydrating()`). The server measured
+    // a zero viewport and emitted only the overscan window, so a real size here
+    // widens the visible range mid-walk and the rows mounted for it look for
+    // server nodes that were never rendered: Solid throws "Hydration Mismatch"
+    // and abandons the whole tree. During the walk, leave the first emit to the
+    // effect below — Solid clears the hydrate context before running user
+    // effects (`runUserEffects`), so that emit re-renders instead of hydrating.
+    if (sharedConfig.context && !sharedConfig.done) return;
     updateSize(element);
     updateWindowViewport();
     updateViewportOffset(element);

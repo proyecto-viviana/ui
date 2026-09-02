@@ -67,6 +67,7 @@ import {
   type StyleOrFunction,
   type SlotProps,
   DEFAULT_SLOT,
+  OptionContent,
   Provider,
   useRenderProps,
   filterDOMProps,
@@ -1320,10 +1321,6 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     },
     renderValues,
   );
-  const hasPrimitiveLabel = () => {
-    return typeof props.children === "string" || typeof props.children === "number";
-  };
-
   const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
     isSelected: optionAria.isSelected,
   }));
@@ -1409,11 +1406,7 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         data-selection-mode={state.selectionMode()}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
-          {hasPrimitiveLabel() ? (
-            <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
-          ) : (
-            renderProps.renderChildren()
-          )}
+          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
         </Provider>
       </div>
     </SelectionIndicatorContext.Provider>

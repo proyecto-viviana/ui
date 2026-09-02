@@ -65,6 +65,7 @@ import {
   type StyleOrFunction,
   type SlotProps,
   DEFAULT_SLOT,
+  OptionContent,
   useRenderProps,
   filterDOMProps,
   Provider,
@@ -1263,10 +1264,6 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     return rest;
   };
 
-  const hasPrimitiveLabel = () => {
-    return typeof props.children === "string" || typeof props.children === "number";
-  };
-
   const optionTextSlots = {
     slots: {
       get [DEFAULT_SLOT]() {
@@ -1319,11 +1316,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
-          {hasPrimitiveLabel() ? (
-            <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
-          ) : (
-            renderProps.renderChildren()
-          )}
+          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
         </Provider>
       </div>
     </SelectionIndicatorContext.Provider>

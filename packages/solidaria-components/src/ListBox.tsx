@@ -68,6 +68,7 @@ import {
   type StyleOrFunction,
   type SlotProps,
   DEFAULT_SLOT,
+  OptionContent,
   Provider,
   useRenderProps,
   filterDOMProps,
@@ -1114,9 +1115,6 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
     },
     renderValues,
   );
-  const hasPrimitiveLabel = () => {
-    return typeof props.children === "string" || typeof props.children === "number";
-  };
 
   const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
     isSelected: optionAria.isSelected,
@@ -1213,11 +1211,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         slot={local.slot}
       >
         <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
-          {hasPrimitiveLabel() ? (
-            <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
-          ) : (
-            renderProps.renderChildren()
-          )}
+          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
         </Provider>
       </div>
     </SelectionIndicatorContext.Provider>

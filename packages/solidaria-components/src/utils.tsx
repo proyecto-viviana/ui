@@ -229,6 +229,36 @@ export function composeRenderProps<T extends object>(
   };
 }
 
+export interface OptionContentProps {
+  /** `renderChildren` of the option's {@link useRenderProps} result. */
+  render: () => JSX.Element;
+  /** `labelProps` from `createOption`; spread onto the span that wraps a primitive label. */
+  labelProps: JSX.HTMLAttributes<HTMLSpanElement>;
+}
+
+/**
+ * Renders an option's children with exactly one read of `props.children`,
+ * wrapping a primitive (string/number) label in `<span {...labelProps}>` so the
+ * option's `aria-labelledby` has a target. Internal to the option components
+ * (ListBox, ComboBox, Select); mount it *inside* the option's `TextContext`
+ * provider so `<Text>` children resolve their slots.
+ *
+ * Every read of a compiled element child evaluates its template and consumes a
+ * hydration key — on the server (`ssrHydrationKey`) and on the client
+ * (`getNextElement`) alike. Probing `typeof props.children` and then rendering
+ * it spends several keys per option: the server emits only the last read, and
+ * the client throws "Hydration Mismatch" on the first, taking the whole tree
+ * with it. One tracked memo keeps both sides on the same key.
+ */
+export function OptionContent(props: OptionContentProps): JSX.Element {
+  const content = createMemo(() => props.render());
+  const isPrimitive = () => {
+    const value = content();
+    return typeof value === "string" || typeof value === "number";
+  };
+  return <>{isPrimitive() ? <span {...props.labelProps}>{content()}</span> : content()}</>;
+}
+
 /** A Solid ref target: a callback, a mutable `{ current }` object, or undefined. */
 export type RefLike<T> = T | ((el: T) => void) | { current?: T | null } | undefined;
 

@@ -260,3 +260,69 @@ Certified against preview `:4341` (`COMPARISON_CHROMIUM_ARGS=--disable-software-
   `createRenderEffect` register/focus hung unit tests (focus retriggers the
   flush) — left `createEffect` + rAF. Remaining cause is DragManager
   focus vs `ariaHideOutside` timing, not the Virtualizer scroller.
+
+#### SSR hydration of a virtualized ListBox (PR #33 lane, 2026-09-02 19:30)
+
+Found while repairing `apps/web` `docs/components/virtualizer.tsx` for the
+context-only Virtualizer (the page still passed `class`/`style` to
+`Virtualizer` → `typecheck:apps` red). The rewritten page — `Virtualizer >
+ListBox` with List / Grid / Waterfall layouts, styled on the ListBox — threw
+`Hydration Mismatch` in the route error boundary on first load. "Hydration
+keys unchanged (`vp run test:hydrate`)" above held only because no hydrate
+fixture mounted a Virtualizer or an option with element children. Two causes,
+both below the docs page:
+
+- **Scroll view measures mid-walk** (`packages/solidaria/src/virtualizer/ScrollView.ts`).
+  RAC `useScrollView` initializes the viewport in `useLayoutEffect`
+  (`ScrollView.tsx:305-315`); React runs that after the hydrated commit. Solid
+  runs `createRenderEffect` while `sharedConfig.context` is still live, so the
+  0-height server window (3 overscan rows) widened to the client viewport
+  during the walk and the new rows called `getNextElement` for nodes the
+  server never emitted. **Fix:** the render effect skips the first emit while
+  `sharedConfig.context && !sharedConfig.done` (dom-expressions
+  `isHydrating()`); the `createEffect` — which Solid runs after
+  `setHydrateContext()` — makes the first emit as a client re-render. CSR
+  first-paint (the D-scroll fix above) is unchanged: the render effect still
+  measures when no walk is live.
+- **Option children read three times** (`ListBox.tsx`, `ComboBox.tsx`,
+  `Select.tsx` option bodies). `hasPrimitiveLabel()` probed
+  `typeof props.children` twice and `renderChildren()` read it a third time.
+  Every read of a compiled element child consumes a hydration key on both
+  sides; the server emits only the last read (`…3102`), the client throws on
+  the first (`…3100`). Text-only options were immune (no template), which is
+  why the list demo hydrated and the grid tiles did not. **Fix:** internal
+  `OptionContent` (`utils.tsx`, not exported from the package) reads
+  `renderChildren()` once in a tracked memo and wraps a primitive in the
+  `labelProps` span; the three option components mount it inside their
+  `TextContext` provider so `<Text>` slots still resolve.
+
+Tests (red → green, both remounted against the unfixed tree):
+
+- `packages/solidaria-components/test/Virtualizer.ssr.test.tsx` — zero-height
+  server window is a strict subset of the collection; element-children ListBox
+  writes one tile per option.
+- `packages/solidaria-components/test/Virtualizer.hydrate.test.tsx` — hydrates
+  the server window with a 320px stubbed `clientHeight` and asserts the range
+  grows to ≥ 10 rows *after* hydration (red: `Hydration Mismatch … 00000003000200132030`);
+  element-children options hydrate and the tile keeps the server `data-hk`
+  (red: `Hydration Mismatch … 0030002000203100`).
+
+Browser (dev `:4399`, Playwright): all three docs demos hydrate; list 12/1000
+mounted (`scrollHeight` 40000), grid 21/200 in 3×169px columns (`scrollHeight`
+8040), waterfall 16/200 in 2 columns; grid `scrollTop=4000` → `aria-posinset`
+94–114, `padding-top` 3720px. Console: no `Hydration Mismatch`.
+
+Gates: `vp check` pass · `typecheck` + `typecheck:apps` pass · `test:ssr` 13
+files / 29 · `test:hydrate` 13 files / 30 + 1 expected fail ·
+`guard:idiomatic-solid`, `guard:upstream-test-parity` (Δ0),
+`guard:source-artifacts`, `guard:attribution` PASS. Changeset
+`.changeset/virtualizer-listbox-option-hydration.md`.
+
+Open (not this lane): the same probe-then-render idiom —
+`typeof x.children === "function" ? x.children(...) : x.children` and
+variants — appears at ~40 sites across `solidaria-components`,
+`solid-spectrum`, and `viviana-ui` (`rg -n 'typeof (props|local)\.children ==='`).
+Every site that reads a non-function child more than once has the same key
+drift when that child is a compiled element under SSR; only the sites with
+hydrate fixtures are proven either way. Needs its own ticket and a shared
+one-read helper, not 40 patches.
