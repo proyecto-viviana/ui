@@ -39,8 +39,6 @@ import {
   createContext,
   createMemo,
   createSignal,
-  onCleanup,
-  onMount,
   splitProps,
   useContext,
 } from "solid-js";
@@ -49,9 +47,17 @@ import type {
   DropOperation,
   DropTarget,
   ItemDropTarget,
+  Key,
 } from "@proyecto-viviana/solid-stately";
-import { CollectionRendererContext, type CollectionRendererContextValue } from "./Collection";
-import { filterDOMProps } from "./utils";
+import { createScrollView } from "@proyecto-viviana/solidaria";
+import {
+  CollectionRendererContext,
+  DefaultCollectionRenderer,
+  type CollectionRendererContextValue,
+  type CollectionRootProps,
+  type CollectionBranchProps,
+} from "./Collection";
+import { mergePersistedKeysIntoVirtualRange } from "./DragAndDrop";
 import {
   GridLayout,
   ListLayout,
@@ -132,6 +138,27 @@ export type VirtualizerDropOperationResolver = (
 ) => DropOperation;
 
 export const VirtualizerContext = createContext<VirtualizerContextValue<unknown> | null>(null);
+
+interface VirtualizerOptionsContextValue {
+  layout: VirtualizerLayout<unknown>;
+  layoutOptions?: unknown;
+  shouldObserveItemSize?: boolean;
+  allowsWindowScrolling: boolean;
+}
+
+const VirtualizerOptionsContext = createContext<VirtualizerOptionsContextValue | null>(null);
+
+interface VirtualizerScrollRuntime {
+  setScrollOffset: (value: number) => void;
+  setScrollOffsetX: (value: number) => void;
+  setViewportOffset: (value: number) => void;
+  setWindowViewportSize: (value: number) => void;
+  setMeasuredViewportSize: (value: number) => void;
+  setMeasuredViewportWidth: (value: number) => void;
+  allowsWindowScrolling: () => boolean;
+}
+
+const VirtualizerScrollRuntimeContext = createContext<VirtualizerScrollRuntime | null>(null);
 
 export function useVirtualizerContext<O>(): VirtualizerContextValue<O> | null {
   return useContext(VirtualizerContext) as VirtualizerContextValue<O> | null;
@@ -221,11 +248,6 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   const [measuredViewportSize, setMeasuredViewportSize] = createSignal(0);
   const [measuredViewportWidth, setMeasuredViewportWidth] = createSignal(0);
   const allowsWindowScrolling = createMemo(() => local.allowsWindowScrolling ?? true);
-  // Whether the scroll view is actively scrolling. Mirrors upstream ScrollView's
-  // `isScrolling`: while scrolling, the content gets `pointer-events: none` so pointer
-  // events don't hit rows recycling under a stationary cursor (avoiding hover-state
-  // flicker and needless hit-testing). It flips back 300ms after the last scroll.
-  const [isScrolling, setIsScrolling] = createSignal(false);
   const [dropTargetResolver, setDropTargetResolver] = createSignal<
     VirtualizerDropTargetResolver | undefined
   >(undefined);
@@ -241,7 +263,6 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
   const [keyboardNavigationOverride, setKeyboardNavigationOverride] = createSignal<
     VirtualizerKeyboardNavigationOverride | undefined
   >(undefined);
-  let containerRef: HTMLDivElement | undefined;
   const fallbackLayout = new ListLayout();
   const visibleRangeCache = new Map<number, VirtualizerVisibleRange>();
   const layoutInfoCache = new Map<number, LayoutInfo>();
@@ -759,136 +780,122 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
       getKeyboardPageNavigationTarget,
     },
     renderDropIndicator: local.renderDropIndicator,
+    CollectionRoot,
+    CollectionBranch,
   }));
 
-  const filteredDomProps = createMemo(() => filterDOMProps(domProps, { global: true }));
-
-  const updateViewportSize = () => {
-    if (!containerRef) return;
-    const nextHeight = containerRef.clientHeight;
-    const nextWidth = containerRef.clientWidth;
-    if (nextHeight !== measuredViewportSize()) setMeasuredViewportSize(nextHeight);
-    if (nextWidth !== measuredViewportWidth()) setMeasuredViewportWidth(nextWidth);
+  const scrollRuntime: VirtualizerScrollRuntime = {
+    setScrollOffset,
+    setScrollOffsetX,
+    setViewportOffset,
+    setWindowViewportSize,
+    setMeasuredViewportSize,
+    setMeasuredViewportWidth,
+    allowsWindowScrolling,
   };
 
-  const updateWindowViewport = () => {
-    if (typeof window === "undefined") return;
-    const next = window.innerHeight;
-    if (next !== windowViewportSize()) setWindowViewportSize(next);
-  };
-
-  // Recompute how far the scroll view's top edge sits above the window viewport.
-  // A negative bounding-rect top means the scroll view has been pushed up by page
-  // (or ancestor) scrolling; the offset is the amount scrolled past its top.
-  const updateViewportOffset = () => {
-    if (!containerRef || !allowsWindowScrolling()) return;
-    const rect = containerRef.getBoundingClientRect();
-    const next = rect.y < 0 ? -rect.y : 0;
-    if (next !== viewportOffset()) setViewportOffset(next);
-  };
-
-  let scrollFrame: number | undefined;
-  // Debounce handle that resets `isScrolling` after scrolling stops.
-  let scrollEndTimeout: ReturnType<typeof setTimeout> | undefined;
-  onCleanup(() => {
-    if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
-    if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
-  });
-
-  onMount(() => {
-    updateViewportSize();
-    updateWindowViewport();
-    updateViewportOffset();
-
-    const handleResize = () => {
-      updateViewportSize();
-      updateWindowViewport();
-      updateViewportOffset();
-    };
-    window.addEventListener("resize", handleResize);
-
-    const resizeObserver =
-      typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => updateViewportSize()) : null;
-    if (containerRef && resizeObserver) {
-      resizeObserver.observe(containerRef);
-    }
-
-    // A capturing listener on the document sees scroll events on the scroll view
-    // itself as well as on any ancestor (including the page), so a single handler
-    // can update the local scroll position or the window offset as appropriate.
-    const handleDocumentScroll = (e: Event) => {
-      if (!containerRef) return;
-      const target = e.target as Node | null;
-      const isContainer = target === containerRef;
-      const isAncestor =
-        target === document ||
-        target === (window as unknown as Node) ||
-        (target instanceof Node && target.contains(containerRef));
-      if (!isContainer && !isAncestor) return;
-      // An ancestor/page scroll only matters when the collection scrolls with the page.
-      if (!isContainer && !allowsWindowScrolling()) return;
-
-      // Flag active scrolling and (re)arm the reset for 300ms after the last scroll.
-      // Our handler is already rAF-throttled, so a plain clear/reset debounce matches
-      // upstream's scrollEndTime bookkeeping without the extra accounting.
-      if (!isScrolling()) setIsScrolling(true);
-      if (scrollEndTimeout != null) clearTimeout(scrollEndTimeout);
-      scrollEndTimeout = setTimeout(() => {
-        scrollEndTimeout = undefined;
-        setIsScrolling(false);
-      }, 300);
-
-      if (scrollFrame != null) cancelAnimationFrame(scrollFrame);
-      scrollFrame = requestAnimationFrame(() => {
-        scrollFrame = undefined;
-        if (isContainer) {
-          const next = Math.max(0, containerRef!.scrollTop);
-          if (next !== scrollOffset()) setScrollOffset(next);
-          const nextX = Math.max(0, containerRef!.scrollLeft);
-          if (nextX !== scrollOffsetX()) setScrollOffsetX(nextX);
-        } else {
-          updateViewportOffset();
-        }
-        updateViewportSize();
-      });
-    };
-    document.addEventListener("scroll", handleDocumentScroll, true);
-
-    onCleanup(() => {
-      window.removeEventListener("resize", handleResize);
-      resizeObserver?.disconnect();
-      document.removeEventListener("scroll", handleDocumentScroll, true);
-    });
-  });
-
+  // RAC `Virtualizer.tsx:71-96`: context-only — no DOM. The collection element
+  // is the scroller; CollectionRoot owns useScrollView against that ref.
   return (
     <CollectionRendererContext.Provider value={collectionRenderer()}>
       <VirtualizerContext.Provider value={contextValue()}>
-        <div
-          {...filteredDomProps()}
-          ref={(el) => {
-            containerRef = el;
+        <VirtualizerOptionsContext.Provider
+          value={{
+            layout: resolvedLayout() as VirtualizerLayout<unknown>,
+            layoutOptions: resolvedLayoutOptions(),
+            allowsWindowScrolling: allowsWindowScrolling(),
           }}
-          class={local.class}
-          style={local.style}
-          data-virtualizer
         >
-          {/*
-            Content wrapper mirroring upstream ScrollView's inner content div. It
-            carries the `pointer-events: none` while-scrolling optimization and is
-            otherwise a layout-transparent passthrough (the outer div remains the
-            scroll container we measure and read scroll offsets from).
-          */}
-          <div
-            data-virtualizer-content
-            style={{ "pointer-events": isScrolling() ? "none" : undefined }}
-          >
+          <VirtualizerScrollRuntimeContext.Provider value={scrollRuntime}>
             {local.children}
-          </div>
-        </div>
+          </VirtualizerScrollRuntimeContext.Provider>
+        </VirtualizerOptionsContext.Provider>
       </VirtualizerContext.Provider>
     </CollectionRendererContext.Provider>
   );
+}
+
+function resolveScrollRef(
+  scrollRef: CollectionRootProps<unknown>["scrollRef"],
+): HTMLElement | null {
+  if (!scrollRef) return null;
+  return scrollRef() ?? null;
+}
+
+/**
+ * RAC `Virtualizer.tsx:99-151` CollectionRoot: owns virtualizer scroll against
+ * `scrollRef` (the collection element) and renders the single content div.
+ */
+function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
+  const virtualizer = useVirtualizerContext();
+  const runtime = useContext(VirtualizerScrollRuntimeContext);
+
+  const scrollView = createScrollView({
+    getScrollElement: () => resolveScrollRef(props.scrollRef),
+    allowsWindowScrolling: () => runtime?.allowsWindowScrolling() ?? true,
+    onScrollPositionChange: (position) => {
+      runtime?.setScrollOffset(position.y);
+      runtime?.setScrollOffsetX(position.x);
+    },
+    onViewportOffsetChange: (offset) => runtime?.setViewportOffset(offset),
+    onSizeChange: (size) => {
+      runtime?.setMeasuredViewportSize(size.height);
+      runtime?.setMeasuredViewportWidth(size.width);
+    },
+    onWindowViewportChange: (height) => runtime?.setWindowViewportSize(height),
+  });
+
+  const itemCount = () => {
+    try {
+      return Array.from(props.collection ?? []).length;
+    } catch {
+      return 0;
+    }
+  };
+
+  const range = createMemo(() => {
+    if (!virtualizer) return null;
+    const count = itemCount();
+    if (count <= 0) return null;
+    const baseRange = virtualizer.getVisibleRange(count);
+    if (props.persistedKeys == null || props.persistedKeys.size === 0) return baseRange;
+    const items = Array.from(props.collection ?? []) as Array<{ key?: Key }>;
+    const persistedIndexes = Array.from(props.persistedKeys)
+      .map((key) => items.findIndex((item) => item.key === key))
+      .filter((index) => index >= 0);
+    return mergePersistedKeysIntoVirtualRange(baseRange, persistedIndexes, count, virtualizer, 80);
+  });
+
+  const contentProps = (): JSX.HTMLAttributes<HTMLDivElement> => {
+    const base = scrollView.contentProps();
+    const nextRange = range();
+    const horizontal = virtualizer?.orientation === "horizontal";
+    const padStart = nextRange?.offsetTop ?? 0;
+    const padEnd = nextRange?.offsetBottom ?? 0;
+    return {
+      ...base,
+      style: {
+        ...(base.style as JSX.CSSProperties | undefined),
+        ...(horizontal
+          ? { "padding-left": `${padStart}px`, "padding-right": `${padEnd}px` }
+          : { "padding-top": `${padStart}px`, "padding-bottom": `${padEnd}px` }),
+      },
+    };
+  };
+
+  return (
+    <div {...contentProps()}>
+      {props.children ??
+        DefaultCollectionRenderer.CollectionRoot({
+          collection: props.collection,
+          renderDropIndicator: props.renderDropIndicator,
+        })}
+    </div>
+  );
+}
+
+function CollectionBranch<T>(props: CollectionBranchProps<T>): JSX.Element {
+  return DefaultCollectionRenderer.CollectionBranch(props);
 }
 
 export { ListLayout, GridLayout, WaterfallLayout, TableLayout };

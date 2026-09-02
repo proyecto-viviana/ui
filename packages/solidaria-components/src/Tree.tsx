@@ -81,6 +81,7 @@ import {
   type CollectionRendererContextValue,
   type SectionProps,
   useCollectionRenderer,
+  useCollectionRoot,
 } from "./Collection";
 import {
   GridListHeader,
@@ -853,6 +854,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 
   const locale = useLocale();
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const flatItems = createMemo<TreeItemData<T>[]>(() =>
     flattenCollectionEntries(stateProps.items ?? []),
   );
@@ -903,7 +905,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
-      isVirtualized: ariaProps.isVirtualized,
+      isVirtualized: ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized,
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
       keyboardNavigationBehavior: ariaProps.keyboardNavigationBehavior,
@@ -952,7 +954,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     return state.collection.rows;
   });
   const virtualizer = useVirtualizerContext();
-  const parentCollectionRenderer = useCollectionRenderer<TreeItemData<T>>();
   const getDropTargetByIndex = (
     index: number,
     position: "before" | "after" | "on",
@@ -1265,6 +1266,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
   const rootKeyByNodeKey = createMemo(() => {
     const rootMap = new Map<Key, Key>();
     for (const row of visibleRows()) {
@@ -1373,16 +1375,12 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
                     {local.renderEmptyState()}
                   </div>
                 </div>
-              ) : (
-                <>
-                  {virtualRange()?.offsetTop ? (
-                    <div
-                      role="presentation"
-                      aria-hidden="true"
-                      style={{ height: `${virtualRange()!.offsetTop}px` }}
-                      data-virtualizer-spacer="top"
-                    />
-                  ) : null}
+              ) : parentCollectionRenderer?.isVirtualized ? (
+                <CollectionRoot
+                  collection={virtualRange() ? visibleRows() : []}
+                  scrollRef={() => ref()}
+                  persistedKeys={persistedKeys()}
+                >
                   <Show
                     when={hasSections()}
                     fallback={
@@ -1415,14 +1413,41 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
                       )}
                     </For>
                   </Show>
-                  {virtualRange()?.offsetBottom ? (
-                    <div
-                      role="presentation"
-                      aria-hidden="true"
-                      style={{ height: `${virtualRange()!.offsetBottom}px` }}
-                      data-virtualizer-spacer="bottom"
-                    />
-                  ) : null}
+                </CollectionRoot>
+              ) : (
+                <>
+                  <Show
+                    when={hasSections()}
+                    fallback={
+                      <For each={renderableRows()}>
+                        {(row) => renderTreeRow(row.node, row.globalIndex)}
+                      </For>
+                    }
+                  >
+                    <For each={sectionedRenderableRows() ?? []}>
+                      {(entry) => (
+                        <Show when={entry.rows.length > 0}>
+                          <Show
+                            when={entry.type === "section"}
+                            fallback={
+                              <For each={entry.rows}>
+                                {(row) => renderTreeRow(row.node, row.globalIndex)}
+                              </For>
+                            }
+                          >
+                            <TreeSection>
+                              {entry.type === "section" && entry.section.title ? (
+                                <TreeHeader>{entry.section.title}</TreeHeader>
+                              ) : null}
+                              <For each={entry.rows}>
+                                {(row) => renderTreeRow(row.node, row.globalIndex)}
+                              </For>
+                            </TreeSection>
+                          </Show>
+                        </Show>
+                      )}
+                    </For>
+                  </Show>
                 </>
               )}
             </SharedElementTransition>

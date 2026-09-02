@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from 
 import { Tree, TreeItem } from "../src/Tree";
 
 describe("Virtualizer", () => {
-  it("renders children in virtualizer container", () => {
+  it("renders no wrapper DOM around children", () => {
     const layout: VirtualizerLayout = {};
     const { container } = render(() => (
       <Virtualizer layout={layout}>
@@ -29,7 +29,117 @@ describe("Virtualizer", () => {
     ));
 
     expect(screen.getByText("Item 1")).toBeInTheDocument();
-    expect(container.querySelector("[data-virtualizer]")).toBeInTheDocument();
+    expect(container.querySelector("[data-virtualizer]")).not.toBeInTheDocument();
+  });
+
+  it("uses the collection element as the scroller with RAC listbox > content > items shape", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const items = Array.from({ length: 50 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+    const { container } = render(() => (
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
+        <ListBox
+          aria-label="Collection scroller list"
+          items={items}
+          getKey={(item) => item.id}
+          style={{ height: "60px", overflow: "auto" }}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    expect(container.querySelector("[data-virtualizer]")).not.toBeInTheDocument();
+    const listbox = screen.getByRole("listbox") as HTMLDivElement;
+    expect(listbox.tagName).toBe("DIV");
+    const content = listbox.firstElementChild as HTMLDivElement;
+    expect(content.tagName).toBe("DIV");
+    expect(content.getAttribute("role")).toBe("presentation");
+    const options = content.querySelectorAll('[role="option"]');
+    expect(options.length).toBeGreaterThan(0);
+    expect(listbox.querySelector(':scope > [role="option"]')).toBeNull();
+
+    vi.spyOn(listbox, "clientHeight", "get").mockReturnValue(60);
+    vi.spyOn(listbox, "scrollHeight", "get").mockReturnValue(50 * 20);
+    expect(listbox.scrollHeight).toBeGreaterThan(listbox.clientHeight);
+
+    listbox.focus();
+    fireEvent.keyDown(listbox, { key: "ArrowDown" });
+    fireEvent.keyDown(listbox, { key: "ArrowDown" });
+    fireEvent.keyDown(listbox, { key: "ArrowDown" });
+    fireEvent.keyDown(listbox, { key: "ArrowDown" });
+    // The collection element is the scroller the virtualizer observes
+    // (RAC CollectionRoot `scrollRef`). Scrolling it, not a wrapper, moves the window.
+    listbox.scrollTop = 80;
+    fireEvent.scroll(listbox);
+    expect(listbox.scrollTop).toBe(80);
+    expect(screen.getByText("Item 4")).toBeInTheDocument();
+    expect(screen.queryByText("Item 0")).not.toBeInTheDocument();
+  });
+
+  it("publishes option aria-posinset and aria-setsize for the full collection when windowed", () => {
+    const items = Array.from({ length: 40 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+    render(() => (
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
+        <ListBox aria-label="Windowed posinset list" items={items} getKey={(item) => item.id}>
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBeLessThan(40);
+    expect(options[0]).toHaveAttribute("aria-posinset", "1");
+    expect(options[0]).toHaveAttribute("aria-setsize", "40");
+  });
+
+  it("keeps heading and loader row heights in CollectionRoot content padding", () => {
+    const headingHeight = 32;
+    const loaderHeight = 48;
+    const layout: VirtualizerLayout = {
+      getVisibleRange() {
+        return {
+          start: 1,
+          end: 3,
+          offsetTop: headingHeight + 20,
+          offsetBottom: loaderHeight,
+        };
+      },
+    };
+    const items = Array.from({ length: 20 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+    render(() => (
+      <Virtualizer layout={layout} layoutOptions={{ viewportSize: 60 }}>
+        <ListBox
+          aria-label="Heading loader heights"
+          items={items}
+          getKey={(item) => item.id}
+          hasMore
+          isLoading
+          onLoadMore={() => undefined}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+    const listbox = screen.getByRole("listbox");
+    const content = listbox.firstElementChild as HTMLElement;
+    expect(content.style.paddingTop).toBe(`${headingHeight + 20}px`);
+    expect(content.style.paddingBottom).toBe(`${loaderHeight}px`);
+    const loader = screen.getByRole("option", { name: "Loading more..." });
+    expect(loader).toBeInTheDocument();
+    expect(loader.parentElement).toBe(listbox);
   });
 
   it("instantiates class layouts and provides context", () => {
@@ -249,11 +359,20 @@ describe("Virtualizer", () => {
 
     render(() => (
       <Virtualizer layout={{}}>
+        <ListBox
+          aria-label="Resize observed list"
+          items={[{ id: "0", label: "A" }]}
+          getKey={(item) => item.id}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
         <Consumer />
       </Virtualizer>
     ));
 
-    expect(screen.getByTestId("resized-layout").textContent).toContain('"width":120');
+    await waitFor(() => {
+      expect(screen.getByTestId("resized-layout").textContent).toContain('"width":120');
+    });
 
     width = 260;
     height = 100;
@@ -891,7 +1010,12 @@ describe("Virtualizer", () => {
         layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
         style={{ height: "60px", overflow: "auto" }}
       >
-        <ListBox aria-label="Virtualized list" items={items} getKey={(item) => item.id}>
+        <ListBox
+          aria-label="Virtualized list"
+          items={items}
+          getKey={(item) => item.id}
+          style={{ height: "60px", overflow: "auto" }}
+        >
           {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
         </ListBox>
       </Virtualizer>
@@ -901,7 +1025,7 @@ describe("Virtualizer", () => {
     expect(screen.getByText("Item 2")).toBeInTheDocument();
     expect(screen.queryByText("Item 5")).not.toBeInTheDocument();
 
-    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const container = screen.getByRole("listbox") as HTMLDivElement;
     container.scrollTop = 80;
     fireEvent.scroll(container);
 
@@ -930,14 +1054,19 @@ describe("Virtualizer", () => {
         layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
         style={{ height: "60px", overflow: "auto" }}
       >
-        <ListBox aria-label="Pointer events list" items={items} getKey={(item) => item.id}>
+        <ListBox
+          aria-label="Pointer events list"
+          items={items}
+          getKey={(item) => item.id}
+          style={{ height: "60px", overflow: "auto" }}
+        >
           {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
         </ListBox>
       </Virtualizer>
     ));
 
-    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
-    const content = container.querySelector("[data-virtualizer-content]") as HTMLDivElement;
+    const container = screen.getByRole("listbox") as HTMLDivElement;
+    const content = container.firstElementChild as HTMLDivElement;
 
     const initial = content.style.pointerEvents;
     container.scrollTop = 40;
@@ -996,7 +1125,11 @@ describe("Virtualizer", () => {
         layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
         style={{ height: "40px", overflow: "auto" }}
       >
-        <Tree aria-label="Sectioned virtual tree" items={sectionedTreeItems as any}>
+        <Tree
+          aria-label="Sectioned virtual tree"
+          items={sectionedTreeItems as any}
+          style={{ height: "40px", overflow: "auto" }}
+        >
           {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
         </Tree>
       </Virtualizer>
@@ -1005,7 +1138,7 @@ describe("Virtualizer", () => {
     expect(screen.getByRole("rowheader", { name: "Section A" })).toBeInTheDocument();
     expect(screen.queryByRole("rowheader", { name: "Section B" })).not.toBeInTheDocument();
 
-    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const container = screen.getByRole("treegrid") as HTMLDivElement;
     container.scrollTop = 20;
     fireEvent.scroll(container);
 
@@ -1056,7 +1189,7 @@ describe("Virtualizer", () => {
     expect(screen.getByRole("rowheader", { name: "Section A" })).toBeInTheDocument();
     expect(screen.queryByRole("rowheader", { name: "Section B" })).not.toBeInTheDocument();
 
-    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const container = screen.getByRole("treegrid") as HTMLDivElement;
     container.scrollTop = 60;
     fireEvent.scroll(container);
 
@@ -1179,7 +1312,7 @@ describe("Virtualizer", () => {
     ));
 
     const initialRenderCalls = renderCalls;
-    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const container = screen.getByRole("listbox") as HTMLDivElement;
     container.scrollTop = 5;
     fireEvent.scroll(container);
 
@@ -2077,8 +2210,9 @@ describe("Virtualizer", () => {
       </Virtualizer>
     ));
 
-    const container = document.querySelector("[data-virtualizer]") as HTMLDivElement;
-    fireEvent.scroll(container, { target: { scrollTop: 40 } }); // center grandchild row
+    const container = screen.getByRole("treegrid") as HTMLDivElement;
+    container.scrollTop = 40;
+    fireEvent.scroll(container);
 
     // Current row indicator remains.
     expect(screen.getByTestId("tree-offscreen-drop-after-2")).toBeInTheDocument();
@@ -2326,7 +2460,7 @@ describe("Virtualizer", () => {
       </Virtualizer>
     ));
 
-    const virtualizer = container.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const virtualizer = screen.getByRole("listbox") as HTMLDivElement;
     vi.spyOn(virtualizer, "getBoundingClientRect").mockImplementation(
       () => ({ y: boundingTop, top: boundingTop }) as DOMRect,
     );
@@ -2385,7 +2519,7 @@ describe("Virtualizer", () => {
       </Virtualizer>
     ));
 
-    const virtualizer = container.querySelector("[data-virtualizer]") as HTMLDivElement;
+    const virtualizer = screen.getByRole("listbox") as HTMLDivElement;
     vi.spyOn(virtualizer, "getBoundingClientRect").mockImplementation(
       () => ({ y: boundingTop, top: boundingTop }) as DOMRect,
     );
@@ -2520,7 +2654,7 @@ describe("Virtualizer", () => {
       horizontal.unmount();
     });
 
-    it("renders virtualizer spacers along width when the layout is horizontal", () => {
+    it("pads the CollectionRoot content div along the inline axis when the layout is horizontal", () => {
       const items = Array.from({ length: 200 }, (_, i) => ({ id: `i${i}`, label: `Item ${i}` }));
       const { container } = render(() => (
         <Virtualizer
@@ -2537,11 +2671,14 @@ describe("Virtualizer", () => {
           </GridList>
         </Virtualizer>
       ));
-      const spacer = container.querySelector("[data-virtualizer-spacer]") as HTMLElement | null;
-      expect(spacer).not.toBeNull();
-      // A horizontal layout reserves the windowed-out extent along width, not height.
-      expect(spacer!.style.width).not.toBe("");
-      expect(spacer!.style.height).toBe("");
+      const grid = screen.getByRole("grid");
+      const content = grid.firstElementChild as HTMLElement;
+      expect(content).not.toBeNull();
+      // A horizontal layout reserves the windowed-out extent as inline padding,
+      // not as spacer nodes (RAC CollectionRoot content div).
+      expect(content.style.paddingRight).not.toBe("");
+      expect(content.style.paddingRight).not.toBe("0px");
+      expect(content.style.paddingTop).toBe("");
     });
   });
 });

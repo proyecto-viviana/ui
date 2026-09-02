@@ -684,6 +684,14 @@ export {
   type Size,
 } from "./selection";
 
+export {
+  createScrollView,
+  getScrollLeft,
+  setScrollLeft,
+  type CreateScrollViewOptions,
+  type ScrollViewAria,
+} from "./virtualizer";
+
 export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";
 export { createDescription, type DescriptionProps } from "./utils";

@@ -84,6 +84,7 @@ import {
   useCollectionRenderer,
   flattenCollectionEntries,
   isCollectionSection,
+  useCollectionRoot,
 } from "./Collection";
 import { useVirtualizerContext } from "./Virtualizer";
 import {
@@ -1224,6 +1225,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
   const menuItemContextValue = createMemo<MenuItemContextValue>(() =>
     stateProps.shouldCloseOnSelect !== undefined
       ? { closeOnSelect: stateProps.shouldCloseOnSelect }
@@ -1231,7 +1233,81 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
   const menuListChildren = () => (
     <SharedElementTransition>
-      {usesStaticChildren() ? (
+      {parentCollectionRenderer?.isVirtualized ? (
+        <CollectionRoot
+          collection={virtualRange() ? (stateProps.items ?? []) : []}
+          scrollRef={() => menuRef()}
+          persistedKeys={persistedKeys()}
+        >
+          {usesStaticChildren() ? (
+            renderStaticChildren()
+          ) : hasSections() ? (
+            <For each={sectionedRenderEntries()}>
+              {(entry) =>
+                entry.type === "section" ? (
+                  <div role="presentation" data-section-wrapper>
+                    <Section class="solidaria-Menu-section">
+                      {entry.section.title != null && (
+                        <Header class="solidaria-Menu-sectionHeader">{entry.section.title}</Header>
+                      )}
+                      <Group class="solidaria-Menu-sectionGroup">
+                        <div role="group" aria-label={entry.section["aria-label"]}>
+                          <For each={entry.items}>
+                            {(indexedItem) => (
+                              <>
+                                {collectionRenderer().renderDropIndicator?.(
+                                  indexedItem.index,
+                                  "before",
+                                )}
+                                {collectionRenderer().renderDropIndicator?.(
+                                  indexedItem.index,
+                                  "on",
+                                )}
+                                {renderDynamicItem(indexedItem.item)}
+                                {collectionRenderer().renderDropIndicator?.(
+                                  indexedItem.index,
+                                  "after",
+                                )}
+                              </>
+                            )}
+                          </For>
+                        </div>
+                      </Group>
+                    </Section>
+                  </div>
+                ) : (
+                  <>
+                    {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
+                    {collectionRenderer().renderDropIndicator?.(entry.item.index, "on")}
+                    {renderDynamicItem(entry.item.item)}
+                    {collectionRenderer().renderDropIndicator?.(entry.item.index, "after")}
+                  </>
+                )
+              }
+            </For>
+          ) : (
+            <For each={visibleItems()}>
+              {(item, index) => {
+                const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                const beforeIndicator = () =>
+                  collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
+                const onIndicator = () =>
+                  collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
+                const afterIndicator = () =>
+                  collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
+                return (
+                  <>
+                    {beforeIndicator()}
+                    {onIndicator()}
+                    {renderDynamicItem(item as T)}
+                    {afterIndicator()}
+                  </>
+                );
+              }}
+            </For>
+          )}
+        </CollectionRoot>
+      ) : usesStaticChildren() ? (
         renderStaticChildren()
       ) : hasSections() ? (
         <For each={sectionedRenderEntries()}>
@@ -1273,14 +1349,6 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
         </For>
       ) : (
         <>
-          {virtualRange()?.offsetTop ? (
-            <div
-              role="presentation"
-              aria-hidden="true"
-              style={{ height: `${virtualRange()!.offsetTop}px` }}
-              data-virtualizer-spacer="top"
-            />
-          ) : null}
           <For each={visibleItems()}>
             {(item, index) => {
               const itemIndex = () => (virtualRange()?.start ?? 0) + index();
@@ -1300,14 +1368,6 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
               );
             }}
           </For>
-          {virtualRange()?.offsetBottom ? (
-            <div
-              role="presentation"
-              aria-hidden="true"
-              style={{ height: `${virtualRange()!.offsetBottom}px` }}
-              data-virtualizer-spacer="bottom"
-            />
-          ) : null}
         </>
       )}
       {state.collection().size === 0 && local.renderEmptyState ? (

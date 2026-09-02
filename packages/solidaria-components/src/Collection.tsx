@@ -93,6 +93,14 @@ export interface CollectionRendererContextValue<T> {
     index: number,
     position: "before" | "after" | "on",
   ) => JSX.Element | undefined;
+  /**
+   * Root renderer for collection items. RAC `CollectionRenderer.CollectionRoot`
+   * (`Collection.tsx:196`). Virtualizer replaces this with a scroll-attached
+   * content wrapper (`react-aria-components/src/Virtualizer.tsx:99-151`).
+   */
+  CollectionRoot?: (props: CollectionRootProps<T>) => JSX.Element;
+  /** Branch renderer for nested collection items. RAC `CollectionBranch`. */
+  CollectionBranch?: (props: CollectionBranchProps<T>) => JSX.Element;
 }
 
 export type CollectionEntry<T> = T | CollectionSection<T>;
@@ -157,11 +165,21 @@ export interface CollectionBranchProps<T> {
 export interface CollectionRootProps<T> {
   collection: Iterable<T>;
   persistedKeys?: Set<Key> | null;
+  /**
+   * The collection element that scrolls. RAC `CollectionRootProps.scrollRef`
+   * (`Collection.tsx:183`).
+   */
+  scrollRef?: () => HTMLElement | null | undefined;
   renderDropIndicator?: (target: {
     type: "item";
     key: Key;
     dropPosition: "before" | "after" | "on";
   }) => JSX.Element | undefined;
+  /**
+   * Rendered collection items. RAC CollectionRoot renders `node.render()` from
+   * the collection; Solid collections pass the already-composed item tree.
+   */
+  children?: JSX.Element;
 }
 
 export interface CollectionRenderer<T = unknown> {
@@ -182,6 +200,12 @@ export const HeadingContext = createContext<Partial<HeaderProps> | null>(null);
 
 export function useCollectionRenderer<T>(): CollectionRendererContextValue<T> | null {
   return useContext(CollectionRendererContext) as CollectionRendererContextValue<T> | null;
+}
+
+/** RAC collections always render `CollectionRoot` from the renderer context. */
+export function useCollectionRoot<T>(): (props: CollectionRootProps<T>) => JSX.Element {
+  const renderer = useCollectionRenderer<T>();
+  return renderer?.CollectionRoot ?? DefaultCollectionRenderer.CollectionRoot;
 }
 
 export function isCollectionSection<T>(entry: CollectionEntry<T>): entry is CollectionSection<T> {
@@ -233,6 +257,7 @@ function renderCollectionItems<T>(
 
 export const DefaultCollectionRenderer: CollectionRenderer<unknown> = {
   CollectionRoot(props) {
+    if (props.children != null) return props.children;
     return renderCollectionItems(props.collection, props.renderDropIndicator);
   },
   CollectionBranch(props) {

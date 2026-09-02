@@ -69,6 +69,7 @@ import {
   type CollectionRendererContextValue,
   type SectionProps,
   useCollectionRenderer,
+  useCollectionRoot,
 } from "./Collection";
 import { useVirtualizerContext, type Orientation } from "./Virtualizer";
 import {
@@ -351,6 +352,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const locale = useLocale();
 
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
 
   const collection = createMemo(() =>
     buildGridCollection(
@@ -405,7 +407,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
-      isVirtualized: ariaProps.isVirtualized,
+      isVirtualized: ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized,
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
       selectionBehavior: state.selectionBehavior,
@@ -451,7 +453,6 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
 
   const isEmpty = () => stateProps.items.length === 0;
   const virtualizer = useVirtualizerContext();
-  const parentCollectionRenderer = useCollectionRenderer<T>();
   const getItemNodes = createMemo(() =>
     Array.from(state.collection).filter((node) => node.type === "item"),
   );
@@ -609,11 +610,6 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!range) return stateProps.items;
     return stateProps.items.slice(range.start, range.end);
   });
-  // Spacers reserve the windowed-out extent along the virtualizer's primary axis,
-  // so a horizontal layout offsets along width rather than height.
-  const virtualSpacerStyle = (size: number): JSX.CSSProperties =>
-    virtualizer?.orientation === "horizontal" ? { width: `${size}px` } : { height: `${size}px` };
-
   const contextValue = createMemo<GridListContextValue<T>>(() => ({
     state,
     collection: collection(),
@@ -630,6 +626,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
 
   return (
     <GridListContext.Provider value={contextValue() as unknown as GridListContextValue<object>}>
@@ -660,16 +657,12 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
             <SharedElementTransition>
               {isEmpty() && local.renderEmptyState ? (
                 local.renderEmptyState()
-              ) : (
-                <>
-                  {virtualRange()?.offsetTop ? (
-                    <div
-                      role="presentation"
-                      aria-hidden="true"
-                      style={virtualSpacerStyle(virtualRange()!.offsetTop)}
-                      data-virtualizer-spacer="top"
-                    />
-                  ) : null}
+              ) : parentCollectionRenderer?.isVirtualized ? (
+                <CollectionRoot
+                  collection={virtualRange() ? stateProps.items : []}
+                  scrollRef={() => ref()}
+                  persistedKeys={persistedKeys()}
+                >
                   <For each={visibleItems()}>
                     {(item, index) => {
                       const itemIndex = () => (virtualRange()?.start ?? 0) + index();
@@ -689,14 +682,28 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
                       );
                     }}
                   </For>
-                  {virtualRange()?.offsetBottom ? (
-                    <div
-                      role="presentation"
-                      aria-hidden="true"
-                      style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
-                      data-virtualizer-spacer="bottom"
-                    />
-                  ) : null}
+                </CollectionRoot>
+              ) : (
+                <>
+                  <For each={visibleItems()}>
+                    {(item, index) => {
+                      const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                      const beforeIndicator = () =>
+                        collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
+                      const onIndicator = () =>
+                        collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
+                      const afterIndicator = () =>
+                        collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
+                      return (
+                        <>
+                          {beforeIndicator()}
+                          {onIndicator()}
+                          {props.children(item)}
+                          {afterIndicator()}
+                        </>
+                      );
+                    }}
+                  </For>
                 </>
               )}
             </SharedElementTransition>

@@ -6,12 +6,10 @@ import { forEachScenarioPanel } from "./walk";
  * Driver D-scroll — virtualized scroll-window behavior (see
  * `.claude/current/certification.md`).
  *
- * The Virtualizer has no standalone styled S2 oracle, and its two ports diverge
- * by design in *how* they window: react-aria-components positions rows via
- * absolute layout rects inside a full-height scroller, while our port slices the
- * collection and pads with spacer divs. So the DOM windowing structure is NOT
- * certifiable — but the observable scroll-window *behavior* is, and it is what a
- * user and a screen reader actually perceive:
+ * The Virtualizer has no standalone styled S2 oracle. RAC positions rows via
+ * absolute layout rects; the port still slices the collection and pads the
+ * CollectionRoot content div. The collection element is the scroller on both
+ * stacks. Certifiable observables:
  *
  *  1. The set of options strictly visible in the viewport at a given scroll
  *     offset (geometry-determined: it depends only on scrollTop, viewport height,
@@ -68,32 +66,15 @@ interface WindowResult {
 type ListboxHandle = ElementHandle<HTMLElement | SVGElement>;
 
 /**
- * Finds the actual scroll container for a listbox: the nearest self-or-ancestor
- * (RAC makes the listbox element itself the scroller) or, failing that, a
- * descendant (our port wraps the listbox in a `[data-virtualizer]` scroller —
- * an ancestor — while RAC's inner ScrollView would be a descendant). This finder
- * is inlined verbatim into each `evaluate` body below (not shared) because it has
- * to run in the page context, and Playwright cannot serialize a captured closure.
+ * The collection element is the scroller (RAC `Virtualizer.tsx:99-151`:
+ * `scrollRef` is the listbox/grid/table/tree ref). Do not walk ancestors for a
+ * wrapper scroller or treat the inner content div as one — RAC's inner div is
+ * `useScrollView` `contentProps`, not overflow.
  */
 
 async function scrollTo(handle: ListboxHandle, offset: number): Promise<void> {
   await handle.evaluate((listbox, to) => {
-    const isScrollable = (el: HTMLElement): boolean => {
-      const style = getComputedStyle(el);
-      return el.scrollHeight - el.clientHeight > 1 && /(auto|scroll)/.test(style.overflowY);
-    };
-    const findScroller = (start: HTMLElement): HTMLElement => {
-      let el: HTMLElement | null = start;
-      while (el && el !== document.body) {
-        if (isScrollable(el)) return el;
-        el = el.parentElement;
-      }
-      for (const c of Array.from(start.querySelectorAll<HTMLElement>("*"))) {
-        if (isScrollable(c)) return c;
-      }
-      return start;
-    };
-    const scroller = findScroller(listbox as HTMLElement);
+    const scroller = listbox as HTMLElement;
     scroller.scrollTop = to;
     // Native assignment already fires a scroll event; dispatch one explicitly
     // too so the port's capturing document listener updates deterministically.
@@ -106,22 +87,7 @@ async function captureWindow(
   offset: number,
 ): Promise<OffsetWindow & { rendered: number }> {
   return handle.evaluate((listbox, at) => {
-    const isScrollable = (el: HTMLElement): boolean => {
-      const style = getComputedStyle(el);
-      return el.scrollHeight - el.clientHeight > 1 && /(auto|scroll)/.test(style.overflowY);
-    };
-    const findScroller = (start: HTMLElement): HTMLElement => {
-      let el: HTMLElement | null = start;
-      while (el && el !== document.body) {
-        if (isScrollable(el)) return el;
-        el = el.parentElement;
-      }
-      for (const c of Array.from(start.querySelectorAll<HTMLElement>("*"))) {
-        if (isScrollable(c)) return c;
-      }
-      return start;
-    };
-    const scroller = findScroller(listbox as HTMLElement);
+    const scroller = listbox as HTMLElement;
     const scrollerRect = scroller.getBoundingClientRect();
     const viewTop = scrollerRect.top + scroller.clientTop;
     const viewBottom = viewTop + scroller.clientHeight;

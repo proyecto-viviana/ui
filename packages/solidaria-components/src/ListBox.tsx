@@ -98,6 +98,7 @@ import {
   type CollectionRendererContextValue,
   type SectionProps,
   useCollectionRenderer,
+  useCollectionRoot,
   isCollectionSection,
   flattenCollectionEntries,
 } from "./Collection";
@@ -826,10 +827,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!range) return stateProps.items;
     return stateProps.items.slice(range.start, range.end);
   });
-  // Spacers reserve the windowed-out extent along the virtualizer's primary axis,
-  // so a horizontal layout offsets along width rather than height.
-  const virtualSpacerStyle = (size: number): JSX.CSSProperties =>
-    virtualizer?.orientation === "horizontal" ? { width: `${size}px` } : { height: `${size}px` };
   const sectionedRenderEntries = createMemo(() => {
     let globalIndex = 0;
     return stateProps.items.map((entry) => {
@@ -861,6 +858,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
 
   return (
     <ListBoxContext.Provider
@@ -907,7 +905,97 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                 slot={local.slot}
               >
                 <SharedElementTransition>
-                  {isEmpty() && local.renderEmptyState ? (
+                  {parentCollectionRenderer?.isVirtualized ? (
+                    <>
+                      <CollectionRoot
+                        collection={virtualRange() ? stateProps.items : []}
+                        scrollRef={() => listRef()}
+                        persistedKeys={persistedKeys()}
+                      >
+                        {isEmpty() && local.renderEmptyState ? null : hasSections() ? (
+                          <For each={sectionedRenderEntries()}>
+                            {(entry) =>
+                              entry.type === "section" ? (
+                                <div role="presentation" data-section-wrapper>
+                                  <Section class="solidaria-ListBox-section">
+                                    {entry.section.title != null && (
+                                      <Header class="solidaria-ListBox-sectionHeader">
+                                        {entry.section.title}
+                                      </Header>
+                                    )}
+                                    <Group class="solidaria-ListBox-sectionGroup">
+                                      <div role="group" aria-label={entry.section["aria-label"]}>
+                                        <For each={entry.items}>
+                                          {(indexedItem) => (
+                                            <>
+                                              {collectionRenderer().renderDropIndicator?.(
+                                                indexedItem.index,
+                                                "before",
+                                              )}
+                                              {collectionRenderer().renderDropIndicator?.(
+                                                indexedItem.index,
+                                                "on",
+                                              )}
+                                              {local.children(indexedItem.item)}
+                                              {collectionRenderer().renderDropIndicator?.(
+                                                indexedItem.index,
+                                                "after",
+                                              )}
+                                            </>
+                                          )}
+                                        </For>
+                                      </div>
+                                    </Group>
+                                  </Section>
+                                </div>
+                              ) : (
+                                <>
+                                  {collectionRenderer().renderDropIndicator?.(
+                                    entry.item.index,
+                                    "before",
+                                  )}
+                                  {collectionRenderer().renderDropIndicator?.(
+                                    entry.item.index,
+                                    "on",
+                                  )}
+                                  {local.children(entry.item.item)}
+                                  {collectionRenderer().renderDropIndicator?.(
+                                    entry.item.index,
+                                    "after",
+                                  )}
+                                </>
+                              )
+                            }
+                          </For>
+                        ) : (
+                          <For each={visibleItems()}>
+                            {(item, index) => {
+                              const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                              const beforeIndicator = () =>
+                                collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
+                              const onIndicator = () =>
+                                collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
+                              const afterIndicator = () =>
+                                collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
+                              return (
+                                <>
+                                  {beforeIndicator()}
+                                  {onIndicator()}
+                                  {local.children(item as T)}
+                                  {afterIndicator()}
+                                </>
+                              );
+                            }}
+                          </For>
+                        )}
+                      </CollectionRoot>
+                      {isEmpty() && local.renderEmptyState ? (
+                        <div role="option" style={{ display: "contents" }} data-empty-state>
+                          {local.renderEmptyState()}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : isEmpty() && local.renderEmptyState ? (
                     <div role="option" style={{ display: "contents" }} data-empty-state>
                       {local.renderEmptyState()}
                     </div>
@@ -959,14 +1047,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                     </For>
                   ) : (
                     <>
-                      {virtualRange() != null ? (
-                        <div
-                          role="presentation"
-                          aria-hidden="true"
-                          style={virtualSpacerStyle(virtualRange()!.offsetTop)}
-                          data-virtualizer-spacer="top"
-                        />
-                      ) : null}
                       <For each={visibleItems()}>
                         {(item, index) => {
                           const itemIndex = () => (virtualRange()?.start ?? 0) + index();
@@ -986,14 +1066,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           );
                         }}
                       </For>
-                      {virtualRange() != null ? (
-                        <div
-                          role="presentation"
-                          aria-hidden="true"
-                          style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
-                          data-virtualizer-spacer="bottom"
-                        />
-                      ) : null}
                     </>
                   )}
                 </SharedElementTransition>

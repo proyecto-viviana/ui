@@ -331,6 +331,12 @@
       "import": "./dist/tree/index.js",
       "default": "./dist/tree/index.js"
     },
+    "./virtualizer": {
+      "types": "./dist/virtualizer/index.d.ts",
+      "solid": "./dist/virtualizer/index.jsx",
+      "import": "./dist/virtualizer/index.js",
+      "default": "./dist/virtualizer/index.js"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "solid": "./dist/utils/index.jsx",

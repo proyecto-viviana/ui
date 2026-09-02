@@ -592,7 +592,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "513d2d779960ba1fa19a04e24fd95901357147bad8e5fd2a7feed453cccba83b"
+    "contentSha256": "6118dcc080baa73480cd414b698561ed4fc582ea6b9a5c3df4d0997370b7cf27"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",
