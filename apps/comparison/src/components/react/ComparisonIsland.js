@@ -1,7 +1,8 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 // Keep this module JSX-free. Vite dev import-analysis currently sees this
 // client-script dependency before Astro's React JSX transform runs.
-import { useMemo, useRef, useState } from "react";
+import { Fragment, Suspense, use, useEffect, useMemo, useRef, useState } from "react";
+import "@react-spectrum/s2/page.css";
 import {
   Button as RACButton,
   Dialog as RACDialog,
@@ -22,6 +23,12 @@ import {
 import { reactStyledFixtures } from "./fixtures/styled.js";
 function ComparisonIsland(props) {
   const overlayRootRef = useRef(null);
+  const isStyled = props.layer === "styled";
+  useEffect(() => {
+    if (!isStyled) {
+      props.onFixtureReady?.();
+    }
+  }, [isStyled, props.onFixtureReady]);
   return /* @__PURE__ */ jsxs("div", {
     className: "comparison-island",
     children: [
@@ -33,10 +40,10 @@ function ComparisonIsland(props) {
     ],
   });
 }
-function renderLayer({ componentSlug, layer }) {
+function renderLayer({ componentSlug, layer, onFixtureReady }) {
   let rendered;
   if (layer === "styled") {
-    rendered = renderStyled(componentSlug);
+    rendered = renderStyled(componentSlug, onFixtureReady);
   } else if (layer === "components") {
     rendered = renderComponents(componentSlug);
   } else if (layer === "headless") {
@@ -67,14 +74,64 @@ function ComparisonReferenceFrame({ componentSlug, layer, children }) {
     children: /* @__PURE__ */ jsx("div", { className: "comparison-reference-canvas", children }),
   });
 }
-function renderStyled(componentSlug) {
-  return (
-    reactStyledFixtures[componentSlug]?.() ??
-    /* @__PURE__ */ jsx("div", {
-      className: "comparison-empty-state",
-      children: "No styled React Spectrum demo is wired for this component yet.",
-    })
-  );
+const styledModulePromises = new Map();
+
+function styledFixturePlaceholder() {
+  return /* @__PURE__ */ jsx("div", {
+    className: "comparison-fixture-placeholder",
+    "aria-hidden": true,
+  });
+}
+
+function styledEmptyState() {
+  return /* @__PURE__ */ jsx("div", {
+    className: "comparison-empty-state",
+    children: "No styled React Spectrum demo is wired for this component yet.",
+  });
+}
+
+function loadStyledFixtureModule(componentSlug) {
+  const loader = reactStyledFixtures[componentSlug];
+  if (loader == null) {
+    return Promise.resolve(null);
+  }
+  return loader().catch((error) => {
+    console.error(`Failed to load React styled fixture "${componentSlug}"`, error);
+    return null;
+  });
+}
+
+function styledFixtureModulePromise(componentSlug) {
+  let promise = styledModulePromises.get(componentSlug);
+  if (promise == null) {
+    promise = loadStyledFixtureModule(componentSlug);
+    styledModulePromises.set(componentSlug, promise);
+  }
+  return promise;
+}
+
+function StyledFixtureReady({ onReady }) {
+  useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+  return null;
+}
+
+function StyledFixture({ componentSlug, onReady }) {
+  const mod = use(styledFixtureModulePromise(componentSlug));
+  return /* @__PURE__ */ jsxs(Fragment, {
+    children: [
+      mod?.default != null ? mod.default() : styledEmptyState(),
+      /* @__PURE__ */ jsx(StyledFixtureReady, { onReady }),
+    ],
+  });
+}
+
+function renderStyled(componentSlug, onReady) {
+  return /* @__PURE__ */ jsx(Suspense, {
+    fallback: styledFixturePlaceholder(),
+    children: /* @__PURE__ */ jsx(StyledFixture, { componentSlug, onReady }),
+  });
 }
 function renderComponents(componentSlug) {
   switch (componentSlug) {

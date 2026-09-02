@@ -438,6 +438,24 @@ export default defineConfig({
     plugins: [comparisonS2Macros()],
     build: {
       assetsInlineLimit: 0,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            const normalized = id.replaceAll("\\", "/");
+            if (
+              normalized.includes("/node_modules/react-dom/") ||
+              normalized.includes("/node_modules/scheduler/") ||
+              /\/node_modules\/react\//.test(normalized)
+            ) {
+              return "react-runtime";
+            }
+            if (normalized.includes("/node_modules/solid-js/")) {
+              return "solid-runtime";
+            }
+            return undefined;
+          },
+        },
+      },
     },
     resolve: {
       alias: [

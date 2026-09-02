@@ -35,6 +35,7 @@
     "comparison:test:certified": "vp run --filter @proyecto-viviana/comparison test:certified",
     "comparison:test:certified-waivers": "vp test run apps/comparison/src/data/certified-waivers.test.ts",
     "comparison:test:journeys-driver": "vp test run --config apps/comparison/vitest.config.ts",
+    "comparison:test:fixture-registry-split": "vp test run apps/comparison/src/data/fixture-registry-split.test.ts",
     "comparison:test:buttons": "vp run --filter @proyecto-viviana/comparison test:buttons",
     "comparison:test:catalogue": "vp run --filter @proyecto-viviana/comparison test:catalogue",
     "comparison:test:calendar": "vp run --filter @proyecto-viviana/comparison test:calendar",

@@ -22,9 +22,11 @@ for (const mountNode of document.querySelectorAll<HTMLElement>(
   mountNode.dataset.mounted = "true";
 
   void Promise.all([import("./react-mount"), import("./solid-mount")]).then(
-    ([reactMount, solidMount]) => {
-      reactMount.mountReactComparisonIslands(mountNode);
-      solidMount.mountSolidComparisonIslands(mountNode);
+    async ([reactMount, solidMount]) => {
+      await Promise.all([
+        reactMount.mountReactComparisonIslands(mountNode),
+        solidMount.mountSolidComparisonIslands(mountNode),
+      ]);
       mountNode.dataset.islandsMounted = "true";
     },
   );

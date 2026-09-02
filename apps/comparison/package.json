@@ -14,6 +14,7 @@
     "report:parity": "tsx scripts/report-component-parity.ts",
     "report:parity:strict": "tsx scripts/report-component-parity.ts --strict",
     "report:acceptance": "tsx scripts/report-component-parity.ts --strict-full",
+    "guard:fixture-registry-split": "tsx scripts/fixture-registry-split.ts",
     "test:button": "vp run build && playwright test e2e/button-visual.spec.ts e2e/actionbutton-visual.spec.ts e2e/single-button-controls-visual.spec.ts e2e/grouped-button-controls-visual.spec.ts e2e/collection-button-controls-visual.spec.ts e2e/button-family-contract.spec.ts --reporter=line",
     "test:buttons": "vp run build && playwright test e2e/button-family-contract.spec.ts --reporter=line",
     "test:catalogue": "vp run build && playwright test e2e/catalogue-controls.spec.ts --reporter=line",
