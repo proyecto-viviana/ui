@@ -39,6 +39,14 @@ export default defineConfig({
     // here, not in a `test.use` inside the motion describe, because a describe
     // -level `video` override forces a new Playwright worker.
     video: process.env.MOTION_REVIEW ? "on" : "off",
+    // Extra Chromium switches for one machine, whitespace-separated. Known use:
+    // `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` on WSL2 where
+    // Chrome for Testing 151 (Playwright 1.62 build 1234) never issues a
+    // compositor frame through SwiftShader — rAF and CSS transitions never
+    // fire — while 149 does. Unset in CI so rendering there is unchanged.
+    launchOptions: {
+      args: (process.env.COMPARISON_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
+    },
   },
   projects: [
     {

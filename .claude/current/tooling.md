@@ -160,3 +160,14 @@ agent, which makes Playwright treat the server command as terminated.
 
 Chromium Playwright may need to run outside the sandbox on this host when the
 browser reports `sandbox_host_linux.cc:41 shutdown: Operation not permitted`.
+
+On this WSL2 host, Chrome for Testing 151 (Playwright 1.62 build `1234`) never
+issues a compositor frame through SwiftShader: `requestAnimationFrame`,
+`requestIdleCallback` and CSS transitions never fire, `--screenshot` hangs, and
+every browser gate stalls on "waiting for element to be stable". Build `1228`
+(Chrome 149) is unaffected, `--dump-dom` works, clocks and `/dev/dxg` are not
+the cause. Run the comparison gates with
+`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`
+(`apps/comparison/playwright.config.ts` passes it to `launchOptions.args`);
+rendering then uses Skia CPU raster with the software compositor on both
+stacks, so pair diffs stay like-for-like. Leave it unset in CI.
