@@ -140,3 +140,14 @@ In-lane option labelledby (no missing describedby id), listbox `data-layout`/`da
 - `vp run guard:layer-boundary` — PASS.
 - `vp run guard:rac-parity` — PASS.
 - `vp check --fix` on owned files — pass; `git diff --check` on owned files — clean.
+
+## Remaining step-0 items after the headless lane (orchestrator, 2026-09-02)
+
+Still diffed at step 0 `field dom` on all four seeds, all in the styled layer:
+
+- `solid-spectrum/src/form/HelpText.tsx:62,67` renders the description as `<p>`; S2 `Field.tsx:416-426` renders `<span>` (Picker `aria-describedby` resolves to `p:` vs `span:`).
+- `solid-spectrum/src/combobox/index.tsx:630` field group emits `data-focused`; RAC `Group.tsx:129` emits `data-focus-within` (plus `data-focus-visible`).
+- `solid-spectrum/src/combobox/index.tsx:1091` synthesizes `aria-label` from the label text (`?? textLabel()`); S2 passes the user prop only.
+- Options lack `aria-posinset`/`aria-setsize` because the Solid listbox is never virtualized — #252.
+
+The first three land with #198 (same files) or directly after it; the twins in `@proyecto-viviana/ui` follow the layer-boundary rule.
