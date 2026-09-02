@@ -97,6 +97,7 @@
     "guard:upstream-freshness": "vp exec tsx scripts/check-upstream-freshness.ts",
     "guard:spectrum-tokens-pin": "vp exec tsx scripts/check-spectrum-tokens-pin.ts",
     "guard:style-macro-parity": "vp exec tsx scripts/check-style-macro-parity.ts",
+    "guard:s2-intl-catalog": "vp exec tsx scripts/check-s2-intl-catalog.ts",
     "guard:package-sourcemaps": "node scripts/check-package-macro-sourcemaps.mjs",
     "guard:jsx-ref-dead-code": "vp exec tsx scripts/check-jsx-ref-dead-code.ts",
     "guard:source-artifacts": "node scripts/check-source-artifacts.mjs",

@@ -103,6 +103,7 @@ vp run guard:virtualizer-keyboard-parity
 vp run guard:upstream-test-parity   # baselined contract-vocabulary hard edge vs pinned tests
 vp run guard:spectrum-tokens-pin    # both styled packages match the pinned S2 exact version
 vp run guard:style-macro-parity     # generated S2 styles match the pinned source corpus
+vp run guard:s2-intl-catalog        # shipped S2 intl catalogs equal the pinned JSON key for key
 vp run guard:ts-nocheck-budget      # public-package suppression inventory may only decrease
 ```
 

@@ -119,6 +119,7 @@ const requiredEvidence = [
   "react-spectrum/packages/react-aria-components/test",
   "react-spectrum/packages/@react-spectrum/s2/style/spectrum-theme.ts",
   "react-spectrum/packages/@react-spectrum/s2/test",
+  "react-spectrum/packages/@react-spectrum/s2/intl",
 ];
 
 for (const evidencePath of requiredEvidence) {

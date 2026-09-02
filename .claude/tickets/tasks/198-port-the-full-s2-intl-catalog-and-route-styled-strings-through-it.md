@@ -134,8 +134,12 @@ loading keys; TagGroup `tag.actions`, `tag.showAllButtonLabel`,
 
 ### Tests
 
-- `packages/solid-spectrum/test/intl-catalog.test.tsx` (+ viviana-ui twin):
-  each of 34 locales' JSON equals the pinned file; dictionary keys match.
+- `guard:s2-intl-catalog` (`scripts/check-s2-intl-catalog.ts`, Certification
+  Gates after the oracle materializes): for both ports, each of 34 locales' JSON
+  and the `s2IntlStrings` export equal the pinned file key for key; locale set
+  matches. Started as `packages/*/test/intl-catalog.test.tsx`; moved 2026-09-02
+  because `test:run` on release-readiness has no `./react-spectrum` oracle and
+  the suites failed with ENOENT there.
 - `packages/solid-spectrum/test/intl-strings.test.tsx`: `I18nProvider
 locale="ar-AE"` (plus one `de-DE` ActionBar) for necessity, Picker loading,
   DatePicker time, DateRangePicker start/end, ActionBar ICU count, Menu

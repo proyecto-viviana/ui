@@ -140,6 +140,14 @@ jobs:
         id: guard_style_macro_parity
         run: pnpm run guard:style-macro-parity
 
+      # The shipped S2 intl catalogs must equal the pinned upstream JSON key for
+      # key. The published S2 package ships only ICU-compiled functions, so this
+      # needs the materialized oracle and cannot live in the oracle-free
+      # release-readiness test:run.
+      - name: guard s2-intl-catalog
+        id: guard_s2_intl_catalog
+        run: pnpm run guard:s2-intl-catalog
+
       # Generated declarations beside source can silently shadow newer .ts
       # files. Package declarations belong in dist; only the two explicit JSON
       # module shims are allowed in source trees.
@@ -283,6 +291,7 @@ jobs:
           O_GUARD_FRESHNESS_STATE: ${{ steps.guard_upstream_freshness.outputs.state }}
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_STYLE_MACRO_PARITY: ${{ steps.guard_style_macro_parity.outcome }}
+          O_GUARD_S2_INTL_CATALOG: ${{ steps.guard_s2_intl_catalog.outcome }}
           O_GUARD_SOURCE_ARTIFACTS: ${{ steps.guard_source_artifacts.outcome }}
           O_GUARD_LAYER_BOUNDARY: ${{ steps.guard_layer_boundary.outcome }}
           O_GUARD_IDIOMATIC_SOLID: ${{ steps.guard_idiomatic_solid.outcome }}
@@ -338,6 +347,7 @@ jobs:
             echo "| \`guard:virtualizer-keyboard-parity\` | $(icon "$O_GUARD_VIRTUALIZER") |"
             echo "| \`guard:spectrum-tokens-pin\` | $(icon "$O_GUARD_TOKENS_PIN") |"
             echo "| \`guard:style-macro-parity\` | $(icon "$O_GUARD_STYLE_MACRO_PARITY") |"
+            echo "| \`guard:s2-intl-catalog\` | $(icon "$O_GUARD_S2_INTL_CATALOG") |"
             echo "| \`guard:source-artifacts\` | $(icon "$O_GUARD_SOURCE_ARTIFACTS") |"
             echo "| \`guard:layer-boundary\` | $(icon "$O_GUARD_LAYER_BOUNDARY") |"
             echo "| \`guard:idiomatic-solid\` | $(icon "$O_GUARD_IDIOMATIC_SOLID") |"
