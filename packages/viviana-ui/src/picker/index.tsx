@@ -19,11 +19,9 @@
 import {
   type JSX,
   createContext,
-  createEffect,
   createSignal,
   createUniqueId,
   mergeProps,
-  onCleanup,
   Show,
   splitProps,
   useContext,
@@ -37,7 +35,6 @@ import {
   SelectOption as HeadlessSelectOption,
   ListBoxSection as HeadlessListBoxSection,
   ListLayout,
-  Popover as HeadlessPopover,
   Virtualizer,
   type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type SelectProps as HeadlessSelectProps,
@@ -55,8 +52,6 @@ import {
   css,
   focusRing,
   fontRelative,
-  lightDark,
-  setColorScheme,
   space,
   style,
 } from "../style" with { type: "macro" };
@@ -80,7 +75,8 @@ import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
 import { ProgressCircle } from "../progress/ProgressCircle";
-import { useProviderProps, useTheme } from "../provider";
+import { useProviderProps } from "../provider";
+import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
@@ -398,32 +394,15 @@ const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>(
   padding: 8,
 });
 
-const pickerPopover = style({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      default: "layer-2",
-      forcedColors: "Background",
-    },
+// S2 Picker.tsx:475-484 — width additions on the composed Popover `styles` prop.
+const pickerMenuWidth = style<{ isQuiet?: boolean }>({
+  minWidth: {
+    default: "--trigger-width",
+    isQuiet: 192,
   },
-  backgroundColor: "--s2-container-bg",
-  // Glasselated: frost the scene behind the surface — the container bg is the
-  // translucent `--surface-card`; the blur is what makes it read as glass.
-  backdropFilter: "var(--blur-card)",
-  boxShadow: "elevated",
-  borderRadius: "panel",
-  display: "flex",
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
-    forcedColors: "ButtonBorder",
+  width: {
+    default: "--trigger-width",
+    isQuiet: "[calc(var(--trigger-width) - 24)]",
   },
 });
 
@@ -617,7 +596,6 @@ function PickerListBoxPopover(props: {
   shouldFlip: () => boolean;
   children: JSX.Element;
 }) {
-  const theme = useTheme();
   const selectContext = useContext(HeadlessSelectContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -628,49 +606,11 @@ function PickerListBoxPopover(props: {
     selectContext?.triggerRef?.() ??
     selectContext?.rootRef?.()?.querySelector<HTMLElement>("button[aria-haspopup='listbox']") ??
     null;
-  const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
-
-  const updateTriggerWidth = () => {
-    const trigger = triggerRef();
-    if (trigger) {
-      setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
-    }
-  };
-
-  createEffect(() => {
-    const trigger = triggerRef();
-    if (!trigger) {
-      setTriggerWidth(undefined);
-      return;
-    }
-
-    updateTriggerWidth();
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver(updateTriggerWidth);
-    resizeObserver.observe(trigger);
-    onCleanup(() => resizeObserver.disconnect());
-  });
-
-  const resolvedTriggerWidth = () => {
-    const explicitMenuWidth = props.menuWidth();
-    if (explicitMenuWidth != null) {
-      return `${explicitMenuWidth}px`;
-    }
-
-    const measuredWidth = triggerWidth();
-    if (measuredWidth) {
-      return measuredWidth;
-    }
-
-    const trigger = triggerRef();
-    return trigger ? `${trigger.getBoundingClientRect().width}px` : undefined;
-  };
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
+      padding="none"
       trigger="Select"
       triggerRef={triggerRef}
       isOpen={selectContext?.isOpen?.() ?? false}
@@ -684,22 +624,13 @@ function PickerListBoxPopover(props: {
       crossOffset={props.isQuiet() ? -12 : undefined}
       shouldFlip={props.shouldFlip()}
       autoFocus={false}
-      class={(renderProps) =>
-        pickerPopover({
-          ...renderProps,
-          colorScheme: theme.colorScheme,
-          isArrowShown: false,
-          isSubmenu: false,
-        })
-      }
-      style={() => ({
-        "--trigger-width": resolvedTriggerWidth(),
-        minWidth: props.isQuiet() ? "192px" : "var(--trigger-width)",
-        width: props.isQuiet() ? "calc(var(--trigger-width) - 24px)" : "var(--trigger-width)",
-      })}
+      UNSAFE_style={{
+        width: props.menuWidth() != null && !props.isQuiet() ? `${props.menuWidth()}px` : undefined,
+      }}
+      styles={pickerMenuWidth({ isQuiet: props.isQuiet() })}
     >
       <div class={pickerListBoxFrame}>{props.children}</div>
-    </HeadlessPopover>
+    </Popover>
   );
 }
 

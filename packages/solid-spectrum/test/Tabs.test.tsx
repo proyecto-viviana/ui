@@ -6,6 +6,10 @@ import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { Tabs, TabList, Tab, TabPanel, TabPanels, Text, TabsContext } from "../src/tabs";
+import { TabsPicker } from "../src/tabs/TabsPicker";
+import { Button } from "../src/button";
+import { Popover, PopoverTrigger } from "../src/popover";
+import { style } from "../src/style";
 
 const tabItems = [
   { id: "tab1", label: "First", content: "Content 1" },
@@ -329,5 +333,108 @@ describe("Tabs (solid-spectrum S2)", () => {
 
     expect(screen.getByRole("tablist", { name: "Context sections" })).toBeInTheDocument();
     expect(document.querySelector(".context-tabs")).toHaveAttribute("data-density", "compact");
+  });
+
+  it("composes the S2 Popover surface on TabsPicker, including entering motion, matching a bare Popover", async () => {
+    const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished: new Promise<void>(() => {}) }] as unknown as Animation[],
+    });
+    const popoverMotion = style<{
+      isEntering?: boolean;
+      isExiting?: boolean;
+      placement?: "top" | "bottom" | "left" | "right";
+    }>({
+      opacity: { isEntering: 0, isExiting: 0 },
+      translateY: {
+        placement: {
+          top: { isEntering: 4, isExiting: 4 },
+          bottom: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      translateX: {
+        placement: {
+          left: { isEntering: 4, isExiting: 4 },
+          right: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      transition: "[opacity, translate]",
+      transitionDuration: 200,
+      transitionTimingFunction: { isExiting: "in" },
+      pointerEvents: { isExiting: "none" },
+    });
+    const classTokens = (className: string) => className.split(/\s+/).filter(Boolean);
+    const motionContract = (className: string) =>
+      classTokens(className).filter((token) => !token.startsWith("-macro-dynamic-"));
+
+    try {
+      const enteringMotion = popoverMotion({
+        isEntering: true,
+        isExiting: false,
+        placement: "bottom",
+      });
+      const settledMotion = popoverMotion({
+        isEntering: false,
+        isExiting: false,
+        placement: "bottom",
+      });
+      expect(enteringMotion).not.toBe(settledMotion);
+      const enteringContract = motionContract(enteringMotion);
+      expect(enteringContract.length).toBeGreaterThan(0);
+
+      const user = setupUser();
+      const { unmount: unmountPicker } = render(() => (
+        <TabsPicker
+          id="tabs-picker"
+          valueId="tabs-value"
+          aria-label="Overflow tabs"
+          density="regular"
+          labelBehavior="show"
+          items={[
+            { id: "tab1", textValue: "First", label: "First" },
+            { id: "tab2", textValue: "Second", label: "Second" },
+          ]}
+          selectedKey="tab1"
+        />
+      ));
+      const trigger = screen.getByRole("button", { name: /First|Overflow tabs/ });
+      await user.click(trigger);
+      const pickerOverlay = screen.getByRole("listbox").closest("[data-placement]") as HTMLElement;
+      expect(pickerOverlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(pickerOverlay.getAttribute("data-placement")).toBeTruthy());
+      const pickerTokens = classTokens(pickerOverlay.className);
+      expect(pickerTokens).toEqual(expect.arrayContaining(enteringContract));
+      unmountPicker();
+
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover hideArrow>
+            <p>Bare popover</p>
+          </Popover>
+        </PopoverTrigger>
+      ));
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const bareOverlay = screen.getByRole("dialog");
+      expect(bareOverlay).toHaveAttribute("data-entering");
+      const bareTokens = classTokens(bareOverlay.className);
+      expect(bareTokens).toEqual(expect.arrayContaining(enteringContract));
+      expect(pickerTokens).toEqual(bareTokens);
+    } finally {
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+      if (previousCssTransition === undefined) {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+      }
+    }
   });
 });

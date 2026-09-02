@@ -16,18 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/TabsPicker.tsx.
 
+import { createMemo, Show, splitProps, useContext, type JSX } from "solid-js";
 import {
-  createEffect,
-  createMemo,
-  createSignal,
-  onCleanup,
-  Show,
-  splitProps,
-  useContext,
-  type JSX,
-} from "solid-js";
-import {
-  Popover as HeadlessPopover,
   Select as HeadlessSelect,
   SelectContext as HeadlessSelectContext,
   SelectListBox as HeadlessSelectListBox,
@@ -38,13 +28,7 @@ import {
   type SelectOptionRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import {
-  baseColor,
-  focusRing,
-  lightDark,
-  setColorScheme,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import { controlFont, fieldInput } from "../s2-internal/style-utils" with { type: "macro" };
 import { centerBaseline } from "../icon/center-baseline";
@@ -58,8 +42,8 @@ import {
   menuItemIconCenterWrapper,
   menuItemLabel,
 } from "../menu/s2-menu-styles";
-import { useTheme } from "../provider";
 import { TextContext } from "../text";
+import { Popover } from "../popover";
 import type { TabsDensity, TabsLabelBehavior } from "./index";
 
 export interface TabsPickerItem {
@@ -91,8 +75,6 @@ interface TabsPickerStyleState {
   isDisabled?: boolean;
   isOpen?: boolean;
   isFocusVisible?: boolean;
-  colorScheme?: "light" | "dark" | "light dark";
-  placement?: string;
 }
 
 const tabsPickerRoot = style({
@@ -184,30 +166,10 @@ const tabsPickerMenu = style({
   listStyleType: "none",
 });
 
-const tabsPickerPopover = style<TabsPickerStyleState>({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      default: "layer-2",
-      forcedColors: "Background",
-    },
-  },
-  backgroundColor: "--s2-container-bg",
-  boxShadow: "elevated",
-  borderRadius: "lg",
-  display: "flex",
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
-    forcedColors: "ButtonBorder",
-  },
+// S2 TabsPicker.tsx:267-270 — width additions on the composed Popover `styles` prop.
+const tabsPickerMenuWidth = style({
+  minWidth: 192,
+  width: "[calc(var(--trigger-width) - 24)]",
 });
 
 const tabsPickerFrame = style({
@@ -248,7 +210,6 @@ function selectedText(item: TabsPickerItem | undefined) {
 }
 
 function TabsPickerPopover(props: { children: JSX.Element }) {
-  const theme = useTheme();
   const selectContext = useContext(HeadlessSelectContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -259,34 +220,10 @@ function TabsPickerPopover(props: { children: JSX.Element }) {
     selectContext?.triggerRef?.() ??
     selectContext?.rootRef?.()?.querySelector<HTMLElement>("button[aria-haspopup='listbox']") ??
     null;
-  const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
-
-  const updateTriggerWidth = () => {
-    const trigger = triggerRef();
-    setTriggerWidth(trigger ? `${trigger.getBoundingClientRect().width}px` : undefined);
-  };
-
-  createEffect(() => {
-    const trigger = triggerRef();
-    if (!trigger) {
-      setTriggerWidth(undefined);
-      return;
-    }
-
-    updateTriggerWidth();
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const observer = new ResizeObserver(updateTriggerWidth);
-    observer.observe(trigger);
-    onCleanup(() => observer.disconnect());
-  });
-
-  const width = () => (triggerWidth() ? `calc(${triggerWidth()} - 24px)` : undefined);
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
       trigger="Select"
       triggerRef={triggerRef}
       isOpen={selectContext?.isOpen?.() ?? false}
@@ -300,21 +237,10 @@ function TabsPickerPopover(props: { children: JSX.Element }) {
       crossOffset={-12}
       shouldFlip
       autoFocus={false}
-      class={(renderProps) =>
-        tabsPickerPopover({
-          ...renderProps,
-          colorScheme: theme.colorScheme,
-          isArrowShown: false,
-          isSubmenu: false,
-        })
-      }
-      style={() => ({
-        minWidth: "192px",
-        width: width(),
-      })}
+      styles={tabsPickerMenuWidth}
     >
       <div class={tabsPickerFrame}>{props.children}</div>
-    </HeadlessPopover>
+    </Popover>
   );
 }
 

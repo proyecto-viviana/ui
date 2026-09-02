@@ -26,12 +26,10 @@ import {
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
   Menu as HeadlessMenu,
-  Popover as HeadlessPopover,
   type MenuProps as HeadlessMenuProps,
   type MenuTriggerRenderProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
   type MenuRenderProps,
-  type PopoverRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
@@ -43,7 +41,6 @@ import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { s2IntlStrings } from "../intl";
 import { HeaderContext, HeadingContext, Keyboard, Text, TextContext } from "../text";
-import { useTheme } from "../provider";
 import { pressScale } from "../pressScale";
 import {
   getSlottedContextProps,
@@ -60,12 +57,12 @@ import {
   menuFrame,
   menuItemDescription,
   menuItemLabel,
-  menuPopover,
   menuSectionHeader,
   menuSectionHeading,
 } from "./s2-menu-styles";
 import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
 import { MenuItem } from "./index";
+import { Popover } from "../popover";
 
 export type ActionMenuMenuSize = "S" | "M" | "L" | "XL";
 export type ActionMenuAlign = "start" | "end";
@@ -163,18 +160,6 @@ function actionMenuPlacement(
     default:
       return `${resolvedDirection} ${resolvedAlign}`;
   }
-}
-
-function actionMenuPlacementAxis(
-  direction: ActionMenuDirection | undefined,
-): NonNullable<PopoverRenderProps["placement"]> {
-  if (direction === "start") {
-    return "left";
-  }
-  if (direction === "end") {
-    return "right";
-  }
-  return direction ?? "bottom";
 }
 
 function getDataAttributes(
@@ -446,26 +431,20 @@ interface ActionMenuPopoverProps<T extends object> {
 }
 
 function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): JSX.Element {
-  const theme = useTheme();
   const usesStaticChildren = () => props.items() == null;
   const menuClass = (renderProps: MenuRenderProps) =>
     [s2Menu({ ...renderProps, size: props.menuSize() }), props.class].filter(Boolean).join(" ");
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
+      padding="none"
       trigger="MenuTrigger"
       triggerRef={props.triggerRef}
       placement={actionMenuPlacement(props.direction(), props.align()) as never}
       offset={8}
       shouldFlip={props.shouldFlip()}
       autoFocus={false}
-      class={(renderProps: PopoverRenderProps) =>
-        menuPopover({
-          ...renderProps,
-          placement: renderProps.placement ?? actionMenuPlacementAxis(props.direction()),
-          colorScheme: theme.colorScheme,
-        })
-      }
     >
       <div class={menuFrame}>
         <MenuSizeContext.Provider value={props.menuSize()}>
@@ -517,6 +496,6 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
           </MenuLinkOutIconContext.Provider>
         </MenuSizeContext.Provider>
       </div>
-    </HeadlessPopover>
+    </Popover>
   );
 }

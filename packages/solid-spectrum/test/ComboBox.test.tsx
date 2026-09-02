@@ -2,11 +2,15 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
-import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { ComboBox, ComboBoxContext, ComboBoxOption, Form, type ComboBoxProps } from "../src";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { SearchAutocomplete } from "../src/autocomplete";
+import { Button } from "../src/button";
+import { Popover, PopoverTrigger } from "../src/popover";
+import { style } from "../src/style";
+import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 const items = [
   { id: "1", name: "Apple" },
@@ -29,7 +33,87 @@ function FruitComboBox(props: Partial<ComboBoxProps<Fruit>>) {
   );
 }
 
+function mockGetAnimations(impl: () => Animation[]): () => void {
+  const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+  if (typeof CSSTransition === "undefined") {
+    (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+  }
+  const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    writable: true,
+    value: impl,
+  });
+  return () => {
+    if (previous) {
+      Object.defineProperty(Element.prototype, "getAnimations", previous);
+    } else {
+      delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+    }
+    if (previousCssTransition === undefined) {
+      delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    }
+  };
+}
+
+const popoverMotion = style<{
+  isEntering?: boolean;
+  isExiting?: boolean;
+  placement?: "top" | "bottom" | "left" | "right";
+}>({
+  opacity: {
+    isEntering: 0,
+    isExiting: 0,
+  },
+  translateY: {
+    placement: {
+      top: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      bottom: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  translateX: {
+    placement: {
+      left: {
+        isEntering: 4,
+        isExiting: 4,
+      },
+      right: {
+        isEntering: -4,
+        isExiting: -4,
+      },
+    },
+  },
+  transition: "[opacity, translate]",
+  transitionDuration: 200,
+  transitionTimingFunction: {
+    isExiting: "in",
+  },
+  pointerEvents: {
+    isExiting: "none",
+  },
+});
+
+function classTokens(className: string): string[] {
+  return className.split(/\s+/).filter(Boolean);
+}
+
+function motionContract(className: string): string[] {
+  return classTokens(className).filter((token) => !token.startsWith("-macro-dynamic-"));
+}
+
+function overlayFrom(role: "listbox" | "menu" | "dialog"): HTMLElement {
+  const node = screen.getByRole(role);
+  return (node.closest("[data-placement]") as HTMLElement) ?? node;
+}
+
 describe("ComboBox (solid-spectrum)", () => {
+  afterEach(() => cleanup());
   it("associates visible label with combobox input", () => {
     render(() => <FruitComboBox />);
 
@@ -273,6 +357,63 @@ describe("ComboBox listbox virtualization (solid-spectrum)", () => {
         expect(probe).toHaveTextContent(String(LOADER_ROW_HEIGHTS[size].medium));
       }
       unmount();
+    }
+  });
+
+  it("composes the S2 Popover surface, including entering motion, matching a bare Popover", async () => {
+    let resolveCurrent!: () => void;
+    const restore = mockGetAnimations(
+      () =>
+        [
+          {
+            finished: new Promise<void>((resolve) => {
+              resolveCurrent = resolve;
+            }),
+          },
+        ] as unknown as Animation[],
+    );
+
+    try {
+      const enteringMotion = popoverMotion({
+        isEntering: true,
+        isExiting: false,
+        placement: "bottom",
+      });
+      const settledMotion = popoverMotion({
+        isEntering: false,
+        isExiting: false,
+        placement: "bottom",
+      });
+      expect(enteringMotion).not.toBe(settledMotion);
+      const enteringContract = motionContract(enteringMotion);
+      expect(enteringContract.length).toBeGreaterThan(0);
+
+      const { unmount: unmountCombo } = render(() => <FruitComboBox defaultOpen />);
+      const comboOverlay = overlayFrom("listbox");
+      expect(comboOverlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(comboOverlay.getAttribute("data-placement")).toBeTruthy());
+      const comboTokens = classTokens(comboOverlay.className);
+      expect(comboTokens).toEqual(expect.arrayContaining(enteringContract));
+      unmountCombo();
+
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover hideArrow>
+            <p>Bare popover</p>
+          </Popover>
+        </PopoverTrigger>
+      ));
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const bareOverlay = screen.getByRole("dialog");
+      expect(bareOverlay).toHaveAttribute("data-entering");
+      const bareTokens = classTokens(bareOverlay.className);
+      expect(bareTokens).toEqual(expect.arrayContaining(enteringContract));
+      expect(comboTokens).toEqual(bareTokens);
+      void resolveCurrent;
+    } finally {
+      restore();
     }
   });
 });

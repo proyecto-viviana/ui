@@ -19,7 +19,6 @@
 import {
   type JSX,
   createContext,
-  createEffect,
   createSignal,
   createUniqueId,
   mergeProps,
@@ -41,7 +40,6 @@ import {
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ListBoxSection as HeadlessListBoxSection,
   ListLayout,
-  Popover as HeadlessPopover,
   Virtualizer,
   defaultContainsFilter,
   type ListBoxSectionProps as HeadlessListBoxSectionProps,
@@ -60,15 +58,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { FilterFn, Key, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import {
-  baseColor,
-  focusRing,
-  fontRelative,
-  lightDark,
-  setColorScheme,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import {
   control,
@@ -89,7 +79,8 @@ import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
-import { useProviderProps, useTheme } from "../provider";
+import { useProviderProps } from "../provider";
+import { Popover } from "../popover";
 import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
@@ -344,30 +335,10 @@ const comboBoxListBox = style<ComboBoxListBoxRenderProps & { size?: S2ComboBoxSi
   listStyleType: "none",
 });
 
-const comboBoxPopover = style({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      default: "layer-2",
-      forcedColors: "Background",
-    },
-  },
-  backgroundColor: "--s2-container-bg",
-  boxShadow: "elevated",
-  borderRadius: "lg",
-  display: "flex",
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
-    forcedColors: "ButtonBorder",
-  },
+// S2 ComboBox.tsx:765-768 — width additions on the composed Popover `styles` prop.
+const comboBoxMenuWidth = style({
+  minWidth: "--trigger-width",
+  width: "--trigger-width",
 });
 
 const comboBoxListBoxFrame = style({
@@ -661,7 +632,6 @@ function ComboBoxListBoxPopover(props: {
   shouldFlip: () => boolean;
   children: JSX.Element;
 }) {
-  const theme = useTheme();
   const comboBoxContext = useContext(HeadlessComboBoxContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -676,49 +646,11 @@ function ComboBoxListBoxPopover(props: {
     comboBoxContext?.inputRef?.() ??
     comboBoxContext?.buttonRef?.() ??
     null;
-  const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
-
-  const updateTriggerWidth = () => {
-    const trigger = triggerRef();
-    if (trigger) {
-      setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
-    }
-  };
-
-  createEffect(() => {
-    const trigger = triggerRef();
-    if (!trigger) {
-      setTriggerWidth(undefined);
-      return;
-    }
-
-    updateTriggerWidth();
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver(updateTriggerWidth);
-    resizeObserver.observe(trigger);
-    onCleanup(() => resizeObserver.disconnect());
-  });
-
-  const resolvedTriggerWidth = () => {
-    const explicitMenuWidth = props.menuWidth();
-    if (explicitMenuWidth != null) {
-      return `${explicitMenuWidth}px`;
-    }
-
-    const measuredWidth = triggerWidth();
-    if (measuredWidth) {
-      return measuredWidth;
-    }
-
-    const trigger = triggerRef();
-    return trigger ? `${trigger.getBoundingClientRect().width}px` : undefined;
-  };
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
+      padding="none"
       trigger="ComboBox"
       triggerRef={triggerRef}
       isOpen={comboBoxContext?.isOpen?.() ?? false}
@@ -732,22 +664,13 @@ function ComboBoxListBoxPopover(props: {
       offset={comboBoxMenuOffset(props.size())}
       shouldFlip={props.shouldFlip()}
       autoFocus={false}
-      class={(renderProps) =>
-        comboBoxPopover({
-          ...renderProps,
-          colorScheme: theme.colorScheme,
-          isArrowShown: false,
-          isSubmenu: false,
-        })
-      }
-      style={() => ({
-        "--trigger-width": resolvedTriggerWidth(),
-        minWidth: "var(--trigger-width)",
-        width: "var(--trigger-width)",
-      })}
+      UNSAFE_style={{
+        "--trigger-width": props.menuWidth() != null ? `${props.menuWidth()}px` : undefined,
+      }}
+      styles={comboBoxMenuWidth}
     >
       <div class={comboBoxListBoxFrame}>{props.children}</div>
-    </HeadlessPopover>
+    </Popover>
   );
 }
 

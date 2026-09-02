@@ -16,19 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Menu.tsx.
 
-import type {
-  MenuItemRenderProps,
-  MenuRenderProps,
-  PopoverRenderProps,
-} from "@proyecto-viviana/solidaria-components";
-import {
-  baseColor,
-  focusRing,
-  fontRelative,
-  setColorScheme,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import type { MenuItemRenderProps, MenuRenderProps } from "@proyecto-viviana/solidaria-components";
+import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import {
   control,
   controlBorderRadius,
@@ -57,101 +46,6 @@ const menuItemGrid = {
     XL: [edgeToText(48), "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", edgeToText(48)],
   },
 } as const;
-
-export const menuPopover = style<
-  PopoverRenderProps & { colorScheme?: "light" | "dark" | "light dark" }
->({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      /* Viviana UI v2 (Glasselated): a floating overlay wears the PANEL surface whole.
-       * `layer-1` resolves to `var(--surface-panel)` in the theme's backgroundColor map
-       * and pairs with `--blur-panel` and the 14px `panel` radius below. This was
-       * `layer-2` (= `var(--surface-card)`) sitting on the `panel` radius — the card's
-       * fill and blur on the panel's corner, which is not a surface the register draws. */
-      default: "layer-1",
-      forcedColors: "Background",
-    },
-  },
-  backgroundColor: "--s2-container-bg",
-  /* The panel register is open-coded here rather than spread from
-   * `glassSurface("panel")` (s2-internal/style-utils.ts), for two reasons specific to
-   * this surface. (1) The fill has to stay behind the `--s2-container-bg` custom
-   * property: the theme's auto/overlay colors are computed against it
-   * (`autoStaticColor`/`generateOverlayColorScale` both default to
-   * `var(--s2-container-bg)`, style/tokens.ts), so descendants lose their contrast
-   * reference if it is replaced by a direct `backgroundColor`. (2) This surface paints
-   * its edge with `outline` (see the bottom of this object) where the helper paints a
-   * `border`, so spreading it would draw a second 1px edge and shift the box metrics.
-   * The blur is the load-bearing half: translucent fill plus blur is what reads as glass. */
-  backdropFilter: "var(--blur-panel)",
-  /* Not a cast shadow: the theme points `elevated`, `emphasized` and `edge-glass` at
-   * one shared inset-rim value, so this already resolves to the register's rim. Left
-   * spelled `elevated` deliberately — it is the same value, and the token map is where
-   * that decision lives. */
-  boxShadow: "elevated",
-  borderRadius: "panel",
-  display: "flex",
-  opacity: {
-    default: 1,
-    isEntering: 0,
-    isExiting: 0,
-  },
-  translateY: {
-    default: 0,
-    placement: {
-      top: {
-        isEntering: 4,
-        isExiting: 4,
-      },
-      bottom: {
-        isEntering: -4,
-        isExiting: -4,
-      },
-    },
-  },
-  translateX: {
-    default: 0,
-    placement: {
-      left: {
-        isEntering: 4,
-        isExiting: 4,
-      },
-      right: {
-        isEntering: -4,
-        isExiting: -4,
-      },
-    },
-  },
-  transition: "[opacity, translate]",
-  transitionDuration: 200,
-  transitionTimingFunction: {
-    isExiting: "in",
-  },
-  pointerEvents: {
-    default: "auto",
-    isExiting: "none",
-  },
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  /* 1px `--border-subtle` — the register's glass-surface edge, reached through the
-   * `border-subtle` key the theme's outlineColor map exposes alongside borderColor's.
-   * The previous value was `lightDark("transparent-white-25", "gray-200")`, and
-   * `transparent-white-25` is the 25th STOP of Spectrum's transparent-white ramp
-   * (`rgba(255, 255, 255, 0)` in @adobe/spectrum-tokens color-palette.json), not 25%
-   * white — so light drew no edge at all while dark drew a solid gray. An edge that is
-   * present in one scheme and absent in the other is wrong under any register. */
-  outlineColor: {
-    default: "border-subtle",
-    forcedColors: "ButtonBorder",
-  },
-});
 
 export const menuFrame = style({
   display: "flex",

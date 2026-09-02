@@ -21,6 +21,9 @@ import { Header, Heading, Menu, MenuItem, MenuSection, SubmenuTrigger } from "..
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
 import MoreIcon from "../src/icon/s2wf-icons/MoreIcon";
+import { Button } from "../src/button";
+import { Popover, PopoverTrigger } from "../src/popover";
+import { style } from "../src/style";
 
 afterEach(() => cleanup());
 
@@ -948,5 +951,81 @@ describe("ActionMenu (solid-spectrum)", () => {
       .getAllByRole("dialog")
       .find((dialog) => dialog.getAttribute("data-trigger") === "SubmenuTrigger");
     expect(submenuHelpPopover).toBeUndefined();
+  });
+
+  it("composes the S2 Popover surface, including entering motion, matching a bare Popover", async () => {
+    const restore = mockGetAnimations(
+      () => [{ finished: new Promise<void>(() => {}) }] as unknown as Animation[],
+    );
+    const popoverMotion = style<{
+      isEntering?: boolean;
+      isExiting?: boolean;
+      placement?: "top" | "bottom" | "left" | "right";
+    }>({
+      opacity: { isEntering: 0, isExiting: 0 },
+      translateY: {
+        placement: {
+          top: { isEntering: 4, isExiting: 4 },
+          bottom: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      translateX: {
+        placement: {
+          left: { isEntering: 4, isExiting: 4 },
+          right: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      transition: "[opacity, translate]",
+      transitionDuration: 200,
+      transitionTimingFunction: { isExiting: "in" },
+      pointerEvents: { isExiting: "none" },
+    });
+    const classTokens = (className: string) => className.split(/\s+/).filter(Boolean);
+    const motionContract = (className: string) =>
+      classTokens(className).filter((token) => !token.startsWith("-macro-dynamic-"));
+
+    try {
+      const enteringMotion = popoverMotion({
+        isEntering: true,
+        isExiting: false,
+        placement: "bottom",
+      });
+      const settledMotion = popoverMotion({
+        isEntering: false,
+        isExiting: false,
+        placement: "bottom",
+      });
+      expect(enteringMotion).not.toBe(settledMotion);
+      const enteringContract = motionContract(enteringMotion);
+      expect(enteringContract.length).toBeGreaterThan(0);
+
+      const { unmount: unmountMenu } = render(() => (
+        <ActionMenu defaultOpen items={items} getKey={(item) => item.id} />
+      ));
+      const menuOverlay = screen.getByRole("menu").closest("[data-placement]") as HTMLElement;
+      expect(menuOverlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(menuOverlay.getAttribute("data-placement")).toBeTruthy());
+      const menuTokens = classTokens(menuOverlay.className);
+      expect(menuTokens).toEqual(expect.arrayContaining(enteringContract));
+      unmountMenu();
+
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover hideArrow>
+            <p>Bare popover</p>
+          </Popover>
+        </PopoverTrigger>
+      ));
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const bareOverlay = screen.getByRole("dialog");
+      expect(bareOverlay).toHaveAttribute("data-entering");
+      const bareTokens = classTokens(bareOverlay.className);
+      expect(bareTokens).toEqual(expect.arrayContaining(enteringContract));
+      expect(menuTokens).toEqual(bareTokens);
+    } finally {
+      restore();
+    }
   });
 });
