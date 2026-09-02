@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { resetTooltipState } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import { Tooltip, TooltipTrigger } from "../src/Tooltip";
 import { Button } from "../src/Button";
@@ -278,22 +279,20 @@ describe("Tooltip", () => {
     expect(screen.getByTestId("tooltip")).toHaveAttribute("data-placement", "bottom");
   });
 
-  it("should resolve start and end placements using document direction", () => {
-    const originalDir = document.documentElement.dir;
-    document.documentElement.dir = "rtl";
-
-    try {
-      render(() => (
+  it("should resolve start and end placements from I18nProvider without document.dir", () => {
+    const dirGetter = vi.spyOn(document.documentElement, "dir", "get");
+    render(() => (
+      <I18nProvider locale="he-IL">
         <TooltipTrigger isOpen placement="start">
           <Button>Hover me</Button>
           <Tooltip data-testid="tooltip">Content</Tooltip>
         </TooltipTrigger>
-      ));
+      </I18nProvider>
+    ));
 
-      expect(screen.getByTestId("tooltip")).toHaveAttribute("data-placement", "right");
-    } finally {
-      document.documentElement.dir = originalDir;
-    }
+    expect(screen.getByTestId("tooltip")).toHaveAttribute("data-placement", "right");
+    expect(dirGetter).not.toHaveBeenCalled();
+    dirGetter.mockRestore();
   });
 
   it("should suppress controlled open state when disabled on the trigger", () => {

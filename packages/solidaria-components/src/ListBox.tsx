@@ -542,14 +542,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const el = listRef();
-      if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-        const dir = window.getComputedStyle(el).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??

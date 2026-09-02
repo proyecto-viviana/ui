@@ -26,6 +26,7 @@ import { FieldError } from "../src/FieldError";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { setupUser, assertAriaIdIntegrity } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 
 // Setup userEvent
 const user = setupUser();
@@ -1219,6 +1220,50 @@ describe("Select", () => {
       render(() => <TestSelect />);
 
       assertAriaIdIntegrity(document.body);
+    });
+  });
+
+  describe("i18n catalogs", () => {
+    it("uses the catalog placeholder when SelectValue has none", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <Select aria-label="Test Select" items={testItems} getKey={(item) => item.id}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("button")).toHaveTextContent("Element wählen");
+      expect(screen.getByRole("button")).not.toHaveTextContent("Select an item");
+    });
+
+    it("formats a multi-select value with the provider locale conjunction", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <Select
+            aria-label="Test Select"
+            selectionMode="multiple"
+            defaultSelectedKeys={["cat", "dog"]}
+            items={testItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </I18nProvider>
+      ));
+      const trigger = screen.getByRole("button");
+      expect(trigger.textContent).toContain(" y ");
+      expect(trigger.textContent).not.toMatch(/ and /);
     });
   });
 });

@@ -21,6 +21,8 @@ import { createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { TableSelectAllCheckboxAria } from "./types";
+import { createStringFormatter } from "../i18n";
+import { tableIntlStrings } from "./intl";
 
 /**
  * Creates accessibility props for a table select-all checkbox.
@@ -28,6 +30,7 @@ import type { TableSelectAllCheckboxAria } from "./types";
 export function createTableSelectAllCheckbox<T extends object>(
   state: Accessor<TableState<T, TableCollection<T>>>,
 ): TableSelectAllCheckboxAria {
+  const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
   const isSelectAll = createMemo(() => {
     return state().isSelectAll;
   });
@@ -64,7 +67,7 @@ export function createTableSelectAllCheckbox<T extends object>(
       checked: isSelectAll(),
       disabled: isDisabled(),
       onChange,
-      "aria-label": s.selectionMode === "single" ? "Select" : "Select All",
+      "aria-label": stringFormatter().format(s.selectionMode === "single" ? "select" : "selectAll"),
     };
 
     if (isIndeterminate()) {

@@ -46,6 +46,8 @@ import {
   type AriaSelectProps,
   type AriaListBoxProps,
   type AriaOptionProps,
+  createStringFormatter,
+  createListFormatter,
 } from "@proyecto-viviana/solidaria";
 import {
   createSelectState,
@@ -70,6 +72,7 @@ import {
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
 import { ListBoxLoadMoreItem } from "./ListBox";
+import { racIntlStrings } from "./intl";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -889,8 +892,11 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
   }
   const { valueProps, placeholder: contextPlaceholder } = context;
   const state = context.state as SelectState<T>;
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
+  const listFormatter = createListFormatter({ style: "long", type: "conjunction" });
 
-  const placeholder = () => local.placeholder ?? contextPlaceholder;
+  const placeholder = () =>
+    local.placeholder ?? contextPlaceholder ?? stringFormatter().format("selectPlaceholder");
 
   const renderValues = createMemo<SelectValueRenderProps<T>>(() => {
     const collection = state.collection();
@@ -906,9 +912,7 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
     const selectedText =
       state.selectionMode() === "multiple"
         ? selectedItems.length > 0
-          ? new Intl.ListFormat(undefined, { style: "long", type: "conjunction" }).format(
-              selectedItems.map((item) => item.textValue),
-            )
+          ? listFormatter().format(selectedItems.map((item) => item.textValue))
           : null
         : (selectedItem?.textValue ?? null);
     return {

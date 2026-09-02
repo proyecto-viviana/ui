@@ -43,6 +43,7 @@ import {
   createHover,
   mergeProps,
   type AriaTreeProps,
+  useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
   createTreeState,
@@ -310,23 +311,6 @@ const EXPANSION_KEYS = {
   expand: { ltr: "ArrowRight", rtl: "ArrowLeft" },
   collapse: { ltr: "ArrowLeft", rtl: "ArrowRight" },
 } as const;
-
-function resolveTreeDirection(element: HTMLElement | null): "ltr" | "rtl" {
-  if (element) {
-    const dir = element.closest("[dir]")?.getAttribute("dir");
-    if (dir === "rtl") return "rtl";
-    if (dir === "ltr") return "ltr";
-    if (typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-      const computedDirection = window.getComputedStyle(element).direction;
-      if (computedDirection === "rtl") return "rtl";
-      if (computedDirection === "ltr") return "ltr";
-    }
-  }
-  if (typeof document !== "undefined") {
-    return document.dir === "rtl" ? "rtl" : "ltr";
-  }
-  return "ltr";
-}
 
 function createTreeDropTargetDelegate<T extends object>(
   delegate: TreeDropTargetDelegate,
@@ -862,6 +846,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     ],
   );
 
+  const locale = useLocale();
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
   const flatItems = createMemo<TreeItemData<T>[]>(() =>
     flattenCollectionEntries(stateProps.items ?? []),
@@ -899,7 +884,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   });
 
   // Resolve writing direction for keyboard expand/collapse parity
-  const treeDirection = createMemo(() => ariaProps.direction ?? resolveTreeDirection(ref()));
+  const treeDirection = createMemo(() => ariaProps.direction ?? locale().direction);
 
   // Keep the aria object (do NOT destructure `treeProps`): its `treeProps` getter
   // wraps a memo carrying the reactive roving-container `tabIndex`, which rolls to
@@ -1046,7 +1031,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const direction = resolveTreeDirection(ref());
+    const direction = locale().direction;
     const baseDropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??
@@ -1106,7 +1091,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
           if (!target || target.type !== "item" || target.dropPosition !== "on") return;
           const item = state.collection.getItem(target.key);
           if (!item?.hasChildNodes) return;
-          const currentDirection = ariaProps.direction ?? resolveTreeDirection(ref());
+          const currentDirection = ariaProps.direction ?? locale().direction;
           const expandKey = EXPANSION_KEYS.expand[currentDirection];
           const collapseKey = EXPANSION_KEYS.collapse[currentDirection];
           if (event.key === expandKey && !state.isExpanded(target.key)) {
@@ -1243,7 +1228,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   // (tree branch traversal, level-aware wrapping — RAC parity item #36).
   createEffect(() => {
     if (!virtualizer) return;
-    const direction = resolveTreeDirection(ref());
+    const direction = locale().direction;
     const parentDelegate: TreeDropTargetDelegate = {
       getDropTargetFromPoint:
         parentCollectionRenderer?.dropTargetDelegate?.getDropTargetFromPoint ??

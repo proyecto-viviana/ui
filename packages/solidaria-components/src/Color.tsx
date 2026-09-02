@@ -86,6 +86,7 @@ import {
   createHover,
   mergeProps,
   useLocale,
+  createStringFormatter,
   type AriaColorSliderOptions,
   type AriaColorAreaOptions,
   type AriaColorWheelOptions,
@@ -117,6 +118,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { racIntlStrings } from "./intl";
 
 interface ColorPickerChannelContextValue {
   value?: Color | string;
@@ -2080,6 +2082,8 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
 
 export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   const pickerContext = useContext(ColorPickerContextInternal);
+  const locale = useLocale();
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
   const [local, rest] = splitProps(props, [
     "value",
     "defaultValue",
@@ -2178,7 +2182,8 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     () => ({
       id: local.id,
       "aria-label":
-        local["aria-label"] ?? (!local["aria-labelledby"] ? "Color swatches" : undefined),
+        local["aria-label"] ??
+        (!local["aria-labelledby"] ? stringFormatter().format("colorSwatchPicker") : undefined),
       "aria-labelledby": local["aria-labelledby"],
       "aria-describedby": local["aria-describedby"],
       "aria-details": local["aria-details"],
@@ -2186,11 +2191,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     state,
   );
 
-  const resolveDirection = (): "ltr" | "rtl" => {
-    if (typeof document === "undefined") return "ltr";
-    const rootDir = document.dir;
-    return rootDir === "rtl" ? "rtl" : "ltr";
-  };
+  const resolveDirection = (): "ltr" | "rtl" => locale().direction;
 
   const isItemDisabled = (key: Key | null) => {
     if (key == null) return false;

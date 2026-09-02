@@ -301,16 +301,7 @@ describe("ListBox", () => {
       expect(screen.getByRole("listbox")).toHaveAttribute("aria-labelledby");
     });
 
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
+    it("passes locale direction into the droppable ListDropTargetDelegate", () => {
       let capturedDirection: "ltr" | "rtl" | undefined;
       const dragAndDropHooks = {
         useDroppableCollectionState: () => ({
@@ -343,65 +334,12 @@ describe("ListBox", () => {
         },
       };
 
-      try {
-        render(() => <TestListBox listBoxProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
-    });
-
-    it("prefers computed direction over document direction when available", () => {
-      const originalDir = document.dir;
-      document.dir = "ltr";
-      const computedStyleSpy = vi
-        .spyOn(window, "getComputedStyle")
-        .mockImplementation(() => ({ direction: "rtl" }) as CSSStyleDeclaration);
-
-      let capturedDirection: "ltr" | "rtl" | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: () => ({ collectionProps: {} }),
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          constructor(
-            _collection: unknown,
-            _ref: unknown,
-            options?: { direction?: "ltr" | "rtl" },
-          ) {
-            capturedDirection = options?.direction;
-          }
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => <TestListBox listBoxProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        computedStyleSpy.mockRestore();
-        document.dir = originalDir;
-      }
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestListBox listBoxProps={{ dragAndDropHooks: dragAndDropHooks as any }} />
+        </I18nProvider>
+      ));
+      expect(capturedDirection).toBe("rtl");
     });
 
     it("should render option text content", () => {

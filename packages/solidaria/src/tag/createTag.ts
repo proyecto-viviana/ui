@@ -28,7 +28,9 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { createStringFormatter } from "../i18n";
 import { getTagGroupData } from "./createTagGroup";
+import { tagIntlStrings } from "./intl";
 import type { ListState, Key } from "@proyecto-viviana/solid-stately";
 
 export interface AriaTagProps {
@@ -71,6 +73,7 @@ export function createTag<T>(
   ref: () => HTMLElement | null,
 ): TagAria {
   const getProps = () => access(props);
+  const stringFormatter = createStringFormatter(tagIntlStrings, "@react-aria/tag");
   const rowId = createId();
   const cellId = createId();
   const removeButtonId = createId();
@@ -304,7 +307,7 @@ export function createTag<T>(
       const data = getData();
       return {
         id: removeButtonId,
-        "aria-label": "Remove",
+        "aria-label": stringFormatter().format("removeButtonLabel"),
         "aria-labelledby": `${removeButtonId} ${rowId}`,
         isDisabled: isDisabled(),
         onPress: () => {

@@ -22,6 +22,7 @@
 import { createMemo } from "solid-js";
 import { DateFormatter, startOfWeek, today } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { useLocale } from "../i18n";
 import type { CalendarState, CalendarDate } from "@proyecto-viviana/solid-stately";
 import { formatVisibleRangeDescription, getCalendarHookData } from "./utils";
 
@@ -49,7 +50,7 @@ export interface CalendarGridAria {
 export function createCalendarGrid<T extends CalendarState>(
   props: MaybeAccessor<AriaCalendarGridProps>,
   state: T,
-  ref?: () => HTMLElement | null,
+  _ref?: () => HTMLElement | null,
 ): CalendarGridAria {
   // Week days for headers
   const weekDays = createMemo(() => {
@@ -65,13 +66,10 @@ export function createCalendarGrid<T extends CalendarState>(
     );
   });
 
-  // Handle keyboard navigation
-  const isRTL = (): boolean => {
-    const element = ref?.();
-    const scopedDirection = element?.closest("[dir]")?.getAttribute("dir");
-    const documentDirection = typeof document !== "undefined" ? document.dir : "";
-    return (scopedDirection ?? documentDirection) === "rtl";
-  };
+  // Handle keyboard navigation. Direction comes from I18nProvider via
+  // useLocale — not document.dir or a [dir] ancestor (RAC useCalendarGrid).
+  const locale = useLocale();
+  const isRTL = (): boolean => locale().direction === "rtl";
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (state.isDisabled()) return;

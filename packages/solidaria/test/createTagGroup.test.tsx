@@ -6,6 +6,7 @@ import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { For } from "solid-js";
 import { createListState, type Key, type SelectionMode } from "@proyecto-viviana/solid-stately";
 import { createTagGroup, createTag } from "../src/tag";
+import { I18nProvider } from "../src/i18n";
 
 interface Item {
   id: string;
@@ -142,5 +143,47 @@ describe("createTagGroup/createTag", () => {
     expect(onRemove).toHaveBeenCalledTimes(1);
     const removedKeys = onRemove.mock.calls[0]?.[0] as Set<Key>;
     expect(Array.from(removedKeys).sort()).toEqual(["1", "2"]);
+  });
+
+  it("labels the remove button from I18nProvider, not the English literal", () => {
+    function RemovableTag(props: { item: Item; state: ReturnType<typeof createListState<Item>> }) {
+      let ref: HTMLDivElement | undefined;
+      const tagAria = createTag(
+        {
+          get key() {
+            return props.item.id;
+          },
+          get textValue() {
+            return props.item.name;
+          },
+        },
+        props.state,
+        () => ref ?? null,
+      );
+      return (
+        <div ref={ref} {...tagAria.rowProps}>
+          <span {...tagAria.gridCellProps}>{props.item.name}</span>
+          <button {...tagAria.removeButtonProps} data-testid="remove">
+            x
+          </button>
+        </div>
+      );
+    }
+
+    function RemovableList() {
+      const state = createListState({
+        items: sampleItems,
+        getKey: (item) => item.id,
+      });
+      createTagGroup({ "aria-label": "Hook tags", onRemove: () => {} }, state);
+      return <RemovableTag item={sampleItems[0]!} state={state} />;
+    }
+
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <RemovableList />
+      </I18nProvider>
+    ));
+    expect(screen.getByTestId("remove")).toHaveAttribute("aria-label", "Entfernen");
   });
 });

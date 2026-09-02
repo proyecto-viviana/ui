@@ -32,6 +32,8 @@ import { getTreeData } from "./createTree";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
 import { mergeProps } from "../utils/mergeProps";
+import { createStringFormatter } from "../i18n";
+import { treeIntlStrings } from "./intl";
 
 /**
  * Creates accessibility props for a tree item.
@@ -41,6 +43,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
   state: Accessor<TreeState<T, C>>,
   ref: Accessor<HTMLElement | null>,
 ): TreeItemAria {
+  const stringFormatter = createStringFormatter(treeIntlStrings, "@react-aria/tree");
   const fallbackRowId = createId();
   const expandButtonId = createId();
 
@@ -234,7 +237,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     const baseProps: Record<string, unknown> = {
       type: "button",
       id: expandButtonId,
-      "aria-label": isExpanded() ? "Collapse" : "Expand",
+      "aria-label": stringFormatter().format(isExpanded() ? "collapse" : "expand"),
       "aria-labelledby": isExpandable() ? `${expandButtonId} ${rowId()}` : undefined,
       "data-react-aria-prevent-focus": true,
       onClick: onExpandClick,

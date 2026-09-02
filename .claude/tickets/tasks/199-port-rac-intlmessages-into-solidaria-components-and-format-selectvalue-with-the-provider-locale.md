@@ -4,9 +4,14 @@ type: task
 title: "Port RAC intlMessages into solidaria-components and format SelectValue with the provider locale"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "RAC intl catalog (34 locales) + createListFormatter landed; DropZone/SelectValue/ColumnResizer/ColorSwatchPicker format from I18nProvider; pending orchestrator verification",
+    }
 ---
 
 ## Cause
@@ -38,3 +43,13 @@ Spanish conjunction; tests fail on the English literals.
 ## Relationship
 
 F-I18N-002/007. Headless layer per Rule #4.
+
+## Landed
+
+| surface                                                                                                              | locales before | locales after                                   |
+| -------------------------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------- |
+| `packages/solidaria-components/src/intl` (`selectPlaceholder`, `tableResizer`, `dropzoneLabel`, `colorSwatchPicker`) | 0              | 34 (verbatim from `react-aria-components/intl`) |
+
+Call sites: DropZone `dropzoneLabel`, SelectValue `selectPlaceholder` + `createListFormatter` (locale from `I18nProvider`), ColumnResizer `tableResizer`, ColorSwatchPicker `colorSwatchPicker`. en-US `dropzoneLabel` is `"DropZone"` (not `"Drop files"`). ar-AE/he-IL `dropzoneLabel` is also `"DropZone"` — de-DE `"Ablegebereich"` / ja-JP prove non-English fallback.
+
+Styled DropZone tests in `packages/solid-spectrum` still expect `"Drop files"` — #198 owns that surface; not patched here.

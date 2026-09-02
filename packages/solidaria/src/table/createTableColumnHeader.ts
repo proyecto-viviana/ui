@@ -23,6 +23,8 @@ import type { TableState, TableCollection } from "@proyecto-viviana/solid-statel
 import type { AriaTableColumnHeaderProps, TableColumnHeaderAria } from "./types";
 import { getTableData } from "./createTable";
 import { createDescription } from "../utils/createDescription";
+import { createStringFormatter } from "../i18n";
+import { tableIntlStrings } from "./intl";
 
 /**
  * Creates accessibility props for a table column header.
@@ -32,6 +34,7 @@ export function createTableColumnHeader<T extends object>(
   state: Accessor<TableState<T, TableCollection<T>>>,
   _ref: Accessor<HTMLTableCellElement | null>,
 ): TableColumnHeaderAria {
+  const stringFormatter = createStringFormatter(tableIntlStrings, "@react-aria/table");
   const [isPressed, setIsPressed] = createSignal(false);
   let ignoreNextClick = false;
   let ignoreNextClickTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -47,7 +50,7 @@ export function createTableColumnHeader<T extends object>(
   // Backed by a shared hidden element (ref-counted) and referenced via
   // aria-describedby.
   const sortDescriptionProps = createDescription(() =>
-    props().allowsSorting ? "sortable column" : undefined,
+    props().allowsSorting ? stringFormatter().format("sortable") : undefined,
   );
 
   const sortColumn = () => {

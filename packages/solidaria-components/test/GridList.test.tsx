@@ -12,6 +12,7 @@ import {
   GridListHeader,
   GridListSelectionCheckbox,
 } from "../src/GridList";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 
 // Test data
@@ -259,8 +260,6 @@ describe("GridList", () => {
     });
 
     it("wires horizontal droppable keyboard delegate methods in rtl", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
       let keyboardDelegate:
         | {
             getKeyLeftOf?: (key: string | number) => string | number | null;
@@ -299,8 +298,8 @@ describe("GridList", () => {
         },
       };
 
-      try {
-        render(() => (
+      render(() => (
+        <I18nProvider locale="he-IL">
           <GridList
             items={testItems}
             getKey={(item) => item.id}
@@ -313,91 +312,13 @@ describe("GridList", () => {
               </GridListItem>
             )}
           </GridList>
-        ));
+        </I18nProvider>
+      ));
 
-        expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        document.dir = originalDir;
-      }
-    });
-
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
-      let keyboardDelegate:
-        | {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          }
-        | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: (props: {
-          keyboardDelegate?: {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          };
-        }) => {
-          keyboardDelegate = props.keyboardDelegate;
-          return { collectionProps: {} };
-        },
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => (
-          <GridList
-            items={testItems}
-            getKey={(item) => item.id}
-            aria-label="DnD Grid fallback direction"
-            dragAndDropHooks={dragAndDropHooks as any}
-          >
-            {(item) => (
-              <GridListItem id={item.id} textValue={item.name}>
-                {item.name}
-              </GridListItem>
-            )}
-          </GridList>
-        ));
-
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
+      expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
+      expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
     });
   });
 
@@ -781,22 +702,34 @@ describe("GridList", () => {
     });
 
     it("flips the inline axis under RTL in a horizontal stack under tab navigation", () => {
-      // Upstream feeds direction into the delegate so Right=prev / Left=next in
-      // RTL. resolveDirection falls back to document.dir in jsdom (computed
-      // `direction` isn't derived from the dir attribute there).
-      document.dir = "rtl";
-      try {
-        const grid = renderNav({ orientation: "horizontal", keyboardNavigationBehavior: "tab" });
-        expect(focusedIndex()).toBe(0);
+      // Upstream feeds useLocale().direction into the delegate so Right=prev / Left=next
+      // in RTL. Ticket #201: locale context, not document.dir.
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <GridList
+            items={testItems}
+            getKey={(item) => item.id}
+            aria-label="Fruits"
+            orientation="horizontal"
+            keyboardNavigationBehavior="tab"
+          >
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        </I18nProvider>
+      ));
+      const grid = screen.getByRole("grid", { name: "Fruits" });
+      fireEvent.focus(grid);
+      expect(focusedIndex()).toBe(0);
 
-        fireEvent.keyDown(grid, { key: "ArrowLeft" });
-        expect(focusedIndex()).toBe(1);
+      fireEvent.keyDown(grid, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
 
-        fireEvent.keyDown(grid, { key: "ArrowRight" });
-        expect(focusedIndex()).toBe(0);
-      } finally {
-        document.dir = "";
-      }
+      fireEvent.keyDown(grid, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
     });
   });
 

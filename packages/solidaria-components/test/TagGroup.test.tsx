@@ -13,6 +13,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test"
 import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
 import { SelectionIndicator } from "../src/SelectionIndicator";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -319,6 +320,25 @@ describe("TagGroup", () => {
 
       const removeButton = document.querySelector(".solidaria-TagRemoveButton");
       expect(removeButton).toHaveAttribute("aria-label", "Remove");
+    });
+
+    it("labels the remove button from I18nProvider, not the English literal", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TagGroup>
+            <TagList items={sampleItems} aria-label="Test" onRemove={vi.fn()}>
+              {(item) => (
+                <Tag id={item.id}>
+                  {item.name}
+                  <TagRemoveButton />
+                </Tag>
+              )}
+            </TagList>
+          </TagGroup>
+        </I18nProvider>
+      ));
+      const removeButton = document.querySelector(".solidaria-TagRemoveButton");
+      expect(removeButton).toHaveAttribute("aria-label", "Entfernen");
     });
 
     it("should render custom remove button content", () => {

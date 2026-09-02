@@ -20,9 +20,11 @@
 
 import { type JSX } from "solid-js";
 import { createTextField, type AriaTextFieldProps, type TextFieldAria } from "../textfield";
+import { createStringFormatter } from "../i18n";
 import { mergeProps } from "../utils";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import type { SearchFieldState } from "@proyecto-viviana/solid-stately";
+import { searchFieldIntlStrings } from "./intl";
 
 export interface AriaSearchFieldProps extends AriaTextFieldProps {
   /** Handler that is called when the user submits the search (pressing Enter). */
@@ -53,6 +55,7 @@ export function createSearchField(
   inputRef?: () => HTMLInputElement | null,
 ): SearchFieldAria {
   const getProps = () => access(props);
+  const stringFormatter = createStringFormatter(searchFieldIntlStrings, "@react-aria/searchfield");
 
   const setValue = (value: string) => {
     if (state.value() === value) {
@@ -263,7 +266,7 @@ export function createSearchField(
       const isDisabled = p.isDisabled || p.isReadOnly;
 
       return {
-        "aria-label": "Clear search",
+        "aria-label": stringFormatter().format("Clear search"),
         tabIndex: -1, // Exclude from tab order
         disabled: isDisabled,
         onMouseDown: onClearButtonMouseDown,

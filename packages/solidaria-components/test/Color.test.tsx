@@ -7,6 +7,7 @@
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { createSignal } from "solid-js";
 import {
   ColorSlider,
@@ -28,7 +29,6 @@ import {
   ColorSwatchPickerItem,
 } from "../src/Color";
 import { parseColor } from "@proyecto-viviana/solid-stately";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
 
 // Helper components using render props pattern
 function TestColorSlider(props: Parameters<typeof ColorSlider>[0]) {
@@ -1378,6 +1378,37 @@ describe("Color Components", () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
+    it("flips grid ArrowLeft/ArrowRight from I18nProvider without document.dir", () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
+      const onChange = vi.fn();
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid" />
+        </I18nProvider>
+      ));
+
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      listbox.focus();
+      expect(focusedIndex()).toBe(0);
+
+      // RTL: ArrowLeft moves to the next swatch (useLocale().direction, not document.dir).
+      fireEvent.keyDown(listbox, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
+      expect(selectedIndex()).toBe(0);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
+    });
+
+    it("formats the default listbox name from I18nProvider", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TestColorSwatchPicker />
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("listbox", { name: "Farbfelder" })).toBeInTheDocument();
+    });
+
     it("should not wrap ArrowLeft past the left edge in grid layout", () => {
       render(() => <TestColorSwatchPicker aria-label="Palette" layout="grid" />);
 
@@ -1428,28 +1459,25 @@ describe("Color Components", () => {
     });
 
     it("should invert horizontal arrow focus movement in RTL grid layout", () => {
-      const previousDir = document.dir;
-      document.dir = "rtl";
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestColorSwatchPicker aria-label="Palette" layout="grid" />
+        </I18nProvider>
+      ));
 
-      try {
-        render(() => <TestColorSwatchPicker aria-label="Palette" layout="grid" />);
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      listbox.focus();
+      expect(focusedIndex()).toBe(0);
 
-        const listbox = screen.getByRole("listbox", { name: "Palette" });
-        listbox.focus();
-        expect(focusedIndex()).toBe(0);
+      // RTL flips the horizontal axis: ArrowLeft advances to the next swatch
+      // and ArrowRight retreats — the mirror of the LTR mapping.
+      fireEvent.keyDown(listbox, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
 
-        // RTL flips the horizontal axis: ArrowLeft advances to the next swatch
-        // and ArrowRight retreats — the mirror of the LTR mapping.
-        fireEvent.keyDown(listbox, { key: "ArrowLeft" });
-        expect(focusedIndex()).toBe(1);
+      fireEvent.keyDown(listbox, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
 
-        fireEvent.keyDown(listbox, { key: "ArrowRight" });
-        expect(focusedIndex()).toBe(0);
-
-        expect(selectedIndex()).toBe(0);
-      } finally {
-        document.dir = previousDir;
-      }
+      expect(selectedIndex()).toBe(0);
     });
 
     it("should use vertical roving focus without selecting in stack layout", () => {

@@ -13,7 +13,7 @@
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton } from "../src/Menu";
+import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton, SubmenuTrigger } from "../src/Menu";
 import { Separator } from "../src/Separator";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
@@ -240,16 +240,7 @@ describe("Menu", () => {
       expect(items[0]).not.toHaveAttribute("aria-describedby");
     });
 
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
+    it("passes locale direction into the droppable ListDropTargetDelegate", () => {
       let capturedDirection: "ltr" | "rtl" | undefined;
       const dragAndDropHooks = {
         useDroppableCollectionState: () => ({
@@ -282,65 +273,12 @@ describe("Menu", () => {
         },
       };
 
-      try {
-        render(() => <TestMenu menuProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
-    });
-
-    it("prefers computed direction over document direction when available", () => {
-      const originalDir = document.dir;
-      document.dir = "ltr";
-      const computedStyleSpy = vi
-        .spyOn(window, "getComputedStyle")
-        .mockImplementation(() => ({ direction: "rtl" }) as CSSStyleDeclaration);
-
-      let capturedDirection: "ltr" | "rtl" | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: () => ({ collectionProps: {} }),
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          constructor(
-            _collection: unknown,
-            _ref: unknown,
-            options?: { direction?: "ltr" | "rtl" },
-          ) {
-            capturedDirection = options?.direction;
-          }
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => <TestMenu menuProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        computedStyleSpy.mockRestore();
-        document.dir = originalDir;
-      }
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestMenu menuProps={{ dragAndDropHooks: dragAndDropHooks as any }} />
+        </I18nProvider>
+      ));
+      expect(capturedDirection).toBe("rtl");
     });
 
     it("should render item text content", () => {
@@ -1818,6 +1756,49 @@ describe("MenuTrigger", () => {
         expect(screen.queryByRole("menu")).not.toBeInTheDocument();
         expect(document.activeElement).toBe(trigger);
       });
+    });
+  });
+
+  describe("submenu RTL keyboard", () => {
+    it("opens on ArrowLeft under I18nProvider he-IL without document.dir", async () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <MenuTrigger defaultOpen>
+            <MenuButton>Open Menu</MenuButton>
+            <Menu aria-label="Test">
+              <SubmenuTrigger>
+                <MenuItem id="share">Share</MenuItem>
+                <Menu aria-label="Share submenu">
+                  <MenuItem id="email">Email</MenuItem>
+                </Menu>
+              </SubmenuTrigger>
+            </Menu>
+          </MenuTrigger>
+        </I18nProvider>
+      ));
+
+      const triggerItem = screen.getByRole("menuitem", { name: "Share" });
+      // Closed submenu omits aria-expanded (useSubmenuTrigger: `state.isOpen || undefined`).
+      expect(triggerItem).not.toHaveAttribute("aria-expanded", "true");
+      expect(triggerItem).toHaveAttribute("data-has-submenu", "true");
+      triggerItem.focus();
+      // Mirrors react-aria useSubmenuTrigger.ts ArrowLeft: opens when direction === 'rtl'
+      // (SubMenuTrigger.test.tsx rtl ArrowKeys case at ar-AE).
+      fireEvent.keyDown(triggerItem, { key: "ArrowLeft" });
+
+      await waitFor(() => {
+        // Nested menu is labelled by the trigger item (SubmenuTrigger menuProps
+        // aria-labelledby), so the accessible name is "Share", not the authored
+        // aria-label.
+        expect(screen.getByRole("menu", { name: "Share" })).toHaveAttribute(
+          "aria-label",
+          "Share submenu",
+        );
+      });
+      expect(triggerItem).toHaveAttribute("aria-expanded", "true");
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
     });
   });
 

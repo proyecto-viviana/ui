@@ -6,6 +6,7 @@ import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
 import { Checkbox } from "../src/Checkbox";
 import { RouterProvider } from "../src/RouterProvider";
@@ -1856,8 +1857,6 @@ describe("Table", () => {
     });
 
     it("wires horizontal droppable keyboard delegate methods in rtl", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
       let keyboardDelegate:
         | {
             getKeyLeftOf?: (key: string | number) => string | number | null;
@@ -1896,78 +1895,16 @@ describe("Table", () => {
         },
       };
 
-      try {
-        render(() => <TestTable dragAndDropHooks={dragAndDropHooks as any} />);
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestTable dragAndDropHooks={dragAndDropHooks as any} />
+        </I18nProvider>
+      ));
 
-        expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        document.dir = originalDir;
-      }
-    });
-
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
-      let keyboardDelegate:
-        | {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          }
-        | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: (props: {
-          keyboardDelegate?: {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          };
-        }) => {
-          keyboardDelegate = props.keyboardDelegate;
-          return { collectionProps: {} };
-        },
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => <TestTable dragAndDropHooks={dragAndDropHooks as any} />);
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
+      expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
+      expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
     });
   });
 
@@ -4495,5 +4432,47 @@ describe("Table (tree grid / expandable rows)", () => {
     expect(row).not.toHaveAttribute("data-expanded");
     expect(row.style.getPropertyValue("--table-row-level")).toBe("");
     expect(document.querySelector("[data-tree-column]")).toBeNull();
+  });
+
+  it("labels ColumnResizer from I18nProvider when no aria-label is passed", () => {
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <ResizableTableContainer>
+          <Table
+            items={testData}
+            columns={[
+              { key: "name", name: "Name" },
+              { key: "type", name: "Type" },
+            ]}
+            getKey={(item: any) => item.id}
+            aria-label="Resizable"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name" allowsResizing>
+                    {() => (
+                      <>
+                        Name
+                        <ColumnResizer column={{ key: "name" }} />
+                      </>
+                    )}
+                  </TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </ResizableTableContainer>
+      </I18nProvider>
+    ));
+    const input = document.querySelector('input[type="range"]');
+    expect(input).toHaveAttribute("aria-label", "Größenanpassung");
   });
 });

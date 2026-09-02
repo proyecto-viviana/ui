@@ -21,6 +21,7 @@ import {
   type CalendarProps,
 } from "../src/Calendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -271,31 +272,28 @@ describe("Calendar", () => {
       });
     });
 
-    it("should follow RTL arrow direction for day navigation", async () => {
-      const previousDir = document.documentElement.getAttribute("dir");
-      document.documentElement.setAttribute("dir", "rtl");
+    it("should follow RTL arrow direction from I18nProvider without document.dir", async () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
 
-      try {
-        render(() => (
+      render(() => (
+        <I18nProvider locale="he-IL">
           <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
-        ));
-        await waitForCalendarHydration();
+        </I18nProvider>
+      ));
+      await waitForCalendarHydration();
 
-        const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
-        day15.focus();
-        fireEvent.keyDown(day15, { key: "ArrowRight" });
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
+      // Mirrors react-aria useCalendar.test.js keyboard arrows under useLocale().direction === 'rtl'
+      // (useCalendarGrid.ts ArrowRight → focusPreviousDay).
+      fireEvent.keyDown(day15, { key: "ArrowRight" });
 
-        await waitFor(() => {
-          const day14 = screen.getByRole("button", { name: /June 14, 2024/i });
-          expect(day14).toHaveFocus();
-        });
-      } finally {
-        if (previousDir) {
-          document.documentElement.setAttribute("dir", previousDir);
-        } else {
-          document.documentElement.removeAttribute("dir");
-        }
-      }
+      await waitFor(() => {
+        const day14 = screen.getByRole("button", { name: /June 14, 2024/i });
+        expect(day14).toHaveFocus();
+      });
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
     });
   });
 

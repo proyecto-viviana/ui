@@ -41,6 +41,7 @@ import {
   createTooltipTrigger,
   type TooltipTriggerProps as AriaProps,
   OverlayContainer,
+  useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
   type RenderChildren,
@@ -529,6 +530,8 @@ function TooltipContent(
   }
 
   let tooltipRef!: HTMLDivElement;
+  const locale = useLocale();
+  const direction = () => locale().direction;
   const { tooltipProps: ariaTooltipProps } = createTooltip({}, props.state);
 
   // Start visible at 0,0 and update position asynchronously
@@ -540,7 +543,7 @@ function TooltipContent(
     visibility: "visible" as "hidden" | "visible",
   });
   const [renderedPlacement, setRenderedPlacement] = createSignal<TooltipResolvedPlacement>(
-    resolvePlacement(props.placement),
+    resolvePlacement(props.placement, direction()),
   );
 
   // Enter animation state: starts true on mount, clears after first animation frame.
@@ -619,7 +622,7 @@ function TooltipContent(
     const containerPadding = props.containerPadding;
     const crossOffset = props.crossOffset;
     const placement = maybeFlipPlacement(
-      resolvePlacement(props.placement),
+      resolvePlacement(props.placement, direction()),
       triggerRect,
       tooltipWidth,
       tooltipHeight,
@@ -740,7 +743,7 @@ function TooltipContent(
   const setRef = (el: HTMLDivElement) => {
     tooltipRef = el;
     if (!props.dir) {
-      el.dir = getDocumentDirection();
+      el.dir = direction();
     }
     if (!props.lang) {
       const documentLang = document.documentElement.lang;
@@ -781,22 +784,17 @@ function TooltipContent(
   );
 }
 
-function resolvePlacement(placement: TooltipPlacement): TooltipResolvedPlacement {
+function resolvePlacement(
+  placement: TooltipPlacement,
+  direction: "ltr" | "rtl",
+): TooltipResolvedPlacement {
   if (placement === "start") {
-    return getDocumentDirection() === "rtl" ? "right" : "left";
+    return direction === "rtl" ? "right" : "left";
   }
   if (placement === "end") {
-    return getDocumentDirection() === "rtl" ? "left" : "right";
+    return direction === "rtl" ? "left" : "right";
   }
   return placement;
-}
-
-function getDocumentDirection(): "ltr" | "rtl" {
-  if (typeof document === "undefined") {
-    return "ltr";
-  }
-
-  return document.documentElement.dir === "rtl" ? "rtl" : "ltr";
 }
 
 function maybeFlipPlacement(

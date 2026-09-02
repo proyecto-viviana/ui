@@ -21,6 +21,7 @@ import {
 import { FieldError } from "../src/FieldError";
 import { Form } from "../src/Form";
 import { Text } from "../src/Text";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -532,6 +533,18 @@ describe("SearchField", () => {
       render(() => <TestSearchField fieldProps={{ "data-testid": "search" } as any} />);
       const field = document.querySelector(".solidaria-SearchField");
       expect(field).toHaveAttribute("data-testid", "search");
+    });
+  });
+
+  describe("i18n catalogs", () => {
+    it("labels the clear button from I18nProvider, not the English literal", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TestSearchField fieldProps={{ defaultValue: "query" }} />
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("button", { name: "Suche zurücksetzen" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Clear search" })).not.toBeInTheDocument();
     });
   });
 });

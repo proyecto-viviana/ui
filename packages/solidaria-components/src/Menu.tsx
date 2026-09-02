@@ -47,6 +47,7 @@ import {
   type AriaMenuProps,
   type AriaMenuItemProps,
   type AriaMenuTriggerProps,
+  useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
   createSelectionState,
@@ -434,6 +435,7 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
   const trigger = () => children()[0];
   const content = () => children()[1];
   const parentMenuItemContext = useContext(MenuItemContext);
+  const locale = useLocale();
   const state = createMenuTriggerState({
     get isOpen() {
       return props.isOpen;
@@ -557,10 +559,12 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       onMouseEnter: openFromMouseHover,
       onMouseOver: openFromMouseHover,
       onKeyDown: (event: KeyboardEvent) => {
-        if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {
+        const openKey = locale().direction === "rtl" ? "ArrowLeft" : "ArrowRight";
+        const closeKey = locale().direction === "rtl" ? "ArrowRight" : "ArrowLeft";
+        if (event.key === openKey || event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           openSubmenu();
-        } else if (event.key === "ArrowLeft" && state.isOpen()) {
+        } else if (event.key === closeKey && state.isOpen()) {
           event.preventDefault();
           state.close();
         }
@@ -774,6 +778,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
 
   const triggerContext = useContext(MenuTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
+  const locale = useLocale();
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
@@ -1135,18 +1140,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     const hooks = stateProps.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const menuEl = menuRef();
-      if (
-        menuEl &&
-        typeof window !== "undefined" &&
-        typeof window.getComputedStyle === "function"
-      ) {
-        const dir = window.getComputedStyle(menuEl).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??

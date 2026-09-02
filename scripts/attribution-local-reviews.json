@@ -592,12 +592,12 @@
   {
     "localPath": "packages/solidaria/src/i18n/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "91fd9dd70bc4525a471e64874f1bd80e8f7819c2d91b7c0a1378a7817060a905"
+    "contentSha256": "3cccbf93c98c6502c97723dcee48ca667fc3423a9993faf1adffd92a3b90c7b0"
   },
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "da914602b3c259d108b259efdda2522cda3f59e951e0bce3c83c0170ead9772b"
+    "contentSha256": "513d2d779960ba1fa19a04e24fd95901357147bad8e5fd2a7feed453cccba83b"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",

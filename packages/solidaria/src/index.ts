@@ -634,6 +634,7 @@ export {
   NumberFormatter,
   createNumberFormatter,
   type NumberFormatOptions,
+  createListFormatter,
   createDateFormatter,
   createStringFormatter,
   createStringDictionary,

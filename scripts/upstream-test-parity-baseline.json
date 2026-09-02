@@ -66,6 +66,7 @@
     "listbox|aria|aria-multiselectable",
     "listbox|key|arrowleft",
     "listbox|key|arrowright",
+    "menu|key|arrowleft",
     "menu|key|end",
     "menu|key|home",
     "menu|role|presentation",
@@ -221,5 +222,18 @@
     "tokenfield",
     "tokenfield.composition",
     "virtualizedmenu"
+  ],
+  "growthLog": [
+    {
+      "ticket": 201,
+      "at": "2026-09-02",
+      "added": {
+        "suspects": [
+          "menu|key|arrowleft"
+        ],
+        "coverageGaps": [],
+        "upstreamOnly": []
+      }
+    }
   ]
 }

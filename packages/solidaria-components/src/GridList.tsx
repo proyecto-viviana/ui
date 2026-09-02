@@ -44,6 +44,7 @@ import {
   mergeProps,
   type AriaGridListProps,
   type GridListSectionAria,
+  useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
   createGridState,
@@ -347,6 +348,8 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     ],
   );
 
+  const locale = useLocale();
+
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
 
   const collection = createMemo(() =>
@@ -377,14 +380,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   });
 
   const orientation = (): Orientation => local.orientation ?? "vertical";
-  const resolveDirection = (): "ltr" | "rtl" => {
-    const el = ref();
-    if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-      const dir = window.getComputedStyle(el).direction;
-      if (dir === "rtl") return "rtl";
-    }
-    return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-  };
+  const resolveDirection = (): "ltr" | "rtl" => locale().direction;
 
   const state = createGridState<T, GridCollection<T>>(() => ({
     collection: collection(),

@@ -35,6 +35,8 @@ import {
   mergeProps,
   type AriaTableProps,
   createTableColumnResize,
+  useLocale,
+  createStringFormatter,
 } from "@proyecto-viviana/solidaria";
 import {
   createTableState,
@@ -62,6 +64,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { racIntlStrings } from "./intl";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import { ButtonContext, type ButtonContextValue, type ButtonProps } from "./Button";
@@ -563,6 +566,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     ],
   );
 
+  const locale = useLocale();
   const [ref, setRef] = createSignal<HTMLTableElement | null>(null);
   const normalizedColumns = createMemo(() => normalizeColumnDefinitions(stateProps.columns));
   const rowHeaderColumnKeys = createMemo(() => getRowHeaderColumnKeys(normalizedColumns()));
@@ -728,14 +732,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const el = ref();
-      if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-        const dir = window.getComputedStyle(el).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??
@@ -2302,6 +2299,8 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
     "children",
   ]);
 
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
+
   // Register this column with the ResizableTableContainer (auto-collect columns)
   const registerColumn = useContext(ResizableTableRegisterContext);
   if (registerColumn) {
@@ -2338,7 +2337,7 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
   const columnResize = createTableColumnResize(
     () => ({
       column: local.column,
-      "aria-label": local["aria-label"] ?? "Resizer",
+      "aria-label": local["aria-label"] ?? stringFormatter().format("tableResizer"),
       isDisabled: local.isDisabled,
       onResizeStart: (widths) => {
         resizeCtx?.getCallbacks?.().onResizeStart?.(widths);

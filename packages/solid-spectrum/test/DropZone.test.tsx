@@ -49,7 +49,8 @@ describe("DropZone (solid-spectrum)", () => {
     expect(zone.className).not.toContain("cursor-not-allowed");
     expect(zone.className).not.toContain("bg-bg-400");
 
-    expect(screen.getByRole("button", { name: "Drop files" })).toBeInTheDocument();
+    // RAC `dropzoneLabel` (react-aria-components/intl/en-US.json); S2 adds no override.
+    expect(screen.getByRole("button", { name: "DropZone" })).toBeInTheDocument();
   });
 
   it("supports S2 context, unsafe escape hatches, and local prop overrides", () => {
