@@ -34,6 +34,7 @@
     "combobox|aria|aria-disabled",
     "combobox|aria|aria-haspopup",
     "combobox|aria|aria-invalid",
+    "combobox|aria|aria-setsize",
     "combobox|key|arrowup",
     "combobox|key|backspace",
     "combobox|key|escape",
@@ -216,7 +217,6 @@
     "labeledvalue",
     "navigationtree",
     "previewtrigger",
-    "rangecalendar.shadow",
     "shadowdomfocus",
     "sidenav",
     "tokenfield",
@@ -230,6 +230,17 @@
       "added": {
         "suspects": [
           "menu|key|arrowleft"
+        ],
+        "coverageGaps": [],
+        "upstreamOnly": []
+      }
+    },
+    {
+      "ticket": 252,
+      "at": "2026-09-02",
+      "added": {
+        "suspects": [
+          "combobox|aria|aria-setsize"
         ],
         "coverageGaps": [],
         "upstreamOnly": []

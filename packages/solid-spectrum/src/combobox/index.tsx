@@ -42,7 +42,9 @@ import {
   ComboBoxTag as HeadlessComboBoxTag,
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ListBoxSection as HeadlessListBoxSection,
+  ListLayout,
   Popover as HeadlessPopover,
+  Virtualizer,
   defaultContainsFilter,
   type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type ComboBoxButtonProps as HeadlessComboBoxButtonProps,
@@ -90,6 +92,7 @@ import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
 import { useProviderProps, useTheme } from "../provider";
+import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import {
@@ -395,6 +398,26 @@ const comboBoxEmptyStateText = style<{ size?: S2ComboBoxSize }>({
   alignItems: "center",
   paddingStart: "edge-to-text",
 });
+
+// Not from any design, just following the sizing of the existing rows
+export const LOADER_ROW_HEIGHTS = {
+  S: {
+    medium: 24,
+    large: 30,
+  },
+  M: {
+    medium: 32,
+    large: 40,
+  },
+  L: {
+    medium: 40,
+    large: 50,
+  },
+  XL: {
+    medium: 48,
+    large: 60,
+  },
+};
 
 const comboBoxOption = style<ComboBoxOptionStyleProps>({
   ...focusRing(),
@@ -839,6 +862,9 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
 
   const prefixId = createUniqueId();
   const size = () => normalizeComboBoxSize(local.size);
+  // S2 `useScale()` (`packages/@react-spectrum/s2/src/utils.ts`): coarse pointer → large.
+  const matchesCoarsePointer = createMediaQuery("not ((hover: hover) and (pointer: fine))");
+  const scale = (): "medium" | "large" => (matchesCoarsePointer() ? "large" : "medium");
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
@@ -1002,21 +1028,31 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   isRequired: undefined,
                 }}
               >
-                <HeadlessComboBoxListBox
-                  class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+                <Virtualizer
+                  layout={ListLayout}
+                  layoutOptions={{
+                    estimatedRowHeight: 32,
+                    padding: 8,
+                    estimatedHeadingHeight: 50,
+                    loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
+                  }}
                 >
-                  {listBoxChildren}
-                </HeadlessComboBoxListBox>
-                <Show
-                  when={(() => {
-                    const items = headlessProps.items ?? props.defaultItems;
-                    return Array.isArray(items) && items.length === 0;
-                  })()}
-                >
-                  <span class={comboBoxEmptyStateText({ size: size() })}>
-                    {stringFormatter().format("combobox.noResults")}
-                  </span>
-                </Show>
+                  <HeadlessComboBoxListBox
+                    class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+                  >
+                    {listBoxChildren}
+                  </HeadlessComboBoxListBox>
+                  <Show
+                    when={(() => {
+                      const items = headlessProps.items ?? props.defaultItems;
+                      return Array.isArray(items) && items.length === 0;
+                    })()}
+                  >
+                    <span class={comboBoxEmptyStateText({ size: size() })}>
+                      {stringFormatter().format("combobox.noResults")}
+                    </span>
+                  </Show>
+                </Virtualizer>
               </FormContext.Provider>
             </ComboBoxListBoxPopover>
           </>

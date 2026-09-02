@@ -3,7 +3,9 @@
  */
 import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
+import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { Picker, PickerItem } from "../src/picker";
 
 interface SectionItem {
@@ -254,5 +256,110 @@ describe("Picker (solid-spectrum)", () => {
 
     fireEvent.focus(loadMoreOption!);
     expect(onLoadMore).toHaveBeenCalledTimes(1);
+  });
+});
+
+function mockVirtualizerGeometry(): void {
+  class TestResizeObserver {
+    observe = vi.fn();
+    disconnect = vi.fn();
+    unobserve = vi.fn();
+    constructor(_callback: ResizeObserverCallback) {}
+  }
+  vi.stubGlobal("ResizeObserver", TestResizeObserver);
+  const rect = {
+    x: 0,
+    y: 0,
+    top: 0,
+    left: 0,
+    bottom: 200,
+    right: 200,
+    width: 200,
+    height: 200,
+    toJSON() {
+      return this;
+    },
+  };
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(rect as DOMRect);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(200);
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(200);
+}
+
+function LoaderHeightProbe() {
+  const ctx = useVirtualizerContext<{ loaderHeight?: number }>();
+  return (
+    <span data-testid="loader-height" hidden aria-hidden="true">
+      {String(ctx?.layoutOptions?.loaderHeight ?? "")}
+    </span>
+  );
+}
+
+describe("Picker listbox virtualization (solid-spectrum)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("publishes aria-posinset and aria-setsize on every option when virtualized", () => {
+    mockVirtualizerGeometry();
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      >
+        {(item) => <PickerItem id={item.href}>{item.label}</PickerItem>}
+      </Picker>
+    ));
+
+    const options = screen
+      .getAllByRole("option")
+      .filter((option) => option.getAttribute("aria-disabled") !== "true");
+    expect(options).toHaveLength(sections.length);
+    for (const [index, option] of options.entries()) {
+      expect(option).toHaveAttribute("aria-posinset", String(index + 1));
+      expect(option).toHaveAttribute("aria-setsize", String(sections.length));
+    }
+  });
+
+  it("sizes the loader row from LOADER_ROW_HEIGHTS for S and XL", () => {
+    mockVirtualizerGeometry();
+
+    for (const size of ["S", "XL"] as const) {
+      const { unmount } = render(() => (
+        <Picker<SectionItem>
+          aria-label="Docs section"
+          size={size}
+          defaultOpen
+          items={sections}
+          getKey={(item) => item.href}
+          getTextValue={(item) => item.label}
+          loadingState="loadingMore"
+          onLoadMore={vi.fn()}
+        >
+          {(item) => (
+            <PickerItem id={item.href}>
+              {item.label}
+              <LoaderHeightProbe />
+            </PickerItem>
+          )}
+        </Picker>
+      ));
+
+      expect(screen.getByRole("progressbar", { name: "Loading more…" })).toBeInTheDocument();
+      const loader = screen
+        .getByRole("progressbar", { name: "Loading more…" })
+        .closest('[role="option"]');
+      expect(loader).not.toBeNull();
+
+      const probes = screen.getAllByTestId("loader-height");
+      expect(probes.length).toBeGreaterThan(0);
+      for (const probe of probes) {
+        expect(probe).toHaveTextContent(String(LOADER_ROW_HEIGHTS[size].medium));
+      }
+      unmount();
+    }
   });
 });

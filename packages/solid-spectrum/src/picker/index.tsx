@@ -37,7 +37,9 @@ import {
   SelectOption as HeadlessSelectOption,
   ListBoxSection as HeadlessListBoxSection,
   FieldError as HeadlessFieldError,
+  ListLayout,
   Popover as HeadlessPopover,
+  Virtualizer,
   type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type SelectProps as HeadlessSelectProps,
   type SelectRenderProps,
@@ -80,8 +82,10 @@ import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps, useTheme } from "../provider";
+import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { LOADER_ROW_HEIGHTS } from "../combobox";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -847,6 +851,9 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   ]);
 
   const size = () => normalizePickerSize(local.size);
+  // S2 `useScale()` (`packages/@react-spectrum/s2/src/utils.ts`): coarse pointer → large.
+  const matchesCoarsePointer = createMediaQuery("not ((hover: hover) and (pointer: fine))");
+  const scale = (): "medium" | "large" => (matchesCoarsePointer() ? "large" : "medium");
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
@@ -1100,23 +1107,33 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
               menuWidth={() => local.menuWidth}
               shouldFlip={shouldFlip}
             >
-              <HeadlessSelectListBox
-                isInPopover
-                class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
-                onLoadMore={local.onLoadMore}
-                isLoading={isLoadingMore()}
-                loadMoreClass={pickerLoadingWrapper}
-                renderLoadMore={() =>
-                  isLoadingMore() ? (
-                    <PickerProgressCircle
-                      size={size()}
-                      aria-label={stringFormatter().format("table.loadingMore")}
-                    />
-                  ) : undefined
-                }
+              <Virtualizer
+                layout={ListLayout}
+                layoutOptions={{
+                  estimatedRowHeight: 32,
+                  estimatedHeadingHeight: 50,
+                  padding: 8,
+                  loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
+                }}
               >
-                {listBoxChildren}
-              </HeadlessSelectListBox>
+                <HeadlessSelectListBox
+                  isInPopover
+                  class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
+                  onLoadMore={local.onLoadMore}
+                  isLoading={isLoadingMore()}
+                  loadMoreClass={pickerLoadingWrapper}
+                  renderLoadMore={() =>
+                    isLoadingMore() ? (
+                      <PickerProgressCircle
+                        size={size()}
+                        aria-label={stringFormatter().format("table.loadingMore")}
+                      />
+                    ) : undefined
+                  }
+                >
+                  {listBoxChildren}
+                </HeadlessSelectListBox>
+              </Virtualizer>
             </PickerListBoxPopover>
           </>
         )}

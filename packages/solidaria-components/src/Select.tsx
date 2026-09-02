@@ -1240,9 +1240,17 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     assignRef(local.ref, el as HTMLDivElement);
   };
 
+  // SelectOption allocates its own list-state adapter, so `createOption` cannot
+  // find `isVirtualized` in the listbox data keyed by SelectListBox's adapter
+  // (RAC reads it from `listData`, useOption.ts:130-131). Pass it explicitly
+  // from the same CollectionRenderer a parent Virtualizer publishes.
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const optionAria = createOption<T>(
     {
       key: local.id,
+      get isVirtualized() {
+        return parentCollectionRenderer?.isVirtualized;
+      },
       get isDisabled() {
         return Boolean(ariaProps.isDisabled || selectContext?.isDisabled());
       },

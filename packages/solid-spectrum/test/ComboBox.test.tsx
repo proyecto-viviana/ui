@@ -1,9 +1,11 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, expect } from "vite-plus/test";
+import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { ComboBox, ComboBoxContext, ComboBoxOption, Form, type ComboBoxProps } from "../src";
+import { LOADER_ROW_HEIGHTS } from "../src/combobox";
 import { SearchAutocomplete } from "../src/autocomplete";
 
 const items = [
@@ -157,5 +159,90 @@ describe("SearchAutocomplete (solid-spectrum)", () => {
     render(() => <SearchAutocomplete label="Search fruit" items={items} />);
 
     expect(screen.getByRole("combobox", { name: "Search fruit" })).toBeInTheDocument();
+  });
+});
+
+function mockVirtualizerGeometry(): void {
+  class TestResizeObserver {
+    observe = vi.fn();
+    disconnect = vi.fn();
+    unobserve = vi.fn();
+    constructor(_callback: ResizeObserverCallback) {}
+  }
+  vi.stubGlobal("ResizeObserver", TestResizeObserver);
+  const rect = {
+    x: 0,
+    y: 0,
+    top: 0,
+    left: 0,
+    bottom: 200,
+    right: 200,
+    width: 200,
+    height: 200,
+    toJSON() {
+      return this;
+    },
+  };
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(rect as DOMRect);
+  vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(200);
+  vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(200);
+}
+
+function LoaderHeightProbe() {
+  const ctx = useVirtualizerContext<{ loaderHeight?: number }>();
+  return (
+    <span data-testid="loader-height" hidden aria-hidden="true">
+      {String(ctx?.layoutOptions?.loaderHeight ?? "")}
+    </span>
+  );
+}
+
+describe("ComboBox listbox virtualization (solid-spectrum)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("publishes aria-posinset and aria-setsize on every option when virtualized", () => {
+    mockVirtualizerGeometry();
+    render(() => <FruitComboBox defaultOpen />);
+
+    const options = screen.getAllByRole("option");
+    expect(options).toHaveLength(items.length);
+    for (const [index, option] of options.entries()) {
+      expect(option).toHaveAttribute("aria-posinset", String(index + 1));
+      expect(option).toHaveAttribute("aria-setsize", String(items.length));
+    }
+  });
+
+  it("sizes the virtualizer loader from LOADER_ROW_HEIGHTS for S and XL", () => {
+    mockVirtualizerGeometry();
+
+    for (const size of ["S", "XL"] as const) {
+      const { unmount } = render(() => (
+        <ComboBox<Fruit>
+          label="Fruit"
+          size={size}
+          defaultOpen
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+        >
+          {(item) => (
+            <ComboBoxOption id={item.id}>
+              {item.name}
+              <LoaderHeightProbe />
+            </ComboBoxOption>
+          )}
+        </ComboBox>
+      ));
+
+      const probes = screen.getAllByTestId("loader-height");
+      expect(probes.length).toBeGreaterThan(0);
+      for (const probe of probes) {
+        expect(probe).toHaveTextContent(String(LOADER_ROW_HEIGHTS[size].medium));
+      }
+      unmount();
+    }
   });
 });
