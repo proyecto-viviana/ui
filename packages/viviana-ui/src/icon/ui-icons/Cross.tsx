@@ -2,20 +2,20 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize300.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize400.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize400.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize500.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize500.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize600.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CrossSize600.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize400.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize400.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize500.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize500.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize600.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CrossSize600.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

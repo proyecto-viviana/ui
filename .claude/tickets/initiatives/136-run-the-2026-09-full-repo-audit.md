@@ -490,11 +490,11 @@ fixture delay).
 
 Remaining 6:
 
-| Cluster | Count | Owner |
-| --- | --- | --- |
-| D-reorder keyboard DnD (`listbox:Permissions` after Enter) | 2 | #256 |
-| Picker D13 step-0 | 2 | #209 / #248 / #254 |
-| ComboBox D13 step-0 | 2 | #209 / #248 / #254 |
+| Cluster                                                    | Count | Owner              |
+| ---------------------------------------------------------- | ----- | ------------------ |
+| D-reorder keyboard DnD (`listbox:Permissions` after Enter) | 2     | #256               |
+| Picker D13 step-0                                          | 2     | #209 / #248 / #254 |
+| ComboBox D13 step-0                                        | 2     | #209 / #248 / #254 |
 
 #254 is an open owner decision — do not start building it. PR #33
 fast-forward is blocked on explicit go.

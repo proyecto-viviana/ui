@@ -2,16 +2,16 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize50.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize50.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AddSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize50.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize50.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AddSize300.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

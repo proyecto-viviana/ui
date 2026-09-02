@@ -233,9 +233,7 @@
       "ticket": 201,
       "at": "2026-09-02",
       "added": {
-        "suspects": [
-          "menu|key|arrowleft"
-        ],
+        "suspects": ["menu|key|arrowleft"],
         "coverageGaps": [],
         "upstreamOnly": []
       }
@@ -244,9 +242,7 @@
       "ticket": 252,
       "at": "2026-09-02",
       "added": {
-        "suspects": [
-          "combobox|aria|aria-setsize"
-        ],
+        "suspects": ["combobox|aria|aria-setsize"],
         "coverageGaps": [],
         "upstreamOnly": []
       }
@@ -255,10 +251,7 @@
       "ticket": 248,
       "at": "2026-09-02",
       "added": {
-        "suspects": [
-          "combobox|role|alert",
-          "select|role|alert"
-        ],
+        "suspects": ["combobox|role|alert", "select|role|alert"],
         "coverageGaps": [],
         "upstreamOnly": []
       }
@@ -267,9 +260,7 @@
       "ticket": 257,
       "at": "2026-09-02",
       "added": {
-        "suspects": [
-          "tabs|role|listbox"
-        ],
+        "suspects": ["tabs|role|listbox"],
         "coverageGaps": [],
         "upstreamOnly": []
       }
@@ -278,10 +269,7 @@
       "ticket": 256,
       "at": "2026-09-02",
       "added": {
-        "suspects": [
-          "listbox|aria|aria-hidden",
-          "listbox|aria|aria-live"
-        ],
+        "suspects": ["listbox|aria|aria-hidden", "listbox|aria|aria-live"],
         "coverageGaps": [],
         "upstreamOnly": []
       }

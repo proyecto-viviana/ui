@@ -2,14 +2,14 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DragHandleSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DragHandleSize300.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

@@ -2,12 +2,12 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AsteriskSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AsteriskSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AsteriskSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AsteriskSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AsteriskSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_AsteriskSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_AsteriskSize300.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

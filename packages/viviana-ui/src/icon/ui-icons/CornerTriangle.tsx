@@ -2,14 +2,14 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CornerTriangleSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CornerTriangleSize300.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

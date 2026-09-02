@@ -248,7 +248,7 @@ id path:
   description/error ids with `createId()` and never routed through `createField`
   / `createSlotId`. Input `aria-describedby` was only the user-supplied value.
 - `packages/solidaria-components/src/Color.tsx:1591-1617` (pre-fix) hand-built
-  `aria-describedby` from the `description` / `errorMessage` *props* and never
+  `aria-describedby` from the `description` / `errorMessage` _props_ and never
   provided RAC `TextContext` / `FieldErrorContext`. HelpText's
   `<span slot="description">` therefore had no `id`, so the AX tree could not
   resolve the description (input pointed at `solidaria-cl-N`, the span had no
@@ -282,12 +282,12 @@ Certified `output/audit-2026-09/wave-3/failures/d13-journeys.txt`. Field-DOM
 items from round 2 (`p` vs `span`, `data-focus-within`, describedby) are
 landed. What still fails at step 0, by owner:
 
-| Diff | Owner |
-| --- | --- |
-| `data-open` / `data-pressed` / `data-focused` on ComboBox input and trigger button | #209 |
-| Extra wrapper div with `data-focus-visible`/`data-focused` on Picker keyboard-only; plain RAC `Button` vs `SelectTrigger` | #254 (owner decision, do not start) |
-| Dismiss button Solid has `aria-hidden="true"`, React does not | this ticket (overlay/Dismiss) |
-| React `<template>` vs Solid `<form>`; extra hidden `<input>` | this ticket (HiddenSelect / React 19 Activity vs Solid form markup) |
+| Diff                                                                                                                      | Owner                                                               |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `data-open` / `data-pressed` / `data-focused` on ComboBox input and trigger button                                        | #209                                                                |
+| Extra wrapper div with `data-focus-visible`/`data-focused` on Picker keyboard-only; plain RAC `Button` vs `SelectTrigger` | #254 (owner decision, do not start)                                 |
+| Dismiss button Solid has `aria-hidden="true"`, React does not                                                             | this ticket (overlay/Dismiss)                                       |
+| React `<template>` vs Solid `<form>`; extra hidden `<input>`                                                              | this ticket (HiddenSelect / React 19 Activity vs Solid form markup) |
 
 H1/H2 journeys stay blocked until step 0 is green. Do not patch the journey
 driver to ignore these.
