@@ -102,14 +102,6 @@ type RuntimeActionButtonProps = ActionButtonProps & {
   holdAffordance?: boolean;
 };
 
-const avatarSize: Record<ActionButtonSize, number> = {
-  XS: 14,
-  S: 16,
-  M: 20,
-  L: 22,
-  XL: 26,
-};
-
 export interface ActionButtonProps extends StyledActionButtonBaseProps {
   /** The content to display in the ActionButton. */
   children?: JSX.Element;
@@ -358,9 +350,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       styles: () => s2ActionButtonText({ isProgressVisible: isProgressVisible() }),
     };
     const avatarContextValue = {
-      get size() {
-        return avatarSize[size()];
-      },
+      size: "1lh" as const,
       get styles() {
         return style({
           marginStart: "--iconMargin",

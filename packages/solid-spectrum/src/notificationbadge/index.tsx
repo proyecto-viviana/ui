@@ -103,7 +103,7 @@ const notificationBadge = style(
           isIndicatorOnly: 8,
         },
         M: {
-          default: fontRelative(18),
+          default: "1lh",
           isIndicatorOnly: 8,
         },
         L: {

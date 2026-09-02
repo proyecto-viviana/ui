@@ -22,7 +22,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { ButtonFillStyle, ButtonProps, ButtonSize, ButtonVariant } from "./types";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { pressScale } from "../pressScale";
@@ -167,7 +167,7 @@ export function Button(props: ButtonProps): JSX.Element {
       }),
       styles: () =>
         style({
-          size: fontRelative(20),
+          size: "1lh",
           marginStart: "--iconMargin",
           flexShrink: 0,
         }),

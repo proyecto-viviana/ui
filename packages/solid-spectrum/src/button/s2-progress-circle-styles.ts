@@ -27,15 +27,7 @@ export interface S2PendingProgressCircleStyleProps {
 
 export const s2PendingProgressCircle = style<S2PendingProgressCircleStyleProps>({
   ...staticColor(),
-  size: {
-    size: {
-      XS: 12,
-      S: 14,
-      M: 18,
-      L: 20,
-      XL: 24,
-    },
-  },
+  size: "1lh",
   aspectRatio: "square",
 });
 

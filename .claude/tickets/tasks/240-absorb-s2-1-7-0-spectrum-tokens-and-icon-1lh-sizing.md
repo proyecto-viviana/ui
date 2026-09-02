@@ -10,7 +10,7 @@ history:
   - {
       state: in-progress,
       at: 2026-09-02,
-      note: "copied S2 1.7.0 1lh icon/avatar/progress source, style-macro lh/rlh + POSTFIX 17, color-scheme media query, CloseButton overlay contrast, vertical ActionButtonGroup width; pending gates",
+      note: "copied S2 1.7.0 1lh icon/avatar/progress source, style-macro lh/rlh + POSTFIX 17, color-scheme media query, CloseButton overlay contrast, vertical ActionButtonGroup width, Calendar/RangeCalendar nav 1lh; gates below",
     }
 ---
 
@@ -67,10 +67,13 @@ ActionButton/Button/LinkButton styles and icon/avatar/progress sizes,
 Avatar `${number}lh` + ImageContext reset, Badge, CloseButton contrast,
 Field prefix (and viviana-ui suffix), FieldErrorIcon copies, SearchField,
 ListView, Menu icon, TreeView, ComboBox/Picker/TextField/NumberField/
-Date*/ColorField error icons, `setColorScheme` media query. viviana-ui
-Button/ActionButton keep the documented `fontRelative(16)` local icon size
-(the 1.7.0 hunk was `fontRelative(20)` → `'1lh'`). Avatar isLH outline
-branch does not apply to viviana-ui's fixed `outlineWidth: 2`.
+Date*/ColorField error icons, `setColorScheme` media query,
+Calendar/RangeCalendar nav chevrons `'1lh'` (corresponding ActionButton
+hunk; S2 Calendar uses quiet ActionButton + workflow chevrons, the port
+inlines nav buttons). viviana-ui Button/ActionButton keep the documented
+`fontRelative(16)` local icon size (the 1.7.0 hunk was `fontRelative(20)`
+→ `'1lh'`). Avatar isLH outline branch does not apply to viviana-ui's
+fixed `outlineWidth: 2`.
 
 Not absorbed (no matching port surface for the S2 hunk):
 
@@ -90,5 +93,34 @@ Not absorbed (no matching port surface for the S2 hunk):
 
 ## Evidence
 
-Pending typecheck, `guard:layer-boundary`, unit tests, and certified
-comparison.
+`guard:layer-boundary`: 532 identical, 76 diverged, NEW forks: 0 (one
+unrelated lift of `test-utils/index.ts` from another minion).
+
+Owned-package typecheck after `"1lh" as const` on ActionButton avatar
+context. `vp run check` and `git diff --check` on owned files: clean.
+Changeset `.changeset/s2-1-7-0-icon-1lh.md` (patch solid-spectrum + ui).
+
+Certified comparison (Playwright, existing comparison dist; full
+`vp run comparison:test:certified` rebuilds concurrent solidaria-components
+work and was not used):
+
+- before: 1962 passed / 158 failed / 4 skipped
+  (`output/audit-2026-09/train-2026-09/certified.log`). Every failure was
+  an S2 1.7.0 styling delta.
+- after: 2116 passed / 8 failed / 4 skipped (32.8m)
+  (`output/audit-2026-09/train-2026-09/certified-after-240.log`).
+  All original 158 styling surfaces pass (ActionMenu, Badge, Calendar,
+  ComboBox invalid, ContextualHelp, DateField/DatePicker/DateRangePicker
+  invalid, FieldError, Icon, ListView, Menu list, RangeCalendar,
+  SearchField, TimeField invalid, ToggleButtonGroup vertical).
+
+The 8 Playwright failures:
+
+- ComboBox/Picker D13 journeys (4) — ARIA/DOM snapshot, not a 1.7.0
+  styling hunk. Already #248.
+- Switch D5 tab-cycle (1) and ToggleButton D10 RTL (3) — load flakes
+  (worker SIGKILL / `#example` count 0). Isolated rerun: Switch D5 1/1
+  passed; ToggleButton D10 6/6 passed. No new ticket.
+
+Effective after flake rerun: 2120 passed / 4 D13 failed / 4 skipped.
+No residual that needs a ticket ≥ 250 from this work.

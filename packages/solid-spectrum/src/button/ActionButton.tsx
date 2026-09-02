@@ -36,7 +36,7 @@ import {
   mergeProps as mergeAriaProps,
   useLocale,
 } from "@proyecto-viviana/solidaria";
-import { fontRelative, space, style } from "../style" with { type: "macro" };
+import { space, style } from "../style" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";
@@ -99,14 +99,6 @@ type StyledActionButtonBaseProps = Omit<
 type RuntimeActionButtonProps = ActionButtonProps & {
   onHoverChange?: (isHovered: boolean) => void;
   holdAffordance?: boolean;
-};
-
-const avatarSize: Record<ActionButtonSize, number> = {
-  XS: 14,
-  S: 16,
-  M: 20,
-  L: 22,
-  XL: 26,
 };
 
 export interface ActionButtonProps extends StyledActionButtonBaseProps {
@@ -344,7 +336,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
           })({ isProgressVisible: isProgressVisible() }),
       }),
       styles: style({
-        size: fontRelative(20),
+        size: "1lh",
         marginStart: "--iconMargin",
         flexShrink: 0,
       }),
@@ -353,9 +345,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
       styles: () => s2ActionButtonText({ isProgressVisible: isProgressVisible() }),
     };
     const avatarContextValue = {
-      get size() {
-        return avatarSize[size()];
-      },
+      size: "1lh" as const,
       get styles() {
         return style({
           marginStart: "--iconMargin",

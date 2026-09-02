@@ -61,14 +61,7 @@ import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
-import {
-  baseColor,
-  colorMix,
-  focusRing,
-  fontRelative,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, colorMix, focusRing, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -519,7 +512,7 @@ const treeSlotIcon = style({
   gridArea: "icon",
   gridRowEnd: "span 2",
   display: "block",
-  size: fontRelative(20),
+  size: "1lh",
   alignSelf: "center",
   marginEnd: "text-to-visual",
   "--iconPrimary": {

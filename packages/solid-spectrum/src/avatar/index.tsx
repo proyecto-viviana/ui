@@ -29,7 +29,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { centerBaselineBefore } from "../icon/center-baseline";
-import { Image } from "../image";
+import { Image, ImageContext } from "../image";
 
 export type AvatarSize =
   | 16
@@ -51,7 +51,8 @@ export type AvatarSize =
   | "sm"
   | "md"
   | "lg"
-  | "xl";
+  | "xl"
+  | `${number}lh`;
 
 export type AvatarGroupSize = 16 | 20 | 24 | 28 | 32 | 36 | 40;
 
@@ -107,6 +108,8 @@ const avatarRoot = style(
     outlineWidth: {
       default: 1,
       isLarge: 2,
+      // if bigger than 64px, use 2px outline, otherwise use 1px outline
+      isLH: "min(2px, max(1px, calc((((1lh / 64) - 1px) * 9999) + 1px)))",
     },
   },
   getAllowedOverrides({ width: false }),
@@ -161,11 +164,26 @@ export function Avatar(props: AvatarProps) {
     "ref",
   ]);
 
-  const size = () => {
-    const value = local.size ?? 24;
-    return typeof value === "string" ? legacySizeMap[value] : Number(value);
+  const sizeValue = () => local.size ?? 24;
+  const isLHSize = (value: AvatarSize) => typeof value === "string" && value.endsWith("lh");
+  const numericSize = (value: AvatarSize): number => {
+    if (typeof value === "string") {
+      return legacySizeMap[value as keyof typeof legacySizeMap] ?? Number(value);
+    }
+    return Number(value);
   };
-  const remSize = () => `${size() / 16}rem`;
+  const remSize = () => {
+    const value = sizeValue();
+    if (isLHSize(value)) {
+      return value as string;
+    }
+    return `${numericSize(value) / 16}rem`;
+  };
+  const isLarge = () => {
+    const value = sizeValue();
+    return !isLHSize(value) && numericSize(value) >= 64;
+  };
+  const isLH = () => isLHSize(sizeValue());
   const slot = () =>
     local.slot === null ? undefined : (local.slot ?? contextProps?.slot ?? "avatar");
   const mergedStyle = (): JSX.CSSProperties | undefined => {
@@ -182,24 +200,27 @@ export function Avatar(props: AvatarProps) {
       .join(" ");
 
   return (
-    <Image
-      ref={mergeContextRefs(
-        (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
-        props.ref,
-      )}
-      slot={slot() ?? undefined}
-      alt={local.alt ?? ""}
-      src={local.src || undefined}
-      UNSAFE_className={rootClass()}
-      UNSAFE_style={mergedStyle()}
-      styles={avatarRoot(
-        {
-          isOverBackground: local.isOverBackground,
-          isLarge: size() >= 64,
-        },
-        mergeContextStyles(contextProps?.styles, props.styles),
-      )}
-    />
+    <ImageContext.Provider value={{}}>
+      <Image
+        ref={mergeContextRefs(
+          (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+          props.ref,
+        )}
+        slot={slot() ?? undefined}
+        alt={local.alt ?? ""}
+        src={local.src || undefined}
+        UNSAFE_className={rootClass()}
+        UNSAFE_style={mergedStyle()}
+        styles={avatarRoot(
+          {
+            isOverBackground: local.isOverBackground,
+            isLarge: isLarge(),
+            isLH: isLH(),
+          },
+          mergeContextStyles(contextProps?.styles, props.styles),
+        )}
+      />
+    </ImageContext.Provider>
   );
 }
 

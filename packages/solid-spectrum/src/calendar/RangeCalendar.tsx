@@ -590,8 +590,7 @@ const rangeCalendarNavIcon = style({
     type: "fill",
     value: "currentColor",
   },
-  width: "[1.4285714285714286em]",
-  height: "[1.4285714285714286em]",
+  size: "1lh",
   forcedColorAdjust: "none",
 });
 

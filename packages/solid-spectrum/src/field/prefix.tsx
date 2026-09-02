@@ -24,7 +24,7 @@
  * Two pieces, matching upstream:
  *  - `FieldPrefix` renders the prefix node (text or icon) before the input with
  *    the upstream styling (`gray-600`, `flex-shrink: 0`, `margin-end:
- *    text-to-visual`, icon sized to `fontRelative(20)`).
+ *    text-to-visual`, icon sized to `'1lh'`).
  *  - `PrefixInputProvider` associates the prefix with the input by appending the
  *    prefix's id to the input's `aria-labelledby`, mirroring upstream's
  *    `InputContext.Provider value={{...ctx, 'aria-labelledby': ...}}`.
@@ -32,7 +32,7 @@
 import { type Context, type JSX, useContext } from "solid-js";
 import { CenterBaseline } from "../icon/center-baseline";
 import { IconContext, type IconContextValue } from "../icon";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 
 const prefixStyles = style({
   color: "gray-600",
@@ -41,7 +41,7 @@ const prefixStyles = style({
 });
 
 const prefixIconStyles = style({
-  size: fontRelative(20),
+  size: "1lh",
   "--iconPrimary": {
     type: "fill",
     value: "currentColor",

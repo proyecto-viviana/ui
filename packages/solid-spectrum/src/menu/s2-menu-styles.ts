@@ -212,7 +212,7 @@ export const menuItem = style<S2MenuItemStyleProps>({
 
 export const menuItemIcon = style({
   display: "block",
-  size: fontRelative(20),
+  size: "1lh",
   marginEnd: "text-to-visual",
   "--iconPrimary": {
     type: "fill",

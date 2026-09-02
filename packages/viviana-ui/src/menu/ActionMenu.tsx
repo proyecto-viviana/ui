@@ -41,7 +41,7 @@ import { centerBaseline } from "../icon/center-baseline";
 import MoreIcon from "../icon/s2wf-icons/MoreIcon";
 import { IconContext } from "../icon/spectrum-icon";
 import type { StyleString } from "../style";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { s2IntlStrings } from "../intl";
 import { HeaderContext, HeadingContext, Keyboard, Text, TextContext } from "../text";
@@ -280,7 +280,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         }),
     }),
     styles: style({
-      size: fontRelative(20),
+      size: "1lh",
       marginStart: "--iconMargin",
       flexShrink: 0,
     }),

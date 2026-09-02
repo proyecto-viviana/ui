@@ -30,7 +30,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { centerBaselineBefore } from "../icon/center-baseline";
-import { Image } from "../image";
+import { Image, ImageContext } from "../image";
 
 export type AvatarSize =
   | 16
@@ -52,7 +52,8 @@ export type AvatarSize =
   | "sm"
   | "md"
   | "lg"
-  | "xl";
+  | "xl"
+  | `${number}lh`;
 
 /* 30 is the register's stack size — Panel05's roster is 30×30 avatars
  * (TerminalGlassLab.tsx:688-704); the S2 enum would round it to 32. */
@@ -184,11 +185,21 @@ export function Avatar(props: AvatarProps) {
     "ref",
   ]);
 
-  const size = () => {
-    const value = local.size ?? 24;
-    return typeof value === "string" ? legacySizeMap[value] : Number(value);
+  const sizeValue = () => local.size ?? 24;
+  const isLHSize = (value: AvatarSize) => typeof value === "string" && value.endsWith("lh");
+  const numericSize = (value: AvatarSize): number => {
+    if (typeof value === "string") {
+      return legacySizeMap[value as keyof typeof legacySizeMap] ?? Number(value);
+    }
+    return Number(value);
   };
-  const remSize = () => `${size() / 16}rem`;
+  const remSize = () => {
+    const value = sizeValue();
+    if (isLHSize(value)) {
+      return value as string;
+    }
+    return `${numericSize(value) / 16}rem`;
+  };
   const slot = () =>
     local.slot === null ? undefined : (local.slot ?? contextProps?.slot ?? "avatar");
   const mergedStyle = (): JSX.CSSProperties | undefined => {
@@ -205,23 +216,25 @@ export function Avatar(props: AvatarProps) {
       .join(" ");
 
   return (
-    <Image
-      ref={mergeContextRefs(
-        (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
-        props.ref,
-      )}
-      slot={slot() ?? undefined}
-      alt={local.alt ?? ""}
-      src={local.src || undefined}
-      UNSAFE_className={rootClass()}
-      UNSAFE_style={mergedStyle()}
-      styles={avatarRoot(
-        {
-          isOverBackground: local.isOverBackground,
-        },
-        mergeContextStyles(contextProps?.styles, props.styles),
-      )}
-    />
+    <ImageContext.Provider value={{}}>
+      <Image
+        ref={mergeContextRefs(
+          (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
+          props.ref,
+        )}
+        slot={slot() ?? undefined}
+        alt={local.alt ?? ""}
+        src={local.src || undefined}
+        UNSAFE_className={rootClass()}
+        UNSAFE_style={mergedStyle()}
+        styles={avatarRoot(
+          {
+            isOverBackground: local.isOverBackground,
+          },
+          mergeContextStyles(contextProps?.styles, props.styles),
+        )}
+      />
+    </ImageContext.Provider>
   );
 }
 
