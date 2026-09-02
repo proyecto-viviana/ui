@@ -1,12 +1,9 @@
 /**
  * Rule #7: the children-snapshot heuristic flags a rendered `children()`
  * snapshot and ignores a structural `.toArray()` probe.
- *
- * Lives under packages test include because root vitest.config.ts does not
- * cover scripts/*.test.ts (that config is owned outside #192).
  */
 import { describe, expect, it } from "vite-plus/test";
-import { findRenderedChildrenSnapshots } from "../../../scripts/check-idiomatic-solid.ts";
+import { findRenderedChildrenSnapshots } from "./check-idiomatic-solid";
 
 const SNAPSHOT_RENDERED = `
 import { children } from "solid-js";

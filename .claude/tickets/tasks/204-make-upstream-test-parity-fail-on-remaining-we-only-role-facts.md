@@ -4,9 +4,14 @@ type: task
 title: "Make upstream-test-parity fail on remaining WE-ONLY role facts"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "baseline ratchet is now one-way; new unmatched facts fail; --write-baseline growth requires --allow-growth <ticket>",
+    }
 ---
 
 ## Cause
@@ -35,3 +40,17 @@ one appears.
 ## Relationship
 
 F-UP-004. Rule #1 vocabulary drift the ratchet currently forgives.
+
+## Landed
+
+- `scripts/check-upstream-test-parity.ts` prints a count delta every run.
+  Remaining we-only / unmatched facts may only shrink. A new unmatched
+  upstream fact still fails.
+- `--write-baseline` refuses to grow the three lists unless
+  `--allow-growth <ticket>` is passed; that ticket is written into
+  `growthLog` next to the added facts.
+- Existing WE-ONLY role facts (`menu|role|presentation`,
+  `table|role|presentation`, `switch|role|radio`, `switch|role|radiogroup`,
+  `select|role|progressbar`, `button|role|progressbar`, …) stay on the
+  baseline as the frozen floor to shrink. They are not yet triaged against
+  the pin; that close-out is still this ticket's remaining work.

@@ -1,5 +1,5 @@
 {
-  "description": "Frozen vocabulary findings at the pinned upstream oracle. Removing facts is allowed; new suspect facts, coverage-gap facts, or unmatched upstream suites fail.",
+  "description": "Frozen vocabulary findings at the pinned upstream oracle. Remaining we-only / unmatched facts may only shrink. A new unmatched upstream fact fails. --write-baseline may not increase counts unless --allow-growth <ticket> records the new facts in growthLog.",
   "suspects": [
     "breadcrumbs|aria|aria-labelledby",
     "breadcrumbs|role|button",

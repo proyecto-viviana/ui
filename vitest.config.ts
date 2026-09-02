@@ -13,14 +13,22 @@ export default defineConfig({
     // build output and the vendored React Spectrum oracle, where JSX-in-.js is
     // intentionally valid for upstream's own toolchain but not ours.
     noDiscovery: true,
-    entries: ["packages/**/test/**/*.test.{ts,tsx}", "apps/comparison/src/data/**/*.test.ts"],
+    entries: [
+      "packages/**/test/**/*.test.{ts,tsx}",
+      "apps/comparison/src/data/**/*.test.ts",
+      "scripts/**/*.test.ts",
+    ],
   },
   test: {
     environment: "jsdom",
     globals: true,
     pool: "vmThreads",
     setupFiles: ["./vitest.setup.ts"],
-    include: ["packages/**/test/**/*.test.{ts,tsx}", "apps/comparison/src/data/**/*.test.ts"],
+    include: [
+      "packages/**/test/**/*.test.{ts,tsx}",
+      "apps/comparison/src/data/**/*.test.ts",
+      "scripts/**/*.test.ts",
+    ],
     // SSR-compiled tests run under vitest.ssr.config.ts (node env, generate:"ssr");
     // hydration tests run under vitest.hydrate.config.ts (jsdom, dom+hydratable).
     exclude: ["**/node_modules/**", "**/dist/**", "**/*.{ssr,hydrate}.test.{ts,tsx}"],

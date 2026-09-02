@@ -1,0 +1,15 @@
+{
+  "description": "Ticketed RAC value exports not yet on the solidaria-components barrel. A listed symbol with an OPEN ticket is PENDING (non-blocking). Unlisted missing fails. A listed symbol whose ticket is verified/done/closed/merged fails (ticket closed, export still missing). A listed symbol that is now exported fails (stale pending entry).",
+  "pending": [
+    { "symbol": "MenuLoadMoreItem", "ticket": 229 },
+    { "symbol": "NavigationTree", "ticket": 228 },
+    { "symbol": "NavigationTreeContext", "ticket": 228 },
+    { "symbol": "NavigationTreeHeader", "ticket": 228 },
+    { "symbol": "NavigationTreeItem", "ticket": 228 },
+    { "symbol": "NavigationTreeItemContent", "ticket": 228 },
+    { "symbol": "NavigationTreeItemStateContext", "ticket": 228 },
+    { "symbol": "NavigationTreeSection", "ticket": 228 },
+    { "symbol": "TokenFieldValue", "ticket": 118 },
+    { "symbol": "setInteractionModality", "ticket": 231 }
+  ]
+}

@@ -39,6 +39,18 @@ the Vite Plus block (the `tsgolint` path checks files outside the
 `tsconfig.typecheck.json` contract). `vp run typecheck` runs `tsc` separately
 after `vp check`.
 
+Name-presence and keyboard-walk guards are not behavior evidence.
+`guard:rac-parity` and `guard:rac-export-gap` check barrel **name presence**
+(`export present` / `export missing`), including RAC sibling re-exports from
+`react-aria` / `react-stately`. Ticketed missing names live in
+`scripts/rac-export-gap-pending.json`: an open ticket is PENDING (non-blocking);
+an unlisted miss, a closed ticket, or a stale present entry fails. That lets a
+pin move land before the matching port. `guard:upstream-test-parity` is a
+one-way ratchet: remaining we-only / unmatched facts may only shrink.
+`guard:dnd-keyboard-parity` and `guard:virtualizer-keyboard-parity` diff the
+local keyboard walk against the pinned `useDroppableCollection` /
+`DropTargetKeyboardNavigation` sources.
+
 Blocking package evidence on `ci:release-readiness` and Certification Gates
 runs `test:run`, then `test:ssr`, then `test:hydrate`. SSR writes `output/*.html`
 and hydrate reads it. A failing hydrate test fails the job.
