@@ -432,8 +432,8 @@ be sitting **uncommitted** in the working tree. Check `git status`:
   report lands as `### Wave-3 regression fix` under `## Landed` in #256 (or
   #248/#229 if the DnD cause was there). It had the only browser slot and ran
   `virtualizer`, `dnd-listbox`, `listbox`, `gridlist`, `tableview`,
-  `treeview` certified specs against a preview on port 4341 — kill any
-  leftover `vp preview` on that port.
+  `treeview` certified specs against a preview on port 4340/4341 — kill any
+  leftover `astro preview` on those ports (`pgrep -fa 'astro preview'`).
 - DatePicker lane — `packages/solidaria-components/src/{Popover,DatePicker}.tsx`,
   `solid-spectrum`/`viviana-ui` `popover/**` and `calendar/**`, tests. Report
   under `## Landed` in #251. It was unit-only; nobody has run
