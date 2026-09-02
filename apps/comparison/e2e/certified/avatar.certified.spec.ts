@@ -5,19 +5,16 @@ import { registerStateMatrixDriver } from "../drivers/state-matrix";
 import { test } from "@playwright/test";
 
 /**
- * S2 `Image.tsx:185-201, 316` (and the Solid port at
- * `packages/solid-spectrum/src/image/index.tsx:126-130, 269-295`) sets
- * `transition: isTransitioning ? 'opacity' : 'none'` with
- * `isTransitioning = isRevealed && loadTime > 200` (ms from mount to
- * `onLoad`). The walk loads React then Solid on a fresh navigation, but
- * the browser cache survives: React pays the cold fetch of
- * `/fixtures/avatar/docs-avatar.png` (>200 ms under software
- * rasterizer) and Solid gets the cached image (<200 ms). Delay both
- * fetches well above 200 ms so both panels take the transitioning
- * branch. D3 (pixel) shares this spec file and this route; it captures
- * with `animations: "disabled"` after settle, so the opacity transition
- * itself is not in the screenshot. There is no `avatargroup.certified.spec.ts`
- * (AvatarGroup uses `/fixtures/avatar-group/*`, a different path).
+ * S2 `Image.tsx:185-201, 316` (Solid `packages/solid-spectrum/src/image/index.tsx:126-130, 269-295`)
+ * sets `transition: isTransitioning ? 'opacity' : 'none'` with
+ * `isTransitioning = isRevealed && loadTime > 200`. Without a delayed fetch,
+ * React pays the cold load (transitioning) and Solid hits cache (`none`).
+ * Delaying both fetches above 200 ms with `Cache-Control: no-store` puts
+ * them on the transitioning branch (`loadTime > 200` stays `opacity`; S2
+ * never clears it). `route.continue()` left React on the memory-cache
+ * `img.complete` path (`none`) while Solid waited for `onLoad` (`opacity`).
+ * There is no `avatargroup.certified.spec.ts` (AvatarGroup uses
+ * `/fixtures/avatar-group/*`, a different path).
  */
 const AVATAR_FIXTURE_URL = "**/fixtures/avatar/docs-avatar.png";
 const IMAGE_TRANSITION_THRESHOLD_MS = 200;
@@ -26,7 +23,10 @@ const AVATAR_FIXTURE_ROUTE_DELAY_MS = IMAGE_TRANSITION_THRESHOLD_MS + 100;
 test.beforeEach(async ({ page }) => {
   await page.route(AVATAR_FIXTURE_URL, async (route) => {
     await new Promise((resolve) => setTimeout(resolve, AVATAR_FIXTURE_ROUTE_DELAY_MS));
-    await route.continue();
+    const response = await route.fetch();
+    const body = await response.body();
+    const headers = { ...response.headers(), "cache-control": "no-store" };
+    await route.fulfill({ status: response.status(), headers, body });
   });
 });
 
@@ -83,13 +83,10 @@ const avatarScenario: DriverScenario = {
   // the state matrix collapses to the single resting state (driving the other
   // gesture states would just re-capture the identical default styles).
   states: ["default"],
-  // The `<img>` reveal (opacity 0 → 1 on load) applies a 500ms opacity
-  // transition only when loadTime > 200ms (S2 `Image.tsx:185-201, 316`).
-  // `test.beforeEach` delays `/fixtures/avatar/docs-avatar.png` above that
-  // threshold on both panels so D1 compares the transitioning branch, not
-  // a cache-timing coin flip. settleMs covers the 500ms opacity duration
-  // after the delayed load.
-  settleMs: 500,
+  // Delayed no-store fetch (beforeEach) so both panels take loadTime > 200
+  // (`transition-property: opacity`, which S2 does not clear). settle covers
+  // the 500 ms reveal after that delayed load.
+  settleMs: 800,
   // D6: the avatar's only AX node is the inner `img "Avatar"`. Capturing the
   // default and the over-background cases proves the `isOverBackground` outline
   // path stays a purely visual change — it must not leak a role or name.

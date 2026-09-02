@@ -148,3 +148,14 @@ shot. No `avatargroup.certified.spec.ts` exists; AvatarGroup uses
 `/fixtures/avatar-group/*`, a different path. Journeys/D13 do not mount this
 fixture. Playwright Avatar certified not re-run here (orchestrator owns the
 browser slot).
+
+#### Orchestrator browser (2026-09-02)
+
+`route.continue()` after a 300 ms delay still left React on the memory-cache
+`img.complete` path (`transition-property: none`) while Solid waited for
+`onLoad` (`opacity`). S2 never clears `isTransitioning` when `loadTime > 200`,
+so D1 must compare the same lasting branch.
+
+Fix: `route.fetch()` + `fulfill` with `Cache-Control: no-store` and the same
+300 ms delay, so both panels take `loadTime > 200` (`opacity`). Certified
+Avatar **22 passed** (D1 ×10, D3 ×10, D6 ×2).
