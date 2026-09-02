@@ -393,9 +393,21 @@
   color: var(--color-accent);
 }
 
-/* A fixed-height scroll viewport for the Virtualizer demos. */
+/* A fixed-height scroll viewport for the Virtualizer demos. Virtualizer renders
+   no DOM, so this sits on the collection element (the scroller). */
 .hd-viewport {
   overflow: auto;
   border: 1px solid var(--color-bg-400);
   border-radius: var(--radius-lg);
+}
+
+/* GridLayout / WaterfallLayout demos. The collection's content div holds the
+   windowed options, so it carries the column geometry the layout math assumes:
+   row-major, fixed row height, no row gap. The custom properties are set inline
+   per demo to match its layoutOptions. */
+.hd-viewport--grid > [role="presentation"] {
+  display: grid;
+  grid-template-columns: var(--hd-grid-columns);
+  grid-auto-rows: var(--hd-grid-row-height);
+  column-gap: var(--hd-grid-gap, 0px);
 }
