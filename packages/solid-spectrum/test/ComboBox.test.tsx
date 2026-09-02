@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor, cleanup } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { ComboBox, ComboBoxContext, ComboBoxOption, Form, type ComboBoxProps } from "../src";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
@@ -265,6 +266,31 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(
       prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+
+  it("updates direct reactive option children while open", () => {
+    // `<ComboBoxOption>{label()}</ComboBoxOption>` compiles to a `children`
+    // getter returning the current string. An untracked setup-time read would
+    // freeze the first value in the option label and its text slot.
+    const [label, setLabel] = createSignal("Apple");
+    render(() => (
+      <ComboBox<Fruit>
+        label="Fruit"
+        defaultOpen
+        items={[items[0]!]}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.name}
+      >
+        {(item) => <ComboBoxOption id={item.id}>{label()}</ComboBoxOption>}
+      </ComboBox>
+    ));
+
+    const option = screen.getByRole("option");
+    expect(option).toHaveTextContent("Apple");
+    expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apple");
+    setLabel("Apricot");
+    expect(option).toHaveTextContent("Apricot");
+    expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Apricot");
   });
 });
 

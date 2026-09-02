@@ -19,6 +19,7 @@
 import {
   type JSX,
   createContext,
+  createMemo,
   createSignal,
   createUniqueId,
   mergeProps,
@@ -1014,13 +1015,10 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
-  const rawChildren = local.children;
-  const textLabel = () =>
-    isTextOnlyChildren(rawChildren)
-      ? Array.isArray(rawChildren)
-        ? rawChildren.join("")
-        : String(rawChildren)
-      : undefined;
+  // One tracked read of the children getter. Reading it per use creates the
+  // child DOM once per read and desynchronizes hydration keys; an untracked
+  // setup-time read freezes a direct signal child such as `{label()}`.
+  const content = createMemo(() => local.children);
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
       comboBoxOption({
@@ -1058,12 +1056,12 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             class={checkClass(renderProps)}
             style={comboBoxCheckmarkIconStyle(size)}
           />
-          {isTextOnlyChildren(rawChildren) ? (
+          {isTextOnlyChildren(content()) ? (
             <span slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
-              {rawChildren}
+              {content()}
             </span>
           ) : (
-            rawChildren
+            content()
           )}
         </>
       )}

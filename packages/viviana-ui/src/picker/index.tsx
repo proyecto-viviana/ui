@@ -19,6 +19,7 @@
 import {
   type JSX,
   createContext,
+  createMemo,
   createSignal,
   createUniqueId,
   mergeProps,
@@ -1085,7 +1086,10 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   const size = useContext(PickerSizeContext);
   const insideValue = useContext(InsidePickerValueContext);
   const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
-  const rawChildren = local.children;
+  // One tracked read of the children getter. Reading it per use creates the
+  // child DOM once per read and desynchronizes hydration keys; an untracked
+  // setup-time read freezes a direct signal child such as `{label()}`.
+  const content = createMemo(() => local.children);
 
   // Trigger/value mode: mirror upstream, where `SelectValue`'s default children
   // are the selected item's *content* (`item.props.children`), not a rendered
@@ -1096,12 +1100,12 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   if (insideValue) {
     return (
       <>
-        {isTextOnlyChildren(rawChildren) ? (
+        {isTextOnlyChildren(content()) ? (
           <span slot="label" class={pickerValueText} data-rsp-slot="text">
-            {rawChildren}
+            {content()}
           </span>
         ) : (
-          rawChildren
+          content()
         )}
       </>
     );
@@ -1151,12 +1155,12 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
             // are pruned from the tree automatically — matching the React oracle.
           />
-          {isTextOnlyChildren(rawChildren) ? (
+          {isTextOnlyChildren(content()) ? (
             <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
-              {rawChildren}
+              {content()}
             </span>
           ) : (
-            rawChildren
+            content()
           )}
         </>
       )}

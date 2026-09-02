@@ -4,7 +4,7 @@
  * See ../../LICENSE-CLOUDFLARE and the package README for the current evidence gap.
  */
 
-import { Show, splitProps, type Component, type JSX } from "solid-js";
+import { Show, createMemo, splitProps, type Component, type JSX } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
   Button as HeadlessButton,
@@ -211,9 +211,12 @@ export function Button(props: ButtonProps): JSX.Element {
     ) : local.icon ? (
       <Icon value={local.icon} />
     ) : null;
-  const rawChildren = local.children;
+  // One tracked read of the children getter. Reading it per use creates the
+  // child DOM once per read and desynchronizes hydration keys; an untracked
+  // setup-time read freezes a direct signal child such as `{label()}`.
+  const labelContent = createMemo(() => local.children);
   const label = () =>
-    rawChildren == null ? null : <span class="pv-kumo-Button__label">{rawChildren}</span>;
+    labelContent() == null ? null : <span class="pv-kumo-Button__label">{labelContent()}</span>;
   const content = () => (
     <Show
       when={isEmphasis()}
