@@ -513,7 +513,16 @@ export function Popover(props: PopoverProps): JSX.Element {
   const updateTriggerWidth = () => {
     const trigger = getTriggerRef();
     if (!trigger || hasExplicitTriggerWidth()) return;
-    setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
+    // Layout width, not getBoundingClientRect: S2 `pressScale` applies
+    // `perspective + translate3d(0,0,-2px)` while the trigger is pressed, which
+    // shrinks the transformed rect (~5.84px on size-S/M Picker). RAC measures
+    // in `useLayoutEffect` after pointer-up so the transform is already gone;
+    // Solid's `createEffect` can run on the pressed frame, and ResizeObserver
+    // does not fire for CSS transforms. `offsetWidth` is the box `--trigger-width`
+    // is supposed to copy (RAC `Popover.tsx:309-331`).
+    const width =
+      trigger instanceof HTMLElement ? trigger.offsetWidth : trigger.getBoundingClientRect().width;
+    setTriggerWidth(`${width}px`);
   };
   createEffect(() => {
     if (!isOpen()) return;
@@ -660,16 +669,22 @@ export function Popover(props: PopoverProps): JSX.Element {
       (!(local.shouldSkipAnimation ?? false) &&
         (enterAnimation() || (isOpen() && popoverAria.placement() == null)));
 
-    const renderValues = createMemo<PopoverRenderProps>(() => ({
-      trigger: resolvedTrigger() ?? null,
-      // RAC usePopover reports placement from useLayoutEffect before paint.
-      // Until Solid's createEffect positioning lands, seed the preferred axis
-      // so S2 `translateY: { placement: { bottom: { isEntering: -4 } } }` does
-      // not miss the bottom branch and compile the top entering +4 keyframe.
-      placement: popoverAria.placement() ?? preferredPlacementAxis(local.placement),
-      isEntering: isEntering(),
-      isExiting: isExiting(),
-    }));
+    const renderValues = createMemo<PopoverRenderProps>(() => {
+      const preferred = preferredPlacementAxis(local.placement);
+      const entering = isEntering();
+      return {
+        trigger: resolvedTrigger() ?? null,
+        // RAC usePopover reports placement from useLayoutEffect before paint.
+        // Until Solid's createEffect positioning lands, seed the preferred axis
+        // so S2 `translateY: { placement: { bottom: { isEntering: -4 } } }` does
+        // not miss the bottom branch. Hold that axis for the whole enter so a
+        // later measured flip cannot replace the keyframe mid-transition
+        // (DatePicker D2: Solid `0px 4px` vs React `0px -4px`).
+        placement: entering ? preferred : (popoverAria.placement() ?? preferred),
+        isEntering: entering,
+        isExiting: isExiting(),
+      };
+    });
 
     const renderProps = useRenderProps(
       {
@@ -722,7 +737,7 @@ export function Popover(props: PopoverProps): JSX.Element {
               lang={locale().locale}
               dir={locale().direction}
               data-trigger={resolvedTrigger()}
-              data-placement={popoverAria.placement() ?? preferredPlacementAxis(local.placement)}
+              data-placement={renderValues().placement}
               data-entering={dataAttr(isEntering())}
               data-exiting={dataAttr(isExiting())}
             >

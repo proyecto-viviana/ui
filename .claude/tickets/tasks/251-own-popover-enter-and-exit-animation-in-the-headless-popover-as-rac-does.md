@@ -312,3 +312,17 @@ launch a browser).
   to position before first paint (measure in the ref callback /
   `createRenderEffect` once the trigger and overlay are attached) and then
   delete both seeds. Tracked here as debt; not in scope of the wave-3 fix.
+
+#### Orchestrator browser (2026-09-02 19:54)
+
+Preview 1: D2 still red (`translate: 0px 4px` vs React `0px -4px`) — the
+seed was overwritten when measured placement landed mid-enter.
+
+Fix: while `isEntering()`, render-prop `placement` and `data-placement`
+stay on `preferredPlacementAxis(local.placement)` (`bottom` for DatePicker's
+`bottom start`). After enter, use the measured axis.
+
+Preview 2 certified `datepicker` + `daterangepicker`: D2 open-enter (and
+reduced-motion twin) **green**. D5 open-trap **green** (nested Dialog focus
+from `0ee3511c`). ColorField certified (same Preview 1) **green** — describedby
+from `f0ba29d7`.

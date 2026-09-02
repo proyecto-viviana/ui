@@ -330,17 +330,7 @@ describe("Popover", () => {
 
     it("should expose trigger width as a CSS variable", async () => {
       const trigger = document.createElement("button");
-      trigger.getBoundingClientRect = () => ({
-        x: 0,
-        y: 0,
-        top: 0,
-        left: 0,
-        right: 144,
-        bottom: 32,
-        width: 144,
-        height: 32,
-        toJSON: () => {},
-      });
+      Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 144 });
       document.body.appendChild(trigger);
 
       render(() => (
@@ -356,19 +346,38 @@ describe("Popover", () => {
       document.body.removeChild(trigger);
     });
 
-    it("should preserve an explicit trigger width CSS variable", async () => {
+    it("should use the trigger layout width when a pressScale transform shrinks getBoundingClientRect", async () => {
       const trigger = document.createElement("button");
+      Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 192 });
       trigger.getBoundingClientRect = () => ({
         x: 0,
         y: 0,
         top: 0,
         left: 0,
-        right: 144,
+        right: 186.172,
         bottom: 32,
-        width: 144,
+        width: 186.172,
         height: 32,
         toJSON: () => {},
       });
+      document.body.appendChild(trigger);
+
+      render(() => (
+        <Popover defaultOpen triggerRef={() => trigger}>
+          Content
+        </Popover>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("dialog").style.getPropertyValue("--trigger-width")).toBe("192px");
+      });
+
+      document.body.removeChild(trigger);
+    });
+
+    it("should preserve an explicit trigger width CSS variable", async () => {
+      const trigger = document.createElement("button");
+      Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 144 });
       document.body.appendChild(trigger);
 
       render(() => (

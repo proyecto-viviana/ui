@@ -171,3 +171,32 @@ closed; Tabs snapshot is the tablist, not TabsPicker.
 - Playwright not run (headless Chromium `requestAnimationFrame` never fires
   on this machine).
 - `vp check --fix` owned files: pass. `git diff --check`: pass.
+
+### Wave-3 regression — Picker `--trigger-width` (2026-09-02)
+
+21 certified D1/D3/D8/D9/D10 failures: Solid list `186.172px` vs React
+`192px` (size-s) and `202.156px` vs `208px` (size-m). Delta is a constant
+~5.84px, not a wrong trigger element.
+
+`HeadlessSelectContext.triggerRef()` is the `<button>` (`Select.tsx:817-820`,
+Picker `HeadlessSelectTrigger ref={setTriggerEl}`). The querySelector
+fallback is unused on the happy path.
+
+Root cause: S2 `pressScale` applies `perspective(Npx) translate3d(0,0,-2px)`
+while the trigger is pressed. `getBoundingClientRect().width` shrinks by
+`N/(N+2)`: size-s `192 * 64/66 = 186.18`; size-m `208 * 69.33/71.33 =
+202.18`. RAC measures in `useLayoutEffect` after pointer-up, so the
+transform is gone. Solid `createEffect` can run on the pressed frame, and
+`ResizeObserver` does not fire for CSS transforms.
+
+Fix in headless Popover `updateTriggerWidth`: publish `offsetWidth` (layout
+box), not the transformed rect. Unit tests: `--trigger-width` stays `192px`
+when `getBoundingClientRect().width` is `186.172`; Picker overlay equals the
+trigger button's `offsetWidth`. Changeset
+`.changeset/popover-trigger-width-layout.md`.
+
+Certified `picker` (Build/Preview 2, 2026-09-02 19:54): D1/D3/D8/D9/D10 list
+and trigger cases **green** (the 21 `--trigger-width` checks). Remaining
+picker red is D13 journeys (2) — step-0 `data-focus-visible` wrapper /
+`aria-hidden` Dismiss / form-vs-template, owned by #209 / #248 / #254, not
+this width fix.
