@@ -10,8 +10,9 @@
  * - Full accessibility
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { createComponent } from "solid-js/web";
 import {
   ListBox,
   ListBoxContext,
@@ -505,6 +506,141 @@ describe("ListBox", () => {
       ));
 
       expect(container.querySelector(".solidaria-DropIndicator")).toBeInTheDocument();
+    });
+
+    it("moves DOM focus to the insert-between drop indicator after Enter starts a keyboard drag", async () => {
+      // Failure mode: after Enter pickup, RAC focuses
+      // `option:Insert between Read and Write` (useDropIndicator +
+      // useDroppableItem). Port bugs that left DOM focus on
+      // `listbox:Permissions`:
+      // 1. useRenderDropIndicator gated on the collection-level `isDropTarget`
+      //    boolean, which keyboard `setTarget` never flipped — the indicator
+      //    never mounted.
+      // 2. ListBoxDropIndicator was a nested component identity, so each ListBox
+      //    re-render remounted it and DragManager `dropItems` lost the node;
+      //    `onFocus` then bounced to the collection.
+      // 3. createDroppableCollection's register effect subscribed to `collection`,
+      //    re-installing a new DropTarget object mid-drag so
+      //    `validDropTargets.includes(currentDropTarget)` failed and focused
+      //    the collection. The selectable-collection `onFocusOut` restore then
+      //    focused the inert source option, which Chromium maps to the listbox.
+      const items: TestItem[] = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      const { dragAndDropHooks } = useDragAndDrop<TestItem>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder: () => {},
+      });
+
+      render(() => (
+        <ListBox
+          aria-label="Permissions"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          selectionMode="multiple"
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {(item) => (
+            <ListBoxOption id={item.id} textValue={item.name}>
+              {item.name}
+            </ListBoxOption>
+          )}
+        </ListBox>
+      ));
+
+      const read = screen.getByRole("option", { name: "Read" });
+      read.focus();
+      expect(document.activeElement).toBe(read);
+
+      await user.keyboard("{Enter}");
+
+      try {
+        await waitFor(() => {
+          // During a virtual drag RAC mounts every valid indicator
+          // (`useRenderDropIndicator.ts:87`); the active one is labeled
+          // insert-between, not the first `.solidaria-DropIndicator` in DOM order.
+          const indicator = document.querySelector('[aria-label="Insert between Read and Write"]');
+          expect(indicator).toBeTruthy();
+          expect(indicator).toHaveAttribute("data-drop-target");
+          expect(indicator).toHaveAttribute("role", "option");
+        });
+        // The dragged option must keep its DOM node (RAC ListBoxItem stays
+        // mounted). Remounting leaves DragManager's dragTarget disconnected
+        // and inerts the new option — Chromium then focuses listbox:Permissions.
+        // Testing Library skips aria-hidden options (`dropProps` during virtual
+        // drag); the node is still `id="read"`.
+        expect(document.getElementById("read")).toBe(read);
+        // DragManager announces the labeled indicator only after
+        // `setCurrentDropTarget(..., item)` (`DragManager.ts:579-586`) — the
+        // path RAC takes so keyboard focus lands on the insert-between option.
+        // jsdom still leaves document.activeElement on the source option
+        // (focusin preventDefault); the certified browser walk checks the
+        // active element.
+        await waitFor(() => {
+          expect(document.querySelector("[aria-live='polite']")?.textContent).toContain(
+            "Insert between Read and Write",
+          );
+        });
+      } finally {
+        // End the keyboard drag so DragManager's ariaHideOutside does not leak
+        // into later tests in this file (listbox stays aria-hidden otherwise).
+        await user.keyboard("{Escape}");
+      }
+    });
+
+    it("keeps the dragged option node when children are one-shot component thunks", async () => {
+      // Comparison `hc` returns `() => createComponent(...)`. If indicator
+      // `Show` shares that insert, the thunk is consumed twice, the option
+      // remounts, and Chromium maps focus to `listbox:Permissions`.
+      const items: TestItem[] = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      const { dragAndDropHooks } = useDragAndDrop<TestItem>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder: () => {},
+      });
+
+      render(() => (
+        <ListBox
+          aria-label="Permissions"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          selectionMode="multiple"
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {(item) => {
+            const thunk = () =>
+              createComponent(ListBoxOption, {
+                id: item.id,
+                textValue: item.name,
+                get children() {
+                  return item.name;
+                },
+              });
+            return thunk as unknown as JSX.Element;
+          }}
+        </ListBox>
+      ));
+
+      const read = screen.getByRole("option", { name: "Read" });
+      read.focus();
+      await user.keyboard("{Enter}");
+      try {
+        await waitFor(() => {
+          expect(
+            document.querySelector('[aria-label="Insert between Read and Write"]'),
+          ).toBeTruthy();
+        });
+        expect(document.getElementById("read")).toBe(read);
+      } finally {
+        await user.keyboard("{Escape}");
+      }
     });
 
     it("should trigger onLoadMore when load more sentinel is visible", async () => {

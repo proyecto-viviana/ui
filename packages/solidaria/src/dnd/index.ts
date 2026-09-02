@@ -22,11 +22,13 @@ export {
   createDroppableCollection,
   setGlobalDropCollectionRef,
   getGlobalDropCollectionRef,
+  getDroppableCollectionRef,
 } from "./createDroppableCollection";
 
 // Item hooks
 export { createDraggableItem } from "./createDraggableItem";
 export { createDroppableItem } from "./createDroppableItem";
+export { createDropIndicator } from "./createDropIndicator";
 
 // Types
 export type { AriaDragOptions, DragAria, AriaDropOptions, DropAria } from "./types";
@@ -41,6 +43,7 @@ export type {
 } from "./createDroppableCollection";
 export type { DraggableItemOptions, DraggableItemAria } from "./createDraggableItem";
 export type { DroppableItemOptions, DroppableItemAria } from "./createDroppableItem";
+export type { DropIndicatorOptions, DropIndicatorAria } from "./createDropIndicator";
 
 // Keyboard drag session (reactive mirror of the DragManager singleton), consumed
 // by drop indicators to self-focus while a drag is active.

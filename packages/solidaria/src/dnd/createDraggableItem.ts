@@ -42,7 +42,11 @@ import {
   getGlobalDropEffect,
 } from "./utils";
 import { createInteractionModality } from "../interactions";
-import { setGlobalDraggingTypes } from "./createDraggableCollection";
+import {
+  setGlobalDraggingTypes,
+  setGlobalDraggingCollectionRef,
+  setGlobalDraggingKeys,
+} from "./createDraggableCollection";
 import { beginDragging } from "./DragManager";
 import { createStringFormatter } from "../i18n/createStringFormatter";
 import { dndIntlStrings } from "./intl";
@@ -269,6 +273,19 @@ export function createDraggableItem(
 
       const items = state.getItems(keys);
       setGlobalDraggingTypes(getTypes(items));
+      // RAC `utils.ts` `globalDndState.draggingCollectionRef` is set before the
+      // keyboard session starts. The collection hook's createEffect writes the
+      // same ref, but that flush can lose the race with DragManager's rAF
+      // `setup()` — `isInternal` is then false, `onReorder` is rejected, the
+      // collection drops out of `validDropTargets`, and focusing the indicator
+      // bounces to `listbox:Permissions`.
+      const collectionEl =
+        el.closest<HTMLElement>('[role="listbox"], [role="grid"], [role="tree"], [role="menu"]') ??
+        el.parentElement;
+      if (collectionEl) {
+        setGlobalDraggingCollectionRef(collectionEl);
+      }
+      setGlobalDraggingKeys(keys);
 
       const allowedOps = state.getAllowedDropOperations();
       let allowed = DROP_OPERATION.all;

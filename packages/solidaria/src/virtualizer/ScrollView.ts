@@ -18,7 +18,14 @@
  * - packages/react-aria/src/virtualizer/ScrollView.tsx (`useScrollView`)
  */
 
-import { createEffect, createSignal, onCleanup, type Accessor, type JSX } from "solid-js";
+import {
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+  type Accessor,
+  type JSX,
+} from "solid-js";
 import {
   addEvent,
   getEventTarget,
@@ -88,6 +95,16 @@ export function createScrollView(options: CreateScrollViewOptions): ScrollViewAr
     const next = rect.y < 0 ? -rect.y : 0;
     options.onViewportOffsetChange?.(next);
   };
+
+  createRenderEffect(() => {
+    const element = options.getScrollElement();
+    if (!element) return;
+    // RAC `useScrollView` `ScrollView.tsx:305-315` initializes viewport size
+    // in a layout effect so the first visible-rect emit has a real size.
+    updateSize(element);
+    updateWindowViewport();
+    updateViewportOffset(element);
+  });
 
   createEffect(() => {
     const element = options.getScrollElement();

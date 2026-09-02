@@ -1,5 +1,6 @@
 import h from "solid-js/h";
 import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createComponent } from "solid-js/web";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum";
 import {
@@ -107,7 +108,17 @@ function SolidSpectrumDndListBoxDemo() {
         },
       },
       renderProp((item: DndListBoxDemoItem) =>
-        hc(SolidHeadlessListBoxOption, { id: item.id, textValue: item.label }, [item.label]),
+        // `hc` returns a one-shot thunk. Drop-indicator `Show` shares the
+        // collection insert; a second thunk call remounts the option and
+        // Chromium maps focus to `listbox:Permissions`. Instantiate like
+        // compiled JSX (`createComponent`) so the node stays mounted.
+        createComponent(SolidHeadlessListBoxOption, {
+          id: item.id,
+          textValue: item.label,
+          get children() {
+            return item.label;
+          },
+        }),
       ),
     ),
   );

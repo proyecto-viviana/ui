@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vite-plus/test";
 import { render, fireEvent, screen, cleanup } from "@solidjs/testing-library";
 import { afterEach } from "vite-plus/test";
+import { createSignal } from "solid-js";
 import {
   setGlobalDraggingCollectionRef,
   setGlobalDraggingKeys,
@@ -34,9 +35,11 @@ const dragManagerMock = vi.hoisted(() => {
     onKeyDown?: (e: KeyboardEvent, drag: unknown) => void;
   };
   let captured: Descriptor | null = null;
+  let registerCount = 0;
   return {
     registerDropTarget: (target: Descriptor) => {
       captured = target;
+      registerCount += 1;
       return () => {
         if (captured === target) captured = null;
       };
@@ -45,8 +48,10 @@ const dragManagerMock = vi.hoisted(() => {
       if (!captured) throw new Error("no drop target was registered");
       return captured;
     },
+    getRegisterCount: () => registerCount,
     reset: () => {
       captured = null;
+      registerCount = 0;
     },
   };
 });
@@ -232,6 +237,44 @@ describe("createDroppableCollection keyboard engine (DragManager seam)", () => {
     expect(descriptor.element).toBe(document.getElementById(id));
     expect(typeof descriptor.onKeyDown).toBe("function");
     expect(typeof descriptor.onDropEnter).toBe("function");
+  });
+
+  it("does not re-register the DragManager drop target when collection identity changes", () => {
+    // Failure mode: the register effect subscribed to `collection` via
+    // `getOptions()`. Replacing the collection mid-keyboard-drag installed a
+    // new DropTarget object; DragManager `includes(currentDropTarget)` then
+    // failed and focused the collection (`listbox:Permissions`) instead of the
+    // drop indicator. RAC's effect deps are `[localState, ref, onDrop, direction]`.
+    const { state } = makeState();
+    const id = `drop-host-${++harnessCounter}`;
+    const [keys, setKeys] = createSignal<SimpleKey[]>([1, 2, 3]);
+
+    function TestComponent() {
+      const { collectionProps } = createDroppableCollection(() => {
+        const currentKeys = keys();
+        const collection = makeFlatCollection(currentKeys);
+        const keyboardDelegate = makeDelegate(currentKeys, collection);
+        return {
+          ref: () => document.getElementById(id) as HTMLElement | null,
+          dropTargetDelegate: {
+            getDropTargetFromPoint() {
+              return null;
+            },
+          },
+          collection,
+          keyboardDelegate,
+        };
+      }, state);
+      return <div id={id} tabIndex={0} data-testid={id} {...collectionProps} />;
+    }
+
+    render(() => <TestComponent />);
+    const first = dragManagerMock.getCaptured();
+    expect(dragManagerMock.getRegisterCount()).toBe(1);
+
+    setKeys([1, 2, 3, 4]);
+    expect(dragManagerMock.getRegisterCount()).toBe(1);
+    expect(dragManagerMock.getCaptured()).toBe(first);
   });
 
   it("restores collection focus after an internal reorder", async () => {

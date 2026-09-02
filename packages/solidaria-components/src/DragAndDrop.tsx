@@ -149,12 +149,16 @@ export function useRenderDropIndicator(
 
   return (target: ItemDropTarget) => {
     const stateIsDropTarget = dropState?.isDropTarget;
-    const isTarget =
-      typeof stateIsDropTarget === "function"
-        ? stateIsDropTarget(target)
-        : stateIsDropTarget === true
-          ? targetsEqual(dropState?.target, target)
-          : false;
+    // RAC `useDroppableCollectionState.ts:207` `isDropTarget(target)` is a
+    // per-target predicate. The port exposes `isDropTarget` as a collection-
+    // level boolean (`createDroppableCollectionState.ts:458`) that keyboard
+    // `setTarget` (`createDroppableCollection.ts` `onDropEnter`, RAC `:561`)
+    // never flips. Match `state.target` so the active indicator still mounts
+    // — otherwise Enter pickup leaves DOM focus on the collection
+    // (`listbox:Permissions`) instead of `option:Insert between Read and Write`.
+    const isTargetFromFn =
+      typeof stateIsDropTarget === "function" ? Boolean(stateIsDropTarget(target)) : false;
+    const isTarget = isTargetFromFn || targetsEqual(dropState?.target, target);
     const isVirtualDragging = dragAndDropHooks?.isVirtualDragging?.() ?? false;
     if (!isTarget && !isVirtualDragging) return undefined;
     return dragAndDropHooks?.renderDropIndicator ? (

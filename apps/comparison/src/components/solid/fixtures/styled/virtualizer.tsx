@@ -72,12 +72,6 @@ function SolidSpectrumVirtualizerDemo() {
           return SolidHeadlessListLayout;
         },
         layoutOptions: { itemSize: virtualizerRowHeight },
-        style: {
-          height: `${virtualizerViewportHeight}px`,
-          width: "240px",
-          overflow: "auto",
-          "box-sizing": "border-box",
-        },
       },
       [
         hc(
@@ -94,6 +88,12 @@ function SolidSpectrumVirtualizerDemo() {
             items: virtualizerDemoItems,
             getKey: (item: VirtualizerDemoItem) => item.id,
             getTextValue: (item: VirtualizerDemoItem) => item.label,
+            style: {
+              height: `${virtualizerViewportHeight}px`,
+              width: "240px",
+              overflow: "auto",
+              "box-sizing": "border-box",
+            },
           },
           renderProp((item: VirtualizerDemoItem) =>
             hc(

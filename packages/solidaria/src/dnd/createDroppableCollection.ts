@@ -21,7 +21,7 @@
  * Ported from packages/react-aria/src/dnd/useDroppableCollection.ts.
  */
 
-import { createEffect, createMemo, onCleanup, type Accessor } from "solid-js";
+import { createEffect, createMemo, onCleanup, untrack, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import type {
   Collection,
@@ -50,6 +50,21 @@ export function setGlobalDropCollectionRef(ref: HTMLElement | null): void {
 
 export function getGlobalDropCollectionRef(): HTMLElement | null {
   return globalDropCollectionRef;
+}
+
+// RAC `utils.ts:28-54` `droppableCollectionMap` — keyed by droppable state so
+// `useDroppableItem` can pass THIS collection's ref into `isInternalDropOperation`
+// even before `onDropEnter` writes the global drop-collection ref.
+const droppableCollectionMap = new WeakMap<
+  DroppableCollectionState,
+  Accessor<HTMLElement | null>
+>();
+
+/** RAC `utils.ts:46-54` `getDroppableCollectionRef`. */
+export function getDroppableCollectionRef(
+  state: DroppableCollectionState,
+): Accessor<HTMLElement | null> | undefined {
+  return droppableCollectionMap.get(state);
 }
 
 export interface DropTargetDelegate {
@@ -192,6 +207,7 @@ export function createDroppableCollection(
   state: DroppableCollectionState,
 ): DroppableCollectionAria {
   const getOptions = createMemo(() => options());
+  droppableCollectionMap.set(state, () => getOptions().ref());
 
   // Layout direction drives keyboard drop-target navigation (Left/Right flip in
   // RTL). Read at the reactive owner so the registration effect re-runs on change.
@@ -441,7 +457,14 @@ export function createDroppableCollection(
   // `collectionProps.onKeyDown` engine. Re-runs when the element or locale
   // direction changes (upstream keys the effect on `[localState, ref, onDrop, direction]`).
   createEffect(() => {
-    const refEl = getOptions().ref();
+    // Track only the scroller element and writing direction. Calling
+    // `getOptions()` here would also subscribe to `collection` / `selectedKeys`
+    // (ListBox getters), re-register a *new* DropTarget object mid-drag, and
+    // `validDropTargets.includes(currentDropTarget)` would fail — focusing the
+    // collection (`listbox:Permissions`) instead of the drop indicator.
+    // RAC `useDroppableCollection.ts` effect deps: `[localState, ref, onDrop, direction]`.
+    const refFn = untrack(() => getOptions().ref);
+    const refEl = refFn();
     if (!refEl) return;
     const rtl = locale().direction === "rtl";
 

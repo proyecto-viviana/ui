@@ -84,6 +84,62 @@ describe("Virtualizer", () => {
     expect(screen.queryByText("Item 0")).not.toBeInTheDocument();
   });
 
+  it("windows from the collection element's measured size when the collection is the scroller", async () => {
+    // RAC styles the collection (React comparison fixture puts height/overflow
+    // on ListBox, not Virtualizer). After Virtualizer became context-only,
+    // sizing must live on that collection element so createScrollView measures
+    // a viewport instead of the full content.
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+      configurable: true,
+      get(this: HTMLElement) {
+        if (this.getAttribute("role") === "listbox") return 60;
+        return clientHeight?.get?.call(this) ?? 0;
+      },
+    });
+
+    const items = Array.from({ length: 50 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+    render(() => (
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, overscan: 0 }}>
+        <ListBox
+          aria-label="Measured collection scroller"
+          items={items}
+          getKey={(item) => item.id}
+          style={{ height: "60px", overflow: "auto", "box-sizing": "border-box" }}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    const listbox = screen.getByRole("listbox") as HTMLDivElement;
+    expect(listbox.style.height).toBe("60px");
+    expect(listbox.style.overflow).toBe("auto");
+    const options = screen.getAllByRole("option");
+    expect(options.length).toBeGreaterThan(0);
+    expect(options.length).toBeLessThan(50);
+    expect(screen.getByText("Item 0")).toBeInTheDocument();
+    expect(screen.queryByText("Item 20")).not.toBeInTheDocument();
+
+    listbox.scrollTop = 80;
+    fireEvent.scroll(listbox);
+    expect(screen.getByText("Item 4")).toBeInTheDocument();
+    expect(screen.queryByText("Item 0")).not.toBeInTheDocument();
+
+    if (clientHeight) {
+      Object.defineProperty(HTMLElement.prototype, "clientHeight", clientHeight);
+    }
+  });
+
   it("publishes option aria-posinset and aria-setsize for the full collection when windowed", () => {
     const items = Array.from({ length: 40 }, (_, i) => ({
       id: `item-${i}`,
@@ -277,7 +333,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer layout={layout} style={{ width: "240px" }}>
+      <Virtualizer layout={layout}>
         <Consumer />
       </Virtualizer>
     ));
@@ -317,7 +373,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer layout={layout} style={{ width: "260px" }}>
+      <Virtualizer layout={layout}>
         <Consumer />
       </Virtualizer>
     ));
@@ -1005,17 +1061,8 @@ describe("Virtualizer", () => {
     }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
-        <ListBox
-          aria-label="Virtualized list"
-          items={items}
-          getKey={(item) => item.id}
-          style={{ height: "60px", overflow: "auto" }}
-        >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
+        <ListBox aria-label="Virtualized list" items={items} getKey={(item) => item.id}>
           {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
         </ListBox>
       </Virtualizer>
@@ -1049,17 +1096,8 @@ describe("Virtualizer", () => {
     }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
-        <ListBox
-          aria-label="Pointer events list"
-          items={items}
-          getKey={(item) => item.id}
-          style={{ height: "60px", overflow: "auto" }}
-        >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
+        <ListBox aria-label="Pointer events list" items={items} getKey={(item) => item.id}>
           {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
         </ListBox>
       </Virtualizer>
@@ -1120,16 +1158,8 @@ describe("Virtualizer", () => {
     ];
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
-        <Tree
-          aria-label="Sectioned virtual tree"
-          items={sectionedTreeItems as any}
-          style={{ height: "40px", overflow: "auto" }}
-        >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
+        <Tree aria-label="Sectioned virtual tree" items={sectionedTreeItems as any}>
           {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
         </Tree>
       </Virtualizer>
@@ -1175,11 +1205,7 @@ describe("Virtualizer", () => {
     ];
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <Tree aria-label="Section boundary virtual tree" items={sectionedTreeItems as any}>
           {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
         </Tree>
@@ -1210,11 +1236,7 @@ describe("Virtualizer", () => {
     }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
         <ListBox aria-label="Focused retention list" items={items} getKey={(item) => item.id}>
           {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
         </ListBox>
@@ -1263,11 +1285,7 @@ describe("Virtualizer", () => {
     };
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
         <ListBox
           aria-label="Drop target retention list"
           items={items}
@@ -1297,11 +1315,7 @@ describe("Virtualizer", () => {
     let renderCalls = 0;
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <ListBox aria-label="Stable window list" items={items} getKey={(item) => item.id}>
           {(item) => {
             renderCalls += 1;
@@ -1343,11 +1357,7 @@ describe("Virtualizer", () => {
     }));
 
     render(() => (
-      <Virtualizer
-        layout={layout}
-        layoutOptions={{ viewportSize: 60 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={layout} layoutOptions={{ viewportSize: 60 }}>
         <ListBox aria-label="Custom layout list" items={items} getKey={(item) => item.id}>
           {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
         </ListBox>
@@ -1420,7 +1430,6 @@ describe("Virtualizer", () => {
       <Virtualizer
         layout={{}}
         layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
         renderDropIndicator={(index, position) => (
           <li role="presentation" data-testid={`drop-${position}-${index}`} />
         )}
@@ -1458,7 +1467,6 @@ describe("Virtualizer", () => {
       <Virtualizer
         layout={{}}
         layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
         renderDropIndicator={(index, position) => (
           <li role="presentation" data-testid={`section-drop-${position}-${index}`} />
         )}
@@ -1493,11 +1501,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <>
           <ListBox aria-label="Listbox drop metadata" items={items} getKey={(item) => item.id}>
             {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
@@ -1536,11 +1540,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <>
           <ListBox aria-label="Sectioned listbox drop metadata" items={items as unknown[]}>
             {(item) => (
@@ -1603,11 +1603,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <>
           <ListBox aria-label="Sectioned keyboard delegate listbox" items={items as unknown[]}>
             {(item) => (
@@ -1636,11 +1632,7 @@ describe("Virtualizer", () => {
     const items = Array.from({ length: 20 }, (_, i) => ({ id: i, name: `Grid ${i}` }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <GridList items={items} getKey={(item) => item.id} aria-label="Virtualized grid list">
           {(item) => <GridListItem id={item.id}>{item.name}</GridListItem>}
         </GridList>
@@ -1662,11 +1654,7 @@ describe("Virtualizer", () => {
     const items = Array.from({ length: 120 }, (_, i) => ({ id: i, name: `Grid ${i}` }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
         <GridList items={items} getKey={(item) => item.id} aria-label="Focused retention grid">
           {(item) => <GridListItem id={item.id}>{item.name}</GridListItem>}
         </GridList>
@@ -1712,11 +1700,7 @@ describe("Virtualizer", () => {
     };
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
         <GridList
           items={items}
           getKey={(item) => item.id}
@@ -1744,11 +1728,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <>
           <GridList items={items} getKey={(item) => item.id} aria-label="Grid drop metadata">
             {(item) => <GridListItem id={item.id}>{item.name}</GridListItem>}
@@ -1768,11 +1748,7 @@ describe("Virtualizer", () => {
     const items = Array.from({ length: 30 }, (_, i) => ({ id: i, name: `Row ${i}` }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <Table
           items={items}
           columns={columns}
@@ -1815,11 +1791,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <>
           <Table
             items={items}
@@ -1860,11 +1832,7 @@ describe("Virtualizer", () => {
     }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <Tree items={items} aria-label="Virtualized tree">
           {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
         </Tree>
@@ -1890,11 +1858,7 @@ describe("Virtualizer", () => {
     }));
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
         <Tree items={items} aria-label="Focused retention tree">
           {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
         </Tree>
@@ -1944,11 +1908,7 @@ describe("Virtualizer", () => {
     };
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}
-        style={{ height: "60px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 60, overscan: 0 }}>
         <Tree
           items={items}
           aria-label="Drop target retention tree"
@@ -1981,11 +1941,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 80, overscan: 0 }}
-        style={{ height: "80px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 80, overscan: 0 }}>
         <>
           <Tree items={items} defaultExpandedKeys={["parent"]} aria-label="Tree drop metadata">
             {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
@@ -2048,11 +2004,7 @@ describe("Virtualizer", () => {
     }
 
     render(() => (
-      <Virtualizer
-        layout={{}}
-        layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}
-        style={{ height: "40px", overflow: "auto" }}
-      >
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 20, viewportSize: 40, overscan: 0 }}>
         <>
           <Tree items={items} aria-label="Tree hidden keyboard key">
             {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
@@ -2086,7 +2038,6 @@ describe("Virtualizer", () => {
       <Virtualizer
         layout={{}}
         layoutOptions={{ itemSize: 20, viewportSize: 80, overscan: 0 }}
-        style={{ height: "80px", overflow: "auto" }}
         renderDropIndicator={(index, position) => (
           <li role="presentation" data-testid={`tree-drop-${position}-${index}`} />
         )}
@@ -2112,7 +2063,6 @@ describe("Virtualizer", () => {
       <Virtualizer
         layout={{}}
         layoutOptions={{ itemSize: 20, viewportSize: 80, overscan: 0 }}
-        style={{ height: "80px", overflow: "auto" }}
         renderDropIndicator={(index, position) => (
           <li role="presentation" data-testid={`tree-flat-drop-${position}-${index}`} />
         )}
@@ -2151,7 +2101,6 @@ describe("Virtualizer", () => {
       <Virtualizer
         layout={{}}
         layoutOptions={{ itemSize: 20, viewportSize: 120, overscan: 0 }}
-        style={{ height: "120px", overflow: "auto" }}
         renderDropIndicator={(index, position) => (
           <li role="presentation" data-testid={`tree-deep-drop-${position}-${index}`} />
         )}
@@ -2195,7 +2144,6 @@ describe("Virtualizer", () => {
       <Virtualizer
         layout={{}}
         layoutOptions={{ itemSize: 20, viewportSize: 20, overscan: 0 }}
-        style={{ height: "20px", overflow: "auto" }}
         renderDropIndicator={(index, position) => (
           <li role="presentation" data-testid={`tree-offscreen-drop-${position}-${index}`} />
         )}

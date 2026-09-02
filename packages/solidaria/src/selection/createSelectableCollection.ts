@@ -63,6 +63,7 @@ import { useLocale } from "../i18n";
 import { createTypeSelect } from "./createTypeSelect";
 import { getItemElement, isNonContiguousSelectionModifier, registerCollectionId } from "./utils";
 import { CLEAR_FOCUS_EVENT, FOCUS_EVENT } from "./constants";
+import { isVirtualDragging } from "../dnd/DragManager";
 
 export interface CreateSelectableCollectionOptions<T = unknown> {
   /** An interface for reading and updating multiple selection state. */
@@ -472,6 +473,13 @@ export function createSelectableCollection<T = unknown>(
     // DOM focus (RAC keeps the persisted node, so this path does not run).
     const focusedKey = manager.focusedKey;
     if (e.relatedTarget == null && focusedKey != null) {
+      // During a keyboard/virtual drag, DOM focus belongs to the drop indicator
+      // (`useDroppableItem.ts:84-88`). Restoring the focused option here — and
+      // especially restoring an `inert` option, which Chromium then maps to the
+      // collection — bounces `document.activeElement` onto `listbox:Permissions`.
+      if (isVirtualDragging()) {
+        return;
+      }
       const lostTarget = e.target as Node;
       requestAnimationFrame(() => {
         if (manager.focusedKey !== focusedKey) {

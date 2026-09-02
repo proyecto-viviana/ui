@@ -157,3 +157,106 @@ Negative test assertions (`Virtualizer.test.tsx:32,59`); unused `data-virtualize
   Tree and Menu (the non-virtualized arm can never see a range). `rg -n
 "data-virtualizer" packages apps` now returns only the negative assertions
   and CHANGELOG history.
+
+### Wave-3 regression fix
+
+Certified failures after #256 (`52ab0c52`) / comparison wave-3. DnD is **not** a #248 (`1d988fd9`) or #229 (`e97bb6f2`) ListBox a11y regression — the drop-indicator focus trail broke in the DragManager / collection-register / item-remount path below.
+
+#### D-scroll window (fixed)
+
+- **Root cause:** RAC Virtualizer is context-only (`react-aria-components/src/Virtualizer.tsx:71-151`). After the wrapper DOM was removed, leftover Virtualizer `class`/`style` were dropped. Comparison fixtures still put `height`/`overflow` on Virtualizer, so `createScrollView` (`packages/solidaria/src/virtualizer/ScrollView.ts`, RAC `react-aria/src/virtualizer/ScrollView.tsx`) measured an unconstrained listbox and `virtualRange()` never windowed (Solid rendered posinset 1..60).
+- **Fix:** Viewport first-paint in `ScrollView.ts` `createRenderEffect` (RAC layout effect). Style the collection (RAC + React fixture), not Virtualizer. The `class`/`style` context shim was deleted in the close-out session.
+- **Test:** `packages/solidaria-components/test/Virtualizer.test.tsx` — `"windows from the collection element's measured size when the collection is the scroller"`.
+- **Certified:** `e2e/certified/virtualizer.certified.spec.ts` D-scroll **passed**.
+
+#### D-reorder keyboard DnD (partial — remaining certified fail)
+
+- **Root cause (mount, fixed):** RAC `isDropTarget(target)` is a per-target predicate (`useDroppableCollectionState.ts:207`). Port `isDropTarget` is a collection-level boolean (`createDroppableCollectionState.ts:458`) that keyboard `setTarget` never flips. `useRenderDropIndicator` gated on that boolean → no indicator. **Fix:** `DragAndDrop.tsx` `useRenderDropIndicator` also matches `state.target`.
+- **Root cause (register, fixed):** Nested `ListBoxDropIndicator` remounted every parent re-render and `onCleanup(unregister)` emptied `dropItems`. **Fix:** module-level `ListBoxDropIndicatorWrapper` + `createDropIndicator.ts` (RAC `useDropIndicator.ts`) + `createDroppableItem.ts` register/focus (RAC `useDroppableItem.ts:49-88`).
+- **Root cause (isInternal race, fixed):** RAC `useDraggableCollection.ts:29-32` sets `globalDndState.draggingCollectionRef` during render before `beginDragging`. The port's `createDraggableCollection` `createEffect` could write `null` or clear the ref before DragManager rAF `setup()`, so `isInternal` was false, `onReorder` canceled, and the collection dropped out of `validDropTargets` — `onFocus` then focused `listbox:Permissions`. **Fix:** stamp dragging collection ref + keys in `createDraggableItem` `onKeyUp` before `beginDragging`; do not overwrite with a null ref; skip the clear while `isVirtualDragging()`. `createDroppableCollection` register effect untracks `collection` (RAC effect deps `[localState, ref, onDrop, direction]`). DragManager matches `currentDropTarget` by element, not object identity (`DragManager.ts:421`). `createSelectableCollection` `onFocusOut` restore is skipped during a virtual drag.
+- **Root cause (option remount, remaining in Chromium comparison):** After Enter, Solid's dragged `Read` option is a **new DOM node** (`sameNode: false`); React's is stable. `ariaHideOutside({shouldUseInert:true})` keeps `dragTarget.element` (the disconnected node) and **inerts the new Read**. Chromium then maps focus off the indicator onto `listbox:Permissions`. jsdom keeps the node (`document.getElementById("read")` identity assertion). Comparison fixture uses hyperscript `hc(ListBoxOption)` as `children`; a `For` item template that re-runs still remounts that option. Added `ListBoxItemWithDropIndicators` so indicator mount is a sibling computation (RAC ListBoxItem stays mounted while Collection inserts indicator siblings). **Comparison still remounts the option after Enter** — remaining certified fail.
+- **Tests:**
+  - `ListBox.test.tsx` — `"moves DOM focus to the insert-between drop indicator after Enter starts a keyboard drag"` (indicator `data-drop-target`, polite live `"Insert between Read and Write"`, option node identity via `id="read"`).
+  - `createDroppableCollection.test.tsx` — `"does not re-register the DragManager drop target when collection identity changes"`.
+- **Certified (preview `:4341`, `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`):** 27 passed / **2 failed** (both D-reorder trails) / 1 skipped. Failures: after Enter, Solid `active` is `listbox:Permissions` vs React `option:Insert between Read and Write`.
+
+#### Gates (verbatim)
+
+```
+vp test run packages/solidaria-components packages/solidaria
+  Test Files  162 passed (162)
+  Tests  3918 passed | 6 skipped (3924)
+
+vp run typecheck
+  pass (tsc --noEmit -p tsconfig.typecheck.json)
+
+vp run test:ssr
+  Test Files  12 passed (12)
+  Tests  26 passed (26)
+
+vp run test:hydrate
+  Test Files  12 passed (12)
+  Tests  28 passed | 1 expected fail (29)
+
+vp run guard:layer-boundary
+  NEW forks 0
+  PASS: no new Spectrum forks into viviana-ui
+
+vp run guard:virtualizer-keyboard-parity
+  PASS (oracle walk checks)
+
+vp run guard:upstream-test-parity
+  count delta vs baseline: suspects 155 → 157 (Δ+2), coverageGaps 47 → 47 (Δ0), upstreamOnly 18 → 18 (Δ0)
+  New suspect facts:
+    - listbox|aria|aria-hidden
+    - listbox|aria|aria-live
+  (did not write baseline)
+
+vp run guard:attribution-headers
+  report only; mismatches:
+    - packages/solidaria/src/dnd/createDropIndicator.ts
+    - packages/solidaria/src/dnd/createDroppableItem.ts
+    - packages/solidaria/src/dnd/index.ts
+    - packages/solidaria/src/index.ts
+  (orchestrator re-records reviewed-local hashes)
+
+vp check --fix <owned files>
+  pass
+
+git diff --check
+  pass
+```
+
+#### Orchestrator (close-out session, 2026-09-02 16:20)
+
+- Deleted the `class`/`style` Virtualizer context shim. RAC `VirtualizerProps`
+  has neither (`Virtualizer.tsx:44-55`); the React comparison fixture already
+  styles the ListBox. Solid fixture and unit tests now do the same. Viewport
+  first-paint stays in `ScrollView.ts` `createRenderEffect` (RAC layout
+  effect `:305-315`).
+- Re-recorded reviewed-local hashes for `packages/solidaria/src/index.ts` and
+  `dnd/index.ts` (re-export-only `createDropIndicator` / `getDroppableCollectionRef`).
+  `vp run sync:attribution-headers` for the new exact file. Guard green.
+- Absorbed ratchet growth `--write-baseline --allow-growth 256`:
+  `listbox|aria|aria-hidden` (RAC `useDropIndicator.ts:110-118`) and
+  `listbox|aria|aria-live` (RAC `DragManager.ts:599` `announce(label, 'polite')`).
+- Changeset `.changeset/virtualizer-dnd-first-paint.md`.
+- DnD remaining (unchanged): comparison hyperscript remounts the dragged option
+  after Enter so Chromium maps focus to `listbox:Permissions`. Unit tests pass;
+  certified D-reorder still needs the host node to stay mounted.
+
+#### Orchestrator (close-out, 2026-09-02 19:55)
+
+Certified against preview `:4341` (`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`):
+
+- Virtualizer D-scroll window + focus retention: **green**.
+- ListBox / GridList / TableView / TreeView certified in the same run: **green**
+  (27 passed / 1 skipped with the two D-reorder fails below).
+- D-reorder keyboard DnD (2): still **red**. After Enter, Solid `active` is
+  `listbox:Permissions` vs React `option:Insert between Read and Write`.
+  Isolated the option render (`ListBoxRenderedItem` + `untrack` thunk
+  instantiate; comparison fixture uses `createComponent` not `hc`). Unit
+  `getElementById("read") === read` passes for JSX and one-shot thunks.
+  `createRenderEffect` register/focus hung unit tests (focus retriggers the
+  flush) — left `createEffect` + rAF. Remaining cause is DragManager
+  focus vs `ariaHideOutside` timing, not the Virtualizer scroller.

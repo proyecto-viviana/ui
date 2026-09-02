@@ -188,8 +188,6 @@ export interface VirtualizerProps<O> extends Omit<
    * so a virtualizer with unbounded height still virtualizes as the page scrolls.
    */
   allowsWindowScrolling?: boolean;
-  class?: string;
-  style?: string | JSX.CSSProperties;
 }
 
 function getObjectValue<T extends object, K extends keyof T>(
@@ -231,8 +229,6 @@ export function Virtualizer<O>(props: VirtualizerProps<O>): JSX.Element {
     "renderDropIndicator",
     "getDropOperation",
     "allowsWindowScrolling",
-    "class",
-    "style",
   ]);
   // The scroll view's own scroll position (its scrollTop).
   const [scrollOffset, setScrollOffset] = createSignal(0);

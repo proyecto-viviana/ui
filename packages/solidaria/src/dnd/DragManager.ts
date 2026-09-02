@@ -90,8 +90,10 @@ interface DroppableItem {
 
 export function registerDropItem(item: DroppableItem): () => void {
   dropItems.set(item.element, item);
+  dragSession?.updateValidDropTargets();
   return (): void => {
     dropItems.delete(item.element);
+    dragSession?.updateValidDropTargets();
   };
 }
 
@@ -416,8 +418,20 @@ class DragSession {
       ];
     }
 
-    if (this.currentDropTarget && !this.validDropTargets.includes(this.currentDropTarget)) {
-      this.setCurrentDropTarget(this.validDropTargets[0]);
+    // RAC `DragManager.ts:421-423` uses object identity (`includes`). If the
+    // collection hook re-registers a new DropTarget for the same element
+    // mid-session, identity fails and `setCurrentDropTarget` without an item
+    // focuses the collection (`listbox:Permissions`) instead of the indicator.
+    // Match by element and swap the descriptor in place so keyboard handlers
+    // stay current without bouncing DOM focus.
+    if (this.currentDropTarget) {
+      const currentEl = this.currentDropTarget.element;
+      const replacement = this.validDropTargets.find((target) => target.element === currentEl);
+      if (replacement) {
+        this.currentDropTarget = replacement;
+      } else {
+        this.setCurrentDropTarget(this.validDropTargets[0]);
+      }
     }
 
     // Find valid drop items within collections
@@ -519,8 +533,15 @@ class DragSession {
 
     let minDistance = Infinity;
     let nearest = -1;
+    let ancestor = -1;
     for (let i = 0; i < this.validDropTargets.length; i++) {
       let dropTarget = this.validDropTargets[i];
+      // RAC `DragManager.ts:535-537`: prefer the collection that contains the
+      // drag source so nested/side-by-side collections don't steal the session.
+      if (ancestor < 0 && nodeContains(dropTarget.element, this.dragTarget.element)) {
+        ancestor = i;
+      }
+
       let rect = dropTarget.element.getBoundingClientRect();
       let dx = rect.left - dragTargetRect.left;
       let dy = rect.top - dragTargetRect.top;
@@ -531,7 +552,7 @@ class DragSession {
       }
     }
 
-    return nearest;
+    return ancestor >= 0 ? ancestor : nearest;
   }
 
   setCurrentDropTarget(dropTarget: DropTarget | null, item?: DroppableItem): void {

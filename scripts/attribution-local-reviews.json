@@ -547,7 +547,7 @@
   {
     "localPath": "packages/solidaria/src/dnd/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "76dcf580057719548456ca583ddc014ea947139f17e64fb3fe13ebc3efc8b36b"
+    "contentSha256": "ee0a6db871354530175609f60b98ce150f66f9f3b425fc8c239fe1acb3dd3799"
   },
   {
     "localPath": "packages/solidaria/src/focus/createAutoFocus.ts",
@@ -592,7 +592,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "6118dcc080baa73480cd414b698561ed4fc582ea6b9a5c3df4d0997370b7cf27"
+    "contentSha256": "85d3f5099a7763758903d2913e29f88b048faadf6b05d4678d0089fff9df13b0"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",

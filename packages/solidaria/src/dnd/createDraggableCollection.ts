@@ -46,6 +46,7 @@ import {
 } from "solid-js";
 import type { DraggableCollectionState } from "@proyecto-viviana/solid-stately";
 import { getTypes } from "./utils";
+import { isVirtualDragging } from "./DragManager";
 
 // Global state for tracking the dragging collection. These back the reactive
 // `isVirtualDragging` gate that decides whether drop indicators render across
@@ -114,11 +115,24 @@ export function createDraggableCollection(
   createEffect(() => {
     const currentRef = ref();
     if (state.draggingKeys.size > 0) {
-      if (untrack(getGlobalDraggingCollectionRef) !== currentRef) {
+      // Never write `null` over the element `createDraggableItem` stamped
+      // synchronously on keyboard pickup (RAC `useDraggableCollection.ts:29-32`
+      // sets `draggingCollectionRef` during render; a null `ref()` here would
+      // make `isInternal` false, `onReorder` cancel, and the collection drop
+      // out of `validDropTargets` so focusing the indicator bounces to
+      // `listbox:Permissions`).
+      if (currentRef && untrack(getGlobalDraggingCollectionRef) !== currentRef) {
         setGlobalDraggingCollectionRef(currentRef);
       }
       setGlobalDraggingKeys(state.draggingKeys);
       setGlobalDraggingTypes(getTypes(state.getItems(state.draggingKeys)));
+      return;
+    }
+
+    // A keyboard DragManager session owns these globals until teardown. Clearing
+    // them here races `beginDragging`'s rAF `setup()` when this effect still
+    // sees `draggingKeys.size === 0`.
+    if (isVirtualDragging()) {
       return;
     }
 

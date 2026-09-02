@@ -28,8 +28,8 @@ import {
   createDraggableItem,
   createDroppableCollection,
   createDroppableItem,
-  getGlobalDraggingCollectionRef,
-  getGlobalDraggingKeys,
+  createDropIndicator,
+  isVirtualDragging,
   type DraggableCollectionOptions,
   type DraggableCollectionAria,
   type DraggableItemOptions,
@@ -229,8 +229,9 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
     hooks.useDraggableItem = (props, state) => createDraggableItem(() => props, state);
     hooks.DragPreview = DragPreview;
     hooks.renderDragPreview = renderDragPreview;
-    hooks.isVirtualDragging = () =>
-      getGlobalDraggingCollectionRef() != null || getGlobalDraggingKeys().size > 0;
+    // RAC `useDragAndDrop.tsx:182` `isVirtualDragging` is DragManager's
+    // `!!dragSession`, not "any in-flight pointer keys".
+    hooks.isVirtualDragging = isVirtualDragging;
   }
 
   if (isDroppable) {
@@ -344,32 +345,8 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
       state: DroppableCollectionState,
       ref: Accessor<HTMLElement | null>,
     ) => createDroppableItem(() => ({ ...props, ref }), state);
-    hooks.useDropIndicator = (
-      props: { target: DropTarget },
-      state: DroppableCollectionState,
-      _ref: Accessor<HTMLElement | null>,
-    ) => {
-      const target = props.target;
-      const activeTarget = state.target;
-      const isDropTarget =
-        activeTarget?.type === target.type &&
-        (target.type === "root" ||
-          (activeTarget.type === "item" &&
-            target.type === "item" &&
-            activeTarget.key === target.key &&
-            activeTarget.dropPosition === target.dropPosition));
-      return {
-        dropIndicatorProps: {
-          role: "option",
-          "aria-disabled": true,
-          "aria-hidden": isDropTarget ? undefined : "true",
-          tabIndex: -1,
-          "data-drop-target": isDropTarget ? "" : undefined,
-        },
-        isDropTarget,
-        isHidden: !isDropTarget,
-      };
-    };
+    // RAC `useDragAndDrop.tsx:203` `hooks.useDropIndicator = useDropIndicator`.
+    hooks.useDropIndicator = (props, state, ref) => createDropIndicator(props, state, ref);
     hooks.renderDropIndicator = renderDropIndicator;
     hooks.dropTargetDelegate = dropTargetDelegate;
     hooks.ListDropTargetDelegate = ListDropTargetDelegate;
