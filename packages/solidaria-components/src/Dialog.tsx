@@ -35,6 +35,7 @@ import {
   createDialog,
   createOverlayTrigger,
   focusSafely,
+  useIsHidden,
   type AriaDialogProps,
 } from "@proyecto-viviana/solidaria";
 import {
@@ -95,7 +96,7 @@ export { DialogTriggerContext, useDialogTrigger } from "./contexts";
  * A DialogTrigger opens a dialog when a trigger element is pressed.
  * Children should include a trigger element (e.g. Button) and the dialog content.
  */
-export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
+export function DialogTrigger(props: DialogTriggerProps): JSX.Element | null {
   const [local] = splitProps(props, ["isOpen", "defaultOpen", "onOpenChange"]);
 
   const state = createOverlayTriggerState({
@@ -169,6 +170,14 @@ export function DialogTrigger(props: DialogTriggerProps): JSX.Element {
     triggerProps: triggerAria.triggerProps,
     overlayProps: triggerAria.overlayProps,
   }));
+
+  // If within a collection (e.g. Tabs), render nothing. Matches RAC DialogTrigger
+  // (`useIsHidden()` early return) so a hidden collection pass does not leak a
+  // duplicate trigger. Not using createHideableComponent: that also wraps a ref.
+  const isHidden = useIsHidden();
+  if (isHidden()) {
+    return null;
+  }
 
   // In SolidJS, we simply render children directly within the provider
   return (

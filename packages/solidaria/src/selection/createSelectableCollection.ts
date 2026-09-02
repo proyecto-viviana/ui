@@ -588,6 +588,15 @@ export function createSelectableCollection<T = unknown>(
     manager.setFocused(true);
     manager.setFocusedKey(focusedKey);
 
+    if (
+      focusedKey != null &&
+      selectOnFocus() &&
+      !selectedKeys.size &&
+      manager.canSelectItem(focusedKey)
+    ) {
+      manager.replaceSelection(focusedKey);
+    }
+
     // If no default focus key is selected, focus the collection itself.
     const root = ref();
     if (focusedKey == null && !shouldUseVirtualFocus && root) {

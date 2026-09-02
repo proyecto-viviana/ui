@@ -1080,4 +1080,44 @@ describe("createCalendarState", () => {
       });
     });
   });
+
+  describe("selectDate with isDateUnavailable", () => {
+    const focusedDate = new CalendarDate(2026, 4, 15);
+
+    it("selects a date before the visible range when isDateUnavailable is provided", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: focusedDate,
+          isDateUnavailable: () => false,
+        });
+
+        state.focusNextPage();
+        state.selectDate(focusedDate);
+        expect(state.value()?.toString()).toBe(focusedDate.toString());
+
+        state.selectDate(focusedDate.subtract({ months: 1 }));
+        expect(state.value()?.toString()).toBe(focusedDate.subtract({ months: 1 }).toString());
+
+        dispose();
+      });
+    });
+
+    it("selects a date after the visible range when isDateUnavailable is provided", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: focusedDate,
+          isDateUnavailable: () => false,
+        });
+
+        state.focusPreviousPage();
+        state.selectDate(focusedDate);
+        expect(state.value()?.toString()).toBe(focusedDate.toString());
+
+        state.selectDate(focusedDate.add({ months: 1 }));
+        expect(state.value()?.toString()).toBe(focusedDate.add({ months: 1 }).toString());
+
+        dispose();
+      });
+    });
+  });
 });

@@ -23,6 +23,7 @@
 import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
+import { createKeyboard } from "../interactions/createKeyboard";
 import type { AriaColorFieldOptions, ColorFieldAria } from "./types";
 
 /**
@@ -91,6 +92,23 @@ export function createColorField(
       e.preventDefault();
     }
   };
+
+  const { keyboardProps } = createKeyboard({
+    shortcuts: {
+      Enter: () => {
+        const s = getState();
+        if (isDisabled() || isReadOnly()) {
+          return { shouldPreventDefault: false };
+        }
+        s.commit();
+        const commitValidation = (s as ColorFieldState & { commitValidation?: () => void })
+          .commitValidation;
+        commitValidation?.();
+        return { shouldPreventDefault: false };
+      },
+    },
+    onKeyDown,
+  });
 
   const onWheel = (e: WheelEvent) => {
     const p = getProps();
@@ -187,7 +205,8 @@ export function createColorField(
       onBlur: () => {
         s.commit();
       },
-      onKeyDown,
+      onKeyDown: keyboardProps.onKeyDown,
+      onKeyUp: keyboardProps.onKeyUp,
       onWheel,
     };
   });

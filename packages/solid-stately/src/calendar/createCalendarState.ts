@@ -39,6 +39,7 @@ import {
   createCalendar as intlCreateCalendar,
   toCalendar as intlToCalendar,
   toCalendarDate as intlToCalendarDate,
+  minDate,
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 
@@ -422,22 +423,45 @@ export function createCalendarState<
     return formatter.format(formattableMonth.toDate(timeZone));
   });
 
+  // Walks previousAvailableDate from minValue ?? minDate(constrained, startDate)
+  // rather than from startDate alone, so a date before the visible month remains
+  // selectable when isDateUnavailable is set. Mirrors useCalendarState.normalizeValue.
+  const normalizeValue = (newValue: CalendarDate): T | null => {
+    const constrained = constrainDate(newValue);
+    const minBound = access(props.minValue);
+    const lowerBound =
+      minBound != null
+        ? toDisplayCalendarDate(minBound)
+        : (minDate(constrained, visibleRange().start) ?? constrained);
+    const prev = previousAvailableDate(constrained, lowerBound, props.isDateUnavailable);
+    if (!prev) {
+      return null;
+    }
+
+    const oldValue = sourceValue();
+    const referenceValue = Array.isArray(oldValue) ? (oldValue[0] ?? null) : oldValue;
+    return convertValue(prev, referenceValue) as T;
+  };
+
   // Set value with onChange callback
   const setValue = (newValue: T | T[] | null) => {
     if (isDisabled() || isReadOnly()) return;
 
     const oldValue = sourceValue();
-    const referenceValue = Array.isArray(oldValue) ? (oldValue[0] ?? null) : oldValue;
 
     let nextValue: T | T[] | null;
     if (newValue == null) {
       nextValue = selectionMode() === "multiple" ? ([] as T[]) : null;
     } else if (Array.isArray(newValue)) {
-      nextValue = newValue.map(
-        (v) => convertValue(constrainDate(toDisplayCalendarDate(v)), referenceValue) as T,
-      );
+      nextValue = newValue
+        .map((v) => normalizeValue(toDisplayCalendarDate(v)))
+        .filter((v): v is T => v != null);
     } else {
-      nextValue = convertValue(constrainDate(toDisplayCalendarDate(newValue)), referenceValue) as T;
+      const localValue = normalizeValue(toDisplayCalendarDate(newValue));
+      if (!localValue) {
+        return;
+      }
+      nextValue = localValue;
     }
 
     const controlled = access(props.value);
@@ -708,4 +732,27 @@ function convertValue(newValue: CalendarDate, oldValue?: DateValue | null): Date
   }
 
   return localValue;
+}
+
+/**
+ * Walks backward from `date` while it is unavailable and still at/after `minValue`.
+ * Mirrors @react-stately/calendar previousAvailableDate.
+ */
+function previousAvailableDate(
+  date: CalendarDate,
+  minValue: CalendarDate,
+  isDateUnavailable?: (date: DateValue) => boolean,
+): CalendarDate | null {
+  if (!isDateUnavailable) {
+    return date;
+  }
+
+  while (date.compare(minValue) >= 0 && isDateUnavailable(date)) {
+    date = date.subtract({ days: 1 });
+  }
+
+  if (date.compare(minValue) >= 0) {
+    return date;
+  }
+  return null;
 }

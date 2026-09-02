@@ -1090,6 +1090,43 @@ describe("Color Components", () => {
           "true",
         );
       });
+
+      it("should commit the typed value on Enter", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#ff0000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "#0000ff" } });
+        expect(onChange).not.toHaveBeenCalled();
+
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.calls[0][0].toString("hex")).toBe("#0000ff");
+        expect(input).toHaveValue("#0000ff");
+      });
+
+      it("should restore the previous value on Enter if the typed value cannot be parsed", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#ff0000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "ab" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(onChange).not.toHaveBeenCalled();
+        expect(input).toHaveValue("#ff0000");
+      });
     });
   });
 

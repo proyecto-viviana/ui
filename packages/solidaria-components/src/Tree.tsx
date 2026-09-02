@@ -312,7 +312,7 @@ const EXPANSION_KEYS = {
   collapse: { ltr: "ArrowLeft", rtl: "ArrowRight" },
 } as const;
 
-function createTreeDropTargetDelegate<T extends object>(
+export function createTreeDropTargetDelegate<T extends object>(
   delegate: TreeDropTargetDelegate,
   state: TreeState<T, TreeCollection<T>>,
   direction: "ltr" | "rtl",
@@ -394,14 +394,19 @@ function createTreeDropTargetDelegate<T extends object>(
       const isLastChildAtLevel = !nextItem || nextItem.parentKey !== parentKey;
 
       if (isLastChildAtLevel) {
-        const afterParentTarget: ItemDropTarget = {
-          type: "item",
-          key: parentKey,
-          dropPosition: "after",
-        };
+        // Only items can be drop targets. Ancestors such as a Table's <TableBody> or a
+        // <TreeSection> are part of the collection, but their keys are generated rather than
+        // provided by the user, so dropping "after" them is not something the user can handle.
+        if (parentItem?.type === "item") {
+          const afterParentTarget: ItemDropTarget = {
+            type: "item",
+            key: parentKey,
+            dropPosition: "after",
+          };
 
-        if (isValidDropTarget(afterParentTarget)) {
-          ancestorTargets.push(afterParentTarget);
+          if (isValidDropTarget(afterParentTarget)) {
+            ancestorTargets.push(afterParentTarget);
+          }
         }
         if (nextItem) break;
       }

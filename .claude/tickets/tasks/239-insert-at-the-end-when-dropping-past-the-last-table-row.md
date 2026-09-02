@@ -4,9 +4,14 @@ type: task
 title: "Insert at the end when dropping past the last Table row"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "TreeDropTargetDelegate item-only ancestor guard; Table wraps ListDropTargetDelegate with createTreeDropTargetDelegate; drop-past-last-row test red-then-green",
+    }
 ---
 
 ## Cause
@@ -36,3 +41,10 @@ the target escalates to TableBody.
 ## Relationship
 
 Child of #220. Delta on #84; do not wait for the full subsystem to close.
+
+## Landed
+
+- `react-aria-components/src/TreeDropTargetDelegate.ts:212-226` → `packages/solidaria-components/src/Tree.tsx:396-409` → `inserts after the last item instead of escalating to a generated TableBody ancestor` (`packages/solidaria-components/test/TreeDropTargetDelegate.test.tsx`)
+- Table wrap (RAC already did this): `packages/solidaria-components/src/Table.tsx:749-759`
+- `createTreeDropTargetDelegate` is exported from `Tree.tsx` for Table + tests, not from the package index (no new public name).
+- Red-then-green: without the `parentItem?.type === "item"` guard, last `getDropTargetFromPoint` returned `{key: "body", dropPosition: "after"}`; restored, green.

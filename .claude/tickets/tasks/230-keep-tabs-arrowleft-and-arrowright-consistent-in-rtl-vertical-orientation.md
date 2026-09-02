@@ -4,9 +4,14 @@ type: task
 title: "Keep Tabs ArrowLeft and ArrowRight consistent in RTL vertical orientation"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "ported TabsKeyboardDelegate.flipDirection = direction === rtl regardless of orientation; RTL vertical ArrowLeft/ArrowRight tests red-then-green",
+    }
 ---
 
 ## Cause
@@ -37,3 +42,8 @@ gates those keys.
 ## Relationship
 
 Child of #220. Note on #201; does not replace it. Adjacent to #179 D10 RTL.
+
+## Landed
+
+- `react-aria/src/tabs/TabsKeyboardDelegate.ts:28-30` → `packages/solidaria/src/tabs/createTabs.ts:260-268` → `ArrowLeft and ArrowRight follow RTL in vertical orientation` (`packages/solidaria/test/createTabs.test.tsx`); RAC Tabs RTL vertical cases in `packages/solidaria-components/test/Tabs.test.tsx`
+- Red-then-green: with `isHorizontal` still gating ArrowLeft/Right, ArrowLeft stayed on the first vertical RTL tab; restored, test green.

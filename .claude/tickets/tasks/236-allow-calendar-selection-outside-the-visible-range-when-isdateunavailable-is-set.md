@@ -4,9 +4,14 @@ type: task
 title: "Allow Calendar selection outside the visible range when isDateUnavailable is set"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "ported useCalendarState.normalizeValue lowerBound; range calendar at the pin still walks from visibleRange.start — no Solid change",
+    }
 ---
 
 ## Cause
@@ -37,3 +42,9 @@ clamped to `startDate`.
 ## Relationship
 
 Child of #220. Adjacent to #189 (SSR date/calendar).
+
+## Landed
+
+- `react-stately/src/calendar/useCalendarState.ts:232-235` → `packages/solid-stately/src/calendar/createCalendarState.ts:428-460` → `selects a date before the visible range when isDateUnavailable is provided` / `selects a date after the visible range when isDateUnavailable is provided` (`packages/solid-stately/test/createCalendarState.test.ts`; same names in `packages/solidaria-components/test/Calendar.test.tsx`)
+- Range: pin `useRangeCalendarState.ts:178-182` still walks `previousAvailableDate` from `calendar.visibleRange.start`. Solid `createRangeCalendarState.ts:800-803` already matches. Ticket claim that range needed the same lowerBound change is wrong vs the pin — no invent.
+- Red-then-green: before-visible-range with walk clamped to `startDate` left `value()` undefined / `"none"`; restored, green.

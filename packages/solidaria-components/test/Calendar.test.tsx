@@ -18,6 +18,7 @@ import {
   CalendarButton,
   CalendarGrid,
   CalendarCell,
+  useCalendarContext,
   type CalendarProps,
 } from "../src/Calendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
@@ -685,6 +686,87 @@ describe("Calendar", () => {
 
       const gridcells = screen.getAllByRole("gridcell");
       expect(gridcells.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("selectDate", () => {
+    const focusedDate = new CalendarDate(2026, 4, 15);
+
+    function SelectDateExample() {
+      const state = useCalendarContext();
+      return (
+        <>
+          <button type="button" onClick={() => state.selectDate(focusedDate)}>
+            Select focused
+          </button>
+          <button
+            type="button"
+            onClick={() => state.selectDate(focusedDate.subtract({ months: 1 }))}
+          >
+            Select one month before
+          </button>
+          <button type="button" onClick={() => state.selectDate(focusedDate.add({ months: 1 }))}>
+            Select one month after
+          </button>
+          <span data-testid="selected-value">{state.value() ? String(state.value()) : "none"}</span>
+        </>
+      );
+    }
+
+    it("selects a date before the visible range when isDateUnavailable is provided", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Appointment date"
+          defaultFocusedValue={focusedDate}
+          isDateUnavailable={() => false}
+        >
+          <header>
+            <CalendarButton slot="previous">◀</CalendarButton>
+            <CalendarHeading />
+            <CalendarButton slot="next">▶</CalendarButton>
+          </header>
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <SelectDateExample />
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
+      await user.click(screen.getByRole("button", { name: "Select focused" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(focusedDate.toString());
+
+      await user.click(screen.getByRole("button", { name: "Select one month before" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(
+        focusedDate.subtract({ months: 1 }).toString(),
+      );
+    });
+
+    it("selects a date after the visible range when isDateUnavailable is provided", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Appointment date"
+          defaultFocusedValue={focusedDate}
+          isDateUnavailable={() => false}
+        >
+          <header>
+            <CalendarButton slot="previous">◀</CalendarButton>
+            <CalendarHeading />
+            <CalendarButton slot="next">▶</CalendarButton>
+          </header>
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <SelectDateExample />
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      await user.click(screen.getAllByRole("button", { name: "Previous" })[0]);
+      await user.click(screen.getByRole("button", { name: "Select focused" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(focusedDate.toString());
+
+      await user.click(screen.getByRole("button", { name: "Select one month after" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(
+        focusedDate.add({ months: 1 }).toString(),
+      );
     });
   });
 });

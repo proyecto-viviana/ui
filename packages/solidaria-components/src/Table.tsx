@@ -87,6 +87,7 @@ import {
   useDndPersistedKeys,
   useRenderDropIndicator,
 } from "./DragAndDrop";
+import { createTreeDropTargetDelegate } from "./Tree";
 
 export interface TableRenderProps {
   /** Whether the table has focus. */
@@ -733,7 +734,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
     const resolveDirection = (): "ltr" | "rtl" => locale().direction;
-    const dropTargetDelegate =
+    const baseDropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??
       (hooks.ListDropTargetDelegate
@@ -743,7 +744,19 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
             { layout: "grid", orientation: "vertical", direction: resolveDirection() },
           )
         : undefined);
-    if (!dropTargetDelegate) return undefined;
+    if (!baseDropTargetDelegate) return undefined;
+    const expandedKeys = state.expandedKeys;
+    const dropTargetDelegate = createTreeDropTargetDelegate(
+      baseDropTargetDelegate,
+      {
+        collection: state.collection,
+        expandedKeys:
+          expandedKeys === "all"
+            ? new Set(Array.from(state.collection, (node) => node.key))
+            : (expandedKeys ?? new Set()),
+      } as unknown as Parameters<typeof createTreeDropTargetDelegate>[1],
+      resolveDirection(),
+    );
     return hooks.useDroppableCollection(
       {
         dropTargetDelegate,
