@@ -799,7 +799,7 @@ function DatePickerPopup(props: {
       class={(rp) =>
         datePickerPopover({
           colorScheme: theme.colorScheme,
-          placement: rp.placement ?? undefined,
+          placement: rp.placement ?? "bottom",
           isEntering: rp.isEntering,
           isExiting: rp.isExiting,
         })

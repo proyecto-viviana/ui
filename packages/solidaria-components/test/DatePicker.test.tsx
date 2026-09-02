@@ -713,4 +713,65 @@ describe("DatePicker", () => {
       expect(screen.getByRole("spinbutton", { name: /day/i })).toHaveTextContent("03");
     });
   });
+
+  // ============================================
+  // POPOVER PLACEMENT + TAB ORDER (wave-3 #251)
+  // ============================================
+
+  describe("open popover placement and tab order", () => {
+    it("seeds data-placement to the preferred bottom axis so the S2 entering translate is not the top sign", async () => {
+      render(() => <TestDatePicker />);
+      await waitForDatePickerHydration();
+
+      const button = document.querySelector(".solidaria-DatePickerButton") as HTMLElement;
+      await user.click(button);
+
+      const popover = await waitFor(() => {
+        const node = document.querySelector("[data-trigger='DatePicker']") as HTMLElement | null;
+        expect(node).toBeInTheDocument();
+        return node!;
+      });
+
+      // Failure mode: shared Popover reports placement=null on the first paint
+      // (createEffect positioning, unlike RAC useLayoutEffect). S2 popoverStyles
+      // then miss `placement === "bottom"` (translateY -4) and the first matching
+      // branch is top (translateY +4) — certified D2 open-enter.
+      expect(popover.getAttribute("data-placement")).toBe("bottom");
+    });
+
+    it("tabs Previous → month grid → Next inside the open calendar dialog, matching RAC Dialog autoFocus", async () => {
+      render(() => <TestDatePicker />);
+      await waitForDatePickerHydration();
+
+      const button = document.querySelector(".solidaria-DatePickerButton") as HTMLElement;
+      await user.click(button);
+
+      const dialog = await waitFor(() => screen.getByRole("dialog"));
+      expect(dialog.tagName).toBe("SECTION");
+
+      // Failure mode: PopoverInner focused the overlay (tabIndex=-1) because
+      // isDialog started true and createDialog never ran on the raw <section>.
+      // First Tab then hit a focus sink before Previous (certified D5 open-trap).
+      await waitFor(() => {
+        expect(dialog.contains(document.activeElement)).toBe(true);
+      });
+
+      await user.tab();
+      expect(document.activeElement).toHaveAccessibleName(/previous/i);
+
+      await user.tab();
+      const second = document.activeElement as HTMLElement | null;
+      expect(second).toBeTruthy();
+      const secondName = second?.getAttribute("aria-label") ?? second?.textContent ?? "";
+      const secondInGrid = Boolean(second?.closest('[role="grid"]'));
+      expect(
+        secondInGrid || /next/i.test(secondName),
+        `second tab stop was <${second?.tagName?.toLowerCase()} role=${second?.getAttribute("role")} name=${JSON.stringify(secondName)}>`,
+      ).toBe(true);
+      if (secondInGrid) {
+        await user.tab();
+        expect(document.activeElement).toHaveAccessibleName(/next/i);
+      }
+    });
+  });
 });

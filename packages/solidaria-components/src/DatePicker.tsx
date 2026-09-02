@@ -77,6 +77,7 @@ import { RangeCalendarContext } from "./RangeCalendar";
 import { HiddenDateInput } from "./HiddenDateInput";
 import { FormContext, type FormProps } from "./Form";
 import { Popover, type PopoverRenderProps } from "./Popover";
+import { Dialog } from "./Dialog";
 import {
   DateRangePickerContext,
   useDateRangePickerContext,
@@ -1354,9 +1355,7 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
       class={datePickerContentClass(props.class, "solidaria-DatePickerContent")}
       style={props.style}
     >
-      <section {...context.pickerAria.dialogProps} tabIndex={-1}>
-        {props.children}
-      </section>
+      <Dialog {...context.pickerAria.dialogProps}>{props.children}</Dialog>
     </Popover>
   );
 }
@@ -1381,9 +1380,7 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
       class={datePickerContentClass(props.class, "solidaria-DateRangePickerContent")}
       style={props.style}
     >
-      <section {...context.pickerAria.dialogProps} tabIndex={-1}>
-        {props.children}
-      </section>
+      <Dialog {...context.pickerAria.dialogProps}>{props.children}</Dialog>
     </Popover>
   );
 }

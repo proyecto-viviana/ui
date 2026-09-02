@@ -926,4 +926,24 @@ describe("Popover", () => {
       expect(screen.getByTestId("popover-content")).toBeInTheDocument();
     });
   });
+
+  describe("placement render props", () => {
+    it("seeds data-placement with the preferred axis before calculatePosition so entering translate is not the top sign", async () => {
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover placement="bottom start">Content</Popover>
+        </PopoverTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const popover = await waitFor(() => screen.getByRole("dialog"));
+
+      // Failure mode: first paint has placement=null (Solid createEffect vs RAC
+      // useLayoutEffect). S2 `translateY: { placement: { top: 4, bottom: -4 } }`
+      // then applies the top entering keyframe (certified DatePicker D2).
+      expect(popover.getAttribute("data-placement")).toBe("bottom");
+    });
+  });
 });

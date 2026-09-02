@@ -695,7 +695,7 @@ function DateRangeDisplay(props: {
           class={(rp) =>
             dateRangePickerPopover({
               colorScheme: theme.colorScheme,
-              placement: rp.placement ?? undefined,
+              placement: rp.placement ?? "bottom",
               isEntering: rp.isEntering,
               isExiting: rp.isExiting,
             })

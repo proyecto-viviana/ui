@@ -225,3 +225,90 @@ Red-then-green:
     Computed `transitionDuration:0s` / `getAnimations=[]`, so exit unmounts next
     rAF (RAC no-animation branch). Motion tokens live on `popoverStyles` /
     `menuPopover`; ComboBox's overlay class is outside this ticket.
+
+### Wave-3 regression fix
+
+HEAD 697018f6. Six certified failures after #251 swapped DatePicker onto
+shared `<Popover>` (`output/audit-2026-09/wave-3/failures/datepicker-popover.txt`).
+Did not commit. No new changeset (behavior is the wave's existing enter/exit
+plumbing, restored to RAC/S2).
+
+#### D2 motion (`translate: 0px 4px` Solid vs `0px -4px` React)
+
+Root cause: RAC PopoverInner (`react-aria-components/src/Popover.tsx:251`)
+feeds `placement` from `useLayoutEffect` positioning, so the first painted
+frame already has the resolved axis. S2 `Popover.tsx:123-135` keys
+`translateY` on that axis (`bottom` → entering `-4`). Solid's
+`createOverlayPosition` (`createOverlayPosition.ts:241`) lands in a
+`createEffect` after paint, so `popoverAria.placement()` is `null` on the
+enter frame. `datePickerPopover({ placement: rp.placement ?? undefined,
+isEntering: true })` then misses `placement === "bottom"` and the style
+macro's first placement branch (`top`) compiles `translateY: 4`. Picker /
+ComboBox / Menu happened to paint after positioning; DatePicker's calendar
+popover captured the unplaced enter keyframe.
+
+Fix (headless Popover, both S2 twins): seed
+`popoverAria.placement() ?? preferredPlacementAxis(local.placement)` onto
+render props and `data-placement` (`Popover.tsx`; `"bottom start"` →
+`bottom`, matching RAC DatePicker `PopoverContext.placement: 'bottom start'`
+at `DatePicker.tsx:231`). Styled DatePicker / DateRangePicker class
+functions use `rp.placement ?? "bottom"` (twins identical).
+
+#### D5 focus trail (first Tab `active: null` vs Previous)
+
+Root cause: S2 CalendarPopover (`s2/DatePicker.tsx:308`) wraps `<Dialog>`;
+RAC `useDialog` (`useDialog.ts:65-67`) focuses the dialog (`tabIndex: -1`)
+and `useOverlayFocusContain` (`Overlay.tsx:96-101`) turns contain on. RAC
+PopoverInner (`Popover.tsx:277-280, 286-295`) then sees the nested
+`[role=dialog]` so `isDialog` is false and does **not** `focusSafely` the
+overlay. Solid DatePickerContent used a raw `<section {...dialogProps}
+tabIndex={-1}>` (no `createDialog`), and Popover's open-focus effect
+focused the overlay. First Tab hit a nameless sink before Previous; the
+rest of the trail shifted by one.
+
+Fix: DatePickerContent / DateRangePickerContent render `<Dialog>` (RAC
+DatePicker + S2 CalendarPopover). Popover skips overlay focus when a
+nested `[role=dialog]` exists (`focusIfNeeded`). OverlayContext
+(RAC Overlay.tsx:48-54, 78) + Dialog `setContain(true)` (useOverlayFocusContain)
+keeps the trap when the popover itself is not the dialog.
+
+#### Tests (red → green)
+
+- Headless `DatePicker.test.tsx` tab order: first Tab after open was not
+  Previous (`toHaveAccessibleName(/previous/i)` received empty name) → green
+  after Dialog + overlay-focus skip.
+- Spectrum `DatePicker.test.tsx` entering class: bottom-axis tokens missing
+  (`bottomEntering.some(...)` expected true, got false) → green after
+  placement seed; first Tab Previous also red → green.
+- `Popover.test.tsx`: seeds `data-placement="bottom"` for `placement="bottom start"`.
+
+#### Gates
+
+- `vp test run packages/solidaria-components packages/solid-spectrum packages/viviana-ui`
+  — owned DatePicker/Popover/Dialog + Menu/ActionMenu regression snapshots green.
+  Three-package run: 160 files, 3330 passed, 1 expected fail, 6 skipped, 12
+  ListBox failed. Those 12 are the concurrent Virtualizer lane
+  (`ListBox.tsx` / `Virtualizer.tsx` dirty on this tree); not this fix.
+  (An earlier Menu snapshot attribute-order miss recovered once `isDialog`
+  kept its `shouldBeDialogBase()` initial value.)
+- `vp run typecheck` — pass.
+- `vp run test:ssr` — 12 files, 26 passed.
+- `vp run test:hydrate` — 12 files, 28 passed, 1 expected fail.
+- `vp run guard:layer-boundary` — NEW forks: 0.
+- `vp run guard:upstream-test-parity` — suspects 155 → 156 (Δ+1). NEW suspect
+  `listbox|aria|aria-hidden` is the concurrent Virtualizer lane. Did not write.
+- `vp run guard:attribution-headers` — pass (header contracts satisfied).
+- `vp check --fix` on owned files — pass. `git diff --check` on owned files — clean.
+
+Orchestrator: re-run `datepicker.certified.spec.ts` /
+`daterangepicker.certified.spec.ts` (this lane did not build comparison or
+launch a browser).
+
+- Orchestrator (2026-09-02): the placement seed is the second documented
+  deviation in `Popover.tsx` that exists only because Solid positions in a
+  `createEffect` after paint while RAC's `useOverlayPosition` runs in
+  `useLayoutEffect` before paint (the first is the `isEntering`-while-unplaced
+  note). Two patches on one cause is the Rule #5 signal: the structural fix is
+  to position before first paint (measure in the ref callback /
+  `createRenderEffect` once the trigger and overlay are attached) and then
+  delete both seeds. Tracked here as debt; not in scope of the wave-3 fix.

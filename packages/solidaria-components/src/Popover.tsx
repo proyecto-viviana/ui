@@ -210,6 +210,25 @@ interface PopoverContextValue {
 export const PopoverContext = createContext<PopoverContextValue | null>(null);
 const PopoverGroupContext = createContext<(() => HTMLElement | null) | null>(null);
 
+/**
+ * RAC Overlay.tsx OverlayContext. Dialog's useOverlayFocusContain equivalent
+ * sets contain so a nested Dialog still traps Tab when the Popover itself is
+ * not the dialog (DatePicker / DateRangePicker CalendarPopover).
+ */
+export interface OverlayContextValue {
+  setContain: (contain: boolean) => void;
+}
+
+export const OverlayContext = createContext<OverlayContextValue | null>(null);
+
+function preferredPlacementAxis(placement: Placement | undefined): PlacementAxis {
+  const axis = (placement ?? "bottom").split(" ")[0];
+  if (axis === "top" || axis === "bottom" || axis === "left" || axis === "right") {
+    return axis;
+  }
+  return "bottom";
+}
+
 function PopoverDismissButton(props: { onDismiss: () => void }): JSX.Element {
   return (
     <button
@@ -534,6 +553,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     resolvedTrigger() === "SubmenuTrigger" ||
     resolvedTrigger() === "PreviewTrigger";
   const [isDialog, setIsDialog] = createSignal(shouldBeDialogBase());
+  const [overlayContain, setOverlayContain] = createSignal(false);
   createEffect(() => {
     const node = popoverRef();
     if (!node) return;
@@ -574,6 +594,9 @@ export function Popover(props: PopoverProps): JSX.Element {
       if (!isOpen() || !shouldBeDialog()) return;
       const node = popoverRef();
       if (!node || resolvedTrigger() === "SubmenuTrigger") return;
+      // Nested Dialog (DatePicker) owns initial focus via createDialog —
+      // RAC PopoverInner skips focusSafely when isDialog is false.
+      if (node.querySelector("[role=dialog]")) return;
       if (document.activeElement === node || node.contains(document.activeElement)) {
         return;
       }
@@ -639,7 +662,11 @@ export function Popover(props: PopoverProps): JSX.Element {
 
     const renderValues = createMemo<PopoverRenderProps>(() => ({
       trigger: resolvedTrigger() ?? null,
-      placement: popoverAria.placement(),
+      // RAC usePopover reports placement from useLayoutEffect before paint.
+      // Until Solid's createEffect positioning lands, seed the preferred axis
+      // so S2 `translateY: { placement: { bottom: { isEntering: -4 } } }` does
+      // not miss the bottom branch and compile the top entering +4 keyframe.
+      placement: popoverAria.placement() ?? preferredPlacementAxis(local.placement),
       isEntering: isEntering(),
       isExiting: isExiting(),
     }));
@@ -673,35 +700,40 @@ export function Popover(props: PopoverProps): JSX.Element {
       <PopoverContext.Provider
         value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
       >
-        <FocusScope contain={shouldContainFocus() && !isExiting()} restoreFocus>
-          <div
-            {...domProps()}
-            {...cleanPopoverProps()}
-            {...(triggerContext?.overlayProps ?? {})}
-            ref={(el) => {
-              setPopoverRef(el);
-              triggerContext?.setOverlayRef?.(el);
-            }}
-            id={overlayId()}
-            role={shouldBeDialog() ? "dialog" : undefined}
-            tabIndex={shouldBeDialog() ? -1 : undefined}
-            aria-labelledby={overlayLabelledBy()}
-            class={renderProps.class()}
-            style={mergedStyle()}
-            lang={locale().locale}
-            dir={locale().direction}
-            data-trigger={resolvedTrigger()}
-            data-placement={popoverAria.placement()}
-            data-entering={dataAttr(isEntering())}
-            data-exiting={dataAttr(isExiting())}
+        <OverlayContext.Provider value={{ setContain: setOverlayContain }}>
+          <FocusScope
+            contain={(shouldContainFocus() || overlayContain()) && !isExiting()}
+            restoreFocus
           >
-            <Show when={!isNonModal()}>
+            <div
+              {...domProps()}
+              {...cleanPopoverProps()}
+              {...(triggerContext?.overlayProps ?? {})}
+              ref={(el) => {
+                setPopoverRef(el);
+                triggerContext?.setOverlayRef?.(el);
+              }}
+              id={overlayId()}
+              role={shouldBeDialog() ? "dialog" : undefined}
+              tabIndex={shouldBeDialog() ? -1 : undefined}
+              aria-labelledby={overlayLabelledBy()}
+              class={renderProps.class()}
+              style={mergedStyle()}
+              lang={locale().locale}
+              dir={locale().direction}
+              data-trigger={resolvedTrigger()}
+              data-placement={popoverAria.placement() ?? preferredPlacementAxis(local.placement)}
+              data-entering={dataAttr(isEntering())}
+              data-exiting={dataAttr(isExiting())}
+            >
+              <Show when={!isNonModal()}>
+                <PopoverDismissButton onDismiss={close} />
+              </Show>
+              {renderProps.renderChildren()}
               <PopoverDismissButton onDismiss={close} />
-            </Show>
-            {renderProps.renderChildren()}
-            <PopoverDismissButton onDismiss={close} />
-          </div>
-        </FocusScope>
+            </div>
+          </FocusScope>
+        </OverlayContext.Provider>
       </PopoverContext.Provider>
     );
   }
