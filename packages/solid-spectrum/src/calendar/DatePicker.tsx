@@ -450,9 +450,8 @@ const datePickerPopover = style<{
   // Byte-copied from the shared `popoverStyles` enter/exit motion (which is
   // itself S2 `Popover.tsx`'s `popover()` motion). S2's DatePicker popover is a
   // plain `<Popover>`, so its enter transition IS this generic opacity/translate
-  // fade — NOT a bespoke keyframe. The port's DatePicker owns a private
-  // `DatePickerContent` that bypasses the shared Popover, so the same tokens are
-  // mirrored here and driven by `createEnterAnimation` (data-entering) below.
+  // fade — NOT a bespoke keyframe. Headless `DatePickerContent` now renders that
+  // Popover, so these tokens key off its `isEntering` / `isExiting` render props.
   opacity: {
     isEntering: 0,
     isExiting: 0,

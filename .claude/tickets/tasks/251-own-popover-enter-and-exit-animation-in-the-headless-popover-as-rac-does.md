@@ -4,12 +4,17 @@ type: task
 title: "Own Popover enter and exit animation in the headless Popover as RAC does"
 created: 2026-09-02
 parent: 136
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-02,
       note: "found while tracing the owner-reported transparent / misplaced list (#248) against the upstream overlay facts",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "ported RAC enter/exit onto headless Popover; deleted ActionMenu timers and DatePicker duplicate machines; changeset popover-enter-exit-animation.md; not committed",
     }
 ---
 
@@ -101,3 +106,122 @@ Child of #136. Suspected root of #248; #248's journey is the proof. Related:
 #192 (OpenTransition sits on the snapshot baseline and is a fourth
 transition helper to evaluate for deletion), #234 (1.21 visualViewport
 positioning). Blocks nothing in #240.
+
+## Landed
+
+Did not commit or stage. Changeset: `.changeset/popover-enter-exit-animation.md`
+(patch `solidaria-components` + `solid-spectrum` + `@proyecto-viviana/ui`).
+
+### Helper reused
+
+`createEnterAnimation` / `createExitAnimation` from
+`packages/solidaria/src/utils/animation.ts` — the same primitives Modal already
+calls (`Modal.tsx:222-224,436`). Not extracted into a second module; Tooltip
+still has its own exit machine (`Tooltip.tsx:440-486`) and was left per the
+ticket. Tabs still stubs `isEntering`/`isExiting` as `false`.
+
+### Upstream file:line → Solid file:line
+
+- RAC `Popover.tsx:173` `useExitAnimation(ref, state.isOpen)` →
+  `packages/solidaria-components/src/Popover.tsx:481`
+- RAC `Popover.tsx:174` `props.isExiting || (!shouldSkipAnimation && exitAnimation)` →
+  `Popover.tsx:482-484`
+- RAC `Popover.tsx:176-192` `useIsHidden` early children →
+  `Popover.tsx:485,707-721`
+- RAC `Popover.tsx:194` `!state.isOpen && !isExiting` unmount →
+  `Popover.tsx:722` (`isHydrated() && (isOpen() || isExiting())`)
+- RAC `Popover.tsx:251` `useEnterAnimation(ref, !!placement)` →
+  `Popover.tsx:622-623` (inside `PopoverInner`, remounts per full open)
+- RAC `Popover.tsx:253` `props.isEntering || (!shouldSkipAnimation && enterAnimation)` →
+  `Popover.tsx:626-629` (Solid also treats `isOpen && placement == null` as
+  entering so the pre-placement `fixed; top:0; left:0` frame stays at opacity 0;
+  RAC gets that from layout-before-paint)
+- RAC `Popover.tsx:261-267` `trigger`/`placement`/`isEntering`/`isExiting` render props →
+  `Popover.tsx:631-636`
+- RAC `Popover.tsx:350-351` `data-entering` / `data-exiting` →
+  `Popover.tsx:685-686`
+- RAC `Overlay.tsx:78` `contain && !isExiting` →
+  `Popover.tsx:666`
+- RAC `Popover.tsx:99-103` `shouldSkipAnimation` →
+  `Popover.tsx:185,309,484,628`
+- S2 `Popover.tsx:119-157` opacity/translate/duration/easing →
+  `packages/solid-spectrum/src/popover/index.tsx:112-150` (already present;
+  now fed real render props)
+- S2 `ActionMenu.tsx:65-89` MenuTrigger + Menu, no timers →
+  `packages/solid-spectrum/src/menu/ActionMenu.tsx:454-461` (twin
+  `packages/viviana-ui/src/menu/ActionMenu.tsx`)
+- RAC `DatePicker.tsx:227-234` PopoverContext (`trigger: 'DatePicker'`,
+  `placement: 'bottom start'`) →
+  `packages/solidaria-components/src/DatePicker.tsx:1341-1360` and
+  DateRangePickerContent `:1368`
+
+### Deleted hand-rolled code
+
+- `packages/solid-spectrum/src/menu/ActionMenu.tsx` (was `:450-552`):
+  `ACTION_MENU_POPOVER_TRANSITION_DURATION`, `setTimeout` exit, rAF enter,
+  `wasOpen` / `renderedOpen` / `isEnteringForRender`, manual trigger focus
+  restore. Twin: `packages/viviana-ui/src/menu/ActionMenu.tsx`.
+- `packages/solidaria-components/src/DatePicker.tsx` (was `:1371` and `:1484`):
+  `createEnterAnimation` / `createExitAnimation` plus private `createPopover` /
+  Portal / FocusScope. Now a `<Popover>`.
+
+### Tests
+
+- `sets data-entering on first render and removes it after the enter animation resolves`
+- `keeps the popover mounted with data-exiting until the exit animation finished promise resolves`
+- `unmounts on the next animation frame when getAnimations returns no animations`
+- `passes isEntering and isExiting to class and style render props`
+- `reopens during exit without a second enter`
+- existing `should call onOpenChange when popover closes via Escape` still
+  `[true, false]`
+- `generates distinct entering, settled, and exiting classes from the S2 motion tokens`
+- `marks the popover entering and exiting transition lifecycle` (ActionMenu;
+  no `requestAnimationFrame` spy)
+- existing DatePicker `keeps the calendar mounted and marks it exiting until its animation settles`
+
+Red-then-green:
+
+1. `vi.spyOn(Element.prototype, "getAnimations")` →
+   `Error: The property "getAnimations" is not defined on the object.`
+   (JSDOM; switched to `Object.defineProperty` on the prototype, as DatePicker
+   does on the instance.)
+2. After that mock, enter never cleared:
+   `Expected the element not to have attribute: data-entering Received: data-entering=""`
+   (resolved the `finished` promise before placement made `createAnimation`
+   subscribe). Wait-for-`data-placement` then resolve → green.
+3. `packages/solidaria-components/test/Popover.test.tsx` + DatePicker +
+   spectrum Popover + ActionMenu: 104 passed.
+
+### Verification
+
+- Listed files 10/10, 223 passed. None missing.
+- `vp test run packages/solidaria-components packages/solid-spectrum packages/viviana-ui`
+  — 160 files, 3322 passed, 1 expected fail, 6 skipped.
+- `vp run typecheck` — pass.
+- `vp run guard:layer-boundary` — NEW forks: 0.
+- `vp run guard:attribution-headers` — pass (header contracts satisfied).
+- `vp run guard:upstream-test-parity` — suspects 151 → 152 (Δ+1). NEW suspect
+  `combobox|aria|aria-setsize` is the concurrent #252 Virtualizer lane, not this
+  ticket. Did not write the baseline.
+- `vp run test:ssr` — 12 files, 26 passed.
+- `vp run test:hydrate` — 12 files, 28 passed, 1 expected fail.
+- `vp check --fix` on owned files — pass. `git diff --check` on owned files — clean.
+- `vp run docs:generate` — blocked: ticket #248 `status must equal the last history state` (concurrent lane). Did not edit #248.
+- Certified Playwright: `vp run build` and `apps/comparison` `vp run build` passed (88 pages). Then
+  `npx playwright test e2e/certified/{combobox,picker,menu,actionmenu}.certified.spec.ts --workers=2 --reporter=line`
+  started 168 tests. First 6 (D1 ActionMenu/ComboBox size-s/m × dark/light) all failed at
+  `apps/comparison/e2e/comparison-page.ts:33` `await document.fonts.ready` —
+  `Test timeout of 120000ms exceeded` / `Error: page.evaluate: Test timeout of 120000ms exceeded.`
+  Page snapshot showed the component shell mounted; this is a font-load hang, not overlay opacity.
+  Aborted the remaining 162 so they would not each burn 120s on the same hang.
+  MCP overlay proof on the fresh 4322 preview (skips `fonts.ready`):
+  - ActionMenu (this ticket's styled popover): open-sync `opacity:0` `translate:0px -4px`
+    `transitionDuration:0.2s` with two running `CSSTransition` 200ms (enter flag already
+    flipped — RAC CSS-transition model); settled `opacity:1` `translate:0px` at
+    `top:468px; left:518px`; close `data-exiting` held through rAF with running
+    200ms transitions; unmounted by 250ms.
+  - ComboBox list (concurrent #252 styles): settled `data-trigger=ComboBox`
+    `data-placement=bottom` `opacity:1` at `top:534px; left:373px`, 3 options.
+    Computed `transitionDuration:0s` / `getAnimations=[]`, so exit unmounts next
+    rAF (RAC no-animation branch). Motion tokens live on `popoverStyles` /
+    `menuPopover`; ComboBox's overlay class is outside this ticket.

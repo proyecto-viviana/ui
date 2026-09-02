@@ -24,6 +24,29 @@ import MoreIcon from "../src/icon/s2wf-icons/MoreIcon";
 
 afterEach(() => cleanup());
 
+function mockGetAnimations(impl: () => Animation[]): () => void {
+  const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+  if (typeof CSSTransition === "undefined") {
+    (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+  }
+  const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    writable: true,
+    value: impl,
+  });
+  return () => {
+    if (previous) {
+      Object.defineProperty(Element.prototype, "getAnimations", previous);
+    } else {
+      delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+    }
+    if (previousCssTransition === undefined) {
+      delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    }
+  };
+}
+
 const items = [
   { id: "copy", label: "Copy", shortcut: "Cmd+C" },
   { id: "cut", label: "Cut", shortcut: "Cmd+X" },
@@ -301,28 +324,41 @@ describe("ActionMenu (solid-spectrum)", () => {
   });
 
   it("marks the popover entering and exiting transition lifecycle", async () => {
-    const user = setupUser();
-    const requestAnimationFrameSpy = vi
-      .spyOn(window, "requestAnimationFrame")
-      .mockImplementation(() => 999);
+    let resolveCurrent!: () => void;
+    let currentFinished = new Promise<void>((resolve) => {
+      resolveCurrent = resolve;
+    });
+    const restore = mockGetAnimations(
+      () => [{ finished: currentFinished }] as unknown as Animation[],
+    );
 
     try {
+      const user = setupUser();
       render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
 
       await user.click(screen.getByRole("button", { name: "More actions" }));
 
       const popover = screen.getByRole("dialog");
       expect(popover).toHaveAttribute("data-entering");
+      await waitFor(() => expect(popover.getAttribute("data-placement")).toBeTruthy());
+
+      const finishEnter = resolveCurrent;
+      currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      finishEnter();
+      await waitFor(() => expect(popover).not.toHaveAttribute("data-entering"));
+
+      await user.keyboard("{Escape}");
+      expect(popover).toBeInTheDocument();
+      expect(popover).not.toHaveAttribute("data-entering");
+      expect(popover).toHaveAttribute("data-exiting");
+
+      resolveCurrent();
+      await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
     } finally {
-      requestAnimationFrameSpy.mockRestore();
+      restore();
     }
-
-    await user.keyboard("{Escape}");
-
-    const exitingPopover = screen.getByRole("dialog");
-    expect(exitingPopover).not.toHaveAttribute("data-entering");
-    expect(exitingPopover).toHaveAttribute("data-exiting");
-    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
   });
 
   it("applies the upstream press scale transform while pressed", () => {

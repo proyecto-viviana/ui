@@ -448,8 +448,8 @@ const dateRangePickerPopover = style<{
   // Byte-copied from the single DatePicker's `datePickerPopover` motion, which
   // is itself the shared `popover()` enter/exit fade. S2's DateRangePicker
   // popover is a plain `<Popover>`, so the enter transition IS this generic
-  // opacity/translate fade — driven here by `createEnterAnimation`
-  // (data-entering) inside the shared `DateRangePickerContent`.
+  // opacity/translate fade — driven by headless Popover `isEntering` / `isExiting`
+  // render props inside the shared `DateRangePickerContent`.
   opacity: {
     isEntering: 0,
     isExiting: 0,

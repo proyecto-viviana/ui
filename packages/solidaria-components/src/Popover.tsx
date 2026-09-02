@@ -35,7 +35,10 @@ import { Portal } from "solid-js/web";
 import {
   createOverlayTrigger,
   createPopover,
+  createEnterAnimation,
+  createExitAnimation,
   FocusScope,
+  useIsHidden,
   useLocale,
   useUNSAFE_PortalContext,
   visuallyHiddenStyles,
@@ -54,7 +57,11 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
-import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
+import {
+  DialogTriggerContext,
+  OverlayTriggerStateContext,
+  PopoverTriggerContext,
+} from "./contexts";
 import { SelectContext } from "./Select";
 
 export interface PopoverRenderProps {
@@ -171,6 +178,11 @@ export interface PopoverProps extends SlotProps, AriaLabelingProps {
   isEntering?: boolean;
   /** Whether the popover is exiting (for animations). */
   isExiting?: boolean;
+  /**
+   * Whether the popover should appear and disappear without an entry or exit animation.
+   * Used by PreviewTrigger to skip animations when quickly swapping between overlays.
+   */
+  shouldSkipAnimation?: boolean;
 }
 
 export interface PopoverTriggerProps {
@@ -294,6 +306,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     "autoFocus",
     "isEntering",
     "isExiting",
+    "shouldSkipAnimation",
   ]);
 
   // A reactive ref (not a plain `let`) so the overlay-position effect in
@@ -321,6 +334,7 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   const triggerContext = useContext(PopoverTriggerContext);
   const dialogTriggerContext = useContext(DialogTriggerContext);
+  const overlayTriggerState = useContext(OverlayTriggerStateContext);
   const popoverGroupContext = useContext(PopoverGroupContext);
   const selectContext = useContext(SelectContext);
   const overlayLabelledBy = () =>
@@ -342,6 +356,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     if (dialogTriggerContext) {
       return dialogTriggerContext.state.isOpen();
     }
+    if (overlayTriggerState) {
+      return overlayTriggerState.isOpen;
+    }
     return internalOpen();
   };
 
@@ -353,6 +370,9 @@ export function Popover(props: PopoverProps): JSX.Element {
       local.onOpenChange?.(false);
     } else if (dialogTriggerContext) {
       dialogTriggerContext.state.close();
+      local.onOpenChange?.(false);
+    } else if (overlayTriggerState) {
+      overlayTriggerState.close();
       local.onOpenChange?.(false);
     } else {
       setInternalOpen(false);
@@ -426,6 +446,9 @@ export function Popover(props: PopoverProps): JSX.Element {
         } else if (dialogTriggerContext) {
           dialogTriggerContext.state.open();
           local.onOpenChange?.(true);
+        } else if (overlayTriggerState) {
+          overlayTriggerState.open();
+          local.onOpenChange?.(true);
         } else {
           setInternalOpen(true);
           local.onOpenChange?.(true);
@@ -440,6 +463,8 @@ export function Popover(props: PopoverProps): JSX.Element {
           triggerContext.state.toggle();
         } else if (dialogTriggerContext) {
           dialogTriggerContext.state.toggle();
+        } else if (overlayTriggerState) {
+          overlayTriggerState.toggle();
         } else {
           setInternalOpen(true);
           local.onOpenChange?.(true);
@@ -449,36 +474,22 @@ export function Popover(props: PopoverProps): JSX.Element {
     },
   );
 
-  const renderValues = createMemo<PopoverRenderProps>(() => ({
-    trigger: resolvedTrigger() ?? null,
-    placement: popoverAria.placement(),
-    isEntering: local.isEntering ?? false,
-    isExiting: local.isExiting ?? false,
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      // Read children lazily. The popover content is gated behind
-      // `<Show when={isHydrated() && …}>` below, so it must NOT be instantiated
-      // during the component body. An eager `children: props.children` reads the
-      // child getter at object-construction time, building the content template
-      // (and walking `getNextElement`) before the gate — which the server, with
-      // the gate closed, never emitted → hydration mismatch. The getter defers
-      // the read until `renderChildren()` runs inside the gated overlay.
-      get children() {
-        return props.children;
-      },
-      class: local.class,
-      style: local.style,
-      defaultClassName: "solidaria-Popover",
-    },
-    renderValues,
-  );
+  // RAC: `useExitAnimation(ref, state.isOpen)` lives on the outer Popover so the
+  // `'closed' | 'open' | 'exiting'` machine survives Inner unmount. Enter lives
+  // on PopoverInner (below) so it re-initializes per open, matching
+  // `useEnterAnimation(ref, !!placement)` in RAC's PopoverInner.
+  const exitAnimation = createExitAnimation(() => popoverRef(), isOpen);
+  const isExiting = () =>
+    Boolean(local.isExiting) || (!(local.shouldSkipAnimation ?? false) && exitAnimation());
+  const isHidden = useIsHidden();
 
   const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
   const hasExplicitTriggerWidth = () => {
-    const style = renderProps.style() as (JSX.CSSProperties & Record<string, unknown>) | undefined;
-    return style?.["--trigger-width"] != null;
+    const style = typeof local.style === "function" ? undefined : local.style;
+    return (
+      (style as (JSX.CSSProperties & Record<string, unknown>) | undefined)?.["--trigger-width"] !=
+      null
+    );
   };
   const updateTriggerWidth = () => {
     const trigger = getTriggerRef();
@@ -518,26 +529,27 @@ export function Popover(props: PopoverProps): JSX.Element {
     return remaining;
   };
 
-  const mergedStyle = (): JSX.CSSProperties => {
-    const ariaStyle = (popoverAria.popoverProps as Record<string, unknown>).style as
-      | JSX.CSSProperties
-      | undefined;
-    const renderStyle = (renderProps.style() || {}) as JSX.CSSProperties & Record<string, unknown>;
-    return {
-      ...ariaStyle,
-      ...renderStyle,
-      "--trigger-width": renderStyle["--trigger-width"] ?? triggerWidth(),
-    };
-  };
+  const shouldBeDialogBase = () =>
+    !local.isNonModal ||
+    resolvedTrigger() === "SubmenuTrigger" ||
+    resolvedTrigger() === "PreviewTrigger";
+  const [isDialog, setIsDialog] = createSignal(shouldBeDialogBase());
+  createEffect(() => {
+    const node = popoverRef();
+    if (!node) return;
+    setIsDialog(shouldBeDialogBase() && node.querySelector("[role=dialog]") == null);
+  });
 
-  const shouldBeDialog = () => !local.isNonModal || resolvedTrigger() === "SubmenuTrigger";
+  const shouldBeDialog = () => isDialog();
   const shouldContainFocus = () => {
     if (!shouldBeDialog()) {
       return false;
     }
 
     const trigger = resolvedTrigger();
-    return trigger !== "MenuTrigger" && trigger !== "SubmenuTrigger";
+    return (
+      trigger !== "MenuTrigger" && trigger !== "SubmenuTrigger" && trigger !== "PreviewTrigger"
+    );
   };
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => {
@@ -605,41 +617,94 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   const isNonModal = () => local.isNonModal ?? resolvedTrigger() === "PreviewTrigger";
 
-  const overlay = () => (
-    <PopoverContext.Provider
-      value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
-    >
-      <FocusScope contain={shouldContainFocus()} restoreFocus>
-        <div
-          {...domProps()}
-          {...cleanPopoverProps()}
-          {...(triggerContext?.overlayProps ?? {})}
-          ref={(el) => {
-            setPopoverRef(el);
-            triggerContext?.setOverlayRef?.(el);
-          }}
-          id={overlayId()}
-          role={shouldBeDialog() ? "dialog" : undefined}
-          tabIndex={shouldBeDialog() ? -1 : undefined}
-          aria-labelledby={overlayLabelledBy()}
-          class={renderProps.class()}
-          style={mergedStyle()}
-          lang={locale().locale}
-          dir={locale().direction}
-          data-trigger={resolvedTrigger()}
-          data-placement={popoverAria.placement()}
-          data-entering={dataAttr(local.isEntering)}
-          data-exiting={dataAttr(local.isExiting)}
-        >
-          <Show when={!isNonModal()}>
+  // Enter animation is owned by this inner tree so it remounts on each full
+  // open (RAC PopoverInner + useEnterAnimation). It stays mounted while
+  // `isExiting` so a reopen-during-exit does not start a second enter.
+  //
+  // Local addition (documented deviation): RAC's `useEnterAnimation(ref,
+  // !!placement)` reports `isEntering === false` while the popover is still
+  // unplaced (`animation.ts:22`), relying on `useLayoutEffect` positioning so
+  // that state never paints. Here the open-but-unplaced state is also reported
+  // as entering, so if positioning ever lands after a paint the `top:0;left:0`
+  // frame stays at the entering opacity instead of flashing at the origin.
+  function PopoverInner(): JSX.Element {
+    const enterAnimation = createEnterAnimation(
+      () => popoverRef(),
+      () => popoverAria.placement() != null,
+    );
+    const isEntering = () =>
+      Boolean(local.isEntering) ||
+      (!(local.shouldSkipAnimation ?? false) &&
+        (enterAnimation() || (isOpen() && popoverAria.placement() == null)));
+
+    const renderValues = createMemo<PopoverRenderProps>(() => ({
+      trigger: resolvedTrigger() ?? null,
+      placement: popoverAria.placement(),
+      isEntering: isEntering(),
+      isExiting: isExiting(),
+    }));
+
+    const renderProps = useRenderProps(
+      {
+        get children() {
+          return props.children;
+        },
+        class: local.class,
+        style: local.style,
+        defaultClassName: "solidaria-Popover",
+      },
+      renderValues,
+    );
+
+    const mergedStyle = (): JSX.CSSProperties => {
+      const ariaStyle = (popoverAria.popoverProps as Record<string, unknown>).style as
+        | JSX.CSSProperties
+        | undefined;
+      const renderStyle = (renderProps.style() || {}) as JSX.CSSProperties &
+        Record<string, unknown>;
+      return {
+        ...ariaStyle,
+        ...renderStyle,
+        "--trigger-width": renderStyle["--trigger-width"] ?? triggerWidth(),
+      };
+    };
+
+    return (
+      <PopoverContext.Provider
+        value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
+      >
+        <FocusScope contain={shouldContainFocus() && !isExiting()} restoreFocus>
+          <div
+            {...domProps()}
+            {...cleanPopoverProps()}
+            {...(triggerContext?.overlayProps ?? {})}
+            ref={(el) => {
+              setPopoverRef(el);
+              triggerContext?.setOverlayRef?.(el);
+            }}
+            id={overlayId()}
+            role={shouldBeDialog() ? "dialog" : undefined}
+            tabIndex={shouldBeDialog() ? -1 : undefined}
+            aria-labelledby={overlayLabelledBy()}
+            class={renderProps.class()}
+            style={mergedStyle()}
+            lang={locale().locale}
+            dir={locale().direction}
+            data-trigger={resolvedTrigger()}
+            data-placement={popoverAria.placement()}
+            data-entering={dataAttr(isEntering())}
+            data-exiting={dataAttr(isExiting())}
+          >
+            <Show when={!isNonModal()}>
+              <PopoverDismissButton onDismiss={close} />
+            </Show>
+            {renderProps.renderChildren()}
             <PopoverDismissButton onDismiss={close} />
-          </Show>
-          {renderProps.renderChildren()}
-          <PopoverDismissButton onDismiss={close} />
-        </div>
-      </FocusScope>
-    </PopoverContext.Provider>
-  );
+          </div>
+        </FocusScope>
+      </PopoverContext.Provider>
+    );
+  }
 
   const underlay = () => (
     <div
@@ -649,23 +714,38 @@ export function Popover(props: PopoverProps): JSX.Element {
     />
   );
 
+  const hiddenChildren = () => {
+    const children = props.children;
+    if (typeof children === "function") {
+      return children({
+        trigger: resolvedTrigger() ?? null,
+        placement: "bottom",
+        isEntering: false,
+        isExiting: false,
+      });
+    }
+    return children;
+  };
+
   return (
-    <Show when={isHydrated() && (isOpen() || local.isExiting)}>
-      <Portal mount={portalContainer()}>
-        <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
-        <Show
-          when={isSubPopover()}
-          fallback={
-            <div ref={setGroupRef} style={{ display: "contents" }}>
-              <PopoverGroupContext.Provider value={() => groupRef()}>
-                {overlay()}
-              </PopoverGroupContext.Provider>
-            </div>
-          }
-        >
-          {overlay()}
-        </Show>
-      </Portal>
+    <Show when={!isHidden()} fallback={hiddenChildren()}>
+      <Show when={isHydrated() && (isOpen() || isExiting())}>
+        <Portal mount={portalContainer()}>
+          <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
+          <Show
+            when={isSubPopover()}
+            fallback={
+              <div ref={setGroupRef} style={{ display: "contents" }}>
+                <PopoverGroupContext.Provider value={() => groupRef()}>
+                  <PopoverInner />
+                </PopoverGroupContext.Provider>
+              </div>
+            }
+          >
+            <PopoverInner />
+          </Show>
+        </Portal>
+      </Show>
     </Show>
   );
 }

@@ -10,6 +10,29 @@ import { DialogTrigger } from "../src/Dialog";
 import { createSignal, onMount } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
+function mockGetAnimations(impl: () => Animation[]): () => void {
+  const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+  if (typeof CSSTransition === "undefined") {
+    (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+  }
+  const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    writable: true,
+    value: impl,
+  });
+  return () => {
+    if (previous) {
+      Object.defineProperty(Element.prototype, "getAnimations", previous);
+    } else {
+      delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+    }
+    if (previousCssTransition === undefined) {
+      delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    }
+  };
+}
+
 // setupUser is consolidated in solidaria-test-utils.
 
 describe("Popover", () => {
@@ -642,6 +665,201 @@ describe("Popover", () => {
         // dataAttr returns '' (empty string) for true values - standard HTML boolean attribute
         expect(dialog.hasAttribute("data-exiting")).toBe(true);
       });
+    });
+
+    it("sets data-entering on first render and removes it after the enter animation resolves", async () => {
+      let finishEnter!: () => void;
+      const finished = new Promise<void>((resolve) => {
+        finishEnter = resolve;
+      });
+      const restore = mockGetAnimations(() => [{ finished }] as unknown as Animation[]);
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveAttribute("data-entering");
+        await waitFor(() => expect(dialog).toHaveAttribute("data-placement"));
+
+        finishEnter();
+        await waitFor(() => {
+          expect(dialog).not.toHaveAttribute("data-entering");
+          expect(dialog).toBeInTheDocument();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("keeps the popover mounted with data-exiting until the exit animation finished promise resolves", async () => {
+      let resolveCurrent!: () => void;
+      let currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      const restore = mockGetAnimations(
+        () => [{ finished: currentFinished }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveAttribute("data-entering");
+        await waitFor(() => expect(dialog.getAttribute("data-placement")).toBeTruthy());
+
+        const finishEnter = resolveCurrent;
+        currentFinished = new Promise<void>((resolve) => {
+          resolveCurrent = resolve;
+        });
+        finishEnter();
+        await waitFor(() => expect(dialog).not.toHaveAttribute("data-entering"));
+
+        await user.keyboard("{Escape}");
+        expect(dialog).toBeInTheDocument();
+        expect(dialog).toHaveAttribute("data-exiting");
+
+        resolveCurrent();
+        await waitFor(() => {
+          expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("unmounts on the next animation frame when getAnimations returns no animations", async () => {
+      const restore = mockGetAnimations(() => []);
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+        await user.keyboard("{Escape}");
+        await waitFor(() => {
+          expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("passes isEntering and isExiting to class and style render props", async () => {
+      let resolveCurrent!: () => void;
+      let currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      const restore = mockGetAnimations(
+        () => [{ finished: currentFinished }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover
+              class={(rp) =>
+                rp.isEntering ? "is-entering" : rp.isExiting ? "is-exiting" : "is-settled"
+              }
+              style={(rp) => ({ opacity: rp.isEntering || rp.isExiting ? "0" : "1" })}
+            >
+              <div>Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveClass("is-entering");
+        expect(dialog.style.opacity).toBe("0");
+        await waitFor(() => expect(dialog.getAttribute("data-placement")).toBeTruthy());
+
+        const finishEnter = resolveCurrent;
+        currentFinished = new Promise<void>((resolve) => {
+          resolveCurrent = resolve;
+        });
+        finishEnter();
+        await waitFor(() => {
+          expect(dialog).toHaveClass("is-settled");
+          expect(dialog.style.opacity).toBe("1");
+        });
+
+        await user.keyboard("{Escape}");
+        expect(dialog).toHaveClass("is-exiting");
+        expect(dialog.style.opacity).toBe("0");
+      } finally {
+        restore();
+      }
+    });
+
+    it("reopens during exit without a second enter", async () => {
+      let resolveCurrent!: () => void;
+      let currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      const restore = mockGetAnimations(
+        () => [{ finished: currentFinished }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        await waitFor(() => expect(dialog.getAttribute("data-placement")).toBeTruthy());
+        const finishEnter = resolveCurrent;
+        currentFinished = new Promise<void>((resolve) => {
+          resolveCurrent = resolve;
+        });
+        finishEnter();
+        await waitFor(() => expect(dialog).not.toHaveAttribute("data-entering"));
+
+        await user.keyboard("{Escape}");
+        expect(dialog).toHaveAttribute("data-exiting");
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        expect(dialog).toBeInTheDocument();
+        expect(dialog).not.toHaveAttribute("data-exiting");
+        expect(dialog).not.toHaveAttribute("data-entering");
+      } finally {
+        restore();
+      }
     });
   });
 
