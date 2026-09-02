@@ -4,7 +4,7 @@ type: task
 title: "Position overlays with visualViewport pageTop on iOS 26"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
   - {
@@ -16,6 +16,11 @@ history:
       state: open,
       at: 2026-09-02,
       note: "out of lane: calculatePosition.ts:174-176 still uses offsetTop/offsetLeft; createOverlayPosition.ts lacks addEvent(getPropagationTargets(window), scroll). Both files are under packages/solidaria/src/popover/, not overlays/.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "fence corrected to popover/**; porting pageTop/pageLeft math and window-scroll listener",
     }
 ---
 
@@ -48,12 +53,17 @@ regression test fails if `offsetTop` is read again for that path.
 Child of #220. Adjacent to #123 (global scroll across shadow roots) and #64
 (Tooltip arrow).
 
-## Out of lane
+## Landed
 
-Upstream `packages/react-aria/src/overlays/calculatePosition.ts:140-143` and
-`useOverlayPosition.ts:370-383`. Solid counterparts are
-`packages/solidaria/src/popover/calculatePosition.ts:174-176` (`offsetTop` /
-`offsetLeft`) and `packages/solidaria/src/popover/createOverlayPosition.ts:315-328`
-(visualViewport scroll only; no `addEvent(getPropagationTargets(window), 'scroll')`).
-This lane's fence is `packages/solidaria/src/overlays/**`, not `popover/**`. No
-source change.
+`react-spectrum/packages/react-aria/src/overlays/calculatePosition.ts:140-143`
+→ `packages/solidaria/src/popover/calculatePosition.ts:178-180`
+→ `uses visualViewport.pageTop, not offsetTop, when computing overlay top`
+
+`react-spectrum/packages/react-aria/src/overlays/useOverlayPosition.ts:370-383`
+→ `packages/solidaria/src/popover/createOverlayPosition.ts:322-324`
+→ `repositions when a scroll event fires on window during visual-viewport resize`
+
+`react-spectrum/packages/react-aria/src/utils/shadowdom/DOMFunctions.ts:96-128`
+→ `packages/solidaria/src/utils/dom.ts:177` (`getPropagationTargets`)
+
+Red-then-green: temporarily restored `offsetTop`/`offsetLeft`; pageTop test failed (`top` stayed 0). Temporarily skipped `addEvent(getPropagationTargets(window), 'scroll')`; window-scroll test failed (measure count unchanged). Restored, green.

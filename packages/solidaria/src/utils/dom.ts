@@ -86,6 +86,8 @@
  * - packages/react-aria/src/focus/FocusScope.tsx
  */
 
+import { shadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
+
 /**
  * Gets the owner document of an element, or the global document.
  * Accepts Window / Document / Node so window-target focus events resolve correctly.
@@ -160,6 +162,52 @@ export function addEvent(
       eventTarget.removeEventListener(event, listener, options);
     }
   };
+}
+
+/**
+ * Returns the set of event targets a listener must be attached to in order to
+ * globally observe an event.
+ *
+ * @param from - The target element to start from.
+ * @param to - The element to stop at when bubbling. @default getOwnerWindow(from)
+ *   `to` is generally going to be either `document` or `window`, but
+ *   it can be any intermediate node.
+ * @returns [global, ...shadowRoots]
+ */
+export function getPropagationTargets(
+  from: EventTarget | null | undefined,
+  to?: Document | Window | Element | null,
+): EventTarget[] {
+  // If `to` is coming from a ref, its type technically allows `null`.
+  // In practice, this function will generally be called from within an effect.
+  // If the ref has not resolved by that point, then a coding error has been made.
+  // Better to return an empty array than `[window]`, which may appear to work
+  // in the light DOM, but fail in the shadow DOM.
+  if (to === null) {
+    return [];
+  }
+  to = to ?? getOwnerWindow(from);
+  const targets: EventTarget[] = [to];
+  if (!shadowDOM() || !from || from === to) {
+    return targets;
+  }
+
+  // The root `to` itself lives in. The event already reaches `to` once
+  // it is inside this root, so we must NOT collect this root or anything above
+  // it — only the shadow roots strictly between `refNode` and `to`.
+  // `window` has no getRootNode; its boundary is the document, which the walk
+  // reaches naturally (the document is not a ShadowRoot, so the loop exits).
+  if (!("getRootNode" in from) || typeof (from as Node).getRootNode !== "function") {
+    return targets;
+  }
+  const toRoot = "getRootNode" in to ? (to as Node).getRootNode() : null;
+  let current: Node | null = (from as Node).getRootNode() ?? null;
+  while (isShadowRoot(current) && current !== toRoot) {
+    targets.push(current);
+    current = current.host.getRootNode();
+  }
+
+  return targets;
 }
 
 /**

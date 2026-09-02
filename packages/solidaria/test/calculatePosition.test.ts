@@ -11,7 +11,7 @@
  * real layout engine.
  */
 
-import { describe, it, expect } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { calculatePosition, type PositionOpts } from "../src/popover/calculatePosition";
 
 function baseOpts(overrides: Partial<PositionOpts> = {}): PositionOpts {
@@ -60,5 +60,35 @@ describe("calculatePosition targetRect override", () => {
   it("treats a null targetRect the same as no override", () => {
     const result = calculatePosition(baseOpts({ targetRect: null }));
     expect(result.position.top).toBe(0);
+  });
+});
+
+describe("calculatePosition visualViewport pageTop (iOS 26)", () => {
+  afterEach(() => {
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: undefined,
+    });
+  });
+
+  it("uses visualViewport.pageTop, not offsetTop, when computing overlay top", () => {
+    // WebKit misreports offsetTop during visual-viewport pans (iOS 26).
+    // Left placement applies getDelta on the cross axis (top), so a non-zero
+    // pageTop is observable on the computed position even when all rects are 0.
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: {
+        offsetTop: 0,
+        offsetLeft: 0,
+        pageTop: 80,
+        pageLeft: 0,
+        width: 1024,
+        height: 768,
+        scale: 1,
+      },
+    });
+
+    const result = calculatePosition(baseOpts({ placement: "left" }));
+    expect(result.position.top).toBe(80);
   });
 });
