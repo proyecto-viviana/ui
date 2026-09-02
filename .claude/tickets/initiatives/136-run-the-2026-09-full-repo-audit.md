@@ -270,21 +270,36 @@ every component whose source changed), `a11y:full`, `ui:smoke`,
 `comparison:test:pair` / `contract` (no comparison-app source changed except
 the Astro globs, and `comparison:build` is green).
 
-### Owner decisions requested (round 2)
+### Owner decisions (round 2) — all taken 2026-09-01
 
-| Ticket   | Question                                                                                                                                                   |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #216     | Open the RAC 1.21.0 / S2 1.7.0 train now, or after #82?                                                                                                    |
-| #217     | May `guard:upstream-freshness` exit 0 when GitHub is unreachable?                                                                                          |
-| #218     | Classify unlabeled barrel extras (S2 barrel, MenuButton, VU `Well`/`Pixel*`/`typeRoles`/`meshStrip`, Option/Item canonical names, `class` vs `className`). |
-| #219     | Size oracle, solid-stately entries, `./Button` surface, locale splitting.                                                                                  |
-| #177     | Correct ColorEditor from S2 parity to composition before writing the note.                                                                                 |
-| #48, #81 | Done-when met / resume-here stale — close or rewrite.                                                                                                      |
+| Ticket   | Decision                                                                                                                                                                        |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #216     | Train completion = pin moved + inventory ticketed + certified green. #82 closed under it; #220 opened; pin moves before the functional pass; #118 re-aimed at 1.21.             |
+| #217     | Freshness stays advisory but must never say "current" unchecked: exit 2 + `unknown` state in the summary (implemented in `7e94c39b`).                                           |
+| #218     | S2 barrel equals S2 exports (#221); MenuButton out (#222); viviana-native names off the `ui` barrel (#223); upstream item names canonical (#224); `class` is the one port rule. |
+| #219     | Per-export cost table + ratchet (#225); solid-stately per primitive (#226); per-file subpaths generated from S2 (#227); locale split inside #198.                               |
+| #177     | ColorEditor relabeled `composition`; note names the S2 primitives it composes.                                                                                                  |
+| #48, #81 | Still owner-open: done-when met / resume-here stale — close or rewrite.                                                                                                         |
+
+### Closed after round 2
+
+- **#184** Form+TextField hydration abort — root cause was `solidaria`
+  `mergeProps` reading every getter during merge (a `children` getter
+  instantiates the tree, so the server minted the necessity span twice).
+  Fixed structurally: non-handler/class/style getters are copied lazily with a
+  read-time fallback to the earlier value. Hydrate suite 26/27 (only #134
+  red); viviana-ui Form SSR/hydrate twins added.
+- **#185** viviana-ui SegmentedControl icons before the provider — ported the
+  nested-owner shape; failing-first test added (`e3fc6062`).
 
 ### Highest-signal remaining work after round 2
 
-- **#184** Form+TextField hydration abort (blocker; consumer route shape).
-- **#185** viviana-ui SegmentedControl icons before the provider (published).
+- **#220** pin move to RAC 1.21.0 / S2 1.7.0 — first, so the functional
+  pass compares against current React.
+- **Functional pass** (not yet ticketed; needs the owner's seed list of
+  observed bugs) — React and Solid driven through the same interaction
+  scripts, DOM/ARIA/state diffed per step; divergences become tickets and
+  certified tests.
 - **#160** now has a demonstrated cost and prerequisites (#191).
 - **#198–#202** the i18n spine above the headless layer is two locales and
   English literals; D10 cannot see it.
@@ -294,6 +309,8 @@ the Astro globs, and `comparison:build` is green).
   frozen ratchet.
 - **#206–#209** silent Rule #2 inventions on the five high-traffic
   components (accessors, size aliases, Heading, render props).
+- **#221–#227** the barrel and shape decisions — public-API changes, sequenced
+  after the functional pass.
 
 ## Done when
 
