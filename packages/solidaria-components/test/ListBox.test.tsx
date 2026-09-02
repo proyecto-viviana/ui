@@ -1425,4 +1425,30 @@ describe("ListBox", () => {
       expect(options[0]).toHaveAttribute("data-focused");
     });
   });
+
+  describe("list markup parity", () => {
+    it("listbox exposes data-layout and data-orientation", () => {
+      render(() => <TestListBox />);
+      const listbox = screen.getByRole("listbox");
+      expect(listbox).toHaveAttribute("data-layout", "stack");
+      expect(listbox).toHaveAttribute("data-orientation", "vertical");
+    });
+
+    it("option does not reference a description id when no description slot is rendered", async () => {
+      render(() => <TestListBox />);
+      const options = screen.getAllByRole("option");
+      for (const option of options) {
+        expect(option).not.toHaveAttribute("aria-describedby");
+        expect(option).toHaveAttribute("aria-labelledby");
+        const labelledBy = option.getAttribute("aria-labelledby");
+        expect(document.getElementById(labelledBy!)).not.toBeNull();
+      }
+    });
+
+    it("option exposes data-selection-mode", () => {
+      render(() => <TestListBox listBoxProps={{ selectionMode: "single" }} />);
+      const option = screen.getAllByRole("option")[0];
+      expect(option).toHaveAttribute("data-selection-mode", "single");
+    });
+  });
 });

@@ -663,7 +663,9 @@ export function createComboBox<T>(
           placeholder: p.placeholder,
           autoComplete: "off",
           "aria-autocomplete": p.autoComplete ?? "list",
-          "aria-haspopup": "listbox",
+          // RAC useComboBox copies `aria-expanded` and `aria-controls` from
+          // menuTriggerProps onto the input, not `aria-haspopup`. That key stays
+          // on the trigger button only (useComboBox.ts:520-526).
           "aria-expanded": isOpen,
           "aria-controls": isOpen ? listBoxId : undefined,
           "aria-activedescendant":

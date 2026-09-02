@@ -4,7 +4,7 @@ type: task
 title: "Reproduce the reported ComboBox and Picker list transparency and misplacement"
 created: 2026-09-02
 parent: 243
-status: open
+status: in-progress
 history:
   - {
       state: open,
@@ -73,3 +73,70 @@ option ARIA (`aria-label` + `aria-describedby="(missing)"` vs `aria-labelledby`
 
 Child of #243. Feeds #245 / #246. Related: #135 / #184 (post-hydration
 state classes), #234 (iOS 26 visualViewport positioning in RAC 1.21).
+
+## Landed
+
+In-lane list-markup parity for the #244 seed journeys (step 0 `field dom`).
+Did not commit or stage. Changeset: `.changeset/combobox-picker-list-markup.md`
+(patch `solidaria` + `solidaria-components`).
+
+### Per divergence
+
+1. **Option ARIA (labelledby / describedby / posinset / setsize / data-selection-mode)**
+   - RAC: `react-aria/src/listbox/useOption.ts:117-134` (`useSlotId` for label + description; posinset/setsize only when `isVirtualized`); RAC `ListBox.tsx:628-640` (`data-selection-mode`).
+   - Solid: `packages/solidaria/src/listbox/createOption.ts:173-215` (`createSlotId`; labelledby/describedby only when the slot is in the DOM); `packages/solidaria-components/src/ListBox.tsx:1178`, `ComboBox.tsx:1282`, `Select.tsx:1396` (`data-selection-mode`); ComboBox/Select listboxes forward `isVirtualized` from `useCollectionRenderer` (`ComboBox.tsx:1009-1016`, `Select.tsx:1041-1056`).
+   - Tests: `option does not reference a description id when no description slot is rendered`; `option does not reference a label id when no label slot is rendered`; `option points aria-describedby at a rendered description slot`; `option exposes data-selection-mode`; `omits aria-posinset/aria-setsize when not virtualized` / `sets aria-posinset/aria-setsize when virtualized`.
+
+2. **Listbox root `data-layout` / `data-orientation` / `data-focused`**
+   - RAC: `ListBox.tsx:411-416` (`data-focused`/`data-focus-visible` from `useFocusRing` on the listbox; `data-layout` default `stack`; `data-orientation`).
+   - Solid: `packages/solidaria-components/src/ListBox.tsx:384-390,900-905`; ComboBox listbox `ComboBox.tsx:1020-1093`; Select listbox `Select.tsx:1061-1158`. Virtual-focus ComboBox listbox does not emit `data-focused`.
+   - Tests: `listbox exposes data-layout and data-orientation`.
+
+3. **ComboBox input `aria-haspopup`**
+   - RAC: `useComboBox.ts:520-526` (input gets `aria-expanded`/`aria-controls`, not `aria-haspopup`; button keeps it).
+   - Solid: `packages/solidaria/src/combobox/createComboBox.ts:666-670` (input); button still `711`.
+   - Tests: `combobox input does not carry aria-haspopup`.
+
+4. **ComboBox field group `data-focused` vs `data-focus-within`** — out of lane (below).
+
+5. **Picker overlay `aria-labelledby`**
+   - RAC: `Select.tsx:255-263` passes `menuProps['aria-labelledby']` into `PopoverContext`; `Popover.tsx:343` renders it.
+   - Solid: `packages/solidaria-components/src/Popover.tsx:325-328,624` reads `SelectContext.menuProps['aria-labelledby']` (Solid Select does not inject RAC `PopoverContext`; S2 Picker already passes `isOpen` from SelectContext).
+   - Test: `overlay root carries aria-labelledby from the select menu`.
+
+6. **Picker extra hidden `<input>`**
+   - RAC: `HiddenSelect.tsx:172-244` (≤300: `<select>` in `<label>` in visually hidden container; hidden `<input>`s only when `size > 300` and `name` is set; empty selection still renders one input).
+   - Solid: `packages/solidaria/src/select/createHiddenSelect.tsx:284-325`; `packages/solidaria-components/src/Select.tsx:630-680`.
+   - Test: `hidden select renders no extra input`.
+
+7. **`data-rac`**
+   - Solid does not emit it. `apps/comparison/e2e/drivers/dom-oracle.ts:3-9` adds `ORACLE_IGNORED_DATA_ATTRIBUTES = ["data-rac"]`. The live D13 allow-list is `RAC_STATE_DATA_ATTRIBUTES` in `journeys.ts` (out of lane); that list already omits `data-rac`.
+
+8. **Picker `aria-describedby` `p` vs `span`** — out of lane (below).
+
+### Seed journeys (after in-lane fixes)
+
+`vp run comparison:build` passed. Four D13 seeds (`COMPARISON_PORT=4332`, grep `D13 journey —`) all still fail **step 0 `field dom`**. First message each:
+
+- ComboBox `open-arrow-enter-reopen-scroll-escape`: `Error: open-arrow-enter-reopen-scroll-escape step 0 (click trigger) field dom` — remaining: option `aria-label` (Solid still synthesizes it), missing `aria-posinset`/`aria-setsize` (no Virtualizer), field group `data-focused` vs React `data-focus-within`, extra `data-open`/`data-focus-visible` on input/button, overlay `form` vs React `template`, extra `input[aria-hidden]`.
+- ComboBox `keyboard-only`: `Error: keyboard-only step 0 (Tab to trigger) field dom` — remaining: field group `data-focused` vs `data-focus-within`; chevron `data-focused`.
+- Picker `open-arrow-enter-reopen-scroll-escape`: `Error: open-arrow-enter-reopen-scroll-escape step 0 (click trigger) field dom` — remaining: missing `aria-posinset`/`aria-setsize`, `aria-describedby` `p:Choose the billing plan.` vs `span:…`, extra `svg` child on the trigger, extra `data-focused`/`data-open` on the button.
+- Picker `keyboard-only`: `Error: keyboard-only step 0 (Tab to trigger) field dom` — remaining: `aria-describedby` `p:` vs `span:`; Solid missing a React wrapper `div` with `data-focus-visible`/`data-focused`.
+
+In-lane option labelledby (no missing describedby id), listbox `data-layout`/`data-orientation`, no input `aria-haspopup`, no extra nameless HiddenSelect input, and `data-selection-mode` are no longer the first-diff attributes.
+
+### Out of lane
+
+- Picker description `p` vs `span`: `packages/solid-spectrum/src/form/HelpText.tsx:62,67` still render `<p>`. S2 `Field.tsx:416-426` HelpText uses `<Text slot="description">` (a `<span>`). Change those two tags to `<span>`.
+- ComboBox field group `data-focused` vs `data-focus-within`: `packages/solid-spectrum/src/combobox/index.tsx:630` emits `data-focused`. RAC `Group.tsx:129` emits `data-focus-within` (from `useFocusWithin`). Change `data-focused` to `data-focus-within`. No RAC Group lives in this lane (`Collection.tsx` Group is a section primitive).
+- ComboBox option synthesized `aria-label`: `packages/solid-spectrum/src/combobox/index.tsx:1091` `aria-label={headlessProps["aria-label"] ?? textLabel()}`. RAC ListBoxItem only forwards an explicit `aria-label`. Drop the `?? textLabel()` fallback.
+- S2 ComboBox/Picker Virtualizer: S2 wraps ListBox in `<Virtualizer>` (`@react-spectrum/s2/src/ComboBox.tsx:796`, `Picker.tsx:457`). Solid-spectrum does not. `isVirtualized` is forwarded in-lane but stays false without a Virtualizer parent, so journeys still miss `aria-posinset`/`aria-setsize`.
+- `data-rac` comparison wiring: `apps/comparison/e2e/drivers/journeys.ts` `RAC_STATE_DATA_ATTRIBUTES` already excludes `data-rac`. `ORACLE_IGNORED_DATA_ATTRIBUTES` in `dom-oracle.ts` is unused by `journeys-observe.ts` (allow-list is passed from `journeys.ts`).
+
+### Verification
+
+- `vp test run packages/solidaria/test/createListBox.test.tsx packages/solidaria/test/createComboBox.test.tsx packages/solidaria/test/createHiddenSelect.test.tsx packages/solidaria/test/createSelect.test.tsx packages/solidaria-components/test/ListBox.test.tsx packages/solidaria-components/test/ComboBox.test.tsx packages/solidaria-components/test/Select.test.tsx packages/solidaria-components/test/Popover.test.tsx` — 8 files, 435 passed.
+- `vp run typecheck` — pass (after dropping `selectionMode() === "none"` on Select options; Select mode is `"single" | "multiple"`).
+- `vp run guard:layer-boundary` — PASS.
+- `vp run guard:rac-parity` — PASS.
+- `vp check --fix` on owned files — pass; `git diff --check` on owned files — clean.

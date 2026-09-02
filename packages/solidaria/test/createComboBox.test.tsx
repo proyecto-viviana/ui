@@ -36,7 +36,7 @@ describe("createComboBox", () => {
 
         expect(comboBox.inputProps.role).toBe("combobox");
         expect(comboBox.inputProps.type).toBe("text");
-        expect(comboBox.inputProps["aria-haspopup"]).toBe("listbox");
+        expect(comboBox.inputProps["aria-haspopup"]).toBeUndefined();
         expect(comboBox.inputProps["aria-expanded"]).toBe(false);
         expect(comboBox.inputProps["aria-autocomplete"]).toBe("list");
         expect(comboBox.inputProps.autoComplete).toBe("off");
@@ -220,22 +220,17 @@ describe("createComboBox", () => {
       });
     });
 
-    it("should update aria-expanded when open", () => {
+    it("combobox input does not carry aria-haspopup", () => {
       createRoot((dispose) => {
         let inputRef: HTMLInputElement | null = null;
-
         const state = createComboBoxState({
           items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
         });
-
-        const comboBox = createComboBox({}, state, () => inputRef);
-
-        expect(comboBox.buttonProps["aria-expanded"]).toBe(false);
-
-        state.open();
-        expect(comboBox.buttonProps["aria-expanded"]).toBe(true);
+        const comboBox = createComboBox({ label: "Fruit" }, state, () => inputRef);
+        expect(comboBox.inputProps["aria-haspopup"]).toBeUndefined();
+        expect(comboBox.buttonProps["aria-haspopup"]).toBe("listbox");
         dispose();
       });
     });

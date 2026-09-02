@@ -26,6 +26,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createSignal,
   onCleanup,
   splitProps,
@@ -41,6 +42,7 @@ import {
   createHover,
   createInteractOutside,
   createScrollIntoViewOnFocus,
+  createFocusRing,
   mergeProps,
   isFocusVisible as isGlobalFocusVisible,
   type AriaComboBoxProps,
@@ -61,11 +63,13 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  DEFAULT_SLOT,
   useRenderProps,
   filterDOMProps,
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
+import { useCollectionRenderer } from "./Collection";
 import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
@@ -1001,14 +1005,29 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
     },
   });
 
-  // Create listbox aria props using ComboBoxState's ListState-compatible interface
+  // Create listbox aria props using ComboBoxState's ListState-compatible interface.
+  // A parent Virtualizer publishes `isVirtualized` through the collection renderer
+  // (RAC ListBox.tsx + Virtualizer); forward it so options emit posinset/setsize.
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const { listBoxProps } = createListBox(
-    context.listBoxProps as unknown as AriaListBoxProps,
+    () => ({
+      ...(context.listBoxProps() as AriaListBoxProps),
+      isVirtualized: parentCollectionRenderer?.isVirtualized,
+    }),
     listState,
   );
 
+  // RAC ListBox.tsx:366 — data-focused / data-focus-visible come from useFocusRing
+  // on the listbox. ComboBox uses virtual focus, so the listbox itself is not
+  // focused and must not emit data-focused.
+  const {
+    isFocused: isListBoxFocused,
+    isFocusVisible: isListBoxFocusVisible,
+    focusProps,
+  } = createFocusRing();
+
   const renderValues = createMemo<ComboBoxListBoxRenderProps>(() => ({
-    isFocused: state.isFocused(),
+    isFocused: isListBoxFocused(),
   }));
 
   const renderProps = useRenderProps(
@@ -1026,6 +1045,10 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   };
   const cleanListBoxProps = () => {
     const { ref: _ref2, ...rest } = listBoxProps as Record<string, unknown>;
+    return rest;
+  };
+  const cleanFocusProps = () => {
+    const { ref: _ref3, ...rest } = focusProps as Record<string, unknown>;
     return rest;
   };
 
@@ -1063,9 +1086,14 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
         ref={setListBoxElement}
         {...cleanContextProps()}
         {...cleanListBoxProps()}
+        {...cleanFocusProps()}
         class={renderProps.class()}
         style={renderProps.style()}
-        data-focused={state.isFocused() || undefined}
+        data-focused={isListBoxFocused() || undefined}
+        data-focus-visible={isListBoxFocusVisible() || undefined}
+        data-empty={state.collection().size === 0 || undefined}
+        data-layout="stack"
+        data-orientation="vertical"
       >
         <Show
           when={local.children}
@@ -1201,6 +1229,41 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     return rest;
   };
 
+  const hasPrimitiveLabel = () => {
+    return typeof props.children === "string" || typeof props.children === "number";
+  };
+
+  const optionTextSlots = {
+    slots: {
+      get [DEFAULT_SLOT]() {
+        return optionAria.labelProps;
+      },
+      get label() {
+        return optionAria.labelProps;
+      },
+      get description() {
+        return optionAria.descriptionProps;
+      },
+    },
+  };
+
+  createRenderEffect(() => {
+    const el = ref();
+    const labelId = optionAria.labelProps.id;
+    const descriptionId = optionAria.descriptionProps.id;
+    if (!el) return;
+    if (labelId) {
+      const label = el.querySelector("[slot='label']");
+      if (label && !label.id) label.id = labelId;
+    }
+    if (descriptionId) {
+      const description = el.querySelector("[slot='description']");
+      if (description && !description.id) description.id = descriptionId;
+    }
+  });
+
+  const selectionMode = () => listState.selectionMode();
+
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
       {/* `<div role="option">`, not `<li>` — see the ComboBoxListBox note; the
@@ -1219,8 +1282,15 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         data-pressed={optionAria.isPressed() || undefined}
         data-hovered={optionAria.isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}
+        data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
       >
-        {renderProps.renderChildren()}
+        <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
+          {hasPrimitiveLabel() ? (
+            <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
+          ) : (
+            renderProps.renderChildren()
+          )}
+        </Provider>
       </div>
     </SelectionIndicatorContext.Provider>
   );

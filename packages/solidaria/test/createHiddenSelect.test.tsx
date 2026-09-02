@@ -298,4 +298,14 @@ describe("HiddenSelect component", () => {
     const container = document.querySelector('[aria-hidden="true"]');
     expect(container).toBeDefined();
   });
+
+  it("hidden select renders no extra input", () => {
+    const state = createMockState({ items: testItems, selectedKey: "dog" });
+
+    render(() => <HiddenSelect state={state} label="Pet" name="pet" />);
+
+    expect(document.querySelector("input")).toBeNull();
+    expect(document.querySelector("select")).not.toBeNull();
+    expect(document.querySelector("[data-testid=hidden-select-container]")).not.toBeNull();
+  });
 });

@@ -55,6 +55,7 @@ import {
   useIsHydrated,
 } from "./utils";
 import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
+import { SelectContext } from "./Select";
 
 export interface PopoverRenderProps {
   /**
@@ -321,6 +322,10 @@ export function Popover(props: PopoverProps): JSX.Element {
   const triggerContext = useContext(PopoverTriggerContext);
   const dialogTriggerContext = useContext(DialogTriggerContext);
   const popoverGroupContext = useContext(PopoverGroupContext);
+  const selectContext = useContext(SelectContext);
+  const overlayLabelledBy = () =>
+    props["aria-labelledby"] ??
+    (selectContext?.menuProps as { "aria-labelledby"?: string } | undefined)?.["aria-labelledby"];
   const resolvedTrigger = () =>
     local.trigger ??
     triggerContext?.trigger ??
@@ -616,6 +621,7 @@ export function Popover(props: PopoverProps): JSX.Element {
           id={overlayId()}
           role={shouldBeDialog() ? "dialog" : undefined}
           tabIndex={shouldBeDialog() ? -1 : undefined}
+          aria-labelledby={overlayLabelledBy()}
           class={renderProps.class()}
           style={mergedStyle()}
           lang={locale().locale}

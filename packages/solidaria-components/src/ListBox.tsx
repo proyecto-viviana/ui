@@ -24,6 +24,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createSignal,
   on,
   onCleanup,
@@ -31,6 +32,7 @@ import {
   useContext,
   For,
   Show,
+  type Context,
 } from "solid-js";
 import {
   createListBox,
@@ -65,9 +67,12 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  DEFAULT_SLOT,
+  Provider,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { TextContext } from "./Text";
 import { SharedElementTransition } from "./SharedElementTransition";
 import {
   SelectionIndicatorContext,
@@ -379,7 +384,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
   const renderValues = createMemo<ListBoxRenderProps>(() => ({
-    isFocused: state.isFocused() || isFocused(),
+    // RAC ListBox.tsx:366-414: `data-focused` / render-prop `isFocused` come from
+    // `useFocusRing` on the listbox element, not collection focus. Virtual focus
+    // (ComboBox) leaves the listbox itself unfocused.
+    isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isDisabled: resolveDisabled(),
     isEmpty: state.collection().size === 0,
@@ -889,12 +897,12 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                 }}
                 class={renderProps.class()}
                 style={renderProps.style()}
-                data-focused={state.isFocused() || undefined}
+                data-focused={isFocused() || undefined}
                 data-focus-visible={isFocusVisible() || undefined}
                 data-disabled={resolveDisabled() || undefined}
                 data-empty={isEmpty() || undefined}
-                data-layout={stateProps.layout}
-                data-orientation={stateProps.orientation}
+                data-layout={stateProps.layout || "stack"}
+                data-orientation={stateProps.orientation || "vertical"}
                 data-drop-target={isRootDropTarget() || undefined}
                 slot={local.slot}
               >
@@ -1030,7 +1038,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         return Boolean(ariaProps.isDisabled || listContext?.isDisabled());
       },
       get "aria-label"() {
-        return ariaProps["aria-label"] ?? local.textValue;
+        return ariaProps["aria-label"];
       },
       get shouldSelectOnPressUp() {
         return ariaProps.shouldSelectOnPressUp;
@@ -1105,17 +1113,44 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
   });
 
   const cleanOptionProps = () => {
-    const {
-      ref: _ref1,
-      "aria-describedby": _ariaDescribedby,
-      ...rest
-    } = optionAria.optionProps as Record<string, unknown>;
-    if (!hasPrimitiveLabel() && rest["aria-label"] == null) {
-      delete rest["aria-labelledby"];
-    }
+    const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
     return rest;
   };
+
+  const optionTextSlots = {
+    slots: {
+      get [DEFAULT_SLOT]() {
+        return optionAria.labelProps;
+      },
+      get label() {
+        return optionAria.labelProps;
+      },
+      get description() {
+        return optionAria.descriptionProps;
+      },
+    },
+  };
+
+  // Styled hosts (S2 ComboBoxItem / PickerItem) emit `<span slot="label">` rather
+  // than `<Text>`. Stamp the slot id onto that node before `createSlotId` probes
+  // the DOM, matching RAC TextContext + useSlotId.
+  createRenderEffect(() => {
+    const el = ref();
+    const labelId = optionAria.labelProps.id;
+    const descriptionId = optionAria.descriptionProps.id;
+    if (!el) return;
+    if (labelId) {
+      const label = el.querySelector("[slot='label']");
+      if (label && !label.id) label.id = labelId;
+    }
+    if (descriptionId) {
+      const description = el.querySelector("[slot='description']");
+      if (description && !description.id) description.id = descriptionId;
+    }
+  });
   const domProps = () => filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+
+  const selectionMode = () => state.selectionMode();
 
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
@@ -1140,13 +1175,16 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         data-disabled={optionAria.isDisabled() || undefined}
         data-dragging={draggableItem()?.isDragging || undefined}
         data-drop-target={droppableItem()?.isDropTarget || undefined}
+        data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
         slot={local.slot}
       >
-        {hasPrimitiveLabel() ? (
-          <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
-        ) : (
-          renderProps.renderChildren()
-        )}
+        <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
+          {hasPrimitiveLabel() ? (
+            <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
+          ) : (
+            renderProps.renderChildren()
+          )}
+        </Provider>
       </div>
     </SelectionIndicatorContext.Provider>
   );

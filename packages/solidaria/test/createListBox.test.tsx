@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
-import { cleanup } from "@solidjs/testing-library";
+import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { createListState, createListCollection } from "../../solid-stately/src";
 import { createListBox, createOption } from "../src/listbox";
 import { isMac } from "../src/utils/platform";
@@ -1115,6 +1115,72 @@ describe("createOption", () => {
 
         dispose();
       });
+    });
+  });
+});
+
+describe("createOption slot ids", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("option does not reference a description id when no description slot is rendered", async () => {
+    function Harness() {
+      const state = createBasicListState();
+      const option = createOption({ key: "a" }, state);
+      return (
+        <div {...option.optionProps} data-testid="opt">
+          <span {...option.labelProps}>Apple</span>
+        </div>
+      );
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      const opt = screen.getByTestId("opt");
+      expect(opt).not.toHaveAttribute("aria-describedby");
+      const labelledBy = opt.getAttribute("aria-labelledby");
+      expect(labelledBy).toBeTruthy();
+      expect(document.getElementById(labelledBy!)).not.toBeNull();
+    });
+  });
+
+  it("option does not reference a label id when no label slot is rendered", async () => {
+    function Harness() {
+      const state = createBasicListState();
+      const option = createOption({ key: "a" }, state);
+      return <div {...option.optionProps} data-testid="opt" />;
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      const opt = screen.getByTestId("opt");
+      expect(opt).not.toHaveAttribute("aria-labelledby");
+      expect(opt).not.toHaveAttribute("aria-describedby");
+    });
+  });
+
+  it("option points aria-describedby at a rendered description slot", async () => {
+    function Harness() {
+      const state = createBasicListState();
+      const option = createOption({ key: "a" }, state);
+      return (
+        <div {...option.optionProps} data-testid="opt">
+          <span {...option.labelProps}>Apple</span>
+          <span {...option.descriptionProps}>Crisp fruit</span>
+        </div>
+      );
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      const opt = screen.getByTestId("opt");
+      const describedBy = opt.getAttribute("aria-describedby");
+      expect(describedBy).toBeTruthy();
+      expect(document.getElementById(describedBy!)).not.toBeNull();
     });
   });
 });

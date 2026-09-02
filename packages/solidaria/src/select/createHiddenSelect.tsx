@@ -17,9 +17,10 @@
  * Ported from packages/react-aria/src/select/HiddenSelect.tsx.
  */
 
-import { type JSX, type Accessor, For, createEffect, onCleanup } from "solid-js";
+import { type JSX, type Accessor, For, Show, createEffect, onCleanup } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createFormValidation } from "../form/createFormValidation";
+import { visuallyHiddenStyles } from "../visually-hidden/createVisuallyHidden";
 import type { SelectState, Key, FormValidationState } from "@proyecto-viviana/solid-stately";
 
 export type ValidationBehavior = "aria" | "native";
@@ -105,8 +106,15 @@ export function createHiddenSelect<T>(
   return {
     get containerProps() {
       return {
+        style: {
+          ...visuallyHiddenStyles,
+          position: "fixed",
+          top: 0,
+          left: 0,
+        },
         "aria-hidden": true,
         "data-a11y-ignore": "aria-hidden-focus",
+        "data-react-aria-prevent-focus": true,
       } as JSX.HTMLAttributes<HTMLDivElement>;
     },
     get selectProps() {
@@ -220,7 +228,7 @@ export interface HiddenSelectProps<T> {
  * This is useful on mobile devices where native select behavior is preferred.
  */
 export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
-  const { containerProps, selectProps } = createHiddenSelect({
+  const { containerProps, selectProps, inputProps } = createHiddenSelect({
     get state() {
       return props.state;
     },
@@ -260,31 +268,59 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
         : new Set<Key>();
   const isMultiple = () =>
     typeof props.state.selectionMode === "function" && props.state.selectionMode() === "multiple";
+  const collectionSize = () => collection().size;
+  const hiddenInputValues = (): Array<Key | null> => {
+    if (isMultiple()) {
+      const keys = selectedKeys();
+      if (keys === "all") {
+        return Array.from(collection()).map((item) => item.key);
+      }
+      const listed = Array.from(keys as Set<Key>);
+      return listed.length === 0 ? [null] : listed;
+    }
+    return [selectedKey()];
+  };
 
+  // Mirror RAC HiddenSelect.tsx:172-244: a native <select> inside a <label>
+  // for collections of ≤300 items (autofill); hidden <input>s only when the
+  // collection is larger AND a form name is set. Never both.
   return (
-    <div {...containerProps}>
-      <label>
-        {props.label}
-        <select {...selectProps}>
-          <option />
-          <For each={Array.from(collection())}>
-            {(item) => (
-              <option
-                value={String(item.key)}
-                selected={
-                  isMultiple()
-                    ? selectedKeys() === "all"
-                      ? true
-                      : (selectedKeys() as Set<Key>).has(item.key)
-                    : item.key === selectedKey()
-                }
-              >
-                {item.textValue}
-              </option>
-            )}
+    <Show
+      when={collectionSize() <= 300}
+      fallback={
+        <Show when={props.name}>
+          <For each={hiddenInputValues()}>
+            {(value) => <input {...inputProps} value={value != null ? String(value) : ""} />}
           </For>
-        </select>
-      </label>
-    </div>
+        </Show>
+      }
+    >
+      <div {...containerProps} data-testid="hidden-select-container">
+        <label>
+          {props.label}
+          <select {...selectProps}>
+            <option value="" label={"\u00A0"}>
+              {"\u00A0"}
+            </option>
+            <For each={Array.from(collection())}>
+              {(item) => (
+                <option
+                  value={String(item.key)}
+                  selected={
+                    isMultiple()
+                      ? selectedKeys() === "all"
+                        ? true
+                        : (selectedKeys() as Set<Key>).has(item.key)
+                      : item.key === selectedKey()
+                  }
+                >
+                  {item.textValue}
+                </option>
+              )}
+            </For>
+          </select>
+        </label>
+      </div>
+    </Show>
   );
 }

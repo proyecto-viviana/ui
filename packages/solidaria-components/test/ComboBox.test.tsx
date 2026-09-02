@@ -863,11 +863,12 @@ describe("ComboBox", () => {
       });
     });
 
-    it("should have aria-haspopup listbox", () => {
+    it("combobox input does not carry aria-haspopup", () => {
       render(() => <TestComboBox />);
 
       const input = screen.getByRole("combobox");
-      expect(input).toHaveAttribute("aria-haspopup", "listbox");
+      expect(input).not.toHaveAttribute("aria-haspopup");
+      expect(screen.getByRole("button")).toHaveAttribute("aria-haspopup", "listbox");
     });
 
     it("should have aria-controls when open", async () => {
@@ -1336,6 +1337,43 @@ describe("ComboBox", () => {
 
       const button = screen.getByRole("button");
       expect(button).toBeInTheDocument();
+    });
+  });
+
+  describe("list markup parity", () => {
+    it("listbox exposes data-layout and data-orientation", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        const listbox = screen.getByRole("listbox");
+        expect(listbox).toHaveAttribute("data-layout", "stack");
+        expect(listbox).toHaveAttribute("data-orientation", "vertical");
+        expect(listbox).not.toHaveAttribute("data-focused");
+      });
+    });
+
+    it("option does not reference a description id when no description slot is rendered", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        for (const option of options) {
+          expect(option).not.toHaveAttribute("aria-describedby");
+          expect(option).toHaveAttribute("aria-labelledby");
+          const labelledBy = option.getAttribute("aria-labelledby");
+          expect(document.getElementById(labelledBy!)).not.toBeNull();
+        }
+      });
+    });
+
+    it("option exposes data-selection-mode", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        const option = screen.getAllByRole("option")[0];
+        expect(option).toHaveAttribute("data-selection-mode", "single");
+      });
     });
   });
 });

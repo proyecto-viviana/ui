@@ -21,7 +21,9 @@ import {
   SelectListBox,
   SelectOption,
   SelectStateContext,
+  SelectContext,
 } from "../src/Select";
+import { Popover } from "../src/Popover";
 import { FieldError } from "../src/FieldError";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import type { Key } from "@proyecto-viviana/solid-stately";
@@ -155,7 +157,9 @@ describe("Select", () => {
       // the trigger's accessible name (`aria-labelledby=[valueId, labelId]`), so the
       // name is "Select an option Animals" (placeholder value + label), not "Animals".
       const trigger = screen.getByRole("button", { name: /Animals/ });
-      const label = screen.getByText("Animals");
+      // The HiddenSelect container also renders a <label> with the same text
+      // (RAC HiddenSelect.tsx:175-177). The visible field label is the <span>.
+      const label = screen.getByText("Animals", { selector: "span" });
       expect(trigger.getAttribute("aria-labelledby")).toContain(label.id);
     });
 
@@ -1264,6 +1268,93 @@ describe("Select", () => {
       const trigger = screen.getByRole("button");
       expect(trigger.textContent).toContain(" y ");
       expect(trigger.textContent).not.toMatch(/ and /);
+    });
+  });
+
+  describe("list markup parity", () => {
+    it("listbox exposes data-layout and data-orientation", async () => {
+      render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
+      await waitFor(() => {
+        const listbox = screen.getByRole("listbox");
+        expect(listbox).toHaveAttribute("data-layout", "stack");
+        expect(listbox).toHaveAttribute("data-orientation", "vertical");
+      });
+    });
+
+    it("option does not reference a description id when no description slot is rendered", async () => {
+      render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        for (const option of options) {
+          expect(option).not.toHaveAttribute("aria-describedby");
+          expect(option).toHaveAttribute("aria-labelledby");
+          const labelledBy = option.getAttribute("aria-labelledby");
+          expect(document.getElementById(labelledBy!)).not.toBeNull();
+        }
+      });
+    });
+
+    it("option exposes data-selection-mode", async () => {
+      render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
+      await waitFor(() => {
+        const option = screen.getAllByRole("option")[0];
+        expect(option).toHaveAttribute("data-selection-mode", "single");
+      });
+    });
+
+    it("hidden select renders no extra input", () => {
+      render(() => <TestSelect selectProps={{ name: "pet" }} />);
+      expect(document.querySelector("select")).not.toBeNull();
+      expect(document.querySelector("input")).toBeNull();
+    });
+
+    it("overlay root carries aria-labelledby from the select menu", async () => {
+      const SelectPopover = () => {
+        const ctx = useContext(SelectContext);
+        return (
+          <Popover
+            trigger="Select"
+            isOpen={ctx?.isOpen() ?? false}
+            triggerRef={() => ctx?.triggerRef() ?? null}
+            onOpenChange={(open) => {
+              if (!open) {
+                ctx?.state.close();
+              }
+            }}
+          >
+            <SelectListBox isInPopover>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Popover>
+        );
+      };
+
+      render(() => (
+        <Select
+          aria-label="Plan"
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultOpen
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <SelectPopover />
+        </Select>
+      ));
+
+      await waitFor(() => {
+        const overlay = document.querySelector("[data-placement]");
+        expect(overlay).not.toBeNull();
+        expect(overlay).toHaveAttribute("aria-labelledby");
+        const labelledBy = overlay!.getAttribute("aria-labelledby")!;
+        expect(labelledBy.length).toBeGreaterThan(0);
+        for (const id of labelledBy.split(/\s+/)) {
+          expect(document.getElementById(id)).not.toBeNull();
+        }
+      });
     });
   });
 });

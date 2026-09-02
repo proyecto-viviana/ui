@@ -134,7 +134,11 @@ describe("Picker (solid-spectrum)", () => {
     expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Section help" }));
   });
 
-  it("submits selected keys through named hidden inputs and external forms", () => {
+  // RAC HiddenSelect (≤300 items) submits through the hidden <select> itself so
+  // browser autofill works; there is no parallel <input type="hidden">
+  // (react-aria/src/select/HiddenSelect.tsx; RAC Select.test.js "should support
+  // form prop" queries `[name=select]`).
+  it("submits the selected key through the named hidden select and external forms", () => {
     render(() => (
       <Picker<SectionItem>
         aria-label="Docs section"
@@ -147,35 +151,35 @@ describe("Picker (solid-spectrum)", () => {
       />
     ));
 
-    const select = document.querySelector("select") as HTMLSelectElement;
-    const hiddenInput = document.querySelector(
-      'input[type="hidden"][name="section"]',
-    ) as HTMLInputElement;
-
+    const named = document.querySelectorAll('[name="section"]');
+    expect(named).toHaveLength(1);
+    const select = named[0] as HTMLSelectElement;
+    expect(select.tagName).toBe("SELECT");
     expect(select).toHaveAttribute("form", "docs-form");
-    expect(hiddenInput).toHaveAttribute("form", "docs-form");
-    expect(hiddenInput).toHaveValue("#api");
+    expect(select).toHaveValue("#api");
   });
 
-  it("submits multiple selected S2 values through named hidden inputs", () => {
+  it("submits multiple selected values as FormData entries of the hidden select", () => {
     render(() => (
-      <Picker<SectionItem>
-        aria-label="Docs section"
-        selectionMode="multiple"
-        name="section"
-        form="docs-form"
-        defaultSelectedKeys={["#page-title", "#api"]}
-        items={sections}
-        getKey={(item) => item.href}
-        getTextValue={(item) => item.label}
-      />
+      <form data-testid="form">
+        <Picker<SectionItem>
+          aria-label="Docs section"
+          selectionMode="multiple"
+          name="section"
+          defaultSelectedKeys={["#page-title", "#api"]}
+          items={sections}
+          getKey={(item) => item.href}
+          getTextValue={(item) => item.label}
+        />
+      </form>
     ));
 
-    const values = Array.from(
-      document.querySelectorAll<HTMLInputElement>('input[type="hidden"][name="section"]'),
-    ).map((input) => input.value);
-
-    expect(values).toEqual(["#page-title", "#api"]);
+    const select = document.querySelector('select[name="section"]') as HTMLSelectElement;
+    expect(select).toHaveAttribute("multiple");
+    expect(new FormData(screen.getByTestId("form") as HTMLFormElement).getAll("section")).toEqual([
+      "#page-title",
+      "#api",
+    ]);
   });
 
   it("uses native required validation only for native validationBehavior", () => {
