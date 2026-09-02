@@ -353,19 +353,131 @@ browser gates below):
 - **Comparison app lag (#250)** — fixture registries split per slug for both
   stacks (`a4eacf40`); #255 measures the remaining dev-server module graph.
 
-### Blocked on the machine, not the code
+### Browser gates: root cause found, not the machine (corrected 2026-09-02 13:00)
 
-Headless Chromium on this WSL2 instance stopped producing frames
-(`requestAnimationFrame` never fires, even on a blank `data:` page). Every
-browser gate — pair, contract, certified, D13 seed journeys — hangs on
-"waiting for element to be stable". Unit, SSR, hydrate, typecheck and all
-guards are green on the final tree. Because of this every ticket above that
-has a `## Landed` block is `in-progress`, not `done`: the certified/pair/
-contract re-run and the D13 seed run on ComboBox/Picker are the missing
-proof, and they gate the push of the 41 commits. Restart the instance
-(`wsl --shutdown`), then run `comparison:test:pair`, `:contract`, `:certified`
-and the D13 seeds; #248's hypotheses H1/H2 are decided by `CB-OV-05` /
-`PK-OV-04`.
+The earlier note blaming the WSL2 instance was wrong. Chrome for Testing 151
+(Playwright 1.62 build `1234`) never issues a compositor frame through
+SwiftShader on this host — `requestAnimationFrame`, `requestIdleCallback`,
+CSS transitions and `--screenshot` all hang — while build `1228` (Chrome 149)
+renders instantly. `--disable-software-rasterizer` fixes 151.
+`apps/comparison/playwright.config.ts` now passes
+`COMPARISON_CHROMIUM_ARGS` into `launchOptions.args` (`697018f6`); every
+local browser run needs
+`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`. Details in
+`.claude/current/tooling.md` (Host note). CI is unaffected and leaves it unset.
+
+### Wave-3 browser gates on the final tree (`11a35694`, run 13:01–13:55)
+
+Logs: `output/audit-2026-09/wave-3/gates/` (`_summary.txt`, one log per gate).
+Failures split per cluster with the verbatim React-vs-Solid diffs in
+`output/audit-2026-09/wave-3/failures/*.txt`.
+
+- contract **93/93**, pair **6/6**, ui:smoke green.
+- a11y:full **9/10** — the one failure is a 120 s `frame.evaluate` timeout on
+  the first axe scan (`[dark] WCAG 2.1 AA`); the light twin passed. Re-run
+  before treating it as a violation.
+- certified **2079 passed / 45 failed / 4 skipped** (round 2: 2120 / 0). The
+  45 are seven clusters, all attributable:
+  - `picker-list-width` (21: D1 ×6, D3 ×6, D8, D9 ×6, D10 ×2) — the open
+    Picker list is 5.84 px narrower than React (`208px` vs `202.156px`, the
+    `--trigger-width` custom property). Regression from #257 (`a61a0204`).
+    Both stacks measure `getBoundingClientRect().width` of the trigger
+    (RAC `Popover.tsx:309-331`, Solid `Popover.tsx:486-512`), so the element
+    being measured differs; start at `solid-spectrum/src/picker/index.tsx:562-566`
+    (`triggerRef` fallback) and `solidaria-components/src/Select.tsx:601-603,
+766`. Needs the browser. **Not started.**
+  - `datepicker-popover` (6: D2 motion ×4, D5 focus ×2 on DatePicker and
+    DateRangePicker) — enter translate `0px 4px` vs React `0px -4px` (S2
+    `Popover.tsx` keys the sign on the `placement` render prop), and one extra
+    Tab stop before the calendar "Previous" button. Regression from #251
+    (`179e19c7`). **Lane running / possibly landed uncommitted** — see below.
+  - `avatar-d1` (10) — `transition-property: opacity` vs `none`. Both stacks
+    are faithful to S2 `Image.tsx:185-201,316` (`loadTime > 200 ms`); the
+    React panel paid the cold image fetch, Solid got the cache. Harness made
+    deterministic by delaying the fixture image 300 ms for both panels
+    (`f0ba29d7`). **Needs the browser re-run.**
+  - `colorfield-ax` (1) — ColorField lost `aria-describedby`; `createColorField`
+    minted its own ids and the headless ColorField provided no
+    `TextContext`/`FieldErrorContext`, so `HelpText`'s S2 slot shape (from
+    `2ac31ca9`) had nothing to attach to. Fixed through `createField` +
+    slots as RAC `ColorField.tsx:258-282` (`f0ba29d7`). **Needs the browser
+    re-run.**
+  - `virtualizer-scroll-window` (1) — Solid renders all 60 items (no
+    windowing); `listbox-dnd-reorder` (2) — after `Enter` starts a keyboard
+    drag, focus stays on the listbox instead of the drop indicator.
+    Regressions from #256 (`52ab0c52`) or the ListBox edits in `1d988fd9` /
+    `e97bb6f2`. **Lane running / possibly landed uncommitted** — see below.
+  - `d13-journeys` (4: ComboBox ×2, Picker ×2) — step-0 DOM shape diffs, not
+    regressions: render-prop data attributes Solid emits and React does not
+    (`data-open`/`data-pressed`/`data-hovered`/`data-focus-visible` on
+    trigger/input/svg), hidden-input order, a `<form>` where React has a
+    `<template>`. These are #248 step-0 / #209 / #254 work. The seeds decide
+    #248's H1/H2 only once step 0 passes. **Not started.**
+
+### Handoff for the next agent (written 2026-09-02 14:30)
+
+State: local `main` at `f0ba29d7`, 44 commits ahead of `origin/main`
+(protected). PR [#33](https://github.com/proyecto-viviana/ui/pull/33)
+(`audit-2026-09-round-2` → `main`) is open and 34 commits behind local `main`;
+when the owner authorizes, fast-forward that branch from `main` and push it —
+do not push `main` directly.
+
+Two fix lanes were mid-flight when this handoff was written; their edits may
+be sitting **uncommitted** in the working tree. Check `git status`:
+
+- Virtualizer/DnD lane — files under `packages/solidaria-components/src/`
+  (`Virtualizer`, `ListBox`, `GridList`, `Tree`, `Menu`, `Table`,
+  `DragAndDrop`), `packages/solidaria/src/virtualizer/ScrollView.ts`,
+  `packages/solidaria/src/dnd/createDroppableCollection.ts`, and tests. Its
+  report lands as `### Wave-3 regression fix` under `## Landed` in #256 (or
+  #248/#229 if the DnD cause was there). It had the only browser slot and ran
+  `virtualizer`, `dnd-listbox`, `listbox`, `gridlist`, `tableview`,
+  `treeview` certified specs against a preview on port 4341 — kill any
+  leftover `vp preview` on that port.
+- DatePicker lane — `packages/solidaria-components/src/{Popover,DatePicker}.tsx`,
+  `solid-spectrum`/`viviana-ui` `popover/**` and `calendar/**`, tests. Report
+  under `## Landed` in #251. It was unit-only; nobody has run
+  `datepicker`/`daterangepicker` certified for it yet.
+
+If a lane's report is missing from its ticket, treat that diff as unverified:
+read it, run the gates listed below, and either commit it with the ticket note
+or ask the owner — never `git restore` it silently (Operating rules).
+
+Gate procedure for the remaining browser work (one build/preview at a time;
+the `dist` and package `dist/` directories are shared):
+
+```
+export COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer
+vp run build && vp run comparison:build
+COMPARISON_PORT=4341 vp run comparison:preview --host 127.0.0.1 --port 4341 &
+cd apps/comparison && COMPARISON_BASE_URL=http://127.0.0.1:4341 \
+  vp exec playwright test e2e/certified/<slug>.certified.spec.ts --reporter=line
+```
+
+Order of remaining work:
+
+1. Land/verify the two lanes above; run `colorfield`, `avatar`, `datepicker`,
+   `daterangepicker`, `virtualizer`, `dnd-listbox` certified specs.
+2. Picker `--trigger-width` (21 checks) — needs the browser; fence
+   `solid-spectrum/src/picker/**` + `viviana-ui` twin + `Select.tsx` if the
+   trigger ref is wrong there. Do not patch `Popover.tsx` for it unless RAC
+   measures differently.
+3. D13 step-0 items for ComboBox/Picker (4 checks) under #248; render-prop
+   attribute emission belongs to #209, composition to #254 (owner decision).
+4. Re-run `a11y:full`; then the full `comparison:test:certified` and expect
+   0 failed (4 skipped are tracked waivers).
+5. Flip every `## Landed` ticket whose proof is green to `done`, run
+   `vp run docs:generate && vp run docs:check`, `git diff --check`, commit,
+   then the branch push above.
+
+Recurring mechanics: reviewed-local attribution mismatches are re-recorded by
+replacing `contentSha256` in `scripts/attribution-local-reviews.json`
+(re-export-only diffs only; read the diff first); ported files get
+`vp run sync:attribution-headers`; ratchet growth is absorbed only when the
+fact is upstream-source-backed, with
+`vp run guard:upstream-test-parity -- --write-baseline --allow-growth <ticket>`
+and a note on the ticket; `docs:generate` rejects a task whose `parent:` is a
+task — parent under #136 or an initiative.
 
 ### Owner decisions open after wave 3
 
