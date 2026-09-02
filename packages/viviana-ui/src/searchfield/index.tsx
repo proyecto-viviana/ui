@@ -56,6 +56,8 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import {
@@ -480,6 +482,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
@@ -579,7 +582,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
                       when={necessityIndicator() === "icon"}
                       fallback={
                         <span aria-hidden={renderProps.isRequired ? true : undefined}>
-                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                          {stringFormatter().format(
+                            renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                          )}
                         </span>
                       }
                     >

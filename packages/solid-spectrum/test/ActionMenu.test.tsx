@@ -863,7 +863,9 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(descriptorId).toBeTruthy();
     const descriptor = document.getElementById(descriptorId!);
     expect(descriptor).toBeInTheDocument();
-    expect(within(descriptor!).getByRole("img", { name: "Unavailable" })).toBeInTheDocument();
+    expect(
+      within(descriptor!).getByRole("img", { name: "Unavailable, expand for details" }),
+    ).toBeInTheDocument();
 
     await user.hover(menuItem);
 

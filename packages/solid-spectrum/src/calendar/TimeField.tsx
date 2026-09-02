@@ -58,6 +58,8 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
@@ -346,6 +348,7 @@ function TimeFieldContent(props: {
   const isDisabled = () => state.isDisabled();
   const isInvalid = () => state.isInvalid();
   const isRequired = () => state.isRequired();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   // S2's FieldGroup is a RAC <Group role="presentation"> that consumes the SAME
   // GroupContext as the inner DateInput group, so both elements carry the
   // field's aria-labelledby (label) and aria-describedby (value description +
@@ -390,7 +393,9 @@ function TimeFieldContent(props: {
                   when={props.necessityIndicator === "icon"}
                   fallback={
                     <span aria-hidden={isRequired() ? true : undefined}>
-                      {isRequired() ? "(required)" : "(optional)"}
+                      {stringFormatter().format(
+                        isRequired() ? "label.(required)" : "label.(optional)",
+                      )}
                     </span>
                   }
                 >

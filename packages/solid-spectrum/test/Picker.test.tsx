@@ -227,7 +227,7 @@ describe("Picker (solid-spectrum)", () => {
       />
     ));
 
-    expect(screen.getByRole("progressbar", { name: "Loading more" })).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Loading more…" })).toBeInTheDocument();
   });
 
   it("keeps the load-more sentinel active without showing loading UI while idle", () => {
@@ -248,7 +248,7 @@ describe("Picker (solid-spectrum)", () => {
       </Picker>
     ));
 
-    expect(screen.queryByRole("progressbar", { name: "Loading" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("progressbar", { name: "Loading…" })).not.toBeInTheDocument();
     const loadMoreOption = screen.getAllByRole("option").at(-1);
     expect(loadMoreOption).toHaveAttribute("aria-disabled", "true");
 

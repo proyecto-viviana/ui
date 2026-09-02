@@ -380,8 +380,7 @@ function countMessage(
     return formatter.format("actionbar.selectedAll");
   }
 
-  const message = formatter.format("actionbar.selected", { count });
-  return message.includes("{count}") ? message.replace("{count}", String(count)) : message;
+  return formatter.format("actionbar.selected", { count });
 }
 
 function ActionBarCloseButton(props: {

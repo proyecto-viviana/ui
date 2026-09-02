@@ -73,6 +73,8 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
@@ -684,6 +686,7 @@ function PickerLabel(props: {
   necessityIndicator: PickerNecessityIndicator;
   contextualHelp?: JSX.Element;
 }) {
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   return (
     <span
       class={pickerLabelWrapper({
@@ -714,7 +717,9 @@ function PickerLabel(props: {
               when={props.necessityIndicator === "icon"}
               fallback={
                 <span aria-hidden={props.isRequired ? true : undefined}>
-                  {props.isRequired ? "(required)" : "(optional)"}
+                  {stringFormatter().format(
+                    props.isRequired ? "label.(required)" : "label.(optional)",
+                  )}
                 </span>
               }
             >
@@ -745,6 +750,7 @@ function pickerValueContent<T>(
   valueProps: SelectValueRenderProps<T>,
   renderValue: ((selectedItems: T[]) => JSX.Element) | undefined,
   renderItem: (item: T) => JSX.Element,
+  selectedCountLabel: string,
 ) {
   // Upstream wraps a custom `renderValue` in `<div style={{display:'contents'}}>`
   // (Picker.tsx:743) so it lays out transparently in the flex value container.
@@ -764,7 +770,7 @@ function pickerValueContent<T>(
   if (valueProps.selectedItems.length > 1) {
     return (
       <span slot="label" class={pickerValueText}>
-        {`${valueProps.selectedItems.length} selected`}
+        {selectedCountLabel}
       </span>
     );
   }
@@ -793,17 +799,10 @@ function pickerValueContent<T>(
   );
 }
 
-function loadingSpinnerLabel(loadingState: PickerLoadingState | undefined) {
-  return loadingState === "loadingMore" ? "Loading more" : "Loading";
-}
-
-function PickerProgressCircle(props: {
-  size: S2PickerSize;
-  loadingState: PickerLoadingState | undefined;
-}) {
+function PickerProgressCircle(props: { size: S2PickerSize; "aria-label": string }) {
   return (
     <ProgressCircle
-      aria-label={loadingSpinnerLabel(props.loadingState)}
+      aria-label={props["aria-label"]}
       isIndeterminate
       size="S"
       styles={pickerProgressCircle({ size: props.size })}
@@ -851,6 +850,7 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const direction = () => local.direction ?? "bottom";
   const align = () => local.align ?? "start";
   const shouldFlip = () => local.shouldFlip ?? true;
@@ -996,6 +996,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     <PickerSizeContext.Provider value={size()}>
       <HeadlessSelect
         {...selectProps}
+        placeholder={
+          (headlessProps as { placeholder?: string }).placeholder ??
+          stringFormatter().format("picker.placeholder")
+        }
         aria-label={ariaLabel()}
         aria-labelledby={ariaLabelledBy()}
         aria-describedby={selectDescribedBy()}
@@ -1031,7 +1035,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                     }
                   >
                     {(valueProps) =>
-                      pickerValueContent(valueProps, local.renderValue, listBoxChildren)
+                      pickerValueContent(
+                        valueProps,
+                        local.renderValue,
+                        listBoxChildren,
+                        stringFormatter().format("picker.selectedCount", {
+                          count: valueProps.selectedItems.length,
+                        }),
+                      )
                     }
                   </HeadlessSelectValue>
                   <Show when={isInvalid() && !triggerProps.isDisabled}>
@@ -1041,7 +1052,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                   </Show>
                   <Show when={isTriggerLoading() && !triggerProps.isOpen}>
                     <CenterBaseline>
-                      <PickerProgressCircle size={size()} loadingState={local.loadingState} />
+                      <PickerProgressCircle
+                        size={size()}
+                        aria-label={stringFormatter().format("table.loading")}
+                      />
                     </CenterBaseline>
                   </Show>
                   {/* Faithful to upstream S2 `Picker.tsx` (the ChevronIcon carries
@@ -1094,7 +1108,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                 loadMoreClass={pickerLoadingWrapper}
                 renderLoadMore={() =>
                   isLoadingMore() ? (
-                    <PickerProgressCircle size={size()} loadingState={local.loadingState} />
+                    <PickerProgressCircle
+                      size={size()}
+                      aria-label={stringFormatter().format("table.loadingMore")}
+                    />
                   ) : undefined
                 }
               >

@@ -52,6 +52,8 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
@@ -454,6 +456,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
   let decrementButtonElement: HTMLDivElement | undefined;
@@ -550,7 +553,9 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
                         />
                       }
                     >
-                      (required)
+                      {stringFormatter().format(
+                        renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                      )}
                     </Show>
                   </span>
                 </Show>

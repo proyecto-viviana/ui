@@ -41,7 +41,8 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { createHover, useLocale } from "@proyecto-viviana/solidaria";
+import { createHover, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import {
   type CalendarDateTime,
   type TimeValue,
@@ -531,6 +532,7 @@ function DateRangeDisplay(props: {
 }): JSX.Element {
   const context = useDateRangePickerContext();
   const theme = useTheme();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const state = context.calendarState;
   const isDisabled = () => state.isDisabled();
   // S2's FieldGroup renders on RAC's <Group>, whose `useHover` publishes
@@ -717,7 +719,7 @@ function DateRangeDisplay(props: {
               <div class={dateRangePickerTimeFields}>
                 <TimeField
                   size="md"
-                  label="Start time"
+                  label={stringFormatter().format("datepicker.startTime")}
                   value={timeValueFor("start") ?? undefined}
                   minValue={timeMinValue()}
                   maxValue={timeMaxValue()}
@@ -733,7 +735,7 @@ function DateRangeDisplay(props: {
                 />
                 <TimeField
                   size="md"
-                  label="End time"
+                  label={stringFormatter().format("datepicker.endTime")}
                   value={timeValueFor("end") ?? undefined}
                   minValue={timeMinValue()}
                   maxValue={timeMaxValue()}

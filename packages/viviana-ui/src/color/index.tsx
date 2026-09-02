@@ -37,7 +37,8 @@ import {
   Show,
 } from "solid-js";
 import { Portal } from "solid-js/web";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import {
   ColorSlider as HeadlessColorSlider,
   ColorSliderLabel as HeadlessColorSliderLabel,
@@ -1296,6 +1297,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const fieldStyles = () => getColorFieldStyles();
 
   const rootClassName = (renderProps: ColorFieldRenderProps) =>
@@ -1364,7 +1366,9 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
                       when={necessityIndicator() === "icon"}
                       fallback={
                         <span aria-hidden={renderProps.isRequired ? true : undefined}>
-                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                          {stringFormatter().format(
+                            renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                          )}
                         </span>
                       }
                     >

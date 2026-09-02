@@ -52,6 +52,8 @@ import { pressScale } from "../pressScale";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import { CrossIcon } from "../icon/ui-icons/Cross";
 import { ActionButton } from "../button/ActionButton";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 
 export type TagGroupSize = "S" | "M" | "L" | "sm" | "md" | "lg";
 type S2TagGroupSize = "S" | "M" | "L";
@@ -722,12 +724,13 @@ export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const isInvalid = () => local.isInvalid === true;
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const isEmphasized = () => local.isEmphasized ?? local.variant === "solid";
   const hasItems = () => local.items.length > 0;
   const keyForItem = (item: T) => getItemKey(item, local.getKey);
   const renderedEmptyState = () => (
     <span class={resolveStyleClass(emptyStateStyle, { size: size() })}>
-      {local.renderEmptyState?.() ?? "No tags"}
+      {local.renderEmptyState?.() ?? stringFormatter().format("tag.noTags")}
     </span>
   );
 

@@ -155,11 +155,6 @@
     "contentSha256": "fd5fa9cf929092c44da603deeb09cdbc1132753facd1fd8ffed67a998e4a4dbf"
   },
   {
-    "localPath": "packages/solid-spectrum/src/intl/index.ts",
-    "classification": "local-solid-helper",
-    "contentSha256": "3a750aea81e40c1413dd942d471c438194716f27dfca3780b8744412d9965240"
-  },
-  {
     "localPath": "packages/solid-spectrum/src/landmark/index.tsx",
     "classification": "local-solid-helper",
     "contentSha256": "371fea4453e4f391a5cbdfeab3ea87cdd8ffa0d94cd9699573b357bb750677de"

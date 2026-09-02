@@ -84,6 +84,8 @@ import { CenterBaseline } from "../icon/center-baseline";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
@@ -370,6 +372,28 @@ const comboBoxListBoxFrame = style({
   display: "flex",
   width: "full",
   height: "full",
+});
+
+const comboBoxEmptyStateText = style<{ size?: S2ComboBoxSize }>({
+  height: {
+    size: {
+      S: 24,
+      M: 32,
+      L: 40,
+      XL: 48,
+    },
+  },
+  font: {
+    size: {
+      S: "ui-sm",
+      M: "ui",
+      L: "ui-lg",
+      XL: "ui-xl",
+    },
+  },
+  display: "flex",
+  alignItems: "center",
+  paddingStart: "edge-to-text",
 });
 
 const comboBoxOption = style<ComboBoxOptionStyleProps>({
@@ -744,6 +768,7 @@ function ComboBoxFieldLabel(props: {
   // Renders the label text + necessity indicator as the direct children of the
   // `<label>` (the class lives on `HeadlessComboBoxLabel`), so the label text's
   // nearest element is the `<label>` — matching upstream FieldLabel.
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   return (
     <>
       {props.label}
@@ -754,7 +779,9 @@ function ComboBoxFieldLabel(props: {
             when={props.necessityIndicator === "icon"}
             fallback={
               <span aria-hidden={props.isRequired ? true : undefined}>
-                {props.isRequired ? "(required)" : "(optional)"}
+                {stringFormatter().format(
+                  props.isRequired ? "label.(required)" : "label.(optional)",
+                )}
               </span>
             }
           >
@@ -815,6 +842,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const direction = () => local.direction ?? "bottom";
   const align = () => local.align ?? "start";
   const shouldFlip = () => local.shouldFlip ?? true;
@@ -979,6 +1007,16 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                 >
                   {listBoxChildren}
                 </HeadlessComboBoxListBox>
+                <Show
+                  when={(() => {
+                    const items = headlessProps.items ?? props.defaultItems;
+                    return Array.isArray(items) && items.length === 0;
+                  })()}
+                >
+                  <span class={comboBoxEmptyStateText({ size: size() })}>
+                    {stringFormatter().format("combobox.noResults")}
+                  </span>
+                </Show>
               </FormContext.Provider>
             </ComboBoxListBoxPopover>
           </>

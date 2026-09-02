@@ -56,6 +56,8 @@ import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps, useTheme } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
@@ -787,6 +789,7 @@ function DatePickerPopup(props: {
 }): JSX.Element {
   const theme = useTheme();
   const datePicker = useDatePickerContext();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const timeGranularity = () =>
     datePicker.datePickerState.granularity === "day"
       ? "minute"
@@ -814,7 +817,7 @@ function DatePickerPopup(props: {
           <Show when={props.hasTime}>
             <TimeField
               size="md"
-              label="Time"
+              label={stringFormatter().format("datepicker.time")}
               value={datePicker.datePickerState.timeValue() ?? undefined}
               granularity={timeGranularity()}
               hourCycle={props.hourCycle}

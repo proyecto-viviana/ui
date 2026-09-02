@@ -37,7 +37,8 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { DateFormatter, type CalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import {
@@ -567,6 +568,7 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
   const validationState = () =>
     typeof local.validationState === "function" ? local.validationState() : local.validationState;
   const isInvalid = () => local.isInvalid || validationState() === "invalid";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const errorMessageId = createUniqueId();
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -684,12 +686,13 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
         </For>
       </div>
 
-      <Show when={isInvalid() && local.errorMessage}>
+      <Show when={isInvalid()}>
         <span
           id={errorMessageId}
           class={calendarHelpText({ isInvalid: true, isDisabled: Boolean(rest.isDisabled) })}
         >
-          {local.errorMessage}
+          {local.errorMessage ||
+            stringFormatter().format("calendar.invalidSelection", { selectedCount: 1 })}
         </span>
       </Show>
     </HeadlessCalendar>

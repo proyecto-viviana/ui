@@ -60,6 +60,8 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
@@ -745,6 +747,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const idBase = createUniqueId();
   const labelId = `${idBase}-label`;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
@@ -804,7 +807,9 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
                   when={necessityIndicator() === "icon"}
                   fallback={
                     <span aria-hidden={headlessProps.isRequired ? true : undefined}>
-                      {headlessProps.isRequired ? "(required)" : "(optional)"}
+                      {stringFormatter().format(
+                        headlessProps.isRequired ? "label.(required)" : "label.(optional)",
+                      )}
                     </span>
                   }
                 >

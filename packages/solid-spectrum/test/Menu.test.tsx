@@ -86,7 +86,7 @@ describe("Menu (solid-spectrum)", () => {
       const menuItem = screen.getByRole("menuitem", { name: /Locked action/ });
       expect(menuItem).toHaveAttribute("aria-haspopup", "menu");
       expect(menuItem.querySelector('[data-rsp-slot="descriptor"] svg')).toHaveAccessibleName(
-        "Unavailable",
+        "Unavailable, expand for details",
       );
 
       await user.hover(menuItem);
