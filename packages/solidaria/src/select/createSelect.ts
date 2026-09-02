@@ -27,6 +27,7 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { nodeContains } from "../utils/dom";
 import type { SelectState, CollectionNode } from "@proyecto-viviana/solid-stately";
 
 export interface AriaSelectProps {
@@ -456,7 +457,7 @@ export function createSelect<T>(
         tabIndex: -1,
         onBlur: (e: FocusEvent) => {
           // Only a blur that leaves the listbox entirely blurs the select.
-          if ((e.currentTarget as Node | null)?.contains(e.relatedTarget as Node)) {
+          if (nodeContains(e.currentTarget as Node, e.relatedTarget as Node)) {
             return;
           }
 

@@ -12,8 +12,16 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
-import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton, SubmenuTrigger } from "../src/Menu";
+import { createSignal, For } from "solid-js";
+import {
+  Menu,
+  MenuItem,
+  MenuLoadMoreItem,
+  MenuSection,
+  MenuTrigger,
+  MenuButton,
+  SubmenuTrigger,
+} from "../src/Menu";
 import { Separator } from "../src/Separator";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
@@ -2014,5 +2022,134 @@ describe("MenuTrigger", () => {
       await user.keyboard("{Home}");
       expect(items[0]).toHaveAttribute("data-focused");
     });
+  });
+});
+
+describe("Menu async loading", () => {
+  const asyncItems = [{ name: "Foo" }, { name: "Bar" }, { name: "Baz" }];
+
+  function AsyncMenu(props: {
+    items?: typeof asyncItems;
+    isLoading?: boolean;
+    onLoadMore?: () => void;
+  }) {
+    return (
+      <Menu aria-label="async menu" renderEmptyState={() => <div>empty state</div>}>
+        <For each={props.items ?? asyncItems}>
+          {(item) => <MenuItem id={item.name}>{item.name}</MenuItem>}
+        </For>
+        <MenuLoadMoreItem isLoading={props.isLoading} onLoadMore={props.onLoadMore}>
+          Loading...
+        </MenuLoadMoreItem>
+      </Menu>
+    );
+  }
+
+  function setupIntersectionObserverMock(observe = vi.fn()) {
+    class MockIntersectionObserver implements IntersectionObserver {
+      readonly root: Element | Document | null = null;
+      readonly rootMargin = "";
+      readonly thresholds: ReadonlyArray<number> = [];
+      callback: IntersectionObserverCallback;
+      static instance: MockIntersectionObserver;
+      constructor(cb: IntersectionObserverCallback) {
+        MockIntersectionObserver.instance = this;
+        this.callback = cb;
+      }
+      observe = observe;
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+      takeRecords = () => [];
+      triggerCallback(entries: Array<{ isIntersecting: boolean }>) {
+        this.callback(entries as IntersectionObserverEntry[], this);
+      }
+    }
+    window.IntersectionObserver =
+      MockIntersectionObserver as unknown as typeof IntersectionObserver;
+    return MockIntersectionObserver;
+  }
+
+  const originalIntersectionObserver = window.IntersectionObserver;
+  afterEach(() => {
+    cleanup();
+    window.IntersectionObserver = originalIntersectionObserver;
+  });
+
+  it("should render the loading element when isLoading is true", () => {
+    render(() => <AsyncMenu isLoading items={asyncItems} />);
+
+    const options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(4);
+    expect(options[3]).toHaveTextContent("Loading...");
+    expect(options[3]).toHaveAttribute("data-loading");
+
+    const sentinel = screen.getByTestId("loadMoreSentinel");
+    expect(sentinel.parentElement).toHaveAttribute("inert");
+  });
+
+  it("should render the sentinel but not the loading indicator when not loading", () => {
+    render(() => <AsyncMenu items={asyncItems} />);
+
+    const options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(3);
+    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+  });
+
+  it("should properly render the renderEmptyState if menu is empty", () => {
+    const [isLoading, setIsLoading] = createSignal(false);
+    render(() => <AsyncMenu items={[]} isLoading={isLoading()} />);
+
+    let options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent("empty state");
+    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+
+    setIsLoading(true);
+    options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(2);
+    expect(options[1]).toHaveTextContent("empty state");
+    expect(screen.queryByText("Loading...")).toBeTruthy();
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+  });
+
+  it("should only fire onLoadMore when intersection is detected regardless of loading state", () => {
+    const observe = vi.fn();
+    const MockObserver = setupIntersectionObserverMock(observe);
+    const onLoadMore = vi.fn();
+    const [isLoading, setIsLoading] = createSignal(true);
+
+    render(() => <AsyncMenu items={asyncItems} onLoadMore={onLoadMore} isLoading={isLoading()} />);
+
+    const sentinel = screen.getByTestId("loadMoreSentinel");
+    expect(observe).toHaveBeenLastCalledWith(sentinel);
+    expect(onLoadMore).toHaveBeenCalledTimes(0);
+
+    MockObserver.instance.triggerCallback([{ isIntersecting: true }]);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    setIsLoading(false);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    MockObserver.instance.triggerCallback([{ isIntersecting: true }]);
+    expect(onLoadMore).toHaveBeenCalledTimes(2);
+  });
+
+  it("keyboard navigation skips the loader row", () => {
+    render(() => <AsyncMenu isLoading items={asyncItems} />);
+
+    const menu = screen.getByRole("menu");
+    menu.focus();
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+
+    const loader = screen.getByText("Loading...").closest("[role='menuitem']");
+    expect(screen.getByRole("menuitem", { name: "Baz" })).toHaveAttribute("data-focused");
+    expect(loader).not.toHaveAttribute("data-focused");
+
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    expect(loader).not.toHaveAttribute("data-focused");
   });
 });

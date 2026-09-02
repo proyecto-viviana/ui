@@ -735,7 +735,21 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       "data-hovered": isHovered() || undefined,
     }) as JSX.HTMLAttributes<HTMLDivElement>;
   const RootContent = () => {
-    const renderedRootChildren = <RootChildren />;
+    const textSlots = {
+      slots: {
+        get description() {
+          return selectHook.descriptionProps;
+        },
+        get errorMessage() {
+          return selectHook.errorMessageProps;
+        },
+      },
+    };
+    const renderedRootChildren = (
+      <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+        <RootChildren />
+      </Provider>
+    );
     const rootProps = () =>
       ({
         ...baseRootProps(),

@@ -26,6 +26,7 @@ import {
 } from "../src/ComboBox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Text } from "../src/Text";
+import { Dialog } from "../src/Dialog";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
@@ -1374,6 +1375,90 @@ describe("ComboBox", () => {
         const option = screen.getAllByRole("option")[0];
         expect(option).toHaveAttribute("data-selection-mode", "single");
       });
+    });
+  });
+
+  describe("dialog host", () => {
+    it("should not throw when rendered inside a Dialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog aria-label="Dialog">
+          <ComboBox
+            aria-label="Test ComboBox"
+            items={items}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <ComboBoxInput />
+            <ComboBoxButton>▼</ComboBoxButton>
+            <Text slot="errorMessage">Error</Text>
+            <ComboBoxListBox>
+              {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+            </ComboBoxListBox>
+          </ComboBox>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+
+    it("should not throw when rendered inside an alertdialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog role="alertdialog" aria-label="Dialog">
+          <ComboBox
+            aria-label="Test ComboBox"
+            items={items}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <ComboBoxInput />
+            <ComboBoxButton>▼</ComboBoxButton>
+            <Text slot="errorMessage">Error</Text>
+            <ComboBoxListBox>
+              {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+            </ComboBoxListBox>
+          </ComboBox>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+
+    it("does not close or commit when blurring the input into a descendant of the trigger button", async () => {
+      const onOpenChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultOpen
+          onOpenChange={onOpenChange}
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>
+            <span data-testid="trigger-icon">▼</span>
+          </ComboBoxButton>
+          <ComboBoxListBox>
+            {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      const input = screen.getByRole("combobox");
+      const icon = screen.getByTestId("trigger-icon");
+      fireEvent.blur(input, { relatedTarget: icon });
+
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+      expect(onOpenChange.mock.calls.some((call) => call[0] === false)).toBe(false);
+      expect(onSelectionChange).not.toHaveBeenCalled();
     });
   });
 });

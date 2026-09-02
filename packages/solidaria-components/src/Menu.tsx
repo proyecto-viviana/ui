@@ -1231,13 +1231,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
   const menuListChildren = () => (
     <SharedElementTransition>
-      {state.collection().size === 0 && !usesStaticChildren() && local.renderEmptyState ? (
-        <div role="presentation" data-empty-state>
-          <div role="menuitem" style={{ display: "contents" }}>
-            {local.renderEmptyState()}
-          </div>
-        </div>
-      ) : usesStaticChildren() ? (
+      {usesStaticChildren() ? (
         renderStaticChildren()
       ) : hasSections() ? (
         <For each={sectionedRenderEntries()}>
@@ -1316,6 +1310,13 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
           ) : null}
         </>
       )}
+      {state.collection().size === 0 && local.renderEmptyState ? (
+        <div role="presentation" data-empty-state>
+          <div role="menuitem" style={{ display: "contents" }}>
+            {local.renderEmptyState()}
+          </div>
+        </div>
+      ) : null}
     </SharedElementTransition>
   );
   const menuListProps = () =>
@@ -1892,4 +1893,107 @@ export function MenuSection(props: MenuSectionProps): JSX.Element {
   );
 }
 
+export interface MenuLoadMoreItemProps extends SlotProps {
+  /** Called when the sentinel intersects the scroll parent. */
+  onLoadMore?: () => void | Promise<void>;
+  /** Whether the loading spinner should be rendered. */
+  isLoading?: boolean;
+  /**
+   * Offset from the bottom of the scroll region that should trigger load more,
+   * as a percentage of the scroll body's client height. `1` = 100%.
+   */
+  scrollOffset?: number;
+  /** The load more spinner to render when loading additional items. */
+  children?: JSX.Element;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<{ isLoading: boolean }>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<{ isLoading: boolean }>;
+  /** Ref for the loading indicator element. */
+  ref?: RefLike<HTMLDivElement>;
+}
+
+/**
+ * Load more sentinel item for menu collections.
+ * Port of RAC `MenuLoadMoreItem` (`react-aria-components/src/Menu.tsx`).
+ */
+export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
+  const state = useContext(MenuStateContext);
+  const [sentinel, setSentinel] = createSignal<HTMLElement | null>(null);
+  const [local, domProps] = splitProps(props, [
+    "onLoadMore",
+    "isLoading",
+    "scrollOffset",
+    "children",
+    "class",
+    "style",
+    "ref",
+    "slot",
+  ]);
+
+  createEffect(() => {
+    const current = sentinel();
+    const collection = state?.collection();
+    void collection;
+    const onLoadMore = local.onLoadMore;
+    const scrollOffset = local.scrollOffset ?? 1;
+    if (!current || typeof IntersectionObserver !== "function") return;
+
+    const margin = 100 * scrollOffset;
+    const rootMargin = `0px ${margin}% ${margin}% ${margin}%`;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && onLoadMore) {
+            void onLoadMore();
+          }
+        }
+      },
+      { rootMargin },
+    );
+    observer.observe(current);
+    return () => observer.disconnect();
+  });
+
+  const isLoading = () => !!local.isLoading;
+
+  const renderProps = useRenderProps(
+    {
+      get children() {
+        return local.children;
+      },
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-Menu-loadMore",
+    },
+    () => ({ isLoading: isLoading() }),
+  );
+
+  return (
+    <>
+      <div style={{ position: "relative", width: 0, height: 0 }} inert>
+        <div
+          ref={setSentinel}
+          data-testid="loadMoreSentinel"
+          style={{ position: "absolute", height: "1px", width: "1px" }}
+        />
+      </div>
+      <Show when={isLoading() && local.children}>
+        <div
+          {...filterDOMProps(domProps as Record<string, unknown>, { global: true })}
+          role="menuitem"
+          tabIndex={-1}
+          ref={(el) => assignRef(local.ref, el)}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-loading
+        >
+          {renderProps.renderChildren()}
+        </div>
+      </Show>
+    </>
+  );
+}
+
 Menu.Item = MenuItem;
+Menu.LoadMoreItem = MenuLoadMoreItem;

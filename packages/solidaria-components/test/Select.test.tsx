@@ -29,6 +29,8 @@ import { SelectionIndicator } from "../src/SelectionIndicator";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { setupUser, assertAriaIdIntegrity } from "@proyecto-viviana/solidaria-test-utils";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { Dialog } from "../src/Dialog";
+import { Text } from "../src/Text";
 
 // Setup userEvent
 const user = setupUser();
@@ -1355,6 +1357,56 @@ describe("Select", () => {
           expect(document.getElementById(id)).not.toBeNull();
         }
       });
+    });
+  });
+
+  describe("dialog host", () => {
+    it("should not throw when rendered inside a Dialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog aria-label="Dialog">
+          <Select
+            aria-label="Test Select"
+            items={testItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <Text slot="errorMessage">Error</Text>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+
+    it("should not throw when rendered inside an alertdialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog role="alertdialog" aria-label="Dialog">
+          <Select
+            aria-label="Test Select"
+            items={testItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <Text slot="errorMessage">Error</Text>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
     });
   });
 });

@@ -1160,4 +1160,40 @@ describe("createComboBox", () => {
       });
     });
   });
+
+  describe("blur", () => {
+    it("does not commit when relatedTarget is a descendant of the trigger button", () => {
+      createRoot((dispose) => {
+        const button = document.createElement("button");
+        const icon = document.createElement("span");
+        button.appendChild(icon);
+        document.body.appendChild(button);
+
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+        state.open();
+        state.setFocused(true);
+
+        const comboBox = createComboBox(
+          {},
+          state,
+          () => null,
+          () => button,
+          () => null,
+        );
+
+        const onBlur = comboBox.inputProps.onBlur as (e: FocusEvent) => void;
+        onBlur({ relatedTarget: icon } as FocusEvent);
+
+        expect(state.isOpen()).toBe(true);
+        expect(state.isFocused()).toBe(true);
+
+        button.remove();
+        dispose();
+      });
+    });
+  });
 });

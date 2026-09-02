@@ -29,7 +29,7 @@ import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isAppleDevice } from "../utils/platform";
-import { openLink } from "../utils/dom";
+import { nodeContains, openLink } from "../utils/dom";
 import { ariaHideOutside } from "../overlays/ariaHideOutside";
 import { announce } from "../live-announcer";
 import { createStringFormatter } from "../i18n";
@@ -577,11 +577,12 @@ export function createComboBox<T>(
     const button = buttonRef?.();
     const listBox = listBoxRef?.();
 
-    // Don't blur if focus is moving to the button
-    const blurFromButton = button && button === relatedTarget;
+    // Don't blur if focus is moving to the button or a descendant (e.g. an icon span).
+    // RAC useComboBox.ts:270 uses nodeContains so a child of the trigger does not commit.
+    const blurFromButton = nodeContains(button ?? null, relatedTarget);
 
     // Don't blur if focus is moving into the listbox/popover
-    const blurIntoPopover = listBox?.contains(relatedTarget);
+    const blurIntoPopover = nodeContains(listBox ?? null, relatedTarget);
 
     if (blurFromButton || blurIntoPopover) {
       return;

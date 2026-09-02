@@ -4,9 +4,19 @@ type: task
 title: "Port Menu async loading and empty state"
 created: 2026-09-02
 parent: 34
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-02, note: "opened from the 2026-09 upstream train source diff" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "porting MenuLoadMoreItem + empty-state sibling from RAC Menu.tsx",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "MenuLoadMoreItem exported; async-loading tests red-then-green; pending export-gap row removed",
+    }
 ---
 
 ## Cause
@@ -36,3 +46,22 @@ state branches have keyboard, ARIA, and browser evidence matching
 ## Relationship
 
 Child of #220. Adjacent to #106 (Menu on Popover).
+
+## Landed
+
+`react-spectrum/packages/react-aria-components/src/Menu.tsx:665`
+→ `packages/solidaria-components/src/Menu.tsx:1920` (`MenuLoadMoreItem`; LoaderNode + sentinel + `data-loading` like ListBox/GridList/Table)
+→ `packages/solidaria-components/src/index.ts:277,290` (public export)
+→ `scripts/rac-export-gap-pending.json` (removed `{ "symbol": "MenuLoadMoreItem", "ticket": 229 }`)
+
+Empty state is a sibling of children (RAC CollectionRoot + emptyState), not exclusive — `packages/solidaria-components/src/Menu.tsx` empty-state branch.
+
+Tests (`packages/solidaria-components/test/Menu.test.tsx` `describe("Menu async loading")`):
+
+- `should render the loading element when isLoading is true`
+- `should render the sentinel but not the loading indicator when not loading`
+- `should properly render the renderEmptyState if menu is empty`
+- `should only fire onLoadMore when intersection is detected regardless of loading state`
+- `keyboard navigation skips the loader row`
+
+Red-then-green: stripped `data-testid="loadMoreSentinel"` and restored exclusive empty-state (hide children when empty); sentinel + empty-state tests failed; restored, green.
