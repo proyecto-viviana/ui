@@ -28,6 +28,7 @@ import {
   ColorSwatchPicker,
   ColorSwatchPickerItem,
 } from "../src/Color";
+import { Text } from "../src/Text";
 import { parseColor } from "@proyecto-viviana/solid-stately";
 
 // Helper components using render props pattern
@@ -939,6 +940,62 @@ describe("Color Components", () => {
         expect(input).toBeTruthy();
         expect(input).toHaveAttribute("aria-labelledby", label.id);
         expect(input).not.toHaveAttribute("aria-label");
+      });
+    });
+
+    describe("slots", () => {
+      function describedByText(input: HTMLElement): string {
+        return (input.getAttribute("aria-describedby") ?? "")
+          .split(" ")
+          .filter(Boolean)
+          .map((id) => document.getElementById(id)?.textContent)
+          .join(" ");
+      }
+
+      it("provides description and errorMessage slots (RAC ColorField.test.js)", async () => {
+        // RAC ColorField.test.js "provides slots": both <Text> slots are in the
+        // DOM, so createSlotId folds both ids into aria-describedby.
+        render(() => (
+          <ColorField defaultValue="#f00" data-foo="bar">
+            {() => (
+              <>
+                <label>Color</label>
+                <ColorFieldInput />
+                <Text slot="description">Description</Text>
+                <Text slot="errorMessage">Error</Text>
+              </>
+            )}
+          </ColorField>
+        ));
+
+        const input = screen.getByRole("textbox");
+        expect(input.closest(".solidaria-ColorField")).toHaveAttribute("data-foo", "bar");
+
+        await waitFor(() => {
+          expect(describedByText(input)).toBe("Description Error");
+        });
+      });
+
+      it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
+        render(() => (
+          <ColorField defaultValue="#f00" aria-label="Color">
+            {() => (
+              <>
+                <ColorFieldInput />
+                <Text slot="description">Enter a hex color</Text>
+              </>
+            )}
+          </ColorField>
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" });
+        await waitFor(() => {
+          expect(describedByText(input)).toBe("Enter a hex color");
+        });
+        const describedById = (input.getAttribute("aria-describedby") ?? "")
+          .split(" ")
+          .find((id) => document.getElementById(id));
+        expect(document.getElementById(describedById!)).toHaveClass("solidaria-Text");
       });
     });
 

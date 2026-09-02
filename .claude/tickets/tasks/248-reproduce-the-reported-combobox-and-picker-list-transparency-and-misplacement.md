@@ -234,3 +234,42 @@ Field-DOM items in this round are done (`p` → `span[slot=description]`, error 
 - #251 animation attributes / `isEntering` on the overlay.
 - #252 `aria-posinset` / `aria-setsize` (no Virtualizer parent, `isVirtualized` stays false).
 - #258 group-level `TextContext` still inert (WeakMap id path). Radio remount/ref identity is landed.
+
+### Wave-3 regression fix — ColorField description
+
+Wave-3 D6 AX (`e2e/certified/colorfield.certified.spec.ts`, ColorField › default):
+React's textbox "Color" has description "Enter a hex color"; Solid's had none.
+
+**Root cause.** Commit 2ac31ca9 switched S2 `HelpText` to RAC `<Text slot="description">` /
+`<FieldError slot="errorMessage">` (S2 `Field.tsx` shape). ColorField kept the old
+id path:
+
+- `packages/solidaria/src/color/createColorField.ts:41-43` (pre-fix) minted
+  description/error ids with `createId()` and never routed through `createField`
+  / `createSlotId`. Input `aria-describedby` was only the user-supplied value.
+- `packages/solidaria-components/src/Color.tsx:1591-1617` (pre-fix) hand-built
+  `aria-describedby` from the `description` / `errorMessage` *props* and never
+  provided RAC `TextContext` / `FieldErrorContext`. HelpText's
+  `<span slot="description">` therefore had no `id`, so the AX tree could not
+  resolve the description (input pointed at `solidaria-cl-N`, the span had no
+  id). TextField/NumberField/SearchField already wrap children in `TextContext`
+  slots from `createField`.
+
+**Fix.** Owning layer: `createColorField` now calls `createField` (RAC
+`useColorField` → `useFormattedTextField` → `useTextField` → `useField`).
+Headless ColorField (`Color.tsx`) provides `TextContext` slots +
+`FieldErrorContext` like RAC `ColorField.tsx:258-282`. S2/viviana-ui ColorField
+already compose HelpText the same way as TextField; no twin source edit.
+
+**Test (red → green).**
+
+- `solidaria-components` ColorField slots: `<Text slot="description">` /
+  `<Text slot="errorMessage">` ids are the ones `aria-describedby` references
+  (RAC `ColorField.test.js` "provides slots"). Before: `aria-describedby`
+  missing / `expected '' to be 'Enter a hex color'`. After: pass.
+- `solid-spectrum` ColorField: description resolves to "Enter a hex color";
+  `errorMessage` + invalid resolves to the error text. Before:
+  `getElementById(describedBy[0])` was `null` (span had `slot` but no `id`).
+  After: pass.
+
+**Gates.** `vp test run packages/solidaria packages/solidaria-components packages/solid-spectrum packages/viviana-ui` — 248 files, 5003 passed | 1 expected fail | 6 skipped. `vp run typecheck` — pass. `vp run typecheck:apps` — 0 errors. `vp run guard:layer-boundary` — PASS; NEW forks 0. `vp run guard:upstream-test-parity` — suspects 155 → 155 (Δ0), coverageGaps 47 → 47, upstreamOnly 18 → 18 (did not write). `vp run guard:attribution-headers` — PASS. `vp check --fix` on owned files — pass. `git diff --check` — clean. Playwright certified ColorField/Avatar and `comparison:test:journeys-driver` not run (orchestrator owns the browser slot and shared `dist`). No changeset (behavior restored to the pre-2ac31ca9 HelpText contract; same wave).

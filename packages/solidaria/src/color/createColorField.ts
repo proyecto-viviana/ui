@@ -23,6 +23,7 @@
 import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
+import { createField } from "../label";
 import { createKeyboard } from "../interactions/createKeyboard";
 import type { AriaColorFieldOptions, ColorFieldAria } from "./types";
 
@@ -39,8 +40,6 @@ export function createColorField(
 
   const generatedInputId = createId();
   const labelId = createId();
-  const descriptionId = createId();
-  const errorMessageId = createId();
 
   let didAutoFocus = false;
   createEffect(() => {
@@ -55,6 +54,25 @@ export function createColorField(
   const isReadOnly = () => getProps().isReadOnly || getState().isReadOnly;
   const isInvalid = () => getProps().isInvalid || getState().isInvalid;
   const validationBehavior = () => getProps().validationBehavior ?? "native";
+
+  // RAC `useColorField` reaches `useField` through `useFormattedTextField` /
+  // `useTextField`. Description and error slot ids (and the input's
+  // `aria-describedby`) live in `createField`; do not hand-mint
+  // `createId()` for those slots.
+  const field = createField({
+    get description() {
+      return getProps().description;
+    },
+    get errorMessage() {
+      return getProps().errorMessage;
+    },
+    get isInvalid() {
+      return isInvalid();
+    },
+    get "aria-describedby"() {
+      return getProps()["aria-describedby"];
+    },
+  });
 
   const onKeyDown = (e: KeyboardEvent) => {
     const s = getState();
@@ -141,13 +159,9 @@ export function createColorField(
     };
   });
 
-  const descriptionProps = createMemo(() => ({
-    id: descriptionId,
-  }));
+  const descriptionProps = () => field.descriptionProps;
 
-  const errorMessageProps = createMemo(() => ({
-    id: getProps()["aria-errormessage"] ?? errorMessageId,
-  }));
+  const errorMessageProps = () => field.errorMessageProps;
 
   const inputProps = createMemo(() => {
     const s = getState();
@@ -156,7 +170,6 @@ export function createColorField(
       s.channel && s.colorValue ? s.colorValue.getChannelName(s.channel, "en-US") : undefined;
     const required = p.isRequired || s.isRequired;
     const invalid = isInvalid();
-    const describedBy = p["aria-describedby"];
 
     return {
       id: p.id ?? generatedInputId,
@@ -181,9 +194,11 @@ export function createColorField(
       spellCheck: "false",
       "aria-label": p["aria-label"] ?? channelLabel,
       "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": describedBy,
+      "aria-describedby": field.fieldProps["aria-describedby"],
       "aria-details": p["aria-details"],
-      "aria-errormessage": invalid ? (p["aria-errormessage"] ?? errorMessageId) : undefined,
+      "aria-errormessage": invalid
+        ? (p["aria-errormessage"] ?? field.errorMessageProps.id)
+        : undefined,
       "aria-invalid": invalid || undefined,
       "aria-required": validationBehavior() === "aria" && required ? true : undefined,
       role: s.channel ? undefined : ("textbox" as const),

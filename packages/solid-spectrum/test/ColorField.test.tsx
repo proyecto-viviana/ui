@@ -2,13 +2,13 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { cleanup, render, screen } from "@solidjs/testing-library";
+import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
 import { ColorField } from "../src/ColorField";
 
 afterEach(() => cleanup());
 
 describe("ColorField", () => {
-  it("renders the S2 field structure with label, help text, and native form value", () => {
+  it("renders the S2 field structure with label, help text, and native form value", async () => {
     const { container } = render(() => (
       <ColorField
         label="Color"
@@ -29,6 +29,14 @@ describe("ColorField", () => {
     expect(input).toHaveValue("#336699");
     expect(screen.getByText("Enter a hex color")).toBeInTheDocument();
     expect(container.firstElementChild).toHaveAttribute("data-channel", "hex");
+
+    await waitFor(() => {
+      const describedBy = (input.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean);
+      expect(describedBy).toHaveLength(1);
+      expect(document.getElementById(describedBy[0])).toHaveTextContent("Enter a hex color");
+    });
   });
 
   it("renders channel mode as a textbox with a hidden form input", () => {
@@ -57,16 +65,23 @@ describe("ColorField", () => {
     expect(container.firstElementChild?.querySelector('input[type="hidden"]')).toBeNull();
   });
 
-  it("shows error text and invalid state when invalid", () => {
+  it("shows error text and invalid state when invalid", async () => {
     const { container } = render(() => (
       <ColorField label="Color" isInvalid errorMessage="Enter a valid color" value="#336699" />
     ));
 
     const input = screen.getByRole("textbox", { name: "Color" });
     expect(input).toHaveAttribute("aria-invalid", "true");
-    expect(input.getAttribute("aria-describedby")?.split(/\s+/).filter(Boolean)).toHaveLength(1);
     expect(screen.getByText("Enter a valid color")).toBeInTheDocument();
     expect(container.firstElementChild).toHaveAttribute("data-invalid", "true");
+
+    await waitFor(() => {
+      const describedBy = (input.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean);
+      expect(describedBy).toHaveLength(1);
+      expect(document.getElementById(describedBy[0])).toHaveTextContent("Enter a valid color");
+    });
   });
 
   it("renders a prefix before the input and labels the input with it", () => {

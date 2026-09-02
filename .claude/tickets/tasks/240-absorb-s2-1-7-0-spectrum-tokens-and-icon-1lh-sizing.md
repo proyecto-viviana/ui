@@ -124,3 +124,27 @@ The 8 Playwright failures:
 
 Effective after flake rerun: 2120 passed / 4 D13 failed / 4 skipped.
 No residual that needs a ticket ≥ 250 from this work.
+
+### Wave-3 — Avatar D1 determinism
+
+The first certified run against S2 1.7.0 (and wave-3 under
+`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`) failed D1 on all 5
+Avatar cases × light/dark, part `image`: React `transition-property: opacity`,
+Solid `none`. Not an implementation bug — both stacks match S2
+`Image.tsx:185-201, 316` (`transition: isTransitioning ? 'opacity' : 'none'`
+with `isTransitioning = isRevealed && loadTime > 200`). The walk loads React
+then Solid on a fresh navigation; the browser cache survives, so React pays
+the cold fetch of `/fixtures/avatar/docs-avatar.png` (>200 ms) and Solid gets
+the cached image (<200 ms). Round 2 passed only because both loads were under
+200 ms.
+
+**Harness fix (ADR 0001 / Rule #2 — do not touch `solid-spectrum` Image).**
+`apps/comparison/e2e/certified/avatar.certified.spec.ts` `page.route`s the
+fixture with a 300 ms delay (threshold 200 + 100) before every test, so both
+panels observe the transitioning branch. Comment cites S2 `Image.tsx:185-201, 316`.
+D3 pixel shares this spec and this route; it screenshots with
+`animations: "disabled"` after settle, so the opacity transition is not in the
+shot. No `avatargroup.certified.spec.ts` exists; AvatarGroup uses
+`/fixtures/avatar-group/*`, a different path. Journeys/D13 do not mount this
+fixture. Playwright Avatar certified not re-run here (orchestrator owns the
+browser slot).
