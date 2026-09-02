@@ -16,86 +16,34 @@
  *     Mismatch. Unable to find DOM nodes for hydration key". Fixed by the
  *     read-once pattern (see gridlist's ResolvedItemContent).
  */
-import { hydrate } from "solid-js/web";
-import { sharedConfig, type JSX } from "solid-js";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import { TreeFixture, TreeLabeledFixture } from "./fixtures/tree";
 
-function installHydrationGlobals(): void {
-  // A mid-hydration throw in an earlier test leaves solid's module-global
-  // sharedConfig dirty, and the next hydrate() then silently client-renders
-  // instead of claiming server nodes — every assertion passes without testing
-  // hydration at all. Reset it so each test starts from a clean claim state.
-  const cfg = sharedConfig as unknown as Record<string, unknown>;
-  cfg.context = undefined;
-  cfg.done = false;
-  cfg.registry = undefined;
-  (globalThis as unknown as { _$HY: unknown })._$HY = {
-    events: [],
-    completed: new WeakSet(),
-    r: {},
-    fe() {},
-  };
-}
-
-function hydrateOverSsr(
-  ssrFile: string,
-  Fixture: () => JSX.Element,
-): { thrown: unknown; mismatches: string[]; container: HTMLElement } {
-  const messages: string[] = [];
-  const capture = (...args: unknown[]) => {
-    messages.push(args.map(String).join(" "));
-  };
-  const warnSpy = vi.spyOn(console, "warn").mockImplementation(capture);
-  const errorSpy = vi.spyOn(console, "error").mockImplementation(capture);
-
-  const container = document.createElement("div");
-  container.innerHTML = readFileSync(
-    resolve(import.meta.dirname, `../../../output/${ssrFile}`),
-    "utf8",
-  );
-  document.body.appendChild(container);
-
-  let thrown: unknown;
-  try {
-    hydrate(() => <Fixture />, container);
-  } catch (err) {
-    thrown = err;
-  }
-
-  warnSpy.mockRestore();
-  errorSpy.mockRestore();
-  return {
-    thrown,
-    mismatches: messages.filter((m) => /Hydration Mismatch/.test(m)),
-    container,
-  };
+function readSsr(name: string): string {
+  return readFileSync(resolve(import.meta.dirname, `../../../output/${name}`), "utf8");
 }
 
 describe("Tree hydrates over SSR markup", () => {
-  beforeEach(() => installHydrationGlobals());
   afterEach(() => {
     document.body.innerHTML = "";
-    vi.restoreAllMocks();
   });
 
   it("bare Tree keeps its rows after hydration", () => {
-    const r = hydrateOverSsr("tree-ssr.html", TreeFixture);
-    expect(r.mismatches).toEqual([]);
-    expect(r.thrown).toBeUndefined();
+    const container = hydrateOverSsr(readSsr("tree-ssr.html"), () => <TreeFixture />);
     // THE regression assertion: the theft left the live DOM with only
     // hydration markers here while both checks above still passed.
-    expect(r.container.querySelectorAll('[role="row"]').length).toBe(4);
-    expect(r.container.textContent).toContain("Projects");
+    expect(container.querySelectorAll('[role="row"]').length).toBe(4);
+    expect(container.textContent).toContain("Projects");
   });
 
   it("labeled (framed) Tree keeps its rows after hydration", () => {
-    const r = hydrateOverSsr("tree-labeled-ssr.html", TreeLabeledFixture);
-    expect(r.mismatches).toEqual([]);
-    expect(r.thrown).toBeUndefined();
-    expect(r.container.querySelectorAll('[role="row"]').length).toBe(4);
-    expect(r.container.textContent).toContain("Projects");
+    const container = hydrateOverSsr(readSsr("tree-labeled-ssr.html"), () => (
+      <TreeLabeledFixture />
+    ));
+    expect(container.querySelectorAll('[role="row"]').length).toBe(4);
+    expect(container.textContent).toContain("Projects");
   });
 });

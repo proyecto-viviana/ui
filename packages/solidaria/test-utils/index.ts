@@ -80,6 +80,8 @@ export {
   cleanupTestEnvironment,
 } from "./setup";
 
+export { hydrateOverSsr } from "./hydrate";
+
 export {
   // axe-core a11y testing (INFRA-1)
   checkA11y,

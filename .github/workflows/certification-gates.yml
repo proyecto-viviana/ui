@@ -96,6 +96,14 @@ jobs:
         id: lint
         run: pnpm exec vp check
 
+      - name: test ssr
+        id: test_ssr
+        run: pnpm run test:ssr
+
+      - name: test hydrate
+        id: test_hydrate
+        run: pnpm run test:hydrate
+
       - name: guard attribution-headers
         id: guard_attribution_headers
         run: pnpm run guard:attribution-headers
@@ -271,6 +279,8 @@ jobs:
           O_GUARD_TS_NOCHECK_BUDGET: ${{ steps.guard_ts_nocheck_budget.outcome }}
           O_CI_GUARD_CONTRACTS: ${{ steps.ci_guard_contracts.outcome }}
           O_LINT: ${{ steps.lint.outcome }}
+          O_TEST_SSR: ${{ steps.test_ssr.outcome }}
+          O_TEST_HYDRATE: ${{ steps.test_hydrate.outcome }}
           O_GUARD_ATTRIBUTION_HEADERS: ${{ steps.guard_attribution_headers.outcome }}
           O_GUARD_RAC_PARITY: ${{ steps.guard_rac_parity.outcome }}
           O_GUARD_RAC_EXPORT_GAP: ${{ steps.guard_rac_export_gap.outcome }}
@@ -328,6 +338,8 @@ jobs:
             echo "| \`guard:ts-nocheck-budget\` | $(icon "$O_GUARD_TS_NOCHECK_BUDGET") |"
             echo "| CI guard negative fixtures | $(icon "$O_CI_GUARD_CONTRACTS") |"
             echo "| \`vp check\` (lint) | $(icon "$O_LINT") |"
+            echo "| \`test:ssr\` | $(icon "$O_TEST_SSR") |"
+            echo "| \`test:hydrate\` | $(icon "$O_TEST_HYDRATE") |"
             echo "| \`guard:attribution-headers\` | $(icon "$O_GUARD_ATTRIBUTION_HEADERS") |"
             echo "| \`guard:rac-parity\` | $(icon "$O_GUARD_RAC_PARITY") |"
             echo "| \`guard:rac-export-gap\` | $(icon "$O_GUARD_RAC_EXPORT_GAP") |"

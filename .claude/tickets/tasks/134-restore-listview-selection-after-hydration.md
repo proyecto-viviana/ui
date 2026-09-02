@@ -46,3 +46,13 @@ focus to the row and left `aria-selected="false"`.
 
 Initiative #24 owns component acceptance. This defect was found while closing
 ticket #19, but it is independent of the attribution and test-helper changes.
+
+## Hydrate-gate envelope (2026-09-02)
+
+#160 made `test:hydrate` a blocking gate. This test is still red, and hiding
+it is forbidden, so
+`packages/viviana-ui/test/Collections.hydrate.test.tsx` wraps
+`ListView rows respond to interaction after hydration (focus + selection)` in
+`it.fails` (ticket id in the name, same envelope #167 recorded). The suite
+is green today and will go red the day this product bug is fixed, which
+forces the envelope off. The static ListView hydrate case stays unwrapped.

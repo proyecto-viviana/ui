@@ -39,6 +39,10 @@ the Vite Plus block (the `tsgolint` path checks files outside the
 `tsconfig.typecheck.json` contract). `vp run typecheck` runs `tsc` separately
 after `vp check`.
 
+Blocking package evidence on `ci:release-readiness` and Certification Gates
+runs `test:run`, then `test:ssr`, then `test:hydrate`. SSR writes `output/*.html`
+and hydrate reads it. A failing hydrate test fails the job.
+
 ## Attribution audit
 
 ```bash

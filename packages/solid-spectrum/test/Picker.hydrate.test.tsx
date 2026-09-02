@@ -13,22 +13,11 @@
  * (`get children()` in Popover/Modal/Toast) so nothing is instantiated during
  * the synchronous hydration walk that the server never emitted.
  */
-import { hydrate } from "solid-js/web";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import { Picker } from "../src/picker";
-
-// Mirrors solid's generateHydrationScript() init so `hydrate` finds the
-// hydration registry instead of crashing on `_$HY.done`.
-function installHydrationGlobals(): void {
-  (globalThis as unknown as { _$HY: unknown })._$HY = {
-    events: [],
-    completed: new WeakSet(),
-    r: {},
-    fe() {},
-  };
-}
 
 interface SectionItem {
   href: string;
@@ -46,55 +35,19 @@ const ssrHtml = readFileSync(
 );
 
 describe("Picker hydration over SSR markup", () => {
-  beforeEach(() => {
-    installHydrationGlobals();
-  });
-
   afterEach(() => {
     document.body.innerHTML = "";
-    vi.restoreAllMocks();
   });
 
   it("hydrates the server markup without a mismatch", () => {
-    const errors: unknown[][] = [];
-    const errorSpy = vi.spyOn(console, "error").mockImplementation((...args) => {
-      errors.push(args);
-    });
-
-    const container = document.createElement("div");
-    container.innerHTML = ssrHtml;
-    document.body.appendChild(container);
-
-    let thrown: unknown;
-    try {
-      hydrate(
-        () => (
-          <Picker<SectionItem>
-            aria-label="Table of contents"
-            items={sections}
-            getKey={(item) => item.href}
-            getTextValue={(item) => item.label}
-            selectedKey="#page-title"
-          />
-        ),
-        container,
-      );
-    } catch (err) {
-      thrown = err;
-    }
-
-    errorSpy.mockRestore();
-
-    if (thrown) {
-      // eslint-disable-next-line no-console
-      console.log("THROWN DURING HYDRATE:", thrown);
-    }
-    if (errors.length) {
-      // eslint-disable-next-line no-console
-      console.log("CONSOLE.ERROR DURING HYDRATE:", JSON.stringify(errors, null, 2));
-    }
-
-    expect(thrown).toBeUndefined();
-    expect(errors).toEqual([]);
+    hydrateOverSsr(ssrHtml, () => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey="#page-title"
+      />
+    ));
   });
 });

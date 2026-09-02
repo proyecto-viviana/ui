@@ -4,9 +4,14 @@ type: task
 title: "Reset sharedConfig in a shared hydrate helper and add the Kumo Button hydrate reader"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "shared hydrateOverSsr helper, migration, Kumo reader, and negative proof landed; pending orchestrator verification",
+    }
 ---
 
 ## Cause
@@ -43,3 +48,19 @@ ordered run.
 
 F-SSR-006/007. Prerequisite for #160 to mean anything. Not #134's selection
 bug.
+
+## Landed
+
+- `hydrateOverSsr(html, fixture)` lives in
+  `packages/solidaria/test-utils/hydrate.ts` and is exported from
+  `@proyecto-viviana/solidaria-test-utils`. It installs `_$HY`, hydrates,
+  always resets `sharedConfig` in `finally`, and throws on a logged
+  Hydration Mismatch.
+- Every existing `*.hydrate.test.tsx` now calls that helper. No test file
+  installs `_$HY` by hand.
+- `packages/kumo/test/Button.hydrate.test.tsx` hydrates over
+  `kumo-button-ssr.html` and asserts a press after hydration.
+- Negative proof:
+  `packages/solidaria/test/hydrateOverSsr.hydrate.test.tsx` — a mismatched
+  SSR string throws, then the next hydrate in the same file still claims
+  server nodes (`data-hk` survives).
