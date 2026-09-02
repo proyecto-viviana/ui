@@ -229,7 +229,7 @@ describe("ActionBar (solid-spectrum)", () => {
 
       expect(screen.getByText("Acciones disponibles.")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Borrar selección" })).toBeInTheDocument();
-      expect(screen.getByText("1 seleccionados")).toBeInTheDocument();
+      expect(screen.getByText("1 seleccionado")).toBeInTheDocument();
     });
 
     it("restores focus to the trigger when the action bar closes", async () => {
