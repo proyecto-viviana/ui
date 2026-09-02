@@ -23,7 +23,7 @@
  */
 
 import { JSX } from "solid-js";
-import { createId } from "../ssr";
+import { createSlotId } from "../ssr";
 import {
   createLabel,
   type LabelAriaProps,
@@ -60,7 +60,14 @@ export interface Validation<T> {
 }
 
 export interface AriaFieldProps
-  extends LabelAriaProps, HelpTextProps, Omit<Validation<any>, "isRequired"> {}
+  extends LabelAriaProps, HelpTextProps, Omit<Validation<any>, "isRequired"> {
+  /**
+   * Legacy validation state. Kept as a `createSlotId` dependency so a
+   * description/error slot is re-probed when this flips, matching RAC
+   * `useField` (`useField.ts:38-48`).
+   */
+  validationState?: "valid" | "invalid";
+}
 
 export interface FieldAria extends LabelAria {
   /** Props for the description element, if any. */
@@ -79,80 +86,54 @@ export interface FieldAria extends LabelAria {
 export function createField(props: MaybeAccessor<AriaFieldProps>): FieldAria {
   const getProps = () => access(props);
 
-  const { labelProps, fieldProps: baseLabelFieldProps } = createLabel(props);
+  // Keep the label hook intact. Its `fieldProps`/`labelProps` are getters;
+  // destructuring them would freeze the first labelledby snapshot.
+  const labelAria = createLabel(props);
 
-  // Generate IDs for description and error message
-  const descriptionId = createId();
-  const errorMessageId = createId();
-
-  const getDescriptionProps = (): FieldAria["descriptionProps"] => {
-    const { description, errorMessage, isInvalid } = getProps();
-
-    // Only include ID if description exists or there's an error message that might be shown
-    if (!description && !errorMessage && !isInvalid) {
-      return {};
-    }
-
-    return {
-      id: descriptionId,
-    };
-  };
-
-  const getErrorMessageProps = (): FieldAria["errorMessageProps"] => {
-    const { errorMessage, isInvalid } = getProps();
-
-    // Only include ID if there's an error message and the field is invalid
-    if (!errorMessage && !isInvalid) {
-      return {};
-    }
-
-    return {
-      id: errorMessageId,
-    };
-  };
+  // RAC `useField.ts:38-48`: `useSlotId` so the id exists only when an element
+  // with that id is in the DOM. Deps re-probe when help-text / invalid state
+  // changes (the slot may mount or unmount).
+  const descriptionId = createSlotId([
+    () => Boolean(getProps().description),
+    () => Boolean(getProps().errorMessage),
+    () => getProps().isInvalid,
+    () => getProps().validationState,
+  ]);
+  const errorMessageId = createSlotId([
+    () => Boolean(getProps().description),
+    () => Boolean(getProps().errorMessage),
+    () => getProps().isInvalid,
+    () => getProps().validationState,
+  ]);
 
   const getFieldProps = (): AriaLabelingProps & DOMProps => {
-    const { description, errorMessage, isInvalid } = getProps();
-
-    const describedByIds: string[] = [];
-
-    // Add description ID if description exists
-    if (description) {
-      describedByIds.push(descriptionId);
-    }
-
-    // Add error message ID if field is invalid and error message exists
-    // Use aria-describedby for error message because aria-errormessage is unsupported
-    // using VoiceOver or NVDA. See https://github.com/adobe/react-spectrum/issues/1346#issuecomment-740136268
-    if (isInvalid && errorMessage) {
-      describedByIds.push(errorMessageId);
-    }
-
-    // Add any existing aria-describedby from props
-    const existingDescribedBy = getProps()["aria-describedby"];
-    if (existingDescribedBy) {
-      describedByIds.push(existingDescribedBy);
-    }
-
-    const ariaDescribedBy = describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
-
-    return mergeProps(baseLabelFieldProps, {
-      "aria-describedby": ariaDescribedBy,
+    // RAC `useField.ts:51-60`: description id, then error id, then the user
+    // `aria-describedby`. `createSlotId` yields `undefined` when the slot is
+    // not rendered, so dangling references never land on the field.
+    return mergeProps(labelAria.fieldProps, {
+      "aria-describedby":
+        [descriptionId(), errorMessageId(), getProps()["aria-describedby"]]
+          .filter(Boolean)
+          .join(" ") || undefined,
     }) as AriaLabelingProps & DOMProps;
   };
 
   return {
     get labelProps() {
-      return labelProps;
+      return labelAria.labelProps;
     },
     get fieldProps() {
       return getFieldProps();
     },
     get descriptionProps() {
-      return getDescriptionProps();
+      return {
+        id: descriptionId(),
+      };
     },
     get errorMessageProps() {
-      return getErrorMessageProps();
+      return {
+        id: errorMessageId(),
+      };
     },
   };
 }

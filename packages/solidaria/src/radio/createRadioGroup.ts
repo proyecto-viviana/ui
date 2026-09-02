@@ -21,7 +21,7 @@
  * This is a 1:1 port of @react-aria/radio's useRadioGroup hook.
  */
 
-import { JSX } from "solid-js";
+import { JSX, createEffect } from "solid-js";
 import { createField } from "../label/createField";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { mergeProps } from "../utils/mergeProps";
@@ -128,7 +128,11 @@ export function createRadioGroup(
     return errors.length > 0 ? errors : undefined;
   };
 
-  const { labelProps, fieldProps, descriptionProps, errorMessageProps } = createField({
+  // Keep the `createField` getters intact. Destructuring `fieldProps` would
+  // freeze the first `aria-describedby` snapshot (RAC `useField.ts:51-60`).
+  // `aria-describedby` must reach `createField` so slot ids concatenate with
+  // the user prop instead of overwriting it (`useField.ts:51-60`).
+  const field = createField({
     get id() {
       return getProps().id;
     },
@@ -140,6 +144,9 @@ export function createRadioGroup(
     },
     get "aria-labelledby"() {
       return getProps()["aria-labelledby"];
+    },
+    get "aria-describedby"() {
+      return getProps()["aria-describedby"];
     },
     get description() {
       return getProps().description;
@@ -172,13 +179,17 @@ export function createRadioGroup(
 
   const groupName = getProps().name ?? createId();
 
-  radioGroupData.set(state, {
-    name: groupName,
-    form: getProps().form,
-    descriptionId: descriptionProps.id,
-    errorMessageId: errorMessageProps.id,
-    validationBehavior: validationBehavior(),
-  });
+  const updateRadioGroupData = () => {
+    radioGroupData.set(state, {
+      name: groupName,
+      form: getProps().form,
+      descriptionId: field.descriptionProps.id,
+      errorMessageId: field.errorMessageProps.id,
+      validationBehavior: validationBehavior(),
+    });
+  };
+  updateRadioGroupData();
+  createEffect(updateRadioGroupData);
 
   const getNavigableRadios = (root: HTMLElement): HTMLInputElement[] => {
     return Array.from(root.querySelectorAll('input[type="radio"]')).filter(
@@ -264,12 +275,18 @@ export function createRadioGroup(
         "aria-required": isRequired() || undefined,
         "aria-disabled": isDisabled() || undefined,
         "aria-orientation": orientation(),
-        ...fieldProps,
+        ...field.fieldProps,
       }) as JSX.HTMLAttributes<HTMLDivElement>;
     },
-    labelProps: labelProps as JSX.HTMLAttributes<HTMLElement>,
-    descriptionProps,
-    errorMessageProps,
+    get labelProps() {
+      return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
+    },
+    get descriptionProps() {
+      return field.descriptionProps;
+    },
+    get errorMessageProps() {
+      return field.errorMessageProps;
+    },
     get isInvalid() {
       return isInvalid();
     },

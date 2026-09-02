@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { JSX, createRoot } from "solid-js";
 import {
   createRadioGroup,
@@ -723,7 +723,7 @@ describe("Radio Group", () => {
     expect(radioGroup).toHaveAttribute("aria-disabled", "true");
   });
 
-  it("should support help text description", () => {
+  it("should support help text description", async () => {
     render(() => (
       <RadioGroup label="Favorite Pet" description="Help text">
         {(state) => (
@@ -743,14 +743,13 @@ describe("Radio Group", () => {
     ));
 
     const group = screen.getByRole("radiogroup");
-    expect(group).toHaveAttribute("aria-describedby");
-
-    const describedBy = group.getAttribute("aria-describedby");
-    const description = document.getElementById(describedBy!);
-    expect(description).toHaveTextContent("Help text");
+    await waitFor(() => {
+      const ids = (group.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+      expect(ids.some((id) => document.getElementById(id)?.textContent === "Help text")).toBe(true);
+    });
   });
 
-  it("should support error message", () => {
+  it("should support error message", async () => {
     render(() => (
       <RadioGroup label="Favorite Pet" errorMessage="Error message" isInvalid>
         {(state) => (
@@ -770,11 +769,12 @@ describe("Radio Group", () => {
     ));
 
     const group = screen.getByRole("radiogroup");
-    expect(group).toHaveAttribute("aria-describedby");
-
-    const describedBy = group.getAttribute("aria-describedby");
-    const description = document.getElementById(describedBy!);
-    expect(description).toHaveTextContent("Error message");
+    await waitFor(() => {
+      const ids = (group.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+      expect(ids.some((id) => document.getElementById(id)?.textContent === "Error message")).toBe(
+        true,
+      );
+    });
   });
 
   describe("keyboard navigation", () => {

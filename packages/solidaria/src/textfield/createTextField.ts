@@ -125,8 +125,11 @@ export function createTextField<
       },
     });
 
-  // Get field accessibility props (label, description, error message)
-  const { labelProps, fieldProps, descriptionProps, errorMessageProps } = createField(props);
+  // Keep the `createField` getters intact. Destructuring `fieldProps` would
+  // freeze the first `aria-describedby` snapshot (slot ids from `createSlotId`
+  // before the DOM probe) — RAC `useField` re-reads `useSlotId` every render
+  // (`useField.ts:51-60`).
+  const field = createField(props);
 
   // Get focusable props
   const { focusableProps } = createFocusable(
@@ -216,7 +219,7 @@ export function createTextField<
         },
       },
       focusableProps as Record<string, unknown>,
-      fieldProps as Record<string, unknown>,
+      field.fieldProps as Record<string, unknown>,
     ) as JSX.InputHTMLAttributes<T>;
   };
 
@@ -226,16 +229,16 @@ export function createTextField<
 
   return {
     get labelProps() {
-      return labelProps;
+      return field.labelProps;
     },
     get inputProps() {
       return getInputProps();
     },
     get descriptionProps() {
-      return descriptionProps;
+      return field.descriptionProps;
     },
     get errorMessageProps() {
-      return errorMessageProps;
+      return field.errorMessageProps;
     },
     get isInvalid() {
       return getIsInvalid();

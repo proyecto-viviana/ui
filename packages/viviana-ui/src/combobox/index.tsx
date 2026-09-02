@@ -33,8 +33,6 @@ import {
   ComboBox as HeadlessComboBox,
   ComboBoxButton as HeadlessComboBoxButton,
   ComboBoxContext as HeadlessComboBoxContext,
-  ComboBoxDescription as HeadlessComboBoxDescription,
-  ComboBoxErrorMessage as HeadlessComboBoxErrorMessage,
   ComboBoxInput as HeadlessComboBoxInput,
   ComboBoxLabel as HeadlessComboBoxLabel,
   ComboBoxListBox as HeadlessComboBoxListBox,
@@ -104,6 +102,7 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { HelpText } from "../form/HelpText";
 
 export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2ComboBoxSize = "S" | "M" | "L" | "XL";
@@ -529,36 +528,6 @@ const comboBoxCheckmark = style<ComboBoxOptionStyleProps>({
   },
 });
 
-const helpTextStyles = style<ComboBoxStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  margin: 0,
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative-1000",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
-  cursor: {
-    default: "text",
-    isDisabled: "default",
-  },
-});
-
 const fieldErrorIcon = style({
   size: "1lh",
   marginStart: "text-to-visual",
@@ -702,7 +671,7 @@ function ComboBoxFieldGroup(props: {
       }}
       onTouchEnd={focusFieldInput}
       data-hovered={isHovered() ? "true" : undefined}
-      data-focused={isFocused() ? "true" : undefined}
+      data-focus-within={isFocused() ? "true" : undefined}
       data-focus-visible={isFocusVisible() ? "true" : undefined}
       data-disabled={props.renderProps.isDisabled ? "true" : undefined}
       data-invalid={props.renderProps.isInvalid ? "true" : undefined}
@@ -944,13 +913,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       isOpen: renderProps.isOpen,
     });
 
-  const helpClass = (renderProps: ComboBoxRenderProps, isInvalid: boolean) =>
-    helpTextStyles({
-      ...renderProps,
-      size: size(),
-      isInvalid,
-    });
-
   const listBoxChildren = typeof local.children === "function" ? local.children : undefined;
 
   return (
@@ -961,8 +923,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
         defaultItems={props.defaultItems}
         allowsEmptyCollection
         label={local.label}
-        description={local.isInvalid ? undefined : local.description}
-        errorMessage={local.errorMessage}
         isInvalid={local.isInvalid}
         slot={local.slot ?? undefined}
         rootRef={(element) => assignRootRef(element)}
@@ -1028,17 +988,14 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               </HeadlessComboBoxButton>
             </ComboBoxFieldGroup>
 
-            <Show when={local.description && !renderProps.isInvalid}>
-              <HeadlessComboBoxDescription class={helpClass(renderProps, false)}>
-                {local.description}
-              </HeadlessComboBoxDescription>
-            </Show>
-
-            <Show when={local.errorMessage && renderProps.isInvalid}>
-              <HeadlessComboBoxErrorMessage class={helpClass(renderProps, true)}>
-                {local.errorMessage}
-              </HeadlessComboBoxErrorMessage>
-            </Show>
+            <HelpText
+              size={size()}
+              isDisabled={renderProps.isDisabled}
+              isInvalid={renderProps.isInvalid || local.isInvalid}
+              description={local.description}
+            >
+              {local.errorMessage}
+            </HelpText>
 
             <ComboBoxListBoxPopover
               size={size}
@@ -1190,7 +1147,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         setOptionEl(el);
         assignRef(local.ref, el);
       }}
-      aria-label={headlessProps["aria-label"] ?? textLabel()}
+      aria-label={headlessProps["aria-label"]}
       class={optionClass}
       // Faithful to upstream S2 `ComboBoxItem` `style={pressScale(ref, UNSAFE_style)}`.
       style={pressScale(() => optionEl(), local.UNSAFE_style)}

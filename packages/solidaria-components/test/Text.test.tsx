@@ -53,7 +53,7 @@ describe("Text", () => {
     const span = container.querySelector("span");
     expect(span?.id).toBe("desc-1");
     expect(span?.textContent).toBe("help text");
-    // `slot` stays logical — it must not leak onto the DOM element.
-    expect(span?.getAttribute("slot")).toBeNull();
+    // RAC `Text.tsx:28-31` spreads `slot` onto the element.
+    expect(span?.getAttribute("slot")).toBe("description");
   });
 });

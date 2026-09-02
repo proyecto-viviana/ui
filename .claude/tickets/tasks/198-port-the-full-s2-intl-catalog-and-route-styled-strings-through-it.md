@@ -103,23 +103,23 @@ S2 `Field.tsx` `FieldLabel` uses `label.(required)` / `label.(optional)`
 (144, 160–161). Styled fields format those keys at the matching necessity
 slot:
 
-| key | S2 | solid-spectrum |
-| --- | --- | --- |
-| `label.(required)` / `label.(optional)` | `Field.tsx:144,160-161` | `textfield/index.tsx:442`, `textfield/TextArea.tsx:459`, `numberfield/index.tsx:559`, `picker/index.tsx:721`, `combobox/index.tsx:783`, `searchfield/index.tsx:557`, `checkbox/index.tsx:787`, `radio/index.tsx:447`, `color/index.tsx:1371`, `calendar/DateField.tsx:403`, `calendar/TimeField.tsx:397` |
-| `table.loading` | `Picker.tsx:446` | `picker/index.tsx:1057` |
-| `table.loadingMore` | `Picker.tsx:375`, `TreeView.tsx:736` | `picker/index.tsx:1113`, `tree/index.tsx:864`, `tree/index.tsx:1264` |
-| `datepicker.time` | `DatePicker.tsx:264` | `calendar/DatePicker.tsx:820` |
-| `datepicker.startTime` | `DateRangePicker.tsx:212` | `calendar/DateRangePicker.tsx:722` |
-| `datepicker.endTime` | `DateRangePicker.tsx:224` | `calendar/DateRangePicker.tsx:738` |
-| `actionbar.selected` | `ActionBar.tsx:223` | `actionbar/index.tsx:383` |
-| `actionbar.selectedAll` | `ActionBar.tsx:222` | `actionbar/index.tsx:380` |
-| `menu.unavailable` | `Menu.tsx:568` | `menu/index.tsx:771` |
-| `combobox.noResults` | `ComboBox.tsx:810` | `combobox/index.tsx:1017` (only when `items`/`defaultItems` is `[]`) |
-| `calendar.invalidSelection` | `Calendar.tsx:522`, `RangeCalendar.tsx:149` | `calendar/index.tsx:695` (`selectedCount: 1`), `calendar/RangeCalendar.tsx:881` (`selectedCount: 2`) |
-| `slider.minimum` / `slider.maximum` | `RangeSlider.tsx:108,133` | `slider/RangeSlider.tsx:872-873` |
-| `tag.noTags` | `TagGroup.tsx:173` | `tag-group/index.tsx:646` |
-| `picker.placeholder` | `Picker.tsx:346` | `picker/index.tsx:1001` |
-| `picker.selectedCount` | `Picker.tsx:679` | `picker/index.tsx:1042` |
+| key                                     | S2                                          | solid-spectrum                                                                                                                                                                                                                                                                                           |
+| --------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label.(required)` / `label.(optional)` | `Field.tsx:144,160-161`                     | `textfield/index.tsx:442`, `textfield/TextArea.tsx:459`, `numberfield/index.tsx:559`, `picker/index.tsx:721`, `combobox/index.tsx:783`, `searchfield/index.tsx:557`, `checkbox/index.tsx:787`, `radio/index.tsx:447`, `color/index.tsx:1371`, `calendar/DateField.tsx:403`, `calendar/TimeField.tsx:397` |
+| `table.loading`                         | `Picker.tsx:446`                            | `picker/index.tsx:1057`                                                                                                                                                                                                                                                                                  |
+| `table.loadingMore`                     | `Picker.tsx:375`, `TreeView.tsx:736`        | `picker/index.tsx:1113`, `tree/index.tsx:864`, `tree/index.tsx:1264`                                                                                                                                                                                                                                     |
+| `datepicker.time`                       | `DatePicker.tsx:264`                        | `calendar/DatePicker.tsx:820`                                                                                                                                                                                                                                                                            |
+| `datepicker.startTime`                  | `DateRangePicker.tsx:212`                   | `calendar/DateRangePicker.tsx:722`                                                                                                                                                                                                                                                                       |
+| `datepicker.endTime`                    | `DateRangePicker.tsx:224`                   | `calendar/DateRangePicker.tsx:738`                                                                                                                                                                                                                                                                       |
+| `actionbar.selected`                    | `ActionBar.tsx:223`                         | `actionbar/index.tsx:383`                                                                                                                                                                                                                                                                                |
+| `actionbar.selectedAll`                 | `ActionBar.tsx:222`                         | `actionbar/index.tsx:380`                                                                                                                                                                                                                                                                                |
+| `menu.unavailable`                      | `Menu.tsx:568`                              | `menu/index.tsx:771`                                                                                                                                                                                                                                                                                     |
+| `combobox.noResults`                    | `ComboBox.tsx:810`                          | `combobox/index.tsx:1017` (only when `items`/`defaultItems` is `[]`)                                                                                                                                                                                                                                     |
+| `calendar.invalidSelection`             | `Calendar.tsx:522`, `RangeCalendar.tsx:149` | `calendar/index.tsx:695` (`selectedCount: 1`), `calendar/RangeCalendar.tsx:881` (`selectedCount: 2`)                                                                                                                                                                                                     |
+| `slider.minimum` / `slider.maximum`     | `RangeSlider.tsx:108,133`                   | `slider/RangeSlider.tsx:872-873`                                                                                                                                                                                                                                                                         |
+| `tag.noTags`                            | `TagGroup.tsx:173`                          | `tag-group/index.tsx:646`                                                                                                                                                                                                                                                                                |
+| `picker.placeholder`                    | `Picker.tsx:346`                            | `picker/index.tsx:1001`                                                                                                                                                                                                                                                                                  |
+| `picker.selectedCount`                  | `Picker.tsx:679`                            | `picker/index.tsx:1042`                                                                                                                                                                                                                                                                                  |
 
 Twins: `intl/index.ts` stays byte-identical (baselined identical). Already-diverged component files received the same hunk.
 
@@ -137,11 +137,11 @@ loading keys; TagGroup `tag.actions`, `tag.showAllButtonLabel`,
 - `packages/solid-spectrum/test/intl-catalog.test.tsx` (+ viviana-ui twin):
   each of 34 locales' JSON equals the pinned file; dictionary keys match.
 - `packages/solid-spectrum/test/intl-strings.test.tsx`: `I18nProvider
-  locale="ar-AE"` (plus one `de-DE` ActionBar) for necessity, Picker loading,
+locale="ar-AE"` (plus one `de-DE` ActionBar) for necessity, Picker loading,
   DatePicker time, DateRangePicker start/end, ActionBar ICU count, Menu
   unavailable, ComboBox no-results.
 - Existing English assertions updated to en-US catalog values (`Loading
-  more…` U+2026, `Unavailable, expand for details`, es-ES ActionBar one-form
+more…` U+2026, `Unavailable, expand for details`, es-ES ActionBar one-form
   `1 seleccionado`).
 
 Red-then-green: temporarily inlined `"(required)"` on TextField

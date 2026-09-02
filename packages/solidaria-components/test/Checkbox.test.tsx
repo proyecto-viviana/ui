@@ -916,14 +916,16 @@ describe("CheckboxGroup", () => {
       await assertNoA11yViolations(container);
     });
 
-    it("ARIA ID: CheckboxGroup no dangling refs", () => {
+    it("ARIA ID: CheckboxGroup no dangling refs", async () => {
       render(() => (
         <CheckboxGroup aria-label="Options" defaultValue={["a"]}>
           <Checkbox value="a">Option A</Checkbox>
           <Checkbox value="b">Option B</Checkbox>
         </CheckboxGroup>
       ));
-      assertAriaIdIntegrity(document.body);
+      await waitFor(() => {
+        assertAriaIdIntegrity(document.body);
+      });
     });
 
     it("DOM: data-testid forwards on Checkbox", () => {

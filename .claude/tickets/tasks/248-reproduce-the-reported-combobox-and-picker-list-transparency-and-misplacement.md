@@ -11,6 +11,11 @@ history:
       at: 2026-09-02,
       note: "opened for the D13 interaction-journeys certification (owner decision 2026-09-02)",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "headless ComboBox/Picker ARIA parity landed (1d988fd9); step-0 round 2 lands field wiring through createField, the S2 HelpText shape, data-focus-within and no synthesized aria-label",
+    }
 ---
 
 ## Cause
@@ -153,3 +158,79 @@ Still diffed at step 0 `field dom` on all four seeds, all in the styled layer:
 The first three land with #198 (same files) or directly after it; the twins in `@proyecto-viviana/ui` follow the layer-boundary rule.
 
 Root cause behind the Picker `p:` description (orchestrator, 2026-09-02): RAC `useSelect.ts:181` builds its field wiring with `useField` (slot ids via `useSlotId`; trigger `aria-describedby` = error id when invalid + description id + the user prop, only for rendered slots — `useField.ts:38-57`). Solid `createSelect.ts:123-124,404,470-477` hand-builds `${id}-description` / `${id}-error`, never folds them into the trigger `aria-describedby`, and ignores whether the slot rendered. `solidaria/src/label/createField.ts` already implements the RAC logic. `solid-spectrum/src/picker/index.tsx:892-905,1005,1086` compensates by minting its own `descriptionId`, stitching `aria-describedby`, and rendering a `<p>` instead of `<Text slot="description">` through the Select `TextContext` (`Select.tsx:738-751`). Fix in the lowest layer: `createSelect` (and `createComboBox` if it does the same) go through `createField`; the Picker/ComboBox styled layers drop the manual ids and render the S2 `HelpText` shape (`Text slot="description"` / `FieldError`). Bundle with the three styled items above.
+
+## Step-0 round 2 landed
+
+Did not commit or stage. Changeset: `.changeset/combobox-picker-list-markup.md` (patch `solidaria`, `solidaria-components`, `solid-spectrum`, `@proyecto-viviana/ui`). Pin `scripts/upstream-pin.json` → `f56660b`.
+
+RAC `useField.ts:51-60` concatenates **description id, then error id, then the user `aria-describedby`** (not error-first). The port matches that order.
+
+### Upstream file:line → Solid file:line
+
+1. **Select/ComboBox field wiring through `useField` / `useSlotId`**
+   - RAC: `react-aria/src/select/useSelect.ts:181-186` (`useField({ …, labelElementType: 'span' })`); `react-aria/src/label/useField.ts:38-72`; `react-aria/src/utils/useId.ts:135-149` (`useSlotId` via `useValueEffect`: yield id, then probe). RAC ComboBox reaches the same through `useTextField` → `useField`.
+   - Solid: `packages/solidaria/src/label/createField.ts:86-139` (`createSlotId` deps + describedby join); `packages/solidaria/src/ssr/index.tsx:116-143` (`createSlotId` yield-then-probe); `packages/solidaria/src/select/createSelect.ts:141-171` (`createField`, `labelElementType: "span"`); `packages/solidaria/src/combobox/createComboBox.ts:199-228` (`createField`, `labelElementType: "label"`). Deleted hand-built `${id}-description` / `${id}-error` and the trigger overwrite of `aria-describedby`.
+   - Composition: `packages/solidaria-components/src/Select.tsx:731-751` (`TextContext` description/errorMessage slots — RAC `Select.tsx:267-274`). Deleted `errorMessageId` / `triggerDescribedBy` stitching. `packages/solidaria-components/src/ComboBox.tsx:605-703` provides `FieldErrorContext` (RAC `ComboBox.tsx:359`).
+   - `packages/solidaria-components/src/Text.tsx:39-54` forwards `slot` onto the DOM (RAC `Text.tsx:28-31`). `packages/solidaria-components/src/FieldError.tsx:105-118` renders `<Text slot="errorMessage">` with no `role="alert"` (RAC `FieldError.tsx:67-72`).
+
+2. **Styled layers stop compensating**
+   - Deleted Picker `descriptionId` / `selectDescribedBy` / `<p id={descriptionId}>` / `HeadlessFieldError` in `packages/solid-spectrum/src/picker/index.tsx` and the viviana-ui twin. Renders `<HelpText>`. Keep `labelId`.
+   - Deleted ComboBox Description/ErrorMessage + passing description/errorMessage into HeadlessComboBox in `packages/solid-spectrum/src/combobox/index.tsx` and the viviana-ui twin. Renders `<HelpText>`.
+
+3. **`HelpText` takes S2's shape**
+   - S2: `s2/Field.tsx:407-468` (`<Text slot="description">` when valid, `<FieldError>` when invalid, no wrapper).
+   - Solid: `packages/solid-spectrum/src/form/HelpText.tsx:81-119` and viviana-ui twin.
+   - Call sites switched to shared `HelpText` (S2 counterparts use `HelpText`): TextField, TextArea, SearchField, NumberField, ColorField, Picker, ComboBox (`packages/solid-spectrum/src/{textfield,searchfield,numberfield,color,picker,combobox}` + viviana-ui twins).
+   - **Kept explicit id path** (no headless `TextContext` slot):
+     - `packages/solid-spectrum/src/form/Field.tsx:103-110` — layout wrapper, no `TextContext`; still `<p role="alert">` / `<p>`.
+     - Checkbox / CheckboxGroup / RadioGroup / Switch — already `Text` slots; groups use explicit WeakMap ids because group-level `TextContext` is inert (`RadioGroup.tsx` `port-context-slots`).
+     - calendar / DatePicker — concurrent lane; not touched.
+     - `contextualhelp` — style name only.
+
+4. **Group `data-focused` → `data-focus-within`**
+   - RAC: `Group.tsx:129` (`data-focus-within` / `data-focus-visible`, no `data-focused`).
+   - Solid: `packages/solid-spectrum/src/combobox/index.tsx` field group (and viviana-ui twin). S2 ComboBox style macro reads `isFocusWithin`.
+
+5. **ComboBox `aria-label` synthesis dropped**
+   - Deleted `?? textLabel()` on options; `aria-label={headlessProps["aria-label"]}` only (RAC ListBoxItem forwards an explicit prop).
+
+### createField getters (forced by slot ids)
+
+Destructuring `createField`'s `fieldProps` froze the first-paint slot ids. Un-destructured in `createTextField.ts`, `createRadioGroup.ts`, `createCheckboxGroup.ts` so they re-read `createSlotId` like RAC `useField` every render. `createRadioGroup` now passes `aria-describedby` into `createField` so slot ids concatenate with the user prop instead of overwriting it (`useField.ts:51-60`).
+
+### Tests
+
+- `createSelect field slot ids` — trigger describedby only when the description slot renders; error id when invalid and the error slot renders; preserves user `aria-describedby`; `descriptionProps.id` undefined when no description is rendered (RAC `useField.ts:38-60` / `useSlotId` `useId.ts:135-149`; RAC `Select.test.js:75-82`).
+- `solidaria-components` Select/ComboBox — `<Text slot="description">` id is the one the trigger/input references (RAC `Select.test.js:75-82`, `ComboBox.test.js:82-89`).
+- `solid-spectrum` Picker/ComboBox — `span[slot=description]` not `p`; error `span[slot=errorMessage]` without `role="alert"`; trigger/input describedby resolves; ComboBox group `data-focus-within` and no `data-focused`; labelled ComboBox input has no synthesized `aria-label`.
+- **NEW test-parity suspects** (orchestrator: `--allow-growth 248`, do not write the baseline): `combobox|role|alert`, `select|role|alert` — RAC `FieldError.tsx:67-72` renders `<Text slot="errorMessage">` with no `role="alert"`; the new tests assert that, and the oracle counts the token.
+
+Red-then-green (pre-slot-forward / pre-FieldErrorContext / pre-createField):
+
+- Picker/ComboBox: `Expected slot="description", Received: null`
+- ComboBox invalid: `Unable to find an element with the text: Selection is required`
+- Select help text: `expected null to be 'description'`
+- Select validation: `Expected aria-describedby, Received: null` while FieldError was in the DOM without an id
+
+`solid-spectrum/test/regression.test.tsx` snapshots: no diff this round (passed without update).
+
+### Verification
+
+- `vp test run packages/solidaria/test packages/solidaria-components/test packages/solid-spectrum packages/viviana-ui` — **1 failed | 246 passed (247 files); 3 failed | 4974 passed | 1 expected fail | 6 skipped (4984)**. The 3 failures are RadioGroup ref identity after `createSlotId` probe remounts nested `GroupChildren` — #258. No Popover/ActionMenu/DatePicker failures in this run.
+- `vp run typecheck` — pass.
+- `vp run guard:layer-boundary` — PASS; NEW forks 0; twins same-hunk (viviana-ui picker is a baselined divergence).
+- `vp run guard:attribution-headers` — PASS. Changed reviewed locals: `Text.tsx`, `FieldError.tsx`, `createField.ts`, `ssr/index.tsx` (headers already matched; orchestrator does not need to re-record).
+- `vp run guard:upstream-test-parity` — suspects 152 → 154 (Δ+2), coverageGaps 47 → 47, upstreamOnly 18 → 18. **NEW suspects** (do not write the baseline; orchestrator can absorb with `--allow-growth 248`): `combobox|role|alert`, `select|role|alert` — our new Picker/ComboBox tests assert the error span has **no** `role="alert"`, matching RAC `FieldError.tsx:67-72` (renders `<Text slot="errorMessage">`, no alert). The oracle counts the token.
+- `vp run test:ssr` — 12 files, 26 passed.
+- `vp run test:hydrate` — 12 files, 28 passed | 1 expected fail (run **after** SSR so `output/*.html` matches HelpText `<span>`). Parallel SSR+hydrate races on stale markup.
+- Playwright not run (headless Chromium `requestAnimationFrame` never fires on this machine).
+- `vp check --fix` on owned files — pass; `git diff --check` — clean.
+
+### Remaining for D13 seeds
+
+Field-DOM items in this round are done (`p` → `span[slot=description]`, error `span[slot=errorMessage]` without `role="alert"`, `data-focus-within`, no synthesized ComboBox `aria-label`, trigger/input describedby from `createField`). What should still remain at step 0:
+
+- #256 Virtualizer wrapper nodes (`data-virtualizer` ancestor; listbox is not the scroller).
+- #251 animation attributes / `isEntering` on the overlay.
+- #252 `aria-posinset` / `aria-setsize` (no Virtualizer parent, `isVirtualized` stays false).
+- #258 group-level `TextContext` still inert (WeakMap id path). Radio remount/ref identity is landed.

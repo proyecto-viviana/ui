@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
 import { ComboBox, ComboBoxContext, ComboBoxOption, Form, type ComboBoxProps } from "../src";
 import { LOADER_ROW_HEIGHTS } from "../src/combobox";
@@ -36,29 +36,59 @@ describe("ComboBox (solid-spectrum)", () => {
     expect(screen.getByRole("combobox", { name: "Fruit" })).toBeInTheDocument();
   });
 
-  it("links description text via aria-describedby", () => {
+  it("links description text via aria-describedby", async () => {
     render(() => <FruitComboBox description="Pick one item" />);
 
     const input = screen.getByRole("combobox", { name: "Fruit" });
-    const describedBy = input.getAttribute("aria-describedby") ?? "";
     const description = screen.getByText("Pick one item");
+    expect(description.tagName).toBe("SPAN");
+    expect(description).toHaveAttribute("slot", "description");
 
-    expect(describedBy).toContain(description.id);
+    await waitFor(() => {
+      const describedBy = input.getAttribute("aria-describedby") ?? "";
+      expect(describedBy).toContain(description.id);
+    });
   });
 
-  it("links error text and omits hidden description ids when invalid", () => {
+  it("links error text and omits hidden description ids when invalid", async () => {
     render(() => (
       <FruitComboBox description="Pick one item" errorMessage="Selection is required" isInvalid />
     ));
 
     const input = screen.getByRole("combobox", { name: "Fruit" });
-    const describedBy = input.getAttribute("aria-describedby") ?? "";
     const error = screen.getByText("Selection is required");
 
     expect(screen.queryByText("Pick one item")).not.toBeInTheDocument();
-    expect(describedBy).not.toContain("description");
-    expect(describedBy).toContain(error.id);
+    expect(error.tagName).toBe("SPAN");
+    expect(error).toHaveAttribute("slot", "errorMessage");
+    expect(error).not.toHaveAttribute("role", "alert");
+    await waitFor(() => {
+      const describedBy = input.getAttribute("aria-describedby") ?? "";
+      expect(describedBy).toContain(error.id);
+    });
     expect(input).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("emits data-focus-within on the field group when the input is focused, not data-focused", async () => {
+    render(() => <FruitComboBox />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    const group = input.closest('[role="presentation"]');
+    expect(group).toBeTruthy();
+    expect(group).not.toHaveAttribute("data-focused");
+
+    fireEvent.focus(input);
+    await waitFor(() => {
+      expect(group).toHaveAttribute("data-focus-within", "true");
+    });
+    expect(group).not.toHaveAttribute("data-focused");
+  });
+
+  it("does not synthesize aria-label on the input when a visible label is present", () => {
+    render(() => <FruitComboBox />);
+
+    const input = screen.getByRole("combobox", { name: "Fruit" });
+    expect(input).not.toHaveAttribute("aria-label");
   });
 
   it("submits selected key by default when name is provided", () => {

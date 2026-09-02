@@ -138,6 +138,35 @@ describe("Select", () => {
       expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
     });
 
+    // RAC Select.test.js "provides slots" (lines 76-82): trigger aria-describedby
+    // resolves to the rendered `<Text slot="description">` / error Text contents.
+    it('links trigger aria-describedby to a <Text slot="description">', async () => {
+      render(() => (
+        <Select<TestItem>
+          aria-label="Favorite Animal"
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <Text slot="description">Description</Text>
+          <SelectListBox>
+            {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+          </SelectListBox>
+        </Select>
+      ));
+
+      const trigger = screen.getByRole("button");
+      await waitFor(() => expect(trigger).toHaveAttribute("aria-describedby"));
+      const ids = trigger.getAttribute("aria-describedby")!.split(" ");
+      expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toBe(
+        "Description",
+      );
+      expect(document.getElementById(ids[0])?.getAttribute("slot")).toBe("description");
+    });
+
     it("should wire visible label via aria-labelledby", () => {
       render(() => (
         <Select<TestItem>

@@ -29,6 +29,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { Text } from "./Text";
 
 export type FieldErrorRenderProps = ValidationResult;
 
@@ -47,6 +48,13 @@ export interface FieldErrorProps
   class?: ClassNameOrFunction<FieldErrorRenderProps>;
   /** The inline style for the element. */
   style?: StyleOrFunction<FieldErrorRenderProps>;
+  /**
+   * The HTML element type to render. Defaults to `'span'`.
+   * Set to `'div'` when using block-level children (e.g. `<ul>`) to avoid invalid HTML.
+   *
+   * @default 'span'
+   */
+  elementType?: string;
 }
 
 export const FieldErrorContext = createContext<ValidationResult | FieldErrorContextValue | null>(
@@ -67,7 +75,14 @@ export function FieldError(props: FieldErrorProps): JSX.Element | null {
     }
     return {};
   };
-  const [local, domProps] = splitProps(props, ["validation", "children", "class", "style", "slot"]);
+  const [local, domProps] = splitProps(props, [
+    "validation",
+    "children",
+    "class",
+    "style",
+    "slot",
+    "elementType",
+  ]);
 
   const validation = createMemo<ValidationResult | null>(
     () => local.validation ?? contextValidation(),
@@ -89,15 +104,16 @@ export function FieldError(props: FieldErrorProps): JSX.Element | null {
 
   return (
     <Show when={validation()?.isInvalid && children()}>
-      <div
-        {...(contextErrorMessageProps() as unknown as JSX.HTMLAttributes<HTMLDivElement>)}
-        {...(filteredDomProps as JSX.HTMLAttributes<HTMLDivElement>)}
+      <Text
+        {...(contextErrorMessageProps() as unknown as JSX.HTMLAttributes<HTMLElement>)}
+        {...(filteredDomProps as JSX.HTMLAttributes<HTMLElement>)}
         slot={local.slot ?? "errorMessage"}
+        elementType={local.elementType}
         class={renderProps.class()}
         style={renderProps.style()}
       >
         {children()}
-      </div>
+      </Text>
     </Show>
   );
 }

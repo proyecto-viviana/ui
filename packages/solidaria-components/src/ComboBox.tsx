@@ -57,6 +57,7 @@ import {
   type Key,
   type FilterFn,
   type MenuTriggerAction,
+  DEFAULT_VALIDATION_RESULT,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -69,6 +70,7 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { useCollectionRenderer } from "./Collection";
 import {
   SelectionIndicatorContext,
@@ -600,6 +602,19 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     },
   };
 
+  // RAC ComboBox.tsx:359: `[FieldErrorContext, validation]`. HelpText's
+  // `<FieldError>` only paints when this context reports `isInvalid`.
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return ariaProps.isInvalid
+        ? { ...DEFAULT_VALIDATION_RESULT, isInvalid: true }
+        : DEFAULT_VALIDATION_RESULT;
+    },
+    get errorMessageProps() {
+      return comboBoxAria.errorMessageProps;
+    },
+  };
+
   return (
     <ComboBoxContext.Provider
       value={
@@ -681,7 +696,14 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               value={state.selectedKey()?.toString() ?? ""}
             />
           </Show>
-          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+          <Provider
+            values={
+              [
+                [TextContext, textSlots],
+                [FieldErrorContext, fieldErrorContext],
+              ] as Array<[Context<unknown>, unknown]>
+            }
+          >
             <ComboBoxChildren />
           </Provider>
         </div>
@@ -733,7 +755,13 @@ export function ComboBoxDescription(props: ComboBoxDescriptionProps): JSX.Elemen
   // `Text` defaults to `elementType="span"` (Text.tsx:24) — so the help text is a
   // `<span>`, not a `<div>`. Match it (mirrors the TextField port's same revert).
   return (
-    <span {...domProps} {...cleanDescriptionProps()} class={local.class} style={local.style}>
+    <span
+      {...domProps}
+      {...cleanDescriptionProps()}
+      slot={local.slot ?? "description"}
+      class={local.class}
+      style={local.style}
+    >
       {local.children}
     </span>
   );
@@ -758,7 +786,13 @@ export function ComboBoxErrorMessage(props: ComboBoxErrorMessageProps): JSX.Elem
   // Same as the description: upstream's error is `<Text slot="errorMessage">`,
   // a `<span>` (RAC Text default elementType). Match it.
   return (
-    <span {...domProps} {...cleanErrorMessageProps()} class={local.class} style={local.style}>
+    <span
+      {...domProps}
+      {...cleanErrorMessageProps()}
+      slot={local.slot ?? "errorMessage"}
+      class={local.class}
+      style={local.style}
+    >
       {local.children}
     </span>
   );

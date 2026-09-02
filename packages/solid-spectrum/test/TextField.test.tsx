@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { TextField } from "../src/textfield";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
@@ -257,7 +257,7 @@ describe("TextField", () => {
       expect(input).toHaveAttribute("aria-labelledby", "label");
     });
 
-    it("supports aria-describedby", () => {
+    it("supports aria-describedby", async () => {
       render(() => (
         <>
           <span id="desc">Description text</span>
@@ -265,7 +265,9 @@ describe("TextField", () => {
         </>
       ));
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-describedby", "desc");
+      await waitFor(() => {
+        expect(input).toHaveAttribute("aria-describedby", "desc");
+      });
     });
   });
 

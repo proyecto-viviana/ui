@@ -38,6 +38,7 @@
     "combobox|key|arrowup",
     "combobox|key|backspace",
     "combobox|key|escape",
+    "combobox|role|alert",
     "datefield|aria|aria-valuenow",
     "datefield|key|arrowdown",
     "datefield|key|arrowleft",
@@ -98,6 +99,7 @@
     "select|key|arrowup",
     "select|key|enter",
     "select|key|escape",
+    "select|role|alert",
     "select|role|progressbar",
     "separator|aria|aria-describedby",
     "separator|aria|aria-details",
@@ -241,6 +243,18 @@
       "added": {
         "suspects": [
           "combobox|aria|aria-setsize"
+        ],
+        "coverageGaps": [],
+        "upstreamOnly": []
+      }
+    },
+    {
+      "ticket": 248,
+      "at": "2026-09-02",
+      "added": {
+        "suspects": [
+          "combobox|role|alert",
+          "select|role|alert"
         ],
         "coverageGaps": [],
         "upstreamOnly": []

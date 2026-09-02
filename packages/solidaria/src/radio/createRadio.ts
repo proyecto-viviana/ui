@@ -77,6 +77,12 @@ export interface RadioAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /**
+   * The input's `aria-describedby`. Kept off `inputProps` so a `createSlotId`
+   * probe (RAC `useSlotId` / `useId.ts:135-149`) can patch the attribute
+   * without a spread that recreates the input.
+   */
+  inputDescribedBy: Accessor<string | undefined>;
   /** Props for the radio's description element, if any. */
   descriptionProps: JSX.HTMLAttributes<HTMLElement>;
   /** Whether the radio is disabled. */
@@ -288,33 +294,42 @@ export function createRadio(
   // this id is rendered (e.g. a `<Text slot="description">` child).
   const descriptionId = createSlotId();
 
+  const inputDescribedBy: Accessor<string | undefined> = () => {
+    const p = getProps();
+    const groupData = getGroupData();
+
+    // Order mirrors upstream useRadio: the user's aria-describedby, then the
+    // radio's own description, then the group's error message (when invalid)
+    // and the group's shared description.
+    const describedByIds: string[] = [];
+    if (p["aria-describedby"]) {
+      describedByIds.push(p["aria-describedby"]);
+    }
+    const ownDescriptionId = descriptionId();
+    if (ownDescriptionId) {
+      describedByIds.push(ownDescriptionId);
+    }
+    if (
+      state.isInvalid &&
+      groupData?.errorMessageId &&
+      document.getElementById(groupData.errorMessageId)
+    ) {
+      describedByIds.push(groupData.errorMessageId);
+    }
+    if (groupData?.descriptionId && document.getElementById(groupData.descriptionId)) {
+      describedByIds.push(groupData.descriptionId);
+    }
+    return describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
+  };
+
   return {
     labelProps: mergeProps(labelPressProps, {
       onClick: (e: MouseEvent) => e.preventDefault(),
       onMouseDown: (e: MouseEvent) => e.preventDefault(),
     }),
+    inputDescribedBy,
     get inputProps() {
-      const p = getProps();
       const groupData = getGroupData();
-
-      // Order mirrors upstream useRadio: the user's aria-describedby, then the
-      // radio's own description, then the group's error message (when invalid)
-      // and the group's shared description.
-      const describedByIds: string[] = [];
-      if (p["aria-describedby"]) {
-        describedByIds.push(p["aria-describedby"]);
-      }
-      const ownDescriptionId = descriptionId();
-      if (ownDescriptionId) {
-        describedByIds.push(ownDescriptionId);
-      }
-      if (state.isInvalid && groupData?.errorMessageId) {
-        describedByIds.push(groupData.errorMessageId);
-      }
-      if (groupData?.descriptionId) {
-        describedByIds.push(groupData.descriptionId);
-      }
-      const ariaDescribedBy = describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
       const validationBehavior = groupData?.validationBehavior ?? "native";
 
       return mergeProps(domProps(), interactions, {
@@ -327,7 +342,6 @@ export function createRadio(
         checked: isSelected(),
         value: value(),
         onChange,
-        "aria-describedby": ariaDescribedBy,
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get descriptionProps() {

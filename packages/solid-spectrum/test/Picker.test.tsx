@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { useVirtualizerContext } from "@proyecto-viviana/solidaria-components";
@@ -134,6 +134,53 @@ describe("Picker (solid-spectrum)", () => {
     expect(button).toHaveTextContent("API section");
     expect(button.getAttribute("aria-describedby")?.split(" ")).toContain(description.id);
     expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Section help" }));
+  });
+
+  it("renders description as span[slot=description] and wires trigger aria-describedby", async () => {
+    render(() => (
+      <Picker<SectionItem>
+        label="Docs section"
+        description="Pick a docs anchor"
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      />
+    ));
+
+    const description = screen.getByText("Pick a docs anchor");
+    expect(description.tagName).toBe("SPAN");
+    expect(description).toHaveAttribute("slot", "description");
+    expect(description.tagName).not.toBe("P");
+
+    const button = screen.getByRole("button");
+    await waitFor(() => {
+      expect(button.getAttribute("aria-describedby")?.split(" ")).toContain(description.id);
+    });
+  });
+
+  it("renders error as span[slot=errorMessage] without role=alert", async () => {
+    render(() => (
+      <Picker<SectionItem>
+        label="Docs section"
+        description="Pick a docs anchor"
+        errorMessage="Required"
+        isInvalid
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      />
+    ));
+
+    expect(screen.queryByText("Pick a docs anchor")).not.toBeInTheDocument();
+    const error = screen.getByText("Required");
+    expect(error.tagName).toBe("SPAN");
+    expect(error).toHaveAttribute("slot", "errorMessage");
+    expect(error).not.toHaveAttribute("role", "alert");
+
+    const button = screen.getByRole("button");
+    await waitFor(() => {
+      expect(button.getAttribute("aria-describedby")?.split(" ")).toContain(error.id);
+    });
   });
 
   // RAC HiddenSelect (≤300 items) submits through the hidden <select> itself so

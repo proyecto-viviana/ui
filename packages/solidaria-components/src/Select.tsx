@@ -27,7 +27,6 @@ import {
   createMemo,
   createRenderEffect,
   createSignal,
-  createUniqueId,
   splitProps,
   useContext,
   For,
@@ -355,7 +354,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   let rootRef: HTMLDivElement | undefined;
   const [selectValidation, setSelectValidation] =
     createSignal<ValidationResult>(DEFAULT_VALIDATION_RESULT);
-  const errorMessageId = createUniqueId();
 
   const resolveDisabled = (): boolean => {
     const disabled = ariaProps.isDisabled;
@@ -429,9 +427,31 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return clean as typeof ariaProps;
   });
 
+  const validation = createMemo<ValidationResult>(() => {
+    const current = selectValidation();
+    if (current.isInvalid || !ariaProps.isInvalid) {
+      return current;
+    }
+
+    return {
+      ...DEFAULT_VALIDATION_RESULT,
+      isInvalid: true,
+    };
+  });
+  const isInvalid = createMemo(() => validation().isInvalid);
+
   // Keep the hook result intact. Its DOM prop surfaces are getters; destructuring
   // them freezes the initial closed-state attributes and event composition.
-  const selectHook = createSelect<T>(selectAriaProps, state);
+  // RAC `useSelect` feeds `state.displayValidation.isInvalid` into `useField`;
+  // pass the composed invalid flag so `createSlotId` re-probes when native
+  // validation mounts the error slot.
+  const selectHook = createSelect<T>(
+    () => ({
+      ...selectAriaProps(),
+      isInvalid: isInvalid(),
+    }),
+    state,
+  );
   const { isFocused, isFocusVisible, isOpen, isPressed } = selectHook;
 
   const { isHovered, hoverProps } = createHover({
@@ -501,40 +521,14 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     rootRef = el;
     assignRef(local.ref, el);
   };
-  const validation = createMemo<ValidationResult>(() => {
-    const current = selectValidation();
-    if (current.isInvalid || !ariaProps.isInvalid) {
-      return current;
-    }
-
-    return {
-      ...DEFAULT_VALIDATION_RESULT,
-      isInvalid: true,
-    };
-  });
-  const isInvalid = createMemo(() => validation().isInvalid);
-  const triggerDescribedBy = () => {
-    const ids = [
-      (selectHook.triggerProps as { "aria-describedby"?: string })["aria-describedby"],
-      isInvalid() ? errorMessageId : undefined,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .split(" ")
-      .filter(Boolean);
-    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
-  };
   const triggerPropsWithValidation = () =>
-    ({
-      ...selectHook.triggerProps,
-      "aria-describedby": triggerDescribedBy(),
-    }) as JSX.HTMLAttributes<HTMLElement>;
+    selectHook.triggerProps as JSX.HTMLAttributes<HTMLElement>;
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
       return validation();
     },
     get errorMessageProps() {
-      return { id: errorMessageId };
+      return selectHook.errorMessageProps;
     },
   };
   const focusTrigger = () => {
@@ -784,7 +778,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             return selectHook.menuProps;
           },
           get errorMessageProps() {
-            return { id: errorMessageId };
+            return selectHook.errorMessageProps;
           },
           get validation() {
             return validation();

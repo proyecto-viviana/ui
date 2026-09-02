@@ -36,7 +36,6 @@ import {
   SelectListBox as HeadlessSelectListBox,
   SelectOption as HeadlessSelectOption,
   ListBoxSection as HeadlessListBoxSection,
-  FieldError as HeadlessFieldError,
   ListLayout,
   Popover as HeadlessPopover,
   Virtualizer,
@@ -86,6 +85,7 @@ import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { LOADER_ROW_HEIGHTS } from "../combobox";
+import { HelpText } from "../form/HelpText";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -382,28 +382,6 @@ const pickerProgressCircle = style<{ size?: S2PickerSize }>({
       XL: 26,
     },
   },
-});
-
-const pickerHelpText = style<PickerStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  margin: 0,
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative-1000",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
 });
 
 const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>({
@@ -942,20 +920,8 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       return isMultiple() ? onSelectionChangeKeys() : undefined;
     },
   });
-  const descriptionId = createUniqueId();
   const labelId = createUniqueId();
   const [triggerEl, setTriggerEl] = createSignal<HTMLButtonElement | null>(null);
-  const selectDescribedBy = () => {
-    const explicitDescribedBy = (headlessProps as Record<string, unknown>)["aria-describedby"] as
-      | string
-      | undefined;
-    const ids = [explicitDescribedBy, local.description && !isInvalid() ? descriptionId : undefined]
-      .filter(Boolean)
-      .join(" ")
-      .split(" ")
-      .filter(Boolean);
-    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
-  };
 
   const rootClass = (renderProps: SelectRenderProps) =>
     [
@@ -991,14 +957,6 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       />
     ) : undefined;
 
-  const helpClass = (renderProps: SelectRenderProps) =>
-    pickerHelpText({
-      isDisabled: renderProps.isDisabled,
-      isRequired: renderProps.isRequired,
-      isSelected: renderProps.isSelected,
-      size: size(),
-      isInvalid: isInvalid(),
-    });
   // Labelling mirrors upstream `useSelect`: a REAL visible label is associated by
   // id (`aria-labelledby` → `labelId`), letting the headless hook fold the value
   // into the trigger name ("Pro Plan") while the listbox is named by the label
@@ -1055,7 +1013,6 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
         }
         aria-label={ariaLabel()}
         aria-labelledby={ariaLabelledBy()}
-        aria-describedby={selectDescribedBy()}
         isInvalid={isInvalid()}
         class={rootClass}
         style={local.UNSAFE_style}
@@ -1135,16 +1092,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                 </>
               )}
             </HeadlessSelectTrigger>
-            <Show when={local.description && !isInvalid()}>
-              <p id={descriptionId} class={helpClass(renderProps)}>
-                {local.description}
-              </p>
-            </Show>
-            <Show when={local.errorMessage && isInvalid()}>
-              <HeadlessFieldError class={helpClass(renderProps)}>
-                {local.errorMessage}
-              </HeadlessFieldError>
-            </Show>
+            <HelpText
+              size={size()}
+              isDisabled={renderProps.isDisabled}
+              isInvalid={isInvalid()}
+              description={local.description}
+            >
+              {local.errorMessage}
+            </HelpText>
             <PickerListBoxPopover
               size={size}
               isQuiet={isQuiet}

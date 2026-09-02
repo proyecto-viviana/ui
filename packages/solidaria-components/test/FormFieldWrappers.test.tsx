@@ -9,7 +9,7 @@
  * mirroring react-aria-components/src/{Switch,Checkbox,RadioGroup}.tsx.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, waitFor } from "@solidjs/testing-library";
 import {
   SwitchField,
   SwitchButton,
@@ -254,7 +254,7 @@ describe("RadioField + RadioButton", () => {
     expect(screen.getByText("A-on")).toBeInTheDocument();
   });
 
-  it("links a per-option description to aria-describedby via a TextContext slot", () => {
+  it("links a per-option description to aria-describedby via a TextContext slot", async () => {
     render(() => (
       <RadioGroup aria-label="Choice">
         <RadioField value="a">
@@ -263,7 +263,9 @@ describe("RadioField + RadioButton", () => {
         </RadioField>
       </RadioGroup>
     ));
-    expect(describedText(screen.getByRole("radio"))).toBe("The first option");
+    await waitFor(() => {
+      expect(describedText(screen.getByRole("radio")).trim()).toBe("The first option");
+    });
   });
 
   it("renders null when used outside a RadioGroup", () => {
@@ -288,6 +290,8 @@ describe("RadioField + RadioButton", () => {
       </RadioGroup>
     ));
     await assertNoA11yViolations(container);
-    assertAriaIdIntegrity(container);
+    await waitFor(() => {
+      assertAriaIdIntegrity(container);
+    });
   });
 });

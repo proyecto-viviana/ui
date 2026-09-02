@@ -22,7 +22,7 @@ import { type JSX, type Accessor, createEffect, onCleanup } from "solid-js";
 import { isServer } from "solid-js/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
-import { createLabel } from "../label/createLabel";
+import { createField } from "../label/createField";
 import { createLabels } from "../label/createLabels";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -159,23 +159,6 @@ export function createComboBox<T>(
   const inputId = `${id}-input`;
   const buttonId = `${id}-button`;
   const listBoxId = `${id}-listbox`;
-  const descriptionId = `${id}-description`;
-  const errorMessageId = `${id}-error`;
-
-  const getAriaDescribedBy = () => {
-    const p = getProps();
-    const ids: string[] = [];
-    if (p["aria-describedby"]) {
-      ids.push(p["aria-describedby"]);
-    }
-    if (p.description) {
-      ids.push(descriptionId);
-    }
-    if (p.isInvalid && p.errorMessage) {
-      ids.push(errorMessageId);
-    }
-    return ids.length > 0 ? ids.join(" ") : undefined;
-  };
 
   // Set up global pointerdown listener to track clicks inside listbox
   // This is needed because the option's createPress stops propagation
@@ -213,19 +196,33 @@ export function createComboBox<T>(
     });
   });
 
-  // Label handling
-  const { labelProps, fieldProps } = createLabel({
+  // RAC `useComboBox.ts:302-331` reaches `useField` through `useTextField`.
+  // Field wiring (description/error slot ids + input `aria-describedby`) lives
+  // in `createField`; do not hand-build `${id}-description` / `${id}-error`.
+  const field = createField({
     get id() {
       return inputId;
     },
     get label() {
       return getProps().label;
     },
+    get description() {
+      return getProps().description;
+    },
+    get errorMessage() {
+      return getProps().errorMessage;
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
     get "aria-label"() {
       return getProps()["aria-label"];
     },
     get "aria-labelledby"() {
       return getProps()["aria-labelledby"];
+    },
+    get "aria-describedby"() {
+      return getProps()["aria-describedby"];
     },
     labelElementType: "label",
   });
@@ -638,7 +635,7 @@ export function createComboBox<T>(
 
   return {
     get labelProps() {
-      return labelProps as JSX.HTMLAttributes<HTMLElement>;
+      return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get inputProps() {
       const p = getProps();
@@ -646,6 +643,7 @@ export function createComboBox<T>(
       const isDisabled = p.isDisabled ?? state.isDisabled;
       const isReadOnly = p.isReadOnly ?? state.isReadOnly;
       const focusedKey = state.focusedKey();
+      const fieldProps = field.fieldProps;
 
       return mergeProps(
         domProps(),
@@ -674,7 +672,6 @@ export function createComboBox<T>(
           "aria-disabled": isDisabled || undefined,
           "aria-required": p.isRequired || undefined,
           "aria-invalid": p.isInvalid || undefined,
-          "aria-describedby": getAriaDescribedBy(),
           name: p.name,
           onInput: onInputChange,
           onKeyDown: onInputKeyDown,
@@ -700,7 +697,7 @@ export function createComboBox<T>(
       const triggerLabels = createLabels({
         id: buttonId,
         "aria-label": stringFormatter?.().format("buttonLabel") ?? "Show suggestions",
-        "aria-labelledby": p["aria-labelledby"] ?? labelProps.id,
+        "aria-labelledby": p["aria-labelledby"] ?? field.labelProps.id,
       });
 
       return mergeProps(
@@ -729,7 +726,7 @@ export function createComboBox<T>(
       const boxLabels = createLabels({
         id: listBoxId,
         "aria-label": stringFormatter?.().format("listboxLabel") ?? "Suggestions",
-        "aria-labelledby": p["aria-labelledby"] ?? labelProps.id,
+        "aria-labelledby": p["aria-labelledby"] ?? field.labelProps.id,
       });
       return {
         id: listBoxId,
@@ -757,15 +754,10 @@ export function createComboBox<T>(
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return {
-        id: descriptionId,
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return field.descriptionProps;
     },
     get errorMessageProps() {
-      return {
-        id: errorMessageId,
-        role: "alert",
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return field.errorMessageProps;
     },
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),
