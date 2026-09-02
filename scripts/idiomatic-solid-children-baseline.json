@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "generated": "2026-09-02",
+  "description": "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail; a baselined site that disappears fails until removed. #168 / #169 own the styled-wrapper fixes.",
+  "sites": [
+    {
+      "file": "packages/solidaria-components/src/Focusable.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 55,
+      "ticket": 192
+    },
+    {
+      "file": "packages/solidaria-components/src/Pressable.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 64,
+      "ticket": 192
+    },
+    {
+      "file": "packages/solid-spectrum/src/badge/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 327,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/button/ActionButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 328,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/button/ActionButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 1,
+      "line": 400,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/button/LinkButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 171,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/button/ToggleButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 308,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/gridlist/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 1043,
+      "ticket": 192
+    },
+    {
+      "file": "packages/solid-spectrum/src/gridlist/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 1211,
+      "ticket": 192
+    },
+    {
+      "file": "packages/solid-spectrum/src/overlays/OpenTransition.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 89,
+      "ticket": 192
+    },
+    {
+      "file": "packages/solid-spectrum/src/radio/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 626,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/segmentedcontrol/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 370,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/selectboxgroup/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 456,
+      "ticket": 169
+    },
+    {
+      "file": "packages/solid-spectrum/src/selectboxgroup/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 625,
+      "ticket": 169
+    },
+    {
+      "file": "packages/solid-spectrum/src/tag-group/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 673,
+      "ticket": 168
+    },
+    {
+      "file": "packages/solid-spectrum/src/tree/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 852,
+      "ticket": 192
+    },
+    {
+      "file": "packages/solid-spectrum/src/tree/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 1011,
+      "ticket": 192
+    },
+    {
+      "file": "packages/viviana-ui/src/badge/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 482,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/button/ActionButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 329,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/button/ActionButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 1,
+      "line": 405,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/button/LinkButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 160,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/button/ToggleButton.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 308,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/gridlist/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 1054,
+      "ticket": 192
+    },
+    {
+      "file": "packages/viviana-ui/src/gridlist/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 1233,
+      "ticket": 192
+    },
+    {
+      "file": "packages/viviana-ui/src/overlays/OpenTransition.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 89,
+      "ticket": 192
+    },
+    {
+      "file": "packages/viviana-ui/src/radio/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 636,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/segmentedcontrol/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 394,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/selectboxgroup/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 471,
+      "ticket": 169
+    },
+    {
+      "file": "packages/viviana-ui/src/selectboxgroup/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 640,
+      "ticket": 169
+    },
+    {
+      "file": "packages/viviana-ui/src/tag-group/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 760,
+      "ticket": 168
+    },
+    {
+      "file": "packages/viviana-ui/src/tree/index.tsx",
+      "ident": "resolved",
+      "ordinal": 0,
+      "line": 853,
+      "ticket": 192
+    },
+    {
+      "file": "packages/viviana-ui/src/tree/index.tsx",
+      "ident": "resolvedChildren",
+      "ordinal": 0,
+      "line": 1026,
+      "ticket": 192
+    }
+  ]
+}

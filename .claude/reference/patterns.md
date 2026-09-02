@@ -215,26 +215,33 @@ function createToggle(props: MaybeAccessor<ToggleProps>) {
 }
 ```
 
-## Getter Pattern for Controlled Components (IMPORTANT)
+## State helpers re-access props (IMPORTANT)
 
-When passing props to state creation functions, **never use arrow functions returning object literals**. Use objects with getters instead.
-
-### The Problem
+`createToggleState` does **not** freeze a `() => ({ isSelected })` object.
+It calls `access(props)` on every read
+(`packages/solid-stately/src/toggle/createToggleState.ts:51-64`). The same is
+true of the other solid-stately helpers: they re-access, they do not snapshot.
+F-SOLID-012 verified this; comments that say the accessor form "freezes"
+controlled mode are wrong (listed on ticket #192 for #168 to remove).
 
 ```typescript
-// ❌ BAD - props are captured when the object is created
+// Live — getProps() re-runs access(props) on every isSelected / setSelected / toggle
 const state = createToggleState(() => ({
-  isSelected: ariaProps.isSelected, // Read immediately, not reactive!
+  isSelected: ariaProps.isSelected,
   onChange: ariaProps.onChange,
 }));
 ```
 
-Even though we're passing a function, the object literal inside evaluates `ariaProps.isSelected` immediately when the function runs. The value gets "frozen" and won't update when the parent changes the prop.
+What **does** freeze a prop is destructuring in a Solid component body (the body
+runs once): `const { isSelected } = props`. That is what
+`guard:idiomatic-solid` flags. Read `props.x` at each use, or split with
+`splitProps`.
 
-### The Solution
+Getters on a plain object are still a valid way to pass lazy fields into a
+helper that reads `props.isSelected` as a property rather than through
+`access()`. They are not required to keep `createToggleState` live.
 
 ```typescript
-// ✅ GOOD - props are read lazily via getters
 const state = createToggleState({
   get isSelected() {
     return ariaProps.isSelected;
@@ -244,67 +251,6 @@ const state = createToggleState({
   },
 });
 ```
-
-Getters defer reading until the state function actually accesses the property, which happens inside a reactive context.
-
-### Why This Happens
-
-In React, components re-run on every prop change, so this pattern works. In SolidJS:
-
-1. Component functions run **once**
-2. Reactivity comes from signals tracked in reactive contexts
-3. Object literals evaluate their properties immediately
-4. Getters defer evaluation until access time
-
-### Where to Apply This
-
-Use getters when calling state creation functions in `solidaria-components`:
-
-| Function                   | Package       |
-| -------------------------- | ------------- |
-| `createToggleState`        | solid-stately |
-| `createRadioGroupState`    | solid-stately |
-| `createCheckboxGroupState` | solid-stately |
-| `createTextFieldState`     | solid-stately |
-
-```typescript
-// In solidaria-components/src/Switch.tsx
-const state = createToggleState({
-  get isSelected() {
-    return ariaProps.isSelected;
-  },
-  get defaultSelected() {
-    return ariaProps.defaultSelected;
-  },
-  get onChange() {
-    return ariaProps.onChange;
-  },
-  get isReadOnly() {
-    return ariaProps.isReadOnly;
-  },
-});
-
-// In solidaria-components/src/RadioGroup.tsx
-const state = createRadioGroupState({
-  get value() {
-    return props.value;
-  },
-  get defaultValue() {
-    return props.defaultValue;
-  },
-  get onChange() {
-    return props.onChange;
-  },
-  get isDisabled() {
-    return props.isDisabled;
-  },
-  // ... etc
-});
-```
-
-### Quick Test
-
-If controlled mode doesn't work (parent signal changes but component doesn't update), check if you're using getters.
 
 ## Cleanup
 
@@ -433,7 +379,7 @@ export function NumberFieldInput(props: NumberFieldInputProps) {
 
 ### Rules
 
-1. **Include `'children'` in the split list** when the component accesses `props.children`, so children don't leak into `domProps`
+1. **Include `'children'` in the split list** when the component accesses `props.children`, so children don't leak into `domProps`. `splitProps` does not evaluate children; a getter read does. Splitting `children` is fine. Reading the getter twice is not (see Hydration-Key Parity).
 2. **Spread `{...domProps}` first** on the DOM element — ARIA/behavior props should come after so they can override
 3. **Extend the interface** with DOM attributes so TypeScript accepts them:
    ```typescript
@@ -453,24 +399,26 @@ All sub-components in `solidaria-components` that render a DOM element and use `
 
 ## SolidJS Children and Context Propagation (CRITICAL)
 
-In SolidJS, children are **lazily evaluated** - they're only evaluated when they're actually rendered. This has critical implications for context propagation.
+In SolidJS, children are **lazily evaluated** - they're only evaluated when
+they're actually rendered. This has critical implications for context
+propagation. `splitProps` does **not** evaluate children; accessing the getter
+does.
 
 ### The Problem
 
-When you access `children` via `splitProps` or destructuring before rendering them inside a context provider, the children evaluate **outside** the provider's context.
+Calling the children getter in JavaScript _before_ the provider is in the tree
+(or resolving them with `children()` and then inserting the snapshot) evaluates
+children **outside** the provider's context.
 
 ```typescript
-// ❌ BAD - breaks context propagation
+// ❌ BAD - JS read instantiates children before the provider
 export function ModalOverlay(props: ModalOverlayProps) {
-  const [local, rest] = splitProps(props, [
-    'children',  // This causes early evaluation!
-    'class',
-    // ...
-  ])
+  const [local, rest] = splitProps(props, ['children', 'class'])
+  const early = local.children  // getter ran OUTSIDE the provider
 
   return (
     <ContextProvider value={state}>
-      <div>{local.children}</div>  // Children already evaluated OUTSIDE provider!
+      <div>{early}</div>
     </ContextProvider>
   )
 }
@@ -478,38 +426,17 @@ export function ModalOverlay(props: ModalOverlayProps) {
 
 ### The Solution
 
-Never include `'children'` in `splitProps`. Use `props.children` directly in the render:
+Keep the getter unread until JSX under the provider. Splitting `children` onto
+`local` is fine — `{local.children}` inside the provider still evaluates there.
 
 ```typescript
-// ✅ GOOD - preserves context propagation
+// ✅ GOOD - getter runs when the provider inserts children
 export function ModalOverlay(props: ModalOverlayProps) {
-  const [local, rest] = splitProps(props, [
-    'class',  // NO 'children' here!
-    // ...
-  ])
+  const [local, rest] = splitProps(props, ['children', 'class'])
 
   return (
     <ContextProvider value={state}>
-      <div>{props.children}</div>  // Children evaluated INSIDE provider!
-    </ContextProvider>
-  )
-}
-```
-
-### Also Avoid the `children()` Helper
-
-The SolidJS `children()` helper also causes early evaluation:
-
-```typescript
-// ❌ BAD - children() evaluates immediately
-import { children } from 'solid-js'
-
-function MyComponent(props) {
-  const resolved = children(() => props.children)  // Evaluated NOW!
-
-  return (
-    <ContextProvider>
-      {resolved()}  // Too late - already evaluated outside context
+      <div>{local.children}</div>
     </ContextProvider>
   )
 }
@@ -526,6 +453,69 @@ function MyComponent(props) {
 
 - https://github.com/solidjs/solid/issues/182
 - https://github.com/solidjs/solid/discussions/574
+
+---
+
+## `children()` snapshots mixed text (CRITICAL)
+
+Solid's `children()` helper (often imported as `resolveChildren`) memos the
+_resolved_ child nodes. A mixed-text child such as `count: {n()}` becomes a
+text-node snapshot. Rendering that snapshot after hydration keeps the server
+value; the signal can update and the label will not.
+
+This is the class #135 hit on Button, that #168 still has on ActionButton,
+ToggleButton, LinkButton, Badge, Radio, SegmentedControl, and TagGroup, and
+that #169 has on SelectBoxGroup. The landed Button adapter is
+`createMemo(() => local.children)` (or rendering the getter directly) — it
+re-runs the children getter instead of flattening dynamic members.
+`guard:idiomatic-solid` flags snapshot-rendered `children()` sites; those
+exports stay on a frozen baseline until #168 / #169 remove them.
+
+### When `children()` is the right tool
+
+Use it to _probe structure_: `.toArray()`, `.length`, or a `typeof` check on a
+static child tree (Focusable/Pressable inspecting a single element, Breadcrumbs
+counting static items). Do not then render the resolved snapshot as the visible
+content if that content may contain reactive text or a child whose output
+changes.
+
+### When it is wrong
+
+Any rendered content that may contain reactive text (`count: {n()}`) or a child
+component whose output changes. That includes styled wrappers that resolve
+children only to decide a text-only `<span>` / `<Text>` wrap.
+
+### The adapter
+
+```tsx
+// ✅ GOOD — re-access the getter; do not flatten mixed text
+const content = createMemo(() => local.children);
+const textChild = () => getSingleTextChild(content());
+return textChild() !== undefined ? <span>{textChild()}</span> : content();
+```
+
+Rendering `{local.children}` / `{props.children}` directly is also correct when
+you do not need to probe.
+
+### The one-read rule
+
+`props.children` is a getter. Read it **once** before probing `typeof`:
+
+```tsx
+const raw = local.children; // single read → server and client emit the same count
+const isRenderProp = typeof raw === "function" && raw.length > 0;
+```
+
+A second read on the server re-instantiates nested components and desyncs
+hydration keys. #184 is the Form+TextField cost of instantiating children a
+different number of times on server vs client. See Hydration-Key Parity below.
+
+### Hydration
+
+If the server and client instantiate children a different number of times —
+`children()` on one side, a memoized getter on the other, or two getter reads
+on the server only — Solid's per-render hydration-key counter drifts and the
+mismatch aborts interactivity for the whole route.
 
 ---
 
@@ -603,7 +593,10 @@ subtree: the whole page renders but silently loses all interactivity.
 
 Two authoring patterns desync the counter. Both are easy to write and neither
 fails SSR _or_ client render in isolation — only the paired hydrate run catches
-them.
+them. A third — `children()` flattening mixed text into a snapshot — is named
+in `children()` snapshots mixed text above (#135 / #168 / #169); it can also
+advance keys a different number of times on server vs client when the snapshot
+and a live getter instantiate children differently (#184).
 
 ### Bug class 1 — reading a props-children getter more than once
 

@@ -1,36 +1,52 @@
 /**
- * guard:idiomatic-solid — flag the one Solid reactivity anti-pattern that has
- * repeatedly bitten this port: destructuring a component/hook's reactive `props`
- * object.
+ * guard:idiomatic-solid — flag the Solid reactivity anti-patterns that have
+ * repeatedly bitten this port.
  *
- * In SolidJS a component/hook body runs ONCE (unlike React, which re-runs every
- * render), so `const { x } = props` reads `x` a single time and FREEZES it — any
- * later reactive change to that prop is lost. The whole port has been fixed one
- * site at a time during the recertification march (object-rest froze getters in
- * ActionGroup/TimeField/TreeView; a destructured `get` prop froze a keyboard
- * delegate; …). The idiomatic replacements are:
- *   - read `props.x` directly at each use site, or
- *   - for a forwarded rest, `splitProps(props, [...])` (reactive rest proxy)
- *     plus `mergeProps(...)` instead of an eager object spread.
+ * 1. Destructuring a component/hook's reactive `props` object.
+ *    In SolidJS a component/hook body runs ONCE (unlike React, which re-runs
+ *    every render), so `const { x } = props` reads `x` a single time and FREEZES
+ *    it — any later reactive change to that prop is lost. The idiomatic
+ *    replacements are: read `props.x` directly at each use site, or for a
+ *    forwarded rest, `splitProps(props, [...])` (reactive rest proxy) plus
+ *    `mergeProps(...)` instead of an eager object spread.
  *
- * This guard scans the hand-written Solid source and fails on any
- * `const { … } = props` / `let { … } = props`. It excludes:
+ * 2. Rendering Solid's `children()` helper (often imported as `resolveChildren`)
+ *    as visible JSX. `children()` memos the *resolved* child nodes. Mixed text
+ *    such as `count: {n()}` becomes a text-node snapshot that stays at the
+ *    server value after hydration (#135 Button; #168 / #169 still open).
+ *
+ *    Heuristic (kept deliberately simple): a `const ident = children(() => …)` /
+ *    `resolveChildren(() => …)` binding is flagged when `ident`, or a one-hop
+ *    alias `const x = ident()` / `const x = () => ident()`, appears inside a
+ *    JSX `{…}` expression or in a `return ident` / `return ident()`. Bindings
+ *    whose identifier is used only with `.toArray()`, `.length`, or a `typeof`
+ *    probe are allowed. False positives and the still-open #168 / #169 sites
+ *    live in `scripts/idiomatic-solid-children-baseline.json`. The baseline
+ *    ratchets both ways: a new site fails, and a baselined site that disappears
+ *    fails until its entry is removed (same shape as `guard:layer-boundary`).
+ *    Sites are keyed by `file:ident#ordinal` (the n-th binding of that name in
+ *    the file), never by line, so unrelated edits above a site do not trip it;
+ *    `line` in the baseline is informational.
+ *
+ * This guard scans the hand-written Solid source. It excludes:
  *   - test/spec/story files, and
  *   - generated files (the `Auto-generated from vendored React Spectrum` icon
- *     set, ~420 files, all uniform `const { class, ...rest } = props` on a
- *     static SVG whose props never change — benign and machine-owned).
- * A small ALLOWLIST records reviewed-benign exceptions (each with a rationale);
- * a genuinely new reactive-props destructure is what this catches.
+ *     set, ~420 files).
+ * A small ALLOWLIST records reviewed-benign *destructure* exceptions (each with
+ * a rationale); a genuinely new reactive-props destructure is what check 1
+ * catches.
  *
  * Exit 1 listing offenders; exit 0 when clean; exit 0 with a note when none of
  * the source roots exist (an environmental gap — never cry wolf). Run standalone
  * anytime: `vp run guard:idiomatic-solid`.
  */
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
+const CHILDREN_BASELINE_PATH = path.join(ROOT, "scripts", "idiomatic-solid-children-baseline.json");
 
 /** Hand-written Solid source roots (ports and styled component packages). */
 const SRC_ROOTS = [
@@ -59,6 +75,37 @@ const IS_TEST = /\.(test|spec|stories)\.[tj]sx?$|(^|\/)(__tests__|test)\//;
  * heuristic does not span — vanishingly rare and acceptable for a guard.
  */
 const PROPS_DESTRUCTURE = /\b(?:const|let)\s*\{[^}]*\}\s*=\s*props\b/g;
+
+/**
+ * `const ident = children(() =>` / `resolveChildren(() =>`. Requires the
+ * helper-call-plus-arrow shape so a local `children(item)` mapper is not a hit.
+ * The longer name is first so `resolveChildren` is not split into a false
+ * `children` match. `=>` is matched via a character class so a regex literal
+ * does not terminate at `/`.
+ */
+const CHILDREN_BINDING =
+  /\b(?:const|let)\s+(\w+)\s*=\s*(?:resolveChildren|children)\s*\(\s*\([^)]*\)\s*=>/g;
+
+export interface ChildrenSnapshotSite {
+  ident: string;
+  /** n-th flagged binding of this ident in the file (0-based); part of the key. */
+  ordinal: number;
+  /** Informational only — not part of the baseline key. */
+  line: number;
+}
+
+export interface ChildrenBaseline {
+  version: number;
+  generated: string;
+  description: string;
+  sites: Array<{
+    file: string;
+    ident: string;
+    ordinal: number;
+    line: number;
+    ticket: number;
+  }>;
+}
 
 /**
  * Reviewed-benign exceptions: a destructure of a stable *reference* (e.g. a
@@ -145,66 +192,284 @@ function walk(dir: string, out: string[]): void {
   }
 }
 
-console.log("Idiomatic-Solid check — reactive `props` must not be destructured");
-
-const roots = SRC_ROOTS.map((r) => path.join(ROOT, r)).filter(existsSync);
-if (roots.length === 0) {
-  console.log("- no Solid source roots present (nothing to scan) — skipping.");
-  process.exit(0);
+function isInsideComment(text: string, idx: number): boolean {
+  const lineStart = text.lastIndexOf("\n", idx) + 1;
+  if (text.slice(lineStart, idx).includes("//")) return true;
+  if (text.lastIndexOf("/*", idx) > text.lastIndexOf("*/", idx)) return true;
+  return false;
 }
 
-const files: string[] = [];
-for (const root of roots) walk(root, files);
-
-type Offender = { file: string; line: number; code: string };
-const offenders: Offender[] = [];
-let allowed = 0;
-
-for (const file of files) {
-  const text = readFileSync(file, "utf8");
-  if (text.includes(GENERATED_MARKER)) continue;
-  PROPS_DESTRUCTURE.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = PROPS_DESTRUCTURE.exec(text)) !== null) {
-    const idx = m.index;
-    // Skip matches that live inside a comment: the fixes for this anti-pattern
-    // routinely cite the very `{ … } = props` they replaced. Line comment = a
-    // `//` earlier on the same line; block comment = an unclosed `/*` before it.
-    // (A stringized `//`/`/*` could in theory mask a real same-line offender, but
-    // a props-destructure never trails a string literal on one line in practice.)
-    const lineStart = text.lastIndexOf("\n", idx) + 1;
-    if (text.slice(lineStart, idx).includes("//")) continue;
-    if (text.lastIndexOf("/*", idx) > text.lastIndexOf("*/", idx)) continue;
-    const line = text.slice(0, idx).split("\n").length;
-    const code = m[0].replace(/\s+/g, " ").trim();
-    if (isAllowlisted(file, code)) {
-      allowed++;
-      continue;
+function skipMatchingParen(text: string, openIdx: number): number {
+  let depth = 0;
+  for (let i = openIdx; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") {
+      depth--;
+      if (depth === 0) return i + 1;
     }
-    offenders.push({ file: file.replace(`${ROOT}/`, ""), line, code });
+  }
+  return openIdx;
+}
+
+function nextSameIdentBinding(text: string, ident: string, from: number): number {
+  const re = new RegExp(
+    String.raw`\b(?:const|let)\s+${ident}\s*=\s*(?:resolveChildren|children)\s*\(\s*\([^)]*\)\s*=>`,
+    "g",
+  );
+  re.lastIndex = from;
+  const m = re.exec(text);
+  return m ? m.index : text.length;
+}
+
+function identAppearsInJsxOrReturn(text: string, ident: string): boolean {
+  const jsx = new RegExp(String.raw`\{[\s]*\b${ident}\b(?!\s*:)`);
+  const ret = new RegExp(String.raw`\breturn\s+\b${ident}\b`);
+  if (jsx.test(text) || ret.test(text)) return true;
+  // Component return that uses ident in a ternary / wrapped expression
+  // (`return cond ? <span/> : content()`), not only `return ident()`.
+  const returnIdx = text.search(/\breturn\b/);
+  if (returnIdx < 0) return false;
+  return new RegExp(String.raw`\b${ident}\b`).test(text.slice(returnIdx));
+}
+
+function oneHopAliases(text: string, ident: string): string[] {
+  const re = new RegExp(
+    String.raw`\b(?:const|let)\s+(\w+)\s*=\s*(?:\(\s*\)\s*=>\s*)?${ident}\s*\(\s*\)`,
+    "g",
+  );
+  const aliases: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (isInsideComment(text, m.index)) continue;
+    aliases.push(m[1]);
+  }
+  return aliases;
+}
+
+function identUsesAreStructuralOnly(text: string, ident: string): boolean {
+  const re = new RegExp(String.raw`\b${ident}\b`, "g");
+  let m: RegExpExecArray | null;
+  let sawUse = false;
+  while ((m = re.exec(text)) !== null) {
+    if (isInsideComment(text, m.index)) continue;
+    sawUse = true;
+    const after = text.slice(m.index + ident.length);
+    if (/^\s*\.toArray\b/.test(after) || /^\s*\.length\b/.test(after)) continue;
+    const before = text.slice(Math.max(0, m.index - 8), m.index);
+    if (/\btypeof\s+$/.test(before)) continue;
+    return false;
+  }
+  return sawUse;
+}
+
+/**
+ * Find `children()` / `resolveChildren()` bindings whose result is rendered as
+ * JSX content or returned from the surrounding function. Structural-only uses
+ * (`.toArray()`, `.length`, `typeof`) are not returned.
+ */
+export function findRenderedChildrenSnapshots(source: string): ChildrenSnapshotSite[] {
+  const sites: ChildrenSnapshotSite[] = [];
+  CHILDREN_BINDING.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = CHILDREN_BINDING.exec(source)) !== null) {
+    if (isInsideComment(source, m.index)) continue;
+    const ident = m[1];
+    const callOpen = /(?:resolveChildren|children)\s*\(/.exec(m[0]);
+    const openParen =
+      m.index + (callOpen ? callOpen.index + callOpen[0].length - 1 : m[0].length - 1);
+    const afterCall = skipMatchingParen(source, openParen);
+    const windowEnd = nextSameIdentBinding(source, ident, afterCall);
+    const window = source.slice(afterCall, windowEnd);
+
+    if (identUsesAreStructuralOnly(window, ident)) continue;
+
+    const aliases = oneHopAliases(window, ident);
+    const rendered =
+      identAppearsInJsxOrReturn(window, ident) ||
+      aliases.some((alias) => identAppearsInJsxOrReturn(window, alias));
+    if (!rendered) continue;
+
+    const line = source.slice(0, m.index).split("\n").length;
+    const ordinal = sites.filter((s) => s.ident === ident).length;
+    sites.push({ ident, ordinal, line });
+  }
+  return sites;
+}
+
+/**
+ * Ticket that owns removing a known snapshot-rendered `children()` site.
+ * #168 / #169 are the styled-wrapper closeouts; remaining inspection wrappers
+ * and extra collection copies sit on #192 until a dedicated closeout exists.
+ */
+export function ticketForChildrenSite(file: string): number {
+  const n = file.replace(/\\/g, "/");
+  if (n.includes("/selectboxgroup/")) return 169;
+  if (
+    /\/(ActionButton|ToggleButton|LinkButton)\.tsx$/.test(n) ||
+    n.includes("/badge/") ||
+    n.includes("/radio/") ||
+    n.includes("/segmentedcontrol/") ||
+    n.includes("/tag-group/")
+  ) {
+    return 168;
+  }
+  return 192;
+}
+
+function siteKey(file: string, ident: string, ordinal: number): string {
+  return `${file}:${ident}#${ordinal}`;
+}
+
+function isExecutedDirectly(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return pathToFileURL(path.resolve(entry)).href === import.meta.url;
+  } catch {
+    return false;
   }
 }
 
-console.log(
-  `- scanned ${files.length} hand-written Solid files` +
-    (allowed ? ` (${allowed} reviewed-benign allowlisted)` : ""),
-);
+function main(): void {
+  const writeBaseline = process.argv.includes("--write-baseline");
 
-if (offenders.length > 0) {
-  console.error(
-    `\nguard:idiomatic-solid — FAIL: ${offenders.length} reactive-props destructure(s) found.\n` +
-      "In SolidJS this freezes the prop at call time (the body runs once). Read\n" +
-      "`props.x` directly, or use splitProps/mergeProps for a forwarded rest.\n",
+  console.log("Idiomatic-Solid check — reactive `props` must not be destructured");
+  console.log("                  — `children()` must not snapshot rendered content");
+
+  const roots = SRC_ROOTS.map((r) => path.join(ROOT, r)).filter(existsSync);
+  if (roots.length === 0) {
+    console.log("- no Solid source roots present (nothing to scan) — skipping.");
+    process.exit(0);
+  }
+
+  const files: string[] = [];
+  for (const root of roots) walk(root, files);
+
+  type DestructureOffender = { file: string; line: number; code: string };
+  const destructureOffenders: DestructureOffender[] = [];
+  let allowed = 0;
+
+  type LocatedChildrenSite = ChildrenSnapshotSite & { file: string };
+  const childrenSites: LocatedChildrenSite[] = [];
+
+  for (const file of files) {
+    const text = readFileSync(file, "utf8");
+    if (text.includes(GENERATED_MARKER)) continue;
+    const rel = file.replace(`${ROOT}/`, "").replace(/\\/g, "/");
+
+    PROPS_DESTRUCTURE.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = PROPS_DESTRUCTURE.exec(text)) !== null) {
+      const idx = m.index;
+      if (isInsideComment(text, idx)) continue;
+      const line = text.slice(0, idx).split("\n").length;
+      const code = m[0].replace(/\s+/g, " ").trim();
+      if (isAllowlisted(file, code)) {
+        allowed++;
+        continue;
+      }
+      destructureOffenders.push({ file: rel, line, code });
+    }
+
+    for (const site of findRenderedChildrenSnapshots(text)) {
+      childrenSites.push({ file: rel, ...site });
+    }
+  }
+
+  console.log(
+    `- scanned ${files.length} hand-written Solid files` +
+      (allowed ? ` (${allowed} reviewed-benign destructure(s) allowlisted)` : ""),
   );
-  for (const o of offenders) console.error(`  ${o.file}:${o.line}: ${o.code}`);
-  console.error(
-    "\nIf a site is genuinely benign (destructuring a stable reference whose\n" +
-      "fields are read reactively afterward), add it to ALLOWLIST with a reason.",
+
+  let failed = false;
+
+  if (destructureOffenders.length > 0) {
+    failed = true;
+    console.error(
+      `\nguard:idiomatic-solid — FAIL: ${destructureOffenders.length} reactive-props destructure(s) found.\n` +
+        "In SolidJS this freezes the prop at call time (the body runs once). Read\n" +
+        "`props.x` directly, or use splitProps/mergeProps for a forwarded rest.\n",
+    );
+    for (const o of destructureOffenders) console.error(`  ${o.file}:${o.line}: ${o.code}`);
+    console.error(
+      "\nIf a site is genuinely benign (destructuring a stable reference whose\n" +
+        "fields are read reactively afterward), add it to ALLOWLIST with a reason.",
+    );
+  }
+
+  if (writeBaseline) {
+    const baseline: ChildrenBaseline = {
+      version: 1,
+      generated: new Date().toISOString().slice(0, 10),
+      description:
+        "Frozen children() snapshot-rendered sites. Ticket #192. New sites fail; a baselined site that disappears fails until removed. #168 / #169 own the styled-wrapper fixes.",
+      sites: childrenSites.map((s) => ({
+        file: s.file,
+        ident: s.ident,
+        ordinal: s.ordinal,
+        line: s.line,
+        ticket: ticketForChildrenSite(s.file),
+      })),
+    };
+    writeFileSync(CHILDREN_BASELINE_PATH, `${JSON.stringify(baseline, null, 2)}\n`);
+    console.log(
+      `Wrote children-snapshot baseline → ${path.relative(ROOT, CHILDREN_BASELINE_PATH)} (${baseline.sites.length} sites)`,
+    );
+    process.exit(failed ? 1 : 0);
+  }
+
+  if (!existsSync(CHILDREN_BASELINE_PATH)) {
+    failed = true;
+    console.error(
+      `\nguard:idiomatic-solid — FAIL: missing children-snapshot baseline at ${path.relative(ROOT, CHILDREN_BASELINE_PATH)}.`,
+    );
+  } else {
+    const baseline = JSON.parse(readFileSync(CHILDREN_BASELINE_PATH, "utf8")) as ChildrenBaseline;
+    const baseKeys = new Set(baseline.sites.map((s) => siteKey(s.file, s.ident, s.ordinal)));
+    const currentKeys = new Set(childrenSites.map((s) => siteKey(s.file, s.ident, s.ordinal)));
+
+    const newSites = childrenSites.filter(
+      (s) => !baseKeys.has(siteKey(s.file, s.ident, s.ordinal)),
+    );
+    const staleSites = baseline.sites.filter(
+      (s) => !currentKeys.has(siteKey(s.file, s.ident, s.ordinal)),
+    );
+
+    console.log(`- frozen children-snapshot baseline: ${baseline.sites.length} sites`);
+    for (const s of baseline.sites) {
+      console.log(`  ${s.file}:${s.line} ${s.ident} (#${s.ticket})`);
+    }
+
+    if (newSites.length > 0) {
+      failed = true;
+      console.error(
+        `\nguard:idiomatic-solid — FAIL: ${newSites.length} new children() snapshot-rendered site(s) not in the baseline:`,
+      );
+      for (const s of newSites) {
+        console.error(`  ${s.file}:${s.line} ${s.ident} — add to the baseline with a ticket id`);
+      }
+    }
+
+    if (staleSites.length > 0) {
+      failed = true;
+      console.error(
+        `\nguard:idiomatic-solid — FAIL: ${staleSites.length} baselined site(s) no longer render a children() snapshot (fixed) — remove them from the baseline:`,
+      );
+      for (const s of staleSites) {
+        console.error(`  ${s.file} ${s.ident}#${s.ordinal} (#${s.ticket})`);
+      }
+    }
+  }
+
+  if (failed) process.exit(1);
+
+  console.log(
+    "guard:idiomatic-solid — PASS: no reactive-props destructures; children-snapshot baseline holds.",
   );
-  process.exit(1);
+  process.exit(0);
 }
 
-console.log(
-  "guard:idiomatic-solid — PASS: no reactive-props destructures in hand-written Solid source.",
-);
-process.exit(0);
+if (isExecutedDirectly()) {
+  main();
+}

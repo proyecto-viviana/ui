@@ -4,9 +4,14 @@ type: task
 title: "Document and gate the children snapshot class"
 created: 2026-09-01
 parent: 136
-status: open
+status: in-progress
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "named the children() snapshot class in patterns.md, corrected the createToggleState freeze claim, and ratcheted snapshot-rendered children() sites in guard:idiomatic-solid",
+    }
 ---
 
 ## Cause
@@ -50,3 +55,41 @@ guard is red on any #168 site and green after each is fixed.
 ## Relationship
 
 F-SOLID-015, F-SOLID-012 (rejected round-1 finding). Structure for #168.
+
+## Landed
+
+- `.claude/reference/patterns.md`: deleted the `createToggleState` freeze
+  claim (helpers re-call `access(props)` per read at
+  `packages/solid-stately/src/toggle/createToggleState.ts:51-64`); named the
+  `children()` mixed-text snapshot class (when to probe, when it is wrong,
+  `createMemo(() => local.children)` adapter, one-read rule, hydration-key
+  desync) with #135 / #168 / #169 / #184 as evidence; splitProps now says
+  splitting `children` is fine and a second getter read is not.
+- `scripts/check-idiomatic-solid.ts` plus
+  `scripts/idiomatic-solid-children-baseline.json`: flags `children(() =>`
+  / `resolveChildren(() =>` whose result (or a one-hop `ident()` alias) is
+  rendered as JSX or returned, allows `.toArray()` / `.length` / `typeof`
+  probes, and ratchets the baseline both ways. 32 frozen sites (#168 / #169
+  / #192). Inspection wrappers (Focusable, Pressable, OpenTransition) and
+  Tree/GridList copies sit on #192. Sites are keyed `file:ident#ordinal`,
+  not by line (orchestrator change after review: a line key would have
+  tripped on any edit above a site; proven by shifting `Focusable.tsx` one
+  line and re-running — still PASS).
+- Guard unit test: `packages/solid-stately/test/check-idiomatic-solid.test.ts`
+  because `vitest.config.ts` include is `packages/**/test/**/*.test.{ts,tsx}`
+  and excludes `scripts/`.
+
+## Comment sites for #168
+
+Source comments that repeat the freeze story (`createToggleState` / state
+helpers snapshot props unless you use getters). Do not edit them in #192;
+remove them when touching those files. `rg -n -i 'freeze|frozen|snapshot'
+packages/*/src` is dominated by _real_ destructure-freeze comments (those
+stay). The freeze _story_ is the "use getters so props are read lazily"
+line above an accessor that already re-accesses:
+
+- `packages/solidaria-components/src/Switch.tsx:134`
+- `packages/solidaria-components/src/Checkbox.tsx:251`
+- `packages/solidaria-components/src/Checkbox.tsx:472`
+- `packages/solidaria-components/src/TextField.tsx:417`
+- `packages/solidaria-components/src/DatePicker.tsx:403`
