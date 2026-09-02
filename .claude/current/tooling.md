@@ -152,6 +152,16 @@ process exit is insufficient: `vp run build` finishes with
 `guard:package-artifacts`, which checks every declared manifest target.
 `guard:source-artifacts` rejects generated declarations and maps in source.
 
+`solid-spectrum` and `viviana-ui` pack in two passes: `dom` (compiled `.js`,
+`styles.css`, cleans `dist`) and `jsx` (macro-expanded `.jsx` for the `solid`
+export condition). Their `build` scripts run each pass in its own `vp pack`
+process (`PACK_PASS=dom`, then `PACK_PASS=jsx`) because `unplugin-parcel-macros`
+keeps generated CSS in module-level maps that concurrent passes in one process
+race on; the symptom was "A macro CSS import reached renderChunk" on CI. Only
+`vp pack --watch` (the `dev` script) runs both passes in one process.
+`selectPackPasses` in `scripts/package-macro-plugin.mjs` owns the switch and
+`guard:package-sourcemaps` holds its contract.
+
 The comparison app uses `astro build`, but its Playwright server uses foreground
 `vp preview`. Astro 7 automatically backgrounds preview when it detects an
 agent, which makes Playwright treat the server command as terminated.

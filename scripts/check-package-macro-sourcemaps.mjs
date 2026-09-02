@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   packageMacros,
   rejectBrokenSourceMap,
+  selectPackPasses,
   sourceMapWarningGuard,
 } from "./package-macro-plugin.mjs";
 
@@ -54,8 +55,35 @@ assert.throws(
   "the package build guard must reject broken-map warnings",
 );
 
+const passes = { dom: { clean: true }, jsx: { clean: false } };
+const savedPackPass = process.env.PACK_PASS;
+try {
+  delete process.env.PACK_PASS;
+  assert.deepEqual(
+    selectPackPasses(passes),
+    [passes.dom, passes.jsx],
+    "without PACK_PASS (watch mode) every pass runs, the cleaning DOM pass first",
+  );
+  process.env.PACK_PASS = "jsx";
+  assert.deepEqual(
+    selectPackPasses(passes),
+    [passes.jsx],
+    "PACK_PASS=<name> must run exactly that pass in its own process",
+  );
+  process.env.PACK_PASS = "ssr";
+  assert.throws(
+    () => selectPackPasses(passes),
+    /Unknown PACK_PASS "ssr"; expected one of: dom, jsx/,
+    "an unknown PACK_PASS must fail the build instead of silently building nothing",
+  );
+} finally {
+  if (savedPackPass === undefined) delete process.env.PACK_PASS;
+  else process.env.PACK_PASS = savedPackPass;
+}
+
 process.stdout.write(
   `guard:package-sourcemaps — PASS: generated ${generated.line + 1}:${generated.column} maps to ` +
     `${traced.originalSource}:${traced.originalLine + 1}:${traced.originalColumn}; ` +
-    "the JSX-preserve transform retains its map and the build rejects SOURCEMAP_BROKEN.\n",
+    "the JSX-preserve transform retains its map, the build rejects SOURCEMAP_BROKEN, " +
+    "and PACK_PASS selects one pack pass per process.\n",
 );

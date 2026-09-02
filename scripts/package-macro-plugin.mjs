@@ -129,6 +129,32 @@ export function packageMacros(options = {}) {
   };
 }
 
+/**
+ * Select the pack passes for one `vp pack` invocation of a styled package.
+ *
+ * `unplugin-parcel-macros` keeps its generated CSS in module-level maps and,
+ * when it transforms a file, first deletes that file's assets from the previous
+ * transform (`unplugin-macros.js` "Remove old assets"). The DOM and JSX-preserve
+ * passes each transform every file, and `vp pack` runs the passes of one config
+ * concurrently in one process, so pass B's re-transform of a file can delete
+ * pass A's `macro-<hash>.css` between A's transform and A's resolve. A then
+ * leaves the import unresolved and its `renderChunk` rejects the chunk — a
+ * timing race that surfaces on slow CI runners. Each pass therefore runs in its
+ * own process: the `build` script invokes `vp pack` once per pass with
+ * `PACK_PASS=<name>`. With `PACK_PASS` unset (watch mode) all passes run as before.
+ */
+export function selectPackPasses(passes) {
+  const name = process.env.PACK_PASS;
+  if (!name) return Object.values(passes);
+  const pass = passes[name];
+  if (!pass) {
+    throw new Error(
+      `Unknown PACK_PASS "${name}"; expected one of: ${Object.keys(passes).join(", ")}.`,
+    );
+  }
+  return [pass];
+}
+
 export function rejectBrokenSourceMap(level, log) {
   if (level === "warn" && log?.code === "SOURCEMAP_BROKEN") {
     const details = Object.fromEntries(

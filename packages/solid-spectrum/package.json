@@ -265,7 +265,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
+    "build": "NODE_ENV=production PACK_PASS=dom vp pack && NODE_ENV=production PACK_PASS=jsx vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
     "dev": "vp pack --watch",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
   },

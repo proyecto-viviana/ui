@@ -2,7 +2,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
 import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
-import { packageMacros, sourceMapWarningGuard } from "../../scripts/package-macro-plugin.mjs";
+import {
+  packageMacros,
+  selectPackPasses,
+  sourceMapWarningGuard,
+} from "../../scripts/package-macro-plugin.mjs";
 
 // Curated public surface: the `.` barrel, the hand-picked PascalCase component
 // aliases (each backed by a package.json subpath export), and the JSX-free style
@@ -110,9 +114,12 @@ const copiedCssFiles = ["components.css", "font-faces.css", "theme.css"].map((fi
   flatten: true,
 }));
 
+// The two passes run one process each (`PACK_PASS=dom` then `PACK_PASS=jsx` in
+// the build script) — see selectPackPasses. The DOM pass cleans `dist`; the JSX
+// pass adds to it, so the order is fixed.
 export default defineConfig({
-  pack: [
-    {
+  pack: selectPackPasses({
+    dom: {
       entry,
       format: ["esm"],
       target: "esnext",
@@ -141,7 +148,7 @@ export default defineConfig({
       deps,
       copy: copiedCssFiles,
     },
-    {
+    jsx: {
       // JSX preserved (macro-expanded) -> dist/*.jsx — the `solid` export
       // condition. The consumer's compiler turns this into DOM
       // or SSR per-environment, so no separate pre-built SSR bundle is needed.
@@ -173,5 +180,5 @@ export default defineConfig({
       plugins: [sourceMapWarningGuard(), packageMacros({ stripCssImports: true })],
       deps,
     },
-  ],
+  }),
 });
