@@ -273,3 +273,21 @@ already compose HelpText the same way as TextField; no twin source edit.
   After: pass.
 
 **Gates.** `vp test run packages/solidaria packages/solidaria-components packages/solid-spectrum packages/viviana-ui` — 248 files, 5003 passed | 1 expected fail | 6 skipped. `vp run typecheck` — pass. `vp run typecheck:apps` — 0 errors. `vp run guard:layer-boundary` — PASS; NEW forks 0. `vp run guard:upstream-test-parity` — suspects 155 → 155 (Δ0), coverageGaps 47 → 47, upstreamOnly 18 → 18 (did not write). `vp run guard:attribution-headers` — PASS. `vp check --fix` on owned files — pass. `git diff --check` — clean. Playwright certified ColorField/Avatar and `comparison:test:journeys-driver` not run (orchestrator owns the browser slot and shared `dist`). No changeset (behavior restored to the pre-2ac31ca9 HelpText contract; same wave).
+
+Orchestrator (2026-09-02 Preview 1): certified `colorfield` **green** (D6 describedby included). Avatar D1 is #240 (no-store delay, 22/22).
+
+## Wave-3 D13 step-0 remaining (orchestrator split, 2026-09-02)
+
+Certified `output/audit-2026-09/wave-3/failures/d13-journeys.txt`. Field-DOM
+items from round 2 (`p` vs `span`, `data-focus-within`, describedby) are
+landed. What still fails at step 0, by owner:
+
+| Diff | Owner |
+| --- | --- |
+| `data-open` / `data-pressed` / `data-focused` on ComboBox input and trigger button | #209 |
+| Extra wrapper div with `data-focus-visible`/`data-focused` on Picker keyboard-only; plain RAC `Button` vs `SelectTrigger` | #254 (owner decision, do not start) |
+| Dismiss button Solid has `aria-hidden="true"`, React does not | this ticket (overlay/Dismiss) |
+| React `<template>` vs Solid `<form>`; extra hidden `<input>` | this ticket (HiddenSelect / React 19 Activity vs Solid form markup) |
+
+H1/H2 journeys stay blocked until step 0 is green. Do not patch the journey
+driver to ignore these.

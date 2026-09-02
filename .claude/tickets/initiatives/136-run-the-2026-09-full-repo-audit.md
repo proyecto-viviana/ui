@@ -479,6 +479,31 @@ fact is upstream-source-backed, with
 and a note on the ticket; `docs:generate` rejects a task whose `parent:` is a
 task — parent under #136 or an initiative.
 
+### Wave-3 close-out (2026-09-02, orchestrator)
+
+Full certified against preview `:4341` (`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`):
+**2118 passed / 6 failed / 4 skipped** (was 2079 / 45 / 4).
+
+Green this close-out: Virtualizer windowing, Picker `--trigger-width`,
+DatePicker/DateRangePicker D2+D5, ColorField describedby, Avatar D1 (no-store
+fixture delay).
+
+Remaining 6:
+
+| Cluster | Count | Owner |
+| --- | --- | --- |
+| D-reorder keyboard DnD (`listbox:Permissions` after Enter) | 2 | #256 |
+| Picker D13 step-0 | 2 | #209 / #248 / #254 |
+| ComboBox D13 step-0 | 2 | #209 / #248 / #254 |
+
+#254 is an open owner decision — do not start building it. PR #33
+fast-forward is blocked on explicit go.
+
+a11y this close-out: comparison axe **80/80** against `:4341`. Playground
+`[dark] WCAG 2.1 AA` still 120 s `frame.evaluate` timeout (same as wave-3;
+not a violation; remaining 9 tests did not run). `a11y:smoke` playground
+clicks hung waiting for "stable" (Chrome 151 / no compositor frame) — aborted.
+
 ### Owner decisions open after wave 3
 
 - **#254** RAC context composition for ComboBox/Select (plain

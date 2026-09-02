@@ -62,6 +62,24 @@ Orchestrator opinion, labeled as such: the context model is the upstream
 structure; keeping the compound components as the primary API guarantees a
 permanent parity tax on the two components the owner reported bugs in.
 
+## Wave-3 D13 evidence (2026-09-02, not a decision)
+
+Certified `d13-journeys.txt` step 0 still diffs DOM shape that the compound
+API cannot match line-for-line with RAC's context composition:
+
+- ComboBox trigger button emits `data-open` / `data-pressed` / `data-focused`
+  that RAC's plain `Button` from `ButtonContext` would get from shared Button
+  render props; the port's `ComboBoxButton` is a separate component.
+- Picker keyboard-only step 0: React has an extra wrapper div carrying
+  `data-focus-visible` / `data-focused` around the trigger; Solid's
+  `SelectTrigger` is the button itself. S2 Picker composes RAC `Button`, not
+  a SelectTrigger.
+- ComboBox `renderEmptyState` on a plain ListBox (#198 leftover) stays
+  blocked until this composition lands.
+
+Seeds cannot decide #248 H1/H2 until step 0 is either green or the remaining
+diffs are explicitly owned here / on #209 / on HiddenSelect.
+
 ## Relationship
 
 Child of #136. Informs #221, #224, #245, #246, #248, #252. Not started until

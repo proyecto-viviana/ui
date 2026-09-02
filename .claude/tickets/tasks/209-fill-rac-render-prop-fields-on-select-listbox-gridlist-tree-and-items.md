@@ -37,3 +37,17 @@ items; the generated reference lists them.
 ## Relationship
 
 F-API-006. DnD behavior stays #84; this is the public type/value surface.
+
+## Wave-3 D13 step-0 (2026-09-02)
+
+ComboBox field journey step 0 diffs render-prop data attributes Solid emits
+and React does not, or emits on a different node:
+
+- `data-open` on the combobox input
+- `data-open` / `data-pressed` / `data-focused` on the "Show suggestions" button
+- `data-hovered` already matches; `data-focus-visible` on trigger/svg is in
+  the same class
+
+These belong on this ticket (fill RAC render-prop fields and emit the matching
+`data-*`), not on #248's overlay geometry. Wrapper / context composition
+(plain `Button` vs `ComboBoxButton`) stays #254.
