@@ -24,20 +24,20 @@ on #118 / #117.
 
 Owner 2026-09-01:
 
-| Export      | Classification            | Note obligation                                                                                                                                   |
-| ----------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ColorEditor | S2 `parity`               | Needs a validation note. May share a color-family note with ColorArea / ColorField / ColorWheel.                                                  |
-| ColorPicker | RAC `composition`         | Needs a composition note, or the same color-family note.                                                                                          |
-| FileTrigger | support export            | Exception. Evidence lives on DropZone and #109. No separate 10-gate catalogue page.                                                               |
-| Landmark    | documented local addition | Exception. RAC has no counterpart. A short note that says "local addition, no S2 oracle" is enough if written; it is not a catalogue march.       |
-| Alert       | documented local addition | Exception. Distinct RAC-layer primitive with no RAC counterpart. Do not mint a second Alert product or fold it into S2 InlineAlert / AlertDialog. |
+| Export      | Classification                                       | Note obligation                                                                                                                                   |
+| ----------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ColorEditor | `composition` (corrected 2026-09-01; no S2 upstream) | Needs a composition note naming the S2 primitives it composes (ColorArea, ColorSlider, ColorField, ColorSwatch). May share the color-family note. |
+| ColorPicker | RAC `composition`                                    | Needs a composition note, or the same color-family note.                                                                                          |
+| FileTrigger | support export                                       | Exception. Evidence lives on DropZone and #109. No separate 10-gate catalogue page.                                                               |
+| Landmark    | documented local addition                            | Exception. RAC has no counterpart. A short note that says "local addition, no S2 oracle" is enough if written; it is not a catalogue march.       |
+| Alert       | documented local addition                            | Exception. Distinct RAC-layer primitive with no RAC counterpart. Do not mint a second Alert product or fold it into S2 InlineAlert / AlertDialog. |
 
 Do not send FileTrigger, Landmark, or Alert through the Button-style
 certification march.
 
 ## Work remaining
 
-Write the ColorEditor parity note and the ColorPicker composition note
+Write the ColorEditor composition note and the ColorPicker composition note
 (one color-family file is allowed). FileTrigger, Landmark, and Alert already
 have recorded exceptions.
 
@@ -53,3 +53,7 @@ bucket.
 ## Round-2 note (2026-09-01)
 
 Round 2 challenge: the owner table calls ColorEditor S2 `parity`; `packages/solid-spectrum/src/color/ColorEditor.tsx:13-21` says there is no S2 upstream for ColorEditor and vendored S2 `src/` has none (it is a v3 composition). Owner: correct the label to composition before the note is written. The exceptions for FileTrigger/Landmark/Alert stand.
+
+## Decision (owner, 2026-09-01)
+
+ColorEditor is relabeled a composition: an explicit, documented local addition (Rule #2), not S2 parity. Its note names the S2 primitives it composes — ColorArea, ColorSlider, ColorField, ColorSwatch — and inherits their certification rather than claiming parity with an upstream that does not exist. The FileTrigger / Landmark / Alert exceptions stand.

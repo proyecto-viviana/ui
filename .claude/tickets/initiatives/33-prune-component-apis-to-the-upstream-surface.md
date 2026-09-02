@@ -17,3 +17,7 @@ Each public difference from upstream is removed or documented as an approved loc
 ## Relationship
 
 Replaces roadmap item `upstream-api-parity`.
+
+## Round-2 owner decisions (2026-09-01)
+
+Resulting checklist from #218 / #219: #221 (barrel equals S2 exports; relocate extras), #222 (MenuButton out of solid-spectrum and solidaria-components), #223 (viviana-native names off the ui barrel), #224 (upstream item names canonical; deprecate ListBoxOption / ComboBoxOption), #227 (per-file subpaths generated from S2 exports/). `class` is the one systematic port rule (architecture.md, "Public names").

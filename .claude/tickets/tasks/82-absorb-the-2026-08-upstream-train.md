@@ -4,7 +4,7 @@ type: task
 title: "Absorb the 2026-08 upstream train"
 created: 2026-08-20
 parent: 34
-status: in-progress
+status: verified
 history:
   - { state: next, at: 2026-08-20, note: "migrated from legacy task upstream-train-2026-08" }
   - {
@@ -26,6 +26,11 @@ history:
       state: in-progress,
       at: 2026-09-01,
       note: "owner 2026-09-01: dropped verified remaining-branch rows #108, #122, #17, and #18",
+    }
+  - {
+      state: verified,
+      at: 2026-09-01,
+      note: "owner decision on #216 redefined train completion as pin moved + inventory ticketed + certified green; pin, comparison manifest, and oracle agree on 5ecb333, every remaining branch has a ticket, certified 2120/2124 at this pin (round-2 gates); the 2026-09 train is #220",
     }
 ---
 
@@ -80,10 +85,11 @@ engines and mobile environments.
 
 ## Done when
 
-The train is classified and absorbed under the upstream-sync playbook, every
-ticket above is verified, pins
-and oracles match the selected upstream commit, and all required parity gates
-pass.
+(Redefined by the owner on 2026-09-01, #216.) The train is classified under
+the upstream-sync playbook, every remaining branch above has a ticket, pins
+and oracles match the selected upstream commit, and the certified suite is
+green at that pin. The branch tickets carry into later trains and are not a
+condition of this one. Met at `5ecb333`; the next train is #220.
 
 ## Relationship
 

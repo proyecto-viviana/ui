@@ -45,3 +45,10 @@ one generated catalog.
 
 F-I18N-001. Not #73 (NumberField) or #179 (D10 registration). #202 makes
 D10 see it.
+
+## Owner decision (2026-09-01, via #219 item 4)
+
+The locale split — mirroring RAC's `./i18n/*` plus optimize-locales structure
+instead of inlining all 34 dictionaries per primitive (ComboBox today) — is
+done inside this spine work with #199 and #200, as one structural pass. No
+separate ticket.

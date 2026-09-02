@@ -79,8 +79,10 @@ Track each styled export as one of:
 - `composition` — an S2-like productized API assembled from multiple headless
   primitives.
 - `viviana-native` — a first-class Viviana component with no upstream S2
-  counterpart. None are on the public barrel today. Do not add one until the
-  owner reopens that surface (#62 / #145).
+  counterpart. None belong on the public barrel until the owner reopens that
+  surface (#62 / #145). The `@proyecto-viviana/ui` barrel still exports
+  `Well`, the `Pixel*` icons, `typeRoles`, and `meshStrip`; the owner
+  confirmed this line as the intent on 2026-09-01 and #223 removes them.
 - `tracked-gap` — a known missing parity component or comparison route.
 
 The Kumo package uses the same evidence rule. Its first Button slice is an
@@ -92,6 +94,19 @@ adds productized wrappers above RAC, and the styled layers may do the same. A
 barrel export that is not an S2 catalogue component is composition,
 viviana-native, or a support export. Support exports do not get a 10-gate
 catalogue page. Ticket #177 records the current exceptions.
+
+## Public names (owner decisions, 2026-09-01, #218)
+
+- The `@proyecto-viviana/solid-spectrum` barrel equals S2's `exports/index.ts`
+  and is guarded. Extras with no consumer are deleted; extras the product uses
+  move to `@proyecto-viviana/ui` (#221). `MenuButton` leaves `solid-spectrum`
+  and `solidaria-components` (#222).
+- Upstream item names are canonical: `ListBoxItem`, `ComboBoxItem`,
+  `PickerItem`. `ListBoxOption` / `ComboBoxOption` are deprecated aliases with
+  a named removal release (#224).
+- `class` is the one systematic port rule: every component takes `class`
+  where RAC and S2 take `className`. `className` is not accepted. The
+  generated API reference states this once; component pages do not repeat it.
 
 ## Build order
 

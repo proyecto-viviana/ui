@@ -125,8 +125,13 @@ existing checkout through the release process below.
     layout, engine behavior, pointer modality, Shadow DOM, or mobile assistive
     technology.
 
-11. Mark the train verified only when all required atomic tasks and same-revision
-    gates pass.
+11. Mark the train verified when three things hold at the same revision: the
+    pin has moved (`scripts/upstream-pin.json`, the comparison manifest, the
+    token pin, and the vendored checkout agree), every delta from step 6 has a
+    ticket, and the certified suite is green against the new oracle. Behavior
+    tickets carry across trains; a train does not wait for them. (Owner
+    decision on #216, 2026-09-01. Before that date "verified" implicitly meant
+    every behavior absorbed, which left the pin unable to move.)
 
 If Adobe moves test files, update `UPSTREAM_TEST_ROOTS` or the matcher in
 `scripts/check-upstream-test-parity.ts`. Current S2 tests live under

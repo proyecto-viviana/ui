@@ -4,9 +4,14 @@ type: task
 title: "Decide whether upstream-freshness may exit 0 when GitHub is unreachable"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: verified,
+      at: 2026-09-01,
+      note: "owner decided: advisory stays, unknown must be visible; script exits 2 on unreachable/unresolved and the workflow publishes a state output rendered as current/behind/unknown",
+    }
 ---
 
 ## Cause
@@ -22,6 +27,14 @@ from the job table.
 
 Owner decision: keep skip-on-offline, or fail closed (or mark the job
 neutral with a visible warning) when the remote is unreachable.
+
+## Decision (owner, 2026-09-01)
+
+Freshness stays advisory (a new Adobe release must not break `main`), but
+the guard must never report "up to date" when it did not check. Unreachable
+remote → distinct non-zero exit code (not the "behind" code) and an `unknown`
+row in the Certification Gates summary, so current / behind / unknown are
+three visible states. The workflow keeps `continue-on-error` for this job.
 
 ## Done when
 

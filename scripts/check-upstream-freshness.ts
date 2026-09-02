@@ -7,14 +7,17 @@
  * nothing tells us when that target goes stale. A new Adobe release can land and
  * sit unnoticed for weeks. This guard asks GitHub for the latest RAC + S2 tags
  * and compares them to the pin:
- *   - exit 0, "up to date" when the pin == latest, or when the remote is
- *     unreachable (never cry wolf on a CI/network blip);
+ *   - exit 0, "current" when the pin == latest for every mirrored package;
  *   - exit 1, "behind" when a newer release exists — naming the gap and pointing
- *     at the absorb playbook (.claude/current/upstream-sync.md).
+ *     at the absorb playbook (.claude/current/upstream-sync.md);
+ *   - exit 2, "unknown" when the remote is unreachable or a tag cannot be
+ *     resolved. The guard did not check, so it must not say "current" (owner
+ *     decision on #217, 2026-09-01).
  *
- * It runs report-only in certification-gates.yml (continue-on-error), so "behind"
- * surfaces as a ❌ cell — a visible nudge, not a blocked build. Run it standalone
- * anytime: `vp run guard:upstream-freshness`.
+ * It runs advisory in certification-gates.yml (continue-on-error); the workflow
+ * maps the exit code to a `state` output so the job summary shows current /
+ * behind / unknown as three different rows — a network blip is not a green pin.
+ * Run it standalone anytime: `vp run guard:upstream-freshness`.
  */
 
 import { execSync } from "node:child_process";
@@ -70,8 +73,10 @@ try {
   });
 } catch {
   console.log("Upstream freshness check");
-  console.log("- could not reach the Adobe remote (offline?) — skipping, treated as up to date.");
-  process.exit(0);
+  console.log(
+    "- could not reach the Adobe remote (offline?) — freshness UNKNOWN; the pin was not checked.",
+  );
+  process.exit(2);
 }
 
 const lines = remote.split("\n");
@@ -79,13 +84,15 @@ console.log("Upstream freshness check");
 console.log(`- pinned release: ${pin.release}`);
 
 let behind = false;
+let unknown = false;
 for (const pkg of PACKAGES) {
   const pinned = pin.tags[pkg];
   const newest = latestTag(lines, pkg);
   const pinnedV = pinned ? parse(pinned) : null;
   const newestV = newest ? parse(newest) : null;
   if (!newest || !newestV || !pinnedV) {
-    console.log(`- ${pkg}: pinned ${pinned ?? "?"} — latest unknown (skipped)`);
+    unknown = true;
+    console.log(`- ${pkg}: pinned ${pinned ?? "?"} — latest UNKNOWN (tag not resolved)`);
     continue;
   }
   if (cmp(newestV, pinnedV) > 0) {
@@ -101,6 +108,11 @@ if (behind) {
   console.log("A newer upstream release exists. Absorb it via the playbook:");
   console.log('  .claude/current/upstream-sync.md  →  "Absorbing a new upstream release"');
   process.exit(1);
+}
+
+if (unknown) {
+  console.log("\nFreshness UNKNOWN: at least one mirrored package could not be compared.");
+  process.exit(2);
 }
 
 console.log("\n✓ pin is current with the latest Adobe release.");

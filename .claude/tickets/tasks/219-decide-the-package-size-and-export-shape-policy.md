@@ -4,9 +4,14 @@ type: task
 title: "Decide the package size and export-shape policy"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: verified,
+      at: 2026-09-01,
+      note: "owner decided all four items; follow-ups #225 #226 #227 filed; locale split noted on #198",
+    }
 ---
 
 ## Cause
@@ -33,6 +38,24 @@ public-shape or oracle choice the owner should steer:
 Owner decides: which size oracle (if any) replaces the ceiling; whether
 solid-stately gets per-primitive entries or a DCE proof (#212); whether
 `./Button` matches S2's per-file surface; whether locales split.
+
+## Decision (owner, 2026-09-01)
+
+1. Size oracle: a per-export cost table produced by the packed consumer
+   smoke (`import { X }` → min+brotli of the consumer bundle) with a
+   checked-in baseline and a ratchet that fails on growth unless a changeset
+   explains it. S2's per-export cost for the same import is printed
+   alongside, report-only. The Babel-deopt ceiling stays as what it is (a
+   compiler guard), not as size evidence.
+2. solid-stately: per-primitive entries reusing the directory names solidaria
+   already exposes (no new names minted), plus the DCE proof (#212) so barrel
+   imports also tree-shake.
+3. Styled per-file subpaths (`./Button`, `./Picker`, …) match S2's
+   `exports/*.ts` surface exactly, generated from S2's `exports/` directory
+   list so drift is guarded.
+4. Locales: mirror RAC's `./i18n/*` + optimize-locales structure, done inside
+   the i18n spine work (#198–#200) as one structural pass, not a separate
+   ticket.
 
 ## Done when
 

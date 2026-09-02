@@ -231,11 +231,24 @@ jobs:
 
       # Goes red when Adobe ships a RAC/S2 release newer than our pin. That is
       # information about upstream, not a defect in this branch, so it must not
-      # block main; the response is a pin bump, not a revert.
+      # block main; the response is a pin bump, not a revert. The script exits
+      # 0 current / 1 behind / 2 unknown (remote unreachable); the `state`
+      # output keeps "unknown" from ever rendering as a green pin (#217).
       - name: guard upstream-freshness
         id: guard_upstream_freshness
         continue-on-error: true
-        run: pnpm run guard:upstream-freshness
+        run: |
+          set +e
+          pnpm run guard:upstream-freshness
+          code=$?
+          case "$code" in
+            0) state=current ;;
+            1) state=behind ;;
+            2) state=unknown ;;
+            *) state=error ;;
+          esac
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          exit "$code"
 
       - name: Upload Playwright artifacts
         if: always()
@@ -263,7 +276,7 @@ jobs:
           O_GUARD_RAC_EXPORT_GAP: ${{ steps.guard_rac_export_gap.outcome }}
           O_GUARD_DND: ${{ steps.guard_dnd_keyboard.outcome }}
           O_GUARD_VIRTUALIZER: ${{ steps.guard_virtualizer_keyboard.outcome }}
-          O_GUARD_FRESHNESS: ${{ steps.guard_upstream_freshness.outcome }}
+          O_GUARD_FRESHNESS_STATE: ${{ steps.guard_upstream_freshness.outputs.state }}
           O_GUARD_TOKENS_PIN: ${{ steps.guard_tokens_pin.outcome }}
           O_GUARD_STYLE_MACRO_PARITY: ${{ steps.guard_style_macro_parity.outcome }}
           O_GUARD_SOURCE_ARTIFACTS: ${{ steps.guard_source_artifacts.outcome }}
@@ -291,6 +304,14 @@ jobs:
               skipped) echo "⏭️ skip" ;;
               cancelled) echo "🚫 cancelled" ;;
               *) echo "▫️ $1" ;;
+            esac
+          }
+          freshness() {
+            case "$1" in
+              current) echo "✅ current" ;;
+              behind) echo "⚠️ behind" ;;
+              unknown) echo "❔ unknown (not checked)" ;;
+              *) echo "▫️ ${1:-no state}" ;;
             esac
           }
           {
@@ -340,7 +361,7 @@ jobs:
             echo ""
             echo "| Gate | Result | Why it is not blocking |"
             echo "| --- | --- | --- |"
-            echo "| \`guard:upstream-freshness\` | $(icon "$O_GUARD_FRESHNESS") | ❌ means Adobe shipped past our pin — a pin bump, not a branch defect |"
+            echo "| \`guard:upstream-freshness\` | $(freshness "$O_GUARD_FRESHNESS_STATE") | ⚠️ behind means Adobe shipped past our pin — a pin bump, not a branch defect; ❔ unknown means the remote was unreachable and the pin was not checked |"
             echo ""
             echo "_Promoting an advisory gate means closing its ticket first, not deleting its row._"
           } >> "$GITHUB_STEP_SUMMARY"

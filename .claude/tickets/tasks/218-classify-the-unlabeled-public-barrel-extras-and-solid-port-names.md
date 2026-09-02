@@ -4,9 +4,14 @@ type: task
 title: "Classify the unlabeled public-barrel extras and Solid port names"
 created: 2026-09-01
 parent: 136
-status: open
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit, round 2" }
+  - {
+      state: verified,
+      at: 2026-09-01,
+      note: "owner decided all five items; recorded on the ticket and in architecture.md; follow-ups #221 #222 #223 #224 filed and listed on #33",
+    }
 ---
 
 ## Cause
@@ -39,6 +44,26 @@ frames the decisions rather than prescribing them:
 Owner decides each: keep-and-label, keep-and-rename, or remove. Then the
 inventory becomes #33's checklist and the labels land in barrel comments and
 the generated reference.
+
+## Decision (owner, 2026-09-01)
+
+1. The `@proyecto-viviana/solid-spectrum` barrel equals S2's
+   `exports/index.ts`, guarded. Extras with no consumer are deleted; extras
+   the product uses move to `@proyecto-viviana/ui`, the owner-ratified
+   additions package. The inventory of what the product imports is the first
+   step of that work.
+2. `MenuButton` leaves `solid-spectrum` and `solidaria-components`; it stays
+   in `@proyecto-viviana/ui` only if the product uses it.
+3. `architecture.md` records the intent: `Well`, the `Pixel*` icons,
+   `typeRoles`, and `meshStrip` come off the `@proyecto-viviana/ui` barrel
+   until #62 reopens the viviana-native surface deliberately.
+4. Upstream item names are canonical (`ListBoxItem`, `ComboBoxItem`,
+   `PickerItem`); `ListBoxOption` / `ComboBoxOption` become deprecated
+   aliases with a named removal release. The styled `Select*` names fall
+   under item 1.
+5. `class` only, as the one systematic port rule; recorded once in
+   `architecture.md` and the generated API reference. `className` is not
+   accepted.
 
 ## Done when
 
