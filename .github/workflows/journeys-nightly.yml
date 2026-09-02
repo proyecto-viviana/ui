@@ -1,0 +1,108 @@
+name: Journey Fuzz Nightly
+
+# Seeded D13 journey fuzz (ticket #247). Not a PR gate: failing sequences are
+# minimized and uploaded so the orchestrator can promote them to named journeys.
+# Certified D13 seed tests stay on Certification Gates; this job only runs the
+# fuzz describe (`JOURNEY_FUZZ=1`).
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: journeys-nightly
+  cancel-in-progress: true
+
+jobs:
+  journey-fuzz:
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: ComboBox
+            spec: e2e/certified/combobox.certified.spec.ts
+          - component: Picker
+            spec: e2e/certified/picker.certified.spec.ts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: materialize pinned upstream oracle
+        id: upstream_oracle
+        run: node scripts/check-upstream-oracle.mjs --acquire
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright install --with-deps chromium
+
+      - name: Derive seed
+        run: echo "JOURNEY_SEED=$(date -u +%Y%m%d)" >> "$GITHUB_ENV"
+
+      - name: Build comparison app
+        run: pnpm run comparison:build
+
+      - name: Fuzz ${{ matrix.component }}
+        id: fuzz
+        env:
+          JOURNEY_FUZZ: "1"
+          JOURNEY_BUDGET_MS: "180000"
+          JOURNEY_MAX_STEPS: "16"
+        run: |
+          pnpm exec vp exec --filter @proyecto-viviana/comparison -- playwright test ${{ matrix.spec }} --grep "D13 fuzz" --reporter=line
+
+      - name: Upload minimized journeys
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: journeys-nightly-${{ matrix.component }}-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            apps/comparison/e2e/journeys/minimized
+            apps/comparison/playwright-report
+            apps/comparison/test-results
+            output/d13-journey-fuzz-*.md
+
+      - name: Publish summary
+        if: always()
+        env:
+          O_FUZZ: ${{ steps.fuzz.outcome }}
+          COMPONENT: ${{ matrix.component }}
+        run: |
+          icon() {
+            case "$1" in
+              success) echo "✅ pass" ;;
+              failure) echo "❌ fail (minimized journey in artifacts)" ;;
+              skipped) echo "⏭️ skip" ;;
+              cancelled) echo "🚫 cancelled" ;;
+              *) echo "▫️ $1" ;;
+            esac
+          }
+          {
+            echo "## D13 journey fuzz — ${COMPONENT}"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| component | ${COMPONENT} |"
+            echo "| seed | \`${JOURNEY_SEED}\` (UTC date) |"
+            echo "| budget | 180000 ms |"
+            echo "| result | $(icon "$O_FUZZ") |"
+            echo ""
+            echo "Minimized sequences land in \`apps/comparison/e2e/journeys/minimized/\` and \`output/d13-journey-fuzz-*.md\`."
+          } >> "$GITHUB_STEP_SUMMARY"
