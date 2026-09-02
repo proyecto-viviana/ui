@@ -52,3 +52,9 @@ The locale split — mirroring RAC's `./i18n/*` plus optimize-locales structure
 instead of inlining all 34 dictionaries per primitive (ComboBox today) — is
 done inside this spine work with #199 and #200, as one structural pass. No
 separate ticket.
+
+## Train 9 note (2026-09-02, via #220)
+
+RAC 1.21.0: "Apply hook filters in `optimize-locales-plugin` so unused locale
+strings are removed" (`@react-aria/optimize-locales-plugin@2.0.2`). That is
+#219 item 4, already assigned here. No new ticket.

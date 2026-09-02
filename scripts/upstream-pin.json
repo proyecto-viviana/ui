@@ -1,10 +1,10 @@
 {
-  "release": "@react-spectrum/s2@1.6.0",
-  "commit": "5ecb3333001313e83898cd07644227897e3bae1f",
+  "release": "@react-spectrum/s2@1.7.0",
+  "commit": "f56660b234bd588751c9f35b85d6fe6e17e45ccf",
   "tags": {
-    "@react-spectrum/s2": "1.6.0",
-    "react-aria-components": "1.20.0"
+    "@react-spectrum/s2": "1.7.0",
+    "react-aria-components": "1.21.0"
   },
-  "pinnedAt": "2026-08-19",
-  "notes": "The gitignored ./react-spectrum oracle is materialized at the S2 1.6.0 / React Aria Components 1.20.0 release train. Bump it via the .claude/current/upstream-sync.md playbook, then re-run the upstream, style, and behavior gates and triage every release delta. Train 8 absorption is tracked by .claude/tickets/tasks/82-absorb-the-2026-08-upstream-train.md; pin alignment is complete, behavior absorption is not."
+  "pinnedAt": "2026-09-02",
+  "notes": "The gitignored ./react-spectrum oracle is materialized at the S2 1.7.0 / React Aria Components 1.21.0 release train. Bump it via the .claude/current/upstream-sync.md playbook, then re-run the upstream, style, and behavior gates and triage every release delta. Train 9 absorption is tracked by .claude/tickets/tasks/220-absorb-the-2026-09-upstream-train.md; pin alignment is in progress, behavior absorption is not."
 }

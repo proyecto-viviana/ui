@@ -32,3 +32,23 @@ Target the 1.21.0 TokenField API — `TokenFieldValue.selectedRange` and
 `withSelectedRange`, not `caretPosition` — because the 2026-09 train (#220)
 moves the pin to `f56660b` before this port finishes. This ticket now belongs
 to #220's train.
+
+## Train 9 note (2026-09-02, via #220)
+
+Pin is now `f56660b` (RAC 1.21.0). Source evidence for the API this ticket
+must ship:
+
+- `packages/react-stately/src/tokenfield/TokenFieldValue.ts` — `selectedRange`
+  / `withSelectedRange`; `caretPosition` is a getter of
+  `selectedRange.current`.
+- `packages/react-aria/src/tokenfield/useTokenField.ts` — restore via
+  `setTokenFieldSelection` + `withSelectedRange`; blur clears selection;
+  `getSelectedRange` uses `setBaseAndExtent` so backward selections survive.
+- `packages/react-aria-components/src/TokenField.tsx` — `data-react-aria-token`
+  plus an adopted stylesheet that hides native selection on tokens (Firefox
+  IME / selection).
+- Release note: "TokenFieldValue now tracks the full selected range instead of
+  a single caret position" and "Fix IME composition in Firefox".
+
+Do not open a sibling ticket. #220's export-gap did not list TokenField
+(already unmatched as an unported suite).

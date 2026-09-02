@@ -42,3 +42,9 @@ Each mapper flips from the locale context alone; the tests fail if
 
 F-I18N-004/005. Why a D10 walk on ColorSwatchPicker would fail today; delta
 on #179's driver list.
+
+## Train 9 note (2026-09-02, via #220)
+
+RAC 1.21.0 also made Tabs ArrowLeft/ArrowRight follow locale direction in
+vertical orientation (`TabsKeyboardDelegate.ts:28-30` at `f56660b`; test
+`Tabs.test.js:474`). That is not this ticket's four mappers. Port is #230.

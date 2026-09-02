@@ -266,7 +266,7 @@
     "dev": "vp pack --watch"
   },
   "dependencies": {
-    "@adobe/spectrum-tokens": "14.0.0",
+    "@adobe/spectrum-tokens": "14.15.0",
     "@parcel/macros": "^2.16.4",
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",
