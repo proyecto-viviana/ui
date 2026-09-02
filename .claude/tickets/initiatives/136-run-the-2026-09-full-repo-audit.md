@@ -312,6 +312,77 @@ the Astro globs, and `comparison:build` is green).
 - **#221–#227** the barrel and shape decisions — public-API changes, sequenced
   after the functional pass.
 
+## Round 2, wave 3 (2026-09-02) — upstream train, D13, structural fixes
+
+Every item above except #160/#191, #206–#209 and #221–#228 moved. Landed on
+`main` (local, ahead of `origin/main` by 41 commits; push waits for the
+browser gates below):
+
+- **Upstream train (#220)** — pin RAC 1.21.0 / S2 1.7.0 (`f56660b`):
+  behaviour fixes #229–#239, #241, #242 (`e97bb6f2`, `ad4f3030`, `8e409052`,
+  `1ea67d34`); S2 1.7.0 `1lh` icon sizing through the style macro, #240
+  (`649852a2`).
+- **i18n spine (#198–#201, #253)** — 34-locale catalogs for solidaria,
+  solidaria-components, solid-spectrum and ui; English literals routed through
+  upstream keys (`9ec33c6d`, `98293143`, `35eed271`); ICU compiled once in
+  `createStringFormatter` by a port of `@internationalized/string-compiler`,
+  the dnd and S2 ad-hoc compilers deleted (`b0388142`).
+- **Guards (#203–#205)** — ticketed-pending export gap, one-way test-parity
+  ratchet with `--allow-growth <ticket>`, oracle-driven keyboard walks.
+  Ratchet growth absorbed this wave: `menu|key|arrowleft` (#201),
+  `combobox|aria|aria-setsize` (#252), `combobox|role|alert` /
+  `select|role|alert` (#248), `tabs|role|listbox` (#257) — each S2/RAC-source
+  backed, none asserted by a pinned upstream test.
+- **Comparison CI (#194–#196)** — sharded blocking certified jobs with a
+  tracked waiver gate; pair/contract are floors (`b09d78df`).
+- **D13 interaction journeys (#243)** — driver, seeds, seeded fuzz + nightly
+  (#244/#247, `684978bf`); step vocabulary and observation classes for the
+  ComboBox/Picker inventories under `apps/comparison/playbook/journeys/`
+  (#245/#246, `62627658`); driver unit tests under a node vitest config in CI.
+- **Owner-reported overlay defect (#248)** — headless ComboBox/Picker ARIA
+  parity (`1d988fd9`); field wiring through `createField` + `createSlotId`,
+  HelpText in the S2 Text/FieldError shape, RadioGroup stable across the
+  slot-id probe (`2ac31ca9`); headless Popover owns RAC enter/exit animation,
+  ActionMenu timers and DatePicker's private popover deleted (#251,
+  `179e19c7`); styled ComboBox/Picker/Menu/ActionMenu/TabsPicker compose the
+  S2 Popover, four popover style forks deleted (#257, `a61a0204`); S2
+  ComboBox/Picker listboxes virtualized with S2 layout options (#252,
+  `8f5245e7`); Virtualizer context-only with the collection element as the
+  scroller, `data-virtualizer` wrapper and harness compensation deleted
+  (#256, `52ab0c52`).
+- **Comparison app lag (#250)** — fixture registries split per slug for both
+  stacks (`a4eacf40`); #255 measures the remaining dev-server module graph.
+
+### Blocked on the machine, not the code
+
+Headless Chromium on this WSL2 instance stopped producing frames
+(`requestAnimationFrame` never fires, even on a blank `data:` page). Every
+browser gate — pair, contract, certified, D13 seed journeys — hangs on
+"waiting for element to be stable". Unit, SSR, hydrate, typecheck and all
+guards are green on the final tree. Because of this every ticket above that
+has a `## Landed` block is `in-progress`, not `done`: the certified/pair/
+contract re-run and the D13 seed run on ComboBox/Picker are the missing
+proof, and they gate the push of the 41 commits. Restart the instance
+(`wsl --shutdown`), then run `comparison:test:pair`, `:contract`, `:certified`
+and the D13 seeds; #248's hypotheses H1/H2 are decided by `CB-OV-05` /
+`PK-OV-04`.
+
+### Owner decisions open after wave 3
+
+- **#254** RAC context composition for ComboBox/Select (plain
+  `Input`/`Button`/`ListBox` from context vs the bespoke compound parts).
+  Evidence and proposal are on the ticket; blocks porting the RAC ComboBox/
+  Select suites verbatim.
+- **#255** dev-server module graph: pre-bundle the Solid packages in dev,
+  deep imports, or dynamic demo loading — measurements on the ticket.
+
+### Still open from round 2
+
+#160/#191 (hydrate gate cost), #202 (D10 over catalogs/RTL), #206–#209
+(Rule #2 inventions), #221–#228 (barrels, shapes, NavigationTree), #249
+(journeys for the rest of the overlay family), #258 (RadioGroup TextContext
+slots).
+
 ## Done when
 
 Every child is merged, verified, owner-blocked, or explicitly dropped with a
