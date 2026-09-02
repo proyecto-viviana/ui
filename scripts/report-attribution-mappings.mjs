@@ -559,7 +559,7 @@ function explicitSources(markers) {
 
   for (const marker of markers) {
     const exactRepositoryPaths = marker.matchAll(
-      /\b(packages\/(?:@react-(?:aria|spectrum|stately|types)\/[a-z0-9-]+|react-(?:aria|stately)|react-aria-components)\/[A-Za-z0-9@_./-]+\.(?:tsx?|jsx?|css|svg|json))\b/gi,
+      /\b(packages\/(?:@react-(?:aria|spectrum|stately|types)\/[a-z0-9-]+|@internationalized\/[a-z0-9-]+|react-(?:aria|stately)|react-aria-components)\/[A-Za-z0-9@_./-]+\.(?:tsx?|jsx?|css|svg|json))\b/gi,
     );
     for (const match of exactRepositoryPaths) {
       const candidate = fileAt(match[1]);

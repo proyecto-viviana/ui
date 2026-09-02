@@ -30,6 +30,6 @@ describe("S2 intl catalog (viviana-ui)", () => {
     ) as Record<string, string>;
     const shipped = s2IntlStrings[locale] as Record<string, unknown>;
     expect(local).toEqual(pinned);
-    expect(Object.keys(shipped).sort()).toEqual(Object.keys(pinned).sort());
+    expect(shipped).toEqual(pinned);
   });
 });

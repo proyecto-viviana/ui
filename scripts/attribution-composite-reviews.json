@@ -761,7 +761,10 @@
       "packages/react-aria/intl/dnd/zh-CN.json",
       "packages/react-aria/intl/dnd/zh-TW.json"
     ],
-    "requiredText": ["All keys are plain ICU MessageFormat strings", "compileSimpleIcu"]
+    "requiredText": [
+      "All keys are plain ICU MessageFormat strings",
+      "createStringFormatter compiles"
+    ]
   },
   {
     "localPath": "packages/solidaria/src/dnd/types.ts",

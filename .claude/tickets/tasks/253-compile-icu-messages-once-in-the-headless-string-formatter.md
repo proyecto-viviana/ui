@@ -4,12 +4,17 @@ type: task
 title: "Compile ICU messages once in the headless string formatter"
 created: 2026-09-02
 parent: 136
-status: open
+status: in-progress
 history:
   - {
       state: open,
       at: 2026-09-02,
       note: "found by #198: the S2 catalog had to add a second ad-hoc ICU compiler next to dnd's compileSimpleIcu",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "one compileIcu in createStringFormatter; dnd and S2 catalog compilers deleted; tests red-then-green",
     }
 ---
 
@@ -57,3 +62,44 @@ the code does.
 ## Relationship
 
 Child of #136 (i18n axis). Follows #198–#201. Independent of #202 (D10).
+
+## Landed
+
+Grammar (`@internationalized/string-compiler` is not a workspace dependency;
+ported the compileParts subset, no new package):
+
+`react-spectrum/packages/@internationalized/string-compiler/src/stringCompiler.js:27-93`
+(`compileString` / `compileParts`: `{var}`, `{var, number}`, `{var, plural, …}` /
+`selectordinal` with `#` and offset, `{var, select, …}`)
+→ `packages/solidaria/src/i18n/compileIcu.ts:82-131` (`render`) and
+`:133-423` (`IcuParser`); `compileIcu` at `:432`
+
+`react-spectrum/packages/@internationalized/string/src/LocalizedStringFormatter.ts:41-44`
+(`typeof message === 'function' ? message(variables, this) : message`)
+→ `packages/solidaria/src/i18n/createStringFormatter.ts:56-80`
+(`compilingDictionary` memoizes compileIcu per locale+key) and
+`:132-139` (`createStringFormatter`)
+
+Deleted compilers:
+
+`packages/solidaria/src/dnd/intl/index.ts:123-131` (`compileSimpleIcu`)
+`packages/solid-spectrum/src/intl/index.ts:297-301` (`compileIcu`) and
+`packages/viviana-ui/src/intl/index.ts` twin (same lines)
+
+Tests (`packages/solidaria/test/createStringFormatter.test.tsx`):
+`passes a string with no arguments through unchanged`
+`passes a message that is already a function through`
+`interpolates {var}`
+`formats {var, number}`
+`substitutes # in the selected plural form`
+`selects ar-AE plural categories, not English one/other`
+`formats {var, select}`
+`formats {var, selectordinal}`
+`unescapes ICU apostrophe braces and still interpolates real arguments`
+`formats actionbar.selected for de-DE instead of returning the ICU template`
+`formats the dnd drop announcement instead of returning Drop on {itemText}`
+
+Red-then-green: before wiring compileIcu into createStringDictionary,
+`formats actionbar.selected for de-DE instead of returning the ICU template`
+failed (`Expected: "1 ausgewählt"` / `Received: "{count, plural, =0 {Nichts ausgewählt} one {# ausgewählt} other {# ausgewählt}}"`);
+after wiring, `Tests 16 passed`.

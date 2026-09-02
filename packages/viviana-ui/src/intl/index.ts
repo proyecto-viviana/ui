@@ -41,16 +41,9 @@
  * Copied verbatim from @react-spectrum/s2 intl JSON (S2 1.7.0 / pin f56660b).
  * LocalizedStringDictionary resolves the locale fallback chain
  * (locale → language → sibling region → en-US).
- *
- * `@internationalized/string`'s LocalizedStringFormatter only interpolates
- * when a message is a FUNCTION — a plain ICU-template string is returned
- * verbatim. Upstream S2 compiles intl JSON at build time
- * (`@internationalized/string-compiler`); this port ships the raw JSON, so
- * `{var}`, `{var, number}`, and `{var, plural, …}` are compiled here at
- * module load (same reason as the solidaria dnd catalog's compileSimpleIcu).
  */
 
-import type { LocalizedString, LocalizedStrings } from "@proyecto-viviana/solidaria";
+import type { LocalizedStrings } from "@proyecto-viviana/solidaria";
 
 import arAE from "./ar-AE.json" with { type: "json" };
 import bgBG from "./bg-BG.json" with { type: "json" };
@@ -137,210 +130,39 @@ export interface S2IntlStrings {
   "toast.showAll": string;
 }
 
-type IcuArgs = Record<string, unknown> | undefined;
-type IcuFormatter = {
-  plural: (count: number, options: Record<string, string | (() => string)>) => string;
-  number: (value: number) => string;
-};
-
-type Part =
-  | { kind: "lit"; text: string }
-  | { kind: "var"; name: string }
-  | { kind: "num"; name: string }
-  | { kind: "hash" }
-  | { kind: "plural"; name: string; options: Record<string, Part[]> };
-
-function parseMessage(source: string, start = 0): { parts: Part[]; index: number } {
-  const parts: Part[] = [];
-  let i = start;
-  let lit = "";
-  const flush = () => {
-    if (lit) {
-      parts.push({ kind: "lit", text: lit });
-      lit = "";
-    }
-  };
-  while (i < source.length) {
-    const ch = source[i];
-    if (ch === "{") {
-      flush();
-      const placeholder = parsePlaceholder(source, i);
-      parts.push(placeholder.part);
-      i = placeholder.index;
-      continue;
-    }
-    if (ch === "}") break;
-    lit += ch;
-    i += 1;
-  }
-  flush();
-  return { parts, index: i };
-}
-
-function parsePlaceholder(source: string, open: number): { part: Part; index: number } {
-  let i = open + 1;
-  while (source[i] === " ") i += 1;
-  let name = "";
-  while (i < source.length && /[\w]/.test(source[i]!)) {
-    name += source[i];
-    i += 1;
-  }
-  while (source[i] === " ") i += 1;
-  if (source[i] === "}") {
-    return { part: { kind: "var", name }, index: i + 1 };
-  }
-  if (source[i] !== ",") {
-    throw new Error(`S2 intl: expected ',' or '}' in "${source}"`);
-  }
-  i += 1;
-  while (source[i] === " ") i += 1;
-  let type = "";
-  while (i < source.length && /[a-z]/.test(source[i]!)) {
-    type += source[i];
-    i += 1;
-  }
-  if (type === "number") {
-    while (source[i] === " ") i += 1;
-    if (source[i] !== "}") {
-      throw new Error(`S2 intl: unclosed {${name}, number} in "${source}"`);
-    }
-    return { part: { kind: "num", name }, index: i + 1 };
-  }
-  if (type !== "plural") {
-    throw new Error(`S2 intl: unsupported ICU type "${type}" in "${source}"`);
-  }
-  if (source[i] !== ",") {
-    throw new Error(`S2 intl: expected ',' after plural in "${source}"`);
-  }
-  i += 1;
-  const options: Record<string, Part[]> = {};
-  while (i < source.length) {
-    while (source[i] === " ") i += 1;
-    if (source[i] === "}") {
-      return { part: { kind: "plural", name, options }, index: i + 1 };
-    }
-    let selector = "";
-    if (source[i] === "=") {
-      selector = "=";
-      i += 1;
-      while (/\d/.test(source[i]!)) {
-        selector += source[i];
-        i += 1;
-      }
-    } else {
-      while (/[a-z]/.test(source[i]!)) {
-        selector += source[i];
-        i += 1;
-      }
-    }
-    while (source[i] === " ") i += 1;
-    if (source[i] !== "{") {
-      throw new Error(`S2 intl: expected '{' for plural selector "${selector}" in "${source}"`);
-    }
-    const inner = parseMessage(source, i + 1);
-    options[selector] = splitHash(inner.parts);
-    i = inner.index;
-    if (source[i] !== "}") {
-      throw new Error(`S2 intl: unclosed plural option "${selector}" in "${source}"`);
-    }
-    i += 1;
-  }
-  throw new Error(`S2 intl: unclosed plural in "${source}"`);
-}
-
-function splitHash(parts: Part[]): Part[] {
-  const out: Part[] = [];
-  for (const part of parts) {
-    if (part.kind !== "lit" || !part.text.includes("#")) {
-      out.push(part);
-      continue;
-    }
-    const chunks = part.text.split("#");
-    chunks.forEach((chunk, idx) => {
-      if (chunk) out.push({ kind: "lit", text: chunk });
-      if (idx < chunks.length - 1) out.push({ kind: "hash" });
-    });
-  }
-  return out;
-}
-
-function render(parts: Part[], args: IcuArgs, formatter: IcuFormatter, hashValue?: number): string {
-  let out = "";
-  for (const part of parts) {
-    switch (part.kind) {
-      case "lit":
-        out += part.text;
-        break;
-      case "var":
-        out += String(args?.[part.name] ?? "");
-        break;
-      case "num":
-        out += formatter.number(Number(args?.[part.name]));
-        break;
-      case "hash":
-        out += formatter.number(hashValue ?? 0);
-        break;
-      case "plural": {
-        const count = Number(args?.[part.name]);
-        const options: Record<string, () => string> = {};
-        for (const [selector, inner] of Object.entries(part.options)) {
-          options[selector] = () => render(inner, args, formatter, count);
-        }
-        out += formatter.plural(count, options);
-        break;
-      }
-    }
-  }
-  return out;
-}
-
-function compileIcu(message: string): LocalizedString {
-  if (!message.includes("{")) return message;
-  const { parts } = parseMessage(message);
-  return (args, formatter) => render(parts, args as IcuArgs, formatter as unknown as IcuFormatter);
-}
-
-function compileLocale(strings: Record<string, string>): Record<string, LocalizedString> {
-  const out: Record<string, LocalizedString> = {};
-  for (const key of Object.keys(strings)) {
-    out[key] = compileIcu(strings[key]!);
-  }
-  return out;
-}
-
-export const s2IntlStrings: LocalizedStrings<keyof S2IntlStrings, LocalizedString> = {
-  "ar-AE": compileLocale(arAE),
-  "bg-BG": compileLocale(bgBG),
-  "cs-CZ": compileLocale(csCZ),
-  "da-DK": compileLocale(daDK),
-  "de-DE": compileLocale(deDE),
-  "el-GR": compileLocale(elGR),
-  "en-US": compileLocale(enUS),
-  "es-ES": compileLocale(esES),
-  "et-EE": compileLocale(etEE),
-  "fi-FI": compileLocale(fiFI),
-  "fr-FR": compileLocale(frFR),
-  "he-IL": compileLocale(heIL),
-  "hr-HR": compileLocale(hrHR),
-  "hu-HU": compileLocale(huHU),
-  "it-IT": compileLocale(itIT),
-  "ja-JP": compileLocale(jaJP),
-  "ko-KR": compileLocale(koKR),
-  "lt-LT": compileLocale(ltLT),
-  "lv-LV": compileLocale(lvLV),
-  "nb-NO": compileLocale(nbNO),
-  "nl-NL": compileLocale(nlNL),
-  "pl-PL": compileLocale(plPL),
-  "pt-BR": compileLocale(ptBR),
-  "pt-PT": compileLocale(ptPT),
-  "ro-RO": compileLocale(roRO),
-  "ru-RU": compileLocale(ruRU),
-  "sk-SK": compileLocale(skSK),
-  "sl-SI": compileLocale(slSI),
-  "sr-SP": compileLocale(srSP),
-  "sv-SE": compileLocale(svSE),
-  "tr-TR": compileLocale(trTR),
-  "uk-UA": compileLocale(ukUA),
-  "zh-CN": compileLocale(zhCN),
-  "zh-TW": compileLocale(zhTW),
+export const s2IntlStrings: LocalizedStrings<keyof S2IntlStrings, string> = {
+  "ar-AE": arAE,
+  "bg-BG": bgBG,
+  "cs-CZ": csCZ,
+  "da-DK": daDK,
+  "de-DE": deDE,
+  "el-GR": elGR,
+  "en-US": enUS,
+  "es-ES": esES,
+  "et-EE": etEE,
+  "fi-FI": fiFI,
+  "fr-FR": frFR,
+  "he-IL": heIL,
+  "hr-HR": hrHR,
+  "hu-HU": huHU,
+  "it-IT": itIT,
+  "ja-JP": jaJP,
+  "ko-KR": koKR,
+  "lt-LT": ltLT,
+  "lv-LV": lvLV,
+  "nb-NO": nbNO,
+  "nl-NL": nlNL,
+  "pl-PL": plPL,
+  "pt-BR": ptBR,
+  "pt-PT": ptPT,
+  "ro-RO": roRO,
+  "ru-RU": ruRU,
+  "sk-SK": skSK,
+  "sl-SI": slSI,
+  "sr-SP": srSP,
+  "sv-SE": svSE,
+  "tr-TR": trTR,
+  "uk-UA": ukUA,
+  "zh-CN": zhCN,
+  "zh-TW": zhTW,
 };

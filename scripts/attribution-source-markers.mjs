@@ -15,7 +15,7 @@ export function sourceMarkers(content) {
   return comments(content)
     .map(normalizedComment)
     .filter((comment) =>
-      /(?:Port(?:ed)?\s+(?:of|from)|Based on)\b[^.!?]{0,160}(?:@react-(?:aria|spectrum|stately|types)|react[- ]aria|react[- ]stately)/i.test(
+      /(?:Port(?:ed)?\s+(?:of|from)|Based on)\b[^.!?]{0,160}(?:@react-(?:aria|spectrum|stately|types)|@internationalized\/|react[- ]aria|react[- ]stately)/i.test(
         comment,
       ),
     );
