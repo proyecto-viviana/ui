@@ -391,6 +391,11 @@ history:
       at: 2026-09-03,
       note: "illustratedmessage outcome equivalent. Isolated default/pointer hover/click/press-scale/wheel, Tab Before→Import→Upload→After with 2px ring, Enter/Space on Import, URL and live size S/M/L / orientation / withActions, disabled URL no-op, locale=ar-SA unwired, injected form {} with click/Enter not extra-submitting match S2. AX heading Create your first asset + Import/Upload. Geometry 380×205; horizontal 472×100; L illustration 160×160. role/aria stripped, id forwarded both. 80ms Button RGB is timing; 400ms exact. Leftover sentinel focus after isolated Tab is harness. No overlay, no form name. No D13 IllustratedMessage journeys (#249). Did not start #254. No new ids. Note output/functional-pass/illustratedmessage.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "icons outcome equivalent. Isolated default/pointer hover/click/press/wheel on labelled and Button-context, Tab Before→Create→After 2px ring, Enter/Space on the button, URL and live ariaHidden/ariaLabel/slot/showDecorative/showSkeleton/showButtonContext/buttonLabel, control-form switches+text, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX img Create item + Loading icon + button Create. Geometry gallery 231×56, labelled 20×20, button icon 18×18 margin -2px. inert=\"\" vs \"true\" not user-visible. Hover 160ms 1-unit RGB is Button timing; 400ms exact. Live BUTTON vs After leftover sentinel is harness. #186/#431 not routed (showSkeleton unmounts). No overlay, no form name. No D13 Icon journeys (#249). Did not start #254. No new ids. Note output/functional-pass/icons.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
