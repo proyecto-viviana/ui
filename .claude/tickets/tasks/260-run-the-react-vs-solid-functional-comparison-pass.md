@@ -281,6 +281,11 @@ history:
       at: 2026-09-03,
       note: "colorslider outcome ticketed. User-visible: hidden range input remounts on the first value change so later keys no-op, focus BODY, thumb 32→16, and a track click leaves data-dragging plus the 50×66 loupe open (#393, same Color.tsx remount as ColorWheel); hue End from 50 is 0°/left 0px vs S2 360°/left 192px (#394). Default rest AX/geometry 192×50.5 track 192×24 thumb 16×16 left 26.6562px output 50°, Tab Before→input→After 32×32 ring, first Arrow/Page/Home, hover, held drag 20%→72 + loupe enter 50×66, wheel no-op, disabled Tab skip, labeled/ariaLabel/vertical rest, RGB End 128→255 thumb 192px, alpha/saturation/lightness/brightness rest, defaultValue 180, RTL 50 درجة + click 80%→72, live isDisabled/orientation/channel/alpha/label/value/ariaLabel, named form {hue:50}→{hue:51} match. hsla vs hsl marker is fixture serialization. Brightness track 213 vs 212 is 1LSB. Not #74 (native range already backs AX). Not #391 (input is focused then replaced). Not #392 (not valuetext digits). Not #396 (ColorWheel End should be 0). No D13 ColorSlider journeys (#249). Did not start #254. Note output/functional-pass/colorslider.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "meter outcome equivalent. Isolated default/pointer hover/click/press-hold/wheel, Tab skip, Enter/Space/arrows/Home/End/Page no-op, URL and live variant/size/labelPosition/value/min/max/valueLabel/label/staticColor/clamp/equal-range/combo, and injected form {} match S2. AX meter Storage 72%, geometry 272×35.25 track 272×6 fill 72% rgb(75, 117, 255). Role token stays #104 (fixture-normalized to meter; AX equal). locale=ar-SA not wired on either fixture. isDisabled/formatOptions/name not routed. No overlay. No D13 Meter journeys (#249). Did not start #254. No new ids. Note output/functional-pass/meter.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
