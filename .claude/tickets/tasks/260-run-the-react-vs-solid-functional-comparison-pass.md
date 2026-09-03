@@ -96,6 +96,11 @@ history:
       at: 2026-09-03,
       note: "listview outcome ticketed. User-visible: intra-row ArrowLeft/Right stay on the row (#305), typeahead letters stay on Project brief (#295), Tab into a disabled-and-selected first row lands on Quarterly (#306), checkbox/row names omit RAC labelledby (#307), pointer click does not open item ActionMenu (#308), live renderActionBar/hideLinkOutIcon/highlight leave slots stale (#309). Default pointer/keyboard Space/Enter/Home/End/Ctrl+A/Escape, single/none/highlight/quiet/wrap/icons/empty, disabledKeys skip, and URL ActionBar match. Virtualizer aria-rowcount stays #66. No D13 ListView journeys (#249). Did not start #254. Note output/functional-pass/listview.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "tableview outcome ticketed. User-visible: cell/header DOM focus (#302), live density/quiet/selectionMode (#303), Column minWidth/maxWidth (#304), rowheader lost after collection update (#310), Ctrl+A (#311), typeahead (#312), checkbox tab order (#313), disabled ArrowDown skip (#314). Default rest AX, pointer select, Select All mixed, Space/Enter, URL remount, sort click, empty AX, ActionBar, disabled click match. Structure/colcount/height stay on #89. Sort-description columnName is D6 known. No D13 TableView journeys (#249). Did not start #254. Note output/functional-pass/tableview.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
