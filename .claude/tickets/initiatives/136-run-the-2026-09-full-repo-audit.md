@@ -11,6 +11,11 @@ history:
       at: 2026-09-01,
       note: "reviewer handoff: owner decisions recorded, archive/custom deleted, remaining children listed below",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "wave-3 CI follow-through: PR #33 fast-forwarded; release-readiness green; certified 2118/2/4; site-gate reds traced (RadioGroup SSR fixed, red-900 contrast is an owner decision); menu-focus :20 regression handed to #257",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,
@@ -503,6 +508,81 @@ a11y this close-out: comparison axe **80/80** against `:4341`. Playground
 `[dark] WCAG 2.1 AA` still 120 s `frame.evaluate` timeout (same as wave-3;
 not a violation; remaining 9 tests did not run). `a11y:smoke` playground
 clicks hung waiting for "stable" (Chrome 151 / no compositor frame) — aborted.
+
+### Wave-3 CI follow-through and handoff (2026-09-02, evening)
+
+State: PR [#33](https://github.com/proyecto-viviana/ui/pull/33) is
+fast-forwarded to local `main` (owner go, 2026-09-02); `origin/main` is
+protected and 60+ commits behind. Keep pushing the branch from `main`, never
+`main` directly. Local tree is clean after the checkpoint commit below.
+
+Landed after the 18:11 close-out (all with tests red on the unfixed tree,
+changesets where a releasable package changed):
+
+- `a741273a` release-readiness: `browserslist`/`fast-uri` overrides past the
+  open advisories; S2 1.7.0 icon inventory regenerated (`TagIcon` geometry,
+  838 version headers); fmt drift.
+- `2e83cdbb` Codex P2 on #33: the single `children` read in S2/Viviana
+  ComboBox option, Picker item, StatusLight and Kumo Button is a tracked memo.
+- `6f03c6fa` + `43d2aa28` Virtualizer docs page; Virtualizer/ListBox hydrate
+  over SSR (scroll view's first measurement waits for the hydration walk;
+  `OptionContent` one-read helper for ListBox/ComboBox/Select options).
+- `50f76592` `api:extract`; `c74beba8` `solid-spectrum`/`viviana-ui` pack
+  passes one process each (`PACK_PASS`, macro-CSS `renderChunk` race).
+- `b0460ae8` `guard:s2-intl-catalog` (oracle-backed, in Certification Gates)
+  replaces the two `intl-catalog.test.tsx` files that read the git-ignored
+  oracle from `test:run`.
+- `b790e84e` headless Popover renders a render-prop child once
+  (`menu-focus.spec.ts:45`, #257) — and regressed `:20`, see below.
+- `ca4c4158` Table `th`/`td` keyed before their children on both compilers
+  (`/showcase/collections` hydration crash, #256 regression).
+- Checkpoint after `ca4c4158`: `createRadio` describedby probe is client-only
+  (`/showcase/selection` SSR crash, #258 note).
+
+CI on `ca4c4158`: Release Readiness green, Changesets Check green,
+Certification Gates red, Site Gate red. The four reds, with owners:
+
+1. Certification Gates → `a11y:full` → `apps/web/e2e/menu-focus.spec.ts:20`
+   (ArrowUp reopen during the exit animation never focuses `"Save"`). 3/3 on
+   `b790e84e` and `ca4c4158`, green on `b0460ae8`: a regression of the Popover
+   fix. Diagnosis, upstream comparison points and the reproduction recipe are
+   under #257 "Follow-up regression". Fix in the headless layer, not the e2e.
+2. Certification Gates → certified report: **2118 passed / 2 failed / 4
+   skipped**. The two are the D-reorder keyboard DnD trails (#256, unchanged).
+   The four ComboBox/Picker D13 step-0 rows from the close-out table are green
+   now, so the open-row count is 2, not 6.
+3. Site Gate → `a11y:contrast` → `/showcase/selection`: the route error
+   boundary was on screen (SSR `document is not defined`). Fixed by the
+   checkpoint; the next run shows whether the route's real content passes.
+4. Site Gate → `a11y:contrast` → `/showcase/inputs`: two `slot="errorMessage"`
+   spans, `[light] #db2e26 on #f2f6fa = 4.36 (needs 4.5)`. Traced, not fixed:
+   the ink is Viviana's glasselated `red-900` light
+   (`packages/viviana-ui/src/style/glasselated-ramps.ts:199`, brand `--red-500`
+   promoted to a ramp; `negative-content-color-default` resolves there), and
+   the surface is `--surface-panel` `rgba(255,255,255,.42)` over
+   `--surface-app #e9eff6` = `#f2f6fa`. The ramp header pins semantic 900s to
+   ≥ 4.5 on **white** (`#db2e26` is 4.74 there); the register's text surface
+   is the panel, so the pin is measured against the wrong background. Not S2
+   (`solid-spectrum` negative is Adobe `rgb(215,50,32)`) and not page chrome —
+   `2f7ac610` already named "Viviana … error tokens" as the remaining contrast
+   failures. This is a register decision (Rule #3): floor `red-900` light to
+   ≥ 4.5 on `#f2f6fa` keeping ≥ 0.02 OKLCh L gaps to 800 `#ee4337` and 1000
+   `#bb241e` (the green ramp's 900 was floored the same way), or repoint
+   `negative-content-color-default` to `red-1000` in viviana-ui's
+   `spectrum-theme.ts` (the ramp header's own suggestion for the ink stop).
+   Check amber `#af6400` and green `#1a8346` 900s against `#f2f6fa` in the same
+   pass; rebuild `viviana-ui` (the macro bakes color at build time). Do not add
+   a `contrast-exemptions.ts` entry — it is real text.
+
+Order for the next agent: (1) #257 follow-up; (2) owner decision on `red-900`,
+then the viviana-ui change with a changeset and a contract test that pins the
+900 inks against the panel composite, not white; (3) owner decision on the two
+D-reorder rows (waiver on the ticket, or continue #256's option-remount fix);
+(4) re-run Certification Gates + Site Gate on the branch; (5) merge #33, review
+the `chore(release): version packages` PR the Release workflow opens, merge it
+to publish (`release-policy.md`). Still recorded and unstarted: the ~40
+probe-then-render children sites across the styled layers (#256 note) need one
+ticket and the shared one-read helper.
 
 ### Owner decisions open after wave 3
 

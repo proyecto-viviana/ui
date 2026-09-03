@@ -16,6 +16,11 @@ history:
       at: 2026-09-02,
       note: "first work item landed: radios stay mounted across the createSlotId probe; ref tests green. Remaining: replace the WeakMap id path with group-level TextContext slots",
     }
+  - {
+      state: open,
+      at: 2026-09-02,
+      note: "SSR regression of the probe fixed: createRadio describedby probe is client-only (isServer); RadioGroup SSR + hydrate tests; unblocks site-gate /showcase/selection",
+    }
 ---
 
 ## Cause
@@ -40,6 +45,28 @@ at the first node. Fix: `splitProps` takes `children` so the reactive aria
 object never re-creates radios; `RadioGroupDefaultRoot` reads describedby as
 an attribute; `createRadio` exposes `inputDescribedBy` off `inputProps` so the
 input spread does not track the probe. The three ref tests are green.
+
+### SSR regression of the probe (2026-09-02, fixed)
+
+Site Gate `a11y:contrast` → `/showcase/selection` failed WCAG AA because the
+route error boundary was on screen: `renderToString` threw "ReferenceError:
+document is not defined" from `createRadio`'s `inputDescribedBy`, which read
+`document.getElementById` for the group's description and error slot ids during
+render. The probe is now client-only (`isServer ||`): the server emits the slot
+ids as is, as `useSlotId` yields them before its layout effect, and the client
+probe drops the ids without an element after hydration.
+
+Tests (red → green): `packages/solidaria-components/test/RadioGroup.ssr.test.tsx`
+writes the `/showcase/selection` shape (described group + bare group) and holds
+that the described radios reference the description id that is in the markup;
+`RadioGroup.hydrate.test.tsx` hydrates over it and holds that every radio keeps
+its server node (`data-hk`), keeps the real description id, and that the bare
+group carries no `aria-describedby`. Fixture: `test/fixtures/radiogroup.tsx`.
+Changeset `.changeset/radio-describedby-probe-server-safe.md`.
+
+The probe itself is still the WeakMap path this ticket replaces; the SSR guard
+goes away with it. Do not port the guard forward — the group-level `TextContext`
+slot ids are accessors and need no DOM probe.
 
 ## Work
 

@@ -22,6 +22,7 @@
  */
 
 import { JSX, Accessor, createEffect } from "solid-js";
+import { isServer } from "solid-js/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
 import { mergeProps } from "../utils/mergeProps";
@@ -294,6 +295,16 @@ export function createRadio(
   // this id is rendered (e.g. a `<Text slot="description">` child).
   const descriptionId = createSlotId();
 
+  // The group's ids reach the radio through the `radioGroupData` WeakMap, a
+  // snapshot rather than a signal, so the radio probes the DOM itself the way
+  // `useSlotId` does (#258 replaces this path with group-level TextContext
+  // slots). The probe is client-only: on the server the slot id is emitted as
+  // is — `useSlotId` yields the raw id before its layout effect runs, and the
+  // client probe patches the attribute after hydration. `document` does not
+  // exist on the server; reading it there threw inside `renderToString` and the
+  // route's error boundary rendered instead of the RadioGroup.
+  const slotIdInDom = (id: string): boolean => isServer || document.getElementById(id) !== null;
+
   const inputDescribedBy: Accessor<string | undefined> = () => {
     const p = getProps();
     const groupData = getGroupData();
@@ -309,14 +320,10 @@ export function createRadio(
     if (ownDescriptionId) {
       describedByIds.push(ownDescriptionId);
     }
-    if (
-      state.isInvalid &&
-      groupData?.errorMessageId &&
-      document.getElementById(groupData.errorMessageId)
-    ) {
+    if (state.isInvalid && groupData?.errorMessageId && slotIdInDom(groupData.errorMessageId)) {
       describedByIds.push(groupData.errorMessageId);
     }
-    if (groupData?.descriptionId && document.getElementById(groupData.descriptionId)) {
+    if (groupData?.descriptionId && slotIdInDom(groupData.descriptionId)) {
       describedByIds.push(groupData.descriptionId);
     }
     return describedByIds.length > 0 ? describedByIds.join(" ") : undefined;

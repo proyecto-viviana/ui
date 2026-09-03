@@ -231,6 +231,51 @@ instance when the popover's enter animation settles" (the CI scenario in jsdom
 with a controlled `getAnimations().finished`). Both red on the unfixed tree.
 Changeset `.changeset/popover-render-prop-children-stable.md`.
 
+#### Follow-up regression — reopen during exit skips `autoFocus="last"` (2026-09-02, open)
+
+The fix above (`b790e84e`) turned `menu-focus.spec.ts:45` green and turned
+`menu-focus.spec.ts:20` ("trigger arrows enter at the first and last items and
+Escape restores focus") red: 3/3 attempts on `b790e84e` and again on
+`ca4c4158`; it passed on `b0460ae8`, the commit before. Failure at line 38:
+ArrowDown opens and focuses `"New file"`, Escape closes and the trigger is
+focused, ArrowUp reopens — `"Save"` is never focused (`Received: inactive`).
+Not yet reproduced locally.
+
+Hypothesis, from the code, unverified in a browser: `PopoverInner` stays
+mounted while `isExiting` so a reopen-during-exit does not restart the enter
+animation (`Popover.tsx` ~653). With the render-prop child now rendered once,
+that reopen also reuses the same Menu instance, and `createSelectableCollection`
+applies `autoFocus` only once per instance (`autoFocusActive`, mount-time —
+RAC `useSelectableCollection` does the same through `autoFocusRef`). Before
+`b790e84e` the `isExiting → false` flip re-ran the render prop and remounted the
+Menu by accident, which is what made the `"last"` strategy land. So the old
+green was masking a gap, not proving parity.
+
+What to compare upstream before fixing (read the source; the vendored oracle
+tree is sparse here — `@react-aria/focus/src` and `selection/src` hold only
+`index.ts`, so materialize or read the installed package): RAC
+`useExitAnimation` also keeps `PopoverInner` mounted on reopen-during-exit, so
+the difference is likely focus-restore timing. If RAC restores focus to the
+trigger from the overlay `FocusScope`'s unmount cleanup (`useRestoreFocus`),
+that runs after the exit animation, and the `await expect(trigger).toBeFocused()`
+step waits out the exit so ArrowUp opens a fresh popover and a fresh Menu. Check
+when the port restores focus (headless `Menu.tsx:1466` wraps the menu in its
+own `<FocusScope restoreFocus>`; RAC `MenuInner` uses a plain `FocusScope` and
+lets the Overlay's scope restore) and whether the port's exit leaves the trigger
+focused early. Fix belongs in the headless layer (Menu/Popover focus restore
+timing, or re-applying the trigger's `focusStrategy` when the same Menu is
+reopened, whichever RAC actually does) — not in the e2e. #251 (own the enter
+and exit animation as RAC does) is the structural home if the timing is the
+cause.
+
+Reproduce: `vp run build`, `cd apps/web && vp preview --port 4000`, then
+`PLAYWRIGHT_BASE_URL=http://127.0.0.1:4000 vp exec playwright test
+e2e/menu-focus.spec.ts:20 --reporter=line` with Chromium launched with
+`--disable-software-rasterizer` on WSL2 (the `:45` fix used a temporary
+Playwright config for that flag; not a repo change). Add the CI scenario to
+`solid-spectrum/test/Menu.test.tsx` next to the existing
+enter-animation test (controlled `getAnimations().finished`).
+
 Found alongside, not fixed here: `<MenuTrigger><Button>…</Button>` (S2 `Button`,
 not `ActionButton`/`MenuButton`) does not open the menu on click in jsdom —
 S2 `ActionButton` wires `MenuTriggerContext` explicitly, S2 `Button` does not,
