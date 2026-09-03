@@ -291,6 +291,11 @@ history:
       at: 2026-09-03,
       note: "progresscircle outcome ticketed. User-visible: live ariaLabel leaves Solid named Loading… while fixture JSON updates (#410). Default rest AX/geometry 32×32, pointer hover/click, Tab skip, Enter/Space/arrows no-op, URL value/clamp/custom/equal range, indeterminate animation+dropped value attrs, sizes S/M/L, staticColor white/black/auto, URL aria-label remount, live value/size/staticColor/indeterminate, and injected form {} match S2. isDisabled URL is an S2 no-op both. Indeterminate fill phase is D2 excluded. locale=ar-SA not wired on either fixture. Attr key-order only. No overlay. name not routed. No D13 ProgressCircle journeys (#249). Did not start #254. Note output/functional-pass/progresscircle.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "progressbar outcome ticketed. User-visible: indeterminate fill easing cubic-bezier(0.37, 0, 0.63, 1) vs S2 in-out cubic-bezier(0.45, 0, 0.4, 1) (#400); same S2 style also sets will-change:transform and position:relative. Default rest AX/geometry 336×35.3 track 336×6 fill 50% rgb(59, 99, 251), pointer/keyboard skip, URL and live value/range/format/size/labelPosition/staticColor/label/clamp/indeterminate AX, and injected form {} match. Hashed animation-name is the D2 exclusion. locale=ar-SA not wired on either fixture. isDisabled/name not routed. No overlay. No D13 ProgressBar journeys (#249). Did not start #254. Note output/functional-pass/progressbar.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
