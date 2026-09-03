@@ -141,6 +141,11 @@ history:
       at: 2026-09-03,
       note: "cardview outcome ticketed. User-visible: CSS auto-fit stacks size S while S2 GridLayout is two-up (#340), Card isDisabled dropped on GridListItem (#341), highlight End/ArrowDown focus without selectOnFocus (#342), ArrowRight no-op on a two-up row (#343), live showActionBar stale (#344), typeahead z stays Apollo (#295), checkbox name Select without labelledby (#307). Default pointer click/toggle/hover, Space/Enter/Escape, Home, Ctrl+A no-op, selectionMode none/single/multiple, highlight replace vs checkbox add, disabledKeys skip, URL ActionBar Clear, uncontrolled defaultSelectedKeys, live selectionMode, and density gap match. Shift+Tab after a clean Tab lands on Apollo both. Playwright Solid Clear intercept is harness. No D13 CardView journeys (#249). Did not start #254. Note output/functional-pass/cardview.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "textarea outcome ticketed. User-visible: live isInvalid leaves HelpText on the mount-time description/error slot (#345). Default rest AX/geometry 208×104, pointer click/group-click/hover, Tab cycle with 2px ring, typing auto-grow, disabled Tab skip, read-only, native required, URL invalid error slot, sizes S/L/XL, empty height 50, and live size/value/label/disabled/required match. textarea data-disabled/data-invalid extras structural. Empty height vs S2 ::before stays #124 (both stacks 50px). URL invalid already matches; not #70. No overlay, no form name. No D13 TextArea journeys (#249). Did not start #254. Note output/functional-pass/textarea.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
