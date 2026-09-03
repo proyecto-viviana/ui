@@ -371,6 +371,11 @@ history:
       at: 2026-09-03,
       note: "divider outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live orientation/size/staticColor including vertical L white and horizontal L black, control-form radios/select, injected form {} match S2. AX separator. Geometry 192×2 HR / vertical 2×24 DIV. isDisabled not a prop. locale=ar-SA not wired. No overlay, no form name. No D13 Divider journeys (#249). Did not start #254. No new ids. Note output/functional-pass/divider.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "provider outcome equivalent. Isolated default/pointer hover/click/press-scale/wheel, Tab Before→Inherited→Nested→After with 2px rings, URL and live colorScheme/background including nested light override, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX two buttons + captions. Geometry 288.53×174.53 nested 288.53×81.27. Solid data-color-scheme/data-background extras DOM-only. Hover 160ms 1-unit RGB is timing; 400ms exact. Pair-diff 0.34 stays the tracked visual floor. No overlay, no form name. No D13 Provider journeys (#249). Did not start #254. No new ids. Note output/functional-pass/provider.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
