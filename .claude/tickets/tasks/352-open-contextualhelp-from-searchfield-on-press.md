@@ -11,6 +11,16 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 searchfield functional pass: isolated Enter/Space/pointer/force-click open React dialog Search syntax; Solid stays aria-expanded=false, no role=dialog, focus BODY, and the help button remounts (solidaria-cl-241→246→251→256→261)",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 timefield: same remount/never-open. Isolated pointer and Enter on ?withContextualHelp=true open React dialog Time help… opacity 1, aria-expanded=true, stable id; Solid aria-expanded=false, dialogs 0, focus BODY, ids solidaria-cl-246→258→263. TimeField also uses span data-slot=contextualHelp. No new id.",
+    }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 datefield: same remount/never-open. Isolated pointer on ?withContextualHelp=true opens React dialog Date help 268×99 opacity 1 placement bottom dy8, aria-expanded=true, focus overlay; Solid aria-expanded=false, overlay absent, focus BODY. DateField.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
 ---
 
 S2 SearchField puts `contextualHelp` through `FieldLabel`, which wraps

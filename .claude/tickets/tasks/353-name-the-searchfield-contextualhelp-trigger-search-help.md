@@ -11,6 +11,16 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 searchfield functional pass: S2 FieldLabel sets aria-labelledby to label id + help id so Chromium AX is button Search Help; Solid span has no ContextualHelpContext so AX is button Help",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 timefield: same name composition. URL ?withContextualHelp=true AX button Start time Help vs Help. React aria-labelledby = label id + help id; Solid aria-label Help only. No new id.",
+    }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 datefield: same name composition. URL ?withContextualHelp=true AX button Appointment date Help vs Help. React aria-labelledby = label id + help id; Solid aria-label Help only. No new id.",
+    }
 ---
 
 S2 `FieldLabel` wraps `contextualHelp` in
