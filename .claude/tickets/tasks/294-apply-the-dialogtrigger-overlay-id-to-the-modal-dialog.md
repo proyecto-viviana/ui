@@ -4,12 +4,17 @@ type: task
 title: "Apply the DialogTrigger overlay id to the modal Dialog"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 dialog functional pass: Solid trigger aria-controls points at solidaria-cl-164 which is not in the document; the role=dialog section has no id. React aria-controls equals the dialog id",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Headless Dialog spreads DialogTrigger overlayProps so the section id matches trigger aria-controls.",
     }
 ---
 

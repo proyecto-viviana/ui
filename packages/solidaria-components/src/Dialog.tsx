@@ -282,6 +282,7 @@ export function Dialog(props: DialogProps): JSX.Element {
   return (
     <DialogContext.Provider value={{ close, titleId: titleId() }}>
       <section
+        {...triggerContext?.overlayProps}
         {...dialogProps()}
         {...domProps()}
         ref={setDialogRef}

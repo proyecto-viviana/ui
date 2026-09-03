@@ -4,12 +4,17 @@ type: task
 title: "Give the Dialog footer paddingTop 32 unless it is empty"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 dialog functional pass: AlertDialog with ButtonGroup is 162px tall on Solid vs 194px on React; footer paddingTop is 0 instead of S2's 32 / :empty 0",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "dialogFooterWrapper paddingTop is 32 with :empty 0 in solid-spectrum and viviana-ui, matching S2 Dialog.tsx.",
     }
 ---
 

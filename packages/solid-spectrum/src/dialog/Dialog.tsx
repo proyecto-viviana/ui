@@ -523,7 +523,10 @@ const dialogFooterWrapper = style({
   flexWrap: "wrap",
   gap: 24,
   paddingX: 32,
-  paddingTop: 0,
+  paddingTop: {
+    default: 32,
+    ":empty": 0,
+  },
   paddingBottom: 32,
 });
 

@@ -4,7 +4,7 @@ type: task
 title: "Omit aria-haspopup on the ContextualHelp trigger to match S2 DialogTrigger"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -45,6 +45,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangeslider: composed ContextualHelp trigger is the same. React omits aria-haspopup; Solid aria-haspopup=dialog. No new id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Dropped the hardcoded aria-haspopup=dialog on ContextualHelp ActionButton so the trigger matches S2 DialogTrigger.",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Update ContextualHelp overlay placement when placement or shouldFlip changes"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 contextualhelp functional pass: URL remount placements match; live placement/shouldFlip after mount leave the Solid overlay at the first-render axis",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "ContextualHelp splits placement/shouldFlip into accessors; S2 Popover tracks shouldFlip like placement. Test: live placement=top start updates data-placement.",
     }
 ---
 
