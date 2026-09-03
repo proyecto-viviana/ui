@@ -346,6 +346,16 @@ history:
       at: 2026-09-03,
       note: "avatar outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 13 sizes 16–112, over-background 1px/<64 and 2px/>=64, alt Kai/empty/long, src abraham/missing/javascript/data/empty sanitize, live size/over-background/alt/src/reset, and injected form {} match S2. AX img Avatar, geometry 24×24, opacity 1. URL remount transition-property opacity vs none stays on #240 (settled opacity 1; certified delays fixture). isDisabled not a prop. No overlay, no form name. No D13 Avatar journeys (#249). Did not start #254. No new ids. Note output/functional-pass/avatar.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "avatargroup outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live size 16–40, count 2/3/4, label Reviewers/empty fallback, ariaLabel Team, control-form label+size, combo Reviewers/32/3, injected form {} match S2. AX group Collaborators 123 members + four imgs. Geometry 160×24 overlap −6px. Generated labelledby ids not user-visible. isDisabled not a prop. locale=ar-SA not wired. No overlay, no form name. No D13 AvatarGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/avatargroup.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "image outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, alt including empty decorative, objectFit cover/contain, sourceMode basic/conditional/error/coordinator, live theme light↔dark on conditional sources, URL and live/control-form remount, forced-colors, injected form {} match S2. AX img Gradient landscape; error text; coordinator two named imgs. Geometry 160×96 wrapper, coordinator grid 328×96. isDisabled not a prop. No overlay, no form name. No D13 Image journeys (#249). Did not start #254. No new ids. Note output/functional-pass/image.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
