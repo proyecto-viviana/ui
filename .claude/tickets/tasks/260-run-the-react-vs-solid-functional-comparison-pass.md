@@ -386,6 +386,11 @@ history:
       at: 2026-09-03,
       note: "labeledvalue outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live size S–XL / labelPosition / labelAlign / valueType string+number+list / copy / empty, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX text Project name Quarterly report. Geometry 208×43. Number 1,234,567.89 and list Adobe, Apple, and Google byte-identical. Control form coverage=gap stays #85. No overlay, no form name. No D13 LabeledValue journeys (#249). Did not start #254. No new ids. Note output/functional-pass/labeledvalue.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "illustratedmessage outcome equivalent. Isolated default/pointer hover/click/press-scale/wheel, Tab Before→Import→Upload→After with 2px ring, Enter/Space on Import, URL and live size S/M/L / orientation / withActions, disabled URL no-op, locale=ar-SA unwired, injected form {} with click/Enter not extra-submitting match S2. AX heading Create your first asset + Import/Upload. Geometry 380×205; horizontal 472×100; L illustration 160×160. role/aria stripped, id forwarded both. 80ms Button RGB is timing; 400ms exact. Leftover sentinel focus after isolated Tab is harness. No overlay, no form name. No D13 IllustratedMessage journeys (#249). Did not start #254. No new ids. Note output/functional-pass/illustratedmessage.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
