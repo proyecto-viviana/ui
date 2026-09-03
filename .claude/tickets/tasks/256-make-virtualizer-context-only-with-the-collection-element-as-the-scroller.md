@@ -326,3 +326,40 @@ Every site that reads a non-function child more than once has the same key
 drift when that child is a compiled element under SSR; only the sites with
 hydrate fixtures are proven either way. Needs its own ticket and a shared
 one-read helper, not 40 patches.
+
+### Wave-3 regression fix 2 — Table column/cell hydration order (2026-09-02)
+
+Site Gate `a11y:contrast` → `/showcase/collections` failed WCAG AA: the route
+error boundary was on screen. Its cause: "Cannot read properties of null
+(reading 'nextSibling')" from S2 `TableColumn`'s template walk during
+hydration of the `selectionMode="multiple"` table. jsdom reproduction:
+`Hydration Mismatch … 000100110001001101`.
+
+Root cause (this ticket's `52ab0c52`): headless `TableColumn` and `TableCell`
+went from `<th …>{columnChildren()}</th>` to `<th {...columnProps()} />` with
+`children: columnChildren()` evaluated eagerly inside the props object. The
+two compilers key that differently. DOM: `getNextElement(th)` claims the
+element's key, then `spread` inserts children. SSR: `ssrElement("th",
+columnProps(), …)` receives the object already built, so the children (and the
+select-all checkbox component) took keys 0 and 1 and the `<th>` took 2. A key
+trace of the failing hydration showed the client claiming the server's
+select-all `<span>` as its `<th>`, then asking for key `…1101` (the server's
+checkbox component id) as an element. The same skew hit every column and
+cell; non-selectable tables walked mismatched nodes without throwing.
+
+Fix: `TableColumn` and `TableCell` render through `TableHost` (`th`/`td`,
+`div` when virtualized) with children as JSX children; the eager `children`
+entry survives only for the `render` prop, where both compilers evaluate it
+before the consumer's element. `TableRow` was never affected — its
+`children: rowChildrenContent` is a function, resolved lazily on both sides.
+
+Tests (red → green): `packages/solid-spectrum/test/Table.ssr.test.tsx` writes
+the `/showcase/collections` selectable table; `Table.hydrate.test.tsx`
+hydrates it with no mismatch and asserts all 9 header/row cells still carry
+the server `data-hk`. Browser (`vp preview :4000`, production build):
+`/showcase/collections` hydrates with no console error, select-all checks the
+row checkboxes; `a11y:contrast` passes for that route and the six
+table/tree/gridlist docs routes (WSL2 needs `--disable-software-rasterizer`
+for headless Chromium to produce frames; not a repo change).
+
+Changeset `.changeset/table-column-cell-hydration-order.md`.

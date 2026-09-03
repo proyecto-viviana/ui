@@ -1163,7 +1163,7 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
     const rawChildren = local.children;
     return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
   };
-  const columnProps = () =>
+  const columnAttrs = () =>
     ({
       ref: (el: HTMLTableCellElement) => {
         setRef(el);
@@ -1180,15 +1180,21 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
       "data-hovered": isHovered() || undefined,
       "data-focused": state.focusedKey === local.id || undefined,
       "data-focus-visible": (isFocusVisible() && state.focusedKey === local.id) || undefined,
-      children: columnChildren(),
     }) as JSX.ThHTMLAttributes<HTMLTableCellElement>;
 
-  return local.render ? (
-    local.render(columnProps(), renderValues())
-  ) : context.isVirtualized ? (
-    <div {...(columnProps() as JSX.HTMLAttributes<HTMLDivElement>)} />
-  ) : (
-    <th {...columnProps()} />
+  if (local.render) {
+    return local.render({ ...columnAttrs(), children: columnChildren() }, renderValues());
+  }
+
+  // Children are JSX children of the host, not an eager `children` entry in the
+  // spread object: the DOM build claims the element's hydration key before it
+  // evaluates children, while `ssrElement` receives an already-built props
+  // object, so an eager entry would key the children ahead of the element on
+  // the server and the client would claim the wrong nodes.
+  return (
+    <TableHost hostTag="th" virtualized={context.isVirtualized} {...columnAttrs()}>
+      {columnChildren()}
+    </TableHost>
   );
 }
 
@@ -2082,7 +2088,7 @@ export function TableCell(props: TableCellProps): JSX.Element {
     const rawChildren = local.children;
     return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
   };
-  const tableCellProps = () =>
+  const cellAttrs = () =>
     ({
       ref: (el: HTMLTableCellElement) => {
         setRef(el);
@@ -2103,15 +2109,19 @@ export function TableCell(props: TableCellProps): JSX.Element {
       "data-expanded": (isTreeGridCell() && cellIsExpanded()) || undefined,
       "data-has-child-items": (isTreeGridCell() && cellHasChildItems()) || undefined,
       "data-level": isTreeGridCell() ? cellLevel() : undefined,
-      children: cellChildren(),
     }) as JSX.TdHTMLAttributes<HTMLTableCellElement>;
 
-  return local.render ? (
-    local.render(tableCellProps(), renderValues())
-  ) : tableContext.isVirtualized ? (
-    <div {...(tableCellProps() as JSX.HTMLAttributes<HTMLDivElement>)} />
-  ) : (
-    <td {...tableCellProps()} />
+  if (local.render) {
+    return local.render({ ...cellAttrs(), children: cellChildren() }, renderValues());
+  }
+
+  // JSX children, not an eager `children` entry in the spread object — see
+  // TableColumn: the element's hydration key must precede its children on
+  // both the server and the client.
+  return (
+    <TableHost hostTag="td" virtualized={tableContext.isVirtualized} {...cellAttrs()}>
+      {cellChildren()}
+    </TableHost>
   );
 }
 
