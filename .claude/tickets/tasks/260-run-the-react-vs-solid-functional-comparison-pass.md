@@ -31,6 +31,11 @@ history:
       at: 2026-09-03,
       note: "actionmenu outcome ticketed. User-visible: wrap from last item (#269), Tab leaves open overlay (#267), live direction/align stale placement (#268). Settled overlay geometry matches. Enter animation still #251/#257. haspopup true vs menu is accepted. No D13 ActionMenu journeys (#249). Note output/functional-pass/actionmenu.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "combobox outcome ticketed. User-visible: menuTrigger=focus does not open (#270), menuTrigger=manual ArrowDown does not open (#271), Enter with custom value leaves overlay open (#272), isRequired uses aria-required instead of native required (#273). Typing unfiltered on both stacks (#245 items). Duplicate filter announcements #80. Dismiss/slot ids #248. data-open #209. Overlay geometry matched when both open. D13 certified still fails step-0 field DOM (#209/#248). Did not start #254. Note output/functional-pass/combobox.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
