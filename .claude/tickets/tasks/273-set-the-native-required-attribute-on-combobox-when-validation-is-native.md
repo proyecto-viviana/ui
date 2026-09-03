@@ -4,12 +4,17 @@ type: task
 title: "Set the native required attribute on ComboBox when validation is native"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 combobox functional pass: default validationBehavior=native, React input.required=true with no aria-required; Solid required=false aria-required=true. Both match under validationBehavior=aria",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createComboBox matches createTextField: native required by default, aria-required only in aria mode.",
     }
 ---
 

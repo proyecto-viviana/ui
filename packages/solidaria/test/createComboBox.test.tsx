@@ -520,7 +520,7 @@ describe("createComboBox", () => {
   });
 
   describe("required", () => {
-    it("should set aria-required when required", () => {
+    it("sets native required when validationBehavior is native (the default)", () => {
       createRoot((dispose) => {
         let inputRef: HTMLInputElement | null = null;
 
@@ -532,6 +532,29 @@ describe("createComboBox", () => {
 
         const comboBox = createComboBox({ isRequired: true }, state, () => inputRef);
 
+        expect(comboBox.inputProps.required).toBe(true);
+        expect(comboBox.inputProps["aria-required"]).toBeUndefined();
+        dispose();
+      });
+    });
+
+    it("sets aria-required when validationBehavior is aria", () => {
+      createRoot((dispose) => {
+        let inputRef: HTMLInputElement | null = null;
+
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+
+        const comboBox = createComboBox(
+          { isRequired: true, validationBehavior: "aria" },
+          state,
+          () => inputRef,
+        );
+
+        expect(comboBox.inputProps.required).toBe(false);
         expect(comboBox.inputProps["aria-required"]).toBe(true);
         dispose();
       });

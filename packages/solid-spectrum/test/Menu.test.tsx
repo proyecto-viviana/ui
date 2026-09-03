@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import type { JSX } from "solid-js";
+import { createSignal } from "solid-js";
 import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ActionButton, ToggleButton } from "../src";
@@ -134,6 +135,62 @@ describe("Menu (solid-spectrum)", () => {
       expect(trigger).toHaveAttribute("aria-controls", menu.id);
       expect(menu.closest("[data-trigger='MenuTrigger']")).toBeInTheDocument();
       expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+    });
+
+    it("places from live direction and align after mount, matching RAC", async () => {
+      const user = setupUser();
+      function LivePlacementMenu() {
+        const [direction, setDirection] = createSignal<"bottom" | "top">("bottom");
+        return (
+          <>
+            <button type="button" onClick={() => setDirection("top")}>
+              Place top
+            </button>
+            <MenuTrigger align="start" direction={direction()} shouldFlip={false}>
+              <ActionButton aria-label="Layer actions">Layer actions</ActionButton>
+              <Menu aria-label="Layer actions">
+                <MenuItem id="copy" textValue="Copy">
+                  Copy
+                </MenuItem>
+              </Menu>
+            </MenuTrigger>
+          </>
+        );
+      }
+
+      render(() => <LivePlacementMenu />);
+      await user.click(screen.getByRole("button", { name: "Place top" }));
+      await user.click(screen.getByRole("button", { name: "Layer actions" }));
+
+      const menu = await screen.findByRole("menu", { name: "Layer actions" });
+      expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+    });
+
+    it("keeps Tab inside an open Menu overlay", async () => {
+      const user = setupUser();
+      render(() => (
+        <>
+          <MenuTrigger>
+            <ActionButton aria-label="Layer actions">Layer actions</ActionButton>
+            <Menu aria-label="Layer actions">
+              <MenuItem id="copy" textValue="Copy">
+                Copy
+              </MenuItem>
+              <MenuItem id="cut" textValue="Cut">
+                Cut
+              </MenuItem>
+            </Menu>
+          </MenuTrigger>
+          <button type="button">After</button>
+        </>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Layer actions" }));
+      const menu = await screen.findByRole("menu", { name: "Layer actions" });
+      await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+      await user.tab();
+      expect(menu.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toBe(document.body);
     });
 
     it("opens an ActionButton context menu only from a context-menu request", async () => {

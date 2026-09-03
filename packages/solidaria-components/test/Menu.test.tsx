@@ -23,6 +23,7 @@ import {
   SubmenuTrigger,
 } from "../src/Menu";
 import { Separator } from "../src/Separator";
+import { Popover } from "../src/Popover";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -576,6 +577,38 @@ describe("Menu", () => {
 
       const items = screen.getAllByRole("menuitem");
       expect(items[0]).toHaveAttribute("data-focused");
+    });
+
+    it("wraps ArrowDown from the last item when shouldFocusWrap is omitted", async () => {
+      render(() => <TestMenu />);
+
+      const menu = screen.getByRole("menu");
+      menu.focus();
+      await user.keyboard("{End}");
+      await user.keyboard("{ArrowDown}");
+      expect(screen.getAllByRole("menuitem")[0]).toHaveAttribute("data-focused");
+    });
+
+    it("keeps Tab inside an open Menu overlay", async () => {
+      render(() => (
+        <>
+          <MenuTrigger defaultOpen>
+            <MenuButton>Open Menu</MenuButton>
+            <Popover>
+              <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
+                {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+              </Menu>
+            </Popover>
+          </MenuTrigger>
+          <button type="button">After</button>
+        </>
+      ));
+
+      const menu = await screen.findByRole("menu");
+      await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+      await user.tab();
+      expect(menu.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toBe(document.body);
     });
 
     it("should focus last with End", async () => {

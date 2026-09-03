@@ -215,7 +215,8 @@ describe("ComboBox (solid-spectrum)", () => {
     const input = screen.getByRole("combobox", { name: "Fruit" });
 
     expect(input).toBeDisabled();
-    expect(input).toHaveAttribute("aria-required", "true");
+    expect(input).toBeRequired();
+    expect(input).not.toHaveAttribute("aria-required");
   });
 
   it("uses context props and root refs", () => {

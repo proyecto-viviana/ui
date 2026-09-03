@@ -4,12 +4,17 @@ type: task
 title: "Close the ComboBox menu on Enter with a custom value"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 combobox functional pass: with allowsCustomValue, typing Zebra then Enter commits the text on both stacks but Solid leaves the overlay open",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Enter always calls state.commit() while matching RAC useComboBox. Custom value with no focused key closes the menu.",
     }
 ---
 

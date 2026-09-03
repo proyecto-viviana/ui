@@ -450,7 +450,13 @@ describe("ListBox", () => {
         />
       ));
 
-      expect(screen.getByText("Load more")).toBeInTheDocument();
+      expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+      expect(screen.queryByText("Load more")).not.toBeInTheDocument();
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+        "Cat",
+        "Dog",
+        "Kangaroo",
+      ]);
     });
 
     it("should apply draggable item semantics when drag hooks are provided", () => {
@@ -649,14 +655,40 @@ describe("ListBox", () => {
 
     it("should trigger onLoadMore when load more sentinel is visible", async () => {
       const onLoadMore = vi.fn();
-      render(() => (
-        <ul role="listbox" aria-label="Load test">
-          <ListBoxLoadMoreItem onLoadMore={onLoadMore} />
-        </ul>
-      ));
+      const observerCallbacks: IntersectionObserverCallback[] = [];
+      class TestIntersectionObserver {
+        constructor(callback: IntersectionObserverCallback) {
+          observerCallbacks.push(callback);
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+        takeRecords = () => [];
+        root = null;
+        rootMargin = "";
+        thresholds = [];
+      }
+      vi.stubGlobal("IntersectionObserver", TestIntersectionObserver);
 
-      fireEvent.focus(screen.getByRole("option"));
-      expect(onLoadMore).toHaveBeenCalled();
+      try {
+        render(() => (
+          <ul role="listbox" aria-label="Load test">
+            <ListBoxLoadMoreItem onLoadMore={onLoadMore} />
+          </ul>
+        ));
+
+        expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+        expect(screen.queryByRole("option")).not.toBeInTheDocument();
+
+        await waitFor(() => expect(observerCallbacks.length).toBeGreaterThan(0));
+        observerCallbacks[0]?.(
+          [{ isIntersecting: true } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        );
+        await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+      } finally {
+        vi.unstubAllGlobals();
+      }
     });
   });
 

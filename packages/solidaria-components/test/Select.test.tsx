@@ -392,6 +392,56 @@ describe("Select", () => {
       expect(onSelectionChange).toHaveBeenCalledWith("cat");
     });
 
+    it("keeps the named hidden select in sync after selection changes", async () => {
+      render(() => (
+        <TestSelect selectProps={{ name: "plan", defaultSelectedKey: "dog", defaultOpen: true }} />
+      ));
+
+      const select = document.querySelector('select[name="plan"]') as HTMLSelectElement;
+      expect(select.value).toBe("dog");
+
+      await user.click(screen.getByRole("option", { name: "Cat" }));
+      expect(select.value).toBe("cat");
+      expect(select.options[select.selectedIndex]?.value).toBe("cat");
+    });
+
+    it("updates HiddenSelect when selectedKey changes after mount", async () => {
+      function ControlledSelect() {
+        const [selectedKey, setSelectedKey] = createSignal<Key | null>("dog");
+        return (
+          <>
+            <Select<TestItem>
+              aria-label="Test Select"
+              items={testItems}
+              getKey={(item) => item.id}
+              getTextValue={(item) => item.name}
+              name="plan"
+              selectedKey={selectedKey()}
+              onSelectionChange={setSelectedKey}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectListBox>
+                {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+              </SelectListBox>
+            </Select>
+            <button type="button" onClick={() => setSelectedKey("kangaroo")}>
+              Set Kangaroo
+            </button>
+          </>
+        );
+      }
+
+      render(() => <ControlledSelect />);
+
+      const select = document.querySelector('select[name="plan"]') as HTMLSelectElement;
+      expect(select.value).toBe("dog");
+
+      await user.click(screen.getByRole("button", { name: "Set Kangaroo" }));
+      expect(select.value).toBe("kangaroo");
+    });
+
     it("should support controlled selectedKey", () => {
       render(() => <TestSelect selectProps={{ selectedKey: "dog" }} />);
 
@@ -972,7 +1022,9 @@ describe("Select", () => {
     it("should support isDisabled on Select", () => {
       render(() => <TestSelect selectProps={{ isDisabled: true }} />);
 
-      const trigger = screen.getByRole("button");
+      const trigger = screen.getByRole("button", { hidden: true });
+      expect(trigger).toBeDisabled();
+      expect(trigger).not.toHaveAttribute("aria-disabled");
       expect(trigger).toHaveAttribute("data-disabled");
     });
 

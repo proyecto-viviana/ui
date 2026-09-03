@@ -4,12 +4,17 @@ type: task
 title: "Keep the Picker hidden select in sync with the selected value"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 picker functional pass: trigger text and data-comparison-value update, native select[name=plan] stays on the initial key",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createHiddenSelect writes the RAC-controlled select.value after options exist. Package tests fail if HiddenSelect stays on the previous key.",
     }
 ---
 

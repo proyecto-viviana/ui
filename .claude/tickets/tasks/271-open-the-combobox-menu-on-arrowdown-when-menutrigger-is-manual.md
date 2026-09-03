@@ -4,12 +4,17 @@ type: task
 title: "Open the ComboBox menu on ArrowDown when menuTrigger is manual"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 combobox functional pass: with menuTrigger=manual, typing stays closed on both stacks, but ArrowDown opens React and leaves Solid closed",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createComboBox ArrowDown already opens with trigger manual. Regression: menuTrigger=manual does not open on type and does open on ArrowDown.",
     }
 ---
 

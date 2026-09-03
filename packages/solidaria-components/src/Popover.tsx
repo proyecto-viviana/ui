@@ -571,14 +571,13 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   const shouldBeDialog = () => isDialog();
   const shouldContainFocus = () => {
+    // RAC Popover.tsx:368 — `shouldContainFocus={isDialog && trigger !== 'PreviewTrigger'}`.
+    // MenuTrigger must contain Tab; excluding it leaked focus to document.body
+    // while the overlay stayed open (#267).
     if (!shouldBeDialog()) {
       return false;
     }
-
-    const trigger = resolvedTrigger();
-    return (
-      trigger !== "MenuTrigger" && trigger !== "SubmenuTrigger" && trigger !== "PreviewTrigger"
-    );
+    return resolvedTrigger() !== "PreviewTrigger";
   };
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => {

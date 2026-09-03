@@ -4,7 +4,7 @@ type: task
 title: "Wrap ActionMenu keyboard focus from the last item"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 breadcrumbs: overflow More items, End then ArrowDown — React wraps Annual report→Files; Solid stays on Projects (last of the two-item menu). Same createMenu shouldFocusWrap default. URL remount menu length is #429; do not file a second id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createMenu defaults shouldFocusWrap to true like RAC useMenu. Package tests fail if the unset default does not wrap.",
     }
 ---
 

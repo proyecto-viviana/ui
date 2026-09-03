@@ -4,12 +4,17 @@ type: task
 title: "Disable the Picker trigger with the native disabled attribute"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 picker functional pass: React trigger.disabled=true, Solid trigger is aria-disabled only and remains focusable",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "SelectTrigger uses native disabled like RAC useButton on a button. Package tests cover the trigger element.",
     }
 ---
 

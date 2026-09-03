@@ -321,6 +321,38 @@ describe("ComboBox", () => {
       });
     });
 
+    it("opens on ArrowDown when menuTrigger is manual and does not open on type", async () => {
+      render(() => <TestComboBox comboBoxProps={{ menuTrigger: "manual" }} />);
+
+      const input = screen.getByRole("combobox");
+      input.focus();
+      await user.keyboard("A");
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+      await user.keyboard("{ArrowDown}");
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+    });
+
+    it("closes on Enter with a custom value when allowsCustomValue", async () => {
+      render(() => <TestComboBox comboBoxProps={{ allowsCustomValue: true, defaultOpen: true }} />);
+
+      const input = screen.getByRole("combobox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      await user.clear(input);
+      await user.type(input, "Zebra");
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => {
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+      });
+      expect(input).toHaveValue("Zebra");
+    });
+
     it("should open on ArrowUp", async () => {
       render(() => <TestComboBox />);
 
@@ -813,10 +845,21 @@ describe("ComboBox", () => {
   // ============================================
 
   describe("required state", () => {
-    it("should support isRequired", () => {
+    it("sets native required when validationBehavior is native (the default)", () => {
       render(() => <TestComboBox comboBoxProps={{ isRequired: true }} />);
 
       const input = screen.getByRole("combobox");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("sets aria-required when validationBehavior is aria", () => {
+      render(() => (
+        <TestComboBox comboBoxProps={{ isRequired: true, validationBehavior: "aria" }} />
+      ));
+
+      const input = screen.getByRole("combobox");
+      expect(input).not.toHaveAttribute("required");
       expect(input).toHaveAttribute("aria-required", "true");
     });
 

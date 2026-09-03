@@ -4,12 +4,17 @@ type: task
 title: "Do not render a Load more row when Picker loadingState is loading"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 picker functional pass: loadingState=loading adds a Solid-only Load more option and a taller overlay",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "ListBoxLoadMoreItem only renders the loader option while isLoading, matching RAC. loadingState=loading no longer inserts Load more.",
     }
 ---
 

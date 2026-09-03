@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 combobox functional pass: Tab and pointer click both open the React overlay and leave the Solid input focused with aria-expanded=false",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "createComboBoxState.setFocused already opens on menuTrigger=focus; headless ComboBox.test.tsx covers click-to-open. Comparison route still needs a preview walk before close.",
+    }
 ---
 
 S2 ComboBox `menuTrigger="focus"` must open the list on input focus (Tab or

@@ -303,6 +303,21 @@ describe("ActionMenu (solid-spectrum)", () => {
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
+  it("wraps ArrowDown from the last item when shouldFocusWrap is omitted", async () => {
+    const user = setupUser();
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    const menu = await screen.findByRole("menu");
+    await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+
+    await user.keyboard("{End}");
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: /Copy/ })).toHaveAttribute("data-focused");
+  });
+
   it("closes when pressing outside the menu", async () => {
     const user = setupUser();
     const onOpenChange = vi.fn();

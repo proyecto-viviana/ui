@@ -242,6 +242,43 @@ describe("Picker (solid-spectrum)", () => {
     expect(select).toHaveValue("#api");
   });
 
+  it("keeps the named hidden select in sync after the selected value changes", async () => {
+    const user = setupUser();
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Docs section"
+        name="plan"
+        defaultSelectedKey="#api"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      />
+    ));
+
+    const select = document.querySelector('select[name="plan"]') as HTMLSelectElement;
+    expect(select).toHaveValue("#api");
+
+    await user.click(screen.getByRole("option", { name: "Accordion" }));
+    expect(select).toHaveValue("#page-title");
+  });
+
+  it("natively disables the trigger when isDisabled", () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Docs section"
+        isDisabled
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+      />
+    ));
+
+    const trigger = screen.getByRole("button", { hidden: true });
+    expect(trigger).toBeDisabled();
+    expect(trigger).not.toHaveAttribute("aria-disabled");
+  });
+
   it("submits multiple selected values as FormData entries of the hidden select", () => {
     render(() => (
       <form data-testid="form">
@@ -332,11 +369,33 @@ describe("Picker (solid-spectrum)", () => {
     ));
 
     expect(screen.queryByRole("progressbar", { name: "Loading…" })).not.toBeInTheDocument();
-    const loadMoreOption = screen.getAllByRole("option").at(-1);
-    expect(loadMoreOption).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+    expect(screen.queryByText("Load more")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Accordion",
+      "API",
+    ]);
+  });
 
-    fireEvent.focus(loadMoreOption!);
-    expect(onLoadMore).toHaveBeenCalledTimes(1);
+  it("does not render a Load more option when loadingState is loading", () => {
+    render(() => (
+      <Picker<SectionItem>
+        aria-label="Docs section"
+        defaultOpen
+        items={sections}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey="#page-title"
+        loadingState="loading"
+        onLoadMore={vi.fn()}
+      />
+    ));
+
+    expect(screen.queryByText("Load more")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Accordion",
+      "API",
+    ]);
   });
 });
 

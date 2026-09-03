@@ -1281,7 +1281,7 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
   const renderProps = useRenderProps(
     {
       get children() {
-        return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
+        return props.children;
       },
       class: props.class,
       style: props.style,
@@ -1290,24 +1290,29 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
     () => ({ isLoading: isLoading() }),
   );
 
+  // RAC ListBoxLoadMoreItem (ListBox.tsx:781-803): always mount the 0×0
+  // sentinel; render the loader `option` only while `isLoading` and children
+  // exist. A visible "Load more" row when idle/`loading` is a local invention.
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div
+          data-testid="loadMoreSentinel"
+          ref={setSentinelRef}
+          style={{ position: "absolute", height: "1px", width: "1px" }}
+        />
       </div>
-      <div
-        role="option"
-        aria-disabled={true}
-        tabIndex={0}
-        onFocus={() => {
-          void triggerLoadMore();
-        }}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-loading={isLoading() || undefined}
-      >
-        {renderProps.renderChildren()}
-      </div>
+      <Show when={isLoading() && props.children}>
+        <div
+          role="option"
+          tabIndex={-1}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-loading
+        >
+          {renderProps.renderChildren()}
+        </div>
+      </Show>
     </>
   );
 }

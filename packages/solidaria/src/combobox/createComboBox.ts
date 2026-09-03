@@ -71,6 +71,11 @@ export interface AriaComboBoxProps {
   errorMessage?: string;
   /** Whether the current value is invalid. */
   isInvalid?: boolean;
+  /**
+   * Whether to use native HTML constraint validation or ARIA.
+   * @default 'native'
+   */
+  validationBehavior?: "aria" | "native";
   /** Placeholder text for the input when no value is entered. */
   placeholder?: string;
   /** Whether the combobox should be auto-focused. */
@@ -411,18 +416,20 @@ export function createComboBox<T>(
     const shouldWrap = p.shouldFocusWrap ?? false;
 
     switch (e.key) {
-      case "Enter":
-        if (state.isOpen() && focusedKey != null) {
+      case "Enter": {
+        // RAC useComboBox.ts:189-216 — preventDefault only while open; always
+        // `state.commit()`. With allowsCustomValue and no focused key, commit
+        // routes to commitCustomValue and closes (#272).
+        const wasOpen = state.isOpen();
+        if (wasOpen) {
           e.preventDefault();
-
-          // Check if the focused item is a link
-          // Link href can be in props (for components) or value (for dynamic items)
+        }
+        if (wasOpen && focusedKey != null) {
           const collectionItem = collection.getItem(focusedKey);
           const itemHref =
             collectionItem?.props?.href ??
             (collectionItem?.value as Record<string, unknown> | null)?.href;
           if (itemHref) {
-            // Find the actual anchor element in the DOM and trigger navigation
             const listBox = listBoxRef?.();
             if (listBox) {
               const item = listBox.querySelector(`[data-key="${CSS.escape(String(focusedKey))}"]`);
@@ -431,11 +438,12 @@ export function createComboBox<T>(
               }
             }
             state.close();
-          } else {
-            state.commit();
+            break;
           }
         }
+        state.commit();
         break;
+      }
 
       case "Escape":
         if (state.isOpen()) {
@@ -670,7 +678,10 @@ export function createComboBox<T>(
           "aria-activedescendant":
             isOpen && focusedKey != null ? `${listBoxId}-option-${focusedKey}` : undefined,
           "aria-disabled": isDisabled || undefined,
-          "aria-required": p.isRequired || undefined,
+          // RAC useComboBox + useTextField: native required by default; aria-required only in aria mode.
+          required: (p.validationBehavior ?? "native") === "native" && !!p.isRequired,
+          "aria-required":
+            ((p.validationBehavior ?? "native") === "aria" && p.isRequired) || undefined,
           "aria-invalid": p.isInvalid || undefined,
           name: p.name,
           onInput: onInputChange,

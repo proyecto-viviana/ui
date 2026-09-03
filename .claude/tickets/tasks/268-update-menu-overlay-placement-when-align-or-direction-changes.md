@@ -4,7 +4,7 @@ type: task
 title: "Update Menu overlay placement when align or direction changes"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "reproduced on ActionMenu (#260): live direction=top updates control props on both stacks; React overlay data-placement=top, Solid stays bottom. URL ?direction=top matches on both (mount-time path).",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createPopover no longer snapshots placement getters into createOverlayPosition. Live direction/align after mount updates data-placement.",
     }
 ---
 

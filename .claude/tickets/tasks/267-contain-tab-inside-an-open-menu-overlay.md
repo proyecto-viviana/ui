@@ -4,7 +4,7 @@ type: task
 title: "Contain Tab inside an open Menu overlay"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 breadcrumbs: overflow More items open, Tab from last menuitem — React stays on Files in the menu; Solid focus is BODY, aria-expanded stays true, menuCount 1. Same MenuTrigger contain miss. Menu length on URL remount still #429; do not file a second id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Popover shouldContainFocus matches RAC (isDialog && trigger !== PreviewTrigger). Tab stays inside the Menu overlay in package tests.",
     }
 ---
 

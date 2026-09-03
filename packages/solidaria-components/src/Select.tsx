@@ -594,6 +594,32 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
         : getSelectValidation(event.currentTarget),
     );
   };
+  // RAC HiddenSelect binds `value` on the <select> (HiddenSelect.tsx:144), not
+  // `selected` on each <option>. Spreading selectProps once snapshots the key.
+  const hiddenSelectItemNodes = () =>
+    Array.from(state.collection()).filter((item) => item.type === "item");
+  const nativeSelectValue = (): string | string[] => {
+    if (state.selectionMode() === "multiple") {
+      const selectedKeys = state.selectedKeys();
+      if (selectedKeys === "all") {
+        return hiddenSelectItemNodes().map((item) => String(item.key));
+      }
+      return Array.from(selectedKeys as Set<Key>).map(String);
+    }
+    const key = state.selectedKey();
+    return key != null ? String(key) : "";
+  };
+  const hiddenSelectFallbackValues = (): Array<Key | null> => {
+    if (state.selectionMode() === "multiple") {
+      const keys = state.selectedKeys();
+      if (keys === "all") {
+        return hiddenSelectItemNodes().map((item) => item.key);
+      }
+      const listed = Array.from(keys as Set<Key>);
+      return listed.length === 0 ? [null] : listed;
+    }
+    return [state.selectedKey()];
+  };
   createEffect(() => {
     if (hasSelection() && selectValidation().isInvalid) {
       setSelectValidation(DEFAULT_VALIDATION_RESULT);
@@ -669,45 +695,22 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
                 required={
                   (hasNativeValidation() && ariaProps.isRequired && !hasSelection()) || undefined
                 }
+                value={nativeSelectValue()}
                 onInvalid={handleHiddenSelectInvalid}
                 onChange={handleHiddenSelectChange}
+                onInput={handleHiddenSelectChange}
               >
                 <option value="" label={"\u00A0"}>
                   {"\u00A0"}
                 </option>
-                <For each={stateProps.items}>
-                  {(item) => {
-                    const itemRecord = isObjectRecord(item) ? item : null;
-                    const fallbackKey =
-                      itemRecord != null
-                        ? (toKey(itemRecord.key) ?? toKey(itemRecord.id))
-                        : undefined;
-                    const key = stateProps.getKey?.(item) ?? fallbackKey ?? String(item);
-                    const fallbackTextValue =
-                      itemRecord != null
-                        ? (toTextValue(itemRecord.textValue) ??
-                          toTextValue(itemRecord.label) ??
-                          toTextValue(itemRecord.name) ??
-                          toTextValue(itemRecord.title))
-                        : undefined;
-                    const textValue =
-                      stateProps.getTextValue?.(item) ??
-                      fallbackTextValue ??
-                      (itemRecord != null ? String(key) : String(item));
-                    const selectedKeys = state.selectedKeys();
-                    const isSelected =
-                      state.selectionMode() === "multiple"
-                        ? selectedKeys === "all"
-                          ? true
-                          : (selectedKeys as Set<Key>).has(key)
-                        : key === state.selectedKey();
-                    return (
-                      <option value={String(key)} selected={isSelected}>
-                        {textValue}
-                      </option>
-                    );
-                  }}
+                <For each={hiddenSelectItemNodes()}>
+                  {(item) => <option value={String(item.key)}>{item.textValue}</option>}
                 </For>
+                <Show when={state.collection().size === 0 && stateProps.name}>
+                  <For each={hiddenSelectFallbackValues()}>
+                    {(value) => <option value={value != null ? String(value) : ""} />}
+                  </For>
+                </Show>
               </select>
             </label>
           </div>
@@ -856,7 +859,11 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   );
 
   const cleanTriggerProps = () => {
-    const { ref: _ref1, ...rest } = context.triggerProps as Record<string, unknown>;
+    const {
+      ref: _ref1,
+      "aria-disabled": _ariaDisabled,
+      ...rest
+    } = context.triggerProps as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
@@ -874,12 +881,12 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       type="button"
       id={triggerAriaProps().id as string | undefined}
       tabIndex={state.isDisabled ? undefined : 0}
+      disabled={state.isDisabled || undefined}
       aria-label={triggerAriaProps()["aria-label"] as string | undefined}
       aria-labelledby={triggerAriaProps()["aria-labelledby"] as string | undefined}
       aria-haspopup="listbox"
       aria-expanded={isOpen()}
       aria-controls={isOpen() ? (menuAriaProps().id as string | undefined) : undefined}
-      aria-disabled={state.isDisabled || undefined}
       aria-required={triggerAriaProps()["aria-required"] as boolean | undefined}
       aria-describedby={triggerAriaProps()["aria-describedby"] as string | undefined}
       class={renderProps.class()}

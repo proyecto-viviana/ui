@@ -151,7 +151,42 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
     placement,
     triggerAnchorPoint,
   } = createOverlayPosition({
-    ...props,
+    get placement() {
+      return props.placement;
+    },
+    get containerPadding() {
+      return props.containerPadding;
+    },
+    get offset() {
+      return props.offset;
+    },
+    get crossOffset() {
+      return props.crossOffset;
+    },
+    get shouldFlip() {
+      return props.shouldFlip;
+    },
+    get maxHeight() {
+      return props.maxHeight;
+    },
+    get boundaryElement() {
+      return props.boundaryElement;
+    },
+    get arrowSize() {
+      return props.arrowSize;
+    },
+    get arrowBoundaryOffset() {
+      return props.arrowBoundaryOffset;
+    },
+    get shouldUpdatePosition() {
+      return props.shouldUpdatePosition;
+    },
+    get arrowRef() {
+      return props.arrowRef;
+    },
+    get scrollRef() {
+      return props.scrollRef;
+    },
     targetRef: triggerRef,
     overlayRef: popoverRef,
     get isOpen() {

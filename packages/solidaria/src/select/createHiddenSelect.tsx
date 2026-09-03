@@ -17,7 +17,16 @@
  * Ported from packages/react-aria/src/select/HiddenSelect.tsx.
  */
 
-import { type JSX, type Accessor, For, Show, createEffect, onCleanup } from "solid-js";
+import {
+  type JSX,
+  type Accessor,
+  For,
+  Show,
+  createEffect,
+  createRenderEffect,
+  createSignal,
+  onCleanup,
+} from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createFormValidation } from "../form/createFormValidation";
 import { visuallyHiddenStyles } from "../visually-hidden/createVisuallyHidden";
@@ -64,8 +73,54 @@ export function createHiddenSelect<T>(
 ): HiddenSelectAria {
   const getProps = () => access(props);
 
-  // Track the select element for form reset/validation
+  // Track the select element for form reset/validation and for writing the
+  // RAC-controlled `value` after options exist (HTML ignores <select value>
+  // assigned before its <option>s).
   let selectRef: HTMLSelectElement | undefined;
+  const [selectEl, setSelectEl] = createSignal<HTMLSelectElement | undefined>();
+
+  const assignSelectRef = (el: HTMLSelectElement | undefined) => {
+    selectRef = el;
+    setSelectEl(el);
+  };
+
+  const nativeSelectValue = (): string | string[] => {
+    const p = getProps();
+    const state = p.state;
+    const selectedKey = state.selectedKey();
+    const isMultiple =
+      typeof state.selectionMode === "function" && state.selectionMode() === "multiple";
+    if (isMultiple) {
+      const selectedKeys =
+        typeof state.selectedKeys === "function"
+          ? state.selectedKeys()
+          : selectedKey != null
+            ? new Set([selectedKey])
+            : new Set<Key>();
+      if (selectedKeys === "all") {
+        return Array.from(state.collection()).map((item) => String(item.key));
+      }
+      return Array.from(selectedKeys).map(String);
+    }
+    return selectedKey != null ? String(selectedKey) : "";
+  };
+
+  // RAC HiddenSelect.tsx:144 — `value: state.value`. React applies that after
+  // the option children commit; Solid has to write the DOM property once the
+  // <option>s exist, or the native select stays on the empty placeholder.
+  createRenderEffect(() => {
+    const el = selectEl();
+    if (!el) return;
+    const next = nativeSelectValue();
+    if (Array.isArray(next)) {
+      const selected = new Set(next);
+      for (const option of el.options) {
+        option.selected = selected.has(option.value);
+      }
+    } else if (el.value !== next) {
+      el.value = next;
+    }
+  });
 
   // Set up form reset handler
   createEffect(() => {
@@ -134,10 +189,23 @@ export function createHiddenSelect<T>(
         selectedKeys === "all"
           ? Array.from(state.collection()).map((item) => String(item.key))
           : Array.from(selectedKeys).map(String);
+      const applyNativeSelectChange = (e: Event) => {
+        const target = e.target as HTMLSelectElement;
+        if (isMultiple) {
+          if (typeof state.setSelectedKeys === "function") {
+            state.setSelectedKeys(Array.from(target.selectedOptions).map((o) => o.value as Key));
+          } else {
+            const first = target.selectedOptions[0]?.value;
+            state.setSelectedKey((first ?? null) as Key | null);
+          }
+        } else {
+          state.setSelectedKey(target.value as Key);
+        }
+      };
 
       return {
         ref: (el: HTMLSelectElement) => {
-          selectRef = el;
+          assignSelectRef(el ?? undefined);
         },
         tabIndex: -1,
         autoComplete: p.autoComplete,
@@ -148,19 +216,9 @@ export function createHiddenSelect<T>(
         // Add required attribute for native form validation
         required: validationBehavior === "native" && p.isRequired,
         value: isMultiple ? multipleValue : selectedKey != null ? String(selectedKey) : "",
-        onChange: (e: Event) => {
-          const target = e.target as HTMLSelectElement;
-          if (isMultiple) {
-            if (typeof state.setSelectedKeys === "function") {
-              state.setSelectedKeys(Array.from(target.selectedOptions).map((o) => o.value as Key));
-            } else {
-              const first = target.selectedOptions[0]?.value;
-              state.setSelectedKey((first ?? null) as Key | null);
-            }
-          } else {
-            state.setSelectedKey(target.value as Key);
-          }
-        },
+        // RAC HiddenSelect.tsx:145-146 — autofill writes through `input` as well as `change`.
+        onChange: applyNativeSelectChange,
+        onInput: applyNativeSelectChange,
         style: {
           position: "absolute",
           top: 0,
@@ -298,26 +356,27 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
       <div {...containerProps} data-testid="hidden-select-container">
         <label>
           {props.label}
-          <select {...selectProps}>
+          <select
+            {...selectProps}
+            value={
+              isMultiple()
+                ? selectedKeys() === "all"
+                  ? Array.from(collection()).map((item) => String(item.key))
+                  : Array.from(selectedKeys() as Set<Key>).map(String)
+                : selectedKey() != null
+                  ? String(selectedKey())
+                  : ""
+            }
+          >
             <option value="" label={"\u00A0"}>
               {"\u00A0"}
             </option>
-            <For each={Array.from(collection())}>
-              {(item) => (
-                <option
-                  value={String(item.key)}
-                  selected={
-                    isMultiple()
-                      ? selectedKeys() === "all"
-                        ? true
-                        : (selectedKeys() as Set<Key>).has(item.key)
-                      : item.key === selectedKey()
-                  }
-                >
-                  {item.textValue}
-                </option>
-              )}
+            <For each={Array.from(collection()).filter((item) => item.type === "item")}>
+              {(item) => <option value={String(item.key)}>{item.textValue}</option>}
             </For>
+            <Show when={collectionSize() === 0 && props.name}>
+              <For each={hiddenInputValues()}>{(value) => <option value={value ?? ""} />}</For>
+            </Show>
           </select>
         </label>
       </div>
