@@ -301,6 +301,16 @@ history:
       at: 2026-09-03,
       note: "colorswatchpicker outcome ticketed. User-visible: PageDown/PageUp no-op (#411), live size/rounding leave 32×32 / 0px (#412), live aria-label/id stay Accent color / generated id (#413), live defaultValue leaves Rose selected (#414, same harness as #395), controlled click remounts React and drops focus (#415). Default rest AX/geometry 248×32 gap 4 overlay on Rose, pointer hover/click/press/wheel, Tab trampoline, arrows without select, Enter/Space, Home/End no-wrap, Escape, Ctrl+A, typeahead getColorName no-op both, URL density/size/rounding/value/unlabeled/labelledby/id/locales, live density/controlled/reset, RTL ArrowLeft, and injected form {} match S2. isDisabled not routed. data-selection-mode stays #209. No D13 ColorSwatchPicker journeys (#249). Did not start #254. Note output/functional-pass/colorswatchpicker.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "disclosure outcome ticketed. User-visible: live withHeaderAction leaves the Solid header at mount-time composition (#419). Isolated default/pointer click toggle/action isolation, hover 160+400, press, Tab Before→trigger→action→After with 2px ring, Space/Enter, arrows/Home/End/Escape no-op, disabled skip, URL size/density/quiet/collapsed/header/region/titleLevel, live expanded/disabled/size/density/quiet/titleLevel/panelRole, and ar-SA RTL chevron match S2. AX, 250×129 geometry, hidden=until-found, panel stays group, 2px focus ring match. Boolean data-expanded true vs empty not user-visible. No overlay, no form. No D13 Disclosure journeys (#249). Did not start #254. Note output/functional-pass/disclosure.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "tabs outcome ticketed. User-visible: live orientation/density/isDisabled/keyboardActivation/ariaLabel/withIcons/labelBehavior stay at mount (#420 harness), overflow TabsPicker trigger 208 vs 70 (#421), static hide dangling labelledby (#422). Default/pointer/keyboard/URL remount including disabled, manual, vertical, compact, hide, icons, static, forceMount match. Overflow listbox 176×112 and settled focus restore match (#68/#251 exit, not #274). Chevron unlabeled img is S2. data-key TEMPLATE labelledBy trailing-space stay #209. locale=ar-SA not routed. No D13 Tabs journeys (#249). Did not start #254. Note output/functional-pass/tabs.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
