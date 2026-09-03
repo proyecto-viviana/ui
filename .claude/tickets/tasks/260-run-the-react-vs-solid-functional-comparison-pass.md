@@ -36,6 +36,11 @@ history:
       at: 2026-09-03,
       note: "combobox outcome ticketed. User-visible: menuTrigger=focus does not open (#270), menuTrigger=manual ArrowDown does not open (#271), Enter with custom value leaves overlay open (#272), isRequired uses aria-required instead of native required (#273). Typing unfiltered on both stacks (#245 items). Duplicate filter announcements #80. Dismiss/slot ids #248. data-open #209. Overlay geometry matched when both open. D13 certified still fails step-0 field DOM (#209/#248). Did not start #254. Note output/functional-pass/combobox.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "menu outcome ticketed. User-visible: Tab leaves open overlay (#267), live direction/align stale placement (#268). Single-selection checkmark column 0px stays on #107. aria-haspopup true vs menu is accepted upstream drift (route contract allows either). No new ids this pass. Note output/functional-pass/menu.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
