@@ -26,6 +26,11 @@ history:
       at: 2026-09-03,
       note: "#260 datefield: createDateField already calls createFormValidation, but the call is skipped when props is an accessor (typeof props === object is false). Same hole as TimeField #362. Do not treat DateField as this ticket.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 radiogroup: same native custom-validity hole, but the wiring is createRadio not createTextField. Filed #376. Do not treat RadioGroup as this ticket.",
+    }
 ---
 
 S2 TextField default `validationBehavior` is native. RAC

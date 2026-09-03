@@ -29,6 +29,11 @@ history:
   - {
       state: open,
       at: 2026-09-03,
+      note: "#260 radiogroup: same name composition. URL ?withContextualHelp=true AX button Plan Help vs Help. React labelledby Plan; Solid labelledby null / aria-label Help only. No new id.",
+    }
+  - {
+      state: open,
+      at: 2026-09-03,
       note: "#260 slider: same name composition. URL ?withContextualHelp=true AX button Volume Help vs Help. SNAP name both Help. No new id.",
     }
 ---

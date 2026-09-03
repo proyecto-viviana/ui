@@ -36,6 +36,11 @@ history:
       at: 2026-09-03,
       note: "#260 slider: composed ContextualHelp trigger is the same. React omits aria-haspopup; Solid aria-haspopup=dialog. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 radiogroup: composed ContextualHelp trigger is the same. React omits aria-haspopup; Solid aria-haspopup=dialog. No new id.",
+    }
 ---
 
 On `/components/contextualhelp/`, the quiet icon trigger's accessible name,

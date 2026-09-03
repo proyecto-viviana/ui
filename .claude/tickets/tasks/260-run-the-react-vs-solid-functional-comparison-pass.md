@@ -196,6 +196,11 @@ history:
       at: 2026-09-03,
       note: "slider outcome ticketed. User-visible: horizontal ArrowUp/Down inverted (#374), live isEmphasized/isDisabled fill and live max output width stale (#375), native input vs div[role=slider] already #74, ContextualHelp press already #352, wrap already #363, name Help vs Volume Help already #353, aria-haspopup already #287. Default rest AX/geometry 208×50 fill 83.2×4, pointer hover/track-click 80/drag 20, wheel no-op, Tab Before→slider→After, ArrowLeft/Right Page Home/End, disabled skip, URL sizes/track/precise/emphasized/fillOffset/labels/uncontrolled/step/clamp, named form {volume:40}→41, live size XL/fillOffset/value 75 match. SNAP thumb mismatch was inner-knob vs role=slider container. No D13 Slider journeys (#249). Did not start #254. Note output/functional-pass/slider.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "radiogroup outcome ticketed. User-visible: isInvalid native custom validity (#376), live isDisabled paint stale (#377), required-empty submit focuses enterprise vs starter (#378), named form name=plan shared across panels (#379), live isInvalid describedby already #258, ContextualHelp press already #352, wrap already #363, name Help vs Plan Help already #353, aria-haspopup already #287. Live HelpText slot swaps (not #345). Default rest AX/geometry 82×164, pointer, Tab single stop, arrows wrap, Space/Enter no extra toggle, disabled skip, read-only move-focus-not-select, required selected submit, aria validation, URL invalid error slot, horizontal, sizes, emphasized, live selected/readonly/required/orientation/size/copy match. Isolated invalid Tab matches. No D13 RadioGroup journeys (#249). Did not start #254. Note output/functional-pass/radiogroup.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

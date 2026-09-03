@@ -21,6 +21,11 @@ history:
       at: 2026-09-02,
       note: "SSR regression of the probe fixed: createRadio describedby probe is client-only (isServer); RadioGroup SSR + hydrate tests; unblocks site-gate /showcase/selection",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 radiogroup functional pass: live isInvalid after mount swaps the visible HelpText slot on both (not #345) but Solid group aria-describedby becomes dangling cl-229 MISSING, errorId stays null, and every radio keeps solidaria-cl-226 MISSING. Live off and URL-invalid-then-live-off leave the description text visible with descId/groupDescribed/radio describedby all null. URL ?isInvalid=true remount already threads the error id on both. WeakMap snapshot + DOM probe is still the remaining work. No new id.",
+    }
 ---
 
 ## Cause

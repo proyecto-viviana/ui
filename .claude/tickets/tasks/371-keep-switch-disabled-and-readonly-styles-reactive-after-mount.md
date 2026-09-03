@@ -75,5 +75,6 @@ walk fails if Solid looks enabled while `input.disabled` is true.
 
 Child of #24. Found by #260. Distinct from #354 (Enter toggle on the
 same hook) and from #121 (field `position: relative`). Checkbox live
-disabled already matches via `inputProps().disabled`. Do not start
-#254.
+disabled already matches via `inputProps().disabled`. RadioGroup
+live disabled paint is #377 (`createRadio` one-shot `isDisabled`).
+Do not start #254.

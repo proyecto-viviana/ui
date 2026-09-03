@@ -31,6 +31,11 @@ history:
       at: 2026-09-03,
       note: "#260 colorfield: same HelpText one-shot. URL ?isInvalid=true error slot Enter a valid color. matches; live isInvalid from default leaves Solid description Enter a hex color (React error). Live off from URL invalid leaves Solid error (React description). Icon/aria-invalid/red border update. ColorField children are untracked; HelpText if() is enough. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 radiogroup: HelpText slot does swap on live isInvalid (error text and red circle border match; reactive Show). Do not treat RadioGroup as this ticket. Live describedby drop after the swap is #258. Native custom validity is #376.",
+    }
 ---
 
 TextArea `isInvalid` updates on URL remount. A live
