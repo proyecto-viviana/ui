@@ -231,6 +231,11 @@ history:
       at: 2026-09-03,
       note: "buttongroup outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab Before→Save→Cancel→After with 2px ring, Enter/Space on each, arrows/Home/End no-op, disabled native skip, URL and live orientation/align/size/icon/wrapWidth overflow, parent ResizeObserver 80→column / 400→row, wrapWidth=96&align=end, and injected type=button form {} match S2. AX button Save / Cancel (disabled both). Geometry 150×32 row gap 12; Save 62×32 Cancel 76×32. Overflow flips axis not shrink. Solid fixture aria-label Approval actions is DOM-only (AX equal). Tab 100ms RGB interpolation is timing. locale=ar-SA not routed. No overlay. name not routed. No D13 ButtonGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/buttongroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "linkbutton outcome ticketed. Isolated default/pointer hover/click/press-scale, Tab Before→link→After 2px ring, Enter navigates and Space/Escape/ArrowDown no-op, disabled Tab skip and force-click no nav, URL and live variant/fill/size/staticColor/icon start/only/children/href, hash href, and injected form requestSubmit {} with click not extra-submitting match S2 except disabled href. User-visible: disabled span drops href so AX has no /url (#385). Hash-click hashchange miss is shared-page measurement. Press-scale 80ms matrix is timing; 300ms exact. locale=ar-SA not wired on either fixture. No overlay. isPending not routed. No D13 LinkButton journeys (#249). Did not start #254. Note output/functional-pass/linkbutton.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
