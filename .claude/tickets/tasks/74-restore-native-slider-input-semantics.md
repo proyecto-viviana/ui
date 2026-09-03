@@ -21,6 +21,11 @@ history:
       at: 2026-09-03,
       note: "#260 rangeslider: two thumbs. Rest AX omits Solid values and concatenates the field label only on React (slider \"Minimum Range\":\"30\" / \"Maximum Range\":\"60\" vs slider \"Minimum\" / \"Maximum\"). React two native input[type=range] tabIndex 0 with labelledby; Solid two div[role=slider] tabIndex 0, no native range, aria-label only. Isolated Tab Before→start→end→After both. Inner-knob accent ring rgb(75,117,255) solid 2px matches; Solid container still native outline rgb(16,16,16) auto 1px. Group id leak false (Solid id=cl-258 is the output for). Do not file a new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 colorarea: not this inversion. Rest AX includes native range slider \"Color, Color picker\": \"155\"; two input[type=range] (x tabIndex 0, y aria-hidden tabIndex -1); no div[role=slider]. ColorArea pointer/vertical-key focus is #391. Hue valuetext digits are #392. Do not file a new id.",
+    }
 ---
 
 Realign the shared Slider spine so the visually hidden native

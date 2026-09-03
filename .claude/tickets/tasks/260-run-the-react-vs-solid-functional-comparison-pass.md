@@ -266,6 +266,11 @@ history:
       at: 2026-09-03,
       note: "colorswatch outcome equivalent. Isolated default/pointer hover/click/press-hold, Tab skip Before→After, Enter/Space/Escape/arrows no-op, URL and live color/transparent slash/empty/alpha/named/size XS–L/rounding none-full/aria refs/id/slot, ar-SA and ar-AE colorName+roledescription, and injected form {} match S2. AX img vibrant red orange, Background color; geometry 32×32 radius 4px. isDisabled URL is an S2 no-op both. Attr key-order only. No overlay. name not routed. No D13 ColorSwatch journeys (#249). Did not start #254. No new ids. Note output/functional-pass/colorswatch.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "colorarea outcome ticketed. User-visible: pointer/vertical-key hidden range inputs never receive DOM focus so ArrowRight after click is a no-op and Tab after ArrowUp hits y (#391); HSL/HSB hue valuetext 253 vs 252.76 degrees (#392). Default rest AX/geometry 192x192, Tab Before to x to After, keyboard channel steps, off-thumb drag+loupe 50x66, wheel no-op, disabled Tab skip, named form redChannel/greenChannel, RTL, URL/live colorSpace/channels/value/label match. Thumb-center press keeps 155; off-center press jumps (same #391). rgb vs rgba marker is fixture serialization. ring.rect.x is side-by-side abs coords. Not #74 (native ranges already back the AX value). No D13 ColorArea journeys (#249). Did not start #254. Note output/functional-pass/colorarea.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
