@@ -296,6 +296,11 @@ history:
       at: 2026-09-03,
       note: "progressbar outcome ticketed. User-visible: indeterminate fill easing cubic-bezier(0.37, 0, 0.63, 1) vs S2 in-out cubic-bezier(0.45, 0, 0.4, 1) (#400); same S2 style also sets will-change:transform and position:relative. Default rest AX/geometry 336×35.3 track 336×6 fill 50% rgb(59, 99, 251), pointer/keyboard skip, URL and live value/range/format/size/labelPosition/staticColor/label/clamp/indeterminate AX, and injected form {} match. Hashed animation-name is the D2 exclusion. locale=ar-SA not wired on either fixture. isDisabled/name not routed. No overlay. No D13 ProgressBar journeys (#249). Did not start #254. Note output/functional-pass/progressbar.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "colorswatchpicker outcome ticketed. User-visible: PageDown/PageUp no-op (#411), live size/rounding leave 32×32 / 0px (#412), live aria-label/id stay Accent color / generated id (#413), live defaultValue leaves Rose selected (#414, same harness as #395), controlled click remounts React and drops focus (#415). Default rest AX/geometry 248×32 gap 4 overlay on Rose, pointer hover/click/press/wheel, Tab trampoline, arrows without select, Enter/Space, Home/End no-wrap, Escape, Ctrl+A, typeahead getColorName no-op both, URL density/size/rounding/value/unlabeled/labelledby/id/locales, live density/controlled/reset, RTL ArrowLeft, and injected form {} match S2. isDisabled not routed. data-selection-mode stays #209. No D13 ColorSwatchPicker journeys (#249). Did not start #254. Note output/functional-pass/colorswatchpicker.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
