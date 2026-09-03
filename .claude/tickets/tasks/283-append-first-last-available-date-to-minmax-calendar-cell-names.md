@@ -4,7 +4,7 @@ type: task
 title: "Append First/Last available date to min/max calendar cell names"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangecalendar URL/live constrainRange: Previous/Next disabled on both (not #277); React cell names include First/Last available date; Solid omits. Same strings already in solidaria calendar intl",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createCalendarCell and createRangeCalendarCell append minimumDate/maximumDate after the selected/today suffix, matching RAC useCalendarCell.",
     }
 ---
 

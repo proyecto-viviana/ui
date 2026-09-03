@@ -494,7 +494,6 @@ const dateRangePickerPopoverFrame = style({
   overflow: "auto",
   display: "flex",
   flexDirection: "column",
-  gap: 16,
   boxSizing: "content-box",
   width: "[max-content]",
 });
@@ -502,9 +501,8 @@ const dateRangePickerPopoverFrame = style({
 const dateRangePickerTimeFields = style({
   display: "flex",
   gap: 16,
-  alignItems: "start",
-  flexWrap: "wrap",
-  maxWidth: "[272px]",
+  contain: "inline-size",
+  marginTop: 24,
 });
 
 function DateRangeDisplay(props: {
@@ -615,6 +613,7 @@ function DateRangeDisplay(props: {
         // the faithful role="group" that `createDateRangePicker` returns (RAC
         // useDateRangePicker groupProps). Placed after the spread so it wins.
         role="presentation"
+        ref={(element: HTMLDivElement) => context.setGroupRef(element)}
         class={dateRangePickerFieldGroup({
           size: props.size,
           isInvalid: props.isInvalid,

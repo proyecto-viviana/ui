@@ -198,7 +198,14 @@ const rangeCalendarRoot = style<{ isMultiMonth?: boolean }>({
     value: 4,
   },
   "--cell-responsive-size": "--s2-calendar-cell-max-width",
-  width: "fit",
+  width: {
+    default: "[calc(7 * var(--cell-max-width) + var(--cell-gap) * 12)]",
+    isMultiMonth: "fit",
+  },
+  maxWidth: {
+    default: "full",
+    isMultiMonth: "unset",
+  },
 });
 
 // Mirrors @react-spectrum/s2 Calendar headerStyles (shared with Calendar).
@@ -778,18 +785,23 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-  const rootStyle = () => ({
-    "--cell-gap": "4px",
-    "--cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--cell-responsive-size": "var(--cell-max-width)",
-    "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
-    "--s2-calendar-visible-months": visibleMonths(),
-    "--num-calendars": visibleMonths(),
-    width: "fit-content",
-    "max-width": "100%",
-    ...(mergedUnsafeStyle() ?? {}),
-  });
+  const rootStyle = () => {
+    const months = visibleMonths();
+    const cellMaxWidth = sizeConfig().cellMaxWidth;
+    const singleMonthWidth = cellMaxWidth * 7 + 4 * 12;
+    return {
+      "--cell-gap": "4px",
+      "--cell-max-width": `${cellMaxWidth}px`,
+      "--cell-responsive-size": "var(--cell-max-width)",
+      "--s2-calendar-cell-max-width": `${cellMaxWidth}px`,
+      "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
+      "--s2-calendar-visible-months": months,
+      "--num-calendars": months,
+      width: months > 1 ? "fit-content" : `${singleMonthWidth}px`,
+      "max-width": months > 1 ? undefined : "100%",
+      ...(mergedUnsafeStyle() ?? {}),
+    };
+  };
   const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
 
   return (

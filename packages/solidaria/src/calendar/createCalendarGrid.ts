@@ -132,10 +132,22 @@ export function createCalendarGrid<T extends CalendarState>(
         state.focusPageEnd();
         break;
       case "Enter":
-      case " ":
+      case " ": {
         e.preventDefault();
+        const rangeState = state as CalendarState & {
+          anchorDate?: () => CalendarDate | null;
+          focusNearestAvailableDate?: (date: CalendarDate) => void;
+        };
+        const hadAnchor = rangeState.anchorDate?.() != null;
         state.selectFocusedDate();
+        // RAC `useCalendarCell` keyboard press auto-advances after range start.
+        // Cells here are `role="button"` divs, so grid Enter is the keyboard
+        // path (usePress stopPropagation is not on the cell).
+        if (!hadAnchor) {
+          rangeState.focusNearestAvailableDate?.(state.focusedDate());
+        }
         break;
+      }
       case "Escape":
         if (
           "anchorDate" in state &&

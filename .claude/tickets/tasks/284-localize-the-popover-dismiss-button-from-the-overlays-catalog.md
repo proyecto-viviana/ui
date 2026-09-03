@@ -4,12 +4,17 @@ type: task
 title: "Localize the Popover dismiss button from the overlays catalog"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 daterangepicker functional pass: locale=fr-FR names React Dismiss Rejeter and Solid Dismiss; Previous/Next already Précédent/Suivant on both",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "PopoverDismissButton uses the overlays catalog via createStringFormatter; fr-FR is Rejeter.",
     }
 ---
 

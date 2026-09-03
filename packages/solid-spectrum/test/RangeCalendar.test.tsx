@@ -231,4 +231,70 @@ describe("RangeCalendar (solid-spectrum)", () => {
     expect(String(selected.start)).toBe("2025-02-03");
     expect(String(selected.end)).toBe("2025-02-07");
   });
+
+  it("sizes a one-month RangeCalendar with cell-gap (272px)", async () => {
+    render(() => (
+      <RangeCalendar aria-label="Trip dates" defaultFocusedValue={new CalendarDate(2025, 2, 4)} />
+    ));
+    await waitForRangeCalendar();
+
+    const grid = screen.getByRole("grid");
+    const calendar = grid.parentElement?.parentElement as HTMLElement;
+    expect(calendar.style.width).toBe("272px");
+  });
+
+  it("advances keyboard focus after selecting the range start", async () => {
+    render(() => (
+      <RangeCalendar aria-label="Trip dates" defaultFocusedValue={new CalendarDate(2025, 2, 4)} />
+    ));
+    await waitForRangeCalendar();
+
+    const start = screen.getByRole("button", { name: /February 4, 2025/ });
+    start.focus();
+    await user.keyboard("{Enter}");
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /February 5, 2025/ })).toHaveAttribute(
+        "tabindex",
+        "0",
+      );
+    });
+    expect(start).toHaveAttribute("data-selection-start");
+  });
+
+  it("does not auto-advance focus after a pointer range-start selection", async () => {
+    render(() => (
+      <RangeCalendar aria-label="Trip dates" defaultFocusedValue={new CalendarDate(2025, 2, 4)} />
+    ));
+    await waitForRangeCalendar();
+
+    const start = screen.getByRole("button", { name: /February 4, 2025/ });
+    await user.click(start);
+
+    expect(start).toHaveAttribute("data-selection-start");
+    expect(start).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("button", { name: /February 5, 2025/ })).toHaveAttribute(
+      "tabindex",
+      "-1",
+    );
+  });
+
+  it("appends First/Last available date to min/max cell names", async () => {
+    render(() => (
+      <RangeCalendar
+        aria-label="Trip dates"
+        defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        minValue={new CalendarDate(2025, 2, 3)}
+        maxValue={new CalendarDate(2025, 2, 20)}
+      />
+    ));
+    await waitForRangeCalendar();
+
+    expect(
+      screen.getByRole("button", { name: /February 3, 2025, First available date/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /February 20, 2025, Last available date/ }),
+    ).toBeInTheDocument();
+  });
 });

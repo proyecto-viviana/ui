@@ -114,6 +114,9 @@ export interface DatePickerContextValue {
   };
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (element: HTMLElement | null) => void;
+  /** RAC Popover `triggerRef: groupRef` — the FieldGroup, not the calendar button. */
+  groupRef: () => HTMLElement | null;
+  setGroupRef: (element: HTMLElement | null) => void;
   pickerAria: ReturnType<typeof createDatePicker>;
 }
 
@@ -392,6 +395,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   );
 
   const [triggerRef, setTriggerRef] = createSignal<HTMLElement | null>(null);
+  const [groupRef, setGroupRefState] = createSignal<HTMLElement | null>(null);
   const [fieldRef, setFieldRef] = createSignal<HTMLDivElement | null>(null);
 
   // Unified state using createDatePickerState as single source of truth.
@@ -548,6 +552,11 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       if (!current || !current.isConnected) {
         setTriggerRef(() => element);
       }
+    },
+    groupRef,
+    setGroupRef: (element) => {
+      if (!element) return;
+      setGroupRefState(() => element);
     },
     pickerAria,
   };
@@ -736,6 +745,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   };
 
   let triggerRef: HTMLElement | null = null;
+  let groupRef: HTMLElement | null = null;
   // The roleless root element — scopes the shared segment focus manager and the
   // outer arrow-navigation across BOTH fields, mirroring the single DatePicker's
   // `fieldRef`.
@@ -940,6 +950,11 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     setTriggerRef: (element) => {
       if (!element) return;
       if (!triggerRef || !triggerRef.isConnected) triggerRef = element;
+    },
+    groupRef: () => groupRef,
+    setGroupRef: (element) => {
+      if (!element) return;
+      groupRef = element;
     },
     pickerAria,
   };
@@ -1341,7 +1356,7 @@ export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
   return (
     <Popover
       trigger="DatePicker"
-      triggerRef={() => context.triggerRef()?.parentElement ?? context.triggerRef()}
+      triggerRef={() => context.groupRef() ?? context.triggerRef()}
       placement="bottom start"
       offset={8}
       isOpen={context.overlayState.isOpen}
@@ -1366,7 +1381,7 @@ export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.
   return (
     <Popover
       trigger="DateRangePicker"
-      triggerRef={() => context.triggerRef()?.parentElement ?? context.triggerRef()}
+      triggerRef={() => context.groupRef() ?? context.triggerRef()}
       placement="bottom start"
       offset={8}
       isOpen={context.overlayState.isOpen}

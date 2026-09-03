@@ -285,4 +285,23 @@ describe("Calendar (solid-spectrum)", () => {
     await waitForCalendar();
     expect(screen.getByRole("button", { name: /المحدد/ })).toBeInTheDocument();
   });
+
+  it("appends First/Last available date to min/max cell names", async () => {
+    render(() => (
+      <Calendar
+        aria-label="Appointment date"
+        defaultFocusedValue={new CalendarDate(2025, 2, 15)}
+        minValue={new CalendarDate(2025, 2, 3)}
+        maxValue={new CalendarDate(2025, 2, 20)}
+      />
+    ));
+    await waitForCalendar();
+
+    expect(
+      screen.getByRole("button", { name: /February 3, 2025, First available date/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /February 20, 2025, Last available date/ }),
+    ).toBeInTheDocument();
+  });
 });

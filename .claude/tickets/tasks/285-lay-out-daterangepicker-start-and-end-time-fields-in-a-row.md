@@ -4,12 +4,17 @@ type: task
 title: "Lay out DateRangePicker start and end time fields in a row"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 daterangepicker functional pass: granularity=hour popover is 304×375 on React (time fields in one row) and 304×440 on Solid (fields wrap under a 272px max-width)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "DateRangePicker time row matches S2 flex/gap/contain/marginTop; dropped invented wrap and 272px cap.",
     }
 ---
 

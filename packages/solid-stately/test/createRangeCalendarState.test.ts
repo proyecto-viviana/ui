@@ -1272,5 +1272,20 @@ describe("createRangeCalendarState", () => {
         dispose();
       });
     });
+
+    it("advances focus to the next day after a keyboard range-start selection", () => {
+      createRoot((dispose) => {
+        const state = createRangeCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 4),
+        });
+
+        expect(state.anchorDate()).toBeNull();
+        state.selectDate(new CalendarDate(2025, 2, 4));
+        state.focusNearestAvailableDate(new CalendarDate(2025, 2, 4));
+        expect(state.focusedDate().toString()).toBe("2025-02-05");
+
+        dispose();
+      });
+    });
   });
 });

@@ -230,6 +230,8 @@ export {
   type PortalProviderContextValue,
   type AriaModalOptions,
   type ModalAria,
+  overlaysIntlStrings,
+  type OverlaysIntlStrings,
 } from "./overlays";
 
 export {

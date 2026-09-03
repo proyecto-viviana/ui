@@ -4,12 +4,17 @@ type: task
 title: "Anchor the DateRangePicker popover to the FieldGroup"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 daterangepicker functional pass: settled overlay sits under the calendar-button wrapper (dxField=166, 256×294) while React aligns to the FieldGroup (dxField=0, 304×294)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "DatePickerContent/DateRangePickerContent pass Popover triggerRef from FieldGroup groupRef; S2 FieldGroup sets it. Test: --trigger-width matches the FieldGroup, not the calendar button.",
     }
 ---
 

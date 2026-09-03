@@ -4,7 +4,7 @@ type: task
 title: "Advance DateRangePicker keyboard focus after selecting the range start"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangecalendar: Tab to Feb 4 + Enter leaves Solid on 4 selected [4] while React moves to 5 highlighting 4–5. The following ArrowRight then commits a single-day range on this inline calendar — that extra miss is #425, not this ticket. DateRangePicker overlay still completes 4–6 on the second Enter",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createRangeCalendarState.focusNearestAvailableDate plus cell/grid keyboard path; pointer select does not advance. Test: Enter on Feb 4 focuses Feb 5; click does not.",
     }
 ---
 

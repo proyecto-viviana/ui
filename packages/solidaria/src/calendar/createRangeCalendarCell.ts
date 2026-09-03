@@ -144,8 +144,12 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
 
   // Handle click for keyboard activation (Enter/Space).
   const handleClick = () => {
-    if (isSelectable()) {
-      state.selectDate(date());
+    if (!isSelectable()) return;
+    const hadAnchor = state.anchorDate() != null;
+    state.selectDate(date());
+    // RAC `useCalendarCell.ts:300-306`: keyboard range-start auto-advances.
+    if (!hadAnchor) {
+      state.focusNearestAvailableDate(date());
     }
   };
 
@@ -216,6 +220,14 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       );
     } else if (isSelected()) {
       label = formatCalendarLabel(state.locale(), "dateSelected", { date: label });
+    }
+    // RAC `useCalendarCell.ts:164-168`: min/max cells append First/Last available date.
+    const minValue = state.minValue();
+    const maxValue = state.maxValue();
+    if (minValue && isSameDay(d, minValue)) {
+      label += `, ${formatCalendarLabel(state.locale(), "minimumDate")}`;
+    } else if (maxValue && isSameDay(d, maxValue)) {
+      label += `, ${formatCalendarLabel(state.locale(), "maximumDate")}`;
     }
 
     const errorMessageId = hookData?.errorMessageId;

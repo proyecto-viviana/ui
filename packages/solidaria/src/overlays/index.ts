@@ -35,3 +35,5 @@ export {
   type AriaModalOptions,
   type ModalAria,
 } from "./createModal";
+
+export { overlaysIntlStrings, type OverlaysIntlStrings } from "./intl";

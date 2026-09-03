@@ -215,6 +215,14 @@ export function createCalendarCell<T extends CalendarState>(
     } else if (isSelected()) {
       label = formatCalendarLabel(locale(), "dateSelected", { date: label });
     }
+    // RAC `useCalendarCell.ts:164-168`: min/max cells append First/Last available date.
+    const minValue = state.minValue();
+    const maxValue = state.maxValue();
+    if (minValue && isSameDay(d, minValue)) {
+      label += `, ${formatCalendarLabel(locale(), "minimumDate")}`;
+    } else if (maxValue && isSameDay(d, maxValue)) {
+      label += `, ${formatCalendarLabel(locale(), "maximumDate")}`;
+    }
     const errorMessageId = getCalendarHookData(state)?.errorMessageId;
 
     return mergeProps(

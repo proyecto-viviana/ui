@@ -554,6 +554,7 @@ function DatePickerFieldGroup(props: {
       // the faithful role="group" that `createDatePicker` returns (RAC useDatePicker
       // groupProps). Placed after the spread so it wins (JSX later-attr precedence).
       role="presentation"
+      ref={(element: HTMLDivElement) => datePicker.setGroupRef(element)}
       class={datePickerFieldGroup({
         size: props.size,
         isInvalid: props.isInvalid,

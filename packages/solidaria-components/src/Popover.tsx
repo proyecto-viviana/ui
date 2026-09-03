@@ -42,6 +42,8 @@ import {
   useLocale,
   useUNSAFE_PortalContext,
   visuallyHiddenStyles,
+  createStringFormatter,
+  overlaysIntlStrings,
   type AriaLabelingProps,
   type Placement,
   type PlacementAxis,
@@ -241,10 +243,11 @@ function preferredPlacementAxis(placement: Placement | undefined): PlacementAxis
 }
 
 function PopoverDismissButton(props: { onDismiss: () => void }): JSX.Element {
+  const stringFormatter = createStringFormatter(overlaysIntlStrings, "@react-aria/overlays");
   return (
     <button
       type="button"
-      aria-label="Dismiss"
+      aria-label={stringFormatter().format("dismiss")}
       tabIndex={-1}
       onClick={props.onDismiss}
       style={visuallyHiddenStyles}

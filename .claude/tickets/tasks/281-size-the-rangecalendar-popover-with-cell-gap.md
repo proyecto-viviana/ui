@@ -4,12 +4,17 @@ type: task
 title: "Size the RangeCalendar popover with cell-gap"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 daterangepicker functional pass: one-month RangeCalendar popover is 256×294 on Solid and 304×294 on React; the grid itself is 224×190 on both",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "rangeCalendarRoot and rootStyle use 7*cellMaxWidth + 12*cell-gap (272px) for one month, fit-content for multi-month. Test fails if the calendar stays 224px.",
     }
 ---
 

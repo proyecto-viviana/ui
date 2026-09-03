@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
-import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";
+import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria";
 import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
 import { Button } from "../src/Button";
 import { DialogTrigger } from "../src/Dialog";
@@ -1138,6 +1138,21 @@ describe("Popover", () => {
       // useLayoutEffect). S2 `translateY: { placement: { top: 4, bottom: -4 } }`
       // then applies the top entering keyframe (certified DatePicker D2).
       expect(popover.getAttribute("data-placement")).toBe("bottom");
+    });
+  });
+
+  describe("DismissButton", () => {
+    it("labels Dismiss from the overlays catalog", () => {
+      render(() => (
+        <I18nProvider locale="fr-FR">
+          <PopoverTrigger defaultOpen>
+            <Button>Open</Button>
+            <Popover>Content</Popover>
+          </PopoverTrigger>
+        </I18nProvider>
+      ));
+
+      expect(screen.getAllByRole("button", { name: "Rejeter" }).length).toBeGreaterThan(0);
     });
   });
 });
