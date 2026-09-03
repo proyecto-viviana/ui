@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "reproduced on ActionMenu (#260): Enter then Tab — React stays on first menuitem, Solid focus is body, overlay still open (menuCount 1, aria-expanded true). RAC Popover contains for MenuTrigger; Solid shouldContainFocus excludes MenuTrigger.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 breadcrumbs: overflow More items open, Tab from last menuitem — React stays on Files in the menu; Solid focus is BODY, aria-expanded stays true, menuCount 1. Same MenuTrigger contain miss. Menu length on URL remount still #429; do not file a second id.",
+    }
 ---
 
 On `/components/menu/`, open either panel with ArrowDown. Press Tab (or

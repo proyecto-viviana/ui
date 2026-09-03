@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 actionmenu functional pass: ArrowDown from Paste wraps to Copy on React and stays on Paste on Solid; RAC useMenu defaults shouldFocusWrap true, createMenu defaults false",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 breadcrumbs: overflow More items, End then ArrowDown — React wraps Annual report→Files; Solid stays on Projects (last of the two-item menu). Same createMenu shouldFocusWrap default. URL remount menu length is #429; do not file a second id.",
+    }
 ---
 
 On `/components/actionmenu/`, open the menu from the keyboard (focus the

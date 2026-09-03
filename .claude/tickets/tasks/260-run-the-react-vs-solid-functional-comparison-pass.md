@@ -336,6 +336,11 @@ history:
       at: 2026-09-03,
       note: "steplist outcome ticketed. User-visible: click/Enter on a completed step does not select (#427), live isDisabled/isReadOnly/disabledKeys leave Solid selectable (#428), container ArrowDown/Home/End/typeahead stay on #99 (not waived). Default/progress/disabled/readonly/disabledKeys URL remount AX and Tab skip match the hooks oracle. Space no-op both. Live defaultSelectedKey ignored both (uncontrolled). Paint scoped out (no S2 oracle). Control form coverage=gap (#85). No D13 StepList journeys (#249). Did not start #254. Note output/functional-pass/steplist.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "breadcrumbs outcome ticketed. User-visible: URL overflow remount leaves React at stale tail=0 (#429 harness; live overflow and overflow-narrow-100 match; D6 knownDivergence), disabled Home/Reports stay rgb(80,80,80) (#430). Tab from last menuitem leaves body (#267), wrap from last menuitem stays (#269). Default/pointer Home/Enter/Space/arrows, Tab Before→Home→After, disabled Tab skip + force-click no-op, size L 16px / 503×40, hover rgb(41,41,41), overflow menu select Files/Projects, live size/overflow/disabled/reset, overlay enter 50ms opacity ~0.408 dy 37.6 gap 5.6 and settle 500ms opacity 1 dy 40 gap 8 match. aria-haspopup true vs menu accepted. aria-current=page on Solid current DIV is RAC extra (AX equal). No D13 Breadcrumbs journeys (#249). Did not start #254. Note output/functional-pass/breadcrumbs.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
