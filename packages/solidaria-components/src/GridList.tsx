@@ -390,7 +390,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     disabledKeys: allDisabledKeys(),
     disabledBehavior: stateProps.disabledBehavior,
     selectionMode: stateProps.selectionMode,
-    selectionBehavior: stateProps.selectionBehavior ?? "replace",
+    selectionBehavior: stateProps.selectionBehavior,
     selectedKeys: stateProps.selectedKeys,
     defaultSelectedKeys: stateProps.defaultSelectedKeys,
     onSelectionChange: stateProps.onSelectionChange,
@@ -754,7 +754,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     () => ({
       node: itemNode(),
       onAction: local.onAction,
-      selectionBehavior: listContext?.selectionBehavior ?? "replace",
+      selectionBehavior: listContext?.selectionBehavior ?? "toggle",
     }),
     () => state,
     ref,
@@ -802,7 +802,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     isHovered: isHovered(),
     isDisabled: isDisabled(),
     selectionMode: state.selectionMode,
-    selectionBehavior: listContext?.selectionBehavior ?? "replace",
+    selectionBehavior: listContext?.selectionBehavior ?? "toggle",
   }));
 
   const renderProps = useRenderProps(

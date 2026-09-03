@@ -421,6 +421,30 @@ describe("GridList", () => {
       expect(items.length).toBe(2);
     });
 
+    it("adds to multiple selection without a modifier by default", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      pressWithMouse(rows[0]);
+      pressWithMouse(rows[1]);
+
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      expect(rows[1]).toHaveAttribute("aria-selected", "true");
+    });
+
     it("should call onSelectionChange", () => {
       const onSelectionChange = vi.fn();
 

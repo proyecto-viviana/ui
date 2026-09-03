@@ -4,12 +4,17 @@ type: task
 title: "Toggle GridList multiple selection without a modifier"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 gridlist functional pass: RAC multiple click/Space toggles add (Read+Write); Solid replace-selects the last row. GridList/createGridList default selectionBehavior to replace instead of the state-layer toggle default",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Omitted selectionBehavior no longer forces replace; createGridState toggle default applies. Click Read then Write keeps both selected.",
     }
 ---
 

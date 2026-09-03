@@ -20,10 +20,12 @@
 import { createMemo, createEffect, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import { createId } from "@proyecto-viviana/solid-stately";
-import type { GridState, GridCollection, Key } from "@proyecto-viviana/solid-stately";
+import type { GridState, GridCollection, Key, Collection } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListProps, GridListAria } from "./types";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
+import { mergeProps } from "../utils/mergeProps";
+import { createTypeSelect } from "../selection/createTypeSelect";
 
 /**
  * Metadata stored for a grid list instance.
@@ -106,7 +108,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   const gridListData: GridListData = {
     gridListId,
     get selectionBehavior() {
-      return props().selectionBehavior ?? "replace";
+      return props().selectionBehavior ?? "toggle";
     },
     get shouldSelectOnPressUp() {
       return props().shouldSelectOnPressUp ?? false;
@@ -126,6 +128,13 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
 
   // Store in WeakMap using the state as key
   gridListDataMap.set(state(), gridListData);
+
+  const { typeSelectProps } = createTypeSelect({
+    collection: () => state().collection as unknown as Collection<T>,
+    focusedKey: () => state().focusedKey,
+    onFocusedKeyChange: (key) => state().setFocusedKey(key),
+    isKeyDisabled: (key) => isNavigationDisabled(state(), key),
+  });
 
   // Handle keyboard navigation
   const onKeyDown = (e: KeyboardEvent) => {
@@ -325,23 +334,26 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     const p = props();
     const s = state();
 
-    const baseProps: Record<string, unknown> = {
-      role: "grid",
-      id: gridListId,
-      "aria-label": p["aria-label"],
-      "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": p["aria-describedby"],
-      "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
-      "aria-disabled": p.isDisabled || undefined,
-      // Roving container tabIndex mirrors useSelectableCollection: the container
-      // is tabbable (0) only while nothing is focused, then rolls to -1 once a row
-      // takes focus so Tab exits the grid. A standalone grid drives AT through
-      // real row focus, so it never needs (nor emits) aria-activedescendant.
-      tabIndex: p.isDisabled ? undefined : s.focusedKey != null ? -1 : 0,
-      onKeyDown,
-      onFocus,
-      onBlur,
-    };
+    const baseProps: Record<string, unknown> = mergeProps(
+      typeSelectProps as Record<string, unknown>,
+      {
+        role: "grid",
+        id: gridListId,
+        "aria-label": p["aria-label"],
+        "aria-labelledby": p["aria-labelledby"],
+        "aria-describedby": p["aria-describedby"],
+        "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
+        "aria-disabled": p.isDisabled || undefined,
+        // Roving container tabIndex mirrors useSelectableCollection: the container
+        // is tabbable (0) only while nothing is focused, then rolls to -1 once a row
+        // takes focus so Tab exits the grid. A standalone grid drives AT through
+        // real row focus, so it never needs (nor emits) aria-activedescendant.
+        tabIndex: p.isDisabled ? undefined : s.focusedKey != null ? -1 : 0,
+        onKeyDown,
+        onFocus,
+        onBlur,
+      },
+    );
 
     // Add row count for virtualized lists
     if (p.isVirtualized) {

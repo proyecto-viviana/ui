@@ -4,7 +4,7 @@ type: task
 title: "Move GridList focus with typeahead letters"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 cardview: same miss. Isolated Tab then z moves React focus to Zephyr (selectedKeys stay apollo); Solid stays on Apollo. Not selectOnFocus (#342).",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createGridList merges createTypeSelect onto gridProps; w from Read focuses Write. ListView/CardView share the hook.",
     }
 ---
 

@@ -419,3 +419,38 @@ describe("createGridList keyboardNavigationBehavior", () => {
     });
   });
 });
+
+describe("createGridList typeahead", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("moves focus to the first row whose text starts with the typed letter", () => {
+    createRoot((dispose) => {
+      const collection = createRowCollection(["Read", "Write", "Admin"]);
+      const state = createGridState<{ key: Key }>(() => ({
+        collection,
+        selectionMode: "multiple",
+      }));
+      const el = document.createElement("div");
+      document.body.append(el);
+
+      const grid = createGridList(
+        () => ({}),
+        () => state,
+        () => el,
+      );
+
+      state.setFocused(true);
+      state.setFocusedKey("Read");
+
+      const event = createMockKeyboardEvent("w", {}, el);
+      (grid.gridProps.onKeyDown as (e: KeyboardEvent) => void)(event);
+
+      expect(state.focusedKey).toBe("Write");
+
+      el.remove();
+      dispose();
+    });
+  });
+});
