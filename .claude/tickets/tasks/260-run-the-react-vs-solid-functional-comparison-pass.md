@@ -91,6 +91,11 @@ history:
       at: 2026-09-03,
       note: "listbox outcome equivalent. Isolated default/pointer/keyboard/typeahead/wrap/Home/End/Page/Escape/Tab trampoline both directions/multiple (click, toggle, Shift-click, Shift+Arrow, Ctrl+A)/none/live and URL selectionMode match RAC. Real roving focus, no activedescendant, 51x67.5 inline list, opacity 1. isDisabled/disabledKeys not routed. S2 prop form is a gap. No D13 ListBox journeys (#249). Did not start #254. No new ids. Note output/functional-pass/listbox.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "listview outcome ticketed. User-visible: intra-row ArrowLeft/Right stay on the row (#305), typeahead letters stay on Project brief (#295), Tab into a disabled-and-selected first row lands on Quarterly (#306), checkbox/row names omit RAC labelledby (#307), pointer click does not open item ActionMenu (#308), live renderActionBar/hideLinkOutIcon/highlight leave slots stale (#309). Default pointer/keyboard Space/Enter/Home/End/Ctrl+A/Escape, single/none/highlight/quiet/wrap/icons/empty, disabledKeys skip, and URL ActionBar match. Virtualizer aria-rowcount stays #66. No D13 ListView journeys (#249). Did not start #254. Note output/functional-pass/listview.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

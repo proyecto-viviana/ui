@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 gridlist functional pass: RAC typeahead moves Read→Write on w and Read→Admin on a; Solid stays on Read. createGridList onKeyDown has arrows/Home/End/Ctrl+A/Escape and no useTypeSelect",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 listview: same createGridList miss. Isolated Tab then b moves React to Budget; Solid stays on Project brief. After 1100ms q moves React to Quarterly; Solid stays. Not #128.",
+    }
 ---
 
 RAC GridList typeahead (useSelectableCollection → useTypeSelect) moves
