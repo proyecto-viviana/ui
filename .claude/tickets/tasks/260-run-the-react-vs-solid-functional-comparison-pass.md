@@ -131,6 +131,11 @@ history:
       at: 2026-09-03,
       note: "actionbar outcome ticketed. User-visible: React fixture stuck on dark tokens (#333), scrollRef enter pops in one frame (#334), Actions available. without scrollRef (#335), collection adapter 370×60 vs ListView renderActionBar 402×56 (#336). Default AX/pointer/keyboard Tab-Edit-Clear/arrows/no-wrap/Home-End no-op/Space/Enter/Escape/clear, URL 0/1/all/emphasized/scrollRef geom, live count/emphasized/scrollRef/collection keys, and 200ms exit match. Collection row names stay #307. data-open true vs omitted not user-visible. isDisabled not routed. No D13 ActionBar journeys (#249). Did not start #254. Note output/functional-pass/actionbar.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "card outcome ticketed. User-visible: standalone href+isDisabled stays an enabled S2 <a> and Solid disables (#337), live href stays a DIV (#338), live size leaves title/description at M fonts (#339). Default rest AX/geometry, pointer hover/click, Tab skip, URL size/density/variant/preview/footer/copy/skeleton/href keyboard+press, quiet preview ring, and live footer/copy match. inert=\"\" vs \"true\" not user-visible. data-size extras structural. Press-scale settles by 300ms both. No overlay, no form. No D13 Card journeys (#249). Did not start #254. Note output/functional-pass/card.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
