@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 daterangepicker functional pass: constrainRange names React Feb 3/20 as First/Last available date and Solid as the bare weekday date; disabled day counts already match",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 calendar functional pass: standalone Calendar ?constrainRange=true&focusedValue=2025-02-15 names React Monday, February 3, 2025, First available date / Thursday, February 20, 2025, Last available date and Solid the bare weekday dates. Disabled counts 17 both. Prev/Next disable stays #277.",
+    }
 ---
 
 RAC `useCalendarCell` appends the localized min/max hint to the cell
@@ -46,6 +51,10 @@ Both: heading February 2025, Previous/Next `disabled=true`,
   `Thursday, February 20, 2025, Last available date`.
 - Solid focused `Thursday, February 20, 2025`. Those two cells have no
   First/Last suffix (`lastAvailable=[]`).
+
+Standalone Calendar
+`http://127.0.0.1:4341/components/calendar/?focusedValue=2025-02-15&constrainRange=true`
+— same names, `disabledCount=17` both. No overlay.
 
 ## Done when
 

@@ -311,6 +311,11 @@ history:
       at: 2026-09-03,
       note: "tabs outcome ticketed. User-visible: live orientation/density/isDisabled/keyboardActivation/ariaLabel/withIcons/labelBehavior stay at mount (#420 harness), overflow TabsPicker trigger 208 vs 70 (#421), static hide dangling labelledby (#422). Default/pointer/keyboard/URL remount including disabled, manual, vertical, compact, hide, icons, static, forceMount match. Overflow listbox 176×112 and settled focus restore match (#68/#251 exit, not #274). Chevron unlabeled img is S2. data-key TEMPLATE labelledBy trailing-space stay #209. locale=ar-SA not routed. No D13 Tabs journeys (#249). Did not start #254. Note output/functional-pass/tabs.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "calendar outcome ticketed. User-visible: pointer select drops cell focus (#416), outside-month cells stay enabled under visibleMonths=2 (#417), live visibleMonths snapshots one month (#418). Calendar still hits stale grid name after page (#279), constrainRange Previous/Next stay enabled (#277), min/max First/Last available names missing (#283). Default rest/tab/arrows/Home/End/Enter/Space, URL disabled/readonly/unavailable/invalid/fr/ar/indian/custom454, live disabled/firstDay/value/locale/unavailable, and wheel match. No overlay, no form. No D13 Calendar journeys (#249). Did not start #254. Note output/functional-pass/calendar.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

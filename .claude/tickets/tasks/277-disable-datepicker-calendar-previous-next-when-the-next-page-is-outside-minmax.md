@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 datepicker functional pass: constrainRange min Feb 3 / max Feb 20 leaves React Previous/Next disabled and Solid Previous/Next enabled",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 calendar functional pass: standalone Calendar ?constrainRange=true&focusedValue=2025-02-15 is the same miss — React Previous/Next disabled, Solid enabled; click Solid Next focuses 2025-02-20. Disabled day counts already match (17). First/Last cell names stay #283.",
+    }
 ---
 
 When the visible month is the only page inside `minValue`/`maxValue`, S2
@@ -37,6 +42,11 @@ Both: heading `February 2025`, overlay 304×294, opacity 1, grid
 - React Previous / Next: `disabled=true`.
 - Solid Previous / Next: `disabled=false`.
 
+Standalone Calendar
+`http://127.0.0.1:4341/components/calendar/?focusedValue=2025-02-15&constrainRange=true`
+is the same miss (no overlay): React Previous/Next `disabled=true`,
+Solid `disabled=false`. Click Solid Next focuses `2025-02-20`.
+
 `packages/solid-stately/src/calendar/createCalendarState.ts` has no
 `isPreviousVisibleRangeInvalid` / `isNextVisibleRangeInvalid`.
 `packages/solidaria/src/calendar/createCalendar.ts` prev/next omit them.
@@ -45,10 +55,10 @@ Range copies live in `createRangeCalendarState.ts:736-746` and
 
 ## Done when
 
-Constrained DatePicker calendar Previous/Next match React: native
-disabled when the next page is outside min/max. A package or comparison
-test fails if those buttons stay enabled on February 2025 with min Feb 3
-/ max Feb 20.
+Constrained DatePicker and standalone Calendar Previous/Next match
+React: native disabled when the next page is outside min/max. A
+package or comparison test fails if those buttons stay enabled on
+February 2025 with min Feb 3 / max Feb 20.
 
 ## Relationship
 
