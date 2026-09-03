@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 contextualhelp functional pass: React S2 trigger omits aria-haspopup; Solid hardcodes aria-haspopup=dialog",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 searchfield: composed ContextualHelp trigger is the same. React omits aria-haspopup; Solid aria-haspopup=dialog. No new id.",
+    }
 ---
 
 On `/components/contextualhelp/`, the quiet icon trigger's accessible name,

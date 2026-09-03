@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 textfield functional pass: URL ?isInvalid=true leaves React input.validity.customError=true, checkValidity=false, :invalid, validationMessage Invalid value., and requestSubmit blocked; Solid stays valid and submits. createTextField never calls createFormValidation; RAC useTextField does",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 searchfield: createSearchField delegates to createTextField, same gap. Isolated forms requestSubmit: React blocked customError=true; Solid submits {projectSearch:status}. URL invalid error slot/AX match. No new id.",
+    }
 ---
 
 S2 TextField default `validationBehavior` is native. RAC
@@ -55,6 +60,7 @@ stays valid on both.
 
 Child of #24. Found by #260. Wiring is
 `packages/solidaria/src/textfield/createTextField.ts` (missing
-`createFormValidation`, which RAC `useTextField.ts` calls). Distinct
+`createFormValidation`, which RAC `useTextField.ts` calls).
+`createSearchField` reuses that hook. Distinct
 from #273 (ComboBox native `required`) and #345 (live HelpText slot).
 Do not start #254.

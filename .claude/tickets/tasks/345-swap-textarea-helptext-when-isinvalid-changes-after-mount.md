@@ -21,6 +21,11 @@ history:
       at: 2026-09-03,
       note: "#260 textfield: same HelpText one-shot. URL ?isInvalid=true swaps to error on both; live isInvalid after mount updates icon/border/aria-invalid and leaves Solid on slot=description (React errorMessage Name is required.). Shared HelpText + untracked TextField children. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 searchfield: same HelpText one-shot. URL ?isInvalid=true error slot Enter a search term. matches; live isInvalid from default leaves Solid description Search by name, status, or owner. (React error). Icon/aria-invalid/red border update. No new id.",
+    }
 ---
 
 TextArea `isInvalid` updates on URL remount. A live
@@ -72,6 +77,6 @@ the mount-time slot.
 Child of #24. Found by #260. Wiring is shared `HelpText`
 (`packages/solid-spectrum/src/form/HelpText.tsx`) composed by
 TextArea and NumberField
-(`packages/solid-spectrum/src/{textfield/TextArea.tsx,numberfield/index.tsx}`).
+(`packages/solid-spectrum/src/{textfield/TextArea.tsx,textfield/index.tsx,numberfield/index.tsx,searchfield/index.tsx}`).
 Distinct from #70 (shared FieldLabel/HelpText extraction; URL
 invalid already matches). Do not start #254.

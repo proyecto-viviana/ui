@@ -156,6 +156,11 @@ history:
       at: 2026-09-03,
       note: "textfield outcome ticketed. User-visible: isInvalid does not set native custom validity so form submit proceeds (#351); live isInvalid leaves HelpText on the mount-time description slot (#345). Default rest AX/geometry 208×82, pointer click/label/group, Tab cycle with settled 2px ring and gray-900 border, typing, disabled Tab skip, read-only, native required, URL invalid error slot/icon, sizes S/L/XL, empty value, and live size/value/label/disabled/required match. Input data-invalid/data-disabled extras structural. data-focused vs data-focus-within not user-visible. No overlay, name not routed. No D13 TextField journeys (#249). Did not start #254. Note output/functional-pass/textfield.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "searchfield outcome ticketed. User-visible: ContextualHelp press remounts and never opens (#352), trigger name Help vs Search Help (#353), live isInvalid HelpText already #345, isInvalid native custom validity already #351, aria-haspopup already #287. Default rest AX/geometry 200×32 pill group, type/fill/Escape/clear/group-click, disabled Tab skip, read-only, native+aria required Enter, URL invalid error slot, sizes/labelPosition/type/placeholder/empty, and live size/disabled/readonly/required/copy match. Standalone autocomplete attrs omitted on both (not #289). No D13 SearchField journeys (#249). Did not start #254. Note output/functional-pass/searchfield.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
