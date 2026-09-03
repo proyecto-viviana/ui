@@ -4,7 +4,7 @@ type: task
 title: "Run the React-vs-Solid functional comparison pass"
 created: 2026-09-02
 parent: 136
-status: in-progress
+status: merged
 history:
   - {
       state: open,
@@ -410,6 +410,11 @@ history:
       state: in-progress,
       at: 2026-09-03,
       note: "toast outcome ticketed. User-visible: Show all drops the Text slot so the button is 48×32 and the collapsed toast 189×84 (#432), region AX omits list/listitem (#433), Show all/Collapse leave focus BODY (#434), live aria-label stays Notifications (#435), LandmarkManager F6 capture/focus miss RAC (#436). Isolated rest, variants, four placements, pointer/keyboard dismiss, Space/Enter open, autodismiss 5s, action close/keep, URL remount, live placement/children/action, injected form match. Enter t=0 is D2 threshold debt. title.slot stays #11. No D13 Toast journeys (#249). Did not start #254. Note output/functional-pass/toast.md.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "overnight walk complete: all 78 live catalogue slugs have a recorded outcome on this ticket. Overlay family, collections, fields, buttons, color, progress, calendars, chrome. New tickets #264–#436 (unused gaps 297–301, 357–361, 397–399, 401–409). 23 slugs equivalent with no new ids. Did not start #254. Did not waive D-reorder (#256). Durable scheduler deleted. Preview :4341 stopped. Evidence remains gitignored under output/functional-pass/. Open divergences stay children of #24/#26/#136.",
     }
 ---
 
