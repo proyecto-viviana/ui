@@ -56,6 +56,11 @@ history:
       at: 2026-09-03,
       note: "datepicker outcome ticketed. User-visible: maxVisibleMonths=2 popover stays 304px (#276), constrainRange Previous/Next stay enabled (#277), createCalendar leaks into field segments (#278), Next paging leaves stale grid name and moves focus to the cell (#279). Default open/keyboard/pointer/disabled/named form matched. No D13 DatePicker journeys (#249). Did not start #254. Note output/functional-pass/datepicker.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "daterangepicker outcome ticketed. User-visible: popover under calendar button not FieldGroup (#280), one-month popover 256 vs 304 missing cell-gap (#281), keyboard range-start does not advance focus (#282), min/max cells omit First/Last available date (#283), fr-FR Dismiss stays Dismiss (#284), hour time fields wrap 440 vs 375 (#285). Two-month overlay 504 both (not #276). Constrain Previous/Next disabled both (not #277). data-open #209. No D13 DateRangePicker journeys (#249). Did not start #254. Note output/functional-pass/daterangepicker.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
