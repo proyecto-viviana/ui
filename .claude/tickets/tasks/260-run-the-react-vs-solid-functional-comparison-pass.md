@@ -81,6 +81,11 @@ history:
       at: 2026-09-03,
       note: "dialog outcome ticketed. User-visible: AlertDialog footer missing paddingTop 32 (#293), DialogTrigger aria-controls dangling / dialog has no overlay id (#294). Default/sizes/Tab trap/Escape/outside/close/isDismissible/isKeyboardDismissDisabled/hasTitle/isOpen/Alert actions and AX match. Backdrop absolute vs fixed is the certified portal-strategy exclusion. comparison-spectrum-Dialog stays on #141. Exit restore by 200ms (Solid earlier; not #274). No D13 Dialog journeys (#249). Did not start #254. Note output/functional-pass/dialog.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "gridlist outcome ticketed. User-visible: typeahead letters do not move focus (#295), multiple click/Space replace instead of toggle (#296). Default/arrow/tab/RTL/Home/End/Escape/Ctrl+A/Shift-click/pointer single and none matched. No isDisabled on this route. No D13 GridList journeys. data-selection-mode stays on #209. Did not start #254. Note output/functional-pass/gridlist.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
