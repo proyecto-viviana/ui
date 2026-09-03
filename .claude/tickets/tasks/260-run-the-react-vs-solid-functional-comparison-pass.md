@@ -381,6 +381,11 @@ history:
       at: 2026-09-03,
       note: "dropzone outcome equivalent. Isolated default/pointer hover/click-to-hidden-button/heading-click, Tab Before→button→After with focus-visible blue dashed, Enter/Space no-op without a drag session, synthetic drag enter/over/leave/drop/800ms activate, paste drop, URL and live size S/M/L / isFilled banner / replaceMessage / ariaLabel, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX button Upload files + heading Upload assets. Geometry 312×209; filled banner 153.7×49.2. React tabindex=0 + empty labelledby DOM-only. 800ms activate sample during live prop churn is timing. id/describedby/details stripped both. No overlay, no form name. No D13 DropZone journeys (#249). Did not start #254. No new ids. Note output/functional-pass/dropzone.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "labeledvalue outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live size S–XL / labelPosition / labelAlign / valueType string+number+list / copy / empty, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX text Project name Quarterly report. Geometry 208×43. Number 1,234,567.89 and list Adobe, Apple, and Google byte-identical. Control form coverage=gap stays #85. No overlay, no form name. No D13 LabeledValue journeys (#249). Did not start #254. No new ids. Note output/functional-pass/labeledvalue.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
