@@ -16,6 +16,11 @@ history:
       at: 2026-09-02,
       note: "RAC split landed: Virtualizer is context-only; CollectionRoot owns createScrollView against the collection element; harness ancestor-scroller compensation deleted. ComboBox/Picker Popover > Virtualizer > ListBox wrap-order is deferred to the concurrent S2 overlay lane.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "#260 dnd-listbox functional pass reconfirmed D-reorder red and did not waive it. After Enter, Solid active is listbox:Permissions vs React option:Insert between Read and Write; AX also shows duplicate Insert between Read and Write / Insert between Write and Admin. Single-item drop order still matches once Enter is pressed on the (unfocused) drop target. Multi-item keys/description is #332, not this ticket.",
+    }
 ---
 
 ## Cause

@@ -121,6 +121,11 @@ history:
       at: 2026-09-03,
       note: "taggroup outcome ticketed. User-visible: focus lost after remove (#316), selectionBehavior=replace ignored (#317), Tab walks every Remove (#318), onAction on selection press / not on Enter (#319), Escape does not clear (#320), Ctrl+A no-op (#321), live allowsRemoving/selectionMode stale (#322), missing keyboard focus ring (#323). Default AX, pointer toggle, arrows/Home/End/wrap, Space, no-remove Tab, single/none pointer, disabled-item skip, RTL, group-action, empty, URL remount match. Typeahead neither. URL isDisabled is S2 no-op vs Solid extra-disable (on #322). data-selection-mode stays #209. Spine stays #54. No D13 TagGroup journeys (#249). Did not start #254. Note output/functional-pass/taggroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "dnd-listbox outcome ticketed. User-visible: keyboard-drag focus stays listbox:Permissions with duplicate insert indicators (#256, not waived), selected-item pickup drags only the focused key and keeps Press Enter to start dragging (#332). Single-item Enter/ArrowDown×2/Enter order write,admin,read and Escape cancel match. Default/pointer/keyboard nav/typeahead/Ctrl+A/Space/URL single remount/live selectionMode match. Pointer HTML5 drag undrivable. No D13 DnD journeys (#249). Did not start #254. Note output/functional-pass/dnd-listbox.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
