@@ -86,6 +86,11 @@ history:
       at: 2026-09-03,
       note: "gridlist outcome ticketed. User-visible: typeahead letters do not move focus (#295), multiple click/Space replace instead of toggle (#296). Default/arrow/tab/RTL/Home/End/Escape/Ctrl+A/Shift-click/pointer single and none matched. No isDisabled on this route. No D13 GridList journeys. data-selection-mode stays on #209. Did not start #254. Note output/functional-pass/gridlist.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "listbox outcome equivalent. Isolated default/pointer/keyboard/typeahead/wrap/Home/End/Page/Escape/Tab trampoline both directions/multiple (click, toggle, Shift-click, Shift+Arrow, Ctrl+A)/none/live and URL selectionMode match RAC. Real roving focus, no activedescendant, 51x67.5 inline list, opacity 1. isDisabled/disabledKeys not routed. S2 prop form is a gap. No D13 ListBox journeys (#249). Did not start #254. No new ids. Note output/functional-pass/listbox.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
