@@ -256,6 +256,11 @@ history:
       at: 2026-09-03,
       note: "togglebuttongroup outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab trampoline + last-focused restore, arrows rove without selecting and without wrap, Home/End no-op, Space/Enter toggle including deselect, disabled skip, URL and live single/multiple/disallowEmpty/orientation/density/quiet/emphasized/justified/sizes XS–XL/staticColor/icon start/only/disabled, and injected type=button form {} match S2. AX radiogroup Text alignment / radio Left [checked]; multiple toolbar + aria-pressed. Geometry 182×32 gap 8; Left 47×32 Center 63×32 Right 56×32. Live selectionMode/orientation update (not #388). locale=ar-SA not routed. Press-scale 80ms matrix is timing; 300ms exact. No overlay. name not routed. No D13 ToggleButtonGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/togglebuttongroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "segmentedcontrol outcome ticketed. User-visible: disabled selection-indicator fill GrayText vs gray-25 (#389), pressScale on the radio instead of the inner content (#390). Default rest AX/geometry 157×32 gap 4, toolbar arrows without select/wrap, Home/End no-op, Tab trampoline, Space/Enter, pointer, disallowEmpty, disabled skip, item-disabled skip, justified, icon start/only, URL and live selectedKey/defaultSelectedKey/isDisabled, injected form {}. Indicator slide in-flight at 250ms; 500ms exact. locale=ar-SA not routed. No overlay. name not routed. No D13 SegmentedControl journeys (#249). Did not start #254. Note output/functional-pass/segmentedcontrol.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
