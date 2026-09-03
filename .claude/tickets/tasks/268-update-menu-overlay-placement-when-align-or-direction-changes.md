@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 menu functional pass: live direction/align controls update data-comparison-control-props on both stacks, but Solid still opens at the mount-time bottom/start placement",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "reproduced on ActionMenu (#260): live direction=top updates control props on both stacks; React overlay data-placement=top, Solid stays bottom. URL ?direction=top matches on both (mount-time path).",
+    }
 ---
 
 MenuTrigger `direction` and `align` work when they are present on first

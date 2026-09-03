@@ -26,6 +26,11 @@ history:
       at: 2026-09-03,
       note: "picker outcome ticketed. User-visible: HiddenSelect stale (#264), disabled trigger aria-disabled (#265), loadingState=loading extra Load more row (#266). Overlay 1px offset left on #248. D13 step-0 DOM still #209/#254. Note output/functional-pass/picker.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "actionmenu outcome ticketed. User-visible: wrap from last item (#269), Tab leaves open overlay (#267), live direction/align stale placement (#268). Settled overlay geometry matches. Enter animation still #251/#257. haspopup true vs menu is accepted. No D13 ActionMenu journeys (#249). Note output/functional-pass/actionmenu.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
