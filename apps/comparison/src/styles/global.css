@@ -91,6 +91,23 @@ html[data-theme="dark"] body.s2-docs {
   }
 }
 
+.s2-skip-link {
+  position: absolute;
+  left: 12px;
+  top: -40px;
+  z-index: 100;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--s2-text);
+  color: var(--s2-bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.s2-skip-link:focus {
+  top: 12px;
+}
+
 .s2-topbar {
   position: sticky;
   top: 0;
@@ -1349,6 +1366,11 @@ html[data-theme="dark"] body.s2-docs {
   .s2-search,
   .s2-topnav {
     display: none;
+  }
+
+  .s2-marketing .s2-topnav {
+    display: flex;
+    flex-wrap: wrap;
   }
 
   .s2-top-actions-divider {
@@ -3027,6 +3049,11 @@ html[data-resolved-theme="dark"] .s2-marketing-hero-section {
 
 .s2-marketing-hero-button:active {
   transform: scale(0.98);
+}
+
+.s2-marketing-hero-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
 
 .s2-marketing-hero-button--accent {

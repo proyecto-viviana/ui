@@ -25,6 +25,8 @@
     "test:default": "vp run build && playwright test e2e/default-state-visual.spec.ts e2e/default-state-pair-diff.spec.ts e2e/live-styled-visual.spec.ts --reporter=line",
     "test:pair": "vp run build && playwright test e2e/default-state-pair-diff.spec.ts --reporter=line",
     "test:a11y": "vp run build && playwright test e2e/comparison-axe.spec.ts --reporter=line",
+    "test:site": "playwright test e2e/comparison-site.spec.ts --reporter=line",
+    "test:worker": "vp test run src/worker.test.ts",
     "test:certified": "vp run build && playwright test e2e/certified",
     "test:dialog": "vp run build && playwright test e2e/dialog-visual.spec.ts --reporter=line",
     "test:datefield": "vp run build && playwright test e2e/certified/datefield.certified.spec.ts --reporter=line",

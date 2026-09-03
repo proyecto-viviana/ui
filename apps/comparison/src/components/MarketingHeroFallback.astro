@@ -1,5 +1,6 @@
 ---
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
+import { comparisonCoveragePath } from "@comparison/data/site-meta";
 ---
 
 <div class="s2-marketing-hero">
@@ -10,11 +11,11 @@ import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-ca
           Spectrum 2, made for Solid.
         </h1>
         <p class="s2-marketing-hero-lede">
-          A faithful SolidJS port of Adobe's Spectrum 2 design system. Accessible primitives,
-          styled components, and a parity-tracked migration path from React Spectrum.
+          A component-by-component parity harness for React Spectrum S2 and
+          @proyecto-viviana/solid-spectrum.
         </p>
         <div class="s2-marketing-hero-actions">
-          <a class="s2-marketing-hero-button s2-marketing-hero-button--accent" href="/coverage"
+          <a class="s2-marketing-hero-button s2-marketing-hero-button--accent" href={comparisonCoveragePath}
             >Browse components</a
           >
           <a

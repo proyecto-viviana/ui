@@ -44,6 +44,8 @@
     "comparison:test:default": "vp run --filter @proyecto-viviana/comparison test:default",
     "comparison:test:pair": "vp run --filter @proyecto-viviana/comparison test:pair",
     "comparison:test:a11y": "vp run --filter @proyecto-viviana/comparison test:a11y",
+    "comparison:test:site": "vp run --filter @proyecto-viviana/comparison test:site",
+    "comparison:test:worker": "vp test run apps/comparison/src/worker.test.ts",
     "comparison:test:theme": "vp run --filter @proyecto-viviana/comparison test:theme",
     "comparison:test:datefield": "vp run --filter @proyecto-viviana/comparison test:datefield",
     "comparison:test:timefield": "vp run --filter @proyecto-viviana/comparison test:timefield",

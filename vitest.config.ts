@@ -16,6 +16,7 @@ export default defineConfig({
     entries: [
       "packages/**/test/**/*.test.{ts,tsx}",
       "apps/comparison/src/data/**/*.test.ts",
+      "apps/comparison/src/worker.test.ts",
       "scripts/**/*.test.ts",
     ],
   },
@@ -27,6 +28,7 @@ export default defineConfig({
     include: [
       "packages/**/test/**/*.test.{ts,tsx}",
       "apps/comparison/src/data/**/*.test.ts",
+      "apps/comparison/src/worker.test.ts",
       "scripts/**/*.test.ts",
     ],
     // SSR-compiled tests run under vitest.ssr.config.ts (node env, generate:"ssr");

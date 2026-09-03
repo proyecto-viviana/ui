@@ -20,6 +20,7 @@ import {
   type ComparisonEntry,
 } from "@comparison/data/comparison-manifest";
 import { getDocsTocItems, type DocsTocItem, type DocsTocVariant } from "@comparison/data/docs-toc";
+import { comparisonComponentPath, comparisonCoveragePath } from "@comparison/data/site-meta";
 import { getComparisonThemeChoiceLabel } from "@comparison/data/theme";
 import {
   docsBrandLink,
@@ -329,7 +330,7 @@ export default function DocsTopBar(props: DocsTopBarProps) {
           "nav",
           { class: classNames("s2-topnav", topNavRootClass), "aria-label": "Top navigation" },
           [
-            topNavLink("/", "Docs"),
+            topNavLink(comparisonCoveragePath, "Docs"),
             props.reactSpectrumUrl
               ? topNavLink(props.reactSpectrumUrl, "React Spectrum")
               : undefined,
@@ -592,7 +593,7 @@ function searchResult(entry: ComparisonEntry) {
   return h(
     "a",
     {
-      href: `/components/${entry.slug}`,
+      href: comparisonComponentPath(entry.slug),
       class: classNames("s2-search-result", searchResultLinkClass),
     },
     [

@@ -1,16 +1,17 @@
 ---
+import { comparisonCoveragePath } from "@comparison/data/site-meta";
 ---
 
 <div class="s2-marketing-cta">
   <section class="s2-marketing-cta-section" aria-labelledby="marketing-cta-title">
     <div class="s2-marketing-cta-inner">
-      <h2 id="marketing-cta-title" class="s2-marketing-cta-title">Ready to get started?</h2>
+      <h2 id="marketing-cta-title" class="s2-marketing-cta-title">Ready to compare a component?</h2>
       <p class="s2-marketing-cta-lede">
-        Browse the parity catalogue, install solid-spectrum from npm, and ship Spectrum 2 UI on
-        Solid.
+        Open the catalogue, pick a slug, and drive React Spectrum and Solid Spectrum on the same
+        route.
       </p>
       <div class="s2-marketing-cta-actions">
-        <a class="s2-marketing-hero-button s2-marketing-hero-button--accent" href="/coverage"
+        <a class="s2-marketing-hero-button s2-marketing-hero-button--accent" href={comparisonCoveragePath}
           >Browse components</a
         >
         <a

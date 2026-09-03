@@ -103,6 +103,6 @@ export type ReactSpectrumComponentSlug = (typeof reactSpectrumCatalogue)[number]
 
 export const reactSpectrumCatalogueSource = {
   name: "React Spectrum S2 component catalogue",
-  url: `${reactSpectrumDocsBase}/ActionButton`,
+  url: reactSpectrumDocsBase,
   docsBase: reactSpectrumDocsBase,
 } as const;

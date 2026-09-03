@@ -11,6 +11,11 @@ history:
       at: 2026-09-02,
       note: "measured by #250 after the fixture split: the lag the owner reported is the package graph under astro dev, not the fixture registries",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "production leftover of static *-demo imports is #262; do not fold that into this owner-gated astro-dev ticket",
+    }
 ---
 
 ## Finding

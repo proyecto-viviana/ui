@@ -12,6 +12,7 @@ import {
   staticClassName,
 } from "@comparison/components/solid/chrome/styles";
 import { getTextWidth } from "@comparison/components/solid/chrome/textWidth";
+import { comparisonInternalRobots } from "@comparison/data/site-meta";
 
 const entry = getComparisonEntry("button");
 const h1Class = staticClassName(docsTypographyH1);
@@ -34,6 +35,7 @@ const toc = [
   sidebarActiveSlug="button"
   sidebarNavigationLabel="Components"
   title="Button | Solid Spectrum (astro-smoke)"
+  robots={comparisonInternalRobots}
   tocItems={toc}
   tocSourceLabel="S2 source"
   tocSourceUrl={entry?.docsUrl}

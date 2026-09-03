@@ -7,7 +7,7 @@ function docsNav(page: Page, name: "Components" | "Documentation") {
 
 test.describe("comparison sidebar navigation", () => {
   test("component list is a single collapsible docs section", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/coverage/");
 
     const sidebarMount = page.locator(".js-docs-sidebar-mount");
     const macroStyledSidebar = sidebarMount.locator(".s2-docs-sidebar");

@@ -97,7 +97,7 @@ export default function DocsToc(props: DocsTocProps) {
       background: "base",
     },
     [
-      h("div", { class: tocHeadingClass }, "On this page"),
+      h("div", { id: "docs-toc-heading", class: tocHeadingClass }, "On this page"),
       h(
         "div",
         {
@@ -118,7 +118,7 @@ export default function DocsToc(props: DocsTocProps) {
         },
         h(
           "nav",
-          { class: tocNavClass, "aria-label": "On this page" },
+          { class: tocNavClass, "aria-labelledby": "docs-toc-heading" },
           h(
             "ul",
             { class: tocListClass },

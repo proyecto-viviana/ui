@@ -39,9 +39,9 @@ const tocItems = getDocsTocItems({ entry, items, variant });
 ---
 
 <div data-docs-toc-fallback>
-  <div class={tocHeadingClass}>On this page</div>
+  <div id="docs-toc-heading" class={tocHeadingClass}>On this page</div>
   <div class={tocScrollerClass}>
-    <nav class={tocNavClass} aria-label="On this page">
+    <nav class={tocNavClass} aria-labelledby="docs-toc-heading">
       <ul class={tocListClass}>
         {tocItems.map((item) => (
           <li

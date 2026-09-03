@@ -1,5 +1,6 @@
 import h from "solid-js/h";
 import { LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
+import { comparisonCoveragePath } from "@comparison/data/site-meta";
 import { hc } from "../solid-h";
 import { createComparisonColorScheme } from "../useComparisonColorScheme";
 
@@ -23,18 +24,18 @@ export default function MarketingCta() {
           h(
             "h2",
             { id: "marketing-cta-title", class: "s2-marketing-cta-title" },
-            "Ready to get started?",
+            "Ready to compare a component?",
           ),
           h(
             "p",
             { class: "s2-marketing-cta-lede" },
-            "Browse the parity catalogue, install solid-spectrum from npm, and ship Spectrum 2 UI on Solid.",
+            "Open the catalogue, pick a slug, and drive React Spectrum and Solid Spectrum on the same route.",
           ),
           h("div", { class: "s2-marketing-cta-actions" }, [
             hc(
               LinkButton,
               {
-                href: "/coverage",
+                href: comparisonCoveragePath,
                 size: "L",
                 variant: "accent",
                 fillStyle: "fill",

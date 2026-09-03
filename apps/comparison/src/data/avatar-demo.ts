@@ -1,3 +1,5 @@
+import { sanitizeDemoSrc } from "./demo-url";
+
 export const avatarSizeOptions = [
   "16",
   "20",
@@ -46,7 +48,10 @@ export function normalizeAvatarDemoProps(props: Partial<AvatarDemoProps> = {}): 
 
   return {
     alt: typeof props.alt === "string" ? props.alt : avatarDemoDefaults.alt,
-    src: typeof props.src === "string" ? props.src : avatarDemoDefaults.src,
+    src: sanitizeDemoSrc(
+      typeof props.src === "string" ? props.src : undefined,
+      avatarDemoDefaults.src,
+    ),
     size: isAvatarSize(size) ? size : avatarDemoDefaults.size,
     isOverBackground: props.isOverBackground === true,
   };

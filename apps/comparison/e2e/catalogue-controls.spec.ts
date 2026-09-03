@@ -49,13 +49,13 @@ test.describe("comparison catalogue controls", () => {
     await chromeSearch.fill("Accordion");
     await expect(searchDialog.getByRole("link", { name: /Accordion/ })).toHaveAttribute(
       "href",
-      "/components/accordion",
+      "/components/accordion/",
     );
     await page.keyboard.press("Escape");
     await expect(searchDialog).toHaveCount(0);
 
     const topnav = page.getByRole("navigation", { name: "Top navigation" });
-    await expect(topnav.getByRole("link", { name: "Docs" })).toHaveAttribute("href", "/");
+    await expect(topnav.getByRole("link", { name: "Docs" })).toHaveAttribute("href", "/coverage/");
     await expect(topnav.getByRole("link", { name: "npm" })).toHaveAttribute(
       "href",
       "https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum",
@@ -123,7 +123,7 @@ test.describe("comparison catalogue controls", () => {
 
     const accordionRow = overviewMount.locator("[data-entry-card][data-title='Accordion']");
     await expect(accordionRow).toBeVisible();
-    await expect(accordionRow).toHaveAttribute("href", "/components/accordion");
+    await expect(accordionRow).toHaveAttribute("href", "/components/accordion/");
     await expect(overviewMount.getByRole("searchbox", { name: "Search" })).toBeVisible();
     await expect(overviewMount.getByRole("button", { name: "All Parity" })).toBeVisible();
     await expect(overviewMount.getByRole("button", { name: "All Status" })).toBeVisible();

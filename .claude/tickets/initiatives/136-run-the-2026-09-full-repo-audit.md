@@ -16,6 +16,11 @@ history:
       at: 2026-09-02,
       note: "wave-3 CI follow-through: PR #33 fast-forwarded; release-readiness green; certified 2118/2/4; site-gate reds traced (RadioGroup SSR fixed, red-900 contrast is an owner decision); menu-focus :20 regression handed to #257",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "owner seeded the functional pass: #259 comparison page production-ready, #260 React-vs-Solid functional comparison (overlay family first)",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,
