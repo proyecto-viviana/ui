@@ -261,6 +261,11 @@ history:
       at: 2026-09-03,
       note: "segmentedcontrol outcome ticketed. User-visible: disabled selection-indicator fill GrayText vs gray-25 (#389), pressScale on the radio instead of the inner content (#390). Default rest AX/geometry 157×32 gap 4, toolbar arrows without select/wrap, Home/End no-op, Tab trampoline, Space/Enter, pointer, disallowEmpty, disabled skip, item-disabled skip, justified, icon start/only, URL and live selectedKey/defaultSelectedKey/isDisabled, injected form {}. Indicator slide in-flight at 250ms; 500ms exact. locale=ar-SA not routed. No overlay. name not routed. No D13 SegmentedControl journeys (#249). Did not start #254. Note output/functional-pass/segmentedcontrol.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "colorswatch outcome equivalent. Isolated default/pointer hover/click/press-hold, Tab skip Before→After, Enter/Space/Escape/arrows no-op, URL and live color/transparent slash/empty/alpha/named/size XS–L/rounding none-full/aria refs/id/slot, ar-SA and ar-AE colorName+roledescription, and injected form {} match S2. AX img vibrant red orange, Background color; geometry 32×32 radius 4px. isDisabled URL is an S2 no-op both. Attr key-order only. No overlay. name not routed. No D13 ColorSwatch journeys (#249). Did not start #254. No new ids. Note output/functional-pass/colorswatch.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
