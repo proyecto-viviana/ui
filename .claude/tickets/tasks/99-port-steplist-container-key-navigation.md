@@ -11,6 +11,11 @@ history:
       at: 2026-08-20,
       note: "recovered from a certified-driver comment that the legacy debt ledger did not represent",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 steplist: progress Tab Details→Select offers→Fallback offer→After matches; from Details, React ArrowDown moves focus (two downs land on Fallback offer), End stays on last selectable, Home returns to Details, typeahead s focuses Select offers without selecting; Solid stays on Details for all four. Default (only step 1 selectable) arrows/Home/End/typeahead are no-ops both. ArrowRight no-op both (vertical). Did not waive.",
+    }
 ---
 
 The current `createStepListState` is hand-rolled and does not use the shared

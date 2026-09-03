@@ -331,6 +331,11 @@ history:
       at: 2026-09-03,
       note: "badge outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 25 variant fills including black-text notice/yellow, bold/subtle/outline, S/M/L/XL, wrap/truncate including constrained 72px, icon-start S–XL, live children/variant/fill/size/overflow/icon, URL remount, injected form {} match S2. AX text Published (presentation; fixture ARIA/hidden filtered). Geometry 72×24. isDisabled not a prop. Categorical outline transparent border is shared S2. No overlay, no form name. No D13 Badge journeys (#249). Did not start #254. No new ids. Note output/functional-pass/badge.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "steplist outcome ticketed. User-visible: click/Enter on a completed step does not select (#427), live isDisabled/isReadOnly/disabledKeys leave Solid selectable (#428), container ArrowDown/Home/End/typeahead stay on #99 (not waived). Default/progress/disabled/readonly/disabledKeys URL remount AX and Tab skip match the hooks oracle. Space no-op both. Live defaultSelectedKey ignored both (uncontrolled). Paint scoped out (no S2 oracle). Control form coverage=gap (#85). No D13 StepList journeys (#249). Did not start #254. Note output/functional-pass/steplist.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
