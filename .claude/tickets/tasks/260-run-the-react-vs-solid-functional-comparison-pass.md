@@ -251,6 +251,11 @@ history:
       at: 2026-09-03,
       note: "toolbar outcome equivalent. Isolated default/pointer click/type/hover, Tab trampoline + last-focused restore, orientation-gated arrows through Size (no text-input guard), no wrap, Home/End caret-only in the input, nested role=group + aria-orientation, URL and live orientation/content, RTL horizontal flip and vertical no-flip match RAC. AX toolbar Text formatting + Bold/Italic/Size/Underline. Geometry 259x22.5 unstyled both. Live orientation while focused drops Solid to BODY (fixture createMemo remount; settled AX/keyboard match; not filed). isDisabled not routed. No overlay, no form. No D13 Toolbar journeys (#249). Did not start #254. No new ids. Note output/functional-pass/toolbar.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "togglebuttongroup outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab trampoline + last-focused restore, arrows rove without selecting and without wrap, Home/End no-op, Space/Enter toggle including deselect, disabled skip, URL and live single/multiple/disallowEmpty/orientation/density/quiet/emphasized/justified/sizes XS–XL/staticColor/icon start/only/disabled, and injected type=button form {} match S2. AX radiogroup Text alignment / radio Left [checked]; multiple toolbar + aria-pressed. Geometry 182×32 gap 8; Left 47×32 Center 63×32 Right 56×32. Live selectionMode/orientation update (not #388). locale=ar-SA not routed. Press-scale 80ms matrix is timing; 300ms exact. No overlay. name not routed. No D13 ToggleButtonGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/togglebuttongroup.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
