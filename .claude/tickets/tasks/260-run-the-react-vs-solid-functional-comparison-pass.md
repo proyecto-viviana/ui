@@ -321,6 +321,11 @@ history:
       at: 2026-09-03,
       note: "rangecalendar outcome ticketed. User-visible: pointer click drops cell focus (#416), drag 8→12 does not extend (#423), keyboard range-start stays on the cell (#282) then ArrowRight commits a single-day range (#425), custom454 cell numbers off by one (#424), stale grid name after Next (#279), min/max First/Last names (#283), live visibleMonths=2 application name (#418), live focusedValue clear leftover April (#426). Default rest AX/geometry 224×246, hover, two-click 8–14, same-day 20, wheel, kbd arrows/Home/End/Page, typeahead no-op, disabled skip, readonly no-commit, URL invalid/unavailable/noncontiguous/firstDay/selectionAlignment/focused/locale/indian/start-end, RTL flip, and live firstDay/start-end/disabled/readonly/unavailable match. URL visibleMonths=2 names match (#417 disabledDays 18 vs 11). #281 hidden by fixture width 224. #277 not reproduced. No overlay, no form. No D13 RangeCalendar journeys (#249). Did not start #254. Note output/functional-pass/rangecalendar.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "statuslight outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 19 variant fills, S/M/L/XL, role=status labelable gate, live children/variant/size/role, URL remount, injected form {} match S2. AX text Sync complete / status named StatusLight route label. Geometry 96.98×18, dot 10×10. isDisabled not a prop. No overlay, no form name. No D13 StatusLight journeys (#249). Did not start #254. No new ids. Note output/functional-pass/statuslight.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
