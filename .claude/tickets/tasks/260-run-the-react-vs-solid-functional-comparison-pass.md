@@ -226,6 +226,11 @@ history:
       at: 2026-09-03,
       note: "togglebutton outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab cycle 2px ring, Enter/Space toggle both ways, Escape/arrows no-op, disabled skip, disabled+selected, URL and live selected/emphasized/quiet/sizes XS–XL/staticColor/icon start/only/children/disabled, ar-SA RTL, and injected type=button form {} match S2. AX button Pin / [pressed] / [disabled] [pressed], geometry 42×32. Hover 160ms 1-unit RGB and press-scale 80ms matrix are timing; 400ms and 300ms exact. Solid data-comparison-control-props isSelected stale after click is harness serialization (aria-pressed matches). No overlay. name not routed. No D13 ToggleButton journeys (#249). Did not start #254. No new ids. Note output/functional-pass/togglebutton.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "buttongroup outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab Before→Save→Cancel→After with 2px ring, Enter/Space on each, arrows/Home/End no-op, disabled native skip, URL and live orientation/align/size/icon/wrapWidth overflow, parent ResizeObserver 80→column / 400→row, wrapWidth=96&align=end, and injected type=button form {} match S2. AX button Save / Cancel (disabled both). Geometry 150×32 row gap 12; Save 62×32 Cancel 76×32. Overflow flips axis not shrink. Solid fixture aria-label Approval actions is DOM-only (AX equal). Tab 100ms RGB interpolation is timing. locale=ar-SA not routed. No overlay. name not routed. No D13 ButtonGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/buttongroup.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
