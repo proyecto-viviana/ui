@@ -101,6 +101,11 @@ history:
       at: 2026-09-03,
       note: "tableview outcome ticketed. User-visible: cell/header DOM focus (#302), live density/quiet/selectionMode (#303), Column minWidth/maxWidth (#304), rowheader lost after collection update (#310), Ctrl+A (#311), typeahead (#312), checkbox tab order (#313), disabled ArrowDown skip (#314). Default rest AX, pointer select, Select All mixed, Space/Enter, URL remount, sort click, empty AX, ActionBar, disabled click match. Structure/colcount/height stay on #89. Sort-description columnName is D6 known. No D13 TableView journeys (#249). Did not start #254. Note output/functional-pass/tableview.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "accordion outcome equivalent. Isolated default/pointer/keyboard Space/Enter/Tab/Shift+Tab/arrows, single and multiple expansion, header-action isolation, disabled skip, URL and live size/density/quiet/disabled/allowsMultipleExpanded, and ar-SA RTL chevron match S2. AX, 220px geometry, hidden=until-found, and 2px focus ring match. Boolean data-expanded true vs empty not user-visible. No overlay, no form. No D13 Accordion journeys (#249). Did not start #254. No new ids. Note output/functional-pass/accordion.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
