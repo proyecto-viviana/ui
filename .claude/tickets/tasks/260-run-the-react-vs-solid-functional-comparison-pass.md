@@ -356,6 +356,11 @@ history:
       at: 2026-09-03,
       note: "image outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, alt including empty decorative, objectFit cover/contain, sourceMode basic/conditional/error/coordinator, live theme light↔dark on conditional sources, URL and live/control-form remount, forced-colors, injected form {} match S2. AX img Gradient landscape; error text; coordinator two named imgs. Geometry 160×96 wrapper, coordinator grid 328×96. isDisabled not a prop. No overlay, no form name. No D13 Image journeys (#249). Did not start #254. No new ids. Note output/functional-pass/image.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "inlinealert outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 5 variants × 3 fillStyles, autoFocus tabindex=-1 + isolated 2px ring, URL remount, live variant/fill/autoFocus, injected form {} match S2. AX alert Payment Information / icon Information|Success|Warning|Error. Geometry 472×126 (negative 472×105). isDisabled not a prop. Solid autofocus=\"\" vs React omitted is DOM-only. Shared-page autoFocus last-wins is harness. Notice boldFill white heading is shared S2. No overlay, no form name. No D13 InlineAlert journeys (#249). Did not start #254. No new ids. Note output/functional-pass/inlinealert.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
