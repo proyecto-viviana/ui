@@ -21,6 +21,11 @@ history:
       at: 2026-09-03,
       note: "first overnight batch: picker, combobox, menu, actionmenu against preview :4341; remaining slugs queued on a durable scheduler",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "picker outcome ticketed. User-visible: HiddenSelect stale (#264), disabled trigger aria-disabled (#265), loadingState=loading extra Load more row (#266). Overlay 1px offset left on #248. D13 step-0 DOM still #209/#254. Note output/functional-pass/picker.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
