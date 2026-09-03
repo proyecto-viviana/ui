@@ -326,6 +326,11 @@ history:
       at: 2026-09-03,
       note: "statuslight outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 19 variant fills, S/M/L/XL, role=status labelable gate, live children/variant/size/role, URL remount, injected form {} match S2. AX text Sync complete / status named StatusLight route label. Geometry 96.98×18, dot 10×10. isDisabled not a prop. No overlay, no form name. No D13 StatusLight journeys (#249). Did not start #254. No new ids. Note output/functional-pass/statuslight.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "badge outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 25 variant fills including black-text notice/yellow, bold/subtle/outline, S/M/L/XL, wrap/truncate including constrained 72px, icon-start S–XL, live children/variant/fill/size/overflow/icon, URL remount, injected form {} match S2. AX text Published (presentation; fixture ARIA/hidden filtered). Geometry 72×24. isDisabled not a prop. Categorical outline transparent border is shared S2. No overlay, no form name. No D13 Badge journeys (#249). Did not start #254. No new ids. Note output/functional-pass/badge.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
