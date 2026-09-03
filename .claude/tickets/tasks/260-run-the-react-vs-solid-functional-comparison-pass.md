@@ -206,6 +206,16 @@ history:
       at: 2026-09-03,
       note: "button outcome ticketed. User-visible: pending label/AX name Save drops immediately (#380). Default rest AX/geometry 62×32, pointer click/press-scale, Tab Before→Save→After, Enter/Space, disabled native skip, pending press suppression, variants/fill/sizes/staticColor/icon/RTL, URL and live children/size/disabled, injected type=button form click no extra submit match. Hover 160ms 19 vs 22 settles 400ms. Icon wrapper vis vs svg hidden is #135 structural. Spinner delay matches on live isPending. No D13 Button journeys (#249). Did not start #254. Note output/functional-pass/button.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "rangeslider outcome ticketed. User-visible: native input vs div[role=slider] already #74 (AX omits Solid value; names Minimum Range vs Minimum; Tab target; extra native outline on the Solid container), ContextualHelp press already #352, wrap already #363, name Help vs Range Help already #353, aria-haspopup already #287. ArrowUp/Down match (not #374). Live isEmphasized/isDisabled fill and live max output width match (not #375). Default rest AX/geometry 396×50 fill 118.8×4 knobs 20×20 output 30–60, pointer hover-start/track-click 10 and 45/drag-start 10, wheel no-op, Tab Before→start→end→After, arrows/Page/Home/End/cross, disabled skip, URL sizes/track/precise/emphasized/formats/labels/controlled/step/clamp, named form {min,max} 30:60→31:59, live size XL/thick-precise/emphasized/disabled/range/format match. data-disabled polarity stays #93 (not user-visible). No D13 RangeSlider journeys (#249). Did not start #254. Note output/functional-pass/rangeslider.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "actionbutton outcome ticketed. User-visible: pending string children keep aria-label Inspect after the spinner (#381). Default rest AX/geometry 67×32, pointer hover/click/press-scale, Tab cycle 2px ring, Enter/Space count, disabled skip, pending focusable+aria-disabled+press-suppressed, quiet, sizes XS–XL, staticColor, icon start/only, live children/size/quiet/disabled/iconPlacement match. Icon-start pending unnamed both. Icon-only pending keeps consumer aria-label both. Press-scale 80ms 5th-decimal matrix is timing; 300ms exact. Button fixture t0 hide is #380, not this slug. Hover/pressed clone photography stays #197. No D13 ActionButton journeys (#249). Did not start #254. Note output/functional-pass/actionbutton.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
