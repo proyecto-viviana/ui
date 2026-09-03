@@ -276,6 +276,11 @@ history:
       at: 2026-09-03,
       note: "colorwheel outcome ticketed. User-visible: hue input remounts on the first value change so later keys no-op and a ring click leaves the loupe open (#393, same Color.tsx thumb remount as ColorSlider); End from 15 is 359 vs S2 0 (#396); live defaultValue leaves Solid at 0 (#395). Default rest AX/geometry 192×192, Tab cycle, first Arrow/PageUp, wrap ArrowLeft, pointer ring 90/180/270, center hole, thumb drag+loupe 50×66, wheel no-op, disabled URL/live skip, sizes 175/224/256 URL and live, controlled value, named form {hue:0}→{hue:1}, aria refs, RTL valuetext match. hsla vs hsl marker is fixture serialization. Not #74 (native range already backs AX). Not #391 (ColorWheel does focusInput). Not #394 (ColorSlider keep 360). No D13 ColorWheel journeys (#249). Did not start #254. Note output/functional-pass/colorwheel.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "colorslider outcome ticketed. User-visible: hidden range input remounts on the first value change so later keys no-op, focus BODY, thumb 32→16, and a track click leaves data-dragging plus the 50×66 loupe open (#393, same Color.tsx remount as ColorWheel); hue End from 50 is 0°/left 0px vs S2 360°/left 192px (#394). Default rest AX/geometry 192×50.5 track 192×24 thumb 16×16 left 26.6562px output 50°, Tab Before→input→After 32×32 ring, first Arrow/Page/Home, hover, held drag 20%→72 + loupe enter 50×66, wheel no-op, disabled Tab skip, labeled/ariaLabel/vertical rest, RGB End 128→255 thumb 192px, alpha/saturation/lightness/brightness rest, defaultValue 180, RTL 50 درجة + click 80%→72, live isDisabled/orientation/channel/alpha/label/value/ariaLabel, named form {hue:50}→{hue:51} match. hsla vs hsl marker is fixture serialization. Brightness track 213 vs 212 is 1LSB. Not #74 (native range already backs AX). Not #391 (input is focused then replaced). Not #392 (not valuetext digits). Not #396 (ColorWheel End should be 0). No D13 ColorSlider journeys (#249). Did not start #254. Note output/functional-pass/colorslider.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
