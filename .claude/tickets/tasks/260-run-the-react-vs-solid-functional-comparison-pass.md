@@ -406,6 +406,11 @@ history:
       at: 2026-09-03,
       note: "actionbuttongroup outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab trampoline + lastFocused restore, orientation-gated arrows without select/wrap, Home/End no-op, Space/Enter replace-select, disabled skip, URL and live orientation/density/quiet/justified/sizes XS–XL/staticColor/icon start/only/disabled, compact vertical XL, and injected type=button form {} match S2. AX toolbar Formatting actions / button Bold [pressed]. Geometry 198×32 gap 8; Bold 51×32 Italic 52×32 Underline 79×32. Live orientation updates (not #388). locale=ar-SA not routed. Press-scale 80ms matrix is timing; 300ms exact. No overlay. name not routed. No D13 ActionButtonGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/actionbuttongroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "toast outcome ticketed. User-visible: Show all drops the Text slot so the button is 48×32 and the collapsed toast 189×84 (#432), region AX omits list/listitem (#433), Show all/Collapse leave focus BODY (#434), live aria-label stays Notifications (#435), LandmarkManager F6 capture/focus miss RAC (#436). Isolated rest, variants, four placements, pointer/keyboard dismiss, Space/Enter open, autodismiss 5s, action close/keep, URL remount, live placement/children/action, injected form match. Enter t=0 is D2 threshold debt. title.slot stays #11. No D13 Toast journeys (#249). Did not start #254. Note output/functional-pass/toast.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
