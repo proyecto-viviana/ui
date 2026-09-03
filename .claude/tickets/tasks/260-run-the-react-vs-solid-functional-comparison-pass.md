@@ -216,6 +216,11 @@ history:
       at: 2026-09-03,
       note: "actionbutton outcome ticketed. User-visible: pending string children keep aria-label Inspect after the spinner (#381). Default rest AX/geometry 67×32, pointer hover/click/press-scale, Tab cycle 2px ring, Enter/Space count, disabled skip, pending focusable+aria-disabled+press-suppressed, quiet, sizes XS–XL, staticColor, icon start/only, live children/size/quiet/disabled/iconPlacement match. Icon-start pending unnamed both. Icon-only pending keeps consumer aria-label both. Press-scale 80ms 5th-decimal matrix is timing; 300ms exact. Button fixture t0 hide is #380, not this slug. Hover/pressed clone photography stays #197. No D13 ActionButton journeys (#249). Did not start #254. Note output/functional-pass/actionbutton.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "form outcome ticketed. User-visible: validationBehavior=aria does not switch descendant TextField off native required (#382), native valueMissing after blocked submit omits HelpText/aria-invalid (#383), live size/labelPosition leave the form grid at mount-time row-gap and columns (#384). Default rest AX/geometry 312×138, pointer click input/label/group, Tab Before→input→submit→After, type+Enter submit, disabled skip, required filled native+asterisk, necessity label (required), URL sizes S/L/XL, URL side-label, emphasized, copy remount, requestSubmit default, live isDisabled/isRequired/emphasized/children inherit size match. URL aria remount still submits both (form noValidate). Hover data-hovered extra on React group (border matches). Input data-disabled extra on React. Side-label y-rects stay #77. No D13 Form journeys (#249). Did not start #254. Note output/functional-pass/form.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

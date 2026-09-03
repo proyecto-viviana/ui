@@ -31,6 +31,11 @@ history:
       at: 2026-09-03,
       note: "#260 radiogroup: same native custom-validity hole, but the wiring is createRadio not createTextField. Filed #376. Do not treat RadioGroup as this ticket.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 form: native required-empty already blocks both via valueMissing; after that blocked submit React paints error HelpText/aria-invalid/red border and Solid does not. Same missing createFormValidation call, different user-visible. Filed #383. Do not treat Form native-submit HelpText as this ticket.",
+    }
 ---
 
 S2 TextField default `validationBehavior` is native. RAC
