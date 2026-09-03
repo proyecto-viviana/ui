@@ -201,6 +201,11 @@ history:
       at: 2026-09-03,
       note: "radiogroup outcome ticketed. User-visible: isInvalid native custom validity (#376), live isDisabled paint stale (#377), required-empty submit focuses enterprise vs starter (#378), named form name=plan shared across panels (#379), live isInvalid describedby already #258, ContextualHelp press already #352, wrap already #363, name Help vs Plan Help already #353, aria-haspopup already #287. Live HelpText slot swaps (not #345). Default rest AX/geometry 82×164, pointer, Tab single stop, arrows wrap, Space/Enter no extra toggle, disabled skip, read-only move-focus-not-select, required selected submit, aria validation, URL invalid error slot, horizontal, sizes, emphasized, live selected/readonly/required/orientation/size/copy match. Isolated invalid Tab matches. No D13 RadioGroup journeys (#249). Did not start #254. Note output/functional-pass/radiogroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "button outcome ticketed. User-visible: pending label/AX name Save drops immediately (#380). Default rest AX/geometry 62×32, pointer click/press-scale, Tab Before→Save→After, Enter/Space, disabled native skip, pending press suppression, variants/fill/sizes/staticColor/icon/RTL, URL and live children/size/disabled, injected type=button form click no extra submit match. Hover 160ms 19 vs 22 settles 400ms. Icon wrapper vis vs svg hidden is #135 structural. Spinner delay matches on live isPending. No D13 Button journeys (#249). Did not start #254. Note output/functional-pass/button.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
