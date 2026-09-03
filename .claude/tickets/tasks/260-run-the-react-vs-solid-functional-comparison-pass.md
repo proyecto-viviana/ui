@@ -146,6 +146,16 @@ history:
       at: 2026-09-03,
       note: "textarea outcome ticketed. User-visible: live isInvalid leaves HelpText on the mount-time description/error slot (#345). Default rest AX/geometry 208×104, pointer click/group-click/hover, Tab cycle with 2px ring, typing auto-grow, disabled Tab skip, read-only, native required, URL invalid error slot, sizes S/L/XL, empty height 50, and live size/value/label/disabled/required match. textarea data-disabled/data-invalid extras structural. Empty height vs S2 ::before stays #124 (both stacks 50px). URL invalid already matches; not #70. No overlay, no form name. No D13 TextArea journeys (#249). Did not start #254. Note output/functional-pass/textarea.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "numberfield outcome ticketed. User-visible: PageUp/PageDown jump to max/min (#346), focused wheel no-op (#347), stepper hold does not repeat (#348), isRequired extra aria-required (#349), value changes not announced (#350). Live isInvalid HelpText already #345. Default rest AX/geometry 208×32, Tab cycle, Arrow/Home/End, pointer click, disabled skip, read-only, URL invalid, hideStepper, sizes, step=3, clamp, live size/value/disabled/hideStepper match. inputMode numeric vs decimal DOM-only on this host. Fixture onInput vs onChange is harness (certified D4). No overlay, no form name. No D13 NumberField journeys (#249). Did not start #254. Note output/functional-pass/numberfield.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "textfield outcome ticketed. User-visible: isInvalid does not set native custom validity so form submit proceeds (#351); live isInvalid leaves HelpText on the mount-time description slot (#345). Default rest AX/geometry 208×82, pointer click/label/group, Tab cycle with settled 2px ring and gray-900 border, typing, disabled Tab skip, read-only, native required, URL invalid error slot/icon, sizes S/L/XL, empty value, and live size/value/label/disabled/required match. Input data-invalid/data-disabled extras structural. data-focused vs data-focus-within not user-visible. No overlay, name not routed. No D13 TextField journeys (#249). Did not start #254. Note output/functional-pass/textfield.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
