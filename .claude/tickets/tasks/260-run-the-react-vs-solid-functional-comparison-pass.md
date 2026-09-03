@@ -241,6 +241,11 @@ history:
       at: 2026-09-03,
       note: "actiongroup outcome ticketed. User-visible: live selectionMode/orientation leave host role and aria-orientation stale (#388), live disabledKeys leave items natively enabled (#386), React fixture drops onPress so click/Space/Enter never select (#387). RTL vertical ArrowRight wraps previous on the unstyled React row is upstream drift (hook flipDirection is rtl && horizontal; Solid next matches; D10 is horizontal none). Default rest AX, Tab trampoline, orientation-agnostic arrows, wrap, Home/End no-op, URL single/multiple/disabled/all-disabled/RTL horizontal, no selection-follows-focus, and none-mode press match. Geometry/paint out of scope (no S2 ActionGroup). No overlay, no form. No D13 ActionGroup journeys (#249). Did not start #254. Note output/functional-pass/actiongroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "link outcome equivalent. Isolated default/pointer hover/click, Tab Before→link→After 2px ring, Enter navigates and Space/Escape/ArrowDown no-op, URL and live variant/standalone/quiet/staticColor/children/href including hash and relative, certified href=# Enter/Space, and injected form requestSubmit {} with click not extra-submitting match S2. AX link View project /url, geometry 78×22.5 inline / 73×18 standalone. Quiet underline on hover and focus-visible both. isDisabled URL/live is an S2 no-op both (not #385). Empty/javascript href sanitizes to default both. Hash-click hashchange miss is shared-page measurement. Press-down 80ms RGB is timing; 300ms exact. locale=ar-SA not wired on either fixture. No overlay. No D13 Link journeys (#249). Did not start #254. No new ids. Note output/functional-pass/link.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
