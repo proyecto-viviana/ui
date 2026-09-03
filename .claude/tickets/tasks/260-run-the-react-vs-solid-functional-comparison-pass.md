@@ -181,6 +181,11 @@ history:
       at: 2026-09-03,
       note: "datefield outcome ticketed. User-visible: isInvalid native custom validity already #362 (createDateField; required-empty focus stays on Submit), ContextualHelp wrap 208×82 vs 208×102 already #363, help press already #352, name Appointment date Help vs Help already #353, aria-haspopup already #287. Live isInvalid HelpText swaps (not #345). HiddenDateInput stepMismatch not user-visible (form=\"\"). Default rest AX/geometry 208×82, Tab month→day→year, Arrow/Page/Home/End spin, typed auto-advance, Backspace, wheel no-op, FieldGroup click year, disabled skip, read-only, named FormData {date:2025-03-03}, sizes/labelPosition/granularity/hourCycle/hideTimeZone/locales/RTL/constrain/unavailable, and live size/value/copy match. No D13 DateField journeys (#249). Did not start #254. Note output/functional-pass/datefield.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "switch outcome ticketed. User-visible: Enter toggles Solid already #354, live isDisabled/isReadOnly paint stale (#371). Field position relative vs static stays #121 (not user-visible here). Default rest AX/geometry 65×18 / track 26×16, pointer label/track/handle, Tab cycle 2px ring, Space, arrows no-op, disabled skip, read-only no-op, selected/emphasized/disabled-selected, sizes S/L/XL remount, URL and live children, live selected/emphasized/size match. name/value/isRequired/isInvalid not routed. Injected named form harness (React re-render drops the DOM name). No D13 Switch journeys (#249). Did not start #254. Note output/functional-pass/switch.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 checkbox functional pass: isolated Tab onto the input then Enter checks Solid and leaves React unchecked; Space then matches native toggle on both. RAC useToggle label onPress returns on keyboard/virtual; Solid createToggle always state.toggle()",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 switch: same Enter hole on /components/switch/. Isolated Tab then Enter, and locator.press(Enter) on the focused input: React stays unchecked, Solid checks and slides the handle 4→13. Space still matches. Did not file a second id.",
+    }
 ---
 
 Native and S2 checkboxes toggle on Space, not Enter. Enter on a
@@ -41,17 +46,29 @@ Before, Tab lands on the input, 2px focus ring, both unchecked.
 Pointer click on the label and keyboard Space still match. No form
 on the default route, so React Enter does not submit either.
 
+Switch, same hook, same walk on `/components/switch/`:
+
+| | React | Solid |
+|---|---|---|
+| Enter | unchecked, handle offset 4 | checked, handle 10×10 offset 13 |
+| Space after that | checked, offset 13 | unchecked, offset 4 |
+| Enter again | stays checked | checked, offset 13 |
+
+`locator.press("Enter")` on the focused input matches that split.
+The Switch visual spec that expects both stacks to check on Enter is
+stale against current S2.
+
 `packages/solidaria/src/toggle/createToggle.ts` label `onPress`.
 Installed RAC `useToggle` skips keyboard/virtual on that handler.
 
 ## Done when
 
-Enter on a focused comparison-route Checkbox does not toggle, matching
-S2. Space still toggles once. A walk fails if Solid checks on Enter
-while React stays unchecked.
+Enter on a focused comparison-route Checkbox or Switch does not
+toggle, matching S2. Space still toggles once. A walk fails if Solid
+checks on Enter while React stays unchecked.
 
 ## Relationship
 
-Child of #24. Found by #260. Wiring is `createToggle` (also used by
-Switch; not driven here). Distinct from native `required` / custom
-validity. Do not start #254.
+Child of #24. Found by #260. Wiring is `createToggle` (Checkbox and
+Switch). Distinct from native `required` / custom validity and from
+#371 (live disabled paint on Switch). Do not start #254.
