@@ -246,6 +246,11 @@ history:
       at: 2026-09-03,
       note: "link outcome equivalent. Isolated default/pointer hover/click, Tab Before→link→After 2px ring, Enter navigates and Space/Escape/ArrowDown no-op, URL and live variant/standalone/quiet/staticColor/children/href including hash and relative, certified href=# Enter/Space, and injected form requestSubmit {} with click not extra-submitting match S2. AX link View project /url, geometry 78×22.5 inline / 73×18 standalone. Quiet underline on hover and focus-visible both. isDisabled URL/live is an S2 no-op both (not #385). Empty/javascript href sanitizes to default both. Hash-click hashchange miss is shared-page measurement. Press-down 80ms RGB is timing; 300ms exact. locale=ar-SA not wired on either fixture. No overlay. No D13 Link journeys (#249). Did not start #254. No new ids. Note output/functional-pass/link.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "toolbar outcome equivalent. Isolated default/pointer click/type/hover, Tab trampoline + last-focused restore, orientation-gated arrows through Size (no text-input guard), no wrap, Home/End caret-only in the input, nested role=group + aria-orientation, URL and live orientation/content, RTL horizontal flip and vertical no-flip match RAC. AX toolbar Text formatting + Bold/Italic/Size/Underline. Geometry 259x22.5 unstyled both. Live orientation while focused drops Solid to BODY (fixture createMemo remount; settled AX/keyboard match; not filed). isDisabled not routed. No overlay, no form. No D13 Toolbar journeys (#249). Did not start #254. No new ids. Note output/functional-pass/toolbar.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
