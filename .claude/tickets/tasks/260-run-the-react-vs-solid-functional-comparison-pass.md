@@ -41,6 +41,11 @@ history:
       at: 2026-09-03,
       note: "menu outcome ticketed. User-visible: Tab leaves open overlay (#267), live direction/align stale placement (#268). Single-selection checkmark column 0px stays on #107. aria-haspopup true vs menu is accepted upstream drift (route contract allows either). No new ids this pass. Note output/functional-pass/menu.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "tooltip outcome ticketed. Isolated drive: hover/focus/Escape/press/disabled/placements/flip/noflip/scroll/warmup/cooldown/live placement match. User-visible remainders already on #64 (enter opacity + exit unmount vs ~200ms linger; 0.5px overlay offset). Arrow unlabeled img matches upstream (#67). No D13 Tooltip journeys (#249). Did not start #254. No new ids. Note output/functional-pass/tooltip.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
