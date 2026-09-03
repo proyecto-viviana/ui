@@ -31,10 +31,10 @@ PageDown to `decrementToMin()`. Home / End already match.
 one panel at a time, input focused, default value 5, `maxValue=20`,
 `minValue=0`, `step=1`.
 
-| | React | Solid |
-|---|---|---|
-| PageUp | 6 | 20 |
-| PageDown | 5 | 0 |
+|               | React     | Solid     |
+| ------------- | --------- | --------- |
+| PageUp        | 6         | 20        |
+| PageDown      | 5         | 0         |
 | End then Home | 20 then 0 | 20 then 0 |
 
 ## Done when

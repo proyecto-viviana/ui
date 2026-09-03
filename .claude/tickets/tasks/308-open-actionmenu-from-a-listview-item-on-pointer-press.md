@@ -29,11 +29,11 @@ ListView item slot.
 islands mounted, one panel at a time. Click
 `getByRole("button", { name: /Project brief.pdf menu/ })`, wait 400ms:
 
-| | React | Solid |
-|---|---|---|
-| `aria-expanded` | true | false |
-| `role=menu` | Copy, opacity 1, 71×48 | none |
-| focus | `role=menu` | BODY |
+|                 | React                  | Solid |
+| --------------- | ---------------------- | ----- |
+| `aria-expanded` | true                   | false |
+| `role=menu`     | Copy, opacity 1, 71×48 | none  |
+| focus           | `role=menu`            | BODY  |
 
 Solid `click({ force: true })` still does not open. `button.click()` via
 `dispatchEvent` opens Copy (opacity 1, 61×40, focus menuitem Copy). Focus

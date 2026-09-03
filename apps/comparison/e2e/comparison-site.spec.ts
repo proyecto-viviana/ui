@@ -31,10 +31,9 @@ test.describe("comparison site chrome", () => {
     await page.goto(comparisonCoveragePath);
     await expect(page).toHaveTitle("Coverage | Solid Spectrum");
     await expect(page.getByRole("heading", { level: 1, name: "Solid Spectrum" })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "Top navigation" }).getByRole("link", { name: "Docs" })).toHaveAttribute(
-      "href",
-      comparisonCoveragePath,
-    );
+    await expect(
+      page.getByRole("navigation", { name: "Top navigation" }).getByRole("link", { name: "Docs" }),
+    ).toHaveAttribute("href", comparisonCoveragePath);
   });
 
   test("the not-found page is in the static tree", async ({ page }) => {
@@ -82,7 +81,9 @@ test.describe("comparison site chrome", () => {
     );
     await page.goto(comparisonCoveragePath);
     await expect(
-      page.locator("[data-entry-card][data-title='Accordion'], a[href='/components/accordion/']").first(),
+      page
+        .locator("[data-entry-card][data-title='Accordion'], a[href='/components/accordion/']")
+        .first(),
     ).toHaveAttribute("href", "/components/accordion/");
   });
 

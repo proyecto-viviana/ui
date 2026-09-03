@@ -28,16 +28,16 @@ both.
 
 Shift+ArrowDown:
 
-| | React | Solid |
-|---|---|---|
-| first | sel `weekly-report,budget`, focus Budget | sel `weekly-report`, focus Budget |
+|        | React                                                       | Solid                                   |
+| ------ | ----------------------------------------------------------- | --------------------------------------- |
+| first  | sel `weekly-report,budget`, focus Budget                    | sel `weekly-report`, focus Budget       |
 | second | sel `weekly-report,budget,client-notes`, focus Client Notes | sel `weekly-report`, focus Client Notes |
 
 Shift-click Budget, then Shift-click Archive:
 
-| | React | Solid |
-|---|---|---|
-| Budget | `weekly-report,budget` | `weekly-report,budget` |
+|         | React                                                                | Solid                                                      |
+| ------- | -------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Budget  | `weekly-report,budget`                                               | `weekly-report,budget`                                     |
 | Archive | `weekly-report,budget,client-notes,photos,archive` (project omitted) | `budget,client-notes,photos,archive` (drops weekly-report) |
 
 Unmodified click/Space still toggle on both. Ctrl+A and Escape match.

@@ -39,21 +39,21 @@ URL remount `?isDisabled=true` and `?isReadOnly=true` already match.
 
 Live `{isDisabled:true}`:
 
-| | React | Solid |
-|---|---|---|
-| `input.disabled` | true | true |
-| `data-disabled` | true | omitted |
+|                               | React                | Solid             |
+| ----------------------------- | -------------------- | ----------------- |
+| `input.disabled`              | true                 | true              |
+| `data-disabled`               | true                 | omitted           |
 | track border / handle / label | `rgb(198, 198, 198)` | `rgb(41, 41, 41)` |
-| Tab from Before | After (skip) | After (skip) |
-| force-click | stays unchecked | stays unchecked |
+| Tab from Before               | After (skip)         | After (skip)      |
+| force-click                   | stays unchecked      | stays unchecked   |
 
 Live `{isReadOnly:true}`:
 
-| | React | Solid |
-|---|---|---|
-| `aria-readonly` | true | true |
-| `data-readonly` | true | omitted |
-| click / Space | no-op | no-op |
+|                            | React                   | Solid                        |
+| -------------------------- | ----------------------- | ---------------------------- |
+| `aria-readonly`            | true                    | true                         |
+| `data-readonly`            | true                    | omitted                      |
+| click / Space              | no-op                   | no-op                        |
 | pointer over / click hover | stays `rgb(41, 41, 41)` | darkens to `rgb(19, 19, 19)` |
 
 `?isDisabled=true` remount: both gray-400, `data-disabled=true`.

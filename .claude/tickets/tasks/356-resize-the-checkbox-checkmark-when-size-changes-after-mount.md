@@ -43,11 +43,11 @@ matches, because the icon first mounts at XL.
 From the default route, live `{isSelected:true}` then live
 `{isSelected:true, size:"XL"}`:
 
-| | React | Solid |
-|---|---|---|
-| box | 20×20 | 20×20 |
-| checkmark | 12×12 | 10×10 |
-| field | 127.8×22 | 127.8×22 |
+|           | React    | Solid    |
+| --------- | -------- | -------- |
+| box       | 20×20    | 20×20    |
+| checkmark | 12×12    | 10×10    |
+| field     | 127.8×22 | 127.8×22 |
 
 Live `{size:"XL", isSelected:true}` in one event from default: both
 12×12. `packages/solid-spectrum/src/checkbox/index.tsx`

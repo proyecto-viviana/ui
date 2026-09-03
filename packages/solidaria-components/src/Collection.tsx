@@ -243,11 +243,14 @@ function renderCollectionItems<T>(
           return <></>;
         }
         const key = node.key ?? index();
+        const isLastInLevel = index() === items.length - 1;
         return (
           <>
             {renderDropIndicator?.({ type: "item", key, dropPosition: "before" })}
             {item as unknown as JSX.Element}
-            {renderDropIndicator?.({ type: "item", key, dropPosition: "after" })}
+            {isLastInLevel
+              ? renderDropIndicator?.({ type: "item", key, dropPosition: "after" })
+              : null}
           </>
         );
       }}
@@ -274,6 +277,32 @@ export function Collection<T>(props: AriaCollectionProps<T>): unknown {
 }
 
 export { createLeafComponent, createBranchComponent };
+
+/**
+ * RAC Collection renders `before` + item for every item, and `after` only when
+ * the next item in the same level is null (`renderAfterDropIndicators`). The
+ * `"on"` position is not a collection-level slot. Index-based hosts (ListBox,
+ * GridList, Menu, Table) use this helper so they do not fork the geometry.
+ */
+export function renderCollectionDropSlots(options: {
+  index: number;
+  lastIndex: number;
+  renderDropIndicator?: (
+    index: number,
+    position: "before" | "after" | "on",
+  ) => JSX.Element | undefined;
+  children: JSX.Element;
+}): JSX.Element {
+  return (
+    <>
+      {options.renderDropIndicator?.(options.index, "before")}
+      {options.children}
+      {options.index === options.lastIndex
+        ? options.renderDropIndicator?.(options.index, "after")
+        : null}
+    </>
+  );
+}
 
 /**
  * A semantic section wrapper for grouped collection content.

@@ -37,18 +37,18 @@ an inline `${maxLabelLength()}ch` object on `HeadlessSliderOutput`.
 
 From the default route, live `{isEmphasized:true}`:
 
-| | React | Solid |
-|---|---|---|
-| fill | `rgb(59, 99, 251)` | `rgb(80, 80, 80)` |
-| upperTrack | `rgb(218, 218, 218)` | same |
+|            | React                | Solid             |
+| ---------- | -------------------- | ----------------- |
+| fill       | `rgb(59, 99, 251)`   | `rgb(80, 80, 80)` |
+| upperTrack | `rgb(218, 218, 218)` | same              |
 
 Live `{isDisabled:true}`:
 
-| | React | Solid |
-|---|---|---|
-| fill | `rgb(233, 233, 233)` | `rgb(80, 80, 80)` |
-| upperTrack / label / thumb border | disabled | disabled |
-| `input.disabled` / Tab skip | true / skip | true / skip |
+|                                   | React                | Solid             |
+| --------------------------------- | -------------------- | ----------------- |
+| fill                              | `rgb(233, 233, 233)` | `rgb(80, 80, 80)` |
+| upperTrack / label / thumb border | disabled             | disabled          |
+| `input.disabled` / Tab skip       | true / skip          | true / skip       |
 
 Live `{label:"Gain", step:5, maxValue:50, value:10}`: values 10 and
 ArrowRight→15 match; output box 16×18 vs 24×18.

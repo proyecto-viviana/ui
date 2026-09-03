@@ -42,22 +42,22 @@ the native input handle Space.
 `.s2-framework-panel` `visibility:hidden` + `inert`. From injected
 Before, Tab lands on the input, 2px focus ring, both unchecked.
 
-| | React | Solid |
-|---|---|---|
-| Enter | unchecked, still focused | checked, checkmark 10×10 |
-| Space after that | checked | unchecked |
-| Enter again | stays checked | checked |
+|                  | React                    | Solid                    |
+| ---------------- | ------------------------ | ------------------------ |
+| Enter            | unchecked, still focused | checked, checkmark 10×10 |
+| Space after that | checked                  | unchecked                |
+| Enter again      | stays checked            | checked                  |
 
 Pointer click on the label and keyboard Space still match. No form
 on the default route, so React Enter does not submit either.
 
 Switch, same hook, same walk on `/components/switch/`:
 
-| | React | Solid |
-|---|---|---|
-| Enter | unchecked, handle offset 4 | checked, handle 10×10 offset 13 |
-| Space after that | checked, offset 13 | unchecked, offset 4 |
-| Enter again | stays checked | checked, offset 13 |
+|                  | React                      | Solid                           |
+| ---------------- | -------------------------- | ------------------------------- |
+| Enter            | unchecked, handle offset 4 | checked, handle 10×10 offset 13 |
+| Space after that | checked, offset 13         | unchecked, offset 4             |
+| Enter again      | stays checked              | checked, offset 13              |
 
 `locator.press("Enter")` on the focused input matches that split.
 The Switch visual spec that expects both stacks to check on Enter is

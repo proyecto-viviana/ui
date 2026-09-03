@@ -36,12 +36,12 @@ keeps ButtonGroup) does not.
 `http://127.0.0.1:4341/components/dialog/?role=alertdialog`, one panel at a
 time, `data-islands-mounted`. Pointer open, wait until opacity 1.
 
-| | React | Solid |
-|---|---|---|
-| overlay | 480×194 @ y 353 | 480×162 @ y 369 |
-| footer child | h 96, padding `32px 32px 32px 32px` | h 64, padding `0px 32px 32px 32px` |
-| buttons | Cancel 80×32, Save 62×32 | same |
-| AX | `alertdialog "Review Changes"` heading + Cancel + Save | identical |
+|              | React                                                  | Solid                              |
+| ------------ | ------------------------------------------------------ | ---------------------------------- |
+| overlay      | 480×194 @ y 353                                        | 480×162 @ y 369                    |
+| footer child | h 96, padding `32px 32px 32px 32px`                    | h 64, padding `0px 32px 32px 32px` |
+| buttons      | Cancel 80×32, Save 62×32                               | same                               |
+| AX           | `alertdialog "Review Changes"` heading + Cancel + Save | identical                          |
 
 Same 32px gap for `variant=error|warning|information|destructive`,
 `size=XL` (folded to L, width 640 both), omitted `cancelLabel`, and live

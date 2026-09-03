@@ -40,6 +40,10 @@
  * and give gray-800 its intermediate value back, which restores both the gap and the hover
  * step. Do not "fix" it by moving the ink off 800 here — that only unpaints the ink.
  *
+ * Negative, notice, and positive *ink* (HelpText, StatusLight, Badge outline) is remapped
+ * at the theme (`spectrum-theme.ts` `color.negative` → 1000). Do not floor 900 here to
+ * make HelpText pass on the panel composite — 900 is the white-on-fill stop.
+ *
  * The 13 decorative ramps (purple, indigo, seafoam, cyan, celery, chartreuse, magenta,
  * fuchsia, pink, turquoise, brown, silver, cinnamon) are intentionally left on Adobe
  * values; nothing in the system surfaces them today, but a component exposing

@@ -92,16 +92,6 @@ const resolveTarget = (opts: DroppableItemOptions): DropTarget | null => {
   return null;
 };
 
-const targetsEqual = (a: DropTarget | null | undefined, b: DropTarget | null): boolean => {
-  if (!a || !b) return false;
-  if (a.type !== b.type) return false;
-  if (a.type === "root" && b.type === "root") return true;
-  if (a.type === "item" && b.type === "item") {
-    return a.key === b.key && a.dropPosition === b.dropPosition;
-  }
-  return false;
-};
-
 /**
  * Creates ARIA props for a droppable item within a collection.
  *
@@ -117,13 +107,10 @@ export function createDroppableItem(
   const resolvedTarget = createMemo(() => resolveTarget(getOptions()));
   const dragSession = createDragSession();
 
-  // RAC `useDroppableItem.ts:83` `state.isDropTarget(options.target)` is a
-  // per-target predicate. The port state exposes a collection-level boolean, so
-  // compare `state.target` (including `dropPosition`) — otherwise a before/after
-  // indicator would also light up the item.
   const isDropTarget = createMemo(() => {
     const target = resolvedTarget();
-    return target != null && targetsEqual(state.target, target);
+    if (target == null) return false;
+    return state.isDropTargetFor(target);
   });
 
   // RAC `useDroppableItem.ts:49-68`: register with DragManager once the node exists.
@@ -150,17 +137,21 @@ export function createDroppableItem(
   });
 
   // RAC `useDroppableItem.ts:84-88`: focus the node when it becomes the active
-  // virtual-drag target. Deferred to rAF so this does not nest inside the
-  // `setTarget` Solid flush (`onDropEnter` → indicator mount).
+  // virtual-drag target. Deferred to a microtask so this does not nest inside the
+  // `setTarget` Solid flush (`onDropEnter` → indicator mount). A rAF lost the
+  // race to collection focus under parallel Playwright workers.
   createEffect(() => {
     const el = getOptions().ref();
     if (!dragSession() || !isDropTarget() || !el) return;
-    const frame = requestAnimationFrame(() => {
-      if (isVirtualDragging() && isDropTarget()) {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled && isVirtualDragging() && isDropTarget()) {
         el.focus();
       }
     });
-    onCleanup(() => cancelAnimationFrame(frame));
+    onCleanup(() => {
+      cancelled = true;
+    });
   });
 
   const isValidDropTarget = createMemo(() => {

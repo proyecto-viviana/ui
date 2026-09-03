@@ -64,5 +64,5 @@ time row wraps under a 272px cap. `viviana-ui` copies the same style.
 ## Relationship
 
 Child of #24. Found by #260. Distinct from #281 (one-month calendar
-width without time fields) and #198 (start/end time *strings*, already
+width without time fields) and #198 (start/end time _strings_, already
 wired).

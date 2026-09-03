@@ -31,18 +31,18 @@ one panel at a time, input focused.
 
 Hex default `#336699`:
 
-| | React | Solid |
-|---|---|---|
-| PageUp | `#33669A` | `#ffffff` |
-| PageDown | `#336699` | `#000000` |
+|               | React                    | Solid                    |
+| ------------- | ------------------------ | ------------------------ |
+| PageUp        | `#33669A`                | `#ffffff`                |
+| PageDown      | `#336699`                | `#000000`                |
 | End then Home | `#FFFFFF` then `#000000` | `#ffffff` then `#000000` |
 
 Channel `?channel=red&colorSpace=rgb` from 51:
 
-| | React | Solid |
-|---|---|---|
-| PageUp | 52 | 255 |
-| PageDown | 51 | 0 |
+|          | React | Solid |
+| -------- | ----- | ----- |
+| PageUp   | 52    | 255   |
+| PageDown | 51    | 0     |
 
 Hue `?channel=hue&colorSpace=hsl` from 210°: React PageUp → 212°;
 Solid → 0°.

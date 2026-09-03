@@ -38,11 +38,11 @@ Read-only click has the same focus drop (value stays put on both).
 — isolate one panel, click `Wednesday, February 12, 2025`, then
 ArrowRight.
 
-| | React | Solid |
-|---|---|---|
-| value | `2025-02-12` | same |
-| focus after click | cell `Wednesday, February 12, 2025 selected` | **BODY** |
-| ArrowRight | `2025-02-13`, focus Thursday 13 | **stays `2025-02-12`, focus BODY** |
+|                   | React                                        | Solid                              |
+| ----------------- | -------------------------------------------- | ---------------------------------- |
+| value             | `2025-02-12`                                 | same                               |
+| focus after click | cell `Wednesday, February 12, 2025 selected` | **BODY**                           |
+| ArrowRight        | `2025-02-13`, focus Thursday 13              | **stays `2025-02-12`, focus BODY** |
 
 Keyboard-only Enter/Space from Tab onto the cell still match (focus
 stays, value updates). No overlay. No form.

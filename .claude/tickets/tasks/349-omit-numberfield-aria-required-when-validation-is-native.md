@@ -31,10 +31,10 @@ The comparison NumberField demo does not route
 
 `http://127.0.0.1:4341/components/numberfield/?isRequired=true`
 
-| | React | Solid |
-|---|---|---|
-| `input.required` | true | true |
-| `aria-required` | omitted | `"true"` |
+|                  | React   | Solid    |
+| ---------------- | ------- | -------- |
+| `input.required` | true    | true     |
+| `aria-required`  | omitted | `"true"` |
 
 AX snapshot still `textbox "Quantity"` on both (Playwright does not
 surface `[required]`). ComboBox #273 is the inverse: Solid never

@@ -38,13 +38,13 @@ Default rest: both `aria-describedby` → `slot=description`
 
 Live `{isInvalid:true}`:
 
-| | React | Solid |
-|---|---|---|
-| visible slot | errorMessage `Select at least one channel.` | same |
-| field | 69×201 | 69×201 |
-| group `aria-describedby` | error id | null |
-| each input `aria-describedby` | error id | null |
-| `aria-invalid` | true on all three | true on all three |
+|                               | React                                       | Solid             |
+| ----------------------------- | ------------------------------------------- | ----------------- |
+| visible slot                  | errorMessage `Select at least one channel.` | same              |
+| field                         | 69×201                                      | 69×201            |
+| group `aria-describedby`      | error id                                    | null              |
+| each input `aria-describedby` | error id                                    | null              |
+| `aria-invalid`                | true on all three                           | true on all three |
 
 Live `{isInvalid:false}` after that: React describedby returns to
 the description id. Solid keeps describedby null with the

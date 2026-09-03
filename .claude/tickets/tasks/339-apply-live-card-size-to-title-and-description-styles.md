@@ -21,7 +21,7 @@ The Card host already tracks `size` (padding `16px` → `24px` on both).
 Title and description classes come from `CardProviders` `TextContext`
 (`title({ size })` / `description({ size })`). Solid `Text` reads that
 context once in the component body, so live `size` does not restyle
-the slots. Title *text* does update (`Zephyr`).
+the slots. Title _text_ does update (`Zephyr`).
 
 ## Evidence
 
@@ -32,11 +32,11 @@ URL `?size=XL` already matches: padding 24px, title 18px / description
 
 Live from the default route, `comparison:controls-change` `{size:"XL"}`:
 
-| | React | Solid |
-|---|---|---|
-| padding | 24px | 24px |
+|                     | React       | Solid           |
+| ------------------- | ----------- | --------------- |
+| padding             | 24px        | 24px            |
 | title / description | 18px / 16px | 14px / 12px (M) |
-| card | 240×262 | 240×250 |
+| card                | 240×262     | 240×250         |
 
 The 12px height gap follows the stale fonts through later live
 density/variant/preview/footer changes. URL remount of the same size

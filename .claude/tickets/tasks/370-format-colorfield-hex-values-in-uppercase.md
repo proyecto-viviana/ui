@@ -28,11 +28,11 @@ RAC `useColorFieldState` `addColorValue` writes
 `http://127.0.0.1:4341/components/colorfield/`, islands mounted,
 one panel at a time.
 
-| | React | Solid |
-|---|---|---|
-| rest `#336699` | `#336699` | `#336699` |
-| ArrowUp | `#33669A` | `#33669a` |
-| type `#ff0000` + Enter | `#FF0000` | `#ff0000` |
+|                                                    | React     | Solid     |
+| -------------------------------------------------- | --------- | --------- |
+| rest `#336699`                                     | `#336699` | `#336699` |
+| ArrowUp                                            | `#33669A` | `#33669a` |
+| type `#ff0000` + Enter                             | `#FF0000` | `#ff0000` |
 | `?valueSource=defaultValue&defaultValue=%23ff00ff` | `#FF00FF` | `#ff00ff` |
 
 AX snapshots differ only in that hex text.

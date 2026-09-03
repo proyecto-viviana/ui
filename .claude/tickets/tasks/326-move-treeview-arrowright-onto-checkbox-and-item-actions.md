@@ -29,17 +29,17 @@ never receive focus.
 `http://127.0.0.1:4341/components/treeview/`, islands mounted, one panel
 at a time. Home lands on expanded Documents on both. Then:
 
-| | React | Solid |
-|---|---|---|
-| ArrowRight | INPUT name Select | row Project |
-| ArrowRight again | back on Documents | row Weekly Report |
+|                          | React               | Solid                                |
+| ------------------------ | ------------------- | ------------------------------------ |
+| ArrowRight               | INPUT name Select   | row Project                          |
+| ArrowRight again         | back on Documents   | row Weekly Report                    |
 | ArrowLeft from Documents | collapses Documents | from Weekly Report, moves to Project |
 
 `?itemActionSlot=buttonGroup`, Tab to Weekly Report:
 
-| | React | Solid |
-|---|---|---|
-| ArrowRight | INPUT Select | stays Weekly Report |
+|                  | React                        | Solid               |
+| ---------------- | ---------------------------- | ------------------- |
+| ArrowRight       | INPUT Select                 | stays Weekly Report |
 | ArrowRight again | button Archive Weekly Report | stays Weekly Report |
 
 Analogous to #305 (ListView), TreeView-specific because the steal is

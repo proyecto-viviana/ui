@@ -28,15 +28,15 @@ islands mounted, one panel at a time.
 
 Pointer: click Read, then click Write (no modifier).
 
-| | React | Solid |
-|---|---|---|
+|          | React       | Solid |
+| -------- | ----------- | ----- |
 | selected | Read, Write | Write |
 
 Keyboard: Tab → Space on Read → ArrowDown → Space on Write.
 
-| | React | Solid |
-|---|---|---|
-| after first Space | Read | Read |
+|                    | React       | Solid |
+| ------------------ | ----------- | ----- |
+| after first Space  | Read        | Read  |
 | after second Space | Read, Write | Write |
 
 Shift-click range and Ctrl-click additive both match. Single-mode click

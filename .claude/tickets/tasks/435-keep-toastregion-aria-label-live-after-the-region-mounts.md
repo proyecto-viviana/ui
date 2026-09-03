@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-03,
-      note: "filed from the #260 toast functional pass: live comparison:controls-change {\"aria-label\":\"Alerts\"} updates data-comparison-control-props on BOTH panels; React region aria-label and AX become Alerts; Solid stays Notifications. URL ?aria-label=Inbox remounts and matches Inbox on both. Live placement/children/action already update. Solid ToastContainer stays mounted; headless ToastRegion regionContent() plus createToastRegion landmark default \"Notifications\" snapshot when hasToasts first flips true",
+      note: 'filed from the #260 toast functional pass: live comparison:controls-change {"aria-label":"Alerts"} updates data-comparison-control-props on BOTH panels; React region aria-label and AX become Alerts; Solid stays Notifications. URL ?aria-label=Inbox remounts and matches Inbox on both. Live placement/children/action already update. Solid ToastContainer stays mounted; headless ToastRegion regionContent() plus createToastRegion landmark default "Notifications" snapshot when hasToasts first flips true',
     }
 ---
 
@@ -34,11 +34,11 @@ unmounts it. Headless `ToastRegion` builds `regionContent()` when
 `?activeSide=` per stack, one Neutral toast, then
 `comparison:controls-change` `{"aria-label":"Alerts"}`.
 
-| | React | Solid |
-|---|---|---|
-| fixture JSON `aria-label` | Alerts | Alerts |
-| region DOM `aria-label` | **Alerts** | **Notifications** |
-| region AX name | **Alerts** | **Notifications** |
+|                           | React      | Solid             |
+| ------------------------- | ---------- | ----------------- |
+| fixture JSON `aria-label` | Alerts     | Alerts            |
+| region DOM `aria-label`   | **Alerts** | **Notifications** |
+| region AX name            | **Alerts** | **Notifications** |
 
 `?aria-label=Inbox` rest: both region name Inbox.
 

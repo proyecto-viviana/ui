@@ -23,12 +23,12 @@ so styled Tag never sees `data-focus-visible` and the ring stays
 `http://127.0.0.1:4341/components/taggroup/`, islands mounted, one panel
 at a time. Focus Before, Tab onto Landscape:
 
-| | React | Solid |
-|---|---|---|
-| `data-focused` | true | empty string / present |
-| `data-focus-visible` | true | omitted |
-| outline | `rgb(75, 117, 255) solid 2px` | `rgb(75, 117, 255) none 2px` |
-| selected bg | darker (`rgb(25, 25, 25)` / `rgb(30, 30, 30)`) | rest selected `rgb(41, 41, 41)` |
+|                      | React                                          | Solid                           |
+| -------------------- | ---------------------------------------------- | ------------------------------- |
+| `data-focused`       | true                                           | empty string / present          |
+| `data-focus-visible` | true                                           | omitted                         |
+| outline              | `rgb(75, 117, 255) solid 2px`                  | `rgb(75, 117, 255) none 2px`    |
+| selected bg          | darker (`rgb(25, 25, 25)` / `rgb(30, 30, 30)`) | rest selected `rgb(41, 41, 41)` |
 
 Same missing ring after ArrowRight (Portrait). Pointer focus on React
 does not show the ring (modality). `allowsRemoving=false` Tab is the

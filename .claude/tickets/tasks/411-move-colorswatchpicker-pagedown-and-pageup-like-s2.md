@@ -32,11 +32,11 @@ mounted. Other `.s2-framework-panel` `visibility:hidden` + `inert`.
 Focus Before, `Tab` onto Rose, then `PageDown`. From a remount,
 `Tab` / `End` / `PageUp`.
 
-| | React | Solid |
-|---|---|---|
-| Tab | Rose focused, selected Rose | same |
-| PageDown | **Pink** focused, selected still Rose | **Rose** focused (no-op) |
-| End then PageUp | **Rose** focused | **Pink** focused (PageUp no-op) |
+|                 | React                                 | Solid                           |
+| --------------- | ------------------------------------- | ------------------------------- |
+| Tab             | Rose focused, selected Rose           | same                            |
+| PageDown        | **Pink** focused, selected still Rose | **Rose** focused (no-op)        |
+| End then PageUp | **Rose** focused                      | **Pink** focused (PageUp no-op) |
 
 Selection overlay stays on Rose both stacks. ArrowRight/Left/Home/End
 and Enter/Space already match.

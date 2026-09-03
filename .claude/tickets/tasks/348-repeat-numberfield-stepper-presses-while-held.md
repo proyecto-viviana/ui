@@ -28,11 +28,11 @@ only the hold path is missing.
 one panel at a time, focus the input (value 5), mouse-down Increase
 for 800ms.
 
-| | React | Solid |
-|---|---|---|
+|                      | React          | Solid          |
+| -------------------- | -------------- | -------------- |
 | press (single click) | 6, focus input | 6, focus input |
-| hold 400ms | 7 | 6 |
-| hold 800ms | 13 | 6 |
+| hold 400ms           | 7              | 6              |
+| hold 800ms           | 13             | 6              |
 
 Focus stays on the input on both stacks (no transient blur).
 Disabled steppers at min/max already match.

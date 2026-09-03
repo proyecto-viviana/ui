@@ -37,11 +37,11 @@ This ticket is the extra inline commit.
 Isolate one panel. Tab to Tuesday 4, Enter, ArrowRight, ArrowRight,
 Enter.
 
-| step | React | Solid |
-|---|---|---|
-| after Enter on 4 | value still 3–7, selected 4–5, focus 5 | value still 3–7, selected 4, focus 4 (#282) |
-| after first ArrowRight | selected 4–6, value 3–7 | **value `2025-02-04/2025-02-04`**, selected 4, focus 5 |
-| after second Enter | **`2025-02-04/2025-02-07`**, selected 4–7 | **still `2025-02-04/2025-02-04`**, selected **6** (new anchor) |
+| step                   | React                                     | Solid                                                          |
+| ---------------------- | ----------------------------------------- | -------------------------------------------------------------- |
+| after Enter on 4       | value still 3–7, selected 4–5, focus 5    | value still 3–7, selected 4, focus 4 (#282)                    |
+| after first ArrowRight | selected 4–6, value 3–7                   | **value `2025-02-04/2025-02-04`**, selected 4, focus 5         |
+| after second Enter     | **`2025-02-04/2025-02-07`**, selected 4–7 | **still `2025-02-04/2025-02-04`**, selected **6** (new anchor) |
 
 Space on 8 then two ArrowRight then Space: React `2025-02-08/2025-02-11`;
 Solid `2025-02-08/2025-02-08` then selected 10. Escape after a

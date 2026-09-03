@@ -43,12 +43,12 @@ offers.
 
 From a fresh default route, live `{isDisabled:true}`:
 
-| | React | Solid |
-|---|---|---|
-| props `isDisabled` | true | true |
-| Details `aria-disabled` | true, no tabindex | **omitted, tabindex 0** |
-| AX Details | `link "1 Current: Details" [disabled]` | **`link "1 Current: Details"`** |
-| Tab from Before | After | **Details** |
+|                         | React                                  | Solid                           |
+| ----------------------- | -------------------------------------- | ------------------------------- |
+| props `isDisabled`      | true                                   | true                            |
+| Details `aria-disabled` | true, no tabindex                      | **omitted, tabindex 0**         |
+| AX Details              | `link "1 Current: Details" [disabled]` | **`link "1 Current: Details"`** |
+| Tab from Before         | After                                  | **Details**                     |
 
 Live `{isReadOnly:true}` on the progress-like URL (selected Select
 offers, lastCompleted Details): React disables all four; Solid

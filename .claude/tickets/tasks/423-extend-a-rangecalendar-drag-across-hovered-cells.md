@@ -42,12 +42,12 @@ stacks.
 Other `.s2-framework-panel` `visibility:hidden` + `inert`. Pointer
 down on Saturday 8, move to Wednesday 12, pointer up.
 
-| | React | Solid |
-|---|---|---|
-| value | `2025-02-08/2025-02-12` | **`2025-02-03/2025-02-07`** |
-| selected | 8–12 | **8 only** |
-| focusedValue | `2025-02-12` | `2025-02-08` |
-| focus | cell Wednesday 12 | BODY (`#416`) |
+|              | React                   | Solid                       |
+| ------------ | ----------------------- | --------------------------- |
+| value        | `2025-02-08/2025-02-12` | **`2025-02-03/2025-02-07`** |
+| selected     | 8–12                    | **8 only**                  |
+| focusedValue | `2025-02-12`            | `2025-02-08`                |
+| focus        | cell Wednesday 12       | BODY (`#416`)               |
 
 Click 8 then click 14 (no drag): both `2025-02-08/2025-02-14`,
 selected 8–14.

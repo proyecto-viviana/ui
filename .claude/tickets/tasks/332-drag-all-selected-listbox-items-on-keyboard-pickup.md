@@ -26,19 +26,19 @@ description never fires, and only the focused option moves.
 panel at a time, `selectionMode=multiple` (default). Tab from Before,
 Space on Read, ArrowDown, Space on Write (focus Write):
 
-| | React | Solid |
-|---|---|---|
-| selected | Read, Write | Read, Write |
+|                      | React                                 | Solid                          |
+| -------------------- | ------------------------------------- | ------------------------------ |
+| selected             | Read, Write                           | Read, Write                    |
 | described (selected) | Press Enter to drag 2 selected items. | Press Enter to start dragging. |
-| described (Admin) | Press Enter to start dragging. | Press Enter to start dragging. |
+| described (Admin)    | Press Enter to start dragging.        | Press Enter to start dragging. |
 
 Enter then ArrowDown ×2 then Enter:
 
-| | React | Solid |
-|---|---|---|
-| `data-dragging` at pickup | Read and Write | Write only |
-| drop target at pickup | Insert between Write and Admin | same label (duplicate indicators, #256) |
-| order after drop | `read,write,admin` (group drop at insert-before-read is a no-op) | `write,read,admin` (only Write moved before Read) |
+|                           | React                                                            | Solid                                             |
+| ------------------------- | ---------------------------------------------------------------- | ------------------------------------------------- |
+| `data-dragging` at pickup | Read and Write                                                   | Write only                                        |
+| drop target at pickup     | Insert between Write and Admin                                   | same label (duplicate indicators, #256)           |
+| order after drop          | `read,write,admin` (group drop at insert-before-read is a no-op) | `write,read,admin` (only Write moved before Read) |
 
 Ctrl+A then Enter: React marks all three `data-dragging` and focuses
 Insert before Read. Solid marks only Write.

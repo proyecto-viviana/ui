@@ -24,9 +24,9 @@ FormContext, so it stays on native required. A live
 Two wiring holes:
 
 1. `packages/solidaria-components/src/Form.tsx` puts `FormContext`
-   (the `validationBehavior` publisher) *inside* `<form>`. Solid
+   (the `validationBehavior` publisher) _inside_ `<form>`. Solid
    context follows the owner tree, not the DOM, so fixture children
-   created by S2 Form never read it. S2 already lifted *its* style
+   created by S2 Form never read it. S2 already lifted _its_ style
    `FormContext` outside `HeadlessForm` for `useFormProps`; the
    headless context was not moved. `withFormValidationBehavior` in
    `packages/solidaria-components/src/TextField.tsx` is a no-op when
@@ -46,13 +46,13 @@ when the input stays `required`. Live aria does not.
 
 URL `?isRequired=true&value=&validationBehavior=aria` remount:
 
-| | React | Solid |
-|---|---|---|
-| `form.noValidate` | true | true |
-| `input.required` | false | true |
-| `aria-required` | `"true"` | omitted |
-| `:invalid` | false | true |
-| click Submit | `{name:""}` count 1, focus submit | `{name:""}` count 1, focus submit |
+|                   | React                             | Solid                             |
+| ----------------- | --------------------------------- | --------------------------------- |
+| `form.noValidate` | true                              | true                              |
+| `input.required`  | false                             | true                              |
+| `aria-required`   | `"true"`                          | omitted                           |
+| `:invalid`        | false                             | true                              |
+| click Submit      | `{name:""}` count 1, focus submit | `{name:""}` count 1, focus submit |
 
 AX rest still equal (no required/invalid announced). Combined
 `?size=XL&labelPosition=side&validationBehavior=aria&isRequired=true&isDisabled=true`
@@ -61,18 +61,18 @@ has the same required / aria-required split.
 Live from a fresh default route,
 `{validationBehavior:"aria", isRequired:true, value:""}`:
 
-| | React | Solid |
-|---|---|---|
-| `form.noValidate` | true | false |
-| `input.required` | false | true |
-| `aria-required` | `"true"` | omitted |
-| click Submit | submits `{name:""}` count 1, focus submit | blocked count 0, focus input |
+|                   | React                                     | Solid                        |
+| ----------------- | ----------------------------------------- | ---------------------------- |
+| `form.noValidate` | true                                      | false                        |
+| `input.required`  | false                                     | true                         |
+| `aria-required`   | `"true"`                                  | omitted                      |
+| click Submit      | submits `{name:""}` count 1, focus submit | blocked count 0, focus input |
 
 Native required-empty (no aria) still blocks both.
 
 ## Done when
 
-Form `validationBehavior="aria"` matches S2 on URL remount *and* live
+Form `validationBehavior="aria"` matches S2 on URL remount _and_ live
 change: `noValidate`, descendant `required` off, `aria-required` on,
 empty submit proceeds. Native mode stays on native `required`. A
 comparison-route walk fails if Solid keeps native required under aria

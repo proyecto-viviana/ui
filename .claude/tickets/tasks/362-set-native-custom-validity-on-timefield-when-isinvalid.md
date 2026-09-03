@@ -39,12 +39,12 @@ islands mounted. Other `.s2-framework-panel` `visibility:hidden`.
 Injected `form[data-fp-form]` + `requestSubmit`. Value stays
 `09:30:00`.
 
-| | React | Solid |
-|---|---|---|
-| `checkValidity()` | false | true |
-| `:invalid` | true | false |
-| `validationMessage` | `Invalid value.` | `""` |
-| `validity.customError` | true | false |
+|                               | React               | Solid                             |
+| ----------------------------- | ------------------- | --------------------------------- |
+| `checkValidity()`             | false               | true                              |
+| `:invalid`                    | true                | false                             |
+| `validationMessage`           | `Invalid value.`    | `""`                              |
+| `validity.customError`        | true                | false                             |
 | injected form `requestSubmit` | blocked, focus hour | submits `{startTime: "09:30:00"}` |
 
 Same table with `?validationBehavior=native` added. Empty

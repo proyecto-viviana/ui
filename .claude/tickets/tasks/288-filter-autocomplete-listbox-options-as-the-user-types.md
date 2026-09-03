@@ -30,13 +30,13 @@ collections in `createFilteredListState`, then iterates `stateProps.items` /
 `data-islands-mounted`. Type into `input[type=search]`, wait 600ms for the
 activedescendant delay.
 
-| step | React | Solid |
-|---|---|---|
-| type `a` | 6 options Apple/Banana/Grape/Mango/Orange/Peach, Cherry/Lemon unmounted | **8 options**, Cherry and Lemon still `display:block` height 23 |
-| type `a` then ArrowDown ×2 | activedescendant Grape | activedescendant Grape (keyboard uses the filtered set) |
-| type `an` | 3 options Banana/Mango/Orange | **8 options** |
-| type `zzz` | 0 options, `data-empty` | **8 options**, no `data-empty` |
-| ArrowDown then Space | input ` `, 0 options, activedescendant cleared | input ` `, **8 options**, activedescendant Apple |
+| step                       | React                                                                   | Solid                                                           |
+| -------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------- |
+| type `a`                   | 6 options Apple/Banana/Grape/Mango/Orange/Peach, Cherry/Lemon unmounted | **8 options**, Cherry and Lemon still `display:block` height 23 |
+| type `a` then ArrowDown ×2 | activedescendant Grape                                                  | activedescendant Grape (keyboard uses the filtered set)         |
+| type `an`                  | 3 options Banana/Mango/Orange                                           | **8 options**                                                   |
+| type `zzz`                 | 0 options, `data-empty`                                                 | **8 options**, no `data-empty`                                  |
+| ArrowDown then Space       | input ` `, 0 options, activedescendant cleared                          | input ` `, **8 options**, activedescendant Apple                |
 
 Default rest, Tab, pointer selection, and `?selectionMode=single|multiple`
 already match.

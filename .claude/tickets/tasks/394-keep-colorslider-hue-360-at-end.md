@@ -29,11 +29,11 @@ RGB End already matches (128→255, thumb `left: 192px`). Home from
 Other `.s2-framework-panel` `visibility:hidden` + `inert`. Focus
 the default hue range input at 50, press End.
 
-| | React | Solid |
-|---|---|---|
-| value / output | 360 / `360°` | 0 / `0°` |
-| thumb `left` | `192px` | `0px` |
-| `onChangeEnd` | `hsla(360, 100%, 50%, 1)` | still `hsl(50, 100%, 50%)` (#393) |
+|                | React                     | Solid                             |
+| -------------- | ------------------------- | --------------------------------- |
+| value / output | 360 / `360°`              | 0 / `0°`                          |
+| thumb `left`   | `192px`                   | `0px`                             |
+| `onChangeEnd`  | `hsla(360, 100%, 50%, 1)` | still `hsl(50, 100%, 50%)` (#393) |
 
 `?channel=red&colorSpace=rgb&value=rgb(128,0,0)` End is 255 / thumb
 `192px` on both.

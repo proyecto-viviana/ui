@@ -61,4 +61,5 @@ export {
   DIRECTORY_DRAG_TYPE,
   type DroppableCollectionStateOptions,
   type DroppableCollectionState,
+  type DroppableCollectionLike,
 } from "./createDroppableCollectionState";

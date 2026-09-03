@@ -44,12 +44,12 @@ the component; the harness is the gap.
 
 After April then live locale fr-FR:
 
-| | React | Solid |
-|---|---|---|
-| heading | **février 2025** | **avril 2025** |
-| focused cell | Monday 3 selected | Tuesday 1 April |
-| selectedDays | 3–7 | **[]** (April has no Feb range) |
-| value marker | `2025-02-03/2025-02-07` | same |
+|              | React                   | Solid                           |
+| ------------ | ----------------------- | ------------------------------- |
+| heading      | **février 2025**        | **avril 2025**                  |
+| focused cell | Monday 3 selected       | Tuesday 1 April                 |
+| selectedDays | 3–7                     | **[]** (April has no Feb range) |
+| value marker | `2025-02-03/2025-02-07` | same                            |
 
 `?focusedValue=2025-02-15` rest: both February 15. Live April 1:
 both April.
@@ -59,7 +59,7 @@ both April.
 Live clearing `focusedValue` on the comparison route remounts (or
 otherwise keeps) the Solid RangeCalendar so the visible month matches
 S2 / the selected value. A walk fails if Solid stays on April while
-React shows February. URL remount and live *set* of `focusedValue`
+React shows February. URL remount and live _set_ of `focusedValue`
 can stay. Do not start #254.
 
 ## Relationship

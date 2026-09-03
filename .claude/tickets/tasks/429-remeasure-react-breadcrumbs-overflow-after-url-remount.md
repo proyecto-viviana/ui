@@ -39,12 +39,12 @@ on the React fixture so the oracle catches up.
 islands mounted. Same split on `?itemSet=overflow&isDisabled=true`
 and `?size=L&itemSet=overflow`.
 
-| | React | Solid |
-|---|---|---|
-| URL overflow items | Home, More | Home, More, Reports, Annual report |
-| URL overflow menu | Files, Projects, Reports, Annual report (120×144) | Files, Projects (88×80) |
-| live `{itemSet: overflow}` | Home, More, Reports, Annual report | same |
-| overflow-narrow-100 | Home, More, Annual report | same |
+|                            | React                                             | Solid                              |
+| -------------------------- | ------------------------------------------------- | ---------------------------------- |
+| URL overflow items         | Home, More                                        | Home, More, Reports, Annual report |
+| URL overflow menu          | Files, Projects, Reports, Annual report (120×144) | Files, Projects (88×80)            |
+| live `{itemSet: overflow}` | Home, More, Reports, Annual report                | same                               |
+| overflow-narrow-100        | Home, More, Annual report                         | same                               |
 
 AX (URL remount):
 

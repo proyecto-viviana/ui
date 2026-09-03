@@ -31,11 +31,11 @@ behavior. Standalone without `href` is a non-interactive `div` on both
 `http://127.0.0.1:4341/components/card/?href=%23card-target&isDisabled=true`,
 islands mounted, one panel at a time. Tab from an injected Before:
 
-| | React | Solid |
-|---|---|---|
+|      | React                                | Solid                                                 |
+| ---- | ------------------------------------ | ----------------------------------------------------- |
 | host | `<a href="#card-target" tabindex=0>` | `<span role="link" aria-disabled="true" tabindex=-1>` |
-| AX | `link "Apollo Active"` | `link "Apollo Active" [disabled]` |
-| Tab | lands on the card, 2px focus ring | skips to After |
+| AX   | `link "Apollo Active"`               | `link "Apollo Active" [disabled]`                     |
+| Tab  | lands on the card, 2px focus ring    | skips to After                                        |
 
 Force-click still fires a click on both hosts; only React remains a
 navigable `<a>`.

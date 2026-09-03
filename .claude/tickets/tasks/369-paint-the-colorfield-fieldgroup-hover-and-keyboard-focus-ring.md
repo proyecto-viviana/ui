@@ -31,19 +31,19 @@ one panel at a time.
 
 Hover the FieldGroup:
 
-| | React | Solid |
-|---|---|---|
-| border | `rgb(198, 198, 198)` | `rgb(218, 218, 218)` |
-| `data-hovered` | `true` | omitted |
+|                | React                | Solid                |
+| -------------- | -------------------- | -------------------- |
+| border         | `rgb(198, 198, 198)` | `rgb(218, 218, 218)` |
+| `data-hovered` | `true`               | omitted              |
 
 Tab from an injected Before (400ms settle):
 
-| | React | Solid |
-|---|---|---|
-| focus | input | input |
-| border | `rgb(19, 19, 19)` | `rgb(19, 19, 19)` |
-| outline | `rgb(75, 117, 255) solid 2px` | `none 2px` |
-| `data-focus-visible` | `true` | omitted |
+|                      | React                         | Solid             |
+| -------------------- | ----------------------------- | ----------------- |
+| focus                | input                         | input             |
+| border               | `rgb(19, 19, 19)`             | `rgb(19, 19, 19)` |
+| outline              | `rgb(75, 117, 255) solid 2px` | `none 2px`        |
+| `data-focus-visible` | `true`                        | omitted           |
 
 Label click matches that keyboard ring on React and omits it on
 Solid. Pointer click on the input omits the ring on both.

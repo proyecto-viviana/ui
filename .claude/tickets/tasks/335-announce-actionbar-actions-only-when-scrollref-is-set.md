@@ -18,7 +18,7 @@ bar, on `ActionBarInner` mount:
 
 ```ts
 if (isInitial.current && scrollRef) {
-  announce(stringFormatter.format('actionbar.actionsAvailable'));
+  announce(stringFormatter.format("actionbar.actionsAvailable"));
 }
 ```
 
@@ -33,12 +33,12 @@ the styled layer always passes `actionsAvailableMessage`. Default
 Document-level `[aria-live=assertive]` regions (both stacks write
 their own announcer):
 
-| load | live regions |
-|---|---|
+| load                                          | live regions               |
+| --------------------------------------------- | -------------------------- |
 | default (`selectedItemCount=3`, no scrollRef) | 1 × `"Actions available."` |
-| `?selectedItemCount=0` | 0 |
-| `?useScrollRef=true` | 2 × `"Actions available."` |
-| live 0→3 with `useScrollRef` | 2 |
+| `?selectedItemCount=0`                        | 0                          |
+| `?useScrollRef=true`                          | 2 × `"Actions available."` |
+| live 0→3 with `useScrollRef`                  | 2                          |
 
 Two announcers exist (scrollRef path produces two regions), so a
 single region on the default load is one stack announcing, not a
@@ -54,4 +54,4 @@ A comparison-route walk fails if the default load produces a Solid
 ## Relationship
 
 Child of #24. Found by #260. Distinct from #180 (D6 driver coverage
-for announce *triggers* in certified specs). Do not start #254.
+for announce _triggers_ in certified specs). Do not start #254.

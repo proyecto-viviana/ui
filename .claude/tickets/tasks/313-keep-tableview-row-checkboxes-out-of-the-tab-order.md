@@ -22,13 +22,13 @@ without `tabIndex=-1`, so they stay in the page tab order.
 `http://127.0.0.1:4341/components/tableview/`, islands mounted, one
 panel at a time. Tab from Before:
 
-| | React | Solid |
-|---|---|---|
-| 1 | Project brief row | Project brief row |
-| 2 | After | Select (input) |
-| 3 | | Select (input) |
-| 4 | | Select (input) |
-| 5 | | After |
+|     | React             | Solid             |
+| --- | ----------------- | ----------------- |
+| 1   | Project brief row | Project brief row |
+| 2   | After             | Select (input)    |
+| 3   |                   | Select (input)    |
+| 4   |                   | Select (input)    |
+| 5   |                   | After             |
 
 Default rest AX still matches (checkboxes are named). Pointer
 checkbox clicks still match. Native `<table>` (#89) does not require

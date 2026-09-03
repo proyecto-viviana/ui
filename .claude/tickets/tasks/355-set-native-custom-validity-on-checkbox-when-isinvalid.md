@@ -41,12 +41,12 @@ by DateField / HiddenSelect. TextField is #351; Checkbox is this hook.
 `http://127.0.0.1:4341/components/checkbox/?isInvalid=true`, islands
 mounted. Injected `form[data-fp-form]` + `requestSubmit`.
 
-| | React | Solid |
-|---|---|---|
-| `checkValidity()` | false | true |
-| `:invalid` | true | false |
-| `validationMessage` | `Invalid value.` | `""` |
-| `validity.customError` | true | false |
+|                               | React                             | Solid        |
+| ----------------------------- | --------------------------------- | ------------ |
+| `checkValidity()`             | false                             | true         |
+| `:invalid`                    | true                              | false        |
+| `validationMessage`           | `Invalid value.`                  | `""`         |
+| `validity.customError`        | true                              | false        |
 | injected form `requestSubmit` | blocked, focus stays on the input | submits `{}` |
 
 `?isInvalid=true&isDisabled=true` skips custom validity on both

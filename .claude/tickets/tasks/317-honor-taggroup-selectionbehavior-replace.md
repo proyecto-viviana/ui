@@ -28,18 +28,18 @@ islands mounted, one panel at a time. Default selectedKeys `landscape`.
 
 Pointer:
 
-| | React | Solid |
-|---|---|---|
-| click Portrait | `portrait` | `landscape,portrait` |
-| click Night | `night` | still additive |
+|                   | React       | Solid                                                                     |
+| ----------------- | ----------- | ------------------------------------------------------------------------- |
+| click Portrait    | `portrait`  | `landscape,portrait`                                                      |
+| click Night       | `night`     | still additive                                                            |
 | Ctrl-click Travel | adds Travel | adds Travel (first-pass: React `portrait,night`; Solid `landscape,night`) |
 
 Keyboard, Tab onto Landscape then ArrowRight:
 
-| | React | Solid |
-|---|---|---|
-| after ArrowRight | `portrait`, focus Portrait | `landscape`, focus Portrait |
-| Space on Portrait | stays `portrait` | `landscape,portrait` |
+|                   | React                      | Solid                       |
+| ----------------- | -------------------------- | --------------------------- |
+| after ArrowRight  | `portrait`, focus Portrait | `landscape`, focus Portrait |
+| Space on Portrait | stays `portrait`           | `landscape,portrait`        |
 
 Default `selectionBehavior=toggle` click/Space already match (not this
 bug).

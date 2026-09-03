@@ -8,8 +8,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:4000",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:4000",
     trace: "on-first-retry",
+    launchOptions: {
+      args: (process.env.COMPARISON_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
+    },
   },
   projects: [
     {

@@ -38,12 +38,12 @@ Preview `http://127.0.0.1:4341/components/actionmenu/`, both panels live
 after `data-islands-mounted="true"`. Isolated per stack (fresh goto, open
 with Enter, ArrowDown ×3):
 
-| after | React focusedItem | Solid focusedItem |
-|---|---|---|
-| open | 0 Copy | 0 Copy |
-| ArrowDown | 1 Cut | 1 Cut |
-| ArrowDown | 2 Paste | 2 Paste |
-| ArrowDown | **0 Copy** | **2 Paste** |
+| after     | React focusedItem | Solid focusedItem |
+| --------- | ----------------- | ----------------- |
+| open      | 0 Copy            | 0 Copy            |
+| ArrowDown | 1 Cut             | 1 Cut             |
+| ArrowDown | 2 Paste           | 2 Paste           |
+| ArrowDown | **0 Copy**        | **2 Paste**       |
 
 Pass-1 `keyboard-roving` on the same route showed the same wrap miss at
 step `[3]` (`items[0].focused` React vs `items[2].focused` Solid).

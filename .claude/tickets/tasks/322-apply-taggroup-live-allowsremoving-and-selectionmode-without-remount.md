@@ -35,18 +35,18 @@ Live from the default route:
 
 `comparison:controls-change` `{allowsRemoving:false, selectionMode:"single"}`:
 
-| | React | Solid |
-|---|---|---|
-| Remove buttons | 0 | 4 |
-| grid | 294×15 | 310×55 |
+|                | React  | Solid  |
+| -------------- | ------ | ------ |
+| Remove buttons | 0      | 4      |
+| grid           | 294×15 | 310×55 |
 
 Then `{selectionMode:"none", itemCount:2, withGroupAction:true}`:
 
-| | React | Solid |
-|---|---|---|
-| tags | 2, `aria-selected` omitted, rest bg | 2, Landscape still selected + dark |
-| Removes | 0 | 2 |
-| Add tag | present | present |
+|         | React                               | Solid                              |
+| ------- | ----------------------------------- | ---------------------------------- |
+| tags    | 2, `aria-selected` omitted, rest bg | 2, Landscape still selected + dark |
+| Removes | 0                                   | 2                                  |
+| Add tag | present                             | present                            |
 
 Live `{isDisabled:true}` is mixed on Solid (Landscape/Portrait stay
 enabled `tabIndex=0`, Travel/Night `aria-disabled`) while React

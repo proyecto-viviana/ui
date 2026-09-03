@@ -33,11 +33,11 @@ Other `.s2-framework-panel` `visibility:hidden` + `inert`.
 `?selectionMode=single&defaultSelectedKeys=italic` rest: both Italic
 `aria-checked=true`. Isolated click Bold / Tab then Space:
 
-| | React | Solid |
-|---|---|---|
-| Bold `aria-checked` | `false` | `true` |
-| Italic `aria-checked` | `true` | `false` |
-| focus | Bold | Bold |
+|                       | React   | Solid   |
+| --------------------- | ------- | ------- |
+| Bold `aria-checked`   | `false` | `true`  |
+| Italic `aria-checked` | `true`  | `false` |
+| focus                 | Bold    | Bold    |
 
 `?selectionMode=multiple&defaultSelectedKeys=bold,underline` isolated
 click Italic: React stays `true,false,true`; Solid

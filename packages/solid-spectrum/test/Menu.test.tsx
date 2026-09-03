@@ -897,6 +897,76 @@ describe("Menu (solid-spectrum)", () => {
     }
   });
 
+  it("keeps the menu mounted through popover exit so ArrowUp after unmount focuses the last item", async () => {
+    // web e2e menu-focus.spec.ts:20 (CI, 2026-09-02): ArrowDown focuses first,
+    // Escape, ArrowUp should focus last. The port used to drop role="menu" on
+    // isOpen while PopoverInner was still exiting, so ArrowUp reused the same
+    // Menu instance and autoFocus="last" never ran. Hang exit through Escape
+    // so the test cannot pass by jsdom ending the animation immediately.
+    const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+    let finishExit!: () => void;
+    const finished = new Promise<void>((resolve) => {
+      finishExit = resolve;
+    });
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished }] as unknown as Animation[],
+    });
+
+    try {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger>
+          <ActionButton>Actions</ActionButton>
+          <Menu aria-label="Actions">
+            <MenuItem id="new" textValue="New file">
+              New file
+            </MenuItem>
+            <MenuItem id="open" textValue="Open">
+              Open
+            </MenuItem>
+            <MenuItem id="save" textValue="Save">
+              Save
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Actions" });
+      trigger.focus();
+      await user.keyboard("{ArrowDown}");
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      const overlay = menu.closest("[data-placement]") as HTMLElement;
+      await waitFor(() => expect(screen.getByRole("menuitem", { name: "New file" })).toHaveFocus());
+
+      await user.keyboard("{Escape}");
+      expect(screen.getByRole("menu", { name: "Actions" })).toBe(menu);
+      expect(overlay).toHaveAttribute("data-exiting");
+      expect(trigger).not.toHaveFocus();
+
+      finishExit();
+      await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+      await waitFor(() => expect(trigger).toHaveFocus());
+
+      await user.keyboard("{ArrowUp}");
+      await waitFor(() => expect(screen.getByRole("menuitem", { name: "Save" })).toHaveFocus());
+    } finally {
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+      if (previousCssTransition === undefined) {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+      }
+    }
+  });
+
   it("composes the S2 Popover surface, including entering motion, matching a bare Popover", async () => {
     const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
     if (typeof CSSTransition === "undefined") {

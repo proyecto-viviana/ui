@@ -15,8 +15,7 @@ history:
 
 S2 `Column` `minWidth` / `maxWidth` bound the column resizer.
 Solid falls through to `createTableColumnResizeState` defaults
-(`DEFAULT_MIN_WIDTH` 75, `DEFAULT_MAX_WIDTH` Infinity rendered as
-9999) even when the Column passes 180 / 320.
+(`DEFAULT_MIN_WIDTH` 75, `DEFAULT_MAX_WIDTH` Infinity rendered as 9999) even when the Column passes 180 / 320.
 
 ## Evidence
 
@@ -24,15 +23,14 @@ Solid falls through to `createTableColumnResizeState` defaults
 islands mounted, one panel at a time. Both stacks show 4 Resizer
 range inputs. Name resizer (first):
 
-| | React | Solid |
-|---|---|---|
-| value / min / max | 180 / 180 / 320 | 124 / 75 / 9999 |
-| ArrowRight | stays 180 (already min) | 125 |
+|                   | React                   | Solid           |
+| ----------------- | ----------------------- | --------------- |
+| value / min / max | 180 / 180 / 320         | 124 / 75 / 9999 |
+| ArrowRight        | stays 180 (already min) | 125             |
 
 The comparison fixture sets `minWidth={180}` `maxWidth={320}` on
 Name and fixed `width` on Type/Status. Pointer sort and checkbox
-counts still match. `createTableColumnResize` maps Infinity max to
-9999.
+counts still match. `createTableColumnResize` maps Infinity max to 9999.
 
 ## Done when
 

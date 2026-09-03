@@ -40,15 +40,15 @@ Default `isLoading: true`, then `comparison:controls-change`
 
 Live `isLoading: false`:
 
-| | React | Solid |
-|---|---|---|
-| fixture JSON | `{isLoading:false}` | same |
-| Text inert / nested skeleton | false / 0 | same |
-| img opacity / visibility | 1 / visible | same |
-| icon `inert` | false | false |
-| icon loading paint | **none / 0px** | **gradient / 300% / 4px** |
-| loadingTargetCount | **0** | **1 (`svg`)** |
-| AX | img Preview + title/body/meta | same |
+|                              | React                         | Solid                     |
+| ---------------------------- | ----------------------------- | ------------------------- |
+| fixture JSON                 | `{isLoading:false}`           | same                      |
+| Text inert / nested skeleton | false / 0                     | same                      |
+| img opacity / visibility     | 1 / visible                   | same                      |
+| icon `inert`                 | false                         | false                     |
+| icon loading paint           | **none / 0px**                | **gradient / 300% / 4px** |
+| loadingTargetCount           | **0**                         | **1 (`svg`)**             |
+| AX                           | img Preview + title/body/meta | same                      |
 
 URL `?isLoading=false` rest: both icon `bg none`, radius `0px`,
 loadingTargetCount 0.

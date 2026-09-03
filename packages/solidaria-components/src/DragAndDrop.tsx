@@ -112,10 +112,12 @@ export function useRenderDropIndicator(
     | {
         target?: DropTarget | null;
         isDropTarget?: ((target: DropTarget) => boolean) | boolean;
+        isDropTargetFor?: (target: DropTarget | null) => boolean;
       },
   maybeDropState?: {
     target?: DropTarget | null;
     isDropTarget?: ((target: DropTarget) => boolean) | boolean;
+    isDropTargetFor?: (target: DropTarget | null) => boolean;
   },
 ): ((target: ItemDropTarget) => JSX.Element | undefined) | undefined {
   const looksLikeDropState = (
@@ -123,6 +125,7 @@ export function useRenderDropIndicator(
   ): value is {
     target?: DropTarget | null;
     isDropTarget?: ((target: DropTarget) => boolean) | boolean;
+    isDropTargetFor?: (target: DropTarget | null) => boolean;
   } => {
     return Boolean(
       value &&
@@ -157,7 +160,11 @@ export function useRenderDropIndicator(
     // — otherwise Enter pickup leaves DOM focus on the collection
     // (`listbox:Permissions`) instead of `option:Insert between Read and Write`.
     const isTargetFromFn =
-      typeof stateIsDropTarget === "function" ? Boolean(stateIsDropTarget(target)) : false;
+      typeof dropState?.isDropTargetFor === "function"
+        ? dropState.isDropTargetFor(target)
+        : typeof stateIsDropTarget === "function"
+          ? Boolean(stateIsDropTarget(target))
+          : false;
     const isTarget = isTargetFromFn || targetsEqual(dropState?.target, target);
     const isVirtualDragging = dragAndDropHooks?.isVirtualDragging?.() ?? false;
     if (!isTarget && !isVirtualDragging) return undefined;

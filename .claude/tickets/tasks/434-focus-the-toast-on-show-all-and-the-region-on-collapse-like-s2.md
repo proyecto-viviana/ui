@@ -52,12 +52,12 @@ bug until then.
 `http://127.0.0.1:4341/components/toast/`, islands mounted, isolated
 `?activeSide=` per stack. Queue three toasts, then:
 
-| step | React | Solid |
-|---|---|---|
-| after Show all | `alertdialog` "Toast is burned!" tabIndex 0 | **BODY** |
-| after Collapse | `region` "Notifications" tabIndex -1 | **BODY** |
-| after Clear all (from expanded) | BODY | Show Positive Toast |
-| outside click while collapsed | region | toast |
+| step                            | React                                       | Solid               |
+| ------------------------------- | ------------------------------------------- | ------------------- |
+| after Show all                  | `alertdialog` "Toast is burned!" tabIndex 0 | **BODY**            |
+| after Collapse                  | `region` "Notifications" tabIndex -1        | **BODY**            |
+| after Clear all (from expanded) | BODY                                        | Show Positive Toast |
+| outside click while collapsed   | region                                      | toast               |
 
 Single-toast Dismiss Enter restores to Show Neutral Toast on both.
 Escape on an open toast does not dismiss on both. Tab from an open

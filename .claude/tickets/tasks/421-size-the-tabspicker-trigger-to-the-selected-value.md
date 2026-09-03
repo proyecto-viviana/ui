@@ -37,14 +37,14 @@ intrinsic width instead of the selected-value content.
 `.comparison-tabs-row` width to 176px until the tablist collapses to
 a picker.
 
-| | React | Solid |
-|---|---|---|
-| trigger closed Overview | **70×48**, width `69.9844px` | **208×48**, width `208px` |
-| inner | SPAN 54 "Overview" + svg 10 | SPAN 54 + svg 10 (`aria-hidden`) |
-| `maxWidth` | `max-content` | `max-content` |
-| trigger after Parity | **48×48** | **208×48** |
-| open listbox | 176×112, opacity 1, 3 options | same |
-| AX button | `"Overview Project tabs"` + unlabeled `img` | `"Overview Project tabs"` (chevron hidden) |
+|                         | React                                       | Solid                                      |
+| ----------------------- | ------------------------------------------- | ------------------------------------------ |
+| trigger closed Overview | **70×48**, width `69.9844px`                | **208×48**, width `208px`                  |
+| inner                   | SPAN 54 "Overview" + svg 10                 | SPAN 54 + svg 10 (`aria-hidden`)           |
+| `maxWidth`              | `max-content`                               | `max-content`                              |
+| trigger after Parity    | **48×48**                                   | **208×48**                                 |
+| open listbox            | 176×112, opacity 1, 3 options               | same                                       |
+| AX button               | `"Overview Project tabs"` + unlabeled `img` | `"Overview Project tabs"` (chevron hidden) |
 
 Default (unforced) tablist is 327×48 on both; no picker. The 208px
 is `fieldInput` `--defaultWidth`, not the visible "Overview" text.

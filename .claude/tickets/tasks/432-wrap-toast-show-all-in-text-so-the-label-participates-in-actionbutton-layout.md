@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-03,
-      note: "filed from the #260 toast functional pass: collapsed stack of 3, S2 Show all is 94×32 with span slot=text \"Show all\" 48×18 + icon 16×18; Solid is 48×32 with childCount 1 (icon slot only, svg 18×18). The \"Show all\" string is a raw text node, so ActionButton grid does not size the label. Collapsed toast 228×84 vs 189×84, x 606 vs 625.5. Accessible name is still Show all. S2 wraps <Text>{toast.showAll}</Text><Chevron/>",
+      note: 'filed from the #260 toast functional pass: collapsed stack of 3, S2 Show all is 94×32 with span slot=text "Show all" 48×18 + icon 16×18; Solid is 48×32 with childCount 1 (icon slot only, svg 18×18). The "Show all" string is a raw text node, so ActionButton grid does not size the label. Collapsed toast 228×84 vs 189×84, x 606 vs 625.5. Accessible name is still Show all. S2 wraps <Text>{toast.showAll}</Text><Chevron/>',
     }
 ---
 
@@ -29,13 +29,13 @@ and the stacked variant-icon x-offset (same 39px delta).
 solid), islands mounted. Queue three toasts (Negative, Positive,
 Neutral). Collapsed stack:
 
-| | React | Solid |
-|---|---|---|
-| toast | 228×84 @ x 606 | **189×84 @ x 625.5** |
-| Show all | **94×32**, gridArea expand | **48×32**, gridArea expand |
+|                   | React                               | Solid                           |
+| ----------------- | ----------------------------------- | ------------------------------- |
+| toast             | 228×84 @ x 606                      | **189×84 @ x 625.5**            |
+| Show all          | **94×32**, gridArea expand          | **48×32**, gridArea expand      |
 | Show all children | span `slot=text` 48×18 + icon 16×18 | **icon only** 48×18 (svg 18×18) |
-| childCount | 2 | **1** |
-| AX button name | Show all | Show all |
+| childCount        | 2                                   | **1**                           |
+| AX button name    | Show all                            | Show all                        |
 
 S2 (`@react-spectrum/s2/src/Toast.tsx` ~604–612):
 

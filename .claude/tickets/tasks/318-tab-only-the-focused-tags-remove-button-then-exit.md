@@ -27,17 +27,17 @@ After; Shift+Tab from After → Night).
 at a time (`visibility:hidden` + `inert` on the other
 `.s2-framework-panel`). Focus Before, then Tab:
 
-| | React | Solid |
-|---|---|---|
+|       | React                | Solid                |
+| ----- | -------------------- | -------------------- |
 | Tab 1 | Landscape `role=row` | Landscape `role=row` |
-| Tab 2 | Remove Landscape | Remove Landscape |
-| Tab 3 | After | Remove Portrait |
-| Tab 4 | (out) | Remove Travel |
+| Tab 2 | Remove Landscape     | Remove Landscape     |
+| Tab 3 | After                | Remove Portrait      |
+| Tab 4 | (out)                | Remove Travel        |
 
 Shift+Tab from After with removes:
 
-| | React | Solid |
-|---|---|---|
+|       | React                                         | Solid                                                    |
+| ----- | --------------------------------------------- | -------------------------------------------------------- |
 | focus | Landscape row, `data-focus-visible`, 2px ring | Night's Remove; `focusedKey` null; all rows `tabIndex=0` |
 
 ## Done when

@@ -41,17 +41,17 @@ announce the URL on React only.
 islands mounted. Same fork on live
 `comparison:controls-change` `{isDisabled:true}`.
 
-| | React | Solid |
-|---|---|---|
-| host | `SPAN` role=link | same |
-| `aria-disabled` | `true` | same |
-| `tabIndex` | `-1` | same |
-| `data-disabled` | `true` | same |
-| `href` | `https://example.com/docs` | omitted |
-| AX | `link "Open docs" [disabled]: /url: https://example.com/docs` | `link "Open docs" [disabled]` |
-| Tab from Before | After (skip) | same |
-| force-click | no navigation | same |
-| paint | 99×32, bg `rgb(233, 233, 233)`, color `rgb(198, 198, 198)`, cursor auto | same |
+|                 | React                                                                   | Solid                         |
+| --------------- | ----------------------------------------------------------------------- | ----------------------------- |
+| host            | `SPAN` role=link                                                        | same                          |
+| `aria-disabled` | `true`                                                                  | same                          |
+| `tabIndex`      | `-1`                                                                    | same                          |
+| `data-disabled` | `true`                                                                  | same                          |
+| `href`          | `https://example.com/docs`                                              | omitted                       |
+| AX              | `link "Open docs" [disabled]: /url: https://example.com/docs`           | `link "Open docs" [disabled]` |
+| Tab from Before | After (skip)                                                            | same                          |
+| force-click     | no navigation                                                           | same                          |
+| paint           | 99×32, bg `rgb(233, 233, 233)`, color `rgb(198, 198, 198)`, cursor auto | same                          |
 
 Live re-enable restores `<a href="https://example.com/docs">`
 tabIndex 0 on both.

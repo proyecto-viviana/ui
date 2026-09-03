@@ -40,11 +40,11 @@ pointer press-scale, quiet focus ring on the preview.
 Live from the default route,
 `comparison:controls-change` `{href:"#card-target"}`:
 
-| | React | Solid |
-|---|---|---|
+|      | React                                               | Solid                         |
+| ---- | --------------------------------------------------- | ----------------------------- |
 | host | `<a href="#card-target" tabindex=0>` cursor pointer | `DIV` tabindex -1 cursor auto |
-| AX | `link "Zephyr Queued"` / `link "Apollo Active"` | `text: …` (not a link) |
-| Tab | lands on the card, 2px ring | skips to After |
+| AX   | `link "Zephyr Queued"` / `link "Apollo Active"`     | `text: …` (not a link)        |
+| Tab  | lands on the card, 2px ring                         | skips to After                |
 
 ## Done when
 

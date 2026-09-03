@@ -26,8 +26,8 @@ increments when `deltaY < 0` and decrements when `deltaY > 0`.
 one panel at a time, click the input (value `#336699`),
 `mouse.wheel(0, 120)` then `mouse.wheel(0, -120)`.
 
-| | React | Solid |
-|---|---|---|
+|            | React     | Solid     |
+| ---------- | --------- | --------- |
 | after +120 | `#33669A` | `#336698` |
 | after -120 | `#336699` | `#336699` |
 

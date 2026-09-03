@@ -33,12 +33,12 @@ by DateField / HiddenSelect. Radio never grew that branch.
 islands mounted. Selected value is still `starter`. Injected
 `form[data-fp-form]` + `requestSubmit`.
 
-| | React | Solid |
-|---|---|---|
-| `checkValidity()` | false (all three radios) | true |
-| `:invalid` | true | false |
-| `validationMessage` | `Invalid value.` | `""` |
-| `validity.customError` | true | false |
+|                               | React                          | Solid                                   |
+| ----------------------------- | ------------------------------ | --------------------------------------- |
+| `checkValidity()`             | false (all three radios)       | true                                    |
+| `:invalid`                    | true                           | false                                   |
+| `validationMessage`           | `Invalid value.`               | `""`                                    |
+| `validity.customError`        | true                           | false                                   |
 | injected form `requestSubmit` | blocked, focus `radio:starter` | submits `{solidaria-cl-228: "starter"}` |
 
 AX, error slot `Choose a plan to continue.`, icon, and circle

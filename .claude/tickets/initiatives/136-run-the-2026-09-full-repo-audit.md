@@ -21,6 +21,16 @@ history:
       at: 2026-09-02,
       note: "owner seeded the functional pass: #259 comparison page production-ready, #260 React-vs-Solid functional comparison (overlay family first)",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "Wave-3 CI remainder ticketed: #437 MenuInner lifecycle, #438 drop-indicator geometry, #439 PressResponder, #440 negative ink 1000, #441 children one-read helper. D-reorder not waived.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "Wave A unblocked PR #33 on local main: #437/#438/#440 merged. menu-focus.spec.ts:20, certified dnd-listbox D-reorder, /showcase/inputs contrast all green. #439 and #441 stay later.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

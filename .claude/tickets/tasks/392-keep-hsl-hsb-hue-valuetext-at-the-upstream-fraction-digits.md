@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-03,
-      note: "filed from the #260 colorarea functional pass: ?colorSpace=hsl and hsb aria-valuetext Hue: 252.76° (S2) vs 253° (Solid). Chromium AX snapshot still slider \"100\" / \"50\" both. RGB valuetext matches. Color.ts HSL/HSB getChannelFormatOptions sets maximumFractionDigits: 0; upstream omits it.",
+      note: 'filed from the #260 colorarea functional pass: ?colorSpace=hsl and hsb aria-valuetext Hue: 252.76° (S2) vs 253° (Solid). Chromium AX snapshot still slider "100" / "50" both. RGB valuetext matches. Color.ts HSL/HSB getChannelFormatOptions sets maximumFractionDigits: 0; upstream omits it.',
     }
 ---
 
@@ -35,11 +35,11 @@ mounted. Same on `?colorSpace=hsb` and on live `colorSpace` after mount.
 
 Default `#9B80FF` converted into the space:
 
-| | React | Solid |
-|---|---|---|
-| hsl `aria-valuetext` | `Saturation: 100%, Lightness: 75%, Hue: 252.76°, vibrant purple` | `… Hue: 253°, …` |
+|                      | React                                                             | Solid            |
+| -------------------- | ----------------------------------------------------------------- | ---------------- |
+| hsl `aria-valuetext` | `Saturation: 100%, Lightness: 75%, Hue: 252.76°, vibrant purple`  | `… Hue: 253°, …` |
 | hsb `aria-valuetext` | `Saturation: 50%, Brightness: 100%, Hue: 252.76°, vibrant purple` | `… Hue: 253°, …` |
-| AX | slider `"100"` / `"50"` | same |
+| AX                   | slider `"100"` / `"50"`                                           | same             |
 
 RGB default valuetext `Red: 155, Green: 128, Blue: 255, vibrant purple`
 matches.

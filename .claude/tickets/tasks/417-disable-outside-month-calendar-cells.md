@@ -25,7 +25,7 @@ isDisabled = isDisabled || state.isCellDisabled(date) || !!props.isOutsideMonth;
 ```
 
 (`react-aria/src/calendar/useCalendarCell.ts`). That is what disables
-the leading/trailing days that belong to another *visible* month when
+the leading/trailing days that belong to another _visible_ month when
 `visibleMonths > 1` (those dates are inside `visibleRange`, so
 `isCellDisabled` is false). S2 then `display:none`s them; the remaining
 copy in the in-month grid is the only tabbable cell for that date.
@@ -52,11 +52,11 @@ February grid March 1: both `display:none` / 0×0. React
 
 `?focusedValue=2025-02-28&visibleMonths=2`, Tab to Feb 28, ArrowRight:
 
-| | React | Solid |
-|---|---|---|
-| focusedValue | `2025-03-01` | same |
-| Feb-grid March 1 | disabled, tab -1 | **enabled, tab 0** (still `display:none`) |
-| March-grid March 1 | tab 0, focused | tab 0, focused |
+|                    | React            | Solid                                     |
+| ------------------ | ---------------- | ----------------------------------------- |
+| focusedValue       | `2025-03-01`     | same                                      |
+| Feb-grid March 1   | disabled, tab -1 | **enabled, tab 0** (still `display:none`) |
+| March-grid March 1 | tab 0, focused   | tab 0, focused                            |
 
 ## Done when
 

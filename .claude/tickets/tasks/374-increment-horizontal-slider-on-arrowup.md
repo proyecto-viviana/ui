@@ -32,14 +32,14 @@ matches (ArrowUp increments).
 `.s2-framework-panel` `visibility:hidden` + `inert`. Focus the
 slider (React native range, Solid `div[role=slider]`) at 40.
 
-| | React | Solid |
-|---|---|---|
-| ArrowUp ×2 | 42 | 38 |
-| ArrowDown ×2 | 38 | 42 |
-| ArrowRight ×2 | 42 | 42 |
-| ArrowLeft ×2 | 38 | 38 |
+|                   | React   | Solid   |
+| ----------------- | ------- | ------- |
+| ArrowUp ×2        | 42      | 38      |
+| ArrowDown ×2      | 38      | 42      |
+| ArrowRight ×2     | 42      | 42      |
+| ArrowLeft ×2      | 38      | 38      |
 | PageUp / PageDown | 50 / 40 | 50 / 40 |
-| End / Home | 100 / 0 | 100 / 0 |
+| End / Home        | 100 / 0 | 100 / 0 |
 
 `?step=3&minValue=2&maxValue=20&value=2` ArrowRight ×2 then PageUp
 is 2→5→8→11 on both. Uncontrolled `defaultValue=25` ArrowRight

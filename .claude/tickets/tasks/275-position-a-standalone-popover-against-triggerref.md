@@ -32,15 +32,15 @@ the same route positions correctly, so this is the standalone ref path.
 
 One panel at a time, click "Open Feedback", wait 2000ms:
 
-| | React | Solid |
-|---|---|---|
-| trigger text | Close Feedback | Close Feedback |
-| overlay | `position:absolute` left/top on the anchor | `position:fixed; left:0; top:0` |
-| dx/dy to anchor | 0 / 47 | −738 / −440 (viewport origin) |
-| opacity | 1 | 0 |
-| data-entering | false | true |
-| focus | dialog "Feedback" | body |
-| Escape + 800ms | overlay gone, focus on Open Feedback | overlay still present, opacity 0 |
+|                 | React                                      | Solid                            |
+| --------------- | ------------------------------------------ | -------------------------------- |
+| trigger text    | Close Feedback                             | Close Feedback                   |
+| overlay         | `position:absolute` left/top on the anchor | `position:fixed; left:0; top:0`  |
+| dx/dy to anchor | 0 / 47                                     | −738 / −440 (viewport origin)    |
+| opacity         | 1                                          | 0                                |
+| data-entering   | false                                      | true                             |
+| focus           | dialog "Feedback"                          | body                             |
+| Escape + 800ms  | overlay gone, focus on Open Feedback       | overlay still present, opacity 0 |
 
 URL `isOpen=true` with both panels open is a matching trap (Solid's origin
 overlay loses the closest-dialog pick to React's placed overlay). Isolate

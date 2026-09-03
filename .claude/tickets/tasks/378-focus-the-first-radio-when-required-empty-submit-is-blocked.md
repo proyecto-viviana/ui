@@ -28,12 +28,12 @@ on a different option than S2.
 islands mounted. Injected `form[data-fp-form]` + `requestSubmit`.
 Other `.s2-framework-panel` `visibility:hidden` + `inert`.
 
-| | React | Solid |
-|---|---|---|
-| `requestSubmit` | blocked, payload `null` | blocked, payload `null` |
-| `validity.valueMissing` | true (all three) | true (all three) |
-| `validationMessage` | `Please select one of these options.` | same |
-| focus after blocked submit | `radio:starter`, `data-focus-visible` on starter only | `radio:enterprise` |
+|                            | React                                                 | Solid                   |
+| -------------------------- | ----------------------------------------------------- | ----------------------- |
+| `requestSubmit`            | blocked, payload `null`                               | blocked, payload `null` |
+| `validity.valueMissing`    | true (all three)                                      | true (all three)        |
+| `validationMessage`        | `Please select one of these options.`                 | same                    |
+| focus after blocked submit | `radio:starter`, `data-focus-visible` on starter only | `radio:enterprise`      |
 
 `?isRequired=true` with starter selected submits on both. Aria
 validation (`validationBehavior=aria`) required-empty submits on

@@ -134,7 +134,7 @@ history:
   - {
       state: in-progress,
       at: 2026-09-03,
-      note: "card outcome ticketed. User-visible: standalone href+isDisabled stays an enabled S2 <a> and Solid disables (#337), live href stays a DIV (#338), live size leaves title/description at M fonts (#339). Default rest AX/geometry, pointer hover/click, Tab skip, URL size/density/variant/preview/footer/copy/skeleton/href keyboard+press, quiet preview ring, and live footer/copy match. inert=\"\" vs \"true\" not user-visible. data-size extras structural. Press-scale settles by 300ms both. No overlay, no form. No D13 Card journeys (#249). Did not start #254. Note output/functional-pass/card.md.",
+      note: 'card outcome ticketed. User-visible: standalone href+isDisabled stays an enabled S2 <a> and Solid disables (#337), live href stays a DIV (#338), live size leaves title/description at M fonts (#339). Default rest AX/geometry, pointer hover/click, Tab skip, URL size/density/variant/preview/footer/copy/skeleton/href keyboard+press, quiet preview ring, and live footer/copy match. inert="" vs "true" not user-visible. data-size extras structural. Press-scale settles by 300ms both. No overlay, no form. No D13 Card journeys (#249). Did not start #254. Note output/functional-pass/card.md.',
     }
   - {
       state: in-progress,
@@ -179,7 +179,7 @@ history:
   - {
       state: in-progress,
       at: 2026-09-03,
-      note: "datefield outcome ticketed. User-visible: isInvalid native custom validity already #362 (createDateField; required-empty focus stays on Submit), ContextualHelp wrap 208×82 vs 208×102 already #363, help press already #352, name Appointment date Help vs Help already #353, aria-haspopup already #287. Live isInvalid HelpText swaps (not #345). HiddenDateInput stepMismatch not user-visible (form=\"\"). Default rest AX/geometry 208×82, Tab month→day→year, Arrow/Page/Home/End spin, typed auto-advance, Backspace, wheel no-op, FieldGroup click year, disabled skip, read-only, named FormData {date:2025-03-03}, sizes/labelPosition/granularity/hourCycle/hideTimeZone/locales/RTL/constrain/unavailable, and live size/value/copy match. No D13 DateField journeys (#249). Did not start #254. Note output/functional-pass/datefield.md.",
+      note: 'datefield outcome ticketed. User-visible: isInvalid native custom validity already #362 (createDateField; required-empty focus stays on Submit), ContextualHelp wrap 208×82 vs 208×102 already #363, help press already #352, name Appointment date Help vs Help already #353, aria-haspopup already #287. Live isInvalid HelpText swaps (not #345). HiddenDateInput stepMismatch not user-visible (form=""). Default rest AX/geometry 208×82, Tab month→day→year, Arrow/Page/Home/End spin, typed auto-advance, Backspace, wheel no-op, FieldGroup click year, disabled skip, read-only, named FormData {date:2025-03-03}, sizes/labelPosition/granularity/hourCycle/hideTimeZone/locales/RTL/constrain/unavailable, and live size/value/copy match. No D13 DateField journeys (#249). Did not start #254. Note output/functional-pass/datefield.md.',
     }
   - {
       state: in-progress,
@@ -359,12 +359,12 @@ history:
   - {
       state: in-progress,
       at: 2026-09-03,
-      note: "inlinealert outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 5 variants × 3 fillStyles, autoFocus tabindex=-1 + isolated 2px ring, URL remount, live variant/fill/autoFocus, injected form {} match S2. AX alert Payment Information / icon Information|Success|Warning|Error. Geometry 472×126 (negative 472×105). isDisabled not a prop. Solid autofocus=\"\" vs React omitted is DOM-only. Shared-page autoFocus last-wins is harness. Notice boldFill white heading is shared S2. No overlay, no form name. No D13 InlineAlert journeys (#249). Did not start #254. No new ids. Note output/functional-pass/inlinealert.md.",
+      note: 'inlinealert outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 5 variants × 3 fillStyles, autoFocus tabindex=-1 + isolated 2px ring, URL remount, live variant/fill/autoFocus, injected form {} match S2. AX alert Payment Information / icon Information|Success|Warning|Error. Geometry 472×126 (negative 472×105). isDisabled not a prop. Solid autofocus="" vs React omitted is DOM-only. Shared-page autoFocus last-wins is harness. Notice boldFill white heading is shared S2. No overlay, no form name. No D13 InlineAlert journeys (#249). Did not start #254. No new ids. Note output/functional-pass/inlinealert.md.',
     }
   - {
       state: in-progress,
       at: 2026-09-03,
-      note: "skeleton outcome ticketed. User-visible: live isLoading=false leaves createIcon on loadingStyle (#431). Default rest AX/geometry 360×180, pointer hover/click/press/wheel, Tab skip, kbd no-op, URL loaded Text/Image/Icon, reduced-motion (WAAPI 0), forced-colors, control-form switch, live isLoading=true, and injected form {} match S2. inert=\"\" vs \"true\" not user-visible. React leftover 2000ms WAAPI on bg none after live unload is not user-visible. isDisabled not a prop. No overlay, no form name. No D13 Skeleton journeys (#249). Did not start #254. Note output/functional-pass/skeleton.md.",
+      note: 'skeleton outcome ticketed. User-visible: live isLoading=false leaves createIcon on loadingStyle (#431). Default rest AX/geometry 360×180, pointer hover/click/press/wheel, Tab skip, kbd no-op, URL loaded Text/Image/Icon, reduced-motion (WAAPI 0), forced-colors, control-form switch, live isLoading=true, and injected form {} match S2. inert="" vs "true" not user-visible. React leftover 2000ms WAAPI on bg none after live unload is not user-visible. isDisabled not a prop. No overlay, no form name. No D13 Skeleton journeys (#249). Did not start #254. Note output/functional-pass/skeleton.md.',
     }
   - {
       state: in-progress,
@@ -394,7 +394,7 @@ history:
   - {
       state: in-progress,
       at: 2026-09-03,
-      note: "icons outcome equivalent. Isolated default/pointer hover/click/press/wheel on labelled and Button-context, Tab Before→Create→After 2px ring, Enter/Space on the button, URL and live ariaHidden/ariaLabel/slot/showDecorative/showSkeleton/showButtonContext/buttonLabel, control-form switches+text, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX img Create item + Loading icon + button Create. Geometry gallery 231×56, labelled 20×20, button icon 18×18 margin -2px. inert=\"\" vs \"true\" not user-visible. Hover 160ms 1-unit RGB is Button timing; 400ms exact. Live BUTTON vs After leftover sentinel is harness. #186/#431 not routed (showSkeleton unmounts). No overlay, no form name. No D13 Icon journeys (#249). Did not start #254. No new ids. Note output/functional-pass/icons.md.",
+      note: 'icons outcome equivalent. Isolated default/pointer hover/click/press/wheel on labelled and Button-context, Tab Before→Create→After 2px ring, Enter/Space on the button, URL and live ariaHidden/ariaLabel/slot/showDecorative/showSkeleton/showButtonContext/buttonLabel, control-form switches+text, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX img Create item + Loading icon + button Create. Geometry gallery 231×56, labelled 20×20, button icon 18×18 margin -2px. inert="" vs "true" not user-visible. Hover 160ms 1-unit RGB is Button timing; 400ms exact. Live BUTTON vs After leftover sentinel is harness. #186/#431 not routed (showSkeleton unmounts). No overlay, no form name. No D13 Icon journeys (#249). Did not start #254. No new ids. Note output/functional-pass/icons.md.',
     }
   - {
       state: in-progress,

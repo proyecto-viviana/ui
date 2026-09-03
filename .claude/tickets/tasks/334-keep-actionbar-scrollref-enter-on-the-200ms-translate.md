@@ -32,14 +32,14 @@ the toolbar unmounts by ~450ms.
 islands mounted, one panel at a time. Dispatch
 `comparison:controls-change` `{ selectedItemCount: 3, useScrollRef: true }`.
 
-| t | React translate | Solid translate |
-|---|---|---|
-| hidden | (no bar) | (no bar) |
-| 0ms | `0px 100%` | `0px calc(0% - 8px)` |
-| 16ms | `0px 100%` | `0px -8px` |
-| 50ms | `0px calc(94.3902% - 0.448784px)` | `0px -8px` |
-| 100ms | `0px calc(38.6571% - 4.90743px)` | `0px -8px` |
-| 200ms | `0px -8px` | `0px -8px` |
+| t      | React translate                   | Solid translate      |
+| ------ | --------------------------------- | -------------------- |
+| hidden | (no bar)                          | (no bar)             |
+| 0ms    | `0px 100%`                        | `0px calc(0% - 8px)` |
+| 16ms   | `0px 100%`                        | `0px -8px`           |
+| 50ms   | `0px calc(94.3902% - 0.448784px)` | `0px -8px`           |
+| 100ms  | `0px calc(38.6571% - 4.90743px)`  | `0px -8px`           |
+| 200ms  | `0px -8px`                        | `0px -8px`           |
 
 Both keep `transitionDuration: 0.2s` / `transitionProperty` including
 `translate`. Settled scroll geometry matches (`absolute`, `bottom 0`,
@@ -57,5 +57,5 @@ route walk fails if Solid is already at `0px -8px` by 16ms.
 
 Child of #24. Found by #260. Distinct from #251 (headless Popover
 enter/exit) and #64 (Tooltip overlay). The contract spec only asserts
-transition *properties*, not that enter actually plays. Do not start
+transition _properties_, not that enter actually plays. Do not start
 #254.

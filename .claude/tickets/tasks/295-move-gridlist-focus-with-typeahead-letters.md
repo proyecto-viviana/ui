@@ -34,11 +34,11 @@ never consumes printable keys, so typeahead is a no-op.
 at a time. Tab from Before lands on Read on both (`role=row`,
 `tabIndex=0`, `data-focus-visible`). Then type:
 
-| | React | Solid |
-|---|---|---|
-| `w` | focus Write | stays Read |
+|                       | React            | Solid      |
+| --------------------- | ---------------- | ---------- |
+| `w`                   | focus Write      | stays Read |
 | `w`, wait 1200ms, `a` | Write then Admin | stays Read |
-| `a` | focus Admin | stays Read |
+| `a`                   | focus Admin      | stays Read |
 
 No `aria-activedescendant` on either stack. ArrowDown/Up, Home/End, and
 Ctrl+A still match. Distinct from #128 (typeahead Space capture phase).

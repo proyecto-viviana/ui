@@ -37,13 +37,13 @@ CardView, matching S2.
 
 Default `size=S` `density=compact` `layout=grid`:
 
-| | React | Solid |
-|---|---|---|
-| packing | two-up, same y | stacked, same x |
-| card | 172×61 at x 447 and 624 | 210×86 at y 872 and 966 |
-| display | `block` (Virtualizer) | `grid` |
-| tracks | `none` | `210px` |
-| gap | (layout options 8) | `8px` |
+|         | React                   | Solid                   |
+| ------- | ----------------------- | ----------------------- |
+| packing | two-up, same y          | stacked, same x         |
+| card    | 172×61 at x 447 and 624 | 210×86 at y 872 and 966 |
+| display | `block` (Virtualizer)   | `grid`                  |
+| tracks  | `none`                  | `210px`                 |
+| gap     | (layout options 8)      | `8px`                   |
 
 `?size=XS`: both two-up. React 114×53; Solid 140×180 (row stretch to the
 180px canvas). Tracks Solid `140px 140px`.

@@ -27,10 +27,10 @@ islands mounted, one panel at a time. Default AX matches (Quarterly
 click Budget adds it on both. Tab lands on Project brief, then
 ArrowDown:
 
-| | React | Solid |
-|---|---|---|
-| first ArrowDown | focus Budget, `tabIndex=0` | focus stays Project brief, `tabIndex=-1`, no row is tabbable |
-| second ArrowDown | stays Budget | focus Budget, `tabIndex=0` |
+|                  | React                      | Solid                                                        |
+| ---------------- | -------------------------- | ------------------------------------------------------------ |
+| first ArrowDown  | focus Budget, `tabIndex=0` | focus stays Project brief, `tabIndex=-1`, no row is tabbable |
+| second ArrowDown | stays Budget               | focus Budget, `tabIndex=0`                                   |
 
 `?disabledKeys=budget` rest AX/disabled flags match; this ticket is
 the arrow skip, not the disabled paint.

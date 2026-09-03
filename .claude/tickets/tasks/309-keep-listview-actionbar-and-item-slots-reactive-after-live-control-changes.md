@@ -35,10 +35,10 @@ selection.
 Live from the default route, click `showActionBar` or dispatch
 `comparison:controls-change` with `{ showActionBar: true }`:
 
-| | React | Solid |
-|---|---|---|
-| ActionBar marker | Archive1 selected 398×56 | null |
-| toolbar Actions | Archive 66×32 | null |
+|                  | React                    | Solid |
+| ---------------- | ------------------------ | ----- |
+| ActionBar marker | Archive1 selected 398×56 | null  |
+| toolbar Actions  | Archive 66×32            | null  |
 
 Same class on later live switches (URL remount matches both):
 

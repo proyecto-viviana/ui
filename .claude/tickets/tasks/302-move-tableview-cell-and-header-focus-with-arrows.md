@@ -23,11 +23,11 @@ old cell and header Enter activates the body row.
 `http://127.0.0.1:4341/components/tableview/`, islands mounted, one
 panel at a time. Tab onto Project brief, then:
 
-| key | React | Solid |
-|---|---|---|
-| ArrowRight | checkbox input "Select" | empty `gridcell`, `tabIndex=0` |
-| second ArrowRight | Name `rowheader` | same empty cell, `tabIndex=-1` |
-| End | Status `gridcell` "Ready" | unnamed cell, `tabIndex=-1` |
+| key               | React                     | Solid                          |
+| ----------------- | ------------------------- | ------------------------------ |
+| ArrowRight        | checkbox input "Select"   | empty `gridcell`, `tabIndex=0` |
+| second ArrowRight | Name `rowheader`          | same empty cell, `tabIndex=-1` |
+| End               | Status `gridcell` "Ready" | unnamed cell, `tabIndex=-1`    |
 
 `?locale=ar-AE` ArrowRight from the row: React focuses Status
 "Ready"; Solid stays on the row with `tabIndex=-1`.

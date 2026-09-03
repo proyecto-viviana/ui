@@ -29,14 +29,14 @@ on the searchbox.
 `http://127.0.0.1:4341/components/autocomplete/`, `data-islands-mounted`,
 `input[type=search]` named "Search fruits":
 
-| attr | React | Solid |
-|---|---|---|
-| `autocomplete` | `off` | missing |
-| `autocorrect` | `off` | missing |
-| `spellcheck` | `false` | missing |
-| `enterkeyhint` | `go` | missing |
-| `aria-autocomplete` | `list` | `list` |
-| `aria-controls` | listbox Fruits | listbox Fruits |
+| attr                | React          | Solid          |
+| ------------------- | -------------- | -------------- |
+| `autocomplete`      | `off`          | missing        |
+| `autocorrect`       | `off`          | missing        |
+| `spellcheck`        | `false`        | missing        |
+| `enterkeyhint`      | `go`           | missing        |
+| `aria-autocomplete` | `list`         | `list`         |
+| `aria-controls`     | listbox Fruits | listbox Fruits |
 
 Same at rest and after typing. `aria-autocomplete` / `aria-controls` already
 match.

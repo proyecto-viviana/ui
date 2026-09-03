@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-03,
-      note: "filed from the #260 actionbutton functional pass: live isPending string children, after the 1s spinner hides the label, Chromium AX is unnamed button [disabled] on S2 and button \"Inspect\" [disabled] on Solid. Solid pendingAccessibleLabel copies the string into aria-label; S2 ActionButton does not. Icon-start pending (non-string children) unnamed on both; icon-only keeps the consumer aria-label on both",
+      note: 'filed from the #260 actionbutton functional pass: live isPending string children, after the 1s spinner hides the label, Chromium AX is unnamed button [disabled] on S2 and button "Inspect" [disabled] on Solid. Solid pendingAccessibleLabel copies the string into aria-label; S2 ActionButton does not. Icon-start pending (non-string children) unnamed on both; icon-only keeps the consumer aria-label on both',
     }
 ---
 
@@ -41,13 +41,13 @@ post-spinner name fork only.
 `http://127.0.0.1:4341/components/actionbutton/`, islands mounted,
 one panel at a time. Live `{isPending:true}` from default Inspect.
 
-| | React | Solid |
-|---|---|---|
-| 0–120ms `aria-label` | omitted | `Inspect` |
-| 0–120ms AX | `button "Inspect" [disabled]` | same |
-| 1100ms label `visibility` | `hidden` | same |
-| 1100ms spinner | 18×18 `pending` | same |
-| 1100ms AX | `button [disabled]` + `progressbar "pending"` | `button "Inspect" [disabled]` + `progressbar "pending"` |
+|                           | React                                         | Solid                                                   |
+| ------------------------- | --------------------------------------------- | ------------------------------------------------------- |
+| 0–120ms `aria-label`      | omitted                                       | `Inspect`                                               |
+| 0–120ms AX                | `button "Inspect" [disabled]`                 | same                                                    |
+| 1100ms label `visibility` | `hidden`                                      | same                                                    |
+| 1100ms spinner            | 18×18 `pending`                               | same                                                    |
+| 1100ms AX                 | `button [disabled]` + `progressbar "pending"` | `button "Inspect" [disabled]` + `progressbar "pending"` |
 
 `packages/@react-spectrum/s2/src/ActionButton.tsx` spreads
 `props` onto `RACButton` with no pending `aria-label`. Solid

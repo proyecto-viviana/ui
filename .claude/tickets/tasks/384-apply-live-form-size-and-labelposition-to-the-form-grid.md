@@ -17,7 +17,7 @@ S2 Form restyles its own CSS grid when `size` or `labelPosition`
 changes after mount (row-gap S 20 / M 24 / L 32 / XL 40; top
 `[field] 1fr` vs side `[label] auto [field] 1fr`). URL remount of
 those props already matches. A live `comparison:controls-change`
-updates Solid *children* through S2 FormContext (`useFormProps`
+updates Solid _children_ through S2 FormContext (`useFormProps`
 getters: label font, button min-height, field areas) and leaves the
 form host on the first-paint `formStyles` class.
 
@@ -42,9 +42,9 @@ URL `?labelPosition=side` remount: both form grid
 
 Live from a fresh default route, `{size:"XL"}`:
 
-| | React | Solid |
-|---|---|---|
-| `rowGap` / `formH` | 40px / 206 | 24px / 190 |
+|                                | React       | Solid       |
+| ------------------------------ | ----------- | ----------- |
+| `rowGap` / `formH`             | 40px / 206  | 24px / 190  |
 | label font / button min-height | 18px / 48px | 18px / 48px |
 
 Live `{size:"S"}`: React 20px / 108; Solid 24px / 112; children both S
@@ -52,11 +52,11 @@ Live `{size:"S"}`: React 20px / 108; Solid 24px / 112; children both S
 
 Live `{labelPosition:"side"}`:
 
-| | React | Solid |
-|---|---|---|
+|                              | React                            | Solid                         |
+| ---------------------------- | -------------------------------- | ----------------------------- |
 | form `grid-template-columns` | `[label] 77px [field] 224.297px` | `[field] 92.6562px 208.641px` |
-| `groupW` | 223.7 | 208 |
-| `fieldAreas` / `formH` | side / 113 | side / 113 |
+| `groupW`                     | 223.7                            | 208                           |
+| `fieldAreas` / `formH`       | side / 113                       | side / 113                    |
 
 Live `labelAlign=end` after a fresh side dispatch keeps the same
 stale form columns; child `labelAlign` is already `end` on both.

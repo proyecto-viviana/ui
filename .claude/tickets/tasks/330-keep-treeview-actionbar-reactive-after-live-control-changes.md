@@ -36,10 +36,10 @@ ticket.
 Live from the default route, dispatch `comparison:controls-change`
 with `{ showActionBar: true }`:
 
-| | React | Solid |
-|---|---|---|
-| ActionBar marker | Archive1 selected 400×56 | null |
-| toolbar Actions | Archive, Clear selection | none |
+|                  | React                    | Solid |
+| ---------------- | ------------------------ | ----- |
+| ActionBar marker | Archive1 selected 400×56 | null  |
+| toolbar Actions  | Archive, Clear selection | none  |
 
 Live `selectionMode` / `selectionStyle=highlight` / empty / icons /
 `itemActionSlot=buttonGroup` still match. URL remount still paints

@@ -62,18 +62,18 @@ that error. AX `textbox "Notes" [invalid]` plus error text.
 Live from the default route,
 `comparison:controls-change` `{isInvalid:true}`:
 
-| | React | Solid |
-|---|---|---|
-| icon / border / aria-invalid | on / red / true | on / red / true |
-| HelpText slot | errorMessage | description |
-| describedby | Notes are required. | Use a short multiline project note. |
+|                              | React               | Solid                               |
+| ---------------------------- | ------------------- | ----------------------------------- |
+| icon / border / aria-invalid | on / red / true     | on / red / true                     |
+| HelpText slot                | errorMessage        | description                         |
+| describedby                  | Notes are required. | Use a short multiline project note. |
 
 Live from `?isInvalid=true` with `{isInvalid:false}`:
 
-| | React | Solid |
-|---|---|---|
+|                              | React                | Solid                |
+| ---------------------------- | -------------------- | -------------------- |
 | icon / border / aria-invalid | off / gray / omitted | off / gray / omitted |
-| HelpText slot | description | errorMessage |
+| HelpText slot                | description          | errorMessage         |
 
 ## Done when
 

@@ -24,12 +24,12 @@ the removed node takes focus with it.
 at a time. Default: Landscape selected, four removable tags. Tab onto
 Landscape, then Delete (or click Remove Landscape):
 
-| | React | Solid |
-|---|---|---|
-| tags | Portrait, Travel, Night | same |
-| selectedKeys | empty | empty |
-| focus | Portrait `role=row` `tabIndex=0` (Delete also `data-focus-visible` + 2px ring) | `BODY`; remaining rows all `tabIndex=-1` |
-| next Tab | Portrait's Remove | a Remove with rows still all `tabIndex=-1` |
+|              | React                                                                          | Solid                                      |
+| ------------ | ------------------------------------------------------------------------------ | ------------------------------------------ |
+| tags         | Portrait, Travel, Night                                                        | same                                       |
+| selectedKeys | empty                                                                          | empty                                      |
+| focus        | Portrait `role=row` `tabIndex=0` (Delete also `data-focus-visible` + 2px ring) | `BODY`; remaining rows all `tabIndex=-1`   |
+| next Tab     | Portrait's Remove                                                              | a Remove with rows still all `tabIndex=-1` |
 
 Pointer-remove is the same focus loss; remaining Solid rows stay
 `tabIndex=0` because `focusedKey` is null. Both stacks drop Landscape

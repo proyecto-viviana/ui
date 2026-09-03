@@ -31,12 +31,12 @@ controlled and matches.
 `comparison:controls-change` with
 `{valueSource:"defaultValue", defaultValue:"hsl(200, 100%, 50%)"}`.
 
-| | React | Solid |
-|---|---|---|
-| input hue | 200 | 0 |
-| thumb | `17.066px, 67.27px` | `180px, 96px` |
-| AX | slider `"Hue": "200"` | slider `"Hue": "0"` |
-| fixture marker | `hsla(200, …)` | `hsl(200, …)` (marker only) |
+|                | React                 | Solid                       |
+| -------------- | --------------------- | --------------------------- |
+| input hue      | 200                   | 0                           |
+| thumb          | `17.066px, 67.27px`   | `180px, 96px`               |
+| AX             | slider `"Hue": "200"` | slider `"Hue": "0"`         |
+| fixture marker | `hsla(200, …)`        | `hsl(200, …)` (marker only) |
 
 `?defaultValue=hsl(180, 100%, 50%)` rest: both hue 180, thumb
 `12px, 96px`. Live controlled `value` `hsl(45, …)`: both 45.

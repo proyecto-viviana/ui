@@ -28,13 +28,13 @@ and not #69 (share `ContextualHelpPopover`).
 `http://127.0.0.1:4341/components/contextualhelp/`, one panel at a time,
 `data-islands-mounted`. Isolated click, wait until opacity 1.
 
-| path | React | Solid |
-|---|---|---|
-| `?placement=top start&shouldFlip=false` then click | `data-placement=top` dy −165 gapTop 8 | same |
-| default, dispatch `placement=top start`, then click | `top` dy −165 | **`bottom` dy 28** |
-| open, then dispatch `placement=left` | `left` dx −276 dy −68 | **`bottom` dx 0 dy 28** |
-| `?placement=top start&shouldFlip=false` near top, open, dispatch `shouldFlip=true` | flips to `bottom` dy 28 | **stays `top` dy −92** |
-| viewer placement Picker → `top start`, then click | `top` | **`bottom`** |
+| path                                                                               | React                                 | Solid                   |
+| ---------------------------------------------------------------------------------- | ------------------------------------- | ----------------------- |
+| `?placement=top start&shouldFlip=false` then click                                 | `data-placement=top` dy −165 gapTop 8 | same                    |
+| default, dispatch `placement=top start`, then click                                | `top` dy −165                         | **`bottom` dy 28**      |
+| open, then dispatch `placement=left`                                               | `left` dx −276 dy −68                 | **`bottom` dx 0 dy 28** |
+| `?placement=top start&shouldFlip=false` near top, open, dispatch `shouldFlip=true` | flips to `bottom` dy 28               | **stays `top` dy −92**  |
+| viewer placement Picker → `top start`, then click                                  | `top`                                 | **`bottom`**            |
 
 Control props already show the new `placement` / `shouldFlip` on Solid.
 

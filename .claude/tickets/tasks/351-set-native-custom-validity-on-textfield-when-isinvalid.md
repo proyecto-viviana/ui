@@ -57,12 +57,12 @@ by DateField / HiddenSelect. TextField never grew that branch.
 `http://127.0.0.1:4341/components/textfield/?isInvalid=true`,
 islands mounted. Value is still `Quarterly report`.
 
-| | React | Solid |
-|---|---|---|
-| `checkValidity()` | false | true |
-| `:invalid` | true | false |
-| `validationMessage` | `Invalid value.` | `""` |
-| `validity.customError` | true | false |
+|                               | React                             | Solid                                 |
+| ----------------------------- | --------------------------------- | ------------------------------------- |
+| `checkValidity()`             | false                             | true                                  |
+| `:invalid`                    | true                              | false                                 |
+| `validationMessage`           | `Invalid value.`                  | `""`                                  |
+| `validity.customError`        | true                              | false                                 |
 | injected form `requestSubmit` | blocked, focus stays on the input | submits `{email: "Quarterly report"}` |
 
 AX, error slot, icon, and group `data-invalid` match. `?isInvalid=true&isDisabled=true`

@@ -250,6 +250,7 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
         onMove: options.onMove ?? props.onMove,
         shouldAcceptItemDrop: options.shouldAcceptItemDrop ?? props.shouldAcceptItemDrop,
         isDisabled: options.isDisabled ?? props.isDisabled,
+        collection: props.collection,
       }));
     };
     hooks.useDroppableCollection = (

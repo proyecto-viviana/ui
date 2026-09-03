@@ -46,19 +46,19 @@ the hue range input at 50.
 
 ArrowRight ×2:
 
-| | React | Solid |
-|---|---|---|
-| 1st key | 51°, focus input, thumb 32×32, `onChangeEnd` 51 | 51°, focus **BODY**, thumb 16×16, `onChangeEnd` still 50 |
-| 2nd key | 52°, focus input | 51°, still BODY |
-| input node | same (`__fpMarker` kept) | **replaced** (marker gone, same id) |
+|            | React                                           | Solid                                                    |
+| ---------- | ----------------------------------------------- | -------------------------------------------------------- |
+| 1st key    | 51°, focus input, thumb 32×32, `onChangeEnd` 51 | 51°, focus **BODY**, thumb 16×16, `onChangeEnd` still 50 |
+| 2nd key    | 52°, focus input                                | 51°, still BODY                                          |
+| input node | same (`__fpMarker` kept)                        | **replaced** (marker gone, same id)                      |
 
 Track click at 80% of the 192px track:
 
-| | React | Solid |
-|---|---|---|
-| value / output | 288 / `288°` | same |
-| 80 ms | `data-dragging` omitted, loupe opacity 0.14 exiting, `onChangeEnd` 288 | `data-dragging=true`, loupe opacity 0.86 entering, `onChangeEnd` 50 |
-| 500 ms | loupe gone | loupe still 50×66 opacity 1, `data-dragging=true` |
+|                | React                                                                  | Solid                                                               |
+| -------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| value / output | 288 / `288°`                                                           | same                                                                |
+| 80 ms          | `data-dragging` omitted, loupe opacity 0.14 exiting, `onChangeEnd` 288 | `data-dragging=true`, loupe opacity 0.86 entering, `onChangeEnd` 50 |
+| 500 ms         | loupe gone                                                             | loupe still 50×66 opacity 1, `data-dragging=true`                   |
 
 Held drag to 20% (down / move / up) reaches 72 on both and Solid
 does fire `onChangeEnd` on pointerup. Loupe enter 50×66 opacity

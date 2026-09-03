@@ -29,11 +29,11 @@ islands mounted, one panel at a time. Click the item ActionMenu
 trigger, wait 400ms; then `dispatchEvent(click)`; then focus the
 trigger and Enter:
 
-| | React | Solid |
-|---|---|---|
-| click | menu Copy, opacity 1, focus `role=menu` | menus `[]`, focus Weekly Report |
-| dispatch click | same open | menus `[]`, focus BODY, `selectedKeys` empty (Esc after click cleared) |
-| Enter | menu Copy, focus menuitem Copy | menus `[]`, focus BODY |
+|                | React                                   | Solid                                                                  |
+| -------------- | --------------------------------------- | ---------------------------------------------------------------------- |
+| click          | menu Copy, opacity 1, focus `role=menu` | menus `[]`, focus Weekly Report                                        |
+| dispatch click | same open                               | menus `[]`, focus BODY, `selectedKeys` empty (Esc after click cleared) |
+| Enter          | menu Copy, focus menuitem Copy          | menus `[]`, focus BODY                                                 |
 
 `aria-haspopup` true vs menu is accepted upstream drift (menu pass).
 No D13 TreeView journeys (#249). Distinct from #308 (ListView pointer

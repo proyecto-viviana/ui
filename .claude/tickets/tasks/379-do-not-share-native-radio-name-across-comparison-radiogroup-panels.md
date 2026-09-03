@@ -35,12 +35,12 @@ group uncheck never wakes it.
 `http://127.0.0.1:4341/components/radiogroup/?name=plan`, islands
 mounted. Injected per-panel `form[data-fp-form]` + `requestSubmit`.
 
-| | React | Solid |
-|---|---|---|
-| rest `input.checked` (starter) | true | false |
-| rest `data-selected` (starter) | true | true |
-| rest submit | `{plan: "starter"}` | `{}` |
-| click Pro in that panel, then submit | `{plan: "pro"}` | `{plan: "pro"}` |
+|                                      | React               | Solid           |
+| ------------------------------------ | ------------------- | --------------- |
+| rest `input.checked` (starter)       | true                | false           |
+| rest `data-selected` (starter)       | true                | true            |
+| rest submit                          | `{plan: "starter"}` | `{}`            |
+| click Pro in that panel, then submit | `{plan: "pro"}`     | `{plan: "pro"}` |
 
 Isolating Solid (`visibility:hidden` + `inert` on React) still
 leaves Solid starter `checked=false`. Clicking Pro in the isolated

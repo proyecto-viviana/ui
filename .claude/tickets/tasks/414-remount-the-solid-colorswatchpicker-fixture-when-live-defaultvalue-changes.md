@@ -34,12 +34,12 @@ component; the harness is the gap.
 mounted. `comparison:controls-change` with
 `{valueSource:"defaultValue", defaultValue:"#3b82f6"}`.
 
-| | React | Solid |
-|---|---|---|
-| selected | **Blue** | **Rose** |
-| overlay | Blue | Rose |
-| fixture marker | `#3b82f6` | `#3b82f6` (marker only) |
-| AX | option Blue `[selected]` | option Rose `[selected]` |
+|                | React                    | Solid                    |
+| -------------- | ------------------------ | ------------------------ |
+| selected       | **Blue**                 | **Rose**                 |
+| overlay        | Blue                     | Rose                     |
+| fixture marker | `#3b82f6`                | `#3b82f6` (marker only)  |
+| AX             | option Blue `[selected]` | option Rose `[selected]` |
 
 `?defaultValue=%233b82f6` rest: both Blue. Live controlled
 `value` `#ec4899`: both Pink.

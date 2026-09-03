@@ -29,7 +29,7 @@ commit never happens. The comparison Form fixture is the first
 place this route wraps TextField in a real `<form>` and clicks its
 submit button.
 
-Required-empty *rest* (no submit) already matches: both `required`,
+Required-empty _rest_ (no submit) already matches: both `required`,
 description visible, no error, AX equal, BODY focus.
 
 ## Evidence
@@ -44,15 +44,15 @@ Before click: both BODY, `required=true`, description
 
 After click Submit:
 
-| | React | Solid |
-|---|---|---|
-| `submitCount` | 0 | 0 |
-| focus | input | input |
-| `aria-invalid` | `"true"` | omitted |
-| group `data-invalid` | `"true"` | omitted |
-| HelpText | error `Please fill out this field.` | description stays |
-| group border | `rgb(183, 40, 24)` | `rgb(19, 19, 19)` + 2px focus ring |
-| AX | `textbox "Project name" [invalid]` + error text | `textbox "Project name"` + description |
+|                      | React                                           | Solid                                  |
+| -------------------- | ----------------------------------------------- | -------------------------------------- |
+| `submitCount`        | 0                                               | 0                                      |
+| focus                | input                                           | input                                  |
+| `aria-invalid`       | `"true"`                                        | omitted                                |
+| group `data-invalid` | `"true"`                                        | omitted                                |
+| HelpText             | error `Please fill out this field.`             | description stays                      |
+| group border         | `rgb(183, 40, 24)`                              | `rgb(19, 19, 19)` + 2px focus ring     |
+| AX                   | `textbox "Project name" [invalid]` + error text | `textbox "Project name"` + description |
 
 Live `{isRequired:true, value:""}` then click is the same split.
 
@@ -72,6 +72,6 @@ description slot after that blocked submit.
 Child of #24. Found by #260. Likely the same missing
 `createFormValidation` call as #351, but the user-visible hole is
 different: #351 is `isInvalid` → `setCustomValidity` so submit
-*proceeds*; this path already *blocks* via `valueMissing` and omits
+_proceeds_; this path already _blocks_ via `valueMissing` and omits
 the native error UI. Not #345 (live `isInvalid` HelpText slot on a
 prop change). Do not start #254.

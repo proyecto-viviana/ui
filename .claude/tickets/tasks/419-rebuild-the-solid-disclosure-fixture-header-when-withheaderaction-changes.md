@@ -42,12 +42,12 @@ that same harness gap, not a Disclosure `withHeaderAction` prop
 `comparison:controls-change` `{withHeaderAction:false}` (other demo
 defaults). Other `.s2-framework-panel` not required.
 
-| | React | Solid |
-|---|---|---|
-| fixture JSON | `withHeaderAction:false` | same |
-| AX | heading + group only | heading + **Edit system requirements** + group |
-| trigger width | **250** | **222** |
-| action button | absent | 24×24, not nested |
+|               | React                    | Solid                                          |
+| ------------- | ------------------------ | ---------------------------------------------- |
+| fixture JSON  | `withHeaderAction:false` | same                                           |
+| AX            | heading + group only     | heading + **Edit system requirements** + group |
+| trigger width | **250**                  | **222**                                        |
+| action button | absent                   | 24×24, not nested                              |
 
 From `?withHeaderAction=false` then live `{withHeaderAction:true}`:
 React adds Edit (trigger 222); Solid stays title-only (trigger 250).

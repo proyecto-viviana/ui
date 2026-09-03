@@ -70,6 +70,7 @@ import {
   type SectionProps,
   useCollectionRenderer,
   useCollectionRoot,
+  renderCollectionDropSlots,
 } from "./Collection";
 import { useVirtualizerContext, type Orientation } from "./Virtualizer";
 import {
@@ -486,7 +487,11 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection;
+      },
+    });
   });
   createEffect(() => {
     if (!hasDraggableDnd()) return;
@@ -666,20 +671,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
                   <For each={visibleItems()}>
                     {(item, index) => {
                       const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                      const beforeIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
-                      const onIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
-                      const afterIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
-                      return (
-                        <>
-                          {beforeIndicator()}
-                          {onIndicator()}
-                          {props.children(item)}
-                          {afterIndicator()}
-                        </>
-                      );
+                      return renderCollectionDropSlots({
+                        index: itemIndex(),
+                        lastIndex: getItemNodes().length - 1,
+                        renderDropIndicator: (i, position) =>
+                          collectionRenderer().renderDropIndicator?.(i, position),
+                        children: props.children(item),
+                      });
                     }}
                   </For>
                 </CollectionRoot>
@@ -688,20 +686,13 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
                   <For each={visibleItems()}>
                     {(item, index) => {
                       const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                      const beforeIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
-                      const onIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
-                      const afterIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
-                      return (
-                        <>
-                          {beforeIndicator()}
-                          {onIndicator()}
-                          {props.children(item)}
-                          {afterIndicator()}
-                        </>
-                      );
+                      return renderCollectionDropSlots({
+                        index: itemIndex(),
+                        lastIndex: getItemNodes().length - 1,
+                        renderDropIndicator: (i, position) =>
+                          collectionRenderer().renderDropIndicator?.(i, position),
+                        children: props.children(item),
+                      });
                     }}
                   </For>
                 </>

@@ -34,12 +34,12 @@ does not rebuild those child classes.
 mounted. From the default route, `comparison:controls-change` with
 defaults plus one of `{size:"XS"}`, `{size:"L"}`, `{rounding:"full"}`.
 
-| live | React | Solid |
-|---|---|---|
-| `{size:"XS"}` | listbox 136×16, swatches 16×16 | props `size:XS`, listbox **248×32**, swatches **32×32** |
-| `{size:"L"}` | 304×40 / 40×40 | props `size:L`, **248×32** / **32×32** |
-| `{rounding:"full"}` | radius 9999px on option, swatch, overlay | props `rounding:full`, radius **0px** |
-| `{density:"spacious"}` | gap 6px, 260×32 | same |
+| live                   | React                                    | Solid                                                   |
+| ---------------------- | ---------------------------------------- | ------------------------------------------------------- |
+| `{size:"XS"}`          | listbox 136×16, swatches 16×16           | props `size:XS`, listbox **248×32**, swatches **32×32** |
+| `{size:"L"}`           | 304×40 / 40×40                           | props `size:L`, **248×32** / **32×32**                  |
+| `{rounding:"full"}`    | radius 9999px on option, swatch, overlay | props `rounding:full`, radius **0px**                   |
+| `{density:"spacious"}` | gap 6px, 260×32                          | same                                                    |
 
 `?size=XS` rest: both 136×16 / 16×16. `?size=L&rounding=full` rest:
 both 304×40 / 40×40 / 9999px.

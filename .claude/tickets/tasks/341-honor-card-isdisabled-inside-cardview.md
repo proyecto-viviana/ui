@@ -30,18 +30,18 @@ panel at a time.
 
 `?disabledItem=zephyr` (Apollo stays selected):
 
-| | React | Solid |
-|---|---|---|
-| Zephyr `aria-disabled` | `true` | omitted |
-| click Zephyr | selectedKeys stay `apollo` | selectedKeys become `zephyr` |
+|                        | React                      | Solid                        |
+| ---------------------- | -------------------------- | ---------------------------- |
+| Zephyr `aria-disabled` | `true`                     | omitted                      |
+| click Zephyr           | selectedKeys stay `apollo` | selectedKeys become `zephyr` |
 
 `?disabledItem=apollo`:
 
-| | React | Solid |
-|---|---|---|
-| Apollo | `[disabled]`, no `aria-selected` | enabled, `[selected]` |
-| selectedKeys | `apollo` (controlled) | `apollo` |
-| Tab from Before | focus grid "Projects" | focus row Apollo |
+|                 | React                            | Solid                 |
+| --------------- | -------------------------------- | --------------------- |
+| Apollo          | `[disabled]`, no `aria-selected` | enabled, `[selected]` |
+| selectedKeys    | `apollo` (controlled)            | `apollo`              |
+| Tab from Before | focus grid "Projects"            | focus row Apollo      |
 
 `?disabledKeys=zephyr`: both mark Zephyr disabled and ignore click
 (not this ticket).

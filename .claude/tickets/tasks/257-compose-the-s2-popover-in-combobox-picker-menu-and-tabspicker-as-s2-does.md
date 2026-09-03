@@ -16,6 +16,16 @@ history:
       at: 2026-09-02,
       note: "compose solid-spectrum Popover in ComboBox, Picker, Menu, ActionMenu, TabsPicker; delete comboBoxPopover/pickerPopover/menuPopover/tabsPickerPopover; twins + tests + changeset",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "menu-focus.spec.ts:20 follow-up is #437 (RAC MenuInner lifecycle), not a Popover remount. MenuTrigger+Button PressResponder is #439.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "#437 merged: menu-focus.spec.ts:20 green. This ticket remains the S2 Popover compose record.",
+    }
 ---
 
 ## Cause
@@ -281,4 +291,4 @@ not `ActionButton`/`MenuButton`) does not open the menu on click in jsdom —
 S2 `ActionButton` wires `MenuTriggerContext` explicitly, S2 `Button` does not,
 and the headless Button consumes only the dialog/popover trigger contexts,
 whereas RAC's `MenuTrigger` uses `PressResponder` so any `usePress` child
-works. Needs its own ticket.
+works. Filed as #439. The `:20` lifecycle fix is #437.

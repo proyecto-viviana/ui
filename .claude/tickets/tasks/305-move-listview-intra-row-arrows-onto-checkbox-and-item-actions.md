@@ -31,11 +31,11 @@ never receives Solid ArrowRight.
 at a time. Tab from Before lands on Project brief on both (`role=row`,
 `tabIndex=0`). Then:
 
-| | React | Solid |
-|---|---|---|
-| ArrowRight | focus INPUT name Select | stays on the row |
-| ArrowRight again | back on the row | stays on the row |
-| ArrowLeft | INPUT Select | stays on the row |
+|                  | React                   | Solid            |
+| ---------------- | ----------------------- | ---------------- |
+| ArrowRight       | focus INPUT name Select | stays on the row |
+| ArrowRight again | back on the row         | stays on the row |
+| ArrowLeft        | INPUT Select            | stays on the row |
 
 `?itemActionSlot=buttonGroup`: React ArrowRight → checkbox, ArrowRight →
 Archive Project brief.pdf. Solid never leaves the row.

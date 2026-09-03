@@ -32,13 +32,13 @@ purpose and already matches selection.
 islands mounted. Other `.s2-framework-panel` `visibility:hidden` +
 `inert`. Click option Orange.
 
-| | React | Solid |
-|---|---|---|
-| selected / marker | Orange / `rgb(249, 115, 22)` | same |
-| focus | **BODY** | **Orange** |
-| listbox tabIndex | **0** | **-1** |
-| Orange tabIndex / data-focused | -1 / omitted | 0 / true |
-| listbox id | new `react-aria…-_r_12_` | stable `solidaria-cl-169` |
+|                                | React                        | Solid                     |
+| ------------------------------ | ---------------------------- | ------------------------- |
+| selected / marker              | Orange / `rgb(249, 115, 22)` | same                      |
+| focus                          | **BODY**                     | **Orange**                |
+| listbox tabIndex               | **0**                        | **-1**                    |
+| Orange tabIndex / data-focused | -1 / omitted                 | 0 / true                  |
+| listbox id                     | new `react-aria…-_r_12_`     | stable `solidaria-cl-169` |
 
 Default-route (uncontrolled) click Orange: both focus Orange,
 listbox tabIndex -1.

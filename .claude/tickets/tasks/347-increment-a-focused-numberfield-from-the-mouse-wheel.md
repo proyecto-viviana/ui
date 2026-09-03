@@ -27,10 +27,10 @@ Solid `createColorField` already ports that `onWheel`.
 one panel at a time, click the input (value 5), `mouse.wheel(0, 120)`
 then `mouse.wheel(0, -120)`.
 
-| | React | Solid |
-|---|---|---|
-| after +120 | 6, live "6" | 5 |
-| after -120 | 5, live "5" | 5 |
+|            | React       | Solid |
+| ---------- | ----------- | ----- |
+| after +120 | 6, live "6" | 5     |
+| after -120 | 5, live "5" | 5     |
 
 Disabled and read-only already ignore the wheel on React (not
 re-driven here). ColorField is the in-tree wheel oracle.

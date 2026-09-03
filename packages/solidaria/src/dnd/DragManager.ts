@@ -444,6 +444,21 @@ class DragSession {
       return true;
     });
 
+    // Keyboard pickup calls `setCurrentDropTarget(collection)` with no item, so
+    // the collection element is focused. RAC then focuses the active indicator
+    // from `useDroppableItem`. If that effect loses the race (inert mutations
+    // re-enter this method), `active` stays `listbox:Permissions`. When an
+    // indicator already has `data-drop-target`, hand it to `setCurrentDropTarget`
+    // as the item so focus lands there before aria-hide.
+    if (this.currentDropTarget && this.currentDropItem == null) {
+      const activeItem = validDropItems.find((item) =>
+        item.element.hasAttribute("data-drop-target"),
+      );
+      if (activeItem) {
+        this.setCurrentDropTarget(this.currentDropTarget, activeItem);
+      }
+    }
+
     // Filter out drop targets that contain valid items. We don't want to stop hiding elements
     // other than the drop items that exist inside the collection.
     let visibleDropTargets = this.validDropTargets.filter(

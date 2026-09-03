@@ -39,19 +39,19 @@ the area.
 
 Pointer click 10%/10% then ArrowRight:
 
-| | React | Solid |
-|---|---|---|
+|             | React                                    | Solid                                                |
+| ----------- | ---------------------------------------- | ---------------------------------------------------- |
 | after click | x focused, 26 / 229, `data-focused=true` | island DIV focused, 26 / 229, `data-focused` omitted |
-| ArrowRight | 27 / 229 | 26 / 229 (no-op) |
+| ArrowRight  | 27 / 229                                 | 26 / 229 (no-op)                                     |
 
 ArrowUp from a focused x input, then Tab:
 
-| | React | Solid |
-|---|---|---|
-| `document.activeElement` | y input (tabIndex 0) | x input (tabIndex **-1**) |
-| y `tabIndex` / `aria-hidden` | 0 / omitted | 0 / omitted |
-| AX | two sliders `"155"` and `"129"` | same two sliders |
-| Tab | After | **y input** (extra stop) |
+|                              | React                           | Solid                     |
+| ---------------------------- | ------------------------------- | ------------------------- |
+| `document.activeElement`     | y input (tabIndex 0)            | x input (tabIndex **-1**) |
+| y `tabIndex` / `aria-hidden` | 0 / omitted                     | 0 / omitted               |
+| AX                           | two sliders `"155"` and `"129"` | same two sliders          |
+| Tab                          | After                           | **y input** (extra stop)  |
 
 Thumb-center press keeps 155 both. Press at 60%/50% (inside the 16px
 thumb, off-center): React stays 155 and then deltas; Solid jumps to

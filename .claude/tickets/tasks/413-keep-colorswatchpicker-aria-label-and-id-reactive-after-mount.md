@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-03,
-      note: "filed from the #260 colorswatchpicker functional pass: live {ariaLabel:\"\"} updates Solid fixture JSON but the listbox stays named Accent color (S2 injects Color swatches); live {id:\"contract-colorswatchpicker\"} leaves Solid on solidaria-cl-169 (S2 forwards the id). URL ?ariaLabel= and ?id= remount and match. createListBox createId snapshots id at setup; ColorSwatchPicker cleanListBoxProps() destructures listBoxProps into a plain object during render, so later fieldProps aria-label never reach the div. Numbered 413 to stay past ProgressCircle #410",
+      note: 'filed from the #260 colorswatchpicker functional pass: live {ariaLabel:""} updates Solid fixture JSON but the listbox stays named Accent color (S2 injects Color swatches); live {id:"contract-colorswatchpicker"} leaves Solid on solidaria-cl-169 (S2 forwards the id). URL ?ariaLabel= and ?id= remount and match. createListBox createId snapshots id at setup; ColorSwatchPicker cleanListBoxProps() destructures listBoxProps into a plain object during render, so later fieldProps aria-label never reach the div. Numbered 413 to stay past ProgressCircle #410',
     }
 ---
 
@@ -35,10 +35,10 @@ mounted. From the default route, `comparison:controls-change` with
 defaults plus `{ariaLabel:""}` or
 `{id:"contract-colorswatchpicker", slot:"color"}`.
 
-| live | React | Solid |
-|---|---|---|
+| live             | React                           | Solid                                         |
+| ---------------- | ------------------------------- | --------------------------------------------- |
 | `{ariaLabel:""}` | listbox name **Color swatches** | fixture `ariaLabel:""`, name **Accent color** |
-| `{id, slot}` | `id=contract-colorswatchpicker` | fixture id set, DOM id **solidaria-cl-169** |
+| `{id, slot}`     | `id=contract-colorswatchpicker` | fixture id set, DOM id **solidaria-cl-169**   |
 
 AX unlabeled: React `listbox "Color swatches"`; Solid
 `listbox "Accent color"`.

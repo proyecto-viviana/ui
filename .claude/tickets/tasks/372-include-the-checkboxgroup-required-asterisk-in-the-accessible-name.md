@@ -32,12 +32,12 @@ CheckboxGroup-specific (Picker also sets the flag; not driven here).
 `http://127.0.0.1:4341/components/checkboxgroup/?isRequired=true`,
 islands mounted.
 
-| | React | Solid |
-|---|---|---|
-| asterisk | 8×8, `aria-label="(required)"`, `aria-hidden="false"` | 8×8, no label, `aria-hidden="true"` |
-| field | 80×182 | 80×182 |
-| AX group name | `Notifications (required)` | `Notifications` |
-| AX img | `img "(required)"` | omitted |
+|               | React                                                 | Solid                               |
+| ------------- | ----------------------------------------------------- | ----------------------------------- |
+| asterisk      | 8×8, `aria-label="(required)"`, `aria-hidden="false"` | 8×8, no label, `aria-hidden="true"` |
+| field         | 80×182                                                | 80×182                              |
+| AX group name | `Notifications (required)`                            | `Notifications`                     |
+| AX img        | `img "(required)"`                                    | omitted                             |
 
 Live `{isRequired:true}` from the default route paints the same
 asterisk split. `necessityIndicator=label` `(optional)` already

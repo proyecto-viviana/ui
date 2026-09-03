@@ -28,14 +28,14 @@ is leftover harness, not a missing API.
 `http://127.0.0.1:4341/components/actionbar/?useCollection=true`,
 islands mounted.
 
-| | React | Solid |
-|---|---|---|
-| selectedKeys | `reports,roadmap,research` | same |
-| count text | `3 selected` | same |
-| bar | 402×56, `position:absolute` | 370×60, `position:absolute` |
-| shell | ListView (no comparison shell) | 420×220, scrollbar 17px, `insetInlineEnd 25px` |
-| row click Q4 reports | keys `roadmap,research`, `2 selected` | same |
-| Clear / Escape | bar gone, keys empty | same |
+|                      | React                                 | Solid                                          |
+| -------------------- | ------------------------------------- | ---------------------------------------------- |
+| selectedKeys         | `reports,roadmap,research`            | same                                           |
+| count text           | `3 selected`                          | same                                           |
+| bar                  | 402×56, `position:absolute`           | 370×60, `position:absolute`                    |
+| shell                | ListView (no comparison shell)        | 420×220, scrollbar 17px, `insetInlineEnd 25px` |
+| row click Q4 reports | keys `roadmap,research`, `2 selected` | same                                           |
+| Clear / Escape       | bar gone, keys empty                  | same                                           |
 
 Direct (no collection) bars match at 432×56. `useScrollRef` bars
 match at 330×60. The collection-mode size split is the fixture

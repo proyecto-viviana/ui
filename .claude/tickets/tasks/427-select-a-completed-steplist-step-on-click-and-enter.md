@@ -33,18 +33,19 @@ clicks already match. Space does not select on either stack.
 
 `http://127.0.0.1:4341/components/steplist/?defaultSelectedKey=fallback-offer&defaultLastCompletedStep=select-offers`
 — islands mounted. Other `.s2-framework-panel` `visibility:hidden`
-+ `inert`.
+
+- `inert`.
 
 Rest AX equal: Details/Select offers completed, Fallback offer
 current, Summary disabled. Tab Before → Details → Select offers →
 Fallback offer → After on both.
 
-| action | React | Solid |
-|---|---|---|
-| click Details | `1 Current: Details`, step 3 Not completed, focus Details | **stays `3 Current: Fallback offer`**, Details stays Completed, focus Details |
-| Tab to Select offers, Enter | `2 Current: Select offers`, step 3 Not completed | **stays `3 Current: Fallback offer`** |
-| Tab to Select offers, Space | no-op, still Fallback offer | same |
-| click Summary (unreached, force) | selection unchanged | same |
+| action                           | React                                                     | Solid                                                                         |
+| -------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| click Details                    | `1 Current: Details`, step 3 Not completed, focus Details | **stays `3 Current: Fallback offer`**, Details stays Completed, focus Details |
+| Tab to Select offers, Enter      | `2 Current: Select offers`, step 3 Not completed          | **stays `3 Current: Fallback offer`**                                         |
+| Tab to Select offers, Space      | no-op, still Fallback offer                               | same                                                                          |
+| click Summary (unreached, force) | selection unchanged                                       | same                                                                          |
 
 Default (only step 1 selectable) click/Enter/Space on Details is a
 no-op both (already current). No overlay. No form `name`.

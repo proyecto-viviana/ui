@@ -53,11 +53,11 @@ field is 208×102.
 `http://127.0.0.1:4341/components/timefield/?withContextualHelp=true`,
 islands mounted.
 
-| | React | Solid |
-|---|---|---|
-| field | 208×82 | 208×102 |
-| label wrapper | 25px, `display:block` | 45px, `display:block` |
-| help button | 20×20, on the label row | 20×20, wrapped under the label |
+|               | React                   | Solid                          |
+| ------------- | ----------------------- | ------------------------------ |
+| field         | 208×82                  | 208×102                        |
+| label wrapper | 25px, `display:block`   | 45px, `display:block`          |
+| help button   | 20×20, on the label row | 20×20, wrapped under the label |
 
 Default (no help) is 208×82 on both.
 

@@ -18,8 +18,8 @@ fixture After button. S2 does. Solid Tab from Weekly Report moves
 `activeElement` to `BODY` and the next Tab returns to Weekly Report, so
 keyboard users cannot tab out.
 
-The certified D5 walk records Tab *into* the tree and the End
-collection tab-stop (#65). It does not hold Tab *out*.
+The certified D5 walk records Tab _into_ the tree and the End
+collection tab-stop (#65). It does not hold Tab _out_.
 
 ## Evidence
 
@@ -27,11 +27,11 @@ collection tab-stop (#65). It does not hold Tab *out*.
 `.s2-framework-panel` `visibility:hidden` and `pointer-events:none`.
 Tab from Before lands on Weekly Report on both. Further Tab:
 
-| | React | Solid |
-|---|---|---|
-| 1 | button After (`inPanel=true`) | BODY (`inPanel=false`) |
-| 2 | Information (page chrome) | Weekly Report |
-| 3 | | BODY again |
+|     | React                         | Solid                  |
+| --- | ----------------------------- | ---------------------- |
+| 1   | button After (`inPanel=true`) | BODY (`inPanel=false`) |
+| 2   | Information (page chrome)     | Weekly Report          |
+| 3   |                               | BODY again             |
 
 After is a sibling of the treegrid in the same canvas. Isolation still
 loops, so this is not the other panel intercepting.

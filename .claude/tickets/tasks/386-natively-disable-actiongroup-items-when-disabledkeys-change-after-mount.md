@@ -41,12 +41,12 @@ items native disabled, Tab Before→After.
 
 From a fresh default route, live `{disabledKeys:"italic"}`:
 
-| | React | Solid |
-|---|---|---|
-| Italic `disabled` | true | false |
-| Italic `data-disabled` | omitted | `true` |
-| AX Italic | `button "Italic" [disabled]` | `button "Italic"` |
-| Tab, ArrowRight | Underline | Italic |
+|                        | React                        | Solid             |
+| ---------------------- | ---------------------------- | ----------------- |
+| Italic `disabled`      | true                         | false             |
+| Italic `data-disabled` | omitted                      | `true`            |
+| AX Italic              | `button "Italic" [disabled]` | `button "Italic"` |
+| Tab, ArrowRight        | Underline                    | Italic            |
 
 Live `{disabledKeys:"bold,italic,underline"}`: group
 `aria-disabled=true` on both (the `aria-disabled` getter is live).

@@ -24,11 +24,11 @@ checkbox column and row height until the island remounts.
 `comparison:controls-change` to
 `{selectionMode:"none", isQuiet:true, density:"compact"}`:
 
-| | React | Solid |
-|---|---|---|
-| control-props | none / compact / quiet | same |
-| checkboxes | 0 | 4 |
-| row heights | 32px | 40px |
+|               | React                  | Solid |
+| ------------- | ---------------------- | ----- |
+| control-props | none / compact / quiet | same  |
+| checkboxes    | 0                      | 4     |
+| row heights   | 32px                   | 40px  |
 
 URL remount already matches: `?density=compact` is 32px on both,
 `?selectionMode=none` is 0 checkboxes on both, `?isQuiet=true` rest

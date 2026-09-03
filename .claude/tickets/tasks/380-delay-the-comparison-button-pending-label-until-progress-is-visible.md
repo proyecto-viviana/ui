@@ -36,11 +36,11 @@ ActionButton already does the right thing: raw string for `none`,
 mounted. Isolated remount and live `comparison:controls-change`
 `isPending=true` after both panels are ready:
 
-| t | React | Solid |
-|---|---|---|
-| 0 ms | text Save vis visible, AX `button "Save" [disabled]`, spinner hidden, bg `rgb(41, 41, 41)` | text vis hidden, innerText empty, AX `button [disabled]`, spinner hidden, same bg |
-| 200 ms (URL remount) | still Save, spinner hidden | spinner visible (Solid island started the 1s timer earlier; not a delay-length bug) |
-| 1150 ms live | both spinner 18×18 vis visible, label hidden, AX `button [disabled]` + `progressbar "pending"`, bg `rgb(233, 233, 233)` | same |
+| t                    | React                                                                                                                   | Solid                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 0 ms                 | text Save vis visible, AX `button "Save" [disabled]`, spinner hidden, bg `rgb(41, 41, 41)`                              | text vis hidden, innerText empty, AX `button [disabled]`, spinner hidden, same bg   |
+| 200 ms (URL remount) | still Save, spinner hidden                                                                                              | spinner visible (Solid island started the 1s timer earlier; not a delay-length bug) |
+| 1150 ms live         | both spinner 18×18 vis visible, label hidden, AX `button [disabled]` + `progressbar "pending"`, bg `rgb(233, 233, 233)` | same                                                                                |
 
 `?iconPlacement=only&isPending=true` keeps `aria-label=Save` on both
 at t0 and t1150 (no fixture text span). Press is suppressed on both

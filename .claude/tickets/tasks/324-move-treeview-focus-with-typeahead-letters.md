@@ -24,10 +24,10 @@ typeahead is a no-op.
 at a time. Tab from Before lands on Weekly Report on both (`role=row`,
 `tabIndex=0`, `data-focus-visible`). Then type:
 
-| | React | Solid |
-|---|---|---|
-| `b` | focus Budget | stays Weekly Report |
-| `p` | focus Photos | stays Weekly Report |
+|     | React              | Solid               |
+| --- | ------------------ | ------------------- |
+| `b` | focus Budget       | stays Weekly Report |
+| `p` | focus Photos       | stays Weekly Report |
 | `c` | focus Client Notes | stays Weekly Report |
 
 `selectedKeys` stays `weekly-report` on both (typeahead is focus, not

@@ -29,16 +29,16 @@ The Solid fixture wraps `Provider` in `colorScheme` from
 `http://127.0.0.1:4341/components/actionbar/`, islands mounted,
 `data-theme=system` / `data-resolved-theme=light`.
 
-| | React | Solid |
-|---|---|---|
-| default (system/light) bar bg | `rgb(34, 34, 34)` | `rgb(255, 255, 255)` |
-| default count color | `rgb(219, 219, 219)` | `rgb(41, 41, 41)` |
-| `comparison:theme-request` dark | `rgb(34, 34, 34)` / `rgb(219, 219, 219)` | same |
+|                                  | React                                          | Solid                                    |
+| -------------------------------- | ---------------------------------------------- | ---------------------------------------- |
+| default (system/light) bar bg    | `rgb(34, 34, 34)`                              | `rgb(255, 255, 255)`                     |
+| default count color              | `rgb(219, 219, 219)`                           | `rgb(41, 41, 41)`                        |
+| `comparison:theme-request` dark  | `rgb(34, 34, 34)` / `rgb(219, 219, 219)`       | same                                     |
 | `comparison:theme-request` light | still `rgb(34, 34, 34)` / `rgb(219, 219, 219)` | `rgb(255, 255, 255)` / `rgb(41, 41, 41)` |
 
 AX, 432×56 geometry, and keyboard match. Focus-ring blue
 `rgb(64, 105, 253)` vs `rgb(75, 117, 255)` is the same theme split.
-Emphasized `isEmphasized` is the correct treatment *for each scheme*
+Emphasized `isEmphasized` is the correct treatment _for each scheme_
 (React light-gray on dark, Solid dark-gray on light).
 
 ## Done when

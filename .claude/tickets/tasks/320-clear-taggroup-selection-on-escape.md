@@ -22,10 +22,10 @@ tag. Solid `createTag` has no Escape handler, so selectedKeys stay.
 at a time. Tab onto Landscape, ArrowRight to Portrait, Space (both
 `landscape,portrait`), then Escape:
 
-| | React | Solid |
-|---|---|---|
-| selectedKeys | empty | `landscape` |
-| focus | Portrait `role=row` | Portrait `role=row` |
+|              | React               | Solid               |
+| ------------ | ------------------- | ------------------- |
+| selectedKeys | empty               | `landscape`         |
+| focus        | Portrait `role=row` | Portrait `role=row` |
 
 First-pass default walk (Space on Night then Enter then Escape) is the
 same class: React empty, Solid still `landscape`. Ctrl+A then Escape

@@ -31,17 +31,17 @@ islands mounted, one panel at a time. `selectedKeys` stay
 
 Rest AX:
 
-| | React | Solid |
-|---|---|---|
-| first row | `[disabled]`, no selected | `[disabled] [selected]` |
-| checkbox on first row | present, checked | present, checked |
+|                       | React                     | Solid                   |
+| --------------------- | ------------------------- | ----------------------- |
+| first row             | `[disabled]`, no selected | `[disabled] [selected]` |
+| checkbox on first row | present, checked          | present, checked        |
 
 Tab from Before, then ArrowDown:
 
-| | React | Solid |
-|---|---|---|
-| Tab | focus grid "Documents" | focus row Quarterly |
-| ArrowDown | focus Quarterly | focus Budget |
+|           | React                  | Solid               |
+| --------- | ---------------------- | ------------------- |
+| Tab       | focus grid "Documents" | focus row Quarterly |
+| ArrowDown | focus Quarterly        | focus Budget        |
 
 `?disabledItem=quarterly-report` and `?disabledKeys=quarterly-report`
 skip the disabled row on click/arrow on both (not #290). This ticket is

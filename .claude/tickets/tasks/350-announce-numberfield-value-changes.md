@@ -27,9 +27,9 @@ and stays empty for Solid-only gestures.
 `http://127.0.0.1:4341/components/numberfield/`, islands mounted,
 one panel at a time, input focused at 5.
 
-| | React | Solid |
-|---|---|---|
-| wheel +120 | value 6, live `"6"` | value 5, no new live |
+|                     | React                 | Solid                |
+| ------------------- | --------------------- | -------------------- |
+| wheel +120          | value 6, live `"6"`   | value 5, no new live |
 | hold Increase 800ms | value 13, live `"13"` | value 6, no new live |
 
 ## Done when

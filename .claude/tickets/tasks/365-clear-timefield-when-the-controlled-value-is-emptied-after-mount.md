@@ -32,11 +32,11 @@ URL remount of `?value=` already matches placeholders. Live
 
 Live `{value:"14:00:00"}` then `{value:""}`:
 
-| | React | Solid |
-|---|---|---|
-| after 14:00 | `2:00 PM`, cmp `14:00:00` | same |
+|             | React                                          | Solid                                     |
+| ----------- | ---------------------------------------------- | ----------------------------------------- |
+| after 14:00 | `2:00 PM`, cmp `14:00:00`                      | same                                      |
 | after empty | hour `9` / minute `30` / AM, hidden `09:30:00` | hour `––` / minute `––` / AM, hidden `""` |
-| cmp | `""` | `""` |
+| cmp         | `""`                                           | `""`                                      |
 
 URL `?value=`: both `–– –– AM`, hidden `""`, AX equal.
 

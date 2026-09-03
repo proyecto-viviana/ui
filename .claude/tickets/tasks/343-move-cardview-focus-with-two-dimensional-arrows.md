@@ -32,10 +32,10 @@ two-up on both, so ArrowRight is a clean 2D miss.
 mounted, one panel at a time. Both pack Apollo | Zephyr on one
 row. Tab onto Apollo, then:
 
-| | React | Solid |
-|---|---|---|
-| ArrowRight | focus+select Zephyr | stays Apollo, selectedKeys `apollo` |
-| ArrowDown (after that Right) | stays Zephyr | focuses Zephyr, selectedKeys stay `apollo` |
+|                              | React               | Solid                                      |
+| ---------------------------- | ------------------- | ------------------------------------------ |
+| ArrowRight                   | focus+select Zephyr | stays Apollo, selectedKeys `apollo`        |
+| ArrowDown (after that Right) | stays Zephyr        | focuses Zephyr, selectedKeys stay `apollo` |
 
 Default `size=S` (React two-up, Solid stacked): React ArrowRight
 moves to Zephyr; Solid ArrowRight is a no-op and ArrowDown focuses

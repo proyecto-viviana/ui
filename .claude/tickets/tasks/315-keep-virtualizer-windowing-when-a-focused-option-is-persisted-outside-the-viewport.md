@@ -29,12 +29,12 @@ panel at a time. Viewport 240px, row 40px, 60 items.
 
 Tab from Before (focus Item 0), then set the listbox `scrollTop` to 2160:
 
-| | React | Solid |
-|---|---|---|
-| visible | Item 54–59 | Item 2–7 |
-| scrollHeight | 2400 | 4480 |
-| rendered | 8 (Item 0 persisted) | 60 |
-| focus | Item 0 | Item 0 |
+|              | React                | Solid    |
+| ------------ | -------------------- | -------- |
+| visible      | Item 54–59           | Item 2–7 |
+| scrollHeight | 2400                 | 4480     |
+| rendered     | 8 (Item 0 persisted) | 60       |
+| focus        | Item 0               | Item 0   |
 
 Click Item 2, then `scrollTop=1600`: React visible Item 40–45 at 2400px;
 Solid visible Item 4–9 at 3840px. Scrolling back to 0 restores Item 0–5

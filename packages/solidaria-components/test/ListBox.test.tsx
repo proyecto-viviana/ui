@@ -573,12 +573,16 @@ describe("ListBox", () => {
         // Testing Library skips aria-hidden options (`dropProps` during virtual
         // drag); the node is still `id="read"`.
         expect(document.getElementById("read")).toBe(read);
-        // DragManager announces the labeled indicator only after
-        // `setCurrentDropTarget(..., item)` (`DragManager.ts:579-586`) — the
-        // path RAC takes so keyboard focus lands on the insert-between option.
-        // jsdom still leaves document.activeElement on the source option
-        // (focusin preventDefault); the certified browser walk checks the
-        // active element.
+        // RAC Collection renders before + last-after, not before+on+after per item.
+        const indicatorNames = [
+          ...document.querySelectorAll('[role="option"][aria-label^="Insert "]'),
+        ].map((node) => node.getAttribute("aria-label"));
+        expect(indicatorNames).toEqual([
+          "Insert before Read",
+          "Insert between Read and Write",
+          "Insert between Write and Admin",
+          "Insert after Admin",
+        ]);
         await waitFor(() => {
           expect(document.querySelector("[aria-live='polite']")?.textContent).toContain(
             "Insert between Read and Write",

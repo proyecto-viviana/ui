@@ -46,13 +46,13 @@ aside from #417. Live `pageBehavior` is read inside
 islands mounted. `comparison:controls-change` with
 `{visibleMonths:"2"}`.
 
-| | React | Solid |
-|---|---|---|
-| app name | **Event date, February to March 2025** | **Event date, February 2025** |
-| width | 472 | 472 |
-| grids | 2 | 2 |
-| March grid disabled cells | 11 | **36** |
-| March 1 in March grid | enabled | **aria-disabled** |
+|                           | React                                  | Solid                         |
+| ------------------------- | -------------------------------------- | ----------------------------- |
+| app name                  | **Event date, February to March 2025** | **Event date, February 2025** |
+| width                     | 472                                    | 472                           |
+| grids                     | 2                                      | 2                             |
+| March grid disabled cells | 11                                     | **36**                        |
+| March 1 in March grid     | enabled                                | **aria-disabled**             |
 
 `?visibleMonths=2&focusedValue=2025-02-15` rest: both named
 February to March 2025, March in-range days enabled (outside-month
@@ -72,6 +72,6 @@ Child of #24. Found by #260. Wiring is
 `packages/solid-stately/src/calendar/createCalendarState.ts`
 (`const visibleMonths = props.visibleMonths ?? 1`) and
 `createRangeCalendarState.ts` (`access(props.visibleMonths)` once).
-Distinct from #417 (outside-month disable when the range *is* two
+Distinct from #417 (outside-month disable when the range _is_ two
 months) and from #395 / #414 / #426 (uncontrolled remount). Do not
 start #254.

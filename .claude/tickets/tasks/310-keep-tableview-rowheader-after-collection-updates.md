@@ -25,11 +25,11 @@ collection rebuild drops `isRowHeader` and remounts those cells as
 panel at a time. Default AX is identical (Name is rowheader on every
 row). Click Budget (`[data-key="budget"]`):
 
-| | React | Solid |
-|---|---|---|
-| Project brief Name | `role=rowheader` | `role=rowheader` (`project-brief-name`) |
-| Quarterly / Budget Name | `role=rowheader` | `role=gridcell` (`quarterly-report-cell`, `budget-cell`) |
-| AX row name (Quarterly) | `Quarterly report.docx` | `Select Quarterly report.docx Document Noah Review` |
+|                         | React                   | Solid                                                    |
+| ----------------------- | ----------------------- | -------------------------------------------------------- |
+| Project brief Name      | `role=rowheader`        | `role=rowheader` (`project-brief-name`)                  |
+| Quarterly / Budget Name | `role=rowheader`        | `role=gridcell` (`quarterly-report-cell`, `budget-cell`) |
+| AX row name (Quarterly) | `Quarterly report.docx` | `Select Quarterly report.docx Document Noah Review`      |
 
 Same loss after Select All, `selectionMode=none` onAction Enter, RTL
 Tab, and ActionBar clear. Already-selected Project brief often keeps

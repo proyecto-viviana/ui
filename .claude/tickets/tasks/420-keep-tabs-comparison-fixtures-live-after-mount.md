@@ -42,15 +42,15 @@ and `disabledKey` already remount both stacks.
 `.s2-framework-panel` `visibility:hidden` + `inert`. Fresh default
 route, then one `comparison:controls-change` merged with defaults.
 
-| live | React | Solid |
-|---|---|---|
-| `{orientation:"vertical"}` | tablist column 54×144 | props vertical, tablist **row 327×48** |
-| `{density:"compact"}` | tabs 54/32/40×32, gap 24 | props compact, **×48**, gap **32** |
-| `{isDisabled:true}` | all `aria-disabled`, color `rgb(198, 198, 198)`, tabIndex -1 | props disabled, Overview **enabled** 41/80, tabIndex **0** |
-| `{keyboardActivation:"manual"}` then Tab, ArrowRight | focus Parity, selected still overview | ArrowRight **selects** Parity (still automatic) |
-| `{ariaLabel:"Milestone tabs"}` | tablist `"Milestone tabs"` | tablist **`"Project tabs"`** |
-| `{labelBehavior:"hide"}` | tabs **12×48**, **0 svgs** (text hidden, no icon) | 32×48, 1 svg (Solid remounts) |
-| `{withIcons:true}` | tabs **54/32/40**, **0 svgs** | 80/58/66, 1 svg (Solid remounts) |
+| live                                                 | React                                                        | Solid                                                      |
+| ---------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
+| `{orientation:"vertical"}`                           | tablist column 54×144                                        | props vertical, tablist **row 327×48**                     |
+| `{density:"compact"}`                                | tabs 54/32/40×32, gap 24                                     | props compact, **×48**, gap **32**                         |
+| `{isDisabled:true}`                                  | all `aria-disabled`, color `rgb(198, 198, 198)`, tabIndex -1 | props disabled, Overview **enabled** 41/80, tabIndex **0** |
+| `{keyboardActivation:"manual"}` then Tab, ArrowRight | focus Parity, selected still overview                        | ArrowRight **selects** Parity (still automatic)            |
+| `{ariaLabel:"Milestone tabs"}`                       | tablist `"Milestone tabs"`                                   | tablist **`"Project tabs"`**                               |
+| `{labelBehavior:"hide"}`                             | tabs **12×48**, **0 svgs** (text hidden, no icon)            | 32×48, 1 svg (Solid remounts)                              |
+| `{withIcons:true}`                                   | tabs **54/32/40**, **0 svgs**                                | 80/58/66, 1 svg (Solid remounts)                           |
 
 `?orientation=vertical` both 54×144 column. `?density=compact` both
 ×32 gap 24. `?isDisabled=true` both gray-400 skip. `?keyboardActivation=manual`

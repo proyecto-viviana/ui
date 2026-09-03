@@ -984,7 +984,11 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection;
+      },
+    });
   });
   createEffect(() => {
     const activeDropState = dropState();
@@ -1319,7 +1323,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   });
   const renderTreeRow = (node: TreeNode<T>, itemIndex: number) => {
     const beforeIndicator = () => collectionRenderer().renderDropIndicator?.(itemIndex, "before");
-    const onIndicator = () => collectionRenderer().renderDropIndicator?.(itemIndex, "on");
     const afterIndicatorIndexes = () => getAfterIndicatorIndexes(itemIndex, renderRange());
     const itemData = treeItemDataFromNode(node);
     const itemState: TreeRenderItemState = {
@@ -1330,7 +1333,6 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     return (
       <>
         {beforeIndicator()}
-        {onIndicator()}
         {props.children(itemData, itemState)}
         <For each={afterIndicatorIndexes()}>
           {(afterIndex) => collectionRenderer().renderDropIndicator?.(afterIndex, "after")}

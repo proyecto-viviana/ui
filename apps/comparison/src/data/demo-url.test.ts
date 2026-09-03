@@ -5,9 +5,7 @@ const fallback = "https://example.com/safe";
 
 describe("sanitizeDemoHref", () => {
   it("keeps http(s), same-origin paths, and hashes", () => {
-    expect(sanitizeDemoHref("https://example.com/docs", fallback)).toBe(
-      "https://example.com/docs",
-    );
+    expect(sanitizeDemoHref("https://example.com/docs", fallback)).toBe("https://example.com/docs");
     expect(sanitizeDemoHref("/coverage/", fallback)).toBe("/coverage/");
     expect(sanitizeDemoHref("#api", fallback)).toBe("#api");
   });

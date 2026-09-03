@@ -39,14 +39,14 @@ islands mounted. Same color split on live `isDisabled` and on
 `?itemSet=overflow&isDisabled=true` for Home (and Solid's visible
 Reports).
 
-| | React | Solid |
-|---|---|---|
-| Home `[role=link]` color | `rgb(198, 198, 198)` | `rgb(80, 80, 80)` |
-| AX | `link "Home" [disabled]` | same |
-| `aria-disabled` / `data-disabled` | `true` | `true` |
-| tabIndex | -1 | -1 |
-| Tab from Before | After | After |
-| force-click Home | path unchanged, count 0 | same |
+|                                   | React                    | Solid             |
+| --------------------------------- | ------------------------ | ----------------- |
+| Home `[role=link]` color          | `rgb(198, 198, 198)`     | `rgb(80, 80, 80)` |
+| AX                                | `link "Home" [disabled]` | same              |
+| `aria-disabled` / `data-disabled` | `true`                   | `true`            |
+| tabIndex                          | -1                       | -1                |
+| Tab from Before                   | After                    | After             |
+| force-click Home                  | path unchanged, count 0  | same              |
 
 Enabled rest still matches: Home `rgb(80, 80, 80)` weight 400;
 hover `data-hovered=true` and `rgb(41, 41, 41)` both.

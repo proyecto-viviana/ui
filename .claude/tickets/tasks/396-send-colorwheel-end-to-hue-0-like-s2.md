@@ -34,12 +34,12 @@ Other `.s2-framework-panel` `visibility:hidden` + `inert`. Focus the
 hue input, `PageUp` to 15, then `End` (Solid via `locator.press` so
 the remounted input is focused; see #393).
 
-| | React | Solid |
-|---|---|---|
-| PageUp | 15, `onChangeEnd` 15 | 15, `onChangeEnd` 15 |
-| End | **0**, `onChangeEnd` still 15 | **359**, `onChangeEnd` 359 |
-| Home | 0 | 0 |
-| End again | 0 | 359 |
+|           | React                         | Solid                      |
+| --------- | ----------------------------- | -------------------------- |
+| PageUp    | 15, `onChangeEnd` 15          | 15, `onChangeEnd` 15       |
+| End       | **0**, `onChangeEnd` still 15 | **359**, `onChangeEnd` 359 |
+| Home      | 0                             | 0                          |
+| End again | 0                             | 359                        |
 
 AX / `aria-valuetext` after End: React `0°, red`; Solid `359°, red`.
 

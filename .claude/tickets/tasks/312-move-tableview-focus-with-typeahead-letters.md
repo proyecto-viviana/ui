@@ -24,10 +24,10 @@ row element, so the letter is a no-op on the comparison route.
 panel at a time. Tab from Before lands on Project brief on both. Then
 type:
 
-| | React | Solid |
-|---|---|---|
+|     | React                          | Solid               |
+| --- | ------------------------------ | ------------------- |
 | `q` | focus Quarterly (`tabIndex=0`) | stays Project brief |
-| `b` | focus Budget (`tabIndex=0`) | stays Project brief |
+| `b` | focus Budget (`tabIndex=0`)    | stays Project brief |
 
 `selectedKeys` stays `project-brief` on both (typeahead is focus, not
 selection). Distinct from #295 (GridList/ListView `createGridList`

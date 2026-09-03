@@ -36,10 +36,10 @@ and hides the bar on both.
 Live from the default route, click `showActionBar` or dispatch
 `comparison:controls-change` with `{ showActionBar: true }`:
 
-| | React | Solid |
-|---|---|---|
-| ActionBar marker | Archive1 selected 344×56 | null |
-| toolbar Actions | Archive, Clear selection | none |
+|                  | React                    | Solid |
+| ---------------- | ------------------------ | ----- |
+| ActionBar marker | Archive1 selected 344×56 | null  |
+| toolbar Actions  | Archive, Clear selection | none  |
 
 Live `selectionMode` still matches. Playwright
 `locator.click` on Solid Clear is intercepted by

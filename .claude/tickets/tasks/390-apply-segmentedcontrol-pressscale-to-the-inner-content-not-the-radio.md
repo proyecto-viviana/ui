@@ -57,13 +57,13 @@ pointerup + 400 ms.
 
 Hold 80 ms (List still checked; Grid `data-pressed=true`):
 
-| | React | Solid |
-|---|---|---|
-| Grid radio | 48×32, transform `none` | 45.18×30.12, `matrix3d(..., -2, 1.0625)` |
-| inner content | DIV 23.51×17.63, `matrix3d` (in-flight) | SPAN 22.59×16.94, transform `none` |
-| `data-focused` | `true` | omitted |
-| `document.activeElement` | Grid radio | `BODY` |
-| indicator | 43×32 on List, fill white | same |
+|                          | React                                   | Solid                                    |
+| ------------------------ | --------------------------------------- | ---------------------------------------- |
+| Grid radio               | 48×32, transform `none`                 | 45.18×30.12, `matrix3d(..., -2, 1.0625)` |
+| inner content            | DIV 23.51×17.63, `matrix3d` (in-flight) | SPAN 22.59×16.94, transform `none`       |
+| `data-focused`           | `true`                                  | omitted                                  |
+| `document.activeElement` | Grid radio                              | `BODY`                                   |
+| indicator                | 43×32 on List, fill white               | same                                     |
 
 Hold 300 ms: React inner 22.15×16.62
 `matrix3d(..., -2, 1.08333)` (settled `pressScale` on 24×18);
@@ -75,7 +75,7 @@ Pointerup + 400 ms: both Grid 48×32 transform none, focus Grid,
 
 Button-family 80 ms fifth-decimal matrix noise is **not** this
 ticket — those components transform the same host as S2. Here the
-transformed *element* is wrong.
+transformed _element_ is wrong.
 
 ## Done when
 

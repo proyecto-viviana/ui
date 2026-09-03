@@ -21,10 +21,10 @@ Solid `createTag` / `createTagGroup` have no `selectAll` key binding.
 `http://127.0.0.1:4341/components/taggroup/`, islands mounted, one panel
 at a time. Tab onto Landscape, then Control+A:
 
-| | React | Solid |
-|---|---|---|
-| selectedKeys | `landscape,portrait,travel,night` | `landscape` |
-| focus | stays Landscape | stays Landscape |
+|              | React                             | Solid           |
+| ------------ | --------------------------------- | --------------- |
+| selectedKeys | `landscape,portrait,travel,night` | `landscape`     |
+| focus        | stays Landscape                   | stays Landscape |
 
 Same after Space on Portrait then Ctrl+A (isolated enter-space walk):
 React all four, Solid still `landscape`. GridList Ctrl+A already

@@ -37,13 +37,13 @@ icon-only tabs accessible").
 `http://127.0.0.1:4341/components/tabs/?orientation=vertical&density=compact&labelBehavior=hide&withIcons=true&composition=static&shouldForceMount=true&disabledKey=testing&selectedKey=parity`,
 islands mounted.
 
-| | React | Solid |
-|---|---|---|
-| AX | `tab "Overview"` / `"Parity" [selected]` / `"Testing" [disabled]` | `tab` / `tab [selected]` / `tab [disabled]` |
-| `getByRole({name:"Overview"\|"Parity"\|"Testing"})` | count 1 | **count 0** |
-| labelledby | `react-aria…-content-overview` (trailing space) | `cl-213` / `cl-214` / `cl-215` |
-| labelledby target | SPAN text Overview/Parity/Testing, `display:none` | **`missing: true`** |
-| geometry | 32×32 icons, vertical compact | same |
+|                                                     | React                                                             | Solid                                       |
+| --------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------- |
+| AX                                                  | `tab "Overview"` / `"Parity" [selected]` / `"Testing" [disabled]` | `tab` / `tab [selected]` / `tab [disabled]` |
+| `getByRole({name:"Overview"\|"Parity"\|"Testing"})` | count 1                                                           | **count 0**                                 |
+| labelledby                                          | `react-aria…-content-overview` (trailing space)                   | `cl-213` / `cl-214` / `cl-215`              |
+| labelledby target                                   | SPAN text Overview/Parity/Testing, `display:none`                 | **`missing: true`**                         |
+| geometry                                            | 32×32 icons, vertical compact                                     | same                                        |
 
 `?labelBehavior=hide&withIcons=true` (dynamic, default composition):
 both AX `tab "Overview" [selected]` / `"Parity"` / `"Testing"`,

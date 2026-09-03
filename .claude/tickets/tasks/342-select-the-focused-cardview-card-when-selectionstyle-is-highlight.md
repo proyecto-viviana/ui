@@ -31,10 +31,10 @@ GridList does not go through that helper).
 panel at a time. Injected Before, Tab onto Apollo (selected,
 `data-focus-visible`). Then End:
 
-| | React | Solid |
-|---|---|---|
-| focus | row Zephyr | row Zephyr |
-| selectedKeys | `zephyr` | `apollo` |
+|              | React      | Solid      |
+| ------------ | ---------- | ---------- |
+| focus        | row Zephyr | row Zephyr |
+| selectedKeys | `zephyr`   | `apollo`   |
 
 Same split after ArrowDown from Apollo (Solid 1-col default or XS
 two-up). Home / Space / Enter / Escape after Home still match

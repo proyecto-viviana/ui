@@ -15,10 +15,7 @@ function isSafeRelativePath(value: string): boolean {
  * Query-string demo href/src values land on a public origin. Keep http(s),
  * same-origin paths, and in-page hashes; drop javascript:/data:/protocol-relative.
  */
-export function sanitizeDemoHref(
-  value: string | null | undefined,
-  fallback: string,
-): string {
+export function sanitizeDemoHref(value: string | null | undefined, fallback: string): string {
   if (value == null) {
     return fallback;
   }
@@ -39,9 +36,6 @@ export function sanitizeDemoHref(
   return fallback;
 }
 
-export function sanitizeDemoSrc(
-  value: string | null | undefined,
-  fallback: string,
-): string {
+export function sanitizeDemoSrc(value: string | null | undefined, fallback: string): string {
   return sanitizeDemoHref(value, fallback);
 }

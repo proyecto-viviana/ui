@@ -23,10 +23,10 @@ Ctrl+A from the focused row does not change `selectedKeys`.
 panel at a time. Tab from Before lands on Project brief on both
 (`role=row`, `tabIndex=0`, `aria-selected=true`). Then Control+A:
 
-| | React | Solid |
-|---|---|---|
-| selectedKeys | `project-brief,quarterly-report,budget` | `project-brief` |
-| focus | stays Project brief row | stays Project brief row |
+|              | React                                   | Solid                   |
+| ------------ | --------------------------------------- | ----------------------- |
+| selectedKeys | `project-brief,quarterly-report,budget` | `project-brief`         |
+| focus        | stays Project brief row                 | stays Project brief row |
 
 Not a cell-focus artifact: both panels still have DOM focus on the
 row. Pointer Select All mixed→all→none still matches (#20). GridList

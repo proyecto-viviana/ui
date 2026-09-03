@@ -35,14 +35,14 @@ Other `.s2-framework-panel` `visibility:hidden` + `inert`. Live
 
 Live `{isDisabled:true}`:
 
-| | React | Solid |
-|---|---|---|
-| `input.disabled` | true | true |
-| group `aria-disabled` / `data-disabled` | true | true |
-| each label `data-disabled` | true | omitted |
-| circle border | `rgb(198, 198, 198)` | `rgb(41, 41, 41)` |
-| Tab from Before | After (skip) | After (skip) |
-| force-click | stays starter | stays starter |
+|                                         | React                | Solid             |
+| --------------------------------------- | -------------------- | ----------------- |
+| `input.disabled`                        | true                 | true              |
+| group `aria-disabled` / `data-disabled` | true                 | true              |
+| each label `data-disabled`              | true                 | omitted           |
+| circle border                           | `rgb(198, 198, 198)` | `rgb(41, 41, 41)` |
+| Tab from Before                         | After (skip)         | After (skip)      |
+| force-click                             | stays starter        | stays starter     |
 
 `?isDisabled=true` remount: both gray-400, label
 `data-disabled=true`. Live `isReadOnly` already matches.

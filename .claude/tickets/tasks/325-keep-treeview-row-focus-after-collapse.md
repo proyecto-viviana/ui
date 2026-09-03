@@ -24,14 +24,14 @@ a no-op.
 at a time. Home lands on Documents (`role=row`, `tabIndex=0`) on both.
 ArrowLeft:
 
-| | React | Solid |
-|---|---|---|
-| row set | documents, photos, archive | same |
-| `aria-expanded` | false | false |
-| `data-focused` | documents | documents |
-| `activeElement` | Documents row | BODY |
-| ArrowRight after | re-expands Documents | no-op, still collapsed |
-| `*` after | stays on Documents | no-op |
+|                  | React                      | Solid                  |
+| ---------------- | -------------------------- | ---------------------- |
+| row set          | documents, photos, archive | same                   |
+| `aria-expanded`  | false                      | false                  |
+| `data-focused`   | documents                  | documents              |
+| `activeElement`  | Documents row              | BODY                   |
+| ArrowRight after | re-expands Documents       | no-op, still collapsed |
+| `*` after        | stays on Documents         | no-op                  |
 
 Pointer click Expand Photos: React focus stays Photos (`exp` includes
 photos, tree 320px). Solid expands Photos (`image-1` mounts) and focus

@@ -25,27 +25,27 @@ of an action.
 
 Default multiple, click Portrait (selection already `landscape`):
 
-| | React | Solid |
-|---|---|---|
+|              | React                | Solid                |
+| ------------ | -------------------- | -------------------- |
 | selectedKeys | `landscape,portrait` | `landscape,portrait` |
-| actionCount | 0 | 1 |
+| actionCount  | 0                    | 1                    |
 
 Single `?selectionMode=single` click Portrait: same action split
 (React 0, Solid 1); selection matches (`portrait`).
 
 Keyboard, Tab → ArrowRight → Space → Enter (isolated):
 
-| | React | Solid |
-|---|---|---|
-| after Space | `landscape,portrait`, act 0 | `landscape,portrait`, act 0 |
+|             | React                             | Solid                                     |
+| ----------- | --------------------------------- | ----------------------------------------- |
+| after Space | `landscape,portrait`, act 0       | `landscape,portrait`, act 0               |
 | after Enter | stays `landscape,portrait`, act 0 | toggles Portrait off (`landscape`), act 0 |
 
 `?selectionMode=none`, Tab → ArrowRight → Space → Enter:
 
-| | React | Solid |
-|---|---|---|
+|       | React            | Solid            |
+| ----- | ---------------- | ---------------- |
 | Space | no select, act 0 | no select, act 0 |
-| Enter | act 1 | act 0 |
+| Enter | act 1            | act 0            |
 
 `selectionMode=none` pointer click Portrait fires `onAction` on both
 (not this bug).

@@ -28,11 +28,11 @@ upstream behavior.
 at a time. Home lands on Documents on both (`expandedKeys=
 documents,project`). Then `*`:
 
-| | React | Solid |
-|---|---|---|
-| `expandedKeys` | `documents,project` | `documents,project,photos,archive` |
-| row keys | 7 (documents…archive) | 9 (adds `image-1`, `invoice`) |
-| focus | Documents row | BODY (also #317 once rows remount) |
+|                | React                 | Solid                              |
+| -------------- | --------------------- | ---------------------------------- |
+| `expandedKeys` | `documents,project`   | `documents,project,photos,archive` |
+| row keys       | 7 (documents…archive) | 9 (adds `image-1`, `invoice`)      |
+| focus          | Documents row         | BODY (also #317 once rows remount) |
 
 ## Done when
 

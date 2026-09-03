@@ -362,12 +362,15 @@ function ListBoxDropIndicatorSlot(props: {
 function ListBoxItemWithDropIndicators<T>(props: {
   item: T;
   itemIndex: number | Accessor<number>;
+  isLastInLevel: boolean | Accessor<boolean>;
   renderItem: (item: T) => JSX.Element;
   renderDropIndicator?: (
     index: number,
     position: "before" | "after" | "on",
   ) => JSX.Element | undefined;
 }): JSX.Element {
+  const isLast = () =>
+    typeof props.isLastInLevel === "function" ? props.isLastInLevel() : props.isLastInLevel;
   return (
     <>
       <ListBoxDropIndicatorSlot
@@ -375,17 +378,14 @@ function ListBoxItemWithDropIndicators<T>(props: {
         position="before"
         renderDropIndicator={props.renderDropIndicator}
       />
-      <ListBoxDropIndicatorSlot
-        itemIndex={props.itemIndex}
-        position="on"
-        renderDropIndicator={props.renderDropIndicator}
-      />
       <ListBoxRenderedItem item={props.item} renderItem={props.renderItem} />
-      <ListBoxDropIndicatorSlot
-        itemIndex={props.itemIndex}
-        position="after"
-        renderDropIndicator={props.renderDropIndicator}
-      />
+      <Show when={isLast()}>
+        <ListBoxDropIndicatorSlot
+          itemIndex={props.itemIndex}
+          position="after"
+          renderDropIndicator={props.renderDropIndicator}
+        />
+      </Show>
     </>
   );
 }
@@ -663,6 +663,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const getItemNodes = createMemo(() =>
     Array.from(state.collection()).filter((node) => node.type === "item"),
   );
+  const isLastDropItem = (itemIndex: number | Accessor<number>) => {
+    const i = typeof itemIndex === "function" ? itemIndex() : itemIndex;
+    return getItemNodes().length > 0 && i === getItemNodes().length - 1;
+  };
   const getDropTargetByIndex = (
     index: number,
     position: "before" | "after" | "on",
@@ -683,7 +687,11 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection();
+      },
+    });
   });
   const hasDraggableDnd = createMemo(() => {
     const hooks = local.dragAndDropHooks;
@@ -938,6 +946,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                             <ListBoxItemWithDropIndicators
                                               item={indexedItem.item}
                                               itemIndex={indexedItem.index}
+                                              isLastInLevel={() =>
+                                                isLastDropItem(indexedItem.index)
+                                              }
                                               renderItem={local.children}
                                               renderDropIndicator={renderItemDropIndicator}
                                             />
@@ -951,6 +962,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                 <ListBoxItemWithDropIndicators
                                   item={entry.item.item}
                                   itemIndex={entry.item.index}
+                                  isLastInLevel={() => isLastDropItem(entry.item.index)}
                                   renderItem={local.children}
                                   renderDropIndicator={renderItemDropIndicator}
                                 />
@@ -963,6 +975,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                               <ListBoxItemWithDropIndicators
                                 item={item as T}
                                 itemIndex={() => (virtualRange()?.start ?? 0) + index()}
+                                isLastInLevel={() =>
+                                  isLastDropItem((virtualRange()?.start ?? 0) + index())
+                                }
                                 renderItem={local.children}
                                 renderDropIndicator={renderItemDropIndicator}
                               />
@@ -998,6 +1013,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                       <ListBoxItemWithDropIndicators
                                         item={indexedItem.item}
                                         itemIndex={indexedItem.index}
+                                        isLastInLevel={() => isLastDropItem(indexedItem.index)}
                                         renderItem={local.children}
                                         renderDropIndicator={renderItemDropIndicator}
                                       />
@@ -1011,6 +1027,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           <ListBoxItemWithDropIndicators
                             item={entry.item.item}
                             itemIndex={entry.item.index}
+                            isLastInLevel={() => isLastDropItem(entry.item.index)}
                             renderItem={local.children}
                             renderDropIndicator={renderItemDropIndicator}
                           />
@@ -1024,6 +1041,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                           <ListBoxItemWithDropIndicators
                             item={item as T}
                             itemIndex={() => (virtualRange()?.start ?? 0) + index()}
+                            isLastInLevel={() =>
+                              isLastDropItem((virtualRange()?.start ?? 0) + index())
+                            }
                             renderItem={local.children}
                             renderDropIndicator={renderItemDropIndicator}
                           />

@@ -42,14 +42,14 @@ fails certification.
 islands mounted. Fill is the track child (`> div:has(> div) > div`).
 Live `isIndeterminate` and URL remount match each other.
 
-| | React | Solid |
-|---|---|---|
-| AX | `progressbar "Loading…"` (no valuetext / value span) | same |
-| duration / iteration | `1s` / `infinite` | same |
-| fill origin | `0px 3px` (left) | same |
-| `animation-timing-function` | **`cubic-bezier(0.45, 0, 0.4, 1)`** | **`cubic-bezier(0.37, 0, 0.63, 1)`** |
-| `will-change` | `transform` | `auto` |
-| `position` | `relative` | `static` |
+|                             | React                                                | Solid                                |
+| --------------------------- | ---------------------------------------------------- | ------------------------------------ |
+| AX                          | `progressbar "Loading…"` (no valuetext / value span) | same                                 |
+| duration / iteration        | `1s` / `infinite`                                    | same                                 |
+| fill origin                 | `0px 3px` (left)                                     | same                                 |
+| `animation-timing-function` | **`cubic-bezier(0.45, 0, 0.4, 1)`**                  | **`cubic-bezier(0.37, 0, 0.63, 1)`** |
+| `will-change`               | `transform`                                          | `auto`                               |
+| `position`                  | `relative`                                           | `static`                             |
 
 Repeats on `?isIndeterminate=true&size=XL`,
 `?isIndeterminate=true&labelPosition=side`, and live

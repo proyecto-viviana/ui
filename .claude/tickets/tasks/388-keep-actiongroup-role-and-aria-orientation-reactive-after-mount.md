@@ -18,7 +18,7 @@ every render from `selectionManager.selectionMode` and `orientation`
 (`none`/`multiple` → `toolbar` with `aria-orientation`; `single` →
 `radiogroup` with orientation omitted). URL remount of those props
 already matches. A live `comparison:controls-change` updates Solid
-*item* `role` / `aria-checked` through the button getters and leaves
+_item_ `role` / `aria-checked` through the button getters and leaves
 the group host on the first-paint attributes.
 
 `packages/solidaria/src/actiongroup/createActionGroup.ts`
@@ -37,19 +37,19 @@ remount: both `role=radiogroup`, no `aria-orientation`, Italic
 
 From a fresh default route, live `{selectionMode:"single"}`:
 
-| | React | Solid |
-|---|---|---|
-| group `role` | `radiogroup` | `toolbar` |
-| `aria-orientation` | omitted | `horizontal` |
-| item `role` | `radio` | `radio` |
-| AX | `radiogroup "Text style"` + radios | `toolbar "Text style"` + radios |
+|                    | React                              | Solid                           |
+| ------------------ | ---------------------------------- | ------------------------------- |
+| group `role`       | `radiogroup`                       | `toolbar`                       |
+| `aria-orientation` | omitted                            | `horizontal`                    |
+| item `role`        | `radio`                            | `radio`                         |
+| AX                 | `radiogroup "Text style"` + radios | `toolbar "Text style"` + radios |
 
 Live `{selectionMode:"none", orientation:"vertical"}`:
 
-| | React | Solid |
-|---|---|---|
-| group `role` | `toolbar` | `toolbar` |
-| `aria-orientation` | `vertical` | `horizontal` |
+|                                       | React         | Solid               |
+| ------------------------------------- | ------------- | ------------------- |
+| group `role`                          | `toolbar`     | `toolbar`           |
+| `aria-orientation`                    | `vertical`    | `horizontal`        |
 | `flex-direction` / `data-orientation` | row / omitted | column / `vertical` |
 
 Live `{selectionMode:"multiple"}` after single: both `toolbar` +

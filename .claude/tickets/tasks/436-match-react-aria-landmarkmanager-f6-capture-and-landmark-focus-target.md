@@ -49,10 +49,10 @@ oracle). This ticket is `createLandmark` used by Toast's region.
 
 From Before (and from Show Neutral Toast):
 
-| | React | Solid |
-|---|---|---|
-| F6 | stays on start | **alertdialog** "Toast available" |
-| F6 again | stays on start | same alertdialog |
+|          | React          | Solid                             |
+| -------- | -------------- | --------------------------------- |
+| F6       | stays on start | **alertdialog** "Toast available" |
+| F6 again | stays on start | same alertdialog                  |
 
 S2 should move to the Notifications **region**.
 

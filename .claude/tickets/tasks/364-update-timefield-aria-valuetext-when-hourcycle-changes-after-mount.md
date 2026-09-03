@@ -29,12 +29,12 @@ URL remount of `?hourCycle=24` already matches (`09` / `09` on both).
 `comparison:controls-change` `{hourCycle:"24"}` from the default
 09:30 AM field.
 
-| | React | Solid |
-|---|---|---|
-| hour text | `09` | `09` |
-| hour `aria-valuetext` | `09` | `9 AM` |
-| dayPeriod | omitted | omitted |
-| Chromium AX | `spinbutton "hour, Start time": "09"` | same |
+|                       | React                                 | Solid   |
+| --------------------- | ------------------------------------- | ------- |
+| hour text             | `09`                                  | `09`    |
+| hour `aria-valuetext` | `09`                                  | `9 AM`  |
+| dayPeriod             | omitted                               | omitted |
+| Chromium AX           | `spinbutton "hour, Start time": "09"` | same    |
 
 URL `?hourCycle=24` remount: both `09` / `09`.
 

@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  COMPARISON_SECURITY_HEADERS,
-  cacheControlForPath,
-  withSecurityHeaders,
-} from "./worker";
+import { COMPARISON_SECURITY_HEADERS, cacheControlForPath, withSecurityHeaders } from "./worker";
 
 describe("comparison worker security headers", () => {
   it("stamps the production header set onto an assets response", async () => {
@@ -35,9 +31,7 @@ describe("comparison worker security headers", () => {
     expect(cacheControlForPath("/_astro/react-runtime.AbCd.js")).toBe(
       "public, max-age=31536000, immutable",
     );
-    expect(cacheControlForPath("/components/button/")).toBe(
-      "public, max-age=0, must-revalidate",
-    );
+    expect(cacheControlForPath("/components/button/")).toBe("public, max-age=0, must-revalidate");
 
     const hashed = withSecurityHeaders(
       new Response("js", { headers: { "content-type": "text/javascript" } }),

@@ -30,12 +30,12 @@ Native validity does not.
 islands mounted. Value is still `#336699`. Injected
 `form[data-fp-form]` + `requestSubmit`.
 
-| | React | Solid |
-|---|---|---|
-| `checkValidity()` | false | true |
-| `:invalid` | true | false |
-| `validationMessage` | `Invalid value.` | `""` |
-| `validity.customError` | true | false |
+|                               | React                             | Solid                             |
+| ----------------------------- | --------------------------------- | --------------------------------- |
+| `checkValidity()`             | false                             | true                              |
+| `:invalid`                    | true                              | false                             |
+| `validationMessage`           | `Invalid value.`                  | `""`                              |
+| `validity.customError`        | true                              | false                             |
 | injected form `requestSubmit` | blocked, focus stays on the input | submits `{brandColor: "#336699"}` |
 
 AX, error slot, icon, and group `data-invalid` match.

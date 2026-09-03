@@ -73,6 +73,7 @@ import {
   type CollectionRendererContextValue,
   useCollectionRenderer,
   useCollectionRoot,
+  renderCollectionDropSlots,
 } from "./Collection";
 import { useVirtualizerContext } from "./Virtualizer";
 import {
@@ -752,7 +753,11 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection;
+      },
+    });
   });
   createEffect(() => {
     if (!hasDraggableDnd()) return;
@@ -1329,20 +1334,13 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
       <For each={visibleItems()}>
         {(item, index) => {
           const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-          const beforeIndicator = () =>
-            parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "before");
-          const onIndicator = () =>
-            parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "on");
-          const afterIndicator = () =>
-            parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "after");
-          return (
-            <>
-              {beforeIndicator()}
-              {onIndicator()}
-              {local.children?.(item)}
-              {afterIndicator()}
-            </>
-          );
+          return renderCollectionDropSlots({
+            index: itemIndex(),
+            lastIndex: rowNodes().length - 1,
+            renderDropIndicator: (i, position) =>
+              parentCollectionRenderer?.renderDropIndicator?.(i, position),
+            children: local.children?.(item),
+          });
         }}
       </For>
     );
