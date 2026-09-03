@@ -353,6 +353,14 @@ export function mergePersistedKeysIntoVirtualRange(
   };
 }
 
+/** Indexes that must stay mounted off-screen without expanding the in-flow window. */
+export function indexesOutsideRange(
+  range: { start: number; end: number },
+  indexes: number[],
+): number[] {
+  return indexes.filter((index) => index < range.start || index >= range.end);
+}
+
 export type DropTargetDelegate = {
   getDropTargetFromPoint: (
     x: number,

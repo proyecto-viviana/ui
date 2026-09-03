@@ -47,7 +47,6 @@ import type {
   DropOperation,
   DropTarget,
   ItemDropTarget,
-  Key,
 } from "@proyecto-viviana/solid-stately";
 import { createScrollView } from "@proyecto-viviana/solidaria";
 import {
@@ -57,7 +56,6 @@ import {
   type CollectionRootProps,
   type CollectionBranchProps,
 } from "./Collection";
-import { mergePersistedKeysIntoVirtualRange } from "./DragAndDrop";
 import {
   GridLayout,
   ListLayout,
@@ -853,13 +851,10 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
     if (!virtualizer) return null;
     const count = itemCount();
     if (count <= 0) return null;
-    const baseRange = virtualizer.getVisibleRange(count);
-    if (props.persistedKeys == null || props.persistedKeys.size === 0) return baseRange;
-    const items = Array.from(props.collection ?? []) as Array<{ key?: Key }>;
-    const persistedIndexes = Array.from(props.persistedKeys)
-      .map((key) => items.findIndex((item) => item.key === key))
-      .filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(baseRange, persistedIndexes, count, virtualizer, 80);
+    // Geometry window only. Persisted focused keys render as absolutely
+    // positioned extras (PersistedVirtualItem) so scrollHeight stays the
+    // content extent. RAC VirtualizerItem does the same with layoutInfo.
+    return virtualizer.getVisibleRange(count);
   });
 
   const contentProps = (): JSX.HTMLAttributes<HTMLDivElement> => {
@@ -872,6 +867,7 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
       ...base,
       style: {
         ...(base.style as JSX.CSSProperties | undefined),
+        position: "relative",
         ...(horizontal
           ? { "padding-left": `${padStart}px`, "padding-right": `${padEnd}px` }
           : { "padding-top": `${padStart}px`, "padding-bottom": `${padEnd}px` }),
@@ -892,6 +888,31 @@ function CollectionRoot<T>(props: CollectionRootProps<T>): JSX.Element {
 
 function CollectionBranch<T>(props: CollectionBranchProps<T>): JSX.Element {
   return DefaultCollectionRenderer.CollectionBranch(props);
+}
+
+/**
+ * RAC VirtualizerItem lays persisted (focused / drop-target) views with
+ * layoutInfo absolute coordinates so they stay mounted off-screen without
+ * expanding the in-flow window or the content extent.
+ */
+export function PersistedVirtualItem(props: { index: number; children: JSX.Element }): JSX.Element {
+  const virtualizer = useVirtualizerContext();
+  const layout = () => virtualizer?.getLayoutInfo(props.index);
+  const horizontal = () => virtualizer?.orientation === "horizontal";
+  return (
+    <div
+      data-persisted-virtual-item=""
+      style={{
+        position: "absolute",
+        top: horizontal() ? 0 : `${layout()?.rect.y ?? 0}px`,
+        left: horizontal() ? `${layout()?.rect.x ?? 0}px` : 0,
+        width: layout()?.rect.width ? `${layout()?.rect.width}px` : undefined,
+        height: layout()?.rect.height ? `${layout()?.rect.height}px` : undefined,
+      }}
+    >
+      {props.children}
+    </div>
+  );
 }
 
 export { ListLayout, GridLayout, WaterfallLayout, TableLayout };

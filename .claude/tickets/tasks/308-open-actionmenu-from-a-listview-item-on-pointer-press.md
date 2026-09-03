@@ -4,12 +4,17 @@ type: task
 title: "Open ActionMenu from a ListView item on pointer press"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 listview functional pass: Playwright click and force-click on Project brief.pdf menu open RAC Copy overlay; Solid expanded stays false, no role=menu. Enter on the focused trigger and a synthetic click do open Solid",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "mergeCollectionRowInteractionProps stops row press for nested isFocusable descendants (tabIndex=-1 ActionMenu trigger and SVG targets), so pointer press reaches the item ActionMenu.",
     }
 ---
 

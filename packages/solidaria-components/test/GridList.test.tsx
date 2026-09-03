@@ -630,6 +630,38 @@ describe("GridList", () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
       expect(onAction).not.toHaveBeenCalled();
     });
+
+    it("lets a tabindex=-1 child control receive pointer press", () => {
+      const onButtonClick = vi.fn();
+
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Documents"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={`${item.name} menu`}
+                onClick={onButtonClick}
+              >
+                <span>Menu</span>
+              </button>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Apple menu" });
+      pressWithMouse(trigger.querySelector("span") ?? trigger);
+
+      expect(onButtonClick).toHaveBeenCalledTimes(1);
+    });
   });
 
   // ============================================

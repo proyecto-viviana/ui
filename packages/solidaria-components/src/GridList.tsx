@@ -73,9 +73,10 @@ import {
   renderCollectionDropSlots,
 } from "./Collection";
 import { TextContext } from "./Text";
-import { useVirtualizerContext, type Orientation } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem, type Orientation } from "./Virtualizer";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -564,24 +565,17 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return null;
     const baseRange = virtualizer.getVisibleRange(stateProps.items.length);
     const itemNodes = getItemNodes();
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => itemNodes.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection);
-    const focusedKey = state.focusedKey;
-    const focusedIndex =
-      focusedKey != null ? itemNodes.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? itemNodes.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
     return mergePersistedKeysIntoVirtualRange(
       baseRange,
-      persistedIndexes,
+      [],
       stateProps.items.length,
       virtualizer,
       80,
@@ -590,6 +584,15 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
         forceIncludeMaxSpan: 320,
       },
     );
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const itemNodes = getItemNodes();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => itemNodes.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   createEffect(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
@@ -682,6 +685,19 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
                         children: props.children(item),
                       });
                     }}
+                  </For>
+                  <For each={persistedOutsideIndexes()}>
+                    {(index) => (
+                      <PersistedVirtualItem index={index}>
+                        {renderCollectionDropSlots({
+                          index,
+                          lastIndex: getItemNodes().length - 1,
+                          renderDropIndicator: (i, position) =>
+                            collectionRenderer().renderDropIndicator?.(i, position),
+                          children: props.children(stateProps.items[index]),
+                        })}
+                      </PersistedVirtualItem>
+                    )}
                   </For>
                 </CollectionRoot>
               ) : (

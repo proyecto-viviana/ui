@@ -18,6 +18,7 @@ import {
   getEventTarget,
   getFocusableTreeWalker,
   getScrollParent,
+  isFocusable,
   isTabbable,
   nodeContains,
 } from "../utils/dom";
@@ -36,6 +37,22 @@ type CollectionRowInteractionProps<T extends HTMLElement> = JSX.HTMLAttributes<T
   onKeyDownCapture?: JSX.EventHandler<T, KeyboardEvent>;
   "oncapture:keydown"?: JSX.EventHandler<T, KeyboardEvent>;
 };
+
+/**
+ * Nested ActionMenu / checkbox widgets in an arrow-nav row are focusable but
+ * `tabIndex=-1`, so `isTabbable` misses them. Walk to the nearest focusable
+ * ancestor inside the row (the event target is often an SVG inside the trigger).
+ */
+function isNestedFocusableChild(row: Element, target: Element): boolean {
+  let el: Element | null = target;
+  while (el && el !== row) {
+    if (isFocusable(el)) {
+      return true;
+    }
+    el = el.parentElement;
+  }
+  return false;
+}
 
 function lastFocusable(walker: TreeWalker): HTMLElement | null {
   let last: Node | null = null;
@@ -196,7 +213,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   const onPointerDown = (event: PointerEvent) => {
     const row = options.ref();
     const target = getEventTarget<Element>(event);
-    if (row && target && target !== row && isTabbable(target)) {
+    if (row && target && target !== row && isNestedFocusableChild(row, target)) {
       event.stopPropagation();
       return;
     }
@@ -206,7 +223,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   const onMouseDown = (event: MouseEvent) => {
     const row = options.ref();
     const target = getEventTarget<Element>(event);
-    if (row && target && target !== row && isTabbable(target)) {
+    if (row && target && target !== row && isNestedFocusableChild(row, target)) {
       event.stopPropagation();
       return;
     }

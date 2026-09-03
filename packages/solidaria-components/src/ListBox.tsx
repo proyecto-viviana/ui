@@ -79,10 +79,11 @@ import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -788,24 +789,17 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized || hasSections()) return null;
     const baseRange = virtualizer.getVisibleRange(stateProps.items.length);
     const itemNodes = getItemNodes();
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => itemNodes.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection());
-    const focusedKey = state.focusedKey();
-    const focusedIndex =
-      focusedKey != null ? itemNodes.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? itemNodes.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
     return mergePersistedKeysIntoVirtualRange(
       baseRange,
-      persistedIndexes,
+      [],
       stateProps.items.length,
       virtualizer,
       80,
@@ -814,6 +808,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         forceIncludeMaxSpan: 320,
       },
     );
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const itemNodes = getItemNodes();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => itemNodes.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   createEffect(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
@@ -970,19 +973,34 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                             }
                           </For>
                         ) : (
-                          <For each={visibleItems()}>
-                            {(item, index) => (
-                              <ListBoxItemWithDropIndicators
-                                item={item as T}
-                                itemIndex={() => (virtualRange()?.start ?? 0) + index()}
-                                isLastInLevel={() =>
-                                  isLastDropItem((virtualRange()?.start ?? 0) + index())
-                                }
-                                renderItem={local.children}
-                                renderDropIndicator={renderItemDropIndicator}
-                              />
-                            )}
-                          </For>
+                          <>
+                            <For each={visibleItems()}>
+                              {(item, index) => (
+                                <ListBoxItemWithDropIndicators
+                                  item={item as T}
+                                  itemIndex={() => (virtualRange()?.start ?? 0) + index()}
+                                  isLastInLevel={() =>
+                                    isLastDropItem((virtualRange()?.start ?? 0) + index())
+                                  }
+                                  renderItem={local.children}
+                                  renderDropIndicator={renderItemDropIndicator}
+                                />
+                              )}
+                            </For>
+                            <For each={persistedOutsideIndexes()}>
+                              {(index) => (
+                                <PersistedVirtualItem index={index}>
+                                  <ListBoxItemWithDropIndicators
+                                    item={stateProps.items[index] as T}
+                                    itemIndex={() => index}
+                                    isLastInLevel={() => isLastDropItem(index)}
+                                    renderItem={local.children}
+                                    renderDropIndicator={renderItemDropIndicator}
+                                  />
+                                </PersistedVirtualItem>
+                              )}
+                            </For>
+                          </>
                         )}
                       </CollectionRoot>
                       {isEmpty() && local.renderEmptyState ? (

@@ -87,9 +87,10 @@ import {
   useCollectionRoot,
   renderCollectionDropSlots,
 } from "./Collection";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -1100,32 +1101,27 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     const dynamicItems = stateProps.items ?? [];
     const baseRange = virtualizer.getVisibleRange(dynamicItems.length);
     const itemNodes = getItemNodes();
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => itemNodes.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection());
-    const focusedKey = state.focusedKey();
-    const focusedIndex =
-      focusedKey != null ? itemNodes.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? itemNodes.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(
-      baseRange,
-      persistedIndexes,
-      dynamicItems.length,
-      virtualizer,
-      80,
-      {
-        forceIncludeIndexes,
-        forceIncludeMaxSpan: 320,
-      },
-    );
+    return mergePersistedKeysIntoVirtualRange(baseRange, [], dynamicItems.length, virtualizer, 80, {
+      forceIncludeIndexes,
+      forceIncludeMaxSpan: 320,
+    });
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const itemNodes = getItemNodes();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => itemNodes.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   const visibleItems = createMemo(() => {
     const range = virtualRange();
@@ -1283,18 +1279,33 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
               }
             </For>
           ) : (
-            <For each={visibleItems()}>
-              {(item, index) => {
-                const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                return renderCollectionDropSlots({
-                  index: itemIndex(),
-                  lastIndex: getItemNodes().length - 1,
-                  renderDropIndicator: (i, position) =>
-                    collectionRenderer().renderDropIndicator?.(i, position),
-                  children: renderDynamicItem(item as T),
-                });
-              }}
-            </For>
+            <>
+              <For each={visibleItems()}>
+                {(item, index) => {
+                  const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                  return renderCollectionDropSlots({
+                    index: itemIndex(),
+                    lastIndex: getItemNodes().length - 1,
+                    renderDropIndicator: (i, position) =>
+                      collectionRenderer().renderDropIndicator?.(i, position),
+                    children: renderDynamicItem(item as T),
+                  });
+                }}
+              </For>
+              <For each={persistedOutsideIndexes()}>
+                {(index) => (
+                  <PersistedVirtualItem index={index}>
+                    {renderCollectionDropSlots({
+                      index,
+                      lastIndex: getItemNodes().length - 1,
+                      renderDropIndicator: (i, position) =>
+                        collectionRenderer().renderDropIndicator?.(i, position),
+                      children: renderDynamicItem((stateProps.items ?? [])[index] as T),
+                    })}
+                  </PersistedVirtualItem>
+                )}
+              </For>
+            </>
           )}
         </CollectionRoot>
       ) : usesStaticChildren() ? (

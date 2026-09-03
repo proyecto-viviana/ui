@@ -69,6 +69,7 @@ import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -89,7 +90,7 @@ import {
   GridListHeaderInnerContext,
   type GridListHeaderProps,
 } from "./GridList";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import {
   handleLinkClick,
   type LinkDOMProps,
@@ -1136,30 +1137,25 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return null;
     const rows = visibleRows();
     const baseRange = virtualizer.getVisibleRange(rows.length);
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => rows.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection);
-    const focusedKey = state.focusedKey;
-    const focusedIndex =
-      focusedKey != null ? rows.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? rows.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null ? rows.findIndex((node) => node.key === normalizedDropKey) : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(
-      baseRange,
-      persistedIndexes,
-      rows.length,
-      virtualizer,
-      80,
-      {
-        forceIncludeIndexes,
-        forceIncludeMaxSpan: 320,
-      },
-    );
+    return mergePersistedKeysIntoVirtualRange(baseRange, [], rows.length, virtualizer, 80, {
+      forceIncludeIndexes,
+      forceIncludeMaxSpan: 320,
+    });
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const rows = visibleRows();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => rows.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   const virtualizedVisibleRows = createMemo(() => {
     const range = virtualRange();
@@ -1415,6 +1411,16 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
                       )}
                     </For>
                   </Show>
+                  <For each={persistedOutsideIndexes()}>
+                    {(index) => {
+                      const node = visibleRows()[index];
+                      return node ? (
+                        <PersistedVirtualItem index={index}>
+                          {renderTreeRow(node, index)}
+                        </PersistedVirtualItem>
+                      ) : null;
+                    }}
+                  </For>
                 </CollectionRoot>
               ) : (
                 <>

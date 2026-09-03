@@ -4,12 +4,17 @@ type: task
 title: "Keep TableView rowheader after collection updates"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: selecting a second row rebuilds Solid cells as role=gridcell with *-cell keys, so AX row names become the full cell dump; React keeps Name as rowheader",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "TableCell maps by data-column index (skips __selection__) and keeps a *-name fallback so Name stays role=rowheader after collection rebuilds.",
     }
 ---
 

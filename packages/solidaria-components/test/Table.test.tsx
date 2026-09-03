@@ -4325,6 +4325,66 @@ describe("Table", () => {
       expect(document.querySelector('input[type="range"]')).toBeNull();
     });
   });
+
+  it("keeps Name as rowheader with a stable *-name key after selection updates", () => {
+    const columns = [
+      { key: "name", name: "Name", isRowHeader: true },
+      { key: "type", name: "Type" },
+    ];
+
+    render(() => (
+      <Table
+        items={testData}
+        columns={columns}
+        getKey={(item: (typeof testData)[number]) => item.id}
+        getTextValue={(item, column) =>
+          String(item[column.key as keyof (typeof testData)[number]] ?? "")
+        }
+        aria-label="Pokemon"
+        selectionMode="multiple"
+        showSelectionCheckboxes
+        defaultSelectedKeys={new Set([1])}
+      >
+        {() => (
+          <>
+            <TableHeader>
+              <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              <TableColumn id="type">{() => <>Type</>}</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {(item: (typeof testData)[number]) => (
+                <TableRow id={item.id} item={item}>
+                  {() => (
+                    <>
+                      <TableCell id="__selection__">
+                        {() => <TableSelectionCheckbox rowKey={item.id} />}
+                      </TableCell>
+                      <TableCell>{() => <>{item.name}</>}</TableCell>
+                      <TableCell>{() => <>{item.type}</>}</TableCell>
+                    </>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </>
+        )}
+      </Table>
+    ));
+
+    const nameKeys = () =>
+      screen.getAllByRole("rowheader").map((cell) => cell.getAttribute("data-key"));
+
+    expect(nameKeys()).toEqual(["1-name", "2-name", "3-name"]);
+
+    const rows = screen.getAllByRole("row");
+    fireEvent.click(rows[2]);
+
+    expect(nameKeys()).toEqual(["1-name", "2-name", "3-name"]);
+    expect(screen.getByRole("rowheader", { name: "Charizard" })).toHaveAttribute(
+      "data-key",
+      "2-name",
+    );
+  });
 });
 
 // ============================================

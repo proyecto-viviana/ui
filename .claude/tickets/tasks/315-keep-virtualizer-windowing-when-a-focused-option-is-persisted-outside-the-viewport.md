@@ -4,12 +4,17 @@ type: task
 title: "Keep virtualizer windowing when a focused option is persisted outside the viewport"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 virtualizer functional pass: Tab to Item 0 then scrollTop=2160 keeps React on Items 54–59 at scrollHeight 2400 with Item 0 persisted off-screen; Solid renders all 60 options, scrollHeight 4480, and the visible window is Items 2–7. Click Item 2 then scroll 1600 is the same class. Unfocused D-scroll offsets still match.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CollectionRoot padding stays on the geometry window; focused keys outside it render as PersistedVirtualItem absolute extras so scrollHeight and the visible key-set match RAC.",
     }
 ---
 

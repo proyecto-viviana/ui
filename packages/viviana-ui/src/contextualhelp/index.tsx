@@ -249,6 +249,8 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
     "aria-labelledby",
     "aria-describedby",
     "aria-details",
+    "placement",
+    "shouldFlip",
   ]);
   const titleId = createUniqueId();
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
@@ -302,6 +304,8 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
   const footerContext = {
     styles: contextualHelpFooter,
   };
+  const overlayPlacement = () => local.placement ?? "bottom start";
+  const overlayShouldFlip = () => local.shouldFlip ?? true;
   const popoverTriggerProps: Partial<PopoverTriggerProps> = {
     get defaultOpen() {
       return local.defaultOpen;
@@ -323,7 +327,6 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
         aria-labelledby={local["aria-labelledby"]}
         aria-describedby={local["aria-describedby"]}
         aria-details={local["aria-details"]}
-        aria-haspopup="dialog"
         ref={(element: HTMLButtonElement) => {
           triggerRef(element);
         }}
@@ -339,10 +342,10 @@ export function ContextualHelp(props: ContextualHelpProps): JSX.Element {
         {...popoverProps}
         aria-labelledby={titleId}
         hideArrow
-        placement={popoverProps.placement ?? "bottom start"}
+        placement={overlayPlacement()}
         containerPadding={popoverProps.containerPadding ?? 8}
         offset={8}
-        shouldFlip={popoverProps.shouldFlip ?? true}
+        shouldFlip={overlayShouldFlip()}
         padding="none"
       >
         <div class={contextualHelpFrame}>

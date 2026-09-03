@@ -158,6 +158,58 @@ describe("Virtualizer", () => {
     expect(options[0]).toHaveAttribute("aria-setsize", "40");
   });
 
+  it("persists a focused option off-screen without expanding the in-flow window", () => {
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+
+    const clientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "clientHeight");
+    Object.defineProperty(HTMLElement.prototype, "clientHeight", {
+      configurable: true,
+      get(this: HTMLElement) {
+        if (this.getAttribute("role") === "listbox") return 240;
+        return clientHeight?.get?.call(this) ?? 0;
+      },
+    });
+
+    const items = Array.from({ length: 60 }, (_, i) => ({
+      id: `item-${i}`,
+      label: `Item ${i}`,
+    }));
+    render(() => (
+      <Virtualizer layout={{}} layoutOptions={{ itemSize: 40, overscan: 0 }}>
+        <ListBox
+          aria-label="Persisted focus list"
+          items={items}
+          getKey={(item) => item.id}
+          style={{ height: "240px", overflow: "auto" }}
+        >
+          {(item) => <ListBoxOption id={item.id}>{item.label}</ListBoxOption>}
+        </ListBox>
+      </Virtualizer>
+    ));
+
+    const listbox = screen.getByRole("listbox") as HTMLDivElement;
+    const first = screen.getByRole("option", { name: "Item 0" });
+    fireEvent.focus(first);
+
+    listbox.scrollTop = 2160;
+    fireEvent.scroll(listbox);
+
+    expect(screen.getByText("Item 0")).toBeInTheDocument();
+    expect(screen.getByText("Item 0").closest("[data-persisted-virtual-item]")).not.toBeNull();
+    expect(screen.getByText("Item 54")).toBeInTheDocument();
+    expect(screen.queryByText("Item 20")).not.toBeInTheDocument();
+    const content = listbox.firstElementChild as HTMLElement;
+    expect(content.style.paddingTop).toBe("2160px");
+
+    if (clientHeight) {
+      Object.defineProperty(HTMLElement.prototype, "clientHeight", clientHeight);
+    }
+  });
+
   it("keeps heading and loader row heights in CollectionRoot content padding", () => {
     const headingHeight = 32;
     const loaderHeight = 48;
@@ -193,9 +245,8 @@ describe("Virtualizer", () => {
     const content = listbox.firstElementChild as HTMLElement;
     expect(content.style.paddingTop).toBe(`${headingHeight + 20}px`);
     expect(content.style.paddingBottom).toBe(`${loaderHeight}px`);
-    const loader = screen.getByRole("option", { name: "Loading more..." });
-    expect(loader).toBeInTheDocument();
-    expect(loader.parentElement).toBe(listbox);
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+    expect(screen.getByTestId("loadMoreSentinel").closest("[role='listbox']")).toBe(listbox);
   });
 
   it("instantiates class layouts and provides context", () => {
@@ -1441,8 +1492,8 @@ describe("Virtualizer", () => {
     ));
 
     expect(screen.getByTestId("drop-before-0")).toBeInTheDocument();
-    expect(screen.getByTestId("drop-on-0")).toBeInTheDocument();
-    expect(screen.getByTestId("drop-after-1")).toBeInTheDocument();
+    expect(screen.getByTestId("drop-before-1")).toBeInTheDocument();
+    expect(screen.queryByTestId("drop-on-0")).not.toBeInTheDocument();
     expect(screen.queryByTestId("drop-before-4")).not.toBeInTheDocument();
   });
 
@@ -1482,7 +1533,7 @@ describe("Virtualizer", () => {
     ));
 
     expect(screen.getByTestId("section-drop-before-0")).toBeInTheDocument();
-    expect(screen.getByTestId("section-drop-on-0")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-drop-on-0")).not.toBeInTheDocument();
     expect(screen.getByTestId("section-drop-after-2")).toBeInTheDocument();
   });
 

@@ -75,7 +75,7 @@ import {
   useCollectionRoot,
   renderCollectionDropSlots,
 } from "./Collection";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import {
   type LinkDOMProps,
   type RouterOptions,
@@ -85,6 +85,7 @@ import {
 } from "./RouterProvider";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -1287,14 +1288,8 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return null;
     const rowCount = items().length;
     const baseRange = virtualizer.getVisibleRange(rowCount);
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => rowNodes().findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = (context.dropState as { target?: DropTarget | null } | undefined)?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, context.collection);
-    const focusedKey = context.state.focusedKey;
-    const focusedIndex =
-      focusedKey != null ? rowNodes().findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item"
         ? rowNodes().findIndex((node) => node.key === dropTarget.key)
@@ -1302,19 +1297,19 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
       normalizedDropKey != null
         ? rowNodes().findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(
-      baseRange,
-      persistedIndexes,
-      rowCount,
-      virtualizer,
-      80,
-      {
-        forceIncludeIndexes,
-        forceIncludeMaxSpan: 320,
-      },
-    );
+    return mergePersistedKeysIntoVirtualRange(baseRange, [], rowCount, virtualizer, 80, {
+      forceIncludeIndexes,
+      forceIncludeMaxSpan: 320,
+    });
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => rowNodes().findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   createEffect(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
@@ -1373,6 +1368,19 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
         persistedKeys={persistedKeys()}
       >
         {rows}
+        <For each={persistedOutsideIndexes()}>
+          {(index) => (
+            <PersistedVirtualItem index={index}>
+              {renderCollectionDropSlots({
+                index,
+                lastIndex: rowNodes().length - 1,
+                renderDropIndicator: (i, position) =>
+                  parentCollectionRenderer?.renderDropIndicator?.(i, position),
+                children: local.children?.(items()[index]),
+              })}
+            </PersistedVirtualItem>
+          )}
+        </For>
       </CollectionRoot>
     );
   };
@@ -1796,8 +1804,12 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   };
 
   const rowContextValue: TableRowContextValue = {
-    rowKey: rowKey(),
-    rowNode: rowNode(),
+    get rowKey() {
+      return rowKey();
+    },
+    get rowNode() {
+      return rowNode();
+    },
     get isRowDisabled() {
       return isDisabled();
     },
@@ -1812,7 +1824,11 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
         registeredCellIds.push(cellId);
       }
 
-      return explicitId ?? tableContext.columns[index]?.key;
+      // Selection cells use `id="__selection__"` and never register. Map the
+      // remaining cells onto data columns so a live checkbox column cannot
+      // steal Name's index and drop `role=rowheader` after a collection rebuild.
+      const dataColumns = tableContext.columns.filter((column) => column.key !== "__selection__");
+      return explicitId ?? dataColumns[index]?.key;
     },
   };
   const dragButtonProps = createMemo<ButtonProps>(() => {
@@ -2014,15 +2030,28 @@ export function TableCell(props: TableCellProps): JSX.Element {
 
   const cellNode = createMemo(() => {
     const key = columnKey();
+    const collection = state.collection;
     if (key != null) {
       const cellKey = `${rowKey}-${key}`;
-      const node = state.collection.getItem(cellKey);
+      const node = collection.getItem(cellKey);
       if (node) return node;
+      const isRowHeader = collection.rowHeaderColumnKeys.has(key);
+      return {
+        type: isRowHeader ? ("rowheader" as const) : ("cell" as const),
+        key: cellKey,
+        value: rowNode.value,
+        textValue: "",
+        level: 1,
+        index: 0,
+        parentKey: rowKey,
+        hasChildNodes: false,
+        childNodes: [],
+      } as GridNode<unknown>;
     }
 
     return {
       type: "cell" as const,
-      key: key ?? `${rowKey}-cell`,
+      key: `${rowKey}-cell`,
       value: rowNode.value,
       textValue: "",
       level: 1,
