@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 calendar functional pass: visibleMonths=2 February grid hides March 1 with display:none on both; React marks that cell aria-disabled and keeps one tabIndex 0 after ArrowRight from Feb 28; Solid leaves it enabled and puts tabIndex 0 on both March 1 copies",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangecalendar URL ?visibleMonths=2: both paint February+March, app name February to March 2025; disabledDays 18 vs 11 (React extra 23–28 are March-grid copies of in-range Feb days). createRangeCalendarCell isDisabled also omits isOutsideMonth. Not a second ticket",
+    }
 ---
 
 RAC `useCalendarCell` folds `isOutsideMonth` into disabled:

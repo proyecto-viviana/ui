@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 daterangepicker functional pass: Enter on the range start leaves Solid on that cell (highlight 4–4) while React moves to the next day (highlight 4–5); the same extra ArrowRights then commit 4–6 vs 4–7",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangecalendar: Tab to Feb 4 + Enter leaves Solid on 4 selected [4] while React moves to 5 highlighting 4–5. The following ArrowRight then commits a single-day range on this inline calendar — that extra miss is #425, not this ticket. DateRangePicker overlay still completes 4–6 on the second Enter",
+    }
 ---
 
 RAC range cells, on keyboard press with no anchor yet, select the date
@@ -57,9 +62,10 @@ extra-advance on React only.
 ## Done when
 
 Keyboard-selecting the range start on the comparison DateRangePicker
-moves focus to the next available day and highlights the in-progress
-range the way React does. A test fails if Enter on the start leaves
-focus on that cell. Pointer must not auto-advance.
+or RangeCalendar moves focus to the next available day and highlights
+the in-progress range the way React does. A test fails if Enter on
+the start leaves focus on that cell. Pointer must not auto-advance.
+RangeCalendar ArrowRight then committing `start/start` is #425.
 
 ## Relationship
 

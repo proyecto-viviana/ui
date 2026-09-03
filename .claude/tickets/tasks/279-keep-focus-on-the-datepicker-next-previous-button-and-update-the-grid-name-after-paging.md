@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "#260 calendar functional pass: standalone Calendar PageDown/PageUp/Shift+PageDown/pointer Next/Prev/live focusedValue leave Solid grid aria-label on the first-render month while heading/app/cells update. Pointer Next/Prev leave Solid focus BODY (DatePicker steals to a cell because the overlay calendar is already focused). Distinct from pointer-select BODY (#416).",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangecalendar: click Next pages heading to March 2025 and focusedValue 2025-03-03 on both; React grid name Trip dates, March 2025 and focus nav:Next; Solid grid name still Trip dates, February 2025 and focus BODY. Same stale names after Previous, visibleMonths=2 Next (April/May vs Feb/March), pageBehavior single/visible Next, and live focusedValue April",
+    }
 ---
 
 Paging the DatePicker calendar with Next/Previous must keep DOM focus on
@@ -58,10 +63,11 @@ has the same stale grid name.
 
 ## Done when
 
-Clicking Next/Previous on the comparison DatePicker calendar keeps focus
-on that button and sets the grid accessible name to the new month, same
-as React. A test fails if focus is on a cell or the grid name stays on
-the previous month after a successful page.
+Clicking Next/Previous on the comparison DatePicker, Calendar, or
+RangeCalendar keeps focus on that button and sets the grid accessible
+name to the new month, same as React. A test fails if focus is on a cell
+or BODY, or the grid name stays on the previous month after a successful
+page.
 
 ## Relationship
 
@@ -69,3 +75,4 @@ Child of #24. Found by #260. Distinct from #277 (whether Next is disabled
 under min/max). Distinct from #416 (pointer-select focus drop). The
 heading already pages; this is grid name + focus. Standalone Calendar
 hits the same grid-name freeze; Next focus lands on BODY there.
+RangeCalendar is the same BODY + stale grid name.

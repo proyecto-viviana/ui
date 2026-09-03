@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "#260 calendar functional pass: standalone Calendar ?constrainRange=true&focusedValue=2025-02-15 names React Monday, February 3, 2025, First available date / Thursday, February 20, 2025, Last available date and Solid the bare weekday dates. Disabled counts 17 both. Prev/Next disable stays #277.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangecalendar URL/live constrainRange: Previous/Next disabled on both (not #277); React cell names include First/Last available date; Solid omits. Same strings already in solidaria calendar intl",
+    }
 ---
 
 RAC `useCalendarCell` appends the localized min/max hint to the cell
@@ -58,10 +63,11 @@ Standalone Calendar
 
 ## Done when
 
-Min and max cells on comparison DateRangePicker / DatePicker / Calendar
-match React's accessible name, localized. A test fails if a min/max cell
-name omits the catalog string. Previous/Next disable is already correct
-on DateRangePicker (DatePicker-only miss is #277).
+Min and max cells on comparison DateRangePicker / DatePicker / Calendar /
+RangeCalendar match React's accessible name, localized. A test fails if
+a min/max cell name omits the catalog string. Previous/Next disable is
+already correct on DateRangePicker and RangeCalendar (DatePicker-only
+miss is #277).
 
 ## Relationship
 

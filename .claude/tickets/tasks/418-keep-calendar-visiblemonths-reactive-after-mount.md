@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 calendar functional pass: live visibleMonths=2 grows a second grid on both and sizes 472px; React names Event date, February to March 2025 with March days enabled; Solid keeps Event date, February 2025 and disables 36 of 42 March cells. URL ?visibleMonths=2 remounts and matches except #417",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangecalendar live visibleMonths=2: both grow a March grid (height 278, 77 cells); React application+heading0 Trip dates, February to March 2025; Solid stays Trip dates, February 2025. createRangeCalendarState also snapshots visibleMonths at init (access once). URL remount already names February to March on both",
+    }
 ---
 
 S2 Calendar `visibleMonths` is read every render, so a live control
@@ -65,6 +70,8 @@ working. Do not start #254.
 
 Child of #24. Found by #260. Wiring is
 `packages/solid-stately/src/calendar/createCalendarState.ts`
-(`const visibleMonths = props.visibleMonths ?? 1`). Distinct from
-#417 (outside-month disable when the range *is* two months) and from
-#395 / #414 (uncontrolled defaultValue remount). Do not start #254.
+(`const visibleMonths = props.visibleMonths ?? 1`) and
+`createRangeCalendarState.ts` (`access(props.visibleMonths)` once).
+Distinct from #417 (outside-month disable when the range *is* two
+months) and from #395 / #414 / #426 (uncontrolled remount). Do not
+start #254.
