@@ -286,6 +286,11 @@ history:
       at: 2026-09-03,
       note: "meter outcome equivalent. Isolated default/pointer hover/click/press-hold/wheel, Tab skip, Enter/Space/arrows/Home/End/Page no-op, URL and live variant/size/labelPosition/value/min/max/valueLabel/label/staticColor/clamp/equal-range/combo, and injected form {} match S2. AX meter Storage 72%, geometry 272×35.25 track 272×6 fill 72% rgb(75, 117, 255). Role token stays #104 (fixture-normalized to meter; AX equal). locale=ar-SA not wired on either fixture. isDisabled/formatOptions/name not routed. No overlay. No D13 Meter journeys (#249). Did not start #254. No new ids. Note output/functional-pass/meter.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "progresscircle outcome ticketed. User-visible: live ariaLabel leaves Solid named Loading… while fixture JSON updates (#410). Default rest AX/geometry 32×32, pointer hover/click, Tab skip, Enter/Space/arrows no-op, URL value/clamp/custom/equal range, indeterminate animation+dropped value attrs, sizes S/M/L, staticColor white/black/auto, URL aria-label remount, live value/size/staticColor/indeterminate, and injected form {} match S2. isDisabled URL is an S2 no-op both. Indeterminate fill phase is D2 excluded. locale=ar-SA not wired on either fixture. Attr key-order only. No overlay. name not routed. No D13 ProgressCircle journeys (#249). Did not start #254. Note output/functional-pass/progresscircle.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
