@@ -116,6 +116,11 @@ history:
       at: 2026-09-03,
       note: "treeview outcome ticketed. User-visible: typeahead letters (#324), collapse drops row focus (#325), ArrowRight expands instead of intra-row widgets (#326), Tab cannot leave the collection (#327), Shift+Arrow/Shift+click range (#328), ActionMenu click/dispatch/Enter stay closed (#329), live showActionBar stale (#330), * expands siblings (#331). Default rest AX, Tab/Arrow/Home/End/Space/Enter/Escape/Ctrl+A, pointer toggle, disabled Project skip, URL remount including ActionBar, live selectionMode/highlight/empty/icons/buttonGroup match. Virtualizer rowcount/End unmount/empty height stay #65. haspopup true vs menu accepted. No D13 TreeView journeys (#249). Did not start #254. Note output/functional-pass/treeview.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "taggroup outcome ticketed. User-visible: focus lost after remove (#316), selectionBehavior=replace ignored (#317), Tab walks every Remove (#318), onAction on selection press / not on Enter (#319), Escape does not clear (#320), Ctrl+A no-op (#321), live allowsRemoving/selectionMode stale (#322), missing keyboard focus ring (#323). Default AX, pointer toggle, arrows/Home/End/wrap, Space, no-remove Tab, single/none pointer, disabled-item skip, RTL, group-action, empty, URL remount match. Typeahead neither. URL isDisabled is S2 no-op vs Solid extra-disable (on #322). data-selection-mode stays #209. Spine stays #54. No D13 TagGroup journeys (#249). Did not start #254. Note output/functional-pass/taggroup.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
