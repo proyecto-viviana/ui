@@ -4,12 +4,17 @@ type: task
 title: "Select all TableView rows with Ctrl+A"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: isolated Tab onto the focused row then Ctrl+A selects all three rows on React and leaves project-brief on Solid",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTable handles Ctrl/Meta+A and Ctrl+A from the focused row selects every enabled row.",
     }
 ---
 

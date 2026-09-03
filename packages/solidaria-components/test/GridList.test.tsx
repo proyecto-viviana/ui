@@ -384,6 +384,7 @@ describe("GridList", () => {
         <GridList
           items={testItems}
           getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
           aria-label="Fruits"
           selectionMode="multiple"
         >
@@ -426,6 +427,7 @@ describe("GridList", () => {
         <GridList
           items={testItems}
           getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
           aria-label="Fruits"
           selectionMode="multiple"
         >
@@ -540,6 +542,7 @@ describe("GridList", () => {
         <GridList
           items={testItems}
           getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
           aria-label="Fruits"
           selectionMode="multiple"
         >
@@ -840,7 +843,7 @@ describe("GridList", () => {
       fireEvent.keyDown(rows[1], { key: "Enter" });
       fireEvent.keyUp(rows[1], { key: "Enter" });
       expect(onAction).toHaveBeenCalledWith(2);
-      expect(rows[1]).toHaveAttribute("aria-selected", "false");
+      expect(rows[1]).not.toHaveAttribute("aria-selected");
     });
 
     it('keeps disabledBehavior="selection" rows actionable through mouse press', () => {
@@ -869,7 +872,7 @@ describe("GridList", () => {
 
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(onAction).toHaveBeenCalledWith(2);
-      expect(rows[1]).toHaveAttribute("aria-selected", "false");
+      expect(rows[1]).not.toHaveAttribute("aria-selected");
     });
   });
 
@@ -1012,6 +1015,88 @@ describe("GridList", () => {
 
       const grid = document.querySelector('[role="grid"]');
       expect(grid).toBeTruthy();
+    });
+  });
+
+  describe("selection checkbox and row names", () => {
+    it("names the checkbox Select plus the row and keeps Select out of the row name", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <GridListSelectionCheckbox itemKey={item.id} />
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const checkbox = row.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      expect(checkbox).toHaveAttribute("aria-labelledby");
+      const labelledBy = checkbox.getAttribute("aria-labelledby")!.split(" ");
+      expect(labelledBy).toHaveLength(2);
+      expect(document.getElementById(labelledBy[0])).toBe(checkbox);
+      expect(document.getElementById(labelledBy[1])).toBe(row);
+      expect(row).toHaveAttribute("aria-label", "Apple");
+    });
+
+    it("omits aria-selected on a disabled selected row", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          selectedKeys={new Set([1])}
+          disabledKeys={new Set([1])}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      expect(row).toHaveAttribute("aria-disabled", "true");
+      expect(row).not.toHaveAttribute("aria-selected");
+    });
+
+    it("moves ArrowRight from the row onto an intra-row widget", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <GridListSelectionCheckbox itemKey={item.id} />
+              {item.name}
+              <button type="button">Archive</button>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const checkbox = row.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      row.focus();
+      fireEvent.keyDown(row, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(checkbox);
+      fireEvent.keyDown(checkbox, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(row.querySelector("button"));
     });
   });
 });

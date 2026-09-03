@@ -26,6 +26,7 @@ import type {
   Key,
   Selection,
 } from "@proyecto-viviana/solid-stately";
+import { createId } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListItemProps, GridListItemAria } from "./types";
 import { getGridListData } from "./createGridList";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
@@ -43,6 +44,8 @@ export function createGridListItem<
   state: Accessor<GridState<T, C>>,
   ref: Accessor<HTMLElement | null>,
 ): GridListItemAria {
+  const descriptionId = createId();
+
   const isSelected = createMemo(() => {
     const s = state();
     const p = props();
@@ -117,11 +120,19 @@ export function createGridListItem<
     const s = state();
     const p = props();
     const node = p.node;
+    const gridListData = getGridListData(s);
+    const rowId = `${gridListData?.gridListId ?? "gridlist"}-row-${String(node.key)}`;
+    const label = node["aria-label"] || node.textValue || undefined;
 
     const baseProps: Record<string, unknown> = {
       role: "row",
-      "aria-selected": s.selectionMode !== "none" ? isSelected() : undefined,
+      // RAC only exposes aria-selected when the row can be selected, so a
+      // disabled selected key does not stay [disabled][selected].
+      "aria-selected":
+        s.selectionMode !== "none" && !s.isDisabled(node.key) ? isSelected() : undefined,
       "aria-disabled": selectableItem.isDisabled() || undefined,
+      "aria-label": label,
+      "aria-labelledby": label ? `${rowId} ${descriptionId}` : undefined,
     };
 
     // Add aria-rowindex for virtualized lists
@@ -129,7 +140,6 @@ export function createGridListItem<
       baseProps["aria-rowindex"] = node.rowIndex + 1; // 1-based
     }
 
-    const gridListData = getGridListData(s);
     const mergedProps = mergeProps<JSX.HTMLAttributes<HTMLElement>>(
       selectableItem.itemProps,
       baseProps,
@@ -145,6 +155,7 @@ export function createGridListItem<
   const gridCellProps = createMemo(() => {
     return {
       role: "gridcell",
+      "aria-colindex": 1,
     } as JSX.HTMLAttributes<HTMLDivElement>;
   });
 
@@ -154,6 +165,9 @@ export function createGridListItem<
     },
     get gridCellProps() {
       return gridCellProps();
+    },
+    get descriptionProps() {
+      return { id: descriptionId };
     },
     get isSelected() {
       return isSelected();

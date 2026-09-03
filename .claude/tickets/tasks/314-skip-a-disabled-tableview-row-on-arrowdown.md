@@ -4,12 +4,17 @@ type: task
 title: "Skip a disabled TableView row on ArrowDown"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: disabledItem=quarterly-report, Tab then ArrowDown lands Budget on React; Solid first press leaves Project brief at tabIndex -1 and the second press lands Budget. createTable ArrowDown uses getKeyAfter without skipping disabled",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTable ArrowDown/Up/Home/End skip navigation-disabled keys on the first press.",
     }
 ---
 

@@ -24,6 +24,7 @@ import {
   createSignal,
   mergeProps,
   onCleanup,
+  Show,
   splitProps,
   useContext,
   type JSX,
@@ -997,12 +998,20 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     setActionSelectedKeys(keys === "all" ? "all" : new Set(keys));
     headlessProps.onSelectionChange?.(keys);
   };
-  const listViewContext = createMemo<ListViewContextValue>(() => ({
-    isQuiet: isQuiet(),
-    selectionStyle: selectionStyle(),
-    overflowMode: overflowMode(),
-    hideLinkOutIcon: !!local.hideLinkOutIcon,
-  }));
+  const listViewContextValue: ListViewContextValue = {
+    get isQuiet() {
+      return isQuiet();
+    },
+    get selectionStyle() {
+      return selectionStyle();
+    },
+    get overflowMode() {
+      return overflowMode();
+    },
+    get hideLinkOutIcon() {
+      return !!local.hideLinkOutIcon;
+    },
+  };
   const className = (renderProps: GridListRenderProps): string =>
     [
       contextProps?.UNSAFE_className,
@@ -1046,7 +1055,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   };
 
   const collection = (
-    <InternalListViewContext.Provider value={listViewContext()}>
+    <InternalListViewContext.Provider value={listViewContextValue}>
       <StaticGridListCollectionContext.Provider value={registrationContext}>
         {registrationChildren()}
       </StaticGridListCollectionContext.Provider>
@@ -1090,11 +1099,20 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       {local.label ? <div class={legacyLabel}>{local.label}</div> : null}
       {collection}
       {local.description ? <div class={legacyDescription}>{local.description}</div> : null}
-      {local.renderActionBar ? local.renderActionBar(actionSelectedKeys()) : null}
+      <Show when={() => !!local.renderActionBar}>
+        {local.renderActionBar!(actionSelectedKeys())}
+      </Show>
     </div>
   );
 
-  return local.label || local.description || local.renderActionBar ? framed : collection;
+  return (
+    <Show
+      when={() => !!(local.label || local.description || local.renderActionBar)}
+      fallback={collection}
+    >
+      {framed}
+    </Show>
+  );
 }
 
 export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX.Element {
@@ -1190,16 +1208,16 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       isLastItem: collection?.getLastKey?.() === props.id,
     };
   };
-  const textContext = createMemo(() => ({
-    slots: {
-      default: { slot: "label" },
-      label: { slot: "label" },
-      description: { slot: "description" },
-    },
-  }));
-
   function ItemChildren(renderProps: GridListItemRenderProps) {
     createEffect(() => applyItemSlotClasses(itemElement, renderProps, context));
+
+    const textContext = () => ({
+      slots: {
+        default: { slot: "label" },
+        label: { slot: "label" },
+        description: { slot: "description", id: renderProps.descriptionId },
+      },
+    });
 
     function ResolvedItemContent() {
       const resolvedChildren = resolveChildren(() =>

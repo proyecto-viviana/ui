@@ -4,7 +4,7 @@ type: task
 title: "Name ListView checkboxes and rows with RAC labelledby"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 cardview ?selectionStyle=checkbox&selectionMode=multiple: RAC checkbox name Select Apollo Active via labelledby; Solid checkbox name Select, labelledby null, row name Select Apollo Active. Same createGridListSelectionCheckbox hole.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createGridListSelectionCheckbox labelledby joins Select plus the row; row aria-label is textValue so the name drops Select and actions.",
     }
 ---
 

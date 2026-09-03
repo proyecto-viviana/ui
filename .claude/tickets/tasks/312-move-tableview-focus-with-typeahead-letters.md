@@ -4,12 +4,17 @@ type: task
 title: "Move TableView focus with typeahead letters"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: isolated Tab then q/b moves React to Quarterly/Budget; Solid stays on Project brief. createTable runTypeahead setFocusedKey without moving DOM focus",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Same focusedKey DOM lookup as #302; typeahead setFocusedKey now focuses the matching row.",
     }
 ---
 

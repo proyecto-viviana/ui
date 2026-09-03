@@ -4,12 +4,17 @@ type: task
 title: "Move TableView cell and header focus with arrows"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: ArrowRight/End/RTL arrows and ArrowUp+Enter into the header set focusedKey on Solid but do not move DOM focus, so the second cell press is tabIndex -1 and header Enter fires onAction on the body row",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Column headers expose data-key; createTable focuses via CSS.escape query and skips disabled keys so ArrowRight/ArrowUp+Enter move DOM focus.",
     }
 ---
 

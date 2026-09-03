@@ -1027,6 +1027,13 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
   );
 }
 
+const TableColumnDefinitionContext = createContext<{
+  key: Key;
+  width?: ColumnSize;
+  minWidth?: number;
+  maxWidth?: number;
+} | null>(null);
+
 /**
  * A column header in a table.
  */
@@ -1185,10 +1192,22 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
       "data-hovered": isHovered() || undefined,
       "data-focused": state.focusedKey === local.id || undefined,
       "data-focus-visible": (isFocusVisible() && state.focusedKey === local.id) || undefined,
+      "data-key": local.id,
     }) as JSX.ThHTMLAttributes<HTMLTableCellElement>;
 
+  const columnDefinition = {
+    key: local.id,
+    width: local.width ?? local.defaultWidth,
+    minWidth: local.minWidth,
+    maxWidth: local.maxWidth,
+  };
+
   if (local.render) {
-    return local.render({ ...columnAttrs(), children: columnChildren() }, renderValues());
+    return (
+      <TableColumnDefinitionContext.Provider value={columnDefinition}>
+        {local.render({ ...columnAttrs(), children: columnChildren() }, renderValues())}
+      </TableColumnDefinitionContext.Provider>
+    );
   }
 
   // Children are JSX children of the host, not an eager `children` entry in the
@@ -1197,9 +1216,11 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
   // object, so an eager entry would key the children ahead of the element on
   // the server and the client would claim the wrong nodes.
   return (
-    <TableHost hostTag="th" virtualized={context.isVirtualized} {...columnAttrs()}>
-      {columnChildren()}
-    </TableHost>
+    <TableColumnDefinitionContext.Provider value={columnDefinition}>
+      <TableHost hostTag="th" virtualized={context.isVirtualized} {...columnAttrs()}>
+        {columnChildren()}
+      </TableHost>
+    </TableColumnDefinitionContext.Provider>
   );
 }
 
@@ -2153,7 +2174,7 @@ export function TableSelectionCheckbox(props: TableSelectionCheckboxProps): JSX.
       {...selectionCheckboxAria.checkboxProps}
       class={props.class}
       style={props.style}
-      tabIndex={props.excludeFromTabOrder ? -1 : selectionCheckboxAria.checkboxProps.tabIndex}
+      tabIndex={-1}
       aria-label={props["aria-label"] ?? selectionCheckboxAria.checkboxProps["aria-label"]}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
@@ -2273,8 +2294,14 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
 
   // Register this column with the ResizableTableContainer (auto-collect columns)
   const registerColumn = useContext(ResizableTableRegisterContext);
+  const columnDef = useContext(TableColumnDefinitionContext);
   if (registerColumn) {
-    registerColumn(local.column.key, { key: local.column.key });
+    registerColumn(local.column.key, {
+      key: local.column.key,
+      width: columnDef?.width,
+      minWidth: columnDef?.minWidth,
+      maxWidth: columnDef?.maxWidth,
+    });
   }
 
   const resizeCtx = useContext(TableColumnResizeStateContext);

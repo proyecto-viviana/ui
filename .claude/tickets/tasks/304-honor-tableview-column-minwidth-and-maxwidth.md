@@ -4,12 +4,17 @@ type: task
 title: "Honor TableView Column minWidth and maxWidth"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: allowsResizing Name Column minWidth 180 maxWidth 320; React resizer is 180/180/320 and ArrowRight is a no-op; Solid is 124/75/9999 and ArrowRight steps to 125",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "ColumnResizer registers minWidth/maxWidth from TableColumn context; Name resizer is 180/320.",
     }
 ---
 

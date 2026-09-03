@@ -93,6 +93,33 @@ function findNextNavigableKey<T extends object, C extends GridCollection<T>>(
   return key;
 }
 
+function firstSelectedKey<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+): Key | null {
+  let key = state.collection.getFirstKey();
+  while (key != null) {
+    if (state.isSelected(key)) return key;
+    key = state.collection.getKeyAfter(key);
+  }
+  return null;
+}
+
+function lastSelectedKey<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+): Key | null {
+  let key = state.collection.getLastKey();
+  while (key != null) {
+    if (state.isSelected(key)) return key;
+    key = state.collection.getKeyBefore(key);
+  }
+  return null;
+}
+
+function queryCollectionItem(root: HTMLElement, key: Key): HTMLElement | null {
+  const escaped = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(String(key)) : String(key);
+  return root.querySelector<HTMLElement>(`[data-key="${escaped}"]`);
+}
+
 /**
  * Creates accessibility props for a grid list.
  */
@@ -280,8 +307,10 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       relatedTarget &&
       container &&
       container.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING
-        ? findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k))
-        : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
+        ? (lastSelectedKey(s) ??
+          findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k)))
+        : (firstSelectedKey(s) ??
+          findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k)));
     if (enterKey != null) {
       s.setFocusedKey(enterKey);
     }
@@ -317,8 +346,13 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       return;
     }
 
-    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    const target = queryCollectionItem(el, key);
     if (target && target !== active) {
+      // A disabled selected key keeps logical focus on the collection (the
+      // row is not tabbable). Focusing it would steal Tab from the grid.
+      if (isNavigationDisabled(s, key)) {
+        return;
+      }
       target.focus();
 
       // Reveal the newly focused row when navigating with the keyboard, mirroring
@@ -348,7 +382,11 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         // is tabbable (0) only while nothing is focused, then rolls to -1 once a row
         // takes focus so Tab exits the grid. A standalone grid drives AT through
         // real row focus, so it never needs (nor emits) aria-activedescendant.
-        tabIndex: p.isDisabled ? undefined : s.focusedKey != null ? -1 : 0,
+        tabIndex: p.isDisabled
+          ? undefined
+          : s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey)
+            ? -1
+            : 0,
         onKeyDown,
         onFocus,
         onBlur,

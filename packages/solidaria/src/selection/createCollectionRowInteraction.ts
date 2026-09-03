@@ -34,6 +34,7 @@ interface CollectionRowInteractionOptions {
 
 type CollectionRowInteractionProps<T extends HTMLElement> = JSX.HTMLAttributes<T> & {
   onKeyDownCapture?: JSX.EventHandler<T, KeyboardEvent>;
+  "oncapture:keydown"?: JSX.EventHandler<T, KeyboardEvent>;
 };
 
 function lastFocusable(walker: TreeWalker): HTMLElement | null {
@@ -80,7 +81,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   rowProps: CollectionRowInteractionProps<T>,
   options: CollectionRowInteractionOptions,
 ): CollectionRowInteractionProps<T> {
-  const baseOnKeyDownCapture = rowProps.onKeyDownCapture as
+  const baseOnKeyDownCapture = (rowProps["oncapture:keydown"] ?? rowProps.onKeyDownCapture) as
     | ((event: KeyboardEvent) => void)
     | undefined;
   const baseOnKeyDown = rowProps.onKeyDown as ((event: KeyboardEvent) => void) | undefined;
@@ -212,10 +213,16 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
     baseOnMouseDown?.(event);
   };
 
+  const captureHandler =
+    options.keyboardNavigationBehavior() === "arrow" ? onKeyDownCapture : baseOnKeyDownCapture;
+
   return {
     ...rowProps,
-    onKeyDownCapture:
-      options.keyboardNavigationBehavior() === "arrow" ? onKeyDownCapture : baseOnKeyDownCapture,
+    // Solid ignores React's `onKeyDownCapture` on a spread; `oncapture:keydown` is
+    // the live capture binding (same prefix as createDraggableItem). Keep the
+    // RAC name so unit tests can still invoke the handler off rowProps.
+    "oncapture:keydown": captureHandler,
+    onKeyDownCapture: captureHandler,
     onKeyDown,
     onPointerDown,
     onMouseDown,

@@ -72,6 +72,7 @@ import {
   useCollectionRoot,
   renderCollectionDropSlots,
 } from "./Collection";
+import { TextContext } from "./Text";
 import { useVirtualizerContext, type Orientation } from "./Virtualizer";
 import {
   getNormalizedDropTargetKey,
@@ -176,6 +177,8 @@ export interface GridListItemRenderProps {
   selectionMode: "none" | "single" | "multiple";
   /** How selection behaves when pressing an item. */
   selectionBehavior: "replace" | "toggle";
+  /** Id for the item description, to join into the row accessible name. */
+  descriptionId?: string;
 }
 
 export interface GridListItemProps<T extends object>
@@ -803,6 +806,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     isDisabled: isDisabled(),
     selectionMode: state.selectionMode,
     selectionBehavior: listContext?.selectionBehavior ?? "toggle",
+    descriptionId: itemAria.descriptionProps.id,
   }));
 
   const renderProps = useRenderProps(
@@ -856,7 +860,15 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       data-dragging={draggableItem()?.isDragging || undefined}
       data-drop-target={droppableItem()?.isDropTarget || undefined}
     >
-      <div {...itemAria.gridCellProps}>{renderProps.renderChildren()}</div>
+      <TextContext.Provider
+        value={{
+          slots: {
+            description: itemAria.descriptionProps,
+          },
+        }}
+      >
+        <div {...itemAria.gridCellProps}>{renderProps.renderChildren()}</div>
+      </TextContext.Provider>
     </div>
   );
 }
@@ -889,7 +901,7 @@ export function GridListSelectionCheckbox(props: {
       class={props.class}
       style={props.style}
       tabIndex={props.excludeFromTabOrder ? -1 : undefined}
-      aria-label={props["aria-label"] ?? "Select"}
+      aria-label={props["aria-label"] ?? checkboxAria.checkboxProps["aria-label"]}
     />
   );
 }

@@ -2571,6 +2571,119 @@ describe("Table", () => {
 
       expect(document.activeElement).toBe(rows[2]);
     });
+
+    it("skips a disabled row on ArrowDown under disabledBehavior all", async () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+          disabledKeys={[2]}
+          disabledBehavior="all"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const table = screen.getByRole("grid", { name: "Pokemon" });
+      const rows = screen.getAllByRole("row");
+      rows[1].focus();
+      fireEvent.focus(rows[1]);
+      fireEvent.keyDown(table, { key: "ArrowDown" });
+      await Promise.resolve();
+
+      expect(document.activeElement).toBe(rows[3]);
+    });
+
+    it("selects every enabled row with Ctrl+A from the focused row", async () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const table = screen.getByRole("grid", { name: "Pokemon" });
+      const rows = screen.getAllByRole("row");
+      rows[1].focus();
+      fireEvent.focus(rows[1]);
+      fireEvent.keyDown(rows[1], { key: "a", ctrlKey: true });
+      await Promise.resolve();
+
+      expect(rows[1]).toHaveAttribute("aria-selected", "true");
+      expect(rows[2]).toHaveAttribute("aria-selected", "true");
+      expect(rows[3]).toHaveAttribute("aria-selected", "true");
+      expect(table).toHaveAttribute("aria-multiselectable", "true");
+    });
+
+    it("keeps row selection checkboxes out of the tab order", () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>{() => <TableSelectionCheckbox rowKey={item.id} />}</TableCell>
+                        <TableCell>{() => <>{item.name}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      for (const checkbox of document.querySelectorAll('input[type="checkbox"]')) {
+        expect(checkbox).toHaveAttribute("tabindex", "-1");
+      }
+    });
   });
 
   // ============================================
@@ -3996,6 +4109,48 @@ describe("Table", () => {
       const labels = Array.from(inputs).map((i) => i.getAttribute("aria-label"));
       expect(labels).toContain("Resize Name");
       expect(labels).toContain("Resize Type");
+    });
+
+    it("honors Column minWidth and maxWidth on the Name resizer", () => {
+      render(() => (
+        <ResizableTableContainer>
+          <Table
+            items={testData}
+            columns={resizableColumns}
+            getKey={(item: any) => item.id}
+            aria-label="Resizable Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name" allowsResizing minWidth={180} maxWidth={320}>
+                    {() => (
+                      <div>
+                        <span>Name</span>
+                        <ColumnResizer column={{ key: "name" }} aria-label="Resize Name" />
+                      </div>
+                    )}
+                  </TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </ResizableTableContainer>
+      ));
+
+      const input = screen.getByRole("slider", { name: "Resize Name" }) as HTMLInputElement;
+      expect(input.min).toBe("180");
+      expect(input.max).toBe("320");
+      const value = Number(input.value);
+      expect(value).toBeGreaterThanOrEqual(180);
+      expect(value).toBeLessThanOrEqual(320);
     });
 
     it("Column resizer accepts data attributes", () => {

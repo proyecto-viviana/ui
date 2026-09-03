@@ -17,7 +17,6 @@ import {
   Show,
   createContext,
   createEffect,
-  createMemo,
   createSignal,
   getOwner,
   mergeProps,
@@ -1252,15 +1251,29 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     ]
       .filter(Boolean)
       .join(" ");
-  const context = createMemo<TableContextValue>(() => ({
-    density: density(),
-    isQuiet: isQuiet(),
-    overflowMode: overflowMode(),
-    showSelectionCheckboxes: showSelectionCheckboxes(),
-    selectionStyle: selectionStyle(),
-    loadingState: local.loadingState,
-    onLoadMore: local.onLoadMore,
-  }));
+  const contextValue: TableContextValue = {
+    get density() {
+      return density();
+    },
+    get isQuiet() {
+      return isQuiet();
+    },
+    get overflowMode() {
+      return overflowMode();
+    },
+    get showSelectionCheckboxes() {
+      return showSelectionCheckboxes();
+    },
+    get selectionStyle() {
+      return selectionStyle();
+    },
+    get loadingState() {
+      return local.loadingState;
+    },
+    get onLoadMore() {
+      return local.onLoadMore;
+    },
+  };
   const renderTable = () => (
     <HeadlessTable
       {...headlessProps}
@@ -1311,7 +1324,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   );
 
   return (
-    <InternalTableContext.Provider value={context()}>
+    <InternalTableContext.Provider value={contextValue}>
       {renderFramed()}
     </InternalTableContext.Provider>
   );
@@ -1327,7 +1340,9 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
 
   return (
     <HeadlessTableHeader {...headlessProps} class={className()}>
-      {context.showSelectionCheckboxes ? <TableSelectAllCheckbox /> : null}
+      <Show when={() => context.showSelectionCheckboxes}>
+        <TableSelectAllCheckbox />
+      </Show>
       {props.children}
     </HeadlessTableHeader>
   );
@@ -1509,13 +1524,13 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     <HeadlessTableRow {...headlessProps} class={className} style={local.UNSAFE_style}>
       {(renderProps: TableRowRenderProps) => (
         <>
-          {context.showSelectionCheckboxes && rowKey() != null ? (
+          <Show when={() => context.showSelectionCheckboxes && rowKey() != null}>
             <TableSelectionCheckbox
               rowKey={rowKey()!}
               isSelected={renderProps.isSelected}
               isDisabled={renderProps.isDisabled}
             />
-          ) : null}
+          </Show>
           {typeof local.children === "function"
             ? (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderProps)
             : local.children}

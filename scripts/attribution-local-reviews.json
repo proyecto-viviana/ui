@@ -462,7 +462,7 @@
   {
     "localPath": "packages/solidaria-components/src/DateRangePickerContext.tsx",
     "classification": "local-solid-helper",
-    "contentSha256": "01add22e84e83e99840322ed5c4c17b94190dca4598ebcd4de046c38450bee12"
+    "contentSha256": "8f6473a0d35ff7a49ba3c09c963d8a427f27c1dc1001aece52529ea75635df0f"
   },
   {
     "localPath": "packages/solidaria-components/src/ElementTag.tsx",
@@ -592,7 +592,7 @@
   {
     "localPath": "packages/solidaria/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "85d3f5099a7763758903d2913e29f88b048faadf6b05d4678d0089fff9df13b0"
+    "contentSha256": "e905ac71264773b4ca8a394f87f4f86e20ccb410d85d886935c29a4b9b1577f8"
   },
   {
     "localPath": "packages/solidaria/src/interactions/index.ts",
@@ -642,7 +642,7 @@
   {
     "localPath": "packages/solidaria/src/overlays/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "0aa20d9475a0e8a5733051ec485322002573f25c82553d58093a6cb97d5fdebf"
+    "contentSha256": "a8d63b8a8d77b8e7b762bf6cbc35d7c3f1e3005651b69eeb79e344c2ba8e5e32"
   },
   {
     "localPath": "packages/solidaria/src/popover/index.ts",

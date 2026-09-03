@@ -4,12 +4,17 @@ type: task
 title: "Keep TableView row checkboxes out of the tab order"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: React Tab is Before → focused row → After; Solid then visits three native Select checkbox inputs before After",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "TableSelectionCheckbox is always tabIndex=-1 so Tab skips the native Select inputs.",
     }
 ---
 

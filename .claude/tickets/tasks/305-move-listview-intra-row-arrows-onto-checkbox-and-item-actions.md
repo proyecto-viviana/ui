@@ -4,12 +4,17 @@ type: task
 title: "Move ListView intra-row ArrowLeft and ArrowRight onto checkbox and item actions"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 listview functional pass: RAC ArrowRight from the focused row focuses the Select checkbox then Archive; Solid stays on the row. Capture handler is mergeCollectionRowInteractionProps; S2 checkbox is opacity-0 tabIndex -1",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "mergeCollectionRowInteractionProps binds oncapture:keydown so ArrowRight lands on the checkbox then Archive.",
     }
 ---
 

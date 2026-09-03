@@ -4,12 +4,17 @@ type: task
 title: "Apply TableView density, quiet, and selectionMode without remount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 tableview functional pass: live comparison:controls-change to selectionMode none + compact + quiet updates Solid data-comparison-control-props but leaves 4 checkboxes and 40px rows; URL remount applies both stacks. React remounts via renderKey",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "InternalTableContext uses getters; checkbox column is a Show so live density/quiet/selectionMode apply without remount.",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Keep ListView ActionBar and item slots reactive after live control changes"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 listview functional pass: URL ?showActionBar=true paints both bars; live showActionBar / comparison:controls-change paints React Archive 1 selected and leaves Solid with no ActionBar. Live hideLinkOutIcon and selectionStyle=highlight also leave Solid slots stale; URL remount matches",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "ListView context uses getters; renderActionBar mounts through Show so live showActionBar/hideLinkOutIcon/selectionStyle apply.",
     }
 ---
 
