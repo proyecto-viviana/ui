@@ -271,6 +271,11 @@ history:
       at: 2026-09-03,
       note: "colorarea outcome ticketed. User-visible: pointer/vertical-key hidden range inputs never receive DOM focus so ArrowRight after click is a no-op and Tab after ArrowUp hits y (#391); HSL/HSB hue valuetext 253 vs 252.76 degrees (#392). Default rest AX/geometry 192x192, Tab Before to x to After, keyboard channel steps, off-thumb drag+loupe 50x66, wheel no-op, disabled Tab skip, named form redChannel/greenChannel, RTL, URL/live colorSpace/channels/value/label match. Thumb-center press keeps 155; off-center press jumps (same #391). rgb vs rgba marker is fixture serialization. ring.rect.x is side-by-side abs coords. Not #74 (native ranges already back the AX value). No D13 ColorArea journeys (#249). Did not start #254. Note output/functional-pass/colorarea.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "colorwheel outcome ticketed. User-visible: hue input remounts on the first value change so later keys no-op and a ring click leaves the loupe open (#393, same Color.tsx thumb remount as ColorSlider); End from 15 is 359 vs S2 0 (#396); live defaultValue leaves Solid at 0 (#395). Default rest AX/geometry 192×192, Tab cycle, first Arrow/PageUp, wrap ArrowLeft, pointer ring 90/180/270, center hole, thumb drag+loupe 50×66, wheel no-op, disabled URL/live skip, sizes 175/224/256 URL and live, controlled value, named form {hue:0}→{hue:1}, aria refs, RTL valuetext match. hsla vs hsl marker is fixture serialization. Not #74 (native range already backs AX). Not #391 (ColorWheel does focusInput). Not #394 (ColorSlider keep 360). No D13 ColorWheel journeys (#249). Did not start #254. Note output/functional-pass/colorwheel.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
