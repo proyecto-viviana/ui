@@ -1,0 +1,88 @@
+---
+id: 260
+type: task
+title: "Run the React-vs-Solid functional comparison pass"
+created: 2026-09-02
+parent: 136
+status: in-progress
+history:
+  - {
+      state: open,
+      at: 2026-09-02,
+      note: "opened from the owner request that is the #136 functional pass: drive both panels, ticket each user-visible divergence",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-02,
+      note: "overnight coordinator; overlay family first per #243, then collections, fields, buttons, color, rest",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "first overnight batch: picker, combobox, menu, actionmenu against preview :4341; remaining slugs queued on a durable scheduler",
+    }
+---
+
+Drive the React and Solid panels of every live comparison route through the
+same user-visible interactions. Diff DOM, ARIA, focus, form value, overlay
+geometry, and behavior after each step. File one bug ticket per real
+divergence. Do not treat certified green, axe, or a screenshot as
+equivalence.
+
+## Why
+
+#136 recorded this pass as un-ticketed, waiting for the owner's seed. The
+owner asked for it on 2026-09-02: component-by-component, outside-world
+functional equivalence, bug tickets for each difference. D1–D12 certify
+states; D13 covers ComboBox/Picker seeds. This pass walks the rest of the
+catalogue the way a user would.
+
+## Order
+
+1. Overlay family (Picker, ComboBox, Menu, ActionMenu, DatePicker,
+   DateRangePicker, Popover, Tooltip, Dialog, ContextualHelp) — #243 / #249.
+2. Collections (ListBox, ListView, GridList, TableView, TreeView, TagGroup,
+   Accordion, Virtualizer, DnD ListBox, CardView).
+3. Fields (TextField, TextArea, SearchField, NumberField, DateField,
+   TimeField, ColorField, Checkbox, CheckboxGroup, RadioGroup, Switch,
+   Slider, RangeSlider, Form).
+4. Buttons and chrome (Button, ActionButton, ToggleButton, LinkButton,
+   ActionGroup, ButtonGroup, ToggleButtonGroup, ActionBar, Toolbar,
+   SegmentedControl).
+5. Color and progress.
+6. Remaining live slugs.
+
+## Method
+
+For each slug, against production preview (`COMPARISON_CHROMIUM_ARGS` on this
+host):
+
+1. Load `/components/<slug>/`, wait for islands-mounted, confirm both panels
+   render the real component (not a missing fallback).
+2. Exercise default, keyboard, pointer, disabled, and the route controls that
+   change user-visible behavior.
+3. Diff React vs Solid after each step (D13 observations where the driver
+   applies; otherwise roles, names, values, focus, geometry).
+4. Classify: `port bug`, `upstream drift`, `harness bug`, `threshold debt`,
+   or `unrelated family failure`.
+5. File a child of #24 (port bug), #26 (harness), or #136 (gate/audit) — never
+   parent a task under this task. Skip filing when an open ticket already
+   owns the exact divergence (name it).
+6. Record the slug outcome on this ticket. Evidence may live under
+   `output/functional-pass/` (gitignored).
+
+Do not implement the ports in this pass unless a one-line harness bug blocks
+the next slug. Do not start #254. Do not waive D-reorder (#256) without the
+owner.
+
+## Done when
+
+Every live catalogue slug has a recorded outcome (equivalent / ticketed /
+blocked with owner). Overlay family is complete. Open divergences have
+tickets with a reproduction on the comparison route.
+
+## Relationship
+
+Child of #136 (the audit's functional pass). Uses the D13 driver (#244) and
+feeds #243 / #249. Page production-ready is #259. Per-component acceptance
+remains #24 — this pass files into it, it does not replace the playbook.
