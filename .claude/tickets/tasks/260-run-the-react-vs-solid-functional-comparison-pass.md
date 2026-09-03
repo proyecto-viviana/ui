@@ -166,6 +166,21 @@ history:
       at: 2026-09-03,
       note: "checkbox outcome ticketed. User-visible: Enter toggles Solid (#354), isInvalid native custom validity missing (#355), isInvalid HelpText icon row already #70, live size after selected leaves checkmark 10×10 (#356). Default rest AX/geometry 99×18 / box 16×16, hover, label/box click, Tab cycle with 2px ring, Space, disabled Tab skip, read-only no-op, native+aria required submit, named form {}, {terms:agree}, sizes S/L/XL remount, indeterminate mixed, emphasized, defaultSelected, and live selected/disabled/readonly/required/children match. Isolated invalid Tab matches. No D13 Checkbox journeys (#249). Did not start #254. Note output/functional-pass/checkbox.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "timefield outcome ticketed. User-visible: isInvalid native custom validity (#362), ContextualHelp wraps under the label (#363), live hourCycle leaves aria-valuetext at 9 AM (#364), live empty value keeps React on 9:30 (#365). Help press already #352, name Start time Help vs Help already #353, aria-haspopup already #287. Live isInvalid HelpText swaps (not #345). Default rest AX/geometry 208×82, pointer, Tab hour→minute→dayPeriod, spin/Page/Home/End, typed 2 auto-advance, Backspace, wheel no-op both, disabled skip, read-only, required empty, URL empty/hourCycle/granularity/leading-zeros/locales/RTL/constrain/name/sizes, and live size/value/label/copy match. No D13 TimeField journeys (#249). Did not start #254. Note output/functional-pass/timefield.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "colorfield outcome ticketed. User-visible: PageUp/PageDown jump to min/max (#366), wheel deltaY +120 decrements (#367), isInvalid native custom validity missing (#368), FieldGroup hover and keyboard ring missing (#369), hex lowercase (#370), live isInvalid HelpText already #345. Default rest AX/geometry 208×82, pointer click/label/group, Tab cycle, Arrow/Home/End, Enter commit, empty/invalid-hex restore, disabled skip, read-only, native+aria required, URL invalid error slot/icon, named hex and channel hidden form, sizes/labelPosition, live size/disabled/readonly/required/copy/channel match. Channel aria-roledescription Number field is DOM-only (AX equal). No D13 ColorField journeys (#249). Did not start #254. Note output/functional-pass/colorfield.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "datefield outcome ticketed. User-visible: isInvalid native custom validity already #362 (createDateField; required-empty focus stays on Submit), ContextualHelp wrap 208×82 vs 208×102 already #363, help press already #352, name Appointment date Help vs Help already #353, aria-haspopup already #287. Live isInvalid HelpText swaps (not #345). HiddenDateInput stepMismatch not user-visible (form=\"\"). Default rest AX/geometry 208×82, Tab month→day→year, Arrow/Page/Home/End spin, typed auto-advance, Backspace, wheel no-op, FieldGroup click year, disabled skip, read-only, named FormData {date:2025-03-03}, sizes/labelPosition/granularity/hourCycle/hideTimeZone/locales/RTL/constrain/unavailable, and live size/value/copy match. No D13 DateField journeys (#249). Did not start #254. Note output/functional-pass/datefield.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
