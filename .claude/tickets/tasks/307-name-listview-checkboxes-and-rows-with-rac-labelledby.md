@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 listview functional pass: RAC checkbox name is Select Project brief.pdf via labelledby; Solid is aria-label Select only. Solid row AX name includes Select and item actions; RAC row is Project brief.pdf PDF document",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 cardview ?selectionStyle=checkbox&selectionMode=multiple: RAC checkbox name Select Apollo Active via labelledby; Solid checkbox name Select, labelledby null, row name Select Apollo Active. Same createGridListSelectionCheckbox hole.",
+    }
 ---
 
 RAC GridList selection checkboxes join `aria-label="Select"` with the row

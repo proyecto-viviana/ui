@@ -136,6 +136,11 @@ history:
       at: 2026-09-03,
       note: "card outcome ticketed. User-visible: standalone href+isDisabled stays an enabled S2 <a> and Solid disables (#337), live href stays a DIV (#338), live size leaves title/description at M fonts (#339). Default rest AX/geometry, pointer hover/click, Tab skip, URL size/density/variant/preview/footer/copy/skeleton/href keyboard+press, quiet preview ring, and live footer/copy match. inert=\"\" vs \"true\" not user-visible. data-size extras structural. Press-scale settles by 300ms both. No overlay, no form. No D13 Card journeys (#249). Did not start #254. Note output/functional-pass/card.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "cardview outcome ticketed. User-visible: CSS auto-fit stacks size S while S2 GridLayout is two-up (#340), Card isDisabled dropped on GridListItem (#341), highlight End/ArrowDown focus without selectOnFocus (#342), ArrowRight no-op on a two-up row (#343), live showActionBar stale (#344), typeahead z stays Apollo (#295), checkbox name Select without labelledby (#307). Default pointer click/toggle/hover, Space/Enter/Escape, Home, Ctrl+A no-op, selectionMode none/single/multiple, highlight replace vs checkbox add, disabledKeys skip, URL ActionBar Clear, uncontrolled defaultSelectedKeys, live selectionMode, and density gap match. Shift+Tab after a clean Tab lands on Apollo both. Playwright Solid Clear intercept is harness. No D13 CardView journeys (#249). Did not start #254. Note output/functional-pass/cardview.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

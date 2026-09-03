@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "#260 listview: same createGridList miss. Isolated Tab then b moves React to Budget; Solid stays on Project brief. After 1100ms q moves React to Quarterly; Solid stays. Not #128.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 cardview: same miss. Isolated Tab then z moves React focus to Zephyr (selectedKeys stay apollo); Solid stays on Apollo. Not selectOnFocus (#342).",
+    }
 ---
 
 RAC GridList typeahead (useSelectableCollection → useTypeSelect) moves
