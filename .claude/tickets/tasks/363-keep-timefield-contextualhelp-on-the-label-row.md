@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "#260 datefield: same wrap. URL ?withContextualHelp=true field is 208×82 React vs 208×102 Solid. DateField.tsx renders contextualHelp in a following span data-slot=contextualHelp after HeadlessDateFieldLabel. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkboxgroup: same wrap. URL ?withContextualHelp=true field is 92×182 React vs 69×202 Solid because the label wrapper is display:block and the 20×20 help button wraps under Notifications (labelWrap 32 vs 52). CheckboxGroup.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
 ---
 
 S2 TimeField puts `contextualHelp` through `FieldLabel`, so the quiet

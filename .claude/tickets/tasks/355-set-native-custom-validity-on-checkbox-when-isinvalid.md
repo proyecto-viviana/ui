@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 checkbox functional pass: URL ?isInvalid=true leaves React input.validity.customError=true, checkValidity=false, :invalid, validationMessage Invalid value., requestSubmit blocked; Solid stays valid and submits. RAC useToggle calls useFormValidation; Solid createToggle does not",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkboxgroup: same native custom-validity hole on every child. URL ?isInvalid=true leaves React checkValidity=false / customError / Invalid value. on Email, SMS, and Push and blocks requestSubmit; Solid stays valid and submits {}. createCheckboxGroupItem uses createToggle. Disabled invalid skips custom validity on both. No new id.",
+    }
 ---
 
 S2 Checkbox default `validationBehavior` is native. RAC `useToggle`

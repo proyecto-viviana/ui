@@ -186,6 +186,11 @@ history:
       at: 2026-09-03,
       note: "switch outcome ticketed. User-visible: Enter toggles Solid already #354, live isDisabled/isReadOnly paint stale (#371). Field position relative vs static stays #121 (not user-visible here). Default rest AX/geometry 65×18 / track 26×16, pointer label/track/handle, Tab cycle 2px ring, Space, arrows no-op, disabled skip, read-only no-op, selected/emphasized/disabled-selected, sizes S/L/XL remount, URL and live children, live selected/emphasized/size match. name/value/isRequired/isInvalid not routed. Injected named form harness (React re-render drops the DOM name). No D13 Switch journeys (#249). Did not start #254. Note output/functional-pass/switch.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "checkboxgroup outcome ticketed. User-visible: required asterisk omitted from group AX name (#372), live isInvalid drops aria-describedby (#373), Enter toggles already #354, isInvalid native custom validity already #355, empty errorMessage FieldError row already #70, ContextualHelp press already #352, wrap already #363, name Help vs Notifications Help already #353, aria-haspopup already #287, live size after selected checkmark already #356. Live HelpText slot swaps (not #345). Default rest AX/geometry 69×182, pointer multi-select, Tab email→sms→push, Space, disabled skip, read-only no-op, required empty submit, named form {channels:email} / [email,sms], sizes/orientation/labelPosition/emphasized/uncontrolled, and live orientation/disabled/labelPosition/selectedValues match. No D13 CheckboxGroup journeys (#249). Did not start #254. Note output/functional-pass/checkboxgroup.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

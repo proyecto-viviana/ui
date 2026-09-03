@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "#260 switch: same Enter hole on /components/switch/. Isolated Tab then Enter, and locator.press(Enter) on the focused input: React stays unchecked, Solid checks and slides the handle 4→13. Space still matches. Did not file a second id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkboxgroup: same Enter hole on group items. Isolated Tab onto Email then Enter unchecks Solid and leaves React checked; Space then matches native toggle on both. createCheckboxGroupItem uses createToggle. No new id.",
+    }
 ---
 
 Native and S2 checkboxes toggle on Space, not Enter. Enter on a

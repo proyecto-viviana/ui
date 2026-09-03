@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 checkbox functional pass: URL ?size=XL&isSelected=true and live size+selected together paint a 12×12 checkmark on both; live size XL after the M checkmark already mounted leaves Solid at 10×10 inside a 20×20 box (React 12×12). Show keeps the first CheckmarkIcon; checkboxIconSizeStyle(size()) is one-shot",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkboxgroup: same live size hole on the already-selected Email child. URL ?size=XL and live size+selected from unchecked paint 12×12 on both; live size XL from the default email-checked route leaves Solid at 10×10 inside a 20×20 box (React 12×12). No new id.",
+    }
 ---
 
 S2 Checkbox sizes the Checkmark / Dash glyph from the current `size`

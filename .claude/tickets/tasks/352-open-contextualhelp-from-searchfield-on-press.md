@@ -21,6 +21,11 @@ history:
       at: 2026-09-03,
       note: "#260 datefield: same remount/never-open. Isolated pointer on ?withContextualHelp=true opens React dialog Date help 268×99 opacity 1 placement bottom dy8, aria-expanded=true, focus overlay; Solid aria-expanded=false, overlay absent, focus BODY. DateField.tsx also uses span data-slot=contextualHelp. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkboxgroup: same remount/never-open. Isolated Enter/Space/dispatch click on ?withContextualHelp=true open React dialog 268×120 opacity 1, aria-expanded=true, stable id; Solid aria-expanded=false, overlay absent, focus BODY, ids solidaria-cl-257→268. CheckboxGroup.tsx also uses span data-slot=contextualHelp. Playwright locator.click intercepts (same remount). No new id.",
+    }
 ---
 
 S2 SearchField puts `contextualHelp` through `FieldLabel`, which wraps
