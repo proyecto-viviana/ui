@@ -401,6 +401,11 @@ history:
       at: 2026-09-03,
       note: "illustrations outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live size S/M/L / ariaHidden / ariaLabel / slot / decorative / skeleton and combos, control-form radios+switches+text, disabled URL no-op, locale=ar-SA unwired, reduced-motion, forced-colors, injected form {} match S2. AX img Planning illustration + Loading illustration. Gallery 376×184; Plan S 48 labelled, DropZone M 96 decorative aria-hidden, IllustratedMessage L 160 under Skeleton with no loadingStyle/WAAPI/inert (not #431). diffs {} / liveDiffs {} / 0 page errors. No overlay, no form name. No D13 Illustrations journeys (#249). Did not start #254. No new ids. Note output/functional-pass/illustrations.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "actionbuttongroup outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab trampoline + lastFocused restore, orientation-gated arrows without select/wrap, Home/End no-op, Space/Enter replace-select, disabled skip, URL and live orientation/density/quiet/justified/sizes XS–XL/staticColor/icon start/only/disabled, compact vertical XL, and injected type=button form {} match S2. AX toolbar Formatting actions / button Bold [pressed]. Geometry 198×32 gap 8; Bold 51×32 Italic 52×32 Underline 79×32. Live orientation updates (not #388). locale=ar-SA not routed. Press-scale 80ms matrix is timing; 300ms exact. No overlay. name not routed. No D13 ActionButtonGroup journeys (#249). Did not start #254. No new ids. Note output/functional-pass/actionbuttongroup.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
