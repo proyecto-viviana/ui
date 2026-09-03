@@ -71,6 +71,16 @@ history:
       at: 2026-09-03,
       note: "autocomplete outcome ticketed. User-visible: typing does not hide non-matching ListBox options (#288), SearchField omits autocomplete/autocorrect/spellcheck/enterkeyhint (#289). Virtual-focus keyboard, Tab, pointer selection, selectionMode, 500ms activedescendant delay, and inline list geometry matched. No D13 Autocomplete journeys. Did not start #254. Note output/functional-pass/autocomplete.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "selectboxgroup outcome ticketed. User-visible: item isDisabled arrow skip (#290), disabled group Tab skip (#291), horizontal wrap ArrowRight (#292). Live illustrations switch already on #169. Default pointer/keyboard/typeahead/disabledKeys/multiple/vertical/URL remount matched. No D13 SelectBoxGroup journeys (#249). Did not start #254. Note output/functional-pass/selectboxgroup.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "dialog outcome ticketed. User-visible: AlertDialog footer missing paddingTop 32 (#293), DialogTrigger aria-controls dangling / dialog has no overlay id (#294). Default/sizes/Tab trap/Escape/outside/close/isDismissible/isKeyboardDismissDisabled/hasTitle/isOpen/Alert actions and AX match. Backdrop absolute vs fixed is the certified portal-strategy exclusion. comparison-spectrum-Dialog stays on #141. Exit restore by 200ms (Solid earlier; not #274). No D13 Dialog journeys (#249). Did not start #254. Note output/functional-pass/dialog.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

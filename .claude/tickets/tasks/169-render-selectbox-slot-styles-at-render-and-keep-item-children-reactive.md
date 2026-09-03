@@ -7,6 +7,11 @@ parent: 136
 status: open
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 selectboxgroup: URL ?withIllustrations=false removes illustrations on both stacks; the live illustrations switch removes them on React and leaves 48×48 slots on Solid (SelectBox children() snapshot)",
+    }
 ---
 
 ## Cause
