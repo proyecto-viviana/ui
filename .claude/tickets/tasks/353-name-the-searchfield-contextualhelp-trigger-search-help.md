@@ -26,6 +26,11 @@ history:
       at: 2026-09-03,
       note: "#260 checkboxgroup: same name composition. URL ?withContextualHelp=true AX button Notifications Help vs Help. React aria-labelledby = label id + help id; Solid aria-label Help only. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 slider: same name composition. URL ?withContextualHelp=true AX button Volume Help vs Help. SNAP name both Help. No new id.",
+    }
 ---
 
 S2 `FieldLabel` wraps `contextualHelp` in

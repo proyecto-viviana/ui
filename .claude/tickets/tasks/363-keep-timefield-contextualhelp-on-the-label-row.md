@@ -21,6 +21,11 @@ history:
       at: 2026-09-03,
       note: "#260 checkboxgroup: same wrap. URL ?withContextualHelp=true field is 92×182 React vs 69×202 Solid because the label wrapper is display:block and the 20×20 help button wraps under Notifications (labelWrap 32 vs 52). CheckboxGroup.tsx also uses span data-slot=contextualHelp. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 slider: same wrap. URL ?withContextualHelp=true group is 208×50 React vs 208×70 Solid; output 24×18 vs 24×38. Slider.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
 ---
 
 S2 TimeField puts `contextualHelp` through `FieldLabel`, so the quiet

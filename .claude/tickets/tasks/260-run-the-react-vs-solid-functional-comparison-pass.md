@@ -191,6 +191,11 @@ history:
       at: 2026-09-03,
       note: "checkboxgroup outcome ticketed. User-visible: required asterisk omitted from group AX name (#372), live isInvalid drops aria-describedby (#373), Enter toggles already #354, isInvalid native custom validity already #355, empty errorMessage FieldError row already #70, ContextualHelp press already #352, wrap already #363, name Help vs Notifications Help already #353, aria-haspopup already #287, live size after selected checkmark already #356. Live HelpText slot swaps (not #345). Default rest AX/geometry 69×182, pointer multi-select, Tab email→sms→push, Space, disabled skip, read-only no-op, required empty submit, named form {channels:email} / [email,sms], sizes/orientation/labelPosition/emphasized/uncontrolled, and live orientation/disabled/labelPosition/selectedValues match. No D13 CheckboxGroup journeys (#249). Did not start #254. Note output/functional-pass/checkboxgroup.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "slider outcome ticketed. User-visible: horizontal ArrowUp/Down inverted (#374), live isEmphasized/isDisabled fill and live max output width stale (#375), native input vs div[role=slider] already #74, ContextualHelp press already #352, wrap already #363, name Help vs Volume Help already #353, aria-haspopup already #287. Default rest AX/geometry 208×50 fill 83.2×4, pointer hover/track-click 80/drag 20, wheel no-op, Tab Before→slider→After, ArrowLeft/Right Page Home/End, disabled skip, URL sizes/track/precise/emphasized/fillOffset/labels/uncontrolled/step/clamp, named form {volume:40}→41, live size XL/fillOffset/value 75 match. SNAP thumb mismatch was inner-knob vs role=slider container. No D13 Slider journeys (#249). Did not start #254. Note output/functional-pass/slider.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
