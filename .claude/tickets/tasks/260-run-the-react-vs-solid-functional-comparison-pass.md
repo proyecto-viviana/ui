@@ -221,6 +221,11 @@ history:
       at: 2026-09-03,
       note: "form outcome ticketed. User-visible: validationBehavior=aria does not switch descendant TextField off native required (#382), native valueMissing after blocked submit omits HelpText/aria-invalid (#383), live size/labelPosition leave the form grid at mount-time row-gap and columns (#384). Default rest AX/geometry 312×138, pointer click input/label/group, Tab Before→input→submit→After, type+Enter submit, disabled skip, required filled native+asterisk, necessity label (required), URL sizes S/L/XL, URL side-label, emphasized, copy remount, requestSubmit default, live isDisabled/isRequired/emphasized/children inherit size match. URL aria remount still submits both (form noValidate). Hover data-hovered extra on React group (border matches). Input data-disabled extra on React. Side-label y-rects stay #77. No D13 Form journeys (#249). Did not start #254. Note output/functional-pass/form.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "togglebutton outcome equivalent. Isolated default/pointer hover/click/press-scale, Tab cycle 2px ring, Enter/Space toggle both ways, Escape/arrows no-op, disabled skip, disabled+selected, URL and live selected/emphasized/quiet/sizes XS–XL/staticColor/icon start/only/children/disabled, ar-SA RTL, and injected type=button form {} match S2. AX button Pin / [pressed] / [disabled] [pressed], geometry 42×32. Hover 160ms 1-unit RGB and press-scale 80ms matrix are timing; 400ms and 300ms exact. Solid data-comparison-control-props isSelected stale after click is harness serialization (aria-pressed matches). No overlay. name not routed. No D13 ToggleButton journeys (#249). Did not start #254. No new ids. Note output/functional-pass/togglebutton.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
