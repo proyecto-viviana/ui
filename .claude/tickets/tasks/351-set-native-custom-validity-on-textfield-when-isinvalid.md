@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "#260 searchfield: createSearchField delegates to createTextField, same gap. Isolated forms requestSubmit: React blocked customError=true; Solid submits {projectSearch:status}. URL invalid error slot/AX match. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkbox: same native custom-validity hole, but the wiring is createToggle not createTextField. Filed #355. Do not treat Checkbox as this ticket.",
+    }
 ---
 
 S2 TextField default `validationBehavior` is native. RAC

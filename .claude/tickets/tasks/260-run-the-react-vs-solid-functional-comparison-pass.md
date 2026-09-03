@@ -161,6 +161,11 @@ history:
       at: 2026-09-03,
       note: "searchfield outcome ticketed. User-visible: ContextualHelp press remounts and never opens (#352), trigger name Help vs Search Help (#353), live isInvalid HelpText already #345, isInvalid native custom validity already #351, aria-haspopup already #287. Default rest AX/geometry 200×32 pill group, type/fill/Escape/clear/group-click, disabled Tab skip, read-only, native+aria required Enter, URL invalid error slot, sizes/labelPosition/type/placeholder/empty, and live size/disabled/readonly/required/copy match. Standalone autocomplete attrs omitted on both (not #289). No D13 SearchField journeys (#249). Did not start #254. Note output/functional-pass/searchfield.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "checkbox outcome ticketed. User-visible: Enter toggles Solid (#354), isInvalid native custom validity missing (#355), isInvalid HelpText icon row already #70, live size after selected leaves checkmark 10×10 (#356). Default rest AX/geometry 99×18 / box 16×16, hover, label/box click, Tab cycle with 2px ring, Space, disabled Tab skip, read-only no-op, native+aria required submit, named form {}, {terms:agree}, sizes S/L/XL remount, indeterminate mixed, emphasized, defaultSelected, and live selected/disabled/readonly/required/children match. Isolated invalid Tab matches. No D13 Checkbox journeys (#249). Did not start #254. Note output/functional-pass/checkbox.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the

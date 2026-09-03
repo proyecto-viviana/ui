@@ -11,6 +11,11 @@ history:
       at: 2026-08-20,
       note: "migrated from legacy task helptext-fielderror-visual-port",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 checkbox: URL ?isInvalid=true and live isInvalid with empty errorMessage paint React FieldError icon row (field 109×52, 20×20 aria-hidden img, helpCount 1, empty error slot); Solid stays 99×18 with no HelpText. Remaining work already names missing invalid cases for Checkbox. Native custom validity is #355, not this. No new id.",
+    }
 ---
 
 Extract the shared S2 `FieldLabel` and `HelpText`/`FieldError` composite. Replace
