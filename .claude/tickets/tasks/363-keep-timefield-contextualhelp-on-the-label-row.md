@@ -31,6 +31,11 @@ history:
       at: 2026-09-03,
       note: "#260 radiogroup: same wrap. URL ?withContextualHelp=true group is 82×164 React vs 82×184 Solid because span data-slot=contextualHelp wraps under Plan. packages/solid-spectrum/src/radio/index.tsx. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangeslider: same wrap. URL ?withContextualHelp=true group is 396×50 React vs 396×70 Solid; output 48×18 vs 48×38. RangeSlider.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
 ---
 
 S2 TimeField puts `contextualHelp` through `FieldLabel`, so the quiet

@@ -36,6 +36,11 @@ history:
       at: 2026-09-03,
       note: "#260 slider: same name composition. URL ?withContextualHelp=true AX button Volume Help vs Help. SNAP name both Help. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangeslider: same name composition. URL ?withContextualHelp=true AX button Range Help vs Help. SNAP name both Help. No new id.",
+    }
 ---
 
 S2 `FieldLabel` wraps `contextualHelp` in

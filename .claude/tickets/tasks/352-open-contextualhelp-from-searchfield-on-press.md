@@ -36,6 +36,11 @@ history:
       at: 2026-09-03,
       note: "#260 radiogroup: same remount/never-open. ?withContextualHelp=true click/Enter open React dialog Plan help… 268×120 opacity 1 placement bottom, aria-expanded=true, stable id react-aria…-_r_6_; Solid aria-expanded=false, overlay absent, focus BODY, ids solidaria-cl-233→247. packages/solid-spectrum/src/radio/index.tsx also uses span data-slot=contextualHelp. No new id.",
     }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangeslider: same remount/never-open. Isolated click and Enter on ?withContextualHelp=true open React dialog Range helpChoose minimum and maximum values. 268×120 opacity 1, aria-expanded=true, focus DIV; Solid aria-expanded=false, dialogs 0, focus BODY. RangeSlider.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
 ---
 
 S2 SearchField puts `contextualHelp` through `FieldLabel`, which wraps
