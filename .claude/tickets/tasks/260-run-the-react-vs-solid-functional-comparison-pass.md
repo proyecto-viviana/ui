@@ -46,6 +46,11 @@ history:
       at: 2026-09-03,
       note: "tooltip outcome ticketed. Isolated drive: hover/focus/Escape/press/disabled/placements/flip/noflip/scroll/warmup/cooldown/live placement match. User-visible remainders already on #64 (enter opacity + exit unmount vs ~200ms linger; 0.5px overlay offset). Arrow unlabeled img matches upstream (#67). No D13 Tooltip journeys (#249). Did not start #254. No new ids. Note output/functional-pass/tooltip.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "popover outcome ticketed. User-visible: dismiss does not restore trigger focus (#274), customAnchor triggerRef stuck at origin opacity 0 (#275). DialogTrigger settled geometry/ARIA/Tab trap/form/placements/sizes/hideArrow/offset/maxHeight/live placement match. Enter/exit still #251/#68. No D13 Popover journeys (#249). Did not start #254. Note output/functional-pass/popover.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
