@@ -376,6 +376,11 @@ history:
       at: 2026-09-03,
       note: "provider outcome equivalent. Isolated default/pointer hover/click/press-scale/wheel, Tab Before→Inherited→Nested→After with 2px rings, URL and live colorScheme/background including nested light override, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX two buttons + captions. Geometry 288.53×174.53 nested 288.53×81.27. Solid data-color-scheme/data-background extras DOM-only. Hover 160ms 1-unit RGB is timing; 400ms exact. Pair-diff 0.34 stays the tracked visual floor. No overlay, no form name. No D13 Provider journeys (#249). Did not start #254. No new ids. Note output/functional-pass/provider.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "dropzone outcome equivalent. Isolated default/pointer hover/click-to-hidden-button/heading-click, Tab Before→button→After with focus-visible blue dashed, Enter/Space no-op without a drag session, synthetic drag enter/over/leave/drop/800ms activate, paste drop, URL and live size S/M/L / isFilled banner / replaceMessage / ariaLabel, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX button Upload files + heading Upload assets. Geometry 312×209; filled banner 153.7×49.2. React tabindex=0 + empty labelledby DOM-only. 800ms activate sample during live prop churn is timing. id/describedby/details stripped both. No overlay, no form name. No D13 DropZone journeys (#249). Did not start #254. No new ids. Note output/functional-pass/dropzone.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
