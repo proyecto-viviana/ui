@@ -361,6 +361,16 @@ history:
       at: 2026-09-03,
       note: "inlinealert outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, all 5 variants × 3 fillStyles, autoFocus tabindex=-1 + isolated 2px ring, URL remount, live variant/fill/autoFocus, injected form {} match S2. AX alert Payment Information / icon Information|Success|Warning|Error. Geometry 472×126 (negative 472×105). isDisabled not a prop. Solid autofocus=\"\" vs React omitted is DOM-only. Shared-page autoFocus last-wins is harness. Notice boldFill white heading is shared S2. No overlay, no form name. No D13 InlineAlert journeys (#249). Did not start #254. No new ids. Note output/functional-pass/inlinealert.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "skeleton outcome ticketed. User-visible: live isLoading=false leaves createIcon on loadingStyle (#431). Default rest AX/geometry 360×180, pointer hover/click/press/wheel, Tab skip, kbd no-op, URL loaded Text/Image/Icon, reduced-motion (WAAPI 0), forced-colors, control-form switch, live isLoading=true, and injected form {} match S2. inert=\"\" vs \"true\" not user-visible. React leftover 2000ms WAAPI on bg none after live unload is not user-visible. isDisabled not a prop. No overlay, no form name. No D13 Skeleton journeys (#249). Did not start #254. Note output/functional-pass/skeleton.md.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "divider outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live orientation/size/staticColor including vertical L white and horizontal L black, control-form radios/select, injected form {} match S2. AX separator. Geometry 192×2 HR / vertical 2×24 DIV. isDisabled not a prop. locale=ar-SA not wired. No overlay, no form name. No D13 Divider journeys (#249). Did not start #254. No new ids. Note output/functional-pass/divider.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
