@@ -111,6 +111,11 @@ history:
       at: 2026-09-03,
       note: "virtualizer outcome ticketed. User-visible: focused option persisted off-screen inflates scrollHeight and shows the wrong window (#315), PageUp after PageDown lands Item 2 (#129), typeahead Space selects instead of matching Item 5 (#128). Unfocused D-scroll offsets, Home/End, arrows, pointer, multiple/none, live selectionMode match. Overscan AX is by design. No D13 Virtualizer journeys (#249). Did not start #254. Did not waive D-reorder (#256). Note output/functional-pass/virtualizer.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "treeview outcome ticketed. User-visible: typeahead letters (#324), collapse drops row focus (#325), ArrowRight expands instead of intra-row widgets (#326), Tab cannot leave the collection (#327), Shift+Arrow/Shift+click range (#328), ActionMenu click/dispatch/Enter stay closed (#329), live showActionBar stale (#330), * expands siblings (#331). Default rest AX, Tab/Arrow/Home/End/Space/Enter/Escape/Ctrl+A, pointer toggle, disabled Project skip, URL remount including ActionBar, live selectionMode/highlight/empty/icons/buttonGroup match. Virtualizer rowcount/End unmount/empty height stay #65. haspopup true vs menu accepted. No D13 TreeView journeys (#249). Did not start #254. Note output/functional-pass/treeview.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
