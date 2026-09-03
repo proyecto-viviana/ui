@@ -106,6 +106,11 @@ history:
       at: 2026-09-03,
       note: "accordion outcome equivalent. Isolated default/pointer/keyboard Space/Enter/Tab/Shift+Tab/arrows, single and multiple expansion, header-action isolation, disabled skip, URL and live size/density/quiet/disabled/allowsMultipleExpanded, and ar-SA RTL chevron match S2. AX, 220px geometry, hidden=until-found, and 2px focus ring match. Boolean data-expanded true vs empty not user-visible. No overlay, no form. No D13 Accordion journeys (#249). Did not start #254. No new ids. Note output/functional-pass/accordion.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "virtualizer outcome ticketed. User-visible: focused option persisted off-screen inflates scrollHeight and shows the wrong window (#315), PageUp after PageDown lands Item 2 (#129), typeahead Space selects instead of matching Item 5 (#128). Unfocused D-scroll offsets, Home/End, arrows, pointer, multiple/none, live selectionMode match. Overscan AX is by design. No D13 Virtualizer journeys (#249). Did not start #254. Did not waive D-reorder (#256). Note output/functional-pass/virtualizer.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
