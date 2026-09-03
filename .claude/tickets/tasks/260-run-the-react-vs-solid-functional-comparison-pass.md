@@ -396,6 +396,11 @@ history:
       at: 2026-09-03,
       note: "icons outcome equivalent. Isolated default/pointer hover/click/press/wheel on labelled and Button-context, Tab Before→Create→After 2px ring, Enter/Space on the button, URL and live ariaHidden/ariaLabel/slot/showDecorative/showSkeleton/showButtonContext/buttonLabel, control-form switches+text, disabled URL no-op, locale=ar-SA unwired, injected form {} match S2. AX img Create item + Loading icon + button Create. Geometry gallery 231×56, labelled 20×20, button icon 18×18 margin -2px. inert=\"\" vs \"true\" not user-visible. Hover 160ms 1-unit RGB is Button timing; 400ms exact. Live BUTTON vs After leftover sentinel is harness. #186/#431 not routed (showSkeleton unmounts). No overlay, no form name. No D13 Icon journeys (#249). Did not start #254. No new ids. Note output/functional-pass/icons.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "illustrations outcome equivalent. Isolated default/pointer hover/click/press/wheel, Tab skip, URL and live size S/M/L / ariaHidden / ariaLabel / slot / decorative / skeleton and combos, control-form radios+switches+text, disabled URL no-op, locale=ar-SA unwired, reduced-motion, forced-colors, injected form {} match S2. AX img Planning illustration + Loading illustration. Gallery 376×184; Plan S 48 labelled, DropZone M 96 decorative aria-hidden, IllustratedMessage L 160 under Skeleton with no loadingStyle/WAAPI/inert (not #431). diffs {} / liveDiffs {} / 0 page errors. No overlay, no form name. No D13 Illustrations journeys (#249). Did not start #254. No new ids. Note output/functional-pass/illustrations.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
