@@ -66,6 +66,11 @@ history:
       at: 2026-09-03,
       note: "contextualhelp outcome ticketed. User-visible: live placement/shouldFlip stale after mount (#286), trigger aria-haspopup dialog vs omitted (#287). Settled geometry, Tab contain, Escape/outside/repress restore, offset pin 8, flip on remount, copy, touch press match. Enter/exit still #251/#68. Focus restore is not #274. No D13 ContextualHelp journeys (#249). Did not start #254. Note output/functional-pass/contextualhelp.md.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "autocomplete outcome ticketed. User-visible: typing does not hide non-matching ListBox options (#288), SearchField omits autocomplete/autocorrect/spellcheck/enterkeyhint (#289). Virtual-focus keyboard, Tab, pointer selection, selectionMode, 500ms activedescendant delay, and inline list geometry matched. No D13 Autocomplete journeys. Did not start #254. Note output/functional-pass/autocomplete.md.",
+    }
 ---
 
 Drive the React and Solid panels of every live comparison route through the
