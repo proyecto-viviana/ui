@@ -766,10 +766,12 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     const win = scopeDoc.defaultView ?? window;
 
     win.requestAnimationFrame(() => {
-      // Only restore if the scope's document lost focus to its body. Use the
-      // scope document (not the restore-target's) so an iframe scope that
-      // unmounts still restores into the parent document.
-      if (scopeDoc.activeElement !== scopeDoc.body) {
+      // RAC FocusScope restores when the document's focus is the body after
+      // unmount. Instant overlay unmount (no exit animation) can leave
+      // activeElement on a detached dialog node instead of body; treat that
+      // the same so DialogTrigger popovers restore the trigger (#274).
+      const active = scopeDoc.activeElement;
+      if (active && active !== scopeDoc.body && active.isConnected) {
         return;
       }
 

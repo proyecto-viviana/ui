@@ -111,12 +111,16 @@ export function createCalendar<T extends CalendarState>(
   // Previous button props
   const prevButtonProps = createMemo(() => {
     const p = getProps();
-    const isDisabled = p.isDisabled || state.isDisabled();
+    const isDisabled = p.isDisabled || state.isDisabled() || state.isPreviousVisibleRangeInvalid();
 
     return {
       "aria-label": formatCalendarLabel(state.locale(), "previous"),
       onClick: () => {
         if (!isDisabled) {
+          // RAC Button preventFocusOnPress keeps the nav button as the focused
+          // element; Solid's native click races a sync cell-focus effect. Clear
+          // calendar-level focus so cells do not steal (#279).
+          state.setFocused(false);
           state.focusPreviousPage();
         }
       },
@@ -127,12 +131,13 @@ export function createCalendar<T extends CalendarState>(
   // Next button props
   const nextButtonProps = createMemo(() => {
     const p = getProps();
-    const isDisabled = p.isDisabled || state.isDisabled();
+    const isDisabled = p.isDisabled || state.isDisabled() || state.isNextVisibleRangeInvalid();
 
     return {
       "aria-label": formatCalendarLabel(state.locale(), "next"),
       onClick: () => {
         if (!isDisabled) {
+          state.setFocused(false);
           state.focusNextPage();
         }
       },

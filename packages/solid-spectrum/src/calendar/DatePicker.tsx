@@ -512,11 +512,6 @@ const datePickerPopoverFrame = style({
   size: "full",
 });
 
-const datePickerCalendarPopoverStyle: JSX.CSSProperties = {
-  width: "272px",
-  "max-width": "100%",
-};
-
 /**
  * A date picker combines a date field and a calendar popup.
  */
@@ -580,7 +575,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const providerProps = useProviderProps(props);
   const contextProps = getSlottedContextProps(useContext(DatePickerContext), (props as any).slot);
   const merged = mergeProps(providerProps, contextProps ?? {}, props);
-  const [local, calendarProps, rest] = splitProps(
+  const [local, calendarProps, createCalendarProps, rest] = splitProps(
     merged,
     [
       "size",
@@ -600,8 +595,8 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       "firstDayOfWeek",
       "pageBehavior",
       "placeholderValue",
-      "createCalendar",
     ],
+    ["createCalendar"],
   );
 
   const size = () => normalizeDatePickerSize(local.size);
@@ -751,7 +746,10 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           size={size()}
           hasTime={hasTime()}
           maxVisibleMonths={visibleMonths()}
-          calendarProps={calendarProps}
+          calendarProps={{
+            ...calendarProps,
+            createCalendar: createCalendarProps.createCalendar,
+          }}
           hourCycle={(rest as { hourCycle?: 12 | 24 }).hourCycle}
           shouldForceLeadingZeros={
             (rest as { shouldForceLeadingZeros?: boolean }).shouldForceLeadingZeros
@@ -810,7 +808,6 @@ function DatePickerPopup(props: {
           <Calendar
             size="md"
             visibleMonths={props.maxVisibleMonths}
-            UNSAFE_style={datePickerCalendarPopoverStyle}
             {...(props.calendarProps ?? {})}
           />
           <Show when={props.hasTime}>

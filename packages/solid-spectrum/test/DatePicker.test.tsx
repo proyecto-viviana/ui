@@ -267,6 +267,84 @@ describe("DatePicker (solid-spectrum)", () => {
     expect(grid).toHaveStyle({ width: "224px" });
   });
 
+  it("widens the calendar popover when maxVisibleMonths is greater than 1", async () => {
+    render(() => (
+      <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} maxVisibleMonths={2} />
+    ));
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getAllByRole("grid")).toHaveLength(2);
+    });
+
+    const grid = screen.getAllByRole("grid")[0];
+    const calendar = grid.parentElement?.parentElement as HTMLElement;
+    expect(calendar.style.width).toBe("fit-content");
+    expect(calendar.style.width).not.toBe("272px");
+  });
+
+  it("disables calendar previous and next when the next page is outside min/max", async () => {
+    render(() => (
+      <DatePicker
+        label="Event"
+        defaultValue={new CalendarDate(2025, 2, 14)}
+        minValue={new CalendarDate(2025, 2, 3)}
+        maxValue={new CalendarDate(2025, 2, 20)}
+      />
+    ));
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByRole("grid")).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByRole("button", { name: "Previous" })[0]).toBeDisabled();
+    expect(screen.getAllByRole("button", { name: "Next" })[0]).toBeDisabled();
+  });
+
+  it("keeps field segments on the locale calendar when createCalendar is set", async () => {
+    render(() => (
+      <DatePicker
+        label="Due date"
+        defaultValue={new CalendarDate(2025, 2, 14)}
+        createCalendar={() => {
+          throw new Error("createCalendar leaked onto DateField state");
+        }}
+      />
+    ));
+    await waitForHydration();
+
+    const segments = screen.getAllByRole("spinbutton");
+    expect(segments.map((segment) => segment.getAttribute("aria-valuenow"))).toEqual([
+      "2",
+      "14",
+      "2025",
+    ]);
+  });
+
+  it("keeps focus on Next and names the grid for the new month after paging", async () => {
+    render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} />);
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    const grid = await waitFor(() => screen.getByRole("grid"));
+    expect(grid).toHaveAttribute("aria-label", expect.stringMatching(/February 2025/));
+
+    await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
+
+    await waitFor(() => {
+      expect(screen.getByRole("grid")).toHaveAttribute(
+        "aria-label",
+        expect.stringMatching(/March 2025/),
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getAllByRole("button", { name: "Next" })[0]).toHaveFocus();
+    });
+  });
+
   it("field group click focuses the last non-placeholder segment", async () => {
     render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2024, 6, 15)} />);
     await waitForHydration();

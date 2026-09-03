@@ -4,12 +4,17 @@ type: task
 title: "Position a standalone Popover against triggerRef"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 popover functional pass: customAnchor click leaves the Solid overlay at position:fixed; left:0; top:0; opacity 0; data-entering for 2000ms, while React sits on the anchor",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Standalone triggerRef now resolves a node or () => node (hc unwraps zero-arg *Ref into a getter); comparison hc no longer unwraps *Ref props.",
     }
 ---
 

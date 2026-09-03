@@ -110,7 +110,20 @@ export function createDroppableItem(
   const isDropTarget = createMemo(() => {
     const target = resolvedTarget();
     if (target == null) return false;
-    return state.isDropTargetFor(target);
+    if (typeof state.isDropTargetFor === "function") {
+      return state.isDropTargetFor(target);
+    }
+    // Tests and RAC-shaped mocks expose `isDropTarget(target)` or only `target`.
+    const predicate = (state as { isDropTarget?: unknown }).isDropTarget;
+    if (typeof predicate === "function") {
+      return Boolean((predicate as (dropTarget: DropTarget) => boolean)(target));
+    }
+    const current = state.target;
+    if (!current) return false;
+    if (current.type !== target.type) return false;
+    if (current.type === "root" && target.type === "root") return true;
+    if (current.type !== "item" || target.type !== "item") return false;
+    return current.key === target.key && current.dropPosition === target.dropPosition;
   });
 
   // RAC `useDroppableItem.ts:49-68`: register with DragManager once the node exists.

@@ -4,12 +4,17 @@ type: task
 title: "Restore focus to the Popover trigger after dismiss"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 popover functional pass: Escape, outside click, and trigger re-press close the Solid overlay but leave document.activeElement on body; React restores the Feedback trigger",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "FocusScope restore treats a detached activeElement like body, so DialogTrigger popovers restore the trigger after instant dismiss.",
     }
 ---
 

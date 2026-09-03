@@ -1120,4 +1120,21 @@ describe("createCalendarState", () => {
       });
     });
   });
+
+  describe("visible range invalid", () => {
+    it("disables paging when the next page is outside min/max", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 14),
+          minValue: new CalendarDate(2025, 2, 3),
+          maxValue: new CalendarDate(2025, 2, 20),
+        });
+
+        expect(state.isPreviousVisibleRangeInvalid()).toBe(true);
+        expect(state.isNextVisibleRangeInvalid()).toBe(true);
+
+        dispose();
+      });
+    });
+  });
 });

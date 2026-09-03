@@ -153,6 +153,10 @@ export interface CalendarState<
   isOutsideVisibleRange: (date: DateValue) => boolean;
   /** Whether a date is invalid. */
   isInvalid: (date: DateValue) => boolean;
+  /** Whether the previous page is entirely outside min/max. */
+  isPreviousVisibleRangeInvalid: () => boolean;
+  /** Whether the next page is entirely outside min/max. */
+  isNextVisibleRangeInvalid: () => boolean;
   /** Moves focus to the previous page (month). */
   focusPreviousPage: () => void;
   /** Moves focus to the next page (month). */
@@ -548,6 +552,29 @@ export function createCalendarState<
     return isCellDisabled(date) || isCellUnavailable(date);
   };
 
+  // RAC `useCalendarState.ts` `isPreviousVisibleRangeInvalid` /
+  // `isNextVisibleRangeInvalid`: prev = startDate−1 invalid; next = endDate+1.
+  const isDateOutsideAllowedRange = (date: DateValue): boolean => {
+    const min = minValueState();
+    const max = maxValueState();
+    const calDate = toDisplayCalendarDate(date);
+    if (min && calDate.compare(toDisplayCalendarDate(min)) < 0) return true;
+    if (max && calDate.compare(toDisplayCalendarDate(max)) > 0) return true;
+    return false;
+  };
+
+  const isPreviousVisibleRangeInvalid = () => {
+    const start = visibleRange().start;
+    const previous = start.subtract({ days: 1 });
+    return isSameDay(previous, start) || isDateOutsideAllowedRange(previous);
+  };
+
+  const isNextVisibleRangeInvalid = () => {
+    const end = visibleRange().end;
+    const next = end.add({ days: 1 });
+    return isSameDay(next, end) || isDateOutsideAllowedRange(next);
+  };
+
   // Navigation methods
   const focusPreviousPage = () => {
     setIsPaginating(true);
@@ -693,6 +720,8 @@ export function createCalendarState<
     isCellDisabled,
     isOutsideVisibleRange,
     isInvalid,
+    isPreviousVisibleRangeInvalid,
+    isNextVisibleRangeInvalid,
     focusPreviousPage,
     focusNextPage,
     focusPreviousSection,

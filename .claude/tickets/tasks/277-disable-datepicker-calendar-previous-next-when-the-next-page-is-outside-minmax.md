@@ -4,7 +4,7 @@ type: task
 title: "Disable DatePicker calendar previous/next when the next page is outside min/max"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -12,9 +12,9 @@ history:
       note: "filed from the #260 datepicker functional pass: constrainRange min Feb 3 / max Feb 20 leaves React Previous/Next disabled and Solid Previous/Next enabled",
     }
   - {
-      state: open,
+      state: merged,
       at: 2026-09-03,
-      note: "#260 calendar functional pass: standalone Calendar ?constrainRange=true&focusedValue=2025-02-15 is the same miss — React Previous/Next disabled, Solid enabled; click Solid Next focuses 2025-02-20. Disabled day counts already match (17). First/Last cell names stay #283.",
+      note: "createCalendarState exposes isPrevious/NextVisibleRangeInvalid; createCalendar and CalendarButton honor them.",
     }
 ---
 

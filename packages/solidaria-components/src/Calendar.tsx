@@ -492,7 +492,8 @@ export function CalendarButton(props: CalendarButtonProps): JSX.Element {
     return calendarAria.nextButtonProps;
   });
 
-  const isDisabled = () => props.isDisabled || state.isDisabled();
+  const isDisabled = () =>
+    props.isDisabled || Boolean(buttonProps().disabled) || state.isDisabled();
 
   return (
     <button
@@ -504,6 +505,15 @@ export function CalendarButton(props: CalendarButtonProps): JSX.Element {
       // focusable button (0), and drop it entirely when disabled — so the
       // nav buttons appear in the roving tab order exactly as upstream does.
       tabindex={isDisabled() ? undefined : 0}
+      onClick={(event) => {
+        const click = buttonProps().onClick as
+          | ((event: MouseEvent & { currentTarget: HTMLButtonElement }) => void)
+          | undefined;
+        click?.(event);
+        if (!isDisabled()) {
+          event.currentTarget.focus();
+        }
+      }}
     >
       {props.children}
     </button>
@@ -524,9 +534,15 @@ export function CalendarGrid(props: CalendarGridProps): JSX.Element {
 
   const gridAria = createCalendarGrid(
     {
-      startDate: startDate(),
-      endDate: endOfMonth(startDate()),
-      weekdayStyle: props.weekdayStyle,
+      get startDate() {
+        return startDate();
+      },
+      get endDate() {
+        return endOfMonth(startDate());
+      },
+      get weekdayStyle() {
+        return props.weekdayStyle;
+      },
     },
     state,
     gridRef,

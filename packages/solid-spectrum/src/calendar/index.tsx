@@ -187,7 +187,18 @@ const calendarRoot = style<{ isMultiMonth?: boolean }>({
     value: 4,
   },
   "--cell-responsive-size": "--s2-calendar-cell-max-width",
-  width: "fit",
+  containerType: {
+    default: "inline-size",
+    isMultiMonth: "unset",
+  },
+  width: {
+    default: "[calc(7 * var(--cell-max-width) + var(--cell-gap) * 12)]",
+    isMultiMonth: "fit",
+  },
+  maxWidth: {
+    default: "full",
+    isMultiMonth: "unset",
+  },
 });
 
 // Mirrors @react-spectrum/s2 Calendar headerStyles.
@@ -481,10 +492,9 @@ function CalendarHeading(props: {
   nextButton: JSX.Element;
 }): JSX.Element {
   const state = useCalendarContext();
-  const months = () =>
-    Array.from({ length: props.visibleMonths }, (_, index) =>
-      monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone),
-    );
+  const monthOffsets = () => Array.from({ length: props.visibleMonths }, (_, index) => index);
+  const titleAt = (index: number) =>
+    monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone);
 
   return (
     // Mirror @react-spectrum/s2 CalendarHeader: one flex row per visible month,
@@ -493,14 +503,17 @@ function CalendarHeading(props: {
     // per-month title mirrors react-aria-components CalendarHeading, whose
     // HeadingContext marks it aria-hidden (the visible range is already named on
     // the application root + each grid) — so it stays out of the AX tree.
-    <For each={months()}>
-      {(title, index) => (
+    //
+    // Key the row by month offset, not the formatted title, so paging does not
+    // remount Next/Previous and drop their DOM focus (#279).
+    <For each={monthOffsets()}>
+      {(offset) => (
         <div class={calendarHeading}>
-          <Show when={index() === 0}>{props.prevButton}</Show>
+          <Show when={offset === 0}>{props.prevButton}</Show>
           <h2 aria-hidden="true" class={calendarTitle}>
-            {title}
+            {titleAt(offset)}
           </h2>
-          <Show when={index() === props.visibleMonths - 1}>{props.nextButton}</Show>
+          <Show when={offset === props.visibleMonths - 1}>{props.nextButton}</Show>
         </div>
       )}
     </For>
@@ -577,17 +590,24 @@ export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProp
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-  const rootStyle = () => ({
-    "--cell-gap": "4px",
-    "--cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--cell-responsive-size": "var(--cell-max-width)",
-    "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
-    "--s2-calendar-visible-months": visibleMonths(),
-    width: "fit-content",
-    "max-width": "100%",
-    ...(mergedUnsafeStyle() ?? {}),
-  });
+  const rootStyle = () => {
+    const months = visibleMonths();
+    const cellMaxWidth = sizeConfig().cellMaxWidth;
+    const singleMonthWidth = cellMaxWidth * 7 + 4 * 12;
+    return {
+      "--cell-gap": "4px",
+      "--cell-max-width": `${cellMaxWidth}px`,
+      "--cell-responsive-size": "var(--cell-max-width)",
+      "--s2-calendar-cell-max-width": `${cellMaxWidth}px`,
+      "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
+      "--s2-calendar-visible-months": months,
+      // Inline width so jsdom/`style.width` matches S2's one-month 272px cap
+      // (`7 * cellMaxWidth + 12 * 4px gap`). Multi-month is `fit-content`.
+      width: months > 1 ? "fit-content" : `${singleMonthWidth}px`,
+      "max-width": months > 1 ? undefined : "100%",
+      ...(mergedUnsafeStyle() ?? {}),
+    };
+  };
   const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
   return (
     <HeadlessCalendar

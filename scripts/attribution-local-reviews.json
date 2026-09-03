@@ -342,7 +342,7 @@
   {
     "localPath": "packages/solid-stately/src/dnd/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "2076ab4477ee9c60fa49af57f61a4ee4c974e2a379d8d6703f1091ccebb91a0e"
+    "contentSha256": "8998d4a60e43ecd8ab5b8b773657b3d751d7e9036b19b76014add5bfa10260bf"
   },
   {
     "localPath": "packages/solid-stately/src/form/index.ts",
@@ -967,7 +967,7 @@
   {
     "localPath": "packages/viviana-ui/src/style/glasselated-ramps.ts",
     "classification": "local-solid-helper",
-    "contentSha256": "948201ab369f75aad9a2c3a1c74d39a91e8e482046c59da9f6392429e16d719c"
+    "contentSha256": "f42c6972418dbe614f84f39a7f7df3976215568fb168e1069682ba27dba403ad"
   },
   {
     "localPath": "packages/viviana-ui/src/style/meshStrip.ts",

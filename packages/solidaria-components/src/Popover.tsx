@@ -221,6 +221,17 @@ export interface OverlayContextValue {
 
 export const OverlayContext = createContext<OverlayContextValue | null>(null);
 
+function resolveTriggerElement(value: unknown): Element | null {
+  if (value == null) return null;
+  if (typeof value === "function") {
+    return resolveTriggerElement((value as () => unknown)());
+  }
+  if (value instanceof Element) {
+    return value;
+  }
+  return null;
+}
+
 function preferredPlacementAxis(placement: Placement | undefined): PlacementAxis {
   const axis = (placement ?? "bottom").split(" ")[0];
   if (axis === "top" || axis === "bottom" || axis === "left" || axis === "right") {
@@ -400,7 +411,13 @@ export function Popover(props: PopoverProps): JSX.Element {
   };
 
   const getTriggerRef = () => {
-    if (local.triggerRef) return local.triggerRef();
+    if (local.triggerRef !== undefined) {
+      // Compiled JSX passes `() => element`. Comparison `hc` unwraps zero-arg
+      // function props into getters, so `triggerRef` can already be the node
+      // (`get triggerRef() { return el }`). Calling a node is a TypeError and
+      // leaves the overlay at the origin frame (#275).
+      return resolveTriggerElement(local.triggerRef);
+    }
     if (triggerContext) return triggerContext.triggerRef();
     if (dialogTriggerContext) return dialogTriggerContext.triggerRef();
     return null;

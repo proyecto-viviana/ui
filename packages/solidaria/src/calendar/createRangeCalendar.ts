@@ -141,6 +141,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
       "aria-label": formatCalendarLabel(state.locale(), "previous"),
       onClick: () => {
         if (!isDisabled) {
+          state.setFocused(false);
           state.focusPreviousPage();
         }
       },
@@ -157,6 +158,7 @@ export function createRangeCalendar<T extends RangeCalendarState>(
       "aria-label": formatCalendarLabel(state.locale(), "next"),
       onClick: () => {
         if (!isDisabled) {
+          state.setFocused(false);
           state.focusNextPage();
         }
       },

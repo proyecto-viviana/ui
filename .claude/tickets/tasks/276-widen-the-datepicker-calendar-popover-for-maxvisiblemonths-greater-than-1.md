@@ -4,12 +4,17 @@ type: task
 title: "Widen the DatePicker calendar popover for maxVisibleMonths greater than 1"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 datepicker functional pass: maxVisibleMonths=2 and pageBehavior=visible both render two month grids, but Solid popover stays 304px while React grows to 504px so the second month sits outside the chrome",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Calendar owns S2 one-month 272px vs multi-month fit-content; DatePicker no longer stamps 272px on the popover Calendar.",
     }
 ---
 

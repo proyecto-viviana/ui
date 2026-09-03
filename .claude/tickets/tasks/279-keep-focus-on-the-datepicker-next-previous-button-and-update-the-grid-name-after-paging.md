@@ -4,7 +4,7 @@ type: task
 title: "Keep focus on the DatePicker next/previous button and update the grid name after paging"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangecalendar: click Next pages heading to March 2025 and focusedValue 2025-03-03 on both; React grid name Trip dates, March 2025 and focus nav:Next; Solid grid name still Trip dates, February 2025 and focus BODY. Same stale names after Previous, visibleMonths=2 Next (April/May vs Feb/March), pageBehavior single/visible Next, and live focusedValue April",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CalendarGrid start/end are getters; heading For keys by offset so Next/Previous stay mounted; paging clears calendar-level focus.",
     }
 ---
 

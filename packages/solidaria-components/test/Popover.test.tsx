@@ -346,6 +346,92 @@ describe("Popover", () => {
       document.body.removeChild(trigger);
     });
 
+    it("positions a standalone popover against a sibling triggerRef accessor", async () => {
+      const restore = mockGetAnimations(() => []);
+      try {
+        let anchor: HTMLDivElement | null = null;
+        const [open, setOpen] = createSignal(false);
+        render(() => (
+          <div>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open Feedback
+            </button>
+            <div
+              ref={(element: HTMLDivElement) => {
+                anchor = element;
+              }}
+            >
+              Popover anchor
+            </div>
+            <Popover
+              isOpen={open()}
+              onOpenChange={setOpen}
+              triggerRef={() => anchor}
+              placement="bottom"
+            >
+              Content
+            </Popover>
+          </div>
+        ));
+
+        const user = setupUser();
+        await user.click(screen.getByRole("button", { name: "Open Feedback" }));
+        await waitFor(() => {
+          const dialog = screen.getByRole("dialog");
+          expect(dialog).toBeInTheDocument();
+          expect(dialog.style.position).toBe("absolute");
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("positions a standalone popover when triggerRef getter yields the node", async () => {
+      const restore = mockGetAnimations(() => []);
+      try {
+        let anchor: HTMLDivElement | null = null;
+        const [open, setOpen] = createSignal(false);
+        render(() => (
+          <div>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open Feedback
+            </button>
+            <div
+              ref={(element: HTMLDivElement) => {
+                anchor = element;
+              }}
+            >
+              Popover anchor
+            </div>
+            <Popover
+              {...({
+                get isOpen() {
+                  return open();
+                },
+                onOpenChange: setOpen,
+                get triggerRef() {
+                  return anchor;
+                },
+                placement: "bottom",
+              } as unknown as Parameters<typeof Popover>[0])}
+            >
+              Content
+            </Popover>
+          </div>
+        ));
+
+        const user = setupUser();
+        await user.click(screen.getByRole("button", { name: "Open Feedback" }));
+        await waitFor(() => {
+          const dialog = screen.getByRole("dialog");
+          expect(dialog).toBeInTheDocument();
+          expect(dialog.style.position).toBe("absolute");
+        });
+      } finally {
+        restore();
+      }
+    });
+
     it("should use the trigger layout width when a pressScale transform shrinks getBoundingClientRect", async () => {
       const trigger = document.createElement("button");
       Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 192 });
@@ -489,6 +575,9 @@ describe("Popover", () => {
 
       // Popover should be closed
       expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(button).toHaveFocus();
+      });
     });
 
     it("should not close when isKeyboardDismissDisabled is true", async () => {
@@ -833,6 +922,43 @@ describe("Popover", () => {
         await user.keyboard("{Escape}");
         await waitFor(() => {
           expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        });
+        await waitFor(() => {
+          expect(screen.getByRole("button", { name: "Open" })).toHaveFocus();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("restores DialogTrigger focus after instant dismiss", async () => {
+      const restore = mockGetAnimations(() => []);
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <DialogTrigger>
+            <Button>Feedback</Button>
+            <Popover>
+              <div role="dialog" aria-label="Feedback">
+                Content
+              </div>
+            </Popover>
+          </DialogTrigger>
+        ));
+
+        const trigger = screen.getByRole("button", { name: "Feedback" });
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole("dialog", { name: "Feedback" })).toBeInTheDocument();
+        });
+
+        await user.keyboard("{Escape}");
+        await waitFor(() => {
+          expect(screen.queryByRole("dialog", { name: "Feedback" })).not.toBeInTheDocument();
+        });
+        await waitFor(() => {
+          expect(trigger).toHaveFocus();
         });
       } finally {
         restore();

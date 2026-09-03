@@ -634,10 +634,9 @@ function RangeCalendarHeading(props: {
   nextButton: JSX.Element;
 }): JSX.Element {
   const state = useRangeCalendarContext();
-  const months = () =>
-    Array.from({ length: props.visibleMonths }, (_, index) =>
-      monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone),
-    );
+  const monthOffsets = () => Array.from({ length: props.visibleMonths }, (_, index) => index);
+  const titleAt = (index: number) =>
+    monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone);
 
   return (
     // Mirror @react-spectrum/s2 CalendarHeader (shared with Calendar): one flex
@@ -647,14 +646,17 @@ function RangeCalendarHeading(props: {
     // CalendarHeading, whose HeadingContext marks it aria-hidden (the visible
     // range is already named on the application root + each grid) — so it stays
     // out of the AX tree.
-    <For each={months()}>
-      {(title, index) => (
+    //
+    // Key the row by month offset, not the formatted title, so paging does not
+    // remount Next/Previous and drop their DOM focus (#279).
+    <For each={monthOffsets()}>
+      {(offset) => (
         <div class={rangeCalendarHeading}>
-          <Show when={index() === 0}>{props.prevButton}</Show>
+          <Show when={offset === 0}>{props.prevButton}</Show>
           <h2 aria-hidden="true" class={rangeCalendarTitle}>
-            {title}
+            {titleAt(offset)}
           </h2>
-          <Show when={index() === props.visibleMonths - 1}>{props.nextButton}</Show>
+          <Show when={offset === props.visibleMonths - 1}>{props.nextButton}</Show>
         </div>
       )}
     </For>

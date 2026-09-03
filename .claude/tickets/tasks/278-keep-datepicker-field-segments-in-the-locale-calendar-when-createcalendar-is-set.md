@@ -4,12 +4,17 @@ type: task
 title: "Keep DatePicker field segments in the locale calendar when createCalendar is set"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 datepicker functional pass: calendarSystem=custom454 keeps React field 2/14/2025 and turns Solid field into 1/13/2025 while both calendars stay on Friday, February 14, 2025",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createCalendar is split off DatePicker field props and passed only to the popover Calendar.",
     }
 ---
 

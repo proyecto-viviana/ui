@@ -148,13 +148,14 @@ function isCallbackProp(key: string) {
 /**
  * Mirror `solid-js/h`'s dynamic-prop convention on the component path: a
  * zero-argument function prop is a reactive accessor and becomes a getter that
- * calls it. Callback-shaped keys (`on*`/`render*`), `ref`, and `children` stay
- * raw — normalizeCallbackProps already pinned the callbacks, and children are
+ * calls it. Callback-shaped keys (`on*`/`render*`), `ref`, `*Ref` (triggerRef
+ * and overlay refs stay `() => Element`), and `children` stay raw —
+ * normalizeCallbackProps already pinned the callbacks, and children are
  * handled by the slot machinery.
  */
 function unwrapAccessorProps(props: Props): Props {
   for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(props))) {
-    if (key === "ref" || key === "children" || isCallbackProp(key)) {
+    if (key === "ref" || key === "children" || isCallbackProp(key) || key.endsWith("Ref")) {
       continue;
     }
     const accessor = descriptor.value;
