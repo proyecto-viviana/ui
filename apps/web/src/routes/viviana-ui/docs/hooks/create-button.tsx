@@ -1,0 +1,244 @@
+import { createFileRoute } from "@tanstack/solid-router";
+import { createSignal } from "solid-js";
+import { createButton } from "@proyecto-viviana/solidaria";
+import { typeRoles } from "@proyecto-viviana/ui";
+import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
+import { seo } from "@/seo";
+
+export const Route = createFileRoute("/viviana-ui/docs/hooks/create-button")({
+  head: () =>
+    seo({
+      title: "Viviana UI createButton",
+      description: "Provides the behavior and accessibility implementation for a button component.",
+      path: "/viviana-ui/docs/hooks/create-button",
+    }),
+  component: CreateButtonPage,
+});
+
+function CreateButtonPage() {
+  const [status, setStatus] = createSignal("Not pressed yet");
+
+  return (
+    <DocPage
+      title="createButton"
+      description="Provides the behavior and accessibility implementation for a button component. Use this hook when you need full control over the button's appearance while maintaining proper accessibility."
+      importCode={`import { createButton } from '@proyecto-viviana/solidaria';`}
+    >
+      <h2>Usage</h2>
+      <pre>
+        <code>{`function CustomButton(props) {
+  const { buttonProps, isPressed } = createButton({
+    onPress: props.onPress,
+    isDisabled: props.isDisabled,
+  });
+
+  return (
+    <button
+      {...buttonProps}
+      class={isPressed() ? 'pressed' : ''}
+    >
+      {props.children}
+    </button>
+  );
+}`}</code>
+      </pre>
+
+      <Example
+        title="Custom Styled Button"
+        description="Build a button with custom styling while maintaining accessibility."
+        code={`function GradientButton(props) {
+  const { buttonProps, isPressed } = createButton({
+    onPress: props.onPress,
+  });
+
+  return (
+    <button
+      {...buttonProps}
+      class={\`gradient-btn \${isPressed() ? 'scale-95' : ''}\`}
+    >
+      {props.children}
+    </button>
+  );
+}`}
+      >
+        <GradientButton
+          onPress={() => {
+            setStatus("Pressed");
+          }}
+        >
+          Custom Gradient Button
+        </GradientButton>
+        <p class={typeRoles.meta} style={{ "margin-top": "12px" }}>
+          Status: {status()}
+        </p>
+      </Example>
+
+      <Example
+        title="Button as Link"
+        description="Create an accessible link that looks like a button."
+        code={`function ButtonLink(props) {
+  const { buttonProps } = createButton({
+    elementType: 'a',
+  });
+
+  return (
+    <a {...buttonProps} href={props.href}>
+      {props.children}
+    </a>
+  );
+}`}
+      >
+        <ButtonLink href="https://github.com/proyecto-viviana">View on GitHub →</ButtonLink>
+      </Example>
+
+      <h2>Parameters</h2>
+      <PropsTable
+        props={[
+          {
+            name: "onPress",
+            type: "(e: PressEvent) => void",
+            description: "Handler called when the button is pressed",
+          },
+          {
+            name: "onPressStart",
+            type: "(e: PressEvent) => void",
+            description: "Handler called when press starts",
+          },
+          {
+            name: "onPressEnd",
+            type: "(e: PressEvent) => void",
+            description: "Handler called when press ends",
+          },
+          {
+            name: "onPressChange",
+            type: "(isPressed: boolean) => void",
+            description: "Handler called when pressed state changes",
+          },
+          {
+            name: "onPressUp",
+            type: "(e: PressEvent) => void",
+            description: "Handler called when pointer is released",
+          },
+          {
+            name: "isDisabled",
+            type: "boolean",
+            default: "false",
+            description: "Whether the button is disabled",
+          },
+          {
+            name: "elementType",
+            type: "'button' | 'a' | 'div' | 'span'",
+            default: "'button'",
+            description: "The HTML element to render as",
+          },
+          {
+            name: "type",
+            type: "'button' | 'submit' | 'reset'",
+            default: "'button'",
+            description: "The button type (for form submission)",
+          },
+          {
+            name: "href",
+            type: "string",
+            description: "URL for link buttons",
+          },
+          {
+            name: "target",
+            type: "string",
+            description: "Link target (_blank, _self, etc.)",
+          },
+          {
+            name: "excludeFromTabOrder",
+            type: "boolean",
+            default: "false",
+            description: "Remove from tab order",
+          },
+        ]}
+      />
+
+      <h2>Return Value</h2>
+      <PropsTable
+        props={[
+          {
+            name: "buttonProps",
+            type: "JSX.HTMLAttributes",
+            description: "Props to spread on the button element",
+          },
+          {
+            name: "isPressed",
+            type: "Accessor<boolean>",
+            description: "Signal indicating if button is currently pressed",
+          },
+        ]}
+      />
+
+      <AccessibilitySection>
+        <li>
+          Handles <code>role="button"</code> when using non-button elements
+        </li>
+        <li>
+          Manages <code>tabIndex</code> for keyboard accessibility
+        </li>
+        <li>Handles Enter and Space key presses</li>
+        <li>
+          Sets <code>aria-disabled</code> for disabled state
+        </li>
+        <li>Normalizes press events across mouse, touch, and keyboard</li>
+        <li>Prevents default behavior for non-native buttons</li>
+      </AccessibilitySection>
+    </DocPage>
+  );
+}
+
+function GradientButton(props: { onPress?: () => void; children: string }) {
+  const { buttonProps, isPressed } = createButton({
+    onPress: props.onPress,
+  });
+
+  return (
+    <button
+      {...buttonProps}
+      class={typeRoles.label}
+      style={{
+        padding: "12px 24px",
+        border: "none",
+        "border-radius": "var(--radius-lg)",
+        background: "linear-gradient(90deg, var(--color-accent), var(--color-primary-500))",
+        color: "var(--color-grey-900)",
+        cursor: "pointer",
+        transition: "transform 150ms ease",
+        transform: isPressed() ? "scale(0.98)" : "none",
+      }}
+    >
+      {props.children}
+    </button>
+  );
+}
+
+function ButtonLink(props: { href: string; children: string }) {
+  const { buttonProps } = createButton({
+    elementType: "a",
+  });
+
+  return (
+    <a
+      {...buttonProps}
+      href={props.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      class={typeRoles.label}
+      style={{
+        display: "inline-flex",
+        "align-items": "center",
+        gap: "8px",
+        padding: "10px 20px",
+        "border-radius": "var(--radius-lg)",
+        background: "var(--color-accent)",
+        color: "var(--color-grey-900)",
+        "text-decoration": "none",
+      }}
+    >
+      {props.children}
+    </a>
+  );
+}

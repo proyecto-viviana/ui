@@ -15,6 +15,7 @@ import { Route as DocsRouteRouteImport } from './routes/docs/route'
 import { Route as ShowcaseRouteRouteImport } from './routes/showcase/route'
 import { Route as SolidSpectrumRouteRouteImport } from './routes/solid-spectrum/route'
 import { Route as ThemeRouteImport } from './routes/theme'
+import { Route as VivianaUiRouteRouteImport } from './routes/viviana-ui/route'
 import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as ShowcaseIndexRouteImport } from './routes/showcase/index'
 import { Route as ShowcaseButtonsRouteImport } from './routes/showcase/buttons'
@@ -36,6 +37,8 @@ import { Route as SolidSpectrumIndexRouteImport } from './routes/solid-spectrum/
 import { Route as SolidSpectrumDocsRouteRouteImport } from './routes/solid-spectrum/docs/route'
 import { Route as SolidSpectrumEcosystemRouteImport } from './routes/solid-spectrum/ecosystem'
 import { Route as SolidSpectrumPlaygroundRouteImport } from './routes/solid-spectrum/playground'
+import { Route as VivianaUiIndexRouteImport } from './routes/viviana-ui/index'
+import { Route as VivianaUiDocsRouteRouteImport } from './routes/viviana-ui/docs/route'
 import { Route as DocsComponentsAccordionRouteImport } from './routes/docs/components/accordion'
 import { Route as DocsComponentsActionbarRouteImport } from './routes/docs/components/actionbar'
 import { Route as DocsComponentsActionbuttonRouteImport } from './routes/docs/components/actionbutton'
@@ -120,6 +123,8 @@ import { Route as DocsComponentsUsercardRouteImport } from './routes/docs/compon
 import { Route as DocsComponentsWellRouteImport } from './routes/docs/components/well'
 import { Route as SolidSpectrumDocsIndexRouteImport } from './routes/solid-spectrum/docs/index'
 import { Route as SolidSpectrumDocsInstallationRouteImport } from './routes/solid-spectrum/docs/installation'
+import { Route as VivianaUiDocsIndexRouteImport } from './routes/viviana-ui/docs/index'
+import { Route as VivianaUiDocsInstallationRouteImport } from './routes/viviana-ui/docs/installation'
 import { Route as SolidSpectrumDocsComponentsAccordionRouteImport } from './routes/solid-spectrum/docs/components/accordion'
 import { Route as SolidSpectrumDocsComponentsActionbarRouteImport } from './routes/solid-spectrum/docs/components/actionbar'
 import { Route as SolidSpectrumDocsComponentsActiongroupRouteImport } from './routes/solid-spectrum/docs/components/actiongroup'
@@ -167,6 +172,9 @@ import { Route as SolidSpectrumDocsComponentsTreeRouteImport } from './routes/so
 import { Route as SolidSpectrumDocsComponentsVirtualizerRouteImport } from './routes/solid-spectrum/docs/components/virtualizer'
 import { Route as SolidSpectrumDocsHooksCreateButtonRouteImport } from './routes/solid-spectrum/docs/hooks/create-button'
 import { Route as SolidSpectrumDocsHooksCreatePressRouteImport } from './routes/solid-spectrum/docs/hooks/create-press'
+import { Route as VivianaUiDocsComponentsButtonRouteImport } from './routes/viviana-ui/docs/components/button'
+import { Route as VivianaUiDocsHooksCreateButtonRouteImport } from './routes/viviana-ui/docs/hooks/create-button'
+import { Route as VivianaUiDocsHooksCreatePressRouteImport } from './routes/viviana-ui/docs/hooks/create-press'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -196,6 +204,11 @@ const SolidSpectrumRouteRoute = SolidSpectrumRouteRouteImport.update({
 const ThemeRoute = ThemeRouteImport.update({
   id: '/theme',
   path: '/theme',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VivianaUiRouteRoute = VivianaUiRouteRouteImport.update({
+  id: '/viviana-ui',
+  path: '/viviana-ui',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsIndexRoute = DocsIndexRouteImport.update({
@@ -302,6 +315,16 @@ const SolidSpectrumPlaygroundRoute = SolidSpectrumPlaygroundRouteImport.update({
   id: '/playground',
   path: '/playground',
   getParentRoute: () => SolidSpectrumRouteRoute,
+} as any)
+const VivianaUiIndexRoute = VivianaUiIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VivianaUiRouteRoute,
+} as any)
+const VivianaUiDocsRouteRoute = VivianaUiDocsRouteRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => VivianaUiRouteRoute,
 } as any)
 const DocsComponentsAccordionRoute = DocsComponentsAccordionRouteImport.update({
   id: '/components/accordion',
@@ -758,6 +781,17 @@ const SolidSpectrumDocsInstallationRoute =
     path: '/installation',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
+const VivianaUiDocsIndexRoute = VivianaUiDocsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VivianaUiDocsRouteRoute,
+} as any)
+const VivianaUiDocsInstallationRoute =
+  VivianaUiDocsInstallationRouteImport.update({
+    id: '/installation',
+    path: '/installation',
+    getParentRoute: () => VivianaUiDocsRouteRoute,
+  } as any)
 const SolidSpectrumDocsComponentsAccordionRoute =
   SolidSpectrumDocsComponentsAccordionRouteImport.update({
     id: '/components/accordion',
@@ -1040,15 +1074,35 @@ const SolidSpectrumDocsHooksCreatePressRoute =
     path: '/hooks/create-press',
     getParentRoute: () => SolidSpectrumDocsRouteRoute,
   } as any)
+const VivianaUiDocsComponentsButtonRoute =
+  VivianaUiDocsComponentsButtonRouteImport.update({
+    id: '/components/button',
+    path: '/components/button',
+    getParentRoute: () => VivianaUiDocsRouteRoute,
+  } as any)
+const VivianaUiDocsHooksCreateButtonRoute =
+  VivianaUiDocsHooksCreateButtonRouteImport.update({
+    id: '/hooks/create-button',
+    path: '/hooks/create-button',
+    getParentRoute: () => VivianaUiDocsRouteRoute,
+  } as any)
+const VivianaUiDocsHooksCreatePressRoute =
+  VivianaUiDocsHooksCreatePressRouteImport.update({
+    id: '/hooks/create-press',
+    path: '/hooks/create-press',
+    getParentRoute: () => VivianaUiDocsRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/docs': typeof DocsRouteRouteWithChildren
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
+  '/viviana-ui': typeof VivianaUiRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
+  '/viviana-ui/docs': typeof VivianaUiDocsRouteRouteWithChildren
   '/showcase/buttons': typeof ShowcaseButtonsRoute
   '/showcase/cards': typeof ShowcaseCardsRoute
   '/showcase/chips': typeof ShowcaseChipsRoute
@@ -1069,6 +1123,7 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
+  '/viviana-ui/': typeof VivianaUiIndexRoute
   '/docs/components/accordion': typeof DocsComponentsAccordionRoute
   '/docs/components/actionbar': typeof DocsComponentsActionbarRoute
   '/docs/components/actionbutton': typeof DocsComponentsActionbuttonRoute
@@ -1152,7 +1207,9 @@ export interface FileRoutesByFullPath {
   '/docs/components/usercard': typeof DocsComponentsUsercardRoute
   '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
+  '/viviana-ui/docs/installation': typeof VivianaUiDocsInstallationRoute
   '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
+  '/viviana-ui/docs/': typeof VivianaUiDocsIndexRoute
   '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
   '/solid-spectrum/docs/components/actionbar': typeof SolidSpectrumDocsComponentsActionbarRoute
   '/solid-spectrum/docs/components/actiongroup': typeof SolidSpectrumDocsComponentsActiongroupRoute
@@ -1200,6 +1257,9 @@ export interface FileRoutesByFullPath {
   '/solid-spectrum/docs/components/virtualizer': typeof SolidSpectrumDocsComponentsVirtualizerRoute
   '/solid-spectrum/docs/hooks/create-button': typeof SolidSpectrumDocsHooksCreateButtonRoute
   '/solid-spectrum/docs/hooks/create-press': typeof SolidSpectrumDocsHooksCreatePressRoute
+  '/viviana-ui/docs/components/button': typeof VivianaUiDocsComponentsButtonRoute
+  '/viviana-ui/docs/hooks/create-button': typeof VivianaUiDocsHooksCreateButtonRoute
+  '/viviana-ui/docs/hooks/create-press': typeof VivianaUiDocsHooksCreatePressRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1225,6 +1285,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/showcase': typeof ShowcaseIndexRoute
   '/solid-spectrum': typeof SolidSpectrumIndexRoute
+  '/viviana-ui': typeof VivianaUiIndexRoute
   '/docs/components/accordion': typeof DocsComponentsAccordionRoute
   '/docs/components/actionbar': typeof DocsComponentsActionbarRoute
   '/docs/components/actionbutton': typeof DocsComponentsActionbuttonRoute
@@ -1308,7 +1369,9 @@ export interface FileRoutesByTo {
   '/docs/components/usercard': typeof DocsComponentsUsercardRoute
   '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
+  '/viviana-ui/docs/installation': typeof VivianaUiDocsInstallationRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsIndexRoute
+  '/viviana-ui/docs': typeof VivianaUiDocsIndexRoute
   '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
   '/solid-spectrum/docs/components/actionbar': typeof SolidSpectrumDocsComponentsActionbarRoute
   '/solid-spectrum/docs/components/actiongroup': typeof SolidSpectrumDocsComponentsActiongroupRoute
@@ -1356,6 +1419,9 @@ export interface FileRoutesByTo {
   '/solid-spectrum/docs/components/virtualizer': typeof SolidSpectrumDocsComponentsVirtualizerRoute
   '/solid-spectrum/docs/hooks/create-button': typeof SolidSpectrumDocsHooksCreateButtonRoute
   '/solid-spectrum/docs/hooks/create-press': typeof SolidSpectrumDocsHooksCreatePressRoute
+  '/viviana-ui/docs/components/button': typeof VivianaUiDocsComponentsButtonRoute
+  '/viviana-ui/docs/hooks/create-button': typeof VivianaUiDocsHooksCreateButtonRoute
+  '/viviana-ui/docs/hooks/create-press': typeof VivianaUiDocsHooksCreatePressRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1363,9 +1429,11 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteRouteWithChildren
   '/showcase': typeof ShowcaseRouteRouteWithChildren
   '/solid-spectrum': typeof SolidSpectrumRouteRouteWithChildren
+  '/viviana-ui': typeof VivianaUiRouteRouteWithChildren
   '/admin': typeof AdminRoute
   '/theme': typeof ThemeRoute
   '/solid-spectrum/docs': typeof SolidSpectrumDocsRouteRouteWithChildren
+  '/viviana-ui/docs': typeof VivianaUiDocsRouteRouteWithChildren
   '/showcase/buttons': typeof ShowcaseButtonsRoute
   '/showcase/cards': typeof ShowcaseCardsRoute
   '/showcase/chips': typeof ShowcaseChipsRoute
@@ -1386,6 +1454,7 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/showcase/': typeof ShowcaseIndexRoute
   '/solid-spectrum/': typeof SolidSpectrumIndexRoute
+  '/viviana-ui/': typeof VivianaUiIndexRoute
   '/docs/components/accordion': typeof DocsComponentsAccordionRoute
   '/docs/components/actionbar': typeof DocsComponentsActionbarRoute
   '/docs/components/actionbutton': typeof DocsComponentsActionbuttonRoute
@@ -1469,7 +1538,9 @@ export interface FileRoutesById {
   '/docs/components/usercard': typeof DocsComponentsUsercardRoute
   '/docs/components/well': typeof DocsComponentsWellRoute
   '/solid-spectrum/docs/installation': typeof SolidSpectrumDocsInstallationRoute
+  '/viviana-ui/docs/installation': typeof VivianaUiDocsInstallationRoute
   '/solid-spectrum/docs/': typeof SolidSpectrumDocsIndexRoute
+  '/viviana-ui/docs/': typeof VivianaUiDocsIndexRoute
   '/solid-spectrum/docs/components/accordion': typeof SolidSpectrumDocsComponentsAccordionRoute
   '/solid-spectrum/docs/components/actionbar': typeof SolidSpectrumDocsComponentsActionbarRoute
   '/solid-spectrum/docs/components/actiongroup': typeof SolidSpectrumDocsComponentsActiongroupRoute
@@ -1517,6 +1588,9 @@ export interface FileRoutesById {
   '/solid-spectrum/docs/components/virtualizer': typeof SolidSpectrumDocsComponentsVirtualizerRoute
   '/solid-spectrum/docs/hooks/create-button': typeof SolidSpectrumDocsHooksCreateButtonRoute
   '/solid-spectrum/docs/hooks/create-press': typeof SolidSpectrumDocsHooksCreatePressRoute
+  '/viviana-ui/docs/components/button': typeof VivianaUiDocsComponentsButtonRoute
+  '/viviana-ui/docs/hooks/create-button': typeof VivianaUiDocsHooksCreateButtonRoute
+  '/viviana-ui/docs/hooks/create-press': typeof VivianaUiDocsHooksCreatePressRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1525,9 +1599,11 @@ export interface FileRouteTypes {
     | '/docs'
     | '/showcase'
     | '/solid-spectrum'
+    | '/viviana-ui'
     | '/admin'
     | '/theme'
     | '/solid-spectrum/docs'
+    | '/viviana-ui/docs'
     | '/showcase/buttons'
     | '/showcase/cards'
     | '/showcase/chips'
@@ -1548,6 +1624,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/showcase/'
     | '/solid-spectrum/'
+    | '/viviana-ui/'
     | '/docs/components/accordion'
     | '/docs/components/actionbar'
     | '/docs/components/actionbutton'
@@ -1631,7 +1708,9 @@ export interface FileRouteTypes {
     | '/docs/components/usercard'
     | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
+    | '/viviana-ui/docs/installation'
     | '/solid-spectrum/docs/'
+    | '/viviana-ui/docs/'
     | '/solid-spectrum/docs/components/accordion'
     | '/solid-spectrum/docs/components/actionbar'
     | '/solid-spectrum/docs/components/actiongroup'
@@ -1679,6 +1758,9 @@ export interface FileRouteTypes {
     | '/solid-spectrum/docs/components/virtualizer'
     | '/solid-spectrum/docs/hooks/create-button'
     | '/solid-spectrum/docs/hooks/create-press'
+    | '/viviana-ui/docs/components/button'
+    | '/viviana-ui/docs/hooks/create-button'
+    | '/viviana-ui/docs/hooks/create-press'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1704,6 +1786,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/showcase'
     | '/solid-spectrum'
+    | '/viviana-ui'
     | '/docs/components/accordion'
     | '/docs/components/actionbar'
     | '/docs/components/actionbutton'
@@ -1787,7 +1870,9 @@ export interface FileRouteTypes {
     | '/docs/components/usercard'
     | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
+    | '/viviana-ui/docs/installation'
     | '/solid-spectrum/docs'
+    | '/viviana-ui/docs'
     | '/solid-spectrum/docs/components/accordion'
     | '/solid-spectrum/docs/components/actionbar'
     | '/solid-spectrum/docs/components/actiongroup'
@@ -1835,15 +1920,20 @@ export interface FileRouteTypes {
     | '/solid-spectrum/docs/components/virtualizer'
     | '/solid-spectrum/docs/hooks/create-button'
     | '/solid-spectrum/docs/hooks/create-press'
+    | '/viviana-ui/docs/components/button'
+    | '/viviana-ui/docs/hooks/create-button'
+    | '/viviana-ui/docs/hooks/create-press'
   id:
     | '__root__'
     | '/'
     | '/docs'
     | '/showcase'
     | '/solid-spectrum'
+    | '/viviana-ui'
     | '/admin'
     | '/theme'
     | '/solid-spectrum/docs'
+    | '/viviana-ui/docs'
     | '/showcase/buttons'
     | '/showcase/cards'
     | '/showcase/chips'
@@ -1864,6 +1954,7 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/showcase/'
     | '/solid-spectrum/'
+    | '/viviana-ui/'
     | '/docs/components/accordion'
     | '/docs/components/actionbar'
     | '/docs/components/actionbutton'
@@ -1947,7 +2038,9 @@ export interface FileRouteTypes {
     | '/docs/components/usercard'
     | '/docs/components/well'
     | '/solid-spectrum/docs/installation'
+    | '/viviana-ui/docs/installation'
     | '/solid-spectrum/docs/'
+    | '/viviana-ui/docs/'
     | '/solid-spectrum/docs/components/accordion'
     | '/solid-spectrum/docs/components/actionbar'
     | '/solid-spectrum/docs/components/actiongroup'
@@ -1995,6 +2088,9 @@ export interface FileRouteTypes {
     | '/solid-spectrum/docs/components/virtualizer'
     | '/solid-spectrum/docs/hooks/create-button'
     | '/solid-spectrum/docs/hooks/create-press'
+    | '/viviana-ui/docs/components/button'
+    | '/viviana-ui/docs/hooks/create-button'
+    | '/viviana-ui/docs/hooks/create-press'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -2002,6 +2098,7 @@ export interface RootRouteChildren {
   DocsRouteRoute: typeof DocsRouteRouteWithChildren
   ShowcaseRouteRoute: typeof ShowcaseRouteRouteWithChildren
   SolidSpectrumRouteRoute: typeof SolidSpectrumRouteRouteWithChildren
+  VivianaUiRouteRoute: typeof VivianaUiRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
   ThemeRoute: typeof ThemeRoute
 }
@@ -2048,6 +2145,13 @@ declare module '@tanstack/solid-router' {
       path: '/theme'
       fullPath: '/theme'
       preLoaderRoute: typeof ThemeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/viviana-ui': {
+      id: '/viviana-ui'
+      path: '/viviana-ui'
+      fullPath: '/viviana-ui'
+      preLoaderRoute: typeof VivianaUiRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/': {
@@ -2196,6 +2300,20 @@ declare module '@tanstack/solid-router' {
       fullPath: '/solid-spectrum/playground'
       preLoaderRoute: typeof SolidSpectrumPlaygroundRouteImport
       parentRoute: typeof SolidSpectrumRouteRoute
+    }
+    '/viviana-ui/': {
+      id: '/viviana-ui/'
+      path: '/'
+      fullPath: '/viviana-ui/'
+      preLoaderRoute: typeof VivianaUiIndexRouteImport
+      parentRoute: typeof VivianaUiRouteRoute
+    }
+    '/viviana-ui/docs': {
+      id: '/viviana-ui/docs'
+      path: '/docs'
+      fullPath: '/viviana-ui/docs'
+      preLoaderRoute: typeof VivianaUiDocsRouteRouteImport
+      parentRoute: typeof VivianaUiRouteRoute
     }
     '/docs/components/accordion': {
       id: '/docs/components/accordion'
@@ -2785,6 +2903,20 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof SolidSpectrumDocsInstallationRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
     }
+    '/viviana-ui/docs/': {
+      id: '/viviana-ui/docs/'
+      path: '/'
+      fullPath: '/viviana-ui/docs/'
+      preLoaderRoute: typeof VivianaUiDocsIndexRouteImport
+      parentRoute: typeof VivianaUiDocsRouteRoute
+    }
+    '/viviana-ui/docs/installation': {
+      id: '/viviana-ui/docs/installation'
+      path: '/installation'
+      fullPath: '/viviana-ui/docs/installation'
+      preLoaderRoute: typeof VivianaUiDocsInstallationRouteImport
+      parentRoute: typeof VivianaUiDocsRouteRoute
+    }
     '/solid-spectrum/docs/components/accordion': {
       id: '/solid-spectrum/docs/components/accordion'
       path: '/components/accordion'
@@ -3113,6 +3245,27 @@ declare module '@tanstack/solid-router' {
       fullPath: '/solid-spectrum/docs/hooks/create-press'
       preLoaderRoute: typeof SolidSpectrumDocsHooksCreatePressRouteImport
       parentRoute: typeof SolidSpectrumDocsRouteRoute
+    }
+    '/viviana-ui/docs/components/button': {
+      id: '/viviana-ui/docs/components/button'
+      path: '/components/button'
+      fullPath: '/viviana-ui/docs/components/button'
+      preLoaderRoute: typeof VivianaUiDocsComponentsButtonRouteImport
+      parentRoute: typeof VivianaUiDocsRouteRoute
+    }
+    '/viviana-ui/docs/hooks/create-button': {
+      id: '/viviana-ui/docs/hooks/create-button'
+      path: '/hooks/create-button'
+      fullPath: '/viviana-ui/docs/hooks/create-button'
+      preLoaderRoute: typeof VivianaUiDocsHooksCreateButtonRouteImport
+      parentRoute: typeof VivianaUiDocsRouteRoute
+    }
+    '/viviana-ui/docs/hooks/create-press': {
+      id: '/viviana-ui/docs/hooks/create-press'
+      path: '/hooks/create-press'
+      fullPath: '/viviana-ui/docs/hooks/create-press'
+      preLoaderRoute: typeof VivianaUiDocsHooksCreatePressRouteImport
+      parentRoute: typeof VivianaUiDocsRouteRoute
     }
   }
 }
@@ -3505,11 +3658,45 @@ const SolidSpectrumRouteRouteChildren: SolidSpectrumRouteRouteChildren = {
 const SolidSpectrumRouteRouteWithChildren =
   SolidSpectrumRouteRoute._addFileChildren(SolidSpectrumRouteRouteChildren)
 
+interface VivianaUiDocsRouteRouteChildren {
+  VivianaUiDocsInstallationRoute: typeof VivianaUiDocsInstallationRoute
+  VivianaUiDocsIndexRoute: typeof VivianaUiDocsIndexRoute
+  VivianaUiDocsComponentsButtonRoute: typeof VivianaUiDocsComponentsButtonRoute
+  VivianaUiDocsHooksCreateButtonRoute: typeof VivianaUiDocsHooksCreateButtonRoute
+  VivianaUiDocsHooksCreatePressRoute: typeof VivianaUiDocsHooksCreatePressRoute
+}
+
+const VivianaUiDocsRouteRouteChildren: VivianaUiDocsRouteRouteChildren = {
+  VivianaUiDocsInstallationRoute: VivianaUiDocsInstallationRoute,
+  VivianaUiDocsIndexRoute: VivianaUiDocsIndexRoute,
+  VivianaUiDocsComponentsButtonRoute: VivianaUiDocsComponentsButtonRoute,
+  VivianaUiDocsHooksCreateButtonRoute: VivianaUiDocsHooksCreateButtonRoute,
+  VivianaUiDocsHooksCreatePressRoute: VivianaUiDocsHooksCreatePressRoute,
+}
+
+const VivianaUiDocsRouteRouteWithChildren =
+  VivianaUiDocsRouteRoute._addFileChildren(VivianaUiDocsRouteRouteChildren)
+
+interface VivianaUiRouteRouteChildren {
+  VivianaUiDocsRouteRoute: typeof VivianaUiDocsRouteRouteWithChildren
+  VivianaUiIndexRoute: typeof VivianaUiIndexRoute
+}
+
+const VivianaUiRouteRouteChildren: VivianaUiRouteRouteChildren = {
+  VivianaUiDocsRouteRoute: VivianaUiDocsRouteRouteWithChildren,
+  VivianaUiIndexRoute: VivianaUiIndexRoute,
+}
+
+const VivianaUiRouteRouteWithChildren = VivianaUiRouteRoute._addFileChildren(
+  VivianaUiRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DocsRouteRoute: DocsRouteRouteWithChildren,
   ShowcaseRouteRoute: ShowcaseRouteRouteWithChildren,
   SolidSpectrumRouteRoute: SolidSpectrumRouteRouteWithChildren,
+  VivianaUiRouteRoute: VivianaUiRouteRouteWithChildren,
   AdminRoute: AdminRoute,
   ThemeRoute: ThemeRoute,
 }

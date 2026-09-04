@@ -219,7 +219,7 @@ function LandingPage(): JSX.Element {
               status="Published · Viviana register"
               blurb="Proyecto Viviana’s expressive component library. It has its own visual language, public API, showcase, and package release."
               install="@proyecto-viviana/ui"
-              links={[{ href: "/showcase", label: "Open showcase →" }]}
+              links={[{ href: "/viviana-ui/docs", label: "Read docs →" }]}
             />
             <RegisterCard
               name="@proyecto-viviana/solid-spectrum"

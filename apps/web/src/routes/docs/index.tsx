@@ -53,10 +53,14 @@ function ApiReferenceIndex() {
 
       <p style={{ "max-width": "62ch" }}>
         Looking for live, editable examples instead? The{" "}
-        <Link to="/showcase" style={{ color: "var(--text-link)" }}>
-          showcase
+        <Link to="/viviana-ui/docs" style={{ color: "var(--text-link)" }}>
+          Viviana UI docs
         </Link>{" "}
-        renders the register in context, and the{" "}
+        walk the register with live examples. The{" "}
+        <Link to="/showcase" style={{ color: "var(--text-link)" }}>
+          playground
+        </Link>{" "}
+        still renders the register in context, and the{" "}
         <Link to="/solid-spectrum/docs" style={{ color: "var(--text-link)" }}>
           solid-spectrum docs
         </Link>{" "}

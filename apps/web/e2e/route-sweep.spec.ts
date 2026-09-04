@@ -36,6 +36,8 @@ test("the route list is derived from the generated tree and is not empty", () =>
   ).toBeGreaterThanOrEqual(MINIMUM_EXPECTED_ROUTES);
   expect(ALL_ROUTES).toContain("/");
   expect(ALL_ROUTES).toContain("/solid-spectrum/docs/installation");
+  expect(ALL_ROUTES).toContain("/viviana-ui/docs");
+  expect(ALL_ROUTES).toContain("/viviana-ui/docs/installation");
 });
 
 for (const route of ALL_ROUTES) {
