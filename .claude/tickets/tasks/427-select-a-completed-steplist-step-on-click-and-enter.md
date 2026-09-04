@@ -4,7 +4,7 @@ type: task
 title: "Select a completed StepList step on click and Enter"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "DefaultStep setSelectedKey on click and Enter when selectable; Space stays a no-op. Package test fails if click Details or Enter on Select offers leave Fallback offer current, or if Space selects.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 507411a3; DefaultStep click/Enter setSelectedKey; Space no-op. Tester package tests pass.",
     }
 ---
 

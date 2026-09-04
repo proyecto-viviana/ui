@@ -4,7 +4,7 @@ type: task
 title: "Stop hoisting every fixture CSS onto comparison component pages"
 created: 2026-09-03
 parent: 26
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "coalesce generated chrome style() macros onto virtual:comparison-chrome.css; fixture CSS stays per-module.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 3ed5bbdf; chrome macros coalesced onto virtual:comparison-chrome.css; fixtures stay per-module.",
     }
 ---
 

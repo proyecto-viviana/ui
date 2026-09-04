@@ -17,6 +17,11 @@ history:
       at: 2026-09-04,
       note: "Git v2 implement; slice (d) after #451. No ticket-session. HEAD 30d22af1. Rolldown extractExportsData cannot parse solid .jsx; did not land optimizeDeps.include.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "independent review APPROVE park at e27611e9; keep blocked. Rolldown cannot parse solid .jsx in optimizeDeps. Do not verify as done.",
+    }
 ---
 
 `optimizeDeps.exclude: localSolidPackages` is why Solid stays unbundled

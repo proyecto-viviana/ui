@@ -4,7 +4,7 @@ type: task
 title: "Deep-import solid-spectrum in comparison chrome, controls, and fixtures"
 created: 2026-09-04
 parent: 136
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "chrome/controls/fixtures/D12 off the barrel onto subpaths; parent-subpath for compound members; dropped exact-package alias; solid dist jsx in plugin include; package-root guard.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at de696c30; chrome/controls/fixtures/D12 off the barrel onto subpaths.",
     }
 ---
 

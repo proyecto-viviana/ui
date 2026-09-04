@@ -4,7 +4,7 @@ type: task
 title: "Add Astro ClientRouter, hover prefetch, and modulepreload to comparison docs"
 created: 2026-09-04
 parent: 136
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "ClientRouter in docs/marketing layouts; hover prefetch of one slug; example remounts on astro:after-swap. #450 folded here.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 3e0e50cc; ClientRouter + hover prefetch; #450 folded here not into #255.",
     }
 ---
 

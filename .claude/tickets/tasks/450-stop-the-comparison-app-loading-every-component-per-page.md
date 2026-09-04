@@ -4,7 +4,7 @@ type: task
 title: "Stop the comparison app loading every component per page"
 created: 2026-09-03
 parent: 26
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -30,6 +30,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "duplicate of #454; client-nav Done-when moved to #454",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "duplicate of #454; independent review APPROVE at 3e0e50cc. Client-nav Done-when proved on #454, not #255.",
     }
 ---
 

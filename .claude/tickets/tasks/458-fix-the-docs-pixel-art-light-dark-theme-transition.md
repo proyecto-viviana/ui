@@ -4,7 +4,7 @@ type: task
 title: "Fix the docs pixel-art light/dark theme transition"
 created: 2026-09-04
 parent: 26
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -30,6 +30,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "old-page layout overlay + Bayer tiles; fill-only wipe fails the spec",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 01b41323; old-page overlay + Bayer tiles; fill-only wipe fails the spec.",
     }
 ---
 

@@ -4,7 +4,7 @@ type: task
 title: "Lazy-load per-slug demo modules in comparison component-controls"
 created: 2026-09-03
 parent: 26
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "per-slug () => import(\"./<slug>-demo\") loaders; getComponentControlGroup async; catalogue/hero off the controls graph.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 85c5ea1e; per-slug demo loaders; Button demoHitCount 1 / coverage 0.",
     }
 ---
 

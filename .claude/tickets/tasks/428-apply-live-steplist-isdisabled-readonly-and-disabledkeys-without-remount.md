@@ -4,7 +4,7 @@ type: task
 title: "Apply live StepList isDisabled, isReadOnly, and disabledKeys without remount"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "createStepListState receives staying-mounted getters. Package tests fail if live isDisabled leaves Details without aria-disabled or Tab lands on Details, if live isReadOnly leaves a progress step enabled, or if live disabledKeys=details moves selection.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 1a02e886; staying-mounted getters into createStepListState. Tester SAC live its pass.",
     }
 ---
 

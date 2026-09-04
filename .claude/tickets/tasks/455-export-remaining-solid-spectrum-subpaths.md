@@ -4,7 +4,7 @@ type: task
 title: "Export remaining solid-spectrum subpaths"
 created: 2026-09-04
 parent: 136
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "55 ./Name keys; wrappers match ./Button; compound members reuse parents (PickerItem → ./Picker, createIcon → ./Icon). Changeset patch. package-artifacts + 89/89 resolve.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at ead40e9f; 55 ./Name keys; 89 names map; compound members reuse parents.",
     }
 ---
 

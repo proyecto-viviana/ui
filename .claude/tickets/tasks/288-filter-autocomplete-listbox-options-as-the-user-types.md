@@ -4,7 +4,7 @@ type: task
 title: "Filter Autocomplete ListBox options as the user types"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "ListBox empty/visible/sectioned/For/virtualizer count from state.collection() node.value. SearchField+ListBox fruits test fails if Cherry stays mounted after typing a.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at ff02dc06; ListBox renders filtered state.collection(). Tester Autocomplete 98/98.",
     }
 ---
 

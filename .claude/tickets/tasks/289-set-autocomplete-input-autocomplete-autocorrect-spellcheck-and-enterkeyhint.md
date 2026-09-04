@@ -4,7 +4,7 @@ type: task
 title: "Set autocomplete autocorrect spellcheck and enterKeyHint on the Autocomplete SearchField"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "SearchFieldInput last-wins autoComplete/autoCorrect/spellCheck/enterKeyHint over SearchField undefined getters. Fruits searchbox test fails if any of the four is omitted while ARIA still matches.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at e966ba50; SearchFieldInput last-wins four native attrs. Tester 15/15.",
     }
 ---
 

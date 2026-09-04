@@ -4,7 +4,7 @@ type: task
 title: "Decide note obligations for FileTrigger ColorEditor Landmark Alert and ColorPicker"
 created: 2026-09-01
 parent: 136
-status: merged
+status: verified
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
   - {
@@ -16,6 +16,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "color-family-validation-notes.md names ColorEditor and ColorPicker as composition; ten gates not-started; FileTrigger, Landmark, and Alert stay ticket exceptions. Did not bump 69/69.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 4f527857; color-family note only; ten gates not-started; 69/69 not bumped.",
     }
 ---
 

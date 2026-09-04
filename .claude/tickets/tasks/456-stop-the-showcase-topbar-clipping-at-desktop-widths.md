@@ -4,7 +4,7 @@ type: task
 title: "Stop the showcase topbar clipping at desktop widths"
 created: 2026-09-04
 parent: 26
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "wrap strip above 820; overflow visible; a11y:smoke overflow contract",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 026016ac; wrap strip above 820; a11y:smoke overflow contract.",
     }
 ---
 

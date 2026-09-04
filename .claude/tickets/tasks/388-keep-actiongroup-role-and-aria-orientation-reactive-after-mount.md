@@ -4,7 +4,7 @@ type: task
 title: "Keep ActionGroup role and aria-orientation reactive after mount"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "actionGroupProps role and aria-orientation are getters. Nested toolbar is an isInToolbar signal the getters read; ref/microtask set the signal, not setAttribute. Package tests fail if live single leaves role=toolbar or live vertical keeps aria-orientation=horizontal.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at db6ac74f; live role/orientation getters. Tester 17/17.",
     }
 ---
 

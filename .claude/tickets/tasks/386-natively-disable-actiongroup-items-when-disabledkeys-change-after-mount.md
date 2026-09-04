@@ -4,7 +4,7 @@ type: task
 title: "Natively disable ActionGroup items when disabledKeys change after mount"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "createActionGroupItem passes () => state.isDisabled(props.key) into createButton. Package tests fail if live disabledKeys leaves Italic.disabled false or ArrowRight from Bold lands on Italic.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 30d22af1; live isDisabled accessor into createButton. Tester pass.",
     }
 ---
 
