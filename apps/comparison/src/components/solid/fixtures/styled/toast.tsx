@@ -1,13 +1,13 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
+import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
+import { ButtonGroup as SolidSpectrumButtonGroup } from "@proyecto-viviana/solid-spectrum/ButtonGroup";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  Button as SolidSpectrumButton,
-  ButtonGroup as SolidSpectrumButtonGroup,
-  Provider as SolidSpectrumProvider,
   ToastContainer as SolidSpectrumToastContainer,
   ToastQueue as SolidSpectrumToastQueue,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Toast";
 import {
   normalizeToastDemoProps,
   serializeToastDemoProps,

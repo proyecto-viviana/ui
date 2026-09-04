@@ -1,11 +1,9 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Provider as SolidSpectrumProvider,
-  ToggleButton as SolidSpectrumToggleButton,
-  ToggleButtonGroup as SolidSpectrumToggleButtonGroup,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { ToggleButton as SolidSpectrumToggleButton } from "@proyecto-viviana/solid-spectrum/ToggleButton";
+import { ToggleButtonGroup as SolidSpectrumToggleButtonGroup } from "@proyecto-viviana/solid-spectrum/ToggleButtonGroup";
 import { s2ToggleButtonText } from "../../../../../../../packages/solid-spectrum/src/button/s2-action-button-styles";
 import { comparisonControlsEvent } from "@comparison/data/button-demo";
 import {

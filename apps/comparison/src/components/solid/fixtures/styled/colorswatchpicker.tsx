@@ -1,12 +1,10 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  ColorSwatch as SolidSpectrumColorSwatch,
-  ColorSwatchPicker as SolidSpectrumColorSwatchPicker,
-  Provider as SolidSpectrumProvider,
-  parseColor as parseSolidSpectrumColor,
-} from "@proyecto-viviana/solid-spectrum";
+import { ColorSwatch as SolidSpectrumColorSwatch } from "@proyecto-viviana/solid-spectrum/ColorSwatch";
+import { ColorSwatchPicker as SolidSpectrumColorSwatchPicker } from "@proyecto-viviana/solid-spectrum/ColorSwatchPicker";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { parseColor as parseSolidSpectrumColor } from "@proyecto-viviana/solid-spectrum/ColorArea";
 import { buttonDemoLocaleFromWindow } from "@comparison/data/button-demo";
 import {
   colorSwatchPickerDemoPropsFromWindow,

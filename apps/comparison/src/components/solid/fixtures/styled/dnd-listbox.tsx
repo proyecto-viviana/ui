@@ -2,7 +2,7 @@ import h from "solid-js/h";
 import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { createComponent } from "solid-js/web";
 import { hc, renderProp } from "../../solid-h";
-import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   ListBox as SolidHeadlessListBox,
   ListBoxOption as SolidHeadlessListBoxOption,

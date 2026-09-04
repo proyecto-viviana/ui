@@ -1,10 +1,8 @@
 /** @jsxImportSource solid-js */
 import { createSignal, onMount, type JSX } from "solid-js";
-import {
-  Provider as SolidSpectrumProvider,
-  TextArea,
-  TextField,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { TextArea } from "@proyecto-viviana/solid-spectrum/TextArea";
+import { TextField } from "@proyecto-viviana/solid-spectrum/TextField";
 
 type ContractCase =
   | "controlled-field"

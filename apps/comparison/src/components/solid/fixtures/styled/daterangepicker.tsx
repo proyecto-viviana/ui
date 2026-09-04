@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  DateRangePicker as SolidSpectrumDateRangePicker,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { DateRangePicker as SolidSpectrumDateRangePicker } from "@proyecto-viviana/solid-spectrum/DateRangePicker";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { calendarCreateCalendarForDemo } from "@comparison/data/calendar-demo";
 import {
   dateRangePickerMaxValue,

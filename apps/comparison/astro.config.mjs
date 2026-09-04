@@ -416,6 +416,7 @@ export default defineConfig({
         "../../packages/kumo/src/**/*",
         "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
+        "../../packages/solid-spectrum/dist/**/*.jsx",
         "../../packages/viviana-ui/src/**/*",
       ],
     }),
@@ -430,6 +431,7 @@ export default defineConfig({
         "../../packages/kumo/src/**/*",
         "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
+        "../../packages/solid-spectrum/dist/**/*.jsx",
         "../../packages/viviana-ui/src/**/*",
       ],
       exclude: ["src/components/react/**/*"],
@@ -498,10 +500,6 @@ export default defineConfig({
         {
           find: /^@proyecto-viviana\/kumo\/styles\.css$/,
           replacement: path.resolve(repoRoot, "packages/kumo/dist/styles.css"),
-        },
-        {
-          find: /^@proyecto-viviana\/solid-spectrum$/,
-          replacement: path.resolve(repoRoot, "packages/solid-spectrum/src/index.ts"),
         },
       ],
     },

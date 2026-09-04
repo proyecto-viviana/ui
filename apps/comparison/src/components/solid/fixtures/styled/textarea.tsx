@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Provider as SolidSpectrumProvider,
-  TextArea as SolidSpectrumTextArea,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { TextArea as SolidSpectrumTextArea } from "@proyecto-viviana/solid-spectrum/TextArea";
 import {
   normalizeTextAreaDemoProps,
   serializeTextAreaDemoProps,

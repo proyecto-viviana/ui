@@ -2,14 +2,14 @@ import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount, Show, type JSX } from "solid-js";
 import { createComponent } from "solid-js/web";
 import { hc, renderProp } from "../../solid-h";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  Provider as SolidSpectrumProvider,
   Tab as SolidSpectrumTab,
   TabList as SolidSpectrumTabList,
   TabPanel as SolidSpectrumTabPanel,
   Tabs as SolidSpectrumTabs,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Tabs";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import { comparisonTabItems as tabItems } from "@comparison/data/comparison-contract";
 import { dispatchComparisonCallback } from "@comparison/data/event-log";
 import {

@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Divider as SolidSpectrumDivider,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Divider as SolidSpectrumDivider } from "@proyecto-viviana/solid-spectrum/Divider";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   dividerDemoPropsFromWindow,
   normalizeDividerDemoProps,

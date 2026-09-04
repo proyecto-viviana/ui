@@ -4,10 +4,10 @@ import { hc, renderProp } from "../../solid-h";
 import {
   ComboBox as SolidSpectrumComboBox,
   ComboBoxItem as SolidSpectrumComboBoxItem,
-  ContextualHelp as SolidSpectrumContextualHelp,
-  Heading as SolidSpectrumHeading,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/ComboBox";
+import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   comboBoxDemoLocaleFromWindow,
   comboBoxDemoPropsFromWindow,

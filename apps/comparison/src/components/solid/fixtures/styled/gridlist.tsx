@@ -1,7 +1,7 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
-import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   GridList as SolidHeadlessGridList,
   GridListItem as SolidHeadlessGridListItem,

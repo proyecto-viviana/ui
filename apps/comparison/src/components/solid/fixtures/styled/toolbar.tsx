@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Toolbar as SolidSpectrumToolbar,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Toolbar as SolidSpectrumToolbar } from "@proyecto-viviana/solid-spectrum/Toolbar";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   toolbarDemoItems,
   toolbarNestedGroups,

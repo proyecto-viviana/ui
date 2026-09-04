@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Button as SolidSpectrumButton,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   normalizeProviderDemoProps,
   providerDemoPropsFromWindow,

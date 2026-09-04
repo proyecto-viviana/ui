@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Provider as SolidSpectrumProvider,
-  RangeCalendar as SolidSpectrumRangeCalendar,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { RangeCalendar as SolidSpectrumRangeCalendar } from "@proyecto-viviana/solid-spectrum/RangeCalendar";
 import { calendarCreateCalendarForDemo } from "@comparison/data/calendar-demo";
 import {
   comparisonControlsEvent as rangeCalendarControlsEvent,

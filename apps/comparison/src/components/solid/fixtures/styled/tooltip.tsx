@@ -1,12 +1,12 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  ActionButton as SolidSpectrumActionButton,
-  Provider as SolidSpectrumProvider,
   Tooltip as SolidSpectrumTooltip,
   TooltipTrigger as SolidSpectrumTooltipTrigger,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Tooltip";
 import {
   isTooltipOpenControlChecked,
   normalizeTooltipDemoProps,

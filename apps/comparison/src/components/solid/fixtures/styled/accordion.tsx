@@ -7,9 +7,9 @@ import {
   AccordionItemHeader as SolidSpectrumAccordionItemHeader,
   AccordionItemPanel as SolidSpectrumAccordionItemPanel,
   AccordionItemTitle as SolidSpectrumAccordionItemTitle,
-  ActionButton as SolidSpectrumActionButton,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Accordion";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   accordionDemoLocaleFromWindow,
   accordionDemoPropsFromWindow,

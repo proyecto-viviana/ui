@@ -1,13 +1,11 @@
 import h from "solid-js/h";
 import { For, createMemo, createSignal } from "solid-js";
-import {
-  Badge,
-  Link,
-  Meter,
-  Picker,
-  Provider,
-  SearchField,
-} from "@proyecto-viviana/solid-spectrum";
+import { Badge } from "@proyecto-viviana/solid-spectrum/Badge";
+import { Link } from "@proyecto-viviana/solid-spectrum/Link";
+import { Meter } from "@proyecto-viviana/solid-spectrum/Meter";
+import { Picker } from "@proyecto-viviana/solid-spectrum/Picker";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { SearchField } from "@proyecto-viviana/solid-spectrum/SearchField";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import {
   comparisonEntries,

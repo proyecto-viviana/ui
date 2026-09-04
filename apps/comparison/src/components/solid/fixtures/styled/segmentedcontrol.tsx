@@ -10,11 +10,11 @@ import {
 } from "solid-js";
 import { createComponent } from "solid-js/web";
 import { hc } from "../../solid-h";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  Provider as SolidSpectrumProvider,
   SegmentedControl as SolidSpectrumSegmentedControl,
   SegmentedControlItem as SolidSpectrumSegmentedControlItem,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/SegmentedControl";
 import { s2ToggleButtonText } from "../../../../../../../packages/solid-spectrum/src/button/s2-action-button-styles";
 import {
   initialSegmentedControlSelectedKey,

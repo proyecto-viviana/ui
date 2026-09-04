@@ -1,22 +1,22 @@
 import h from "solid-js/h";
 import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
+import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { ActionButtonGroup as SolidSpectrumActionButtonGroup } from "@proyecto-viviana/solid-spectrum/ActionButtonGroup";
+import { ActionMenu as SolidSpectrumActionMenu } from "@proyecto-viviana/solid-spectrum/ActionMenu";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { IllustratedMessage as SolidSpectrumIllustratedMessage } from "@proyecto-viviana/solid-spectrum/IllustratedMessage";
+import { MenuItem as SolidSpectrumMenuItem } from "@proyecto-viviana/solid-spectrum/Menu";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
-  ActionBar as SolidSpectrumActionBar,
-  ActionButton as SolidSpectrumActionButton,
-  ActionButtonGroup as SolidSpectrumActionButtonGroup,
-  ActionMenu as SolidSpectrumActionMenu,
-  Content as SolidSpectrumContent,
-  Heading as SolidSpectrumHeading,
-  IllustratedMessage as SolidSpectrumIllustratedMessage,
-  MenuItem as SolidSpectrumMenuItem,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
   TreeView as SolidSpectrumTreeView,
   TreeViewItem as SolidSpectrumTreeViewItem,
   TreeViewItemContent as SolidSpectrumTreeViewItemContent,
   TreeViewLoadMoreItem as SolidSpectrumTreeViewLoadMoreItem,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/TreeView";
 import {
   comparisonControlsEvent as treeViewControlsEvent,
   initialTreeViewExpandedKeys,

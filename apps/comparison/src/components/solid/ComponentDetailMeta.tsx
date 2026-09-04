@@ -1,5 +1,7 @@
 import h from "solid-js/h";
-import { Badge, Meter, Provider } from "@proyecto-viviana/solid-spectrum";
+import { Badge } from "@proyecto-viviana/solid-spectrum/Badge";
+import { Meter } from "@proyecto-viviana/solid-spectrum/Meter";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage, type CoverageMetric } from "@comparison/data/coverage";
 import {

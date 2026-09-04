@@ -1,12 +1,10 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Button as SolidSpectrumButton,
-  Provider as SolidSpectrumProvider,
-  Skeleton as SolidSpectrumSkeleton,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Skeleton as SolidSpectrumSkeleton } from "@proyecto-viviana/solid-spectrum/Skeleton";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   iconsDemoPropsFromWindow,
   normalizeIconsDemoProps,

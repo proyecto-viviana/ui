@@ -1,17 +1,17 @@
 import h from "solid-js/h";
 import { createSignal, type JSX } from "solid-js";
+import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { Content } from "@proyecto-viviana/solid-spectrum/Content";
+import { ContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
+import { Heading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { Picker } from "@proyecto-viviana/solid-spectrum/Picker";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  ActionButton,
-  Content,
-  ContextualHelp,
-  Heading,
-  Picker,
-  Provider,
   Radio,
   RadioGroup,
-  Switch,
-  TextField,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/RadioGroup";
+import { Switch } from "@proyecto-viviana/solid-spectrum/Switch";
+import { TextField } from "@proyecto-viviana/solid-spectrum/TextField";
 import {
   getComponentControlGroup,
   type ComponentControl,

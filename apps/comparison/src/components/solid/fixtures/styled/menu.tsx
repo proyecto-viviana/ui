@@ -1,15 +1,15 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { Keyboard as SolidSpectrumKeyboard } from "@proyecto-viviana/solid-spectrum/Keyboard";
 import {
-  ActionButton as SolidSpectrumActionButton,
-  Keyboard as SolidSpectrumKeyboard,
   Menu as SolidSpectrumMenu,
   MenuItem as SolidSpectrumMenuItem,
   MenuTrigger as SolidSpectrumMenuTrigger,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Menu";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   defaultMenuSelectedKeys,
   menuDemoPropsFromWindow,

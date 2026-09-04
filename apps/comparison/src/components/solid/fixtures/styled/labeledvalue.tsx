@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  LabeledValue as SolidSpectrumLabeledValue,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { LabeledValue as SolidSpectrumLabeledValue } from "@proyecto-viviana/solid-spectrum/LabeledValue";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   labeledValueDemoPropsFromWindow,
   normalizeLabeledValueDemoProps,

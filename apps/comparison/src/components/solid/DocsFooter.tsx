@@ -1,5 +1,7 @@
 import h from "solid-js/h";
-import { Divider, Link, Provider } from "@proyecto-viviana/solid-spectrum";
+import { Divider } from "@proyecto-viviana/solid-spectrum/Divider";
+import { Link } from "@proyecto-viviana/solid-spectrum/Link";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { docsFooterLink, docsFooterList, docsFooterRoot, staticClassName } from "./chrome/styles";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";

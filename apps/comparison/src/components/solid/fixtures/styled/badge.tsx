@@ -1,11 +1,9 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Badge as SolidSpectrumBadge,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+import { Badge as SolidSpectrumBadge } from "@proyecto-viviana/solid-spectrum/Badge";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   badgeDemoPropsFromWindow,
   normalizeBadgeDemoProps,

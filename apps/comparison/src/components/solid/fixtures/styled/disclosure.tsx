@@ -1,14 +1,14 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import {
-  ActionButton as SolidSpectrumActionButton,
   Disclosure as SolidSpectrumDisclosure,
   DisclosureHeader as SolidSpectrumDisclosureHeader,
   DisclosurePanel as SolidSpectrumDisclosurePanel,
   DisclosureTitle as SolidSpectrumDisclosureTitle,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Disclosure";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   disclosureDemoLocaleFromWindow,
   disclosureDemoPropsFromWindow,

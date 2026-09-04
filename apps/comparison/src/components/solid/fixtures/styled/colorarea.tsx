@@ -3,9 +3,9 @@ import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
 import {
   ColorArea as SolidSpectrumColorArea,
-  Provider as SolidSpectrumProvider,
   parseColor as parseSolidSpectrumColor,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/ColorArea";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { buttonDemoLocaleFromWindow } from "@comparison/data/button-demo";
 import {
   colorAreaDemoDefaults,

@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { Provider } from "@proyecto-viviana/solid-spectrum";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import ComponentExampleControls from "./ComponentExampleControls";
 import ComponentExampleFiles from "./ComponentExampleFiles";
 import ComponentExamplePreview from "./ComponentExamplePreview";

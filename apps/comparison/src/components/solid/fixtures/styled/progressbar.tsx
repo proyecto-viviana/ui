@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  ProgressBar as SolidSpectrumProgressBar,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { ProgressBar as SolidSpectrumProgressBar } from "@proyecto-viviana/solid-spectrum/ProgressBar";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { comparisonControlsEvent } from "@comparison/data/button-demo";
 import {
   progressBarFormatOptionsForPreset,

@@ -19,11 +19,9 @@
  * hydrate test's documentation assertion).
  */
 import { createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
-import {
-  Button as SolidSpectrumButton,
-  Provider as SolidSpectrumProvider,
-  createIcon,
-} from "@proyecto-viviana/solid-spectrum";
+import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { createIcon } from "@proyecto-viviana/solid-spectrum/Icon";
 import { s2ButtonText } from "../../../../../../packages/solid-spectrum/src/button/s2-button-styles";
 import { pressCallbackLoggers } from "@comparison/data/event-log";
 import {

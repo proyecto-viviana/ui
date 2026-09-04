@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount, type JSX } from "solid-js";
 import { createComponent } from "solid-js/web";
-import {
-  Provider as SolidSpectrumProvider,
-  Switch as SolidSpectrumSwitch,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Switch as SolidSpectrumSwitch } from "@proyecto-viviana/solid-spectrum/Switch";
 import {
   normalizeSwitchDemoProps,
   serializeSwitchDemoProps,

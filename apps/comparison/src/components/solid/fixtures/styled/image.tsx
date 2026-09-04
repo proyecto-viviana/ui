@@ -1,11 +1,9 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount, type JSX } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Image as SolidSpectrumImage,
-  ImageCoordinator as SolidSpectrumImageCoordinator,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Image as SolidSpectrumImage } from "@proyecto-viviana/solid-spectrum/Image";
+import { ImageCoordinator as SolidSpectrumImageCoordinator } from "@proyecto-viviana/solid-spectrum/ImageCoordinator";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   imageDemoPropsFromWindow,
   imageMissingSource,

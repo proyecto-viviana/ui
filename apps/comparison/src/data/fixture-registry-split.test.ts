@@ -58,4 +58,15 @@ describe("fixture registry split", () => {
       ),
     ).toEqual([]);
   });
+
+  it("fails when a Solid fixture imports the solid-spectrum package root", () => {
+    const known = new Set(["button"]);
+    expect(
+      evaluateFixtureModuleSource(
+        "src/components/solid/fixtures/styled/button.tsx",
+        `import { Button } from "@proyecto-viviana/solid-spectrum";\nexport default () => Button;\n`,
+        known,
+      ),
+    ).toEqual([expect.objectContaining({ kind: "package-root-import" })]);
+  });
 });

@@ -1,13 +1,13 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
+import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
 import {
-  ContextualHelp as SolidSpectrumContextualHelp,
-  Heading as SolidSpectrumHeading,
   Picker as SolidSpectrumPicker,
   PickerItem as SolidSpectrumPickerItem,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Picker";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   normalizePickerDemoProps,
   pickerDemoLocaleFromWindow,

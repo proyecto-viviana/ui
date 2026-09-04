@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Provider as SolidSpectrumProvider,
-  Skeleton as SolidSpectrumSkeleton,
-} from "@proyecto-viviana/solid-spectrum";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Skeleton as SolidSpectrumSkeleton } from "@proyecto-viviana/solid-spectrum/Skeleton";
 import {
   illustrationsDemoPropsFromWindow,
   normalizeIllustrationsDemoProps,

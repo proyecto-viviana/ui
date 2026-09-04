@@ -4,14 +4,14 @@ import { hc } from "../../solid-h";
 import {
   Card as SolidSpectrumCard,
   CardPreview as SolidSpectrumCardPreview,
-  Content as SolidSpectrumContent,
-  Footer as SolidSpectrumFooter,
-  Image as SolidSpectrumImage,
-  Provider as SolidSpectrumProvider,
-  Skeleton as SolidSpectrumSkeleton,
-  StatusLight as SolidSpectrumStatusLight,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Card";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { Footer as SolidSpectrumFooter } from "@proyecto-viviana/solid-spectrum/Footer";
+import { Image as SolidSpectrumImage } from "@proyecto-viviana/solid-spectrum/Image";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Skeleton as SolidSpectrumSkeleton } from "@proyecto-viviana/solid-spectrum/Skeleton";
+import { StatusLight as SolidSpectrumStatusLight } from "@proyecto-viviana/solid-spectrum/StatusLight";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   cardDemoPropsFromWindow,
   normalizeCardDemoProps,

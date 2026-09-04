@@ -1,15 +1,13 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Button as SolidSpectrumButton,
-  DialogTrigger as SolidSpectrumDialogTrigger,
-  Form as SolidSpectrumForm,
-  Popover as SolidSpectrumPopover,
-  Provider as SolidSpectrumProvider,
-  Switch as SolidSpectrumSwitch,
-  TextField as SolidSpectrumTextField,
-} from "@proyecto-viviana/solid-spectrum";
+import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
+import { DialogTrigger as SolidSpectrumDialogTrigger } from "@proyecto-viviana/solid-spectrum/Dialog";
+import { Form as SolidSpectrumForm } from "@proyecto-viviana/solid-spectrum/Form";
+import { Popover as SolidSpectrumPopover } from "@proyecto-viviana/solid-spectrum/Popover";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Switch as SolidSpectrumSwitch } from "@proyecto-viviana/solid-spectrum/Switch";
+import { TextField as SolidSpectrumTextField } from "@proyecto-viviana/solid-spectrum/TextField";
 import {
   isPopoverOpenControlChecked,
   normalizePopoverDemoProps,

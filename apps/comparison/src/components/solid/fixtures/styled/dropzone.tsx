@@ -1,13 +1,11 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Content as SolidSpectrumContent,
-  DropZone as SolidSpectrumDropZone,
-  Heading as SolidSpectrumHeading,
-  IllustratedMessage as SolidSpectrumIllustratedMessage,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { DropZone as SolidSpectrumDropZone } from "@proyecto-viviana/solid-spectrum/DropZone";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { IllustratedMessage as SolidSpectrumIllustratedMessage } from "@proyecto-viviana/solid-spectrum/IllustratedMessage";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   dropZoneDemoPropsFromWindow,
   normalizeDropZoneDemoProps,

@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { Provider } from "@proyecto-viviana/solid-spectrum";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
 import { hc } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";

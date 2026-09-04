@@ -1,5 +1,7 @@
 import h from "solid-js/h";
-import { Badge, LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
+import { Badge } from "@proyecto-viviana/solid-spectrum/Badge";
+import { LinkButton } from "@proyecto-viviana/solid-spectrum/LinkButton";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import {

@@ -6,7 +6,8 @@ import ts from "typescript";
 export type FixtureSplitProblemKind =
   | "static-registry-import"
   | "cross-slug-fixture-import"
-  | "cross-slug-component-import";
+  | "cross-slug-component-import"
+  | "package-root-import";
 
 export interface FixtureSplitProblem {
   kind: FixtureSplitProblemKind;
@@ -27,6 +28,27 @@ const FIXTURE_DIRS = [
 const DESIGN_SYSTEM_SPECIFIERS = [
   "@react-spectrum/s2",
   "@proyecto-viviana/solid-spectrum",
+] as const;
+
+const SOLID_SPECTRUM_PACKAGE_ROOT = "@proyecto-viviana/solid-spectrum";
+
+const PACKAGE_ROOT_GUARD_FILES = [
+  "src/components/solid/CatalogueOverview.tsx",
+  "src/components/solid/ComponentDetailHero.tsx",
+  "src/components/solid/ComponentDetailMeta.tsx",
+  "src/components/solid/ComponentExampleControls.tsx",
+  "src/components/solid/ComponentExampleSection.tsx",
+  "src/components/solid/DocsFooter.tsx",
+  "src/components/solid/DocsSidebar.tsx",
+  "src/components/solid/DocsToc.tsx",
+  "src/components/solid/DocsTopBar.tsx",
+  "src/components/solid/IndexHero.tsx",
+  "src/components/solid/fixtures/styled-shared.tsx",
+  "src/components/solid/islands/SolidButtonIsland.tsx",
+  "src/components/solid/islands/SolidMeterIsland.tsx",
+  "src/components/solid/islands/SolidTextEntryCallbackIsland.tsx",
+  "src/components/solid/marketing/MarketingCta.tsx",
+  "src/components/solid/marketing/MarketingHero.tsx",
 ] as const;
 
 const COMPOSITION_SLUGS = new Set([
@@ -139,6 +161,21 @@ function slugFromDesignSystemSpecifier(spec: string): string | null {
   return null;
 }
 
+export function evaluatePackageRootSource(file: string, source: string): FixtureSplitProblem[] {
+  const sourceFile = parseSource(file, source);
+  const problems: FixtureSplitProblem[] = [];
+  for (const spec of importSpecifiers(sourceFile)) {
+    if (spec === SOLID_SPECTRUM_PACKAGE_ROOT) {
+      problems.push({
+        kind: "package-root-import",
+        file,
+        detail: `package-root specifier "${spec}"`,
+      });
+    }
+  }
+  return problems;
+}
+
 export function evaluateRegistrySource(file: string, source: string): FixtureSplitProblem[] {
   const problems: FixtureSplitProblem[] = [];
   if (STATIC_REGISTRY_IMPORT_RE.test(source)) {
@@ -168,7 +205,7 @@ export function evaluateFixtureModuleSource(
 ): FixtureSplitProblem[] {
   const slug = slugFromFixturePath(file);
   if (slug == null) return [];
-  const problems: FixtureSplitProblem[] = [];
+  const problems: FixtureSplitProblem[] = evaluatePackageRootSource(file, source);
   const sourceFile = parseSource(file, source);
 
   for (const spec of importSpecifiers(sourceFile)) {
@@ -241,6 +278,19 @@ export function evaluateFixtureRegistries(comparisonRoot: string): FixtureSplitP
       continue;
     }
     problems.push(...evaluateRegistrySource(relative, readFileSync(abs, "utf8")));
+  }
+
+  for (const relative of PACKAGE_ROOT_GUARD_FILES) {
+    const abs = join(comparisonRoot, relative);
+    if (!existsSync(abs)) {
+      problems.push({
+        kind: "package-root-import",
+        file: relative,
+        detail: `guard file is missing: ${abs}`,
+      });
+      continue;
+    }
+    problems.push(...evaluatePackageRootSource(relative, readFileSync(abs, "utf8")));
   }
 
   for (const { dir, ext } of FIXTURE_DIRS) {

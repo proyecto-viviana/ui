@@ -2,10 +2,8 @@ import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount, Show, type JSX } from "solid-js";
 import { createComponent } from "solid-js/web";
 import { hc } from "../../solid-h";
-import {
-  Checkbox as SolidSpectrumCheckbox,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Checkbox as SolidSpectrumCheckbox } from "@proyecto-viviana/solid-spectrum/Checkbox";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   checkboxDemoPropsFromWindow,
   initialCheckboxDemoSelected,

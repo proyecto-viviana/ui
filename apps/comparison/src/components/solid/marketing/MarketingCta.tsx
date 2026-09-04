@@ -1,5 +1,6 @@
 import h from "solid-js/h";
-import { LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
+import { LinkButton } from "@proyecto-viviana/solid-spectrum/LinkButton";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { comparisonCoveragePath } from "@comparison/data/site-meta";
 import { hc } from "../solid-h";
 import { createComparisonColorScheme } from "../useComparisonColorScheme";

@@ -1,14 +1,12 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Content as SolidSpectrumContent,
-  ContextualHelp as SolidSpectrumContextualHelp,
-  Footer as SolidSpectrumFooter,
-  Heading as SolidSpectrumHeading,
-  Link as SolidSpectrumLink,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
+import { Footer as SolidSpectrumFooter } from "@proyecto-viviana/solid-spectrum/Footer";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { Link as SolidSpectrumLink } from "@proyecto-viviana/solid-spectrum/Link";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   contextualHelpDemoPropsFromWindow,
   isContextualHelpOpenControlChecked,

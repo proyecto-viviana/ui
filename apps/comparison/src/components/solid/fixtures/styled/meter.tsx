@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Meter as SolidSpectrumMeter,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Meter as SolidSpectrumMeter } from "@proyecto-viviana/solid-spectrum/Meter";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   meterDemoPropsFromWindow,
   normalizeMeterDemoProps,

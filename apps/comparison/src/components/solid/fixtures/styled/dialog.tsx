@@ -1,16 +1,16 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
+import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { AlertDialog as SolidSpectrumAlertDialog } from "@proyecto-viviana/solid-spectrum/AlertDialog";
 import {
-  Button as SolidSpectrumButton,
-  Content as SolidSpectrumContent,
-  AlertDialog as SolidSpectrumAlertDialog,
   Dialog as SolidSpectrumDialog,
   DialogTrigger as SolidSpectrumDialogTrigger,
-  Heading as SolidSpectrumHeading,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Dialog";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import { dispatchComparisonCallback } from "@comparison/data/event-log";
 import {
   dialogDemoPropsFromWindow,

@@ -1,19 +1,17 @@
 import { For, createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import h from "solid-js/h";
-import {
-  ActionButton,
-  CloseIcon,
-  ContrastIcon,
-  Divider,
-  Keyboard,
-  LightenIcon,
-  Link,
-  MenuHamburgerIcon,
-  Picker,
-  Provider,
-  SearchField,
-  SearchIcon,
-} from "@proyecto-viviana/solid-spectrum";
+import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { CloseIcon } from "@proyecto-viviana/solid-spectrum/CloseIcon";
+import { ContrastIcon } from "@proyecto-viviana/solid-spectrum/ContrastIcon";
+import { Divider } from "@proyecto-viviana/solid-spectrum/Divider";
+import { Keyboard } from "@proyecto-viviana/solid-spectrum/Keyboard";
+import { LightenIcon } from "@proyecto-viviana/solid-spectrum/LightenIcon";
+import { Link } from "@proyecto-viviana/solid-spectrum/Link";
+import { MenuHamburgerIcon } from "@proyecto-viviana/solid-spectrum/MenuHamburgerIcon";
+import { Picker } from "@proyecto-viviana/solid-spectrum/Picker";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { SearchField } from "@proyecto-viviana/solid-spectrum/SearchField";
+import { SearchIcon } from "@proyecto-viviana/solid-spectrum/SearchIcon";
 import {
   comparisonEntries,
   getComparisonEntry,

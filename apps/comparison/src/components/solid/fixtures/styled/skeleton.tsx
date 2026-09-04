@@ -1,12 +1,10 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount, type JSX } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Image as SolidSpectrumImage,
-  Provider as SolidSpectrumProvider,
-  Skeleton as SolidSpectrumSkeleton,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+import { Image as SolidSpectrumImage } from "@proyecto-viviana/solid-spectrum/Image";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Skeleton as SolidSpectrumSkeleton } from "@proyecto-viviana/solid-spectrum/Skeleton";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import { imageDemoSources } from "@comparison/data/image-demo";
 import {
   normalizeSkeletonDemoProps,

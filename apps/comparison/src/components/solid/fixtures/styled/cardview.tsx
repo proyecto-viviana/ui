@@ -1,15 +1,13 @@
 import h from "solid-js/h";
 import { createEffect, createMemo, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
-import {
-  ActionBar as SolidSpectrumActionBar,
-  ActionButton as SolidSpectrumActionButton,
-  Card as SolidSpectrumCard,
-  CardView as SolidSpectrumCardView,
-  Content as SolidSpectrumContent,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { Card as SolidSpectrumCard } from "@proyecto-viviana/solid-spectrum/Card";
+import { CardView as SolidSpectrumCardView } from "@proyecto-viviana/solid-spectrum/CardView";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   cardViewDemoPropsFromWindow,
   cardViewItems,

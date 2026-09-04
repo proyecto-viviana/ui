@@ -1,6 +1,8 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
-import { Divider, Link, Provider } from "@proyecto-viviana/solid-spectrum";
+import { Divider } from "@proyecto-viviana/solid-spectrum/Divider";
+import { Link } from "@proyecto-viviana/solid-spectrum/Link";
+import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
 import { getDocsTocItems, type DocsTocItem, type DocsTocVariant } from "@comparison/data/docs-toc";
 import {

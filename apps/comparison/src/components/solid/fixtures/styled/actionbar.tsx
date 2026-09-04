@@ -1,14 +1,14 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
+import { ActionBar as SolidSpectrumActionBar } from "@proyecto-viviana/solid-spectrum/ActionBar";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import {
-  ActionBar as SolidSpectrumActionBar,
-  ActionButton as SolidSpectrumActionButton,
   ListView as SolidSpectrumListView,
   ListViewItem as SolidSpectrumListViewItem,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/ListView";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   actionBarCollectionItems,
   actionBarDemoPropsFromWindow,

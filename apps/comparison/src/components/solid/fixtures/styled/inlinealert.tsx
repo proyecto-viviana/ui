@@ -1,12 +1,10 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Content as SolidSpectrumContent,
-  Heading as SolidSpectrumHeading,
-  InlineAlert as SolidSpectrumInlineAlert,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { InlineAlert as SolidSpectrumInlineAlert } from "@proyecto-viviana/solid-spectrum/InlineAlert";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   inlineAlertDemoPropsFromWindow,
   normalizeInlineAlertDemoProps,

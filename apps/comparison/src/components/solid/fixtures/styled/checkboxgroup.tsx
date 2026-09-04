@@ -2,14 +2,12 @@ import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount, Show, type JSX } from "solid-js";
 import { createComponent } from "solid-js/web";
 import { hc } from "../../solid-h";
-import {
-  Checkbox as SolidSpectrumCheckbox,
-  CheckboxGroup as SolidSpectrumCheckboxGroup,
-  ContextualHelp as SolidSpectrumContextualHelp,
-  Heading as SolidSpectrumHeading,
-  Provider as SolidSpectrumProvider,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+import { Checkbox as SolidSpectrumCheckbox } from "@proyecto-viviana/solid-spectrum/Checkbox";
+import { CheckboxGroup as SolidSpectrumCheckboxGroup } from "@proyecto-viviana/solid-spectrum/CheckboxGroup";
+import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   checkboxGroupDemoPropsFromWindow,
   initialCheckboxGroupDemoValue,

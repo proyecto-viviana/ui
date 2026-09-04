@@ -4,8 +4,8 @@ import { hc, renderProp } from "../../solid-h";
 import {
   Breadcrumb as SolidSpectrumBreadcrumb,
   Breadcrumbs as SolidSpectrumBreadcrumbs,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/Breadcrumbs";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   breadcrumbsDemoPropsFromWindow,
   breadcrumbsItemsForSet,

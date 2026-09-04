@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Avatar as SolidSpectrumAvatar,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Avatar as SolidSpectrumAvatar } from "@proyecto-viviana/solid-spectrum/Avatar";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   avatarDemoPropsFromWindow,
   normalizeAvatarDemoProps,

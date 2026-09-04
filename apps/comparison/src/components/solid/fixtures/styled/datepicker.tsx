@@ -1,13 +1,11 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  Content as SolidSpectrumContent,
-  ContextualHelp as SolidSpectrumContextualHelp,
-  DatePicker as SolidSpectrumDatePicker,
-  Heading as SolidSpectrumHeading,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Content as SolidSpectrumContent } from "@proyecto-viviana/solid-spectrum/Content";
+import { ContextualHelp as SolidSpectrumContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
+import { DatePicker as SolidSpectrumDatePicker } from "@proyecto-viviana/solid-spectrum/DatePicker";
+import { Heading as SolidSpectrumHeading } from "@proyecto-viviana/solid-spectrum/Heading";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { calendarCreateCalendarForDemo } from "@comparison/data/calendar-demo";
 import {
   datePickerMaxValue,

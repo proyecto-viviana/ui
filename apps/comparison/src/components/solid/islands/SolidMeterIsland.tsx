@@ -7,10 +7,8 @@
  * with the hydrated relationship.
  */
 import { createSignal, onMount } from "solid-js";
-import {
-  Meter as SolidSpectrumMeter,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { Meter as SolidSpectrumMeter } from "@proyecto-viviana/solid-spectrum/Meter";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 
 export default function SolidMeterIsland() {
   const [hydrated, setHydrated] = createSignal(false);

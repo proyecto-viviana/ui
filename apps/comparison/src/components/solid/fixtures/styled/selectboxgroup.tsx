@@ -1,11 +1,11 @@
 import h from "solid-js/h";
 import { createEffect, createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  Provider as SolidSpectrumProvider,
   SelectBox as SolidSpectrumSelectBox,
   SelectBoxGroup as SolidSpectrumSelectBoxGroup,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/SelectBoxGroup";
 import {
   initialSelectBoxGroupSelectedKeys,
   normalizeSelectBoxGroupDemoProps,

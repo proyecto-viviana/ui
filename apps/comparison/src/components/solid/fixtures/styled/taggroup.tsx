@@ -1,12 +1,12 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
-  Provider as SolidSpectrumProvider,
   Tag as SolidSpectrumTag,
   TagGroup as SolidSpectrumTagGroup,
-  Text as SolidSpectrumText,
-} from "@proyecto-viviana/solid-spectrum";
+} from "@proyecto-viviana/solid-spectrum/TagGroup";
+import { Text as SolidSpectrumText } from "@proyecto-viviana/solid-spectrum/Text";
 import {
   disabledTagGroupKeys,
   initialTagGroupSelectedKeys,

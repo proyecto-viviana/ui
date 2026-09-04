@@ -1,10 +1,8 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  StepList as SolidSpectrumStepList,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { StepList as SolidSpectrumStepList } from "@proyecto-viviana/solid-spectrum/StepList";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
   stepListDemoItems,
   stepListDemoPropsFromWindow,

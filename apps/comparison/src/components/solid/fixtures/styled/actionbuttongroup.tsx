@@ -1,11 +1,9 @@
 import h from "solid-js/h";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
-import {
-  ActionButton as SolidSpectrumActionButton,
-  ActionButtonGroup as SolidSpectrumActionButtonGroup,
-  Provider as SolidSpectrumProvider,
-} from "@proyecto-viviana/solid-spectrum";
+import { ActionButton as SolidSpectrumActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
+import { ActionButtonGroup as SolidSpectrumActionButtonGroup } from "@proyecto-viviana/solid-spectrum/ActionButtonGroup";
+import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { s2ActionButtonText } from "../../../../../../../packages/solid-spectrum/src/button/s2-action-button-styles";
 import { comparisonActionItems as actionItems } from "@comparison/data/comparison-contract";
 
