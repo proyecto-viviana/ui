@@ -17,7 +17,7 @@
  * Based on @react-aria/numberfield useNumberField.
  */
 
-import { type JSX, createMemo } from "solid-js";
+import { type JSX, createMemo, createSignal, onCleanup } from "solid-js";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -26,6 +26,7 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import type { NumberFieldState } from "@proyecto-viviana/solid-stately";
 import type { AriaButtonProps } from "../button/types";
 import type { PressEvent } from "../interactions";
+import { createFocusWithin } from "../interactions/createFocusWithin";
 
 export interface AriaNumberFieldProps {
   /** A label for the number field. */
@@ -72,6 +73,11 @@ export interface AriaNumberFieldProps {
   onCopy?: JSX.EventHandler<HTMLInputElement, ClipboardEvent>;
   /** Handler for cut events. */
   onCut?: JSX.EventHandler<HTMLInputElement, ClipboardEvent>;
+  /**
+   * Whether to disable incrementing/decrementing from the mouse wheel.
+   * RAC `useNumberField` `isWheelDisabled`.
+   */
+  isWheelDisabled?: boolean;
 }
 
 export interface NumberFieldAria {
@@ -196,11 +202,11 @@ export function createNumberField(
         break;
       case "PageUp":
         e.preventDefault();
-        state.incrementToMax();
+        state.increment();
         break;
       case "PageDown":
         e.preventDefault();
-        state.decrementToMin();
+        state.decrement();
         break;
       case "Home":
         e.preventDefault();
@@ -222,6 +228,36 @@ export function createNumberField(
     getProps().onKeyUp?.(e);
   };
 
+  const [focusWithin, setFocusWithin] = createSignal(false);
+  const { focusWithinProps } = createFocusWithin({
+    onFocusWithinChange: setFocusWithin,
+  });
+
+  const onWheel = (e: WheelEvent) => {
+    const p = getProps();
+    const input = inputRef?.();
+
+    if (
+      p.isWheelDisabled ||
+      p.isDisabled ||
+      p.isReadOnly ||
+      (input != null && input.ownerDocument.activeElement !== input && !focusWithin())
+    ) {
+      return;
+    }
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) {
+      return;
+    }
+    if (e.deltaY > 0) {
+      state.increment();
+    } else if (e.deltaY < 0) {
+      state.decrement();
+    } else {
+      return;
+    }
+    e.preventDefault();
+  };
+
   const onButtonPressStart = (e: PressEvent) => {
     const input = inputRef?.();
 
@@ -240,25 +276,57 @@ export function createNumberField(
 
   let incrementTouchPressUp = false;
   let decrementTouchPressUp = false;
+  let spinTimeout: ReturnType<typeof setTimeout> | undefined;
+  let isSpinning = false;
+
+  const clearSpin = () => {
+    if (spinTimeout != null) {
+      clearTimeout(spinTimeout);
+      spinTimeout = undefined;
+    }
+    isSpinning = false;
+  };
+  onCleanup(clearSpin);
+
+  const startSpin = (direction: "up" | "down", initialDelay: number) => {
+    clearSpin();
+    const step = () => {
+      isSpinning = true;
+      if (direction === "up") {
+        if (!state.canIncrement()) return;
+        state.increment();
+      } else {
+        if (!state.canDecrement()) return;
+        state.decrement();
+      }
+      spinTimeout = setTimeout(step, 60);
+    };
+    spinTimeout = setTimeout(step, initialDelay);
+  };
 
   const onIncrementPressStart = (e: PressEvent) => {
     if (e.pointerType !== "touch") {
       state.increment();
+      startSpin("up", 400);
     } else {
       incrementTouchPressUp = false;
+      startSpin("up", 600);
     }
 
     onButtonPressStart(e);
   };
 
   const onIncrementPressUp = (e: PressEvent) => {
+    clearSpin();
     if (e.pointerType === "touch") {
       incrementTouchPressUp = true;
     }
   };
 
   const onIncrementPressEnd = (e: PressEvent) => {
-    if (e.pointerType === "touch" && incrementTouchPressUp) {
+    const spinning = isSpinning;
+    clearSpin();
+    if (e.pointerType === "touch" && incrementTouchPressUp && !spinning) {
       state.increment();
     }
 
@@ -277,21 +345,26 @@ export function createNumberField(
   const onDecrementPressStart = (e: PressEvent) => {
     if (e.pointerType !== "touch") {
       state.decrement();
+      startSpin("down", 400);
     } else {
       decrementTouchPressUp = false;
+      startSpin("down", 600);
     }
 
     onButtonPressStart(e);
   };
 
   const onDecrementPressUp = (e: PressEvent) => {
+    clearSpin();
     if (e.pointerType === "touch") {
       decrementTouchPressUp = true;
     }
   };
 
   const onDecrementPressEnd = (e: PressEvent) => {
-    if (e.pointerType === "touch" && decrementTouchPressUp) {
+    const spinning = isSpinning;
+    clearSpin();
+    if (e.pointerType === "touch" && decrementTouchPressUp && !spinning) {
       state.decrement();
     }
 
@@ -322,11 +395,11 @@ export function createNumberField(
       return labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get groupProps() {
-      return {
+      return mergeProps(focusWithinProps, {
         role: "group",
         "aria-disabled": getProps().isDisabled || undefined,
         "aria-invalid": getProps().isInvalid || undefined,
-      } as JSX.HTMLAttributes<HTMLElement>;
+      }) as JSX.HTMLAttributes<HTMLElement>;
     },
     get inputProps() {
       const p = getProps();
@@ -379,6 +452,7 @@ export function createNumberField(
           onBlur: onInputBlur,
           onKeyDown,
           onKeyUp,
+          onWheel,
           onPaste: p.onPaste,
           onCopy: p.onCopy,
           onCut: p.onCut,

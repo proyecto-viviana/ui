@@ -4,12 +4,17 @@ type: task
 title: "Keep CardView ActionBar reactive after live control changes"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 cardview functional pass: URL ?showActionBar=true paints both Archive1 selected; live showActionBar / comparison:controls-change paints React Archive1 selected and leaves Solid with no ActionBar. URL remount Clear via evaluate empties both. Playwright locator.click on Solid Clear hits comparison-island.js-solid-mount (harness, not this ticket)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CardView renderActionBar mounts through Show with a boolean when, so live showActionBar paints the bar.",
     }
 ---
 

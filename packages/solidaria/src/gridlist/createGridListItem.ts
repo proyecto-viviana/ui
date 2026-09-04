@@ -70,16 +70,18 @@ export function createGridListItem<
     isSelected: (key: Key) => state().isSelected(key),
     isDisabled: (key: Key) => {
       const s = state();
+      const p = props();
       const item = s.collection.getItem(key);
+      const disabled = s.isDisabled(key) || !!item?.isDisabled || !!p.isDisabled;
       return (
-        s.disabledBehavior === "all" &&
-        s.isDisabled(key) &&
-        item?.props?.disabledBehavior !== "selection"
+        s.disabledBehavior === "all" && disabled && item?.props?.disabledBehavior !== "selection"
       );
     },
     canSelectItem: (key: Key) => {
       const s = state();
-      return s.selectionMode !== "none" && !s.isDisabled(key);
+      const p = props();
+      const item = s.collection.getItem(key);
+      return s.selectionMode !== "none" && !s.isDisabled(key) && !item?.isDisabled && !p.isDisabled;
     },
     setSelectionBehavior: (behavior) => state().setSelectionBehavior(behavior),
     toggleSelection: (key: Key) => state().toggleSelection(key),
@@ -122,7 +124,7 @@ export function createGridListItem<
     const node = p.node;
     const gridListData = getGridListData(s);
     const rowId = `${gridListData?.gridListId ?? "gridlist"}-row-${String(node.key)}`;
-    const label = node["aria-label"] || node.textValue || undefined;
+    const label = p.textValue || node["aria-label"] || node.textValue || undefined;
 
     const baseProps: Record<string, unknown> = {
       role: "row",
@@ -149,6 +151,7 @@ export function createGridListItem<
       ref,
       keyboardNavigationBehavior: () => gridListData?.keyboardNavigationBehavior ?? "arrow",
       direction: () => gridListData?.direction ?? "ltr",
+      layout: () => gridListData?.layout ?? "stack",
     });
   });
 

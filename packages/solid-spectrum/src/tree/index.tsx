@@ -21,6 +21,7 @@ import {
   createSignal,
   mergeProps,
   onCleanup,
+  Show,
   splitProps,
   useContext,
   type JSX,
@@ -907,7 +908,14 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     </div>
   );
 
-  return local.label || local.description || local.renderActionBar ? framed : collection;
+  return (
+    <Show
+      when={Boolean(local.label || local.description || local.renderActionBar)}
+      fallback={collection}
+    >
+      {framed}
+    </Show>
+  );
 }
 
 export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element {

@@ -702,6 +702,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: flatItems(),
+      collection: state.collection(),
+      selectedKeys: state.selectionManager.selectedKeys,
+      isSelected: (key) => state.selectionManager.isSelected(key),
     });
   });
   createEffect(() => {

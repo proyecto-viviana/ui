@@ -32,6 +32,11 @@ interface CollectionRowInteractionOptions {
   keyboardNavigationBehavior: Accessor<KeyboardNavigationBehavior>;
   direction?: Accessor<"ltr" | "rtl">;
   /**
+   * `"grid"` skips intra-row Left/Right so the collection can move between
+   * columns (S2 CardView `layout="grid"`).
+   */
+  layout?: Accessor<"stack" | "grid">;
+  /**
    * Tree expansion/collapse runs in capture before intra-row arrow walking,
    * matching RAC `handleTreeExpansionKeys`. Return true if the key was handled.
    */
@@ -109,6 +114,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   const baseOnKeyDown = rowProps.onKeyDown as ((event: KeyboardEvent) => void) | undefined;
   const baseOnPointerDown = rowProps.onPointerDown as ((event: PointerEvent) => void) | undefined;
   const baseOnMouseDown = rowProps.onMouseDown as ((event: MouseEvent) => void) | undefined;
+  const baseOnClick = rowProps.onClick as ((event: MouseEvent) => void) | undefined;
 
   const onKeyDownCapture = (event: KeyboardEvent) => {
     const row = options.ref();
@@ -124,6 +130,14 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
     }
 
     if (options.onBeforeArrowNavigation?.(event)) {
+      return;
+    }
+
+    if (
+      options.layout?.() === "grid" &&
+      (event.key === "ArrowLeft" || event.key === "ArrowRight")
+    ) {
+      baseOnKeyDownCapture?.(event);
       return;
     }
 
@@ -239,6 +253,16 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
     baseOnMouseDown?.(event);
   };
 
+  const onClick = (event: MouseEvent) => {
+    const row = options.ref();
+    const target = getEventTarget<Element>(event);
+    if (row && target && target !== row && isNestedFocusableChild(row, target)) {
+      event.stopPropagation();
+      return;
+    }
+    baseOnClick?.(event);
+  };
+
   const captureHandler =
     options.keyboardNavigationBehavior() === "arrow" ? onKeyDownCapture : baseOnKeyDownCapture;
 
@@ -252,5 +276,6 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
     onKeyDown,
     onPointerDown,
     onMouseDown,
+    onClick,
   };
 }

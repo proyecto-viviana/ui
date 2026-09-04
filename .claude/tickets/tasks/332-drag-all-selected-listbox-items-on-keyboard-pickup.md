@@ -4,12 +4,17 @@ type: task
 title: "Drag all selected ListBox items on keyboard pickup"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 dnd-listbox functional pass: Space Read+Write then Enter only marks Write data-dragging on Solid; after ArrowDown×2 Enter order is write,read,admin vs React read,write,admin. Selected options stay described Press Enter to start dragging instead of Press Enter to drag N selected items. createDraggableItem getKeysForDrag is stubbed to the focused key",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createDraggableCollectionState.getKeysForDrag matches RAC: selected keys minus selected descendants; selected description uses dragSelectedKeyboard.",
     }
 ---
 

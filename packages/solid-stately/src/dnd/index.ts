@@ -52,8 +52,11 @@ export { createDropState, type DropStateOptions, type DropState } from "./create
 
 export {
   createDraggableCollectionState,
+  getKeysForDrag,
   type DraggableCollectionStateOptions,
   type DraggableCollectionState,
+  type DraggableCollectionLike,
+  type DraggableCollectionNode,
 } from "./createDraggableCollectionState";
 
 export {

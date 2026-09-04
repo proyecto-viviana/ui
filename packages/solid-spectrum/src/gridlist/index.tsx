@@ -24,6 +24,7 @@ import {
   createSignal,
   mergeProps,
   onCleanup,
+  Show,
   splitProps,
   useContext,
   type JSX,
@@ -1093,20 +1094,22 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     </InternalListViewContext.Provider>
   );
 
-  // Branch on the props. Solid `<Show when={fn}>` treats the function as a
-  // truthy value and always renders children (`renderActionBar is not a function`).
-  if (local.label || local.description || local.renderActionBar) {
-    return (
+  // `when={Boolean(...)}` so a render-prop function is not treated as a Show
+  // accessor (`renderActionBar is not a function`). The Boolean tracks live
+  // `renderActionBar` so a post-mount showActionBar switch still paints the bar.
+  return (
+    <Show
+      when={Boolean(local.label || local.description || local.renderActionBar)}
+      fallback={collection}
+    >
       <div class={listViewWrapper({}, mergedStyles())} style={mergedUnsafeStyle()}>
         {local.label ? <div class={legacyLabel}>{local.label}</div> : null}
         {collection}
         {local.description ? <div class={legacyDescription}>{local.description}</div> : null}
         {local.renderActionBar ? local.renderActionBar(actionSelectedKeys()) : null}
       </div>
-    );
-  }
-
-  return collection;
+    </Show>
+  );
 }
 
 export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX.Element {

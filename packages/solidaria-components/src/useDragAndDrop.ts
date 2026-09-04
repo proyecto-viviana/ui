@@ -219,6 +219,9 @@ export function useDragAndDrop<T = object>(options: DragAndDropOptions<T> = {}):
           const sourceItems = props.items ?? options.items ?? [];
           return getItems(keys, sourceItems);
         },
+        collection: props.collection,
+        selectedKeys: props.selectedKeys,
+        isSelected: props.isSelected,
       }));
     };
     hooks.useDraggableCollection = (

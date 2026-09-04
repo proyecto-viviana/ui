@@ -4,12 +4,17 @@ type: task
 title: "Switch a standalone Card to a link when href is set after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 card functional pass: URL ?href=#card-target paints both as <a tabindex=0> named Apollo Active; live comparison:controls-change {href:'#card-target'} updates React to a tabbable link and leaves Solid a DIV with cursor auto. Card if (local.href) return <Link> is a one-shot Solid body branch",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Standalone Card switches HeadlessLink vs div reactively when href appears after mount.",
     }
 ---
 

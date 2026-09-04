@@ -35,7 +35,13 @@ import {
   type AriaNumberFieldProps,
   type AriaButtonProps,
 } from "@proyecto-viviana/solidaria";
-import { createNumberFieldState, type NumberFieldState } from "@proyecto-viviana/solid-stately";
+import {
+  createNumberFieldState,
+  VALID_VALIDITY_STATE,
+  type NumberFieldState,
+  type ValidationResult,
+} from "@proyecto-viviana/solid-stately";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
   type ClassNameOrFunction,
@@ -406,25 +412,47 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       },
     },
   };
+  const fieldValidation = createMemo<ValidationResult>(() => {
+    const isInvalid = ariaProps.isInvalid ?? false;
+    const errorMessage = ariaProps.errorMessage;
+    const validationErrors = isInvalid && typeof errorMessage === "string" ? [errorMessage] : [];
+    return {
+      isInvalid,
+      validationErrors,
+      validationDetails: isInvalid
+        ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
+        : VALID_VALIDITY_STATE,
+    };
+  });
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      return fieldValidation();
+    },
+    get errorMessageProps() {
+      return numberFieldAria.errorMessageProps;
+    },
+  };
 
   return (
-    <NumberFieldStateContext.Provider value={state}>
-      <NumberFieldContext.Provider value={contextValue}>
-        <div
-          {...domProps()}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          data-disabled={ariaProps.isDisabled || undefined}
-          data-invalid={ariaProps.isInvalid || undefined}
-          data-required={ariaProps.isRequired || undefined}
-          data-readonly={ariaProps.isReadOnly || undefined}
-        >
-          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
-            {fieldChildren()}
-          </Provider>
-        </div>
-      </NumberFieldContext.Provider>
-    </NumberFieldStateContext.Provider>
+    <FieldErrorContext.Provider value={fieldErrorContext}>
+      <NumberFieldStateContext.Provider value={state}>
+        <NumberFieldContext.Provider value={contextValue}>
+          <div
+            {...domProps()}
+            class={renderProps.class()}
+            style={renderProps.style()}
+            data-disabled={ariaProps.isDisabled || undefined}
+            data-invalid={ariaProps.isInvalid || undefined}
+            data-required={ariaProps.isRequired || undefined}
+            data-readonly={ariaProps.isReadOnly || undefined}
+          >
+            <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+              {fieldChildren()}
+            </Provider>
+          </div>
+        </NumberFieldContext.Provider>
+      </NumberFieldStateContext.Provider>
+    </FieldErrorContext.Provider>
   );
 }
 

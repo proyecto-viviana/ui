@@ -11,6 +11,16 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: isolated click, dispatchEvent(click), and Enter on the TreeView item ActionMenu open React Copy at opacity 1; Solid stays closed (focus row or BODY, menus []). After the failed click, Solid Escape clears selection. Worse than #308 (ListView dispatch+Enter did open)",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "row nested-focusable pointer/click stop is not enough; jsdom click still never mounts role=menu. Leave open.",
+    }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "ActionMenu inside TreeView still does not open from pointer, dispatch, or Enter. Nested row stopPropagation is landed; the press path is not.",
+    }
 ---
 
 TreeView item `ActionMenu` opens from pointer press, a dispatched

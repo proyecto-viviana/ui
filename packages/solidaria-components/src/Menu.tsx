@@ -1080,6 +1080,9 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return stateProps.dragAndDropHooks?.useDraggableCollectionState?.({
       items: flatItems(),
+      collection: state.collection(),
+      selectedKeys: state.selectionManager.selectedKeys,
+      isSelected: (key) => state.selectionManager.isSelected(key),
     });
   });
   const dropState = createMemo(() => {

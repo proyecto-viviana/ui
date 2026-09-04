@@ -154,6 +154,15 @@ function SolidSpectrumRangeCalendarDemo() {
             get createCalendar() {
               return calendarCreateCalendarForDemo(demoProps().calendarSystem);
             },
+            get UNSAFE_style() {
+              const visibleMonths = rangeCalendarVisibleMonthsFromString(demoProps().visibleMonths);
+              const resolvedVisibleMonths = visibleMonths ?? 1;
+              return {
+                "--cell-responsive-size": "32px",
+                width: `${resolvedVisibleMonths * 224 + (resolvedVisibleMonths - 1) * 24}px`,
+                maxWidth: "100%",
+              };
+            },
             get focusedValue() {
               return demoProps().focusedValue ? (focusedValue() ?? undefined) : undefined;
             },

@@ -270,6 +270,8 @@ describe("Tree", () => {
         cancelDrag: () => {},
         getItems: () => [],
         getAllowedDropOperations: () => ["move"],
+        getKeysForDrag: (key) => new Set([key]),
+        isSelected: () => false,
       };
       const dropState: DroppableCollectionState = {
         isDropTarget: false,

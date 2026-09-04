@@ -4,12 +4,17 @@ type: task
 title: "Repeat NumberField stepper presses while held"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 numberfield functional pass: mouse-down Increase 800ms from 5, React 5→7 at 400ms →13 at 800ms; Solid 5→6 and stays. Single click still matches (both +1, focus stays on the input)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Mouse stepper press starts a 400ms delay then 60ms repeat; touch keeps the 600ms delay and tap-on-release path.",
     }
 ---
 

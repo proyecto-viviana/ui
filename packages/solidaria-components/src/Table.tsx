@@ -750,6 +750,9 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: stateProps.items,
+      collection: state.collection,
+      selectedKeys: state.selectedKeys,
+      isSelected: (key) => state.isSelected(key),
     });
   });
   const dropState = createMemo(() => {

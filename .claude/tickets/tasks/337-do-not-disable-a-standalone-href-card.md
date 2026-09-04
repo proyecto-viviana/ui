@@ -4,12 +4,17 @@ type: task
 title: "Do not disable a standalone href Card (match S2)"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 card functional pass: URL ?href=#card-target&isDisabled=true leaves S2 an enabled <a tabindex=0> that Tab focuses with a 2px ring; Solid renders span[role=link][aria-disabled=true] tabindex=-1 and Tab skips to After. S2 Card Link path spreads filterDOMProps and drops isDisabled; Solid HeadlessLink gets isDisabled={local.isDisabled}",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Standalone href Card ignores isDisabled, matching S2 Link path.",
     }
 ---
 

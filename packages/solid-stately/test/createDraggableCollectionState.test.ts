@@ -190,4 +190,29 @@ describe("createDraggableCollectionState", () => {
       dispose();
     });
   });
+
+  it("drags every selected key that is not a selected descendant", () => {
+    createRoot((dispose) => {
+      const collection = {
+        getItem(key: string) {
+          if (key === "child") return { parentKey: "parent" };
+          return { parentKey: null };
+        },
+        getKeys() {
+          return ["parent", "child", "other"];
+        },
+      };
+      const selected = new Set(["parent", "child", "other"]);
+      const state = createDraggableCollectionState(() => ({
+        getItems: () => [],
+        collection,
+        selectedKeys: selected,
+        isSelected: (key) => selected.has(String(key)),
+      }));
+
+      expect([...state.getKeysForDrag("other")].sort()).toEqual(["other", "parent"]);
+      expect([...state.getKeysForDrag("solo")]).toEqual(["solo"]);
+      dispose();
+    });
+  });
 });

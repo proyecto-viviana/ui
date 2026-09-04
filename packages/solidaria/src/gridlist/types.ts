@@ -85,6 +85,17 @@ export interface AriaGridListProps {
    * @default "ltr"
    */
   direction?: "ltr" | "rtl";
+  /**
+   * `"grid"` uses two-dimensional arrow keys (S2 CardView). `"stack"` keeps
+   * Left/Right on the row and Up/Down on the collection.
+   * @default "stack"
+   */
+  layout?: "stack" | "grid";
+  /**
+   * Column count for `layout="grid"` Down/Up. When omitted, Down/Up walk
+   * document order.
+   */
+  columnCount?: number;
 }
 
 /**
@@ -101,12 +112,16 @@ export interface GridListAria {
 export interface AriaGridListItemProps {
   /** The item node. */
   node: GridNode<unknown>;
+  /** Accessible name. Wins over the collection node's textValue (S2 Card textValue). */
+  textValue?: string;
   /** Whether the grid list is virtualized. */
   isVirtualized?: boolean;
   /** How selection should behave when pressing an item. */
   selectionBehavior?: "replace" | "toggle";
   /** Handler for item action. */
   onAction?: () => void;
+  /** Whether this item is disabled. */
+  isDisabled?: boolean;
 }
 
 /**

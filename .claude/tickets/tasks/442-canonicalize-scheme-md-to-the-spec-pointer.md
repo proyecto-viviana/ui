@@ -7,7 +7,11 @@ status: merged
 history:
   - { state: open, at: 2026-09-03 }
   - { state: next, at: 2026-09-03 }
-  - { state: in-progress, at: 2026-09-03, note: "Projects #97 wave 2; Git v2 bootstrap, no live claim" }
+  - {
+      state: in-progress,
+      at: 2026-09-03,
+      note: "Projects #97 wave 2; Git v2 bootstrap, no live claim",
+    }
   - { state: merged, at: 2026-09-03, note: "SCHEME.md is the spec adoption pointer" }
 ---
 

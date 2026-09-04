@@ -4,12 +4,17 @@ type: task
 title: "Increment a focused NumberField from the mouse wheel"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 numberfield functional pass: focused React input wheel deltaY +120 → 6 and -120 → 5 with live '6'/'5'; Solid stays 5 and does not announce. createNumberField has no onWheel; ColorField already ports useScrollWheel",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Focused NumberField wheel deltaY>0 increments and deltaY<0 decrements, matching useNumberField useScrollWheel.",
     }
 ---
 

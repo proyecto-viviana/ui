@@ -981,6 +981,9 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: visibleRows().map((node) => node.value as T),
+      collection: state.collection,
+      selectedKeys: state.selectedKeys,
+      isSelected: (key) => state.isSelected(key),
     });
   });
   const dropState = createMemo(() => {

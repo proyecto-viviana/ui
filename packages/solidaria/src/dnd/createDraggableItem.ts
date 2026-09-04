@@ -92,12 +92,12 @@ export interface DraggableItemAria {
  * @returns Draggable item ARIA props
  */
 // Drag description keys per interaction modality, mirroring upstream
-// useDraggableItem's MESSAGES table. The port always drags the single focused
-// key, so isSelected is always false → the `notSelected` row is used.
-const DRAG_DESCRIPTION_MESSAGES: Record<string, string> = {
-  keyboard: "dragDescriptionKeyboard",
-  touch: "dragDescriptionLongPress",
-  virtual: "dragDescriptionVirtual",
+// useDraggableItem's MESSAGES table. Selected multi-item drags use the
+// `selected` row (`dragSelectedKeyboard` with `{count}`).
+const DRAG_DESCRIPTION_MESSAGES: Record<string, { selected: string; notSelected: string }> = {
+  keyboard: { selected: "dragSelectedKeyboard", notSelected: "dragDescriptionKeyboard" },
+  touch: { selected: "dragSelectedLongPress", notSelected: "dragDescriptionLongPress" },
+  virtual: { selected: "dragDescriptionVirtual", notSelected: "dragDescriptionVirtual" },
 };
 
 export function createDraggableItem(
@@ -118,24 +118,30 @@ export function createDraggableItem(
     return state.draggingKeys.has(key);
   });
 
-  // Drag affordance description (aria-describedby → "Press Enter to start
-  // dragging."). Mirrors upstream useDraggableItem: surfaced only when the item
-  // has no explicit drag button and the host selection mode is not 'none'. The
-  // port only ever drags the single focused key (getKeysForDrag), so
-  // numKeysForDrag === 1 → isSelected is always false → the base (notSelected)
-  // keyboard message; a host primary action swaps in the Alt variant.
+  const keysForDrag = createMemo(() => state.getKeysForDrag(getOptions().key));
+
+  // Drag affordance description (aria-describedby). Mirrors upstream
+  // useDraggableItem: surfaced only when the item has no explicit drag button
+  // and the host selection mode is not 'none'. Multi-item pickup uses
+  // `dragSelectedKeyboard` when numKeysForDrag > 1 and the item is selected.
   const dragDescription = createMemo(() => {
     const opts = getOptions();
     if (opts.hasDragButton) return undefined;
     if (opts.selectionMode == null || opts.selectionMode === "none") return undefined;
-    // Subscribe to modality changes, then resolve the drag modality the same way
-    // upstream does (pointer → virtual, coarse-pointer virtual → touch). At rest
-    // with no keyboard interaction this is 'virtual' → "Click to start dragging.".
     modality();
     const dragModality = getDragModality();
-    let msg = DRAG_DESCRIPTION_MESSAGES[dragModality] ?? "dragDescriptionVirtual";
+    const messages = DRAG_DESCRIPTION_MESSAGES[dragModality] ?? DRAG_DESCRIPTION_MESSAGES.virtual;
+    const numKeys = keysForDrag().size;
+    const isSelected = numKeys > 1 && state.isSelected(opts.key);
+    let msg = isSelected ? messages.selected : messages.notSelected;
     if (opts.hasAction && dragModality === "keyboard") {
       msg += "Alt";
+    }
+    if (isSelected) {
+      return stringFormatter().format(
+        msg as Parameters<ReturnType<typeof stringFormatter>["format"]>[0],
+        { count: numKeys },
+      );
     }
     return stringFormatter().format(
       msg as Parameters<ReturnType<typeof stringFormatter>["format"]>[0],
@@ -143,13 +149,7 @@ export function createDraggableItem(
   });
   const descriptionProps = createDescription(dragDescription);
 
-  const getKeysForDrag = (): Set<string | number> => {
-    const { key } = getOptions();
-    // If the key is not selected, only drag that item
-    // If it is selected, drag all selected items
-    // For now, just return the single key
-    return new Set([key]);
-  };
+  const getKeysForDrag = (): Set<string | number> => keysForDrag();
 
   const onDragStart = (e: DragEvent) => {
     if (e.defaultPrevented) return;

@@ -369,6 +369,7 @@ export {
   type DropStateOptions,
   type DropState,
   createDraggableCollectionState,
+  getKeysForDrag,
   type DraggableCollectionStateOptions,
   type DraggableCollectionState,
   createDroppableCollectionState,

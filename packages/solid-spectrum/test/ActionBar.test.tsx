@@ -218,10 +218,11 @@ describe("ActionBar (solid-spectrum)", () => {
   });
 
   describe("ARIA lifecycle", () => {
-    it("announces actions available using the provider locale", () => {
+    it("announces actions available only when scrollRef is set", () => {
+      const scrollRef = { current: document.createElement("div") };
       render(() => (
         <Provider locale="es-ES">
-          <ActionBar selectedItemCount={1} onClearSelection={() => {}}>
+          <ActionBar selectedItemCount={1} onClearSelection={() => {}} scrollRef={scrollRef}>
             <ActionButton>Editar</ActionButton>
           </ActionBar>
         </Provider>
@@ -230,6 +231,17 @@ describe("ActionBar (solid-spectrum)", () => {
       expect(screen.getByText("Acciones disponibles.")).toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Borrar selección" })).toBeInTheDocument();
       expect(screen.getByText("1 seleccionado")).toBeInTheDocument();
+    });
+
+    it("does not announce without scrollRef", () => {
+      render(() => (
+        <ActionBar selectedItemCount={1} onClearSelection={() => {}}>
+          <ActionButton>Edit</ActionButton>
+        </ActionBar>
+      ));
+
+      expect(screen.queryByText("Actions available.")).not.toBeInTheDocument();
+      expect(screen.getByRole("toolbar")).toBeInTheDocument();
     });
 
     it("restores focus to the trigger when the action bar closes", async () => {

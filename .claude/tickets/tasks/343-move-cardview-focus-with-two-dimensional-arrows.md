@@ -4,12 +4,17 @@ type: task
 title: "Move CardView focus with two-dimensional arrows"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 cardview functional pass: S2 CardView always passes RAC layout=grid so ArrowRight moves Apollo→Zephyr on a two-up row; Solid createGridList ArrowRight/Left are a no-op unless orientation=horizontal and keyboardNavigationBehavior=tab. Clean evidence on ?size=XS (already two-up on both): React ArrowRight focuses+selects Zephyr; Solid ArrowRight stays Apollo, ArrowDown focuses Zephyr",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CardView passes layout=grid and columnCount so ArrowRight/Left move between columns.",
     }
 ---
 

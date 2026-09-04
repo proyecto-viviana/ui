@@ -4,12 +4,17 @@ type: task
 title: "Keep ActionBar scrollRef enter on the 200ms translate"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 actionbar functional pass: live selectedItemCount 0→3 with useScrollRef slides S2 from translateY 100% through ~94% at 50ms and ~39% at 100ms to 0px -8px at 200ms. Solid paints calc(0% - 8px) at t0 and 0px -8px by 16ms. isEntering is cleared on one rAF so the isEntering:full class never holds. Settled geometry and the 200ms exit match",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "scrollRef ActionBar enter holds isEntering through a double rAF so the full translate paints before the 200ms slide.",
     }
 ---
 

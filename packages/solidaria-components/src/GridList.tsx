@@ -200,6 +200,8 @@ export interface GridListItemProps<T extends object>
   textValue?: string;
   /** Handler called when the item is activated. */
   onAction?: () => void;
+  /** Whether this item is disabled. */
+  isDisabled?: boolean;
   /** Ref for the rendered row element. */
   ref?: RefLike<HTMLDivElement>;
 }
@@ -338,6 +340,8 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "onLoadMore",
       "dragAndDropHooks",
       "orientation",
+      "layout",
+      "columnCount",
     ],
     [
       "items",
@@ -419,6 +423,8 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       keyboardNavigationBehavior: ariaProps.keyboardNavigationBehavior,
       orientation: orientation(),
       direction: resolveDirection(),
+      layout: local.layout,
+      columnCount: local.columnCount,
     }),
     () => state,
     ref,
@@ -487,6 +493,9 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: stateProps.items,
+      collection: state.collection,
+      selectedKeys: state.selectedKeys,
+      isSelected: (key) => state.isSelected(key),
     });
   });
   const dropState = createMemo(() => {
@@ -739,6 +748,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     "item",
     "textValue",
     "onAction",
+    "isDisabled",
     "children",
     "ref",
   ]);
@@ -772,7 +782,9 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   const itemAria = createGridListItem<T, GridCollection<T>>(
     () => ({
       node: itemNode(),
+      textValue: local.textValue,
       onAction: local.onAction,
+      isDisabled: local.isDisabled,
       selectionBehavior: listContext?.selectionBehavior ?? "toggle",
     }),
     () => state,

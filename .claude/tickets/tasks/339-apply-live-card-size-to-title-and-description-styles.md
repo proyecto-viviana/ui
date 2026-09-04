@@ -4,12 +4,17 @@ type: task
 title: "Apply live Card size to title and description styles"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 card functional pass: URL ?size=XL is 18px/16px title/description and 240×262 on both; live comparison:controls-change {size:'XL'} updates React to the same fonts/height and leaves Solid at first-paint 14px/12px and 240×250. Card host padding does update (24px both). Text slot styles come from CardProviders TextContext and stay snapped",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CardProviders title/description styles and Text context reads track live size.",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Honor Card isDisabled inside CardView"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 cardview functional pass: ?disabledItem=zephyr React aria-disabled click ignored; Solid stays enabled and click selects zephyr. ?disabledItem=apollo React deselects+disables and Tab lands on the grid; Solid keeps apollo selected+enabled. disabledKeys=zephyr matches on both. S2 Card spreads props onto GridListItem; Solid splits isDisabled and only forwards it on the standalone HeadlessLink path",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Card isDisabled forwards onto GridListItem and blocks selection.",
     }
 ---
 

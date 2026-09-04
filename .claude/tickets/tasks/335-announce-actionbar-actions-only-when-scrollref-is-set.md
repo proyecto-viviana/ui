@@ -4,12 +4,17 @@ type: task
 title: "Announce ActionBar actions only when scrollRef is set"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 actionbar functional pass: S2 ActionBarInner announces actionbar.actionsAvailable only when scrollRef is set on mount. Solid headless ActionBar announces whenever isOpen becomes true. Fresh default load (no scrollRef, both panels) leaves one assertive live region; ?useScrollRef=true leaves two. Styled layer always passes actionsAvailableMessage",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "ActionBar announces actionsAvailable only when scrollRef is set; default bars stay silent.",
     }
 ---
 

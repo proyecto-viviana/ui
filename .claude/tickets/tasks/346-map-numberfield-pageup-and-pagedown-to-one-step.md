@@ -4,12 +4,17 @@ type: task
 title: "Map NumberField PageUp and PageDown to one step"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 numberfield functional pass: from value 5, React PageUp→6 PageDown→5; Solid PageUp→20 (max) PageDown→0 (min). Home/End already match min/max on both",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createNumberField PageUp/PageDown call increment/decrement (RAC useSpinButton fallthrough); Home/End stay min/max.",
     }
 ---
 

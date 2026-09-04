@@ -4,12 +4,17 @@ type: task
 title: "Select the focused CardView card when selectionStyle is highlight"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 cardview functional pass: highlight+replace Tab then End moves React focus+selection to Zephyr; Solid focuses Zephyr and leaves selectedKeys=apollo. ArrowDown on the stacked/XS grid same pattern. Space/Enter/Escape after Home still match. createGridList setFocusedKey does not selectOnFocus; CardView already sets selectionBehavior replace for highlight",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createGridList selectOnFocus replaceSelection on keyboard move, including Home/End.",
     }
 ---
 

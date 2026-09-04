@@ -324,7 +324,7 @@ describe("createNumberField", () => {
       expect(onChange).toHaveBeenCalledWith(100);
     });
 
-    it("PageUp sets to maximum value", () => {
+    it("PageUp increments by one step", () => {
       const onChange = vi.fn();
       render(() => (
         <TestNumberField
@@ -339,10 +339,10 @@ describe("createNumberField", () => {
       const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "PageUp" });
 
-      expect(onChange).toHaveBeenCalledWith(100);
+      expect(onChange).toHaveBeenCalledWith(51);
     });
 
-    it("PageDown sets to minimum value", () => {
+    it("PageDown decrements by one step", () => {
       const onChange = vi.fn();
       render(() => (
         <TestNumberField
@@ -357,7 +357,7 @@ describe("createNumberField", () => {
       const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "PageDown" });
 
-      expect(onChange).toHaveBeenCalledWith(0);
+      expect(onChange).toHaveBeenCalledWith(49);
     });
 
     it("does not respond to keyboard when disabled", () => {
@@ -585,6 +585,59 @@ describe("createNumberField", () => {
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("readonly");
+    });
+  });
+
+  describe("wheel and stepper repeat", () => {
+    it("increments a focused input on wheel deltaY > 0", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      fireEvent.wheel(input, { deltaY: 120, deltaX: 0 });
+
+      expect(onChange).toHaveBeenCalledWith(6);
+    });
+
+    it("decrements a focused input on wheel deltaY < 0", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      fireEvent.wheel(input, { deltaY: -120, deltaX: 0 });
+
+      expect(onChange).toHaveBeenCalledWith(4);
+    });
+
+    it("repeats increment while the mouse stepper is held", () => {
+      vi.useFakeTimers();
+      const onChange = vi.fn();
+      let pressStart: ((e: { pointerType: string }) => void) | undefined;
+      let pressUp: ((e: { pointerType: string }) => void) | undefined;
+
+      function Capture() {
+        const state = createNumberFieldState({ defaultValue: 5, onChange, step: 1 });
+        const aria = createNumberField(
+          () => ({ "aria-label": "Amount" }),
+          state,
+          () => null,
+        );
+        pressStart = aria.incrementButtonProps.onPressStart as typeof pressStart;
+        pressUp = aria.incrementButtonProps.onPressUp as typeof pressUp;
+        return <input {...aria.inputProps} />;
+      }
+
+      render(() => <Capture />);
+      pressStart?.({ pointerType: "mouse" });
+      expect(onChange).toHaveBeenCalledWith(6);
+      vi.advanceTimersByTime(400);
+      expect(onChange).toHaveBeenCalledWith(7);
+      vi.advanceTimersByTime(400);
+      expect(onChange.mock.calls.at(-1)?.[0]).toBeGreaterThanOrEqual(13);
+      pressUp?.({ pointerType: "mouse" });
+      vi.useRealTimers();
     });
   });
 });

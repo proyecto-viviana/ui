@@ -13,9 +13,9 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Field.tsx
 
 // Port of packages/@react-spectrum/s2/src/Field.tsx HelpText (Field.tsx:407-468).
-import { type JSX, splitProps } from "solid-js";
-import { FieldError, Text } from "@proyecto-viviana/solidaria-components";
-import { DEFAULT_VALIDATION_RESULT } from "@proyecto-viviana/solid-stately";
+import { type JSX, splitProps, useContext } from "solid-js";
+import { FieldError, FieldErrorContext, Text } from "@proyecto-viviana/solidaria-components";
+import { DEFAULT_VALIDATION_RESULT, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import { style } from "../style" with { type: "macro" };
 import { controlFont } from "../s2-internal/style-utils" with { type: "macro" };
 
@@ -94,26 +94,35 @@ export function HelpText(props: HelpTextProps): JSX.Element | null {
     [helpTextStyles({ size: size(), isInvalid, isDisabled: local.isDisabled }), local.class]
       .filter(Boolean)
       .join(" ");
+  const fieldError = useContext(FieldErrorContext);
+  const isInvalid = () => {
+    let fromContext: boolean | undefined;
+    if (fieldError && typeof fieldError === "object") {
+      if ("validation" in fieldError) {
+        fromContext = fieldError.validation?.isInvalid;
+      } else if ("isInvalid" in fieldError) {
+        fromContext = (fieldError as ValidationResult).isInvalid;
+      }
+    }
+    return Boolean(fromContext || local.isInvalid);
+  };
+  const error = () => local.children ?? local.errorMessage;
 
-  if (!local.isInvalid && local.description) {
-    return (
-      <Text slot="description" class={className(false)}>
-        {local.description}
-      </Text>
-    );
-  }
-
-  if (!local.isInvalid) {
-    return null;
-  }
-
-  const error = local.children ?? local.errorMessage;
   return (
-    <FieldError
-      class={className(true)}
-      validation={{ ...DEFAULT_VALIDATION_RESULT, isInvalid: true }}
-    >
-      {error}
-    </FieldError>
+    <>
+      {!isInvalid() && local.description ? (
+        <Text slot="description" class={className(false)}>
+          {local.description}
+        </Text>
+      ) : null}
+      {isInvalid() ? (
+        <FieldError
+          class={className(true)}
+          validation={fieldError ? undefined : { ...DEFAULT_VALIDATION_RESULT, isInvalid: true }}
+        >
+          {error()}
+        </FieldError>
+      ) : null}
+    </>
   );
 }

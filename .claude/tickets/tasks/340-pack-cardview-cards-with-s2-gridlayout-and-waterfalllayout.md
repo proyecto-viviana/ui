@@ -4,12 +4,17 @@ type: task
 title: "Pack CardView cards with S2 GridLayout and WaterfallLayout"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 cardview functional pass: default 360px size S compact paints S2 two-up 172×61 via Virtualizer GridLayout minItemSize 150; Solid CSS auto-fit minmax(150px,210px) stacks 210×86. layout=waterfall keeps the same CSS grid. XS already two-up on both; card height still 53 vs 180. Do not patch comparison styling (ADR 0001)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CardView wraps Virtualizer GridLayout/WaterfallLayout and packs columns from S2 minItemSize/minSpace.",
     }
 ---
 

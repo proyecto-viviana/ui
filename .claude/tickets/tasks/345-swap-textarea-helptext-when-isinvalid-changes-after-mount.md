@@ -4,7 +4,7 @@ type: task
 title: "Swap TextArea HelpText when isInvalid changes after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -35,6 +35,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 radiogroup: HelpText slot does swap on live isInvalid (error text and red circle border match; reactive Show). Do not treat RadioGroup as this ticket. Live describedby drop after the swap is #258. Native custom validity is #376.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "HelpText reads FieldErrorContext and swaps description/error on live isInvalid; TextArea/NumberField tests cover the mount-time and live switch.",
     }
 ---
 

@@ -1,8 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
+import { createSignal } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, screen } from "@solidjs/testing-library";
 import { TextArea } from "../src/textfield/TextArea";
 
 describe("TextArea (solid-spectrum)", () => {
@@ -160,6 +161,29 @@ describe("TextArea (solid-spectrum)", () => {
 
       expect(screen.queryByText("Enter your notes")).not.toBeInTheDocument();
       expect(screen.getByText("Required")).toBeInTheDocument();
+    });
+
+    it("swaps HelpText when isInvalid changes after mount", () => {
+      const [isInvalid, setIsInvalid] = createSignal(false);
+      render(() => (
+        <TextArea
+          aria-label="Notes"
+          isInvalid={isInvalid()}
+          description="Use a short multiline project note."
+          errorMessage="Notes are required."
+        />
+      ));
+
+      expect(screen.getByText("Use a short multiline project note.")).toBeInTheDocument();
+      expect(screen.queryByText("Notes are required.")).not.toBeInTheDocument();
+
+      setIsInvalid(true);
+      expect(screen.queryByText("Use a short multiline project note.")).not.toBeInTheDocument();
+      expect(screen.getByText("Notes are required.")).toBeInTheDocument();
+
+      setIsInvalid(false);
+      expect(screen.getByText("Use a short multiline project note.")).toBeInTheDocument();
+      expect(screen.queryByText("Notes are required.")).not.toBeInTheDocument();
     });
   });
 });

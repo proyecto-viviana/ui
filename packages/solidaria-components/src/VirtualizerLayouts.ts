@@ -99,6 +99,12 @@ export interface GridLayoutOptions extends DefaultVirtualizerLayoutOptions {
   rowHeight?: number;
   columnCount?: number;
   viewportWidth?: number;
+  /** Minimum card/item width used to derive `columnCount` when it is omitted. */
+  minItemSize?: number;
+  /** Maximum card/item width. Consumed by CardView packing. */
+  maxItemSize?: number;
+  /** Gutter between items. */
+  minSpace?: number;
 }
 
 export interface WaterfallLayoutOptions extends GridLayoutOptions {
@@ -231,14 +237,27 @@ export class ListLayout {
 
 export class TableLayout extends ListLayout {}
 
+function resolveGridColumnCount(ctxWidth: number | undefined, options?: GridLayoutOptions): number {
+  if (options?.columnCount != null && options.columnCount > 0) {
+    return Math.max(1, options.columnCount);
+  }
+  const width = Math.max(1, options?.viewportWidth ?? ctxWidth ?? 320);
+  const minItem = Math.max(1, options?.minItemSize ?? options?.itemSize ?? 150);
+  const minSpace = Math.max(0, options?.minSpace ?? 0);
+  return Math.max(1, Math.floor((width + minSpace) / (minItem + minSpace)));
+}
+
 export class GridLayout {
   getVisibleRange(
     ctx: VirtualizerRangeContext,
     options?: GridLayoutOptions,
   ): VirtualizerVisibleRange {
     if (ctx.itemCount <= 0) return { start: 0, end: 0, offsetTop: 0, offsetBottom: 0 };
-    const rowHeight = Math.max(1, options?.rowHeight ?? options?.itemSize ?? 40);
-    const columns = Math.max(1, options?.columnCount ?? 1);
+    const rowHeight = Math.max(
+      1,
+      options?.rowHeight ?? options?.itemSize ?? options?.minItemSize ?? 40,
+    );
+    const columns = resolveGridColumnCount(ctx.viewportWidth, options);
     const safeViewport = Math.max(1, ctx.viewportSize);
     const safeOverscan = Math.max(0, options?.overscan ?? ctx.overscan);
 
@@ -263,8 +282,11 @@ export class GridLayout {
     context: VirtualizerLayoutInfoContext,
     options?: GridLayoutOptions,
   ): LayoutInfo {
-    const rowHeight = Math.max(1, options?.rowHeight ?? options?.itemSize ?? 40);
-    const columns = Math.max(1, options?.columnCount ?? 1);
+    const rowHeight = Math.max(
+      1,
+      options?.rowHeight ?? options?.itemSize ?? options?.minItemSize ?? 40,
+    );
+    const columns = resolveGridColumnCount(context.viewportWidth, options);
     const row = Math.floor(index / columns);
     const col = index % columns;
     const width = Math.max(1, context.viewportWidth);
@@ -287,8 +309,11 @@ export class GridLayout {
     options?: GridLayoutOptions,
   ): VirtualizerDropTarget | null {
     if (itemCount <= 0) return { type: "root", index: -1, position: "on" };
-    const rowHeight = Math.max(1, options?.rowHeight ?? options?.itemSize ?? 40);
-    const columns = Math.max(1, options?.columnCount ?? 1);
+    const rowHeight = Math.max(
+      1,
+      options?.rowHeight ?? options?.itemSize ?? options?.minItemSize ?? 40,
+    );
+    const columns = resolveGridColumnCount(options?.viewportWidth, options);
     const totalRows = Math.ceil(itemCount / columns);
     const totalHeight = totalRows * rowHeight;
     if (point.y < 0) {
