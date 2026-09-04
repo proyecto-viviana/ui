@@ -4,7 +4,7 @@ type: task
 title: "Retarget the package tests that 87da0f75 left stale"
 created: 2026-09-04
 parent: 443
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "groups A–E retargeted; test:run 0 failed (5994 passed) at 535f7bbb working tree",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 0b55a494; test agent vp run test:run 292/292 files, 5994 passed, 0 failed.",
     }
 ---
 
@@ -88,4 +93,4 @@ button wrap under the label, not the labelledby name) and open #382 (FormContext
 / headless NumberField does not forward `validationBehavior`). Merged family:
 #353 Search Help name, #370 hex uppercase, #349 native aria-required omit, #351
 `title=""` via createFormValidation, #354 skip label keyboard press.
-#445 stays merged; this ticket owns the remaining suite-green Done-when.
+#445 is verified with this suite-green Done-when.

@@ -21,6 +21,11 @@ history:
       at: 2026-09-04,
       note: "Add /viviana-ui/docs, retarget landing/header/showcase brand off /showcase; a11y:smoke + route/seo subset",
     }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "leave merged until test+review finish; T9 minted as #458 (implement after this ticket).",
+    }
 ---
 
 On https://ui.proyectoviviana.org the "VIVIANA UI" entry
@@ -62,4 +67,4 @@ SEO floor are updated, and those three controls no longer point at
 Child of #26. Not bound to #40 (deploy the Kumo-aware landing), #45
 (catalogue coverage), or #88 (collection docs pages) — those Done-when
 clauses differ. Release train #443 lists this as ordered work.
-Dual wipe / Header theme toggle is T9, not this ticket.
+Dual wipe / Header theme toggle is #458, not this ticket.

@@ -4,7 +4,7 @@ type: task
 title: "Restore the ListView row selection checkbox name"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "leave merged: Done-when still names vp run test:run green; independent review APPROVE. Remaining 19 failures are T8 (#457), none ListView. Do not claim the suite green here.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at bbed61d4; vp run test:run green at 0b55a494 (T8 #457, 0 failed). ListView.test.tsx 11/11.",
     }
 ---
 

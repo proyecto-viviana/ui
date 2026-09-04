@@ -4,7 +4,7 @@ type: task
 title: "Re-sync cardview and HelpText into viviana-ui"
 created: 2026-09-03
 parent: 443
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -16,6 +16,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "byte-copied Walk #260 CardView packing and HelpText FieldErrorContext into viviana-ui; packing + live-error tests; ui patch changeset",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 99587d10; test agent re-ran layer-boundary PASS (NEW forks 0) and CardView+HelpText 14/14.",
     }
 ---
 
