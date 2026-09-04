@@ -4,12 +4,17 @@ type: task
 title: "Clear TagGroup selection on Escape"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: isolated Escape from a focused tag clears React selectedKeys and leaves Solid on landscape",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTag Escape calls clearSelection and leaves focus on the current tag.",
     }
 ---
 

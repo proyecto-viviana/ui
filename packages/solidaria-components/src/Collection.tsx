@@ -234,6 +234,12 @@ function renderCollectionItems<T>(
   }) => JSX.Element | undefined,
 ): JSX.Element {
   const items = Array.from(collection);
+  let lastRenderableIndex = -1;
+  for (let i = 0; i < items.length; i++) {
+    if ((items[i] as { type?: unknown }).type !== "content") {
+      lastRenderableIndex = i;
+    }
+  }
   return (
     <For each={items}>
       {(item, index) => {
@@ -243,7 +249,7 @@ function renderCollectionItems<T>(
           return <></>;
         }
         const key = node.key ?? index();
-        const isLastInLevel = index() === items.length - 1;
+        const isLastInLevel = index() === lastRenderableIndex;
         return (
           <>
             {renderDropIndicator?.({ type: "item", key, dropPosition: "before" })}

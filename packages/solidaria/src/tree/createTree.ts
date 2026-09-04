@@ -20,10 +20,12 @@
 import { createEffect, createMemo, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import { createId } from "@proyecto-viviana/solid-stately";
-import type { TreeState, TreeCollection, Key } from "@proyecto-viviana/solid-stately";
+import type { TreeState, TreeCollection, Key, Collection } from "@proyecto-viviana/solid-stately";
 import type { AriaTreeProps, TreeAria } from "./types";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
+import { mergeProps } from "../utils/mergeProps";
+import { createTypeSelect } from "../selection/createTypeSelect";
 
 /**
  * Metadata stored for a tree instance.
@@ -117,6 +119,23 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
   // Store in WeakMap using the state as key
   treeDataMap.set(state(), treeData);
 
+  const { typeSelectProps } = createTypeSelect({
+    collection: () => state().collection as unknown as Collection<T>,
+    focusedKey: () => state().focusedKey,
+    onFocusedKeyChange: (key) => state().setFocusedKey(key),
+    isKeyDisabled: (key) => isNavigationDisabled(state(), key),
+  });
+
+  const restoreFocusedRow = (key: Key | null) => {
+    if (key == null) return;
+    queueMicrotask(() => {
+      state().setFocused(true);
+      const el = ref();
+      const target = el?.querySelector<HTMLElement>(`[data-key="${CSS.escape(String(key))}"]`);
+      target?.focus();
+    });
+  };
+
   // Handle keyboard navigation
   const onKeyDown = (e: KeyboardEvent) => {
     const s = state();
@@ -167,6 +186,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
             if (node?.isExpandable) {
               if (!s.isExpanded(focusedKey)) {
                 s.expandKey(focusedKey);
+                restoreFocusedRow(focusedKey);
               } else {
                 const children = [...collection.getChildren(focusedKey)];
                 if (children.length > 0) {
@@ -178,6 +198,7 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
             // Collapse or move to parent
             if (node?.isExpandable && s.isExpanded(focusedKey)) {
               s.collapseKey(focusedKey);
+              restoreFocusedRow(focusedKey);
             } else if (node?.parentKey != null) {
               s.setFocusedKey(node.parentKey);
             }
@@ -222,32 +243,6 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
         if (s.selectionMode !== "none") {
           e.preventDefault();
           s.clearSelection();
-        }
-        break;
-      }
-      case "*": {
-        // Expand all siblings at current level
-        e.preventDefault();
-        if (focusedKey != null) {
-          const node = collection.getItem(focusedKey);
-          if (node) {
-            // Find all siblings at the same level
-            const parentKey = node.parentKey;
-            let siblings: Key[];
-            if (parentKey != null) {
-              siblings = [...collection.getChildren(parentKey)].map((n) => n.key);
-            } else {
-              // Root level siblings
-              siblings = collection.rows.filter((n) => n.level === 0).map((n) => n.key);
-            }
-            // Expand all expandable siblings
-            for (const siblingKey of siblings) {
-              const sibling = collection.getItem(siblingKey);
-              if (sibling?.isExpandable && !s.isExpanded(siblingKey)) {
-                s.expandKey(siblingKey);
-              }
-            }
-          }
         }
         break;
       }
@@ -350,22 +345,25 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
     const p = props();
     const s = state();
 
-    const baseProps: Record<string, unknown> = {
-      role: "treegrid",
-      id: treeId,
-      "aria-label": p["aria-label"],
-      "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": p["aria-describedby"],
-      "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
-      "aria-disabled": p.isDisabled || undefined,
-      // Roving container tab stop: `0` while no row is focused (Tab enters the
-      // tree), `-1` once a row takes focus (the row holds the tab stop). Mirrors
-      // `useSelectableCollection` `tabIndex = focusedKey == null ? 0 : -1`.
-      tabIndex: p.isDisabled ? undefined : s.focusedKey == null ? 0 : -1,
-      onKeyDown,
-      onFocusIn,
-      onFocusOut,
-    };
+    const baseProps: Record<string, unknown> = mergeProps(
+      typeSelectProps as Record<string, unknown>,
+      {
+        role: "treegrid",
+        id: treeId,
+        "aria-label": p["aria-label"],
+        "aria-labelledby": p["aria-labelledby"],
+        "aria-describedby": p["aria-describedby"],
+        "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
+        "aria-disabled": p.isDisabled || undefined,
+        // Roving container tab stop: `0` while no row is focused (Tab enters the
+        // tree), `-1` once a row takes focus (the row holds the tab stop). Mirrors
+        // `useSelectableCollection` `tabIndex = focusedKey == null ? 0 : -1`.
+        tabIndex: p.isDisabled ? undefined : s.focusedKey == null ? 0 : -1,
+        onKeyDown,
+        onFocusIn,
+        onFocusOut,
+      },
+    );
 
     // Add row count for virtualized trees
     if (p.isVirtualized) {

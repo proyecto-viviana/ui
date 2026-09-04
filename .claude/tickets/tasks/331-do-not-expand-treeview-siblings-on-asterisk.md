@@ -4,12 +4,17 @@ type: task
 title: "Do not expand TreeView siblings on * (match S2)"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: * from Documents is a no-op on S2 (expandedKeys stay documents,project); Solid expands photos and archive so image-1 and invoice mount. createTree case * expands every expandable sibling at the current level. S2 is the oracle",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Removed createTree * sibling-expand so S2 TreeView * is a no-op, matching React.",
     }
 ---
 

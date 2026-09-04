@@ -4,12 +4,17 @@ type: task
 title: "Apply TagGroup live allowsRemoving and selectionMode without remount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: live comparison:controls-change drops React Remove buttons and none-mode selection on remount-via-renderKey and leaves Solid first-paint Removes plus Landscape selected; URL remount of the same props already matches",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "TagList onRemove/selectionMode stay getters into createTagGroup/createListState; clearing onRemove live drops Remove buttons without remount.",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Select all TagGroup tags with Ctrl+A"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: isolated Ctrl+A from the focused tag selects all four on React and is a no-op on Solid",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTag Ctrl/Cmd+A in multiple mode calls selectAll.",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Tab only the focused tag's Remove button then exit"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: isolated Tab from Before is Landscape then that tag's Remove then After on React, and Landscape then every Remove on Solid; Shift+Tab from After lands Landscape on React and Night's Remove on Solid",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Remove buttons stay tabIndex=-1; Tab from the focused row focuses that Remove; Shift+Tab from After lands on the focused row.",
     }
 ---
 

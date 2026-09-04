@@ -1214,6 +1214,99 @@ describe("Tree", () => {
       const tree = screen.getByRole("treegrid");
       expect(tree).not.toHaveAttribute("tabIndex");
     });
+
+    it("moves focus with typeahead letters", async () => {
+      const user = setupUser();
+      const items = [
+        { key: "weekly", value: { name: "Weekly Report" }, textValue: "Weekly Report" },
+        { key: "budget", value: { name: "Budget" }, textValue: "Budget" },
+        { key: "photos", value: { name: "Photos" }, textValue: "Photos" },
+      ];
+      render(() => (
+        <Tree items={items} aria-label="Test Tree">
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      screen.getByRole("treegrid").focus();
+      await user.keyboard("b");
+      expect(screen.getByRole("row", { name: /Budget/ })).toHaveFocus();
+    });
+
+    it("does not expand siblings on *", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree items={createTestItems()} aria-label="Test Tree" defaultExpandedKeys={["item-1"]}>
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const item1 = screen.getAllByRole("row")[0];
+      item1.focus();
+      await user.keyboard("*");
+      expect(screen.getByRole("row", { name: /^Item 3$/ })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      expect(screen.queryByRole("row", { name: /Item 3.1/ })).not.toBeInTheDocument();
+    });
+
+    it("keeps DOM focus on the row after collapse", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree items={createTestItems()} aria-label="Test Tree" defaultExpandedKeys={["item-1"]}>
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const item1 = screen.getAllByRole("row")[0];
+      item1.focus();
+      await user.keyboard("{ArrowLeft}");
+      await waitFor(() => {
+        expect(screen.getAllByRole("row")[0]).toHaveAttribute("aria-expanded", "false");
+        expect(screen.getAllByRole("row")[0]).toHaveFocus();
+      });
+    });
+
+    it("moves ArrowRight onto the row checkbox when already expanded", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          defaultExpandedKeys={["item-1"]}
+        >
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {() => (
+                <>
+                  <TreeSelectionCheckbox itemKey={item.key} />
+                  <span>{item.textValue}</span>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const item1 = screen.getAllByRole("row")[0];
+      item1.focus();
+      await user.keyboard("{ArrowRight}");
+      expect(screen.getAllByRole("checkbox")[0]).toHaveFocus();
+    });
   });
 
   describe("parity: ARIA attributes", () => {

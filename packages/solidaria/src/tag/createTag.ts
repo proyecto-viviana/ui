@@ -22,8 +22,7 @@
  */
 
 import { createMemo } from "solid-js";
-import { createFocusable } from "../interactions/createFocusable";
-import { createPress } from "../interactions/createPress";
+import { createFocusRing } from "../interactions/createFocusRing";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
@@ -31,6 +30,7 @@ import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createStringFormatter } from "../i18n";
 import { getTagGroupData } from "./createTagGroup";
 import { tagIntlStrings } from "./intl";
+import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import type { ListState, Key } from "@proyecto-viviana/solid-stately";
 
 export interface AriaTagProps {
@@ -42,6 +42,8 @@ export interface AriaTagProps {
   isDisabled?: boolean;
   /** A text value for the tag used for accessibility. */
   textValue?: string;
+  /** Handler called when the tag is activated (Enter, or press when selectionMode is none). */
+  onAction?: () => void;
 }
 
 export interface TagAria {
@@ -59,6 +61,8 @@ export interface TagAria {
   isDisabled: boolean;
   /** Whether the tag is focused. */
   isFocused: boolean;
+  /** Whether the tag is keyboard focused. */
+  isFocusVisible: boolean;
   /** Whether the tag is pressed. */
   isPressed: boolean;
 }
@@ -173,29 +177,67 @@ export function createTag<T>(
     ).find((el) => el.getAttribute("data-key") === String(nextKey));
 
     nextTag?.focus();
+    // RAC useGridList selectOnFocus when selectionBehavior is replace.
+    if (
+      nextKey != null &&
+      state.selectionManager.selectionMode !== "none" &&
+      state.selectionManager.selectionBehavior === "replace"
+    ) {
+      state.selectionManager.replaceSelection(nextKey);
+    }
   };
 
-  // Handle press for selection
-  const { pressProps, isPressed } = createPress({
-    isDisabled,
-    onPress: () => {
-      if (!isDisabled()) {
-        state.setFocusedKey(key());
-        state.toggleSelection(key());
-      }
-    },
-  });
+  const removeAndRestoreFocus = (keysToRemove: Set<Key>) => {
+    const data = getData();
+    if (!data?.onRemove) return;
+    const current = key();
+    let nextKey = getNextFocusableKey(current);
+    if (nextKey === current) {
+      nextKey = getPreviousFocusableKey(current);
+    }
+    if (nextKey === current) {
+      nextKey = null;
+    }
+    data.onRemove(keysToRemove);
+    if (nextKey == null) {
+      state.setFocusedKey(null);
+      return;
+    }
+    // The removed node blurs the grid (`setFocused(false)`) and Solid may
+    // reconcile the remaining rows in this turn. Restore after that commit so
+    // the next tag is in the DOM and collection-is-focused is true again.
+    queueMicrotask(() => {
+      state.setFocused(true);
+      state.setFocusedKey(nextKey);
+      const nextTag = document.querySelector<HTMLElement>(
+        `[data-key="${CSS.escape(String(nextKey))}"]`,
+      );
+      nextTag?.focus();
+    });
+  };
 
-  // Handle focusable
-  const { focusableProps } = createFocusable(
-    {
-      isDisabled,
-      onFocus: () => {
-        state.setFocusedKey(key());
-      },
-    },
+  const selectableItem = createSelectableItem(
+    () => ({
+      key: key(),
+      id: rowId,
+      isDisabled: isDisabled(),
+      onAction: getProps().onAction,
+    }),
+    state as SelectableItemState<T>,
     ref,
   );
+
+  const { focusProps, isFocusVisible } = createFocusRing();
+
+  // Compute tabIndex. Mirror useTag (vendored @react-aria/tag/src/useTag.ts):
+  //   tabIndex = (!isDisabled && (isFocused || focusedKey == null)) ? 0 : -1
+  // Every non-disabled row is a tab stop when nothing is focused yet (so native
+  // Shift+Tab from a following element lands on the LAST row); once a key is
+  // focused, only that row keeps tabIndex 0 (roving single tab stop).
+  const tabIndex = createMemo(() => {
+    if (isDisabled()) return -1;
+    return isFocused() || state.focusedKey() == null ? 0 : -1;
+  });
 
   // Handle keyboard for navigation and removal
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -234,6 +276,32 @@ export function createTag<T>(
         e.preventDefault();
         focusKey(getLastFocusableKey());
         return;
+      case "Tab": {
+        // RAC keyboardNavigationBehavior "tab": Tab from the row focuses the
+        // Remove button (which stays tabIndex=-1 so Shift+Tab from After lands
+        // on the focused row, not every Remove). Tab from Remove leaves the grid.
+        const row = ref();
+        if (!row || e.shiftKey) return;
+        const removeBtn = row.querySelector<HTMLElement>("button");
+        if (removeBtn && document.activeElement !== removeBtn) {
+          e.preventDefault();
+          removeBtn.focus();
+        }
+        return;
+      }
+      case "Escape":
+        if (state.selectionMode() !== "none") {
+          e.preventDefault();
+          state.clearSelection();
+        }
+        return;
+      case "a":
+      case "A":
+        if ((e.ctrlKey || e.metaKey) && state.selectionMode() === "multiple") {
+          e.preventDefault();
+          state.selectAll();
+        }
+        return;
       default:
         break;
     }
@@ -249,23 +317,13 @@ export function createTag<T>(
             selection === "all"
               ? new Set(Array.from(state.collection()).map((item) => (item as { key: Key }).key))
               : new Set(selection);
-          data.onRemove(keysToRemove);
+          removeAndRestoreFocus(keysToRemove);
         } else {
-          data.onRemove(new Set([key()]));
+          removeAndRestoreFocus(new Set([key()]));
         }
       }
     }
   };
-
-  // Compute tabIndex. Mirror useTag (vendored @react-aria/tag/src/useTag.ts):
-  //   tabIndex = (!isDisabled && (isFocused || focusedKey == null)) ? 0 : -1
-  // Every non-disabled row is a tab stop when nothing is focused yet (so native
-  // Shift+Tab from a following element lands on the LAST row); once a key is
-  // focused, only that row keeps tabIndex 0 (roving single tab stop).
-  const tabIndex = createMemo(() => {
-    if (isDisabled()) return -1;
-    return isFocused() || state.focusedKey() == null ? 0 : -1;
-  });
 
   // Filter DOM props
   const domProps = () => filterDOMProps(getProps() as unknown as Record<string, unknown>);
@@ -282,8 +340,8 @@ export function createTag<T>(
     get rowProps() {
       return mergeProps(
         domProps(),
-        focusableProps as Record<string, unknown>,
-        pressProps as Record<string, unknown>,
+        selectableItem.itemProps as Record<string, unknown>,
+        focusProps as Record<string, unknown>,
         {
           id: rowId,
           role: rootRole(),
@@ -310,9 +368,12 @@ export function createTag<T>(
         "aria-label": stringFormatter().format("removeButtonLabel"),
         "aria-labelledby": `${removeButtonId} ${rowId}`,
         isDisabled: isDisabled(),
+        // Keep Removes out of the tab order. Tab from the focused row focuses
+        // the button; Shift+Tab from After then lands on the row (#318).
+        tabIndex: -1,
         onPress: () => {
           if (data?.onRemove && !isDisabled()) {
-            data.onRemove(new Set([key()]));
+            removeAndRestoreFocus(new Set([key()]));
           }
         },
       };
@@ -329,8 +390,11 @@ export function createTag<T>(
     get isFocused() {
       return isFocused();
     },
+    get isFocusVisible() {
+      return isFocusVisible();
+    },
     get isPressed() {
-      return isPressed();
+      return selectableItem.isPressed();
     },
   };
 }

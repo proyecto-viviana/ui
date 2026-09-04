@@ -4,12 +4,17 @@ type: task
 title: "Show a keyboard focus ring on TagGroup tags"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: isolated Tab onto Landscape sets React data-focus-visible and outline rgb(75, 117, 255) solid 2px; Solid has data-focused but outline none 2px and rest background",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTag uses createFocusRing and Tag sets data-focus-visible so S2 tagStyle focusRing paints the 2px keyboard ring.",
     }
 ---
 

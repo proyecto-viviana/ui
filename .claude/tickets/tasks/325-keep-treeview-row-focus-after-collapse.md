@@ -4,12 +4,17 @@ type: task
 title: "Keep TreeView row focus after collapse"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: ArrowLeft on Documents collapses the same row set on both (documents,photos,archive) but Solid activeElement is BODY while data-focused stays documents; later ArrowRight and * are no-ops. React keeps Documents row focus and re-expands. Pointer Expand Photos also drops Solid to BODY",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Collapse/expand restores DOM focus onto the focused row after the collection commits so ArrowRight can re-expand.",
     }
 ---
 

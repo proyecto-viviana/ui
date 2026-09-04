@@ -137,6 +137,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
                 treeAction?.(p.node.key);
                 if (shouldToggleOnAction) {
                   s.toggleKey(p.node.key);
+                  queueMicrotask(() => ref()?.focus());
                 }
               }
             : undefined,
@@ -202,10 +203,49 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       baseProps,
     );
 
+    const direction = () => treeData?.direction ?? "ltr";
+    const expandKey = () => (direction() === "rtl" ? "ArrowLeft" : "ArrowRight");
+    const collapseKey = () => (direction() === "rtl" ? "ArrowRight" : "ArrowLeft");
+
     return mergeCollectionRowInteractionProps(mergedProps, {
       ref,
       keyboardNavigationBehavior: () => treeData?.keyboardNavigationBehavior ?? "arrow",
-      direction: () => treeData?.direction ?? "ltr",
+      direction,
+      onBeforeArrowNavigation: (event) => {
+        const s = state();
+        const node = props().node;
+        const row = ref();
+        if (!row || s.focusedKey !== node.key) {
+          return false;
+        }
+        if (event.key === expandKey() && isExpandable() && !s.isExpanded(node.key)) {
+          event.preventDefault();
+          event.stopPropagation();
+          s.toggleKey(node.key);
+          queueMicrotask(() => row.focus());
+          return true;
+        }
+        if (event.key === collapseKey()) {
+          if (isExpandable() && s.isExpanded(node.key)) {
+            event.preventDefault();
+            event.stopPropagation();
+            s.toggleKey(node.key);
+            queueMicrotask(() => row.focus());
+            return true;
+          }
+          if (
+            !s.isExpanded(node.key) &&
+            node.parentKey != null &&
+            s.collection.getItem(node.parentKey)?.type === "item"
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            s.setFocusedKey(node.parentKey);
+            return true;
+          }
+        }
+        return false;
+      },
     });
   });
 
@@ -225,6 +265,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     if (selectableItem.isDisabled()) return;
 
     s.toggleKey(p.node.key);
+    queueMicrotask(() => ref()?.focus());
   };
 
   const stopPointerPropagation = (e: Event) => {

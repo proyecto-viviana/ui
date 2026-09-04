@@ -31,6 +31,11 @@ interface CollectionRowInteractionOptions {
   ref: Accessor<HTMLElement | null>;
   keyboardNavigationBehavior: Accessor<KeyboardNavigationBehavior>;
   direction?: Accessor<"ltr" | "rtl">;
+  /**
+   * Tree expansion/collapse runs in capture before intra-row arrow walking,
+   * matching RAC `handleTreeExpansionKeys`. Return true if the key was handled.
+   */
+  onBeforeArrowNavigation?: (event: KeyboardEvent) => boolean;
 }
 
 type CollectionRowInteractionProps<T extends HTMLElement> = JSX.HTMLAttributes<T> & {
@@ -115,6 +120,10 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
       shouldIgnoreRowEvent(event, row)
     ) {
       baseOnKeyDownCapture?.(event);
+      return;
+    }
+
+    if (options.onBeforeArrowNavigation?.(event)) {
       return;
     }
 

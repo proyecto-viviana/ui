@@ -4,12 +4,17 @@ type: task
 title: "Move TreeView ArrowRight onto checkbox and item actions"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: from expanded Documents, React first ArrowRight focuses Select INPUT then back to the row; Solid first ArrowRight moves to Project, second to Weekly Report. buttonGroup: React Weekly Report → Select → Archive Weekly Report; Solid stays on the row. createTree onKeyDown preventDefault on ArrowRight and expands/moves to first child",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTreeItem runs RAC handleTreeExpansionKeys before intra-row arrows: expand only when collapsed, otherwise ArrowRight walks to the checkbox/actions.",
     }
 ---
 

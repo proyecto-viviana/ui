@@ -4,12 +4,17 @@ type: task
 title: "Move TreeView focus with typeahead letters"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: isolated Tab then b/p/c moves React to Budget/Photos/Client Notes; Solid stays on Weekly Report. createTree onKeyDown has arrows/Home/End/Ctrl+A/Escape/* and no typeahead",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTree merges createTypeSelect onto the treegrid so printable keys move roving focus like RAC useSelectableCollection.",
     }
 ---
 

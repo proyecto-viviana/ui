@@ -24,7 +24,6 @@ import {
   createSignal,
   mergeProps,
   onCleanup,
-  Show,
   splitProps,
   useContext,
   type JSX,
@@ -1094,25 +1093,20 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     </InternalListViewContext.Provider>
   );
 
-  const framed = (
-    <div class={listViewWrapper({}, mergedStyles())} style={mergedUnsafeStyle()}>
-      {local.label ? <div class={legacyLabel}>{local.label}</div> : null}
-      {collection}
-      {local.description ? <div class={legacyDescription}>{local.description}</div> : null}
-      <Show when={() => !!local.renderActionBar}>
-        {local.renderActionBar!(actionSelectedKeys())}
-      </Show>
-    </div>
-  );
+  // Branch on the props. Solid `<Show when={fn}>` treats the function as a
+  // truthy value and always renders children (`renderActionBar is not a function`).
+  if (local.label || local.description || local.renderActionBar) {
+    return (
+      <div class={listViewWrapper({}, mergedStyles())} style={mergedUnsafeStyle()}>
+        {local.label ? <div class={legacyLabel}>{local.label}</div> : null}
+        {collection}
+        {local.description ? <div class={legacyDescription}>{local.description}</div> : null}
+        {local.renderActionBar ? local.renderActionBar(actionSelectedKeys()) : null}
+      </div>
+    );
+  }
 
-  return (
-    <Show
-      when={() => !!(local.label || local.description || local.renderActionBar)}
-      fallback={collection}
-    >
-      {framed}
-    </Show>
-  );
+  return collection;
 }
 
 export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX.Element {

@@ -4,12 +4,17 @@ type: task
 title: "Honor TagGroup selectionBehavior replace"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: ?selectionBehavior=replace pointer click and ArrowRight replace-select on React and always toggle-add on Solid; Ctrl-click additive matches the replace-plus-modifier contract only on React",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTag uses createSelectableItem (selectItem honors replace and modifiers) and arrow selectOnFocus calls replaceSelection.",
     }
 ---
 

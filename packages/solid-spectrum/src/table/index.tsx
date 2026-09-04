@@ -1340,9 +1340,7 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
 
   return (
     <HeadlessTableHeader {...headlessProps} class={className()}>
-      <Show when={() => context.showSelectionCheckboxes}>
-        <TableSelectAllCheckbox />
-      </Show>
+      {context.showSelectionCheckboxes ? <TableSelectAllCheckbox /> : null}
       {props.children}
     </HeadlessTableHeader>
   );
@@ -1524,13 +1522,13 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
     <HeadlessTableRow {...headlessProps} class={className} style={local.UNSAFE_style}>
       {(renderProps: TableRowRenderProps) => (
         <>
-          <Show when={() => context.showSelectionCheckboxes && rowKey() != null}>
+          {context.showSelectionCheckboxes && rowKey() != null ? (
             <TableSelectionCheckbox
               rowKey={rowKey()!}
               isSelected={renderProps.isSelected}
               isDisabled={renderProps.isDisabled}
             />
-          </Show>
+          ) : null}
           {typeof local.children === "function"
             ? (local.children as (renderProps: TableRowRenderProps) => JSX.Element)(renderProps)
             : local.children}

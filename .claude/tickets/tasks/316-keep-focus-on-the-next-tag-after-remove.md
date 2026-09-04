@@ -4,12 +4,17 @@ type: task
 title: "Keep focus on the next tag after remove"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: Delete, Backspace, or pointer-remove Landscape moves React focus to Portrait at tabIndex 0; Solid blurs to BODY and leaves remaining rows with no focusedKey",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTag removeAndRestoreFocus sets the next focusedKey and DOM-focuses that row after the collection commits, so Delete/Backspace/Remove leave tabIndex 0 on the next tag.",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Fire TagGroup onAction on Enter, not on selection press"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 taggroup functional pass: default/single pointer fires Solid onAction and not React; Enter on a selected tag keeps React selection and toggles Solid off; selectionMode=none Enter fires React onAction and not Solid",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Tag press goes through createSelectableItem: selection press does not fire onAction; Enter fires onAction when selectionMode is none.",
     }
 ---
 
