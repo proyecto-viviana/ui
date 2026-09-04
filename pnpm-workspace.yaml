@@ -72,3 +72,10 @@ peerDependencyRules:
   allowedVersions:
     vite: "*"
     vitest: "*"
+
+# CI 33825688122: guard:dependency-security timed out on npm advisories/bulk (error 23).
+fetchRetries: 4
+fetchRetryFactor: 10
+fetchRetryMintimeout: 10000
+fetchRetryMaxtimeout: 60000
+fetchTimeout: 120000
