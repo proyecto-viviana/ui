@@ -25,12 +25,7 @@
  */
 
 import { type JSX, createContext, createMemo, splitProps, useContext, For } from "solid-js";
-import {
-  createStepListState,
-  type StepListState,
-  type StepListStateProps,
-  type Key,
-} from "@proyecto-viviana/solid-stately";
+import { createStepListState, type StepListState, type Key } from "@proyecto-viviana/solid-stately";
 import { createStepList, type AriaStepListProps } from "@proyecto-viviana/solidaria";
 import {
   type ClassNameOrFunction,
@@ -136,20 +131,41 @@ export function StepList<T extends { key: Key; label: string }>(
     ["aria-label", "aria-labelledby"],
   );
 
-  const stateProps = createMemo<StepListStateProps>(() => ({
-    items: local.items,
-    selectedKey: local.selectedKey,
-    defaultSelectedKey: local.defaultSelectedKey,
-    onSelectionChange: local.onSelectionChange,
-    lastCompletedStep: local.lastCompletedStep,
-    defaultLastCompletedStep: local.defaultLastCompletedStep,
-    onLastCompletedStepChange: local.onLastCompletedStepChange,
-    isDisabled: local.isDisabled,
-    isReadOnly: local.isReadOnly,
-    disabledKeys: local.disabledKeys,
-  }));
-
-  const state = createStepListState(stateProps());
+  // Staying-mounted getters. `createMemo(() => ({ isDisabled: local.isDisabled }))`
+  // then `stateProps()` is a one-shot snapshot; createStepListState re-reads
+  // props.isDisabled / isReadOnly / disabledKeys only if those names stay live.
+  const state = createStepListState({
+    get items() {
+      return local.items;
+    },
+    get selectedKey() {
+      return local.selectedKey;
+    },
+    get defaultSelectedKey() {
+      return local.defaultSelectedKey;
+    },
+    get onSelectionChange() {
+      return local.onSelectionChange;
+    },
+    get lastCompletedStep() {
+      return local.lastCompletedStep;
+    },
+    get defaultLastCompletedStep() {
+      return local.defaultLastCompletedStep;
+    },
+    get onLastCompletedStepChange() {
+      return local.onLastCompletedStepChange;
+    },
+    get isDisabled() {
+      return local.isDisabled;
+    },
+    get isReadOnly() {
+      return local.isReadOnly;
+    },
+    get disabledKeys() {
+      return local.disabledKeys;
+    },
+  });
 
   // Create ARIA props
   const { stepListProps } = createStepList(

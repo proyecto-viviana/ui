@@ -4,12 +4,22 @@ type: task
 title: "Apply live StepList isDisabled, isReadOnly, and disabledKeys without remount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 steplist functional pass: URL remount of isDisabled/isReadOnly/disabledKeys matches AX and Tab skip; live comparison:controls-change updates data-comparison-control-props on both and leaves Solid aria-disabled/tabIndex on the mount snapshot so Tab still lands on Details. createStepListState(stateProps()) is a one-shot snapshot. Live defaultSelectedKey ignored on both (uncontrolled). Did not start #254",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "SAC createStepListState(stateProps()) is a one-shot snapshot. Pass staying-mounted getters; splitProps local.isDisabled is live only if re-read inside those getters. Do not start #99, #177, or #254.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createStepListState receives staying-mounted getters. Package tests fail if live isDisabled leaves Details without aria-disabled or Tab lands on Details, if live isReadOnly leaves a progress step enabled, or if live disabledKeys=details moves selection.",
     }
 ---
 
@@ -57,6 +67,25 @@ leaves Details and Select offers enabled.
 Live `{disabledKeys:"details"}` from default: React disables Details
 in place (still current; does not move selection the way a remount
 does). Solid leaves Details enabled.
+
+Local (2026-09-04), cwd `/home/emoporemilio/projects/viviana-hub/ui`,
+parent `507411a3`. Source: SAC `StepList` passes a staying-mounted
+object with getters into `createStepListState`. Fixture stays
+mounted with `createSignal` accessors set after mount.
+
+Named tests failed on the `stateProps()` unwrap (Details
+`aria-disabled` stayed omitted). After the getters:
+
+`vp test run packages/solidaria-components/test/StepList.test.tsx`
+PASS (27): live `isDisabled` sets Details `aria-disabled` and drops
+tabindex so Tab Before→After; live `isReadOnly` on progress disables
+all four and keeps Select offers current; live `disabledKeys=details`
+disables Details in place (still current). Mount disabled / read-only
+/ disabledKeys stayed green.
+
+Owned-file `vp check` PASS. `git diff --check` PASS on named paths.
+Repo-wide `vp run check` not run. Comparison walk not run. #99 / #177
+/ #254 not started.
 
 ## Done when
 

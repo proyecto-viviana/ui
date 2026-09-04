@@ -12,9 +12,10 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, type Accessor } from "solid-js";
 import { StepList, Step } from "../src/StepList";
 import type { Key } from "@proyecto-viviana/solid-stately";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // Test data
 interface TestStep {
@@ -457,6 +458,121 @@ describe("StepList", () => {
       ));
       expect(screen.getByTestId("state-step1")).toHaveTextContent("Completed");
       expect(screen.getByTestId("state-step2")).toHaveTextContent("Completed");
+    });
+  });
+
+  // ============================================
+  // LIVE isDisabled / isReadOnly / disabledKeys
+  //
+  // Getters on a staying-mounted object. `isDisabled={flag()}` inside
+  // `render(() => …)` remounts and the one-shot stateProps() snapshot would
+  // pass. Set the signal after mount.
+  // ============================================
+
+  describe("live disable after mount", () => {
+    const checkoutSteps: TestStep[] = [
+      { key: "details", label: "Details" },
+      { key: "select-offers", label: "Select offers" },
+      { key: "fallback-offer", label: "Fallback offer" },
+      { key: "summary", label: "Summary" },
+    ];
+
+    function LiveStepList(props: {
+      isDisabled?: Accessor<boolean>;
+      isReadOnly?: Accessor<boolean>;
+      disabledKeys?: Accessor<Iterable<Key> | undefined>;
+      defaultSelectedKey?: Key;
+      defaultLastCompletedStep?: Key;
+    }) {
+      return (
+        <>
+          <button type="button">Before</button>
+          <StepList
+            items={checkoutSteps}
+            aria-label="Checkout steps"
+            defaultSelectedKey={props.defaultSelectedKey}
+            defaultLastCompletedStep={props.defaultLastCompletedStep}
+            isDisabled={props.isDisabled?.()}
+            isReadOnly={props.isReadOnly?.()}
+            disabledKeys={props.disabledKeys?.()}
+          >
+            {(item, state) => (
+              <Step item={item} stepNumber={state.stepNumber}>
+                {item.label}
+              </Step>
+            )}
+          </StepList>
+          <button type="button">After</button>
+        </>
+      );
+    }
+
+    function checkoutLink(label: string): HTMLAnchorElement {
+      return screen.getByRole("link", { name: new RegExp(label) }) as HTMLAnchorElement;
+    }
+
+    it("sets aria-disabled and drops tabindex when isDisabled becomes true after mount", async () => {
+      const user = setupUser();
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      render(() => <LiveStepList isDisabled={isDisabled} />);
+
+      const details = checkoutLink("Details");
+      expect(details.getAttribute("aria-disabled")).toBeNull();
+      expect(details.getAttribute("tabindex")).toBe("0");
+
+      setIsDisabled(true);
+
+      expect(details.getAttribute("aria-disabled")).toBe("true");
+      expect(details.getAttribute("tabindex")).toBeNull();
+      expect(document.querySelector("ol")?.getAttribute("data-disabled")).toBeTruthy();
+
+      screen.getByRole("button", { name: "Before" }).focus();
+      await user.tab();
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "After" }));
+    });
+
+    it("disables every step when isReadOnly becomes true after mount on a progress list", () => {
+      const [isReadOnly, setIsReadOnly] = createSignal(false);
+      render(() => (
+        <LiveStepList
+          isReadOnly={isReadOnly}
+          defaultSelectedKey="select-offers"
+          defaultLastCompletedStep="details"
+        />
+      ));
+
+      const details = checkoutLink("Details");
+      const selectOffers = checkoutLink("Select offers");
+      const fallback = checkoutLink("Fallback offer");
+      const summary = checkoutLink("Summary");
+
+      expect(details.getAttribute("aria-disabled")).toBeNull();
+      expect(selectOffers.getAttribute("aria-disabled")).toBeNull();
+      expect(selectOffers.getAttribute("aria-current")).toBe("step");
+
+      setIsReadOnly(true);
+
+      for (const link of [details, selectOffers, fallback, summary]) {
+        expect(link.getAttribute("aria-disabled")).toBe("true");
+        expect(link.getAttribute("tabindex")).toBeNull();
+      }
+      expect(selectOffers.getAttribute("aria-current")).toBe("step");
+    });
+
+    it("disables Details in place when disabledKeys becomes details after mount", () => {
+      const [disabledKeys, setDisabledKeys] = createSignal<Iterable<Key> | undefined>(undefined);
+      render(() => <LiveStepList disabledKeys={disabledKeys} />);
+
+      const details = checkoutLink("Details");
+      expect(details.getAttribute("aria-current")).toBe("step");
+      expect(details.getAttribute("aria-disabled")).toBeNull();
+      expect(details.getAttribute("tabindex")).toBe("0");
+
+      setDisabledKeys(["details"]);
+
+      expect(details.getAttribute("aria-current")).toBe("step");
+      expect(details.getAttribute("aria-disabled")).toBe("true");
+      expect(details.getAttribute("tabindex")).toBeNull();
     });
   });
 });
