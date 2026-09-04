@@ -719,4 +719,35 @@ describe("TextField", () => {
       });
     });
   });
+
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      render(() => (
+        <form>
+          <TextField aria-label="Email" isInvalid defaultValue="Quarterly report">
+            {() => <Input />}
+          </TextField>
+        </form>
+      ));
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+    });
+
+    it("skips custom validity when disabled", async () => {
+      render(() => (
+        <TextField aria-label="Email" isInvalid isDisabled defaultValue="Quarterly report">
+          {() => <Input />}
+        </TextField>
+      ));
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(false);
+        expect(input.checkValidity()).toBe(true);
+      });
+    });
+  });
 });

@@ -415,10 +415,11 @@ describe("Checkbox", () => {
         </CheckboxGroup>
       ));
 
-      const group = screen.getByRole("group", { name: "Notification channels" });
+      expect(
+        screen.getByRole("group", { name: /Notification channels\s*\(required\)/ }),
+      ).toBeInTheDocument();
       const email = screen.getByRole("checkbox", { name: "Email" });
 
-      expect(group).toBeInTheDocument();
       expect(email).toHaveAttribute("name", "channels");
       expect(email).toHaveAttribute("form", "settingsForm");
       expect(email).toHaveAttribute("aria-required", "true");
@@ -491,6 +492,68 @@ describe("Checkbox", () => {
       const checkbox = screen.getByRole("checkbox");
       // Same as above: data-* lands on the CheckboxField wrapper <div>.
       expect(checkbox.closest("[data-foo]")).toHaveAttribute("data-foo", "bar");
+    });
+  });
+
+  describe("keyboard", () => {
+    it("does not toggle on Enter", async () => {
+      render(() => <Checkbox>Notify</Checkbox>);
+      const checkbox = screen.getByRole("checkbox");
+      checkbox.focus();
+      await user.keyboard("{Enter}");
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it("toggles on Space", async () => {
+      render(() => <Checkbox>Notify</Checkbox>);
+      const checkbox = screen.getByRole("checkbox");
+      checkbox.focus();
+      await user.keyboard(" ");
+      expect(checkbox).toBeChecked();
+    });
+  });
+
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      render(() => <Checkbox isInvalid>Terms</Checkbox>);
+      const input = screen.getByRole("checkbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+    });
+  });
+
+  describe("live size", () => {
+    it("resizes the checkmark when size changes after mount", async () => {
+      const [size, setSize] = createSignal<"M" | "XL">("M");
+      const { container } = render(() => (
+        <Checkbox isSelected size={size()}>
+          Done
+        </Checkbox>
+      ));
+      const svg = () => container.querySelector("svg") as SVGSVGElement;
+      expect(svg().style.width).toBe("10px");
+      setSize("XL");
+      await waitFor(() => {
+        expect(svg().style.width).toBe("12px");
+        expect(svg().style.height).toBe("12px");
+      });
+    });
+  });
+
+  describe("CheckboxGroup required name", () => {
+    it("includes (required) in the group accessible name", () => {
+      render(() => (
+        <CheckboxGroup label="Notifications" isRequired>
+          <Checkbox value="email">Email</Checkbox>
+        </CheckboxGroup>
+      ));
+      expect(
+        screen.getByRole("group", { name: /Notifications\s*\(required\)/ }),
+      ).toBeInTheDocument();
+      expect(screen.getByRole("img", { name: "(required)" })).toBeInTheDocument();
     });
   });
 });

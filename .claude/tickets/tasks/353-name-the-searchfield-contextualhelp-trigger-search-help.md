@@ -4,7 +4,7 @@ type: task
 title: "Name the SearchField ContextualHelp trigger Search Help"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -40,6 +40,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangeslider: same name composition. URL ?withContextualHelp=true AX button Range Help vs Help. SNAP name both Help. No new id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "FieldContextualHelp sets aria-labelledby to label id + help id. SearchField test fails if the trigger stays named Help.",
     }
 ---
 

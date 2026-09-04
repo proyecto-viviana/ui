@@ -51,6 +51,7 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -638,9 +639,9 @@ export function Slider(props: SliderProps): JSX.Element {
                 <label id={labelId} class={sliderLabel(labelStyleState(renderProps))}>
                   {local.label}
                 </label>
-                <Show when={local.contextualHelp}>
-                  <span data-slot="contextualHelp">{local.contextualHelp}</span>
-                </Show>
+                <FieldContextualHelp labelId={labelId} size={size()}>
+                  {local.contextualHelp}
+                </FieldContextualHelp>
               </div>
             </Show>
             <Show when={labelPosition() === "top" && showOutput()}>

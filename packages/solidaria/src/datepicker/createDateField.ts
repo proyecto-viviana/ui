@@ -221,26 +221,26 @@ export function createDateField<T extends DateFieldState>(
     }
   });
 
-  // Form reset + native validation wiring.
-  if (props && typeof props === "object") {
-    createFormReset(
-      () => getProps().inputRef?.(),
-      state.defaultValue,
-      state.setValue as (value: unknown) => void,
-    );
-    createFormValidation(
-      {
-        get validationBehavior() {
-          return getProps().validationBehavior;
-        },
-        focus() {
-          focusManager.focusFirst();
-        },
+  // Form reset + native validation wiring. Always register — callers pass a
+  // MaybeAccessor, so `typeof props === "object"` would skip the RAC port
+  // (`useFormValidation`) and leave isInvalid fields natively valid (#362).
+  createFormReset(
+    () => getProps().inputRef?.(),
+    state.defaultValue,
+    state.setValue as (value: unknown) => void,
+  );
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return getProps().validationBehavior ?? "native";
       },
-      state as unknown as Parameters<typeof createFormValidation>[1],
-      () => getProps().inputRef?.() as unknown as undefined,
-    );
-  }
+      focus() {
+        focusManager.focusFirst();
+      },
+    },
+    state as unknown as Parameters<typeof createFormValidation>[1],
+    () => getProps().inputRef?.() as unknown as undefined,
+  );
 
   const fieldDOMProps = createMemo(() => {
     if (isPresentation()) {

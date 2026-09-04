@@ -160,7 +160,13 @@ function formatColorValue(
     return displayColor.formatChannelValue(channel, locale);
   }
 
-  return displayColor.toString(format ?? "hex");
+  const formatted = displayColor.toString(format ?? "hex");
+  const resolvedFormat = format ?? "hex";
+  if (resolvedFormat === "hex" || resolvedFormat === "hexa") {
+    return formatted.toUpperCase();
+  }
+
+  return formatted;
 }
 
 function normalizeHexInput(value: string): string {

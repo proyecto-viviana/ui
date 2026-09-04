@@ -4,7 +4,7 @@ type: task
 title: "Set native custom validity on TimeField when isInvalid"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 datefield: same createDateField hole. URL ?isInvalid=true&name=date leaves React hidden text customError=true, checkValidity=false, validationMessage Invalid value., requestSubmit blocked with focus month; Solid stays valid and submits {date:2025-02-03}. Required empty still valueMissing-blocks both, but Solid focus stays on Submit (console: An invalid form control with name='date' is not focusable) because the invalid-event focusFirst never attaches. Cause: createDateField is called with an accessor, so if (props && typeof props === object) skips createFormValidation. DateField.tsx already threads validationInputRef. No new id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createDateField always registers createFormValidation (accessor props no longer skip). DateField and TimeField share the hook.",
     }
 ---
 

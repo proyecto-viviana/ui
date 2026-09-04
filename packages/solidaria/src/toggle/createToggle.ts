@@ -28,8 +28,9 @@ import { filterDOMProps } from "../utils/filterDOMProps";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 import { isDevEnv } from "../utils/env";
 import { createSlotId } from "../ssr";
-import { type ToggleState } from "@proyecto-viviana/solid-stately";
+import { createFormValidationState, type ToggleState } from "@proyecto-viviana/solid-stately";
 import { type PressEvent } from "../interactions/PressEvent";
+import { createFormValidation } from "../form/createFormValidation";
 
 export interface AriaToggleProps {
   /** Whether the element should be selected (controlled). */
@@ -52,6 +53,12 @@ export interface AriaToggleProps {
   isRequired?: boolean;
   /** Whether the element is invalid. */
   isInvalid?: boolean;
+  /**
+   * `"native"` sets the `required` attribute and omits `aria-required`.
+   * `"aria"` does the reverse. S2 Checkbox default is native.
+   * @default "native"
+   */
+  validationBehavior?: "aria" | "native";
   /** The element's children. */
   children?: JSX.Element;
   /** Defines a string value that labels the current element. */
@@ -127,8 +134,41 @@ export function createToggle(
 
   const isDisabled = () => getProps().isDisabled ?? false;
   const isReadOnly = () => getProps().isReadOnly ?? false;
+  const validationBehavior = () => getProps().validationBehavior ?? "native";
   const isInvalid = () => {
     return getProps().isInvalid ?? false;
+  };
+
+  const validationState = createFormValidationState({
+    get value() {
+      return state.isSelected();
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get validationBehavior() {
+      return validationBehavior();
+    },
+  });
+
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return validationBehavior();
+      },
+    },
+    validationState,
+    () => ref() ?? undefined,
+  );
+
+  const skipLabelKeyboardPress = (e: PressEvent): boolean => {
+    // Keyboard/virtual activation is handled by the native input (Space).
+    // Enter on a focused checkbox must not toggle — RAC useToggle label press.
+    if (e.pointerType === "keyboard" || e.pointerType === "virtual") {
+      e.continuePropagation();
+      return true;
+    }
+    return false;
   };
 
   // Handle press state for keyboard interactions and cases where labelProps is not used.
@@ -158,25 +198,35 @@ export function createToggle(
 
   // Handle press state on the label.
   const { pressProps: labelPressProps, isPressed: isLabelPressed } = createPress({
-    get onPressStart() {
-      return getProps().onPressStart;
+    onPressStart(e: PressEvent) {
+      if (skipLabelKeyboardPress(e)) {
+        return;
+      }
+      getProps().onPressStart?.(e);
     },
-    get onPressEnd() {
-      return getProps().onPressEnd;
+    onPressEnd(e: PressEvent) {
+      if (skipLabelKeyboardPress(e)) {
+        return;
+      }
+      getProps().onPressEnd?.(e);
     },
-    get onPressChange() {
-      return getProps().onPressChange;
-    },
-    get onPressUp() {
-      return getProps().onPressUp;
+    onPressUp(e: PressEvent) {
+      if (skipLabelKeyboardPress(e)) {
+        return;
+      }
+      getProps().onPressUp?.(e);
     },
     get onClick() {
       return getProps().onClick;
     },
     onPress(e: PressEvent) {
+      if (skipLabelKeyboardPress(e)) {
+        return;
+      }
       getProps().onPress?.(e);
       state.toggle();
       ref()?.focus();
+      validationState.commitValidation();
     },
     get isDisabled() {
       return isDisabled() || isReadOnly();
@@ -269,6 +319,8 @@ export function createToggle(
         "aria-errormessage": p["aria-errormessage"],
         "aria-controls": p["aria-controls"],
         "aria-readonly": isReadOnly() || undefined,
+        "aria-required": (p.isRequired && validationBehavior() === "aria") || undefined,
+        required: (p.isRequired && validationBehavior() === "native") || undefined,
         "aria-describedby":
           [descriptionId(), errorMessageId(), p["aria-describedby"]].filter(Boolean).join(" ") ||
           undefined,
@@ -292,8 +344,14 @@ export function createToggle(
     },
     isSelected: state.isSelected,
     isPressed: combinedIsPressed,
-    isDisabled: isDisabled(),
-    isReadOnly: isReadOnly(),
-    isInvalid: isInvalid(),
+    get isDisabled() {
+      return isDisabled();
+    },
+    get isReadOnly() {
+      return isReadOnly();
+    },
+    get isInvalid() {
+      return isInvalid();
+    },
   };
 }

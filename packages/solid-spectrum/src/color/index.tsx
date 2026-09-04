@@ -102,6 +102,7 @@ import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { HelpText } from "../form/HelpText";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   InternalColorSwatchContext,
   type InternalColorSwatchRounding,
@@ -307,9 +308,7 @@ export function ColorSlider(props: ColorSliderProps): JSX.Element {
               <HeadlessColorSliderLabel class={colorSliderLabel(renderProps)}>
                 {local.label ??
                   renderProps.color.getChannelName(renderProps.channel, locale().locale)}
-                <Show when={local.contextualHelp}>
-                  <span data-slot="contextualHelp">{local.contextualHelp}</span>
-                </Show>
+                <FieldContextualHelp>{local.contextualHelp}</FieldContextualHelp>
               </HeadlessColorSliderLabel>
             </div>
           </Show>

@@ -95,6 +95,7 @@ import {
   type SpectrumContextValue,
 } from "../button/spectrum-context";
 import { HelpText } from "../form/HelpText";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 
 export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2ComboBoxSize = "S" | "M" | "L" | "XL";
@@ -849,9 +850,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                     necessityIndicator={necessityIndicator()}
                   />
                 </HeadlessComboBoxLabel>
-                <Show when={local.contextualHelp}>
-                  <span data-slot="contextualHelp">{local.contextualHelp}</span>
-                </Show>
+                <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
               </div>
             </Show>
 

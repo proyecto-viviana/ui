@@ -4,12 +4,17 @@ type: task
 title: "Map ColorField PageUp and PageDown to one step"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorfield functional pass: hex from #336699 React PageUp→#33669A PageDown back; Solid PageUp→#ffffff PageDown→#000000. Channel red 51 React PageUp→52 PageDown→51; Solid 255 then 0. Hue PageUp React 212° Solid 0°. Home/End already match min/max on both",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createColorField PageUp/PageDown call increment/decrement. ColorField test fails if PageUp jumps to #FFFFFF.",
     }
 ---
 

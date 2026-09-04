@@ -55,6 +55,7 @@ import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
 import { HelpText } from "../form/HelpText";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -480,9 +481,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
                   </span>
                 </Show>
               </HeadlessSearchFieldLabel>
-              <Show when={local.contextualHelp}>
-                <span data-slot="contextualHelp">{local.contextualHelp}</span>
-              </Show>
+              <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
             </div>
           </Show>
 

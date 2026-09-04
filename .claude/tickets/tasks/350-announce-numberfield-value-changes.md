@@ -4,12 +4,17 @@ type: task
 title: "Announce NumberField value changes"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 numberfield functional pass: focused React wheel/hold writes an assertive live region with the new number; Solid createNumberField never calls announce(). #180 is D6 driver coverage, not this port",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createNumberField announces inputValue assertively when it changes while focused (non-reactive isFocused, matching useSpinButton). Package test fails if ArrowUp leaves the live region empty.",
     }
 ---
 

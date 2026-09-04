@@ -4,7 +4,7 @@ type: task
 title: "Set native custom validity on Checkbox when isInvalid"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 radiogroup: same native custom-validity hole, but the wiring is createRadio not createToggle. Filed #376. Do not treat RadioGroup as this ticket.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createToggle calls createFormValidation. Package test fails if isInvalid leaves customError false.",
     }
 ---
 

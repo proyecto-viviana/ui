@@ -62,6 +62,7 @@ import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 
 export type TimeFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
@@ -409,11 +410,7 @@ function TimeFieldContent(props: {
               </span>
             </Show>
           </HeadlessTimeFieldLabel>
-          <Show when={props.contextualHelp}>
-            <span data-slot="contextualHelp" class={noWrap}>
-              {props.contextualHelp}
-            </span>
-          </Show>
+          <FieldContextualHelp size={props.size}>{props.contextualHelp}</FieldContextualHelp>
         </div>
       </Show>
 

@@ -4,12 +4,17 @@ type: task
 title: "Increment ColorField when scrolling down"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorfield functional pass: focused hex React wheel deltaY +120 → #33669A and -120 back to #336699; Solid +120 → #336698 (decrement) then -120 back. Channel red Solid +120 51→50; React channel stayed 51 in this driver. RAC useColorField increments on deltaY > 0; createColorField inverts the sign. isWheelDisabled already no-ops both",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createColorField wheel increments on deltaY > 0. ColorField test fails if wheel down decrements.",
     }
 ---
 

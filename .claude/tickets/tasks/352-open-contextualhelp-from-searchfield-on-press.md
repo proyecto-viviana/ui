@@ -4,7 +4,7 @@ type: task
 title: "Open ContextualHelp from SearchField on press"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -40,6 +40,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 rangeslider: same remount/never-open. Isolated click and Enter on ?withContextualHelp=true open React dialog Range helpChoose minimum and maximum values. 268×120 opacity 1, aria-expanded=true, focus DIV; Solid aria-expanded=false, dialogs 0, focus BODY. RangeSlider.tsx also uses span data-slot=contextualHelp. No new id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "FieldContextualHelp provides a stable ContextualHelpContext id. SearchField test fails if press remounts the trigger or leaves aria-expanded false.",
     }
 ---
 

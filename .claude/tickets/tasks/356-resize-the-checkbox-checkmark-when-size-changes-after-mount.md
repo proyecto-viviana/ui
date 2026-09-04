@@ -4,7 +4,7 @@ type: task
 title: "Resize the Checkbox checkmark when size changes after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -15,6 +15,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 checkboxgroup: same live size hole on the already-selected Email child. URL ?size=XL and live size+selected from unchecked paint 12×12 on both; live size XL from the default email-checked route leaves Solid at 10×10 inside a 20×20 box (React 12×12). No new id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "LiveCheckboxGlyph re-reads size so an already-selected checkmark grows with XL. Package test fails if the svg stays 10px.",
     }
 ---
 

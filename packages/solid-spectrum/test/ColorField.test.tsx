@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { afterEach, describe, expect, it } from "vite-plus/test";
-import { cleanup, render, screen, waitFor } from "@solidjs/testing-library";
+import { cleanup, fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { ColorField } from "../src/ColorField";
 
 afterEach(() => cleanup());
@@ -98,5 +98,40 @@ describe("ColorField", () => {
     expect(
       prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+
+  it("formats committed hex in uppercase", () => {
+    render(() => <ColorField aria-label="Color" defaultValue="#ff00ff" />);
+    expect(screen.getByRole("textbox")).toHaveValue("#FF00FF");
+  });
+
+  it("maps PageUp and PageDown to one step", () => {
+    render(() => <ColorField aria-label="Color" defaultValue="#336699" />);
+    const input = screen.getByRole("textbox");
+    input.focus();
+    fireEvent.keyDown(input, { key: "PageUp" });
+    expect(input).toHaveValue("#33669A");
+    fireEvent.keyDown(input, { key: "PageDown" });
+    expect(input).toHaveValue("#336699");
+  });
+
+  it("increments on wheel down", () => {
+    render(() => <ColorField aria-label="Color" defaultValue="#336699" />);
+    const input = screen.getByRole("textbox");
+    input.focus();
+    fireEvent.wheel(input, { deltaY: 120 });
+    expect(input).toHaveValue("#33669A");
+    fireEvent.wheel(input, { deltaY: -120 });
+    expect(input).toHaveValue("#336699");
+  });
+
+  it("sets native custom validity when isInvalid", async () => {
+    render(() => <ColorField aria-label="Color" isInvalid defaultValue="#336699" />);
+    const input = screen.getByRole("textbox") as HTMLInputElement;
+    await waitFor(() => {
+      expect(input.validity.customError).toBe(true);
+      expect(input.checkValidity()).toBe(false);
+      expect(input.validationMessage).toBe("Invalid value.");
+    });
   });
 });

@@ -60,6 +60,7 @@ import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps, useTheme } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   control,
   controlBorderRadius,
@@ -662,11 +663,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
               </span>
             </Show>
           </HeadlessDatePickerLabel>
-          <Show when={local.contextualHelp}>
-            <span data-slot="contextualHelp" class={noWrap}>
-              {local.contextualHelp}
-            </span>
-          </Show>
+          <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
         </div>
       </Show>
 

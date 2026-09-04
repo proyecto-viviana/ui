@@ -21,10 +21,11 @@
  */
 
 import { createEffect, createMemo, type Accessor } from "solid-js";
-import type { ColorFieldState } from "@proyecto-viviana/solid-stately";
+import { createFormValidationState, type ColorFieldState } from "@proyecto-viviana/solid-stately";
 import { createId } from "../ssr";
 import { createField } from "../label";
 import { createKeyboard } from "../interactions/createKeyboard";
+import { createFormValidation } from "../form/createFormValidation";
 import type { AriaColorFieldOptions, ColorFieldAria } from "./types";
 
 /**
@@ -54,6 +55,28 @@ export function createColorField(
   const isReadOnly = () => getProps().isReadOnly || getState().isReadOnly;
   const isInvalid = () => getProps().isInvalid || getState().isInvalid;
   const validationBehavior = () => getProps().validationBehavior ?? "native";
+
+  const validationState = createFormValidationState({
+    get value() {
+      return getState().inputValue;
+    },
+    get isInvalid() {
+      return isInvalid();
+    },
+    get validationBehavior() {
+      return validationBehavior();
+    },
+  });
+
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return validationBehavior();
+      },
+    },
+    validationState,
+    () => inputRef() ?? undefined,
+  );
 
   // RAC `useColorField` reaches `useField` through `useFormattedTextField` /
   // `useTextField`. Description and error slot ids (and the input's
@@ -91,10 +114,10 @@ export function createColorField(
         s.decrement();
         break;
       case "PageUp":
-        s.incrementToMax();
+        s.increment();
         break;
       case "PageDown":
-        s.decrementToMin();
+        s.decrement();
         break;
       case "Home":
         s.decrementToMin();
@@ -141,9 +164,9 @@ export function createColorField(
       return;
     }
 
-    if (e.deltaY < 0) {
+    if (e.deltaY > 0) {
       s.increment();
-    } else if (e.deltaY > 0) {
+    } else if (e.deltaY < 0) {
       s.decrement();
     } else {
       return;

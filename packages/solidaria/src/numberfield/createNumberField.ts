@@ -17,7 +17,7 @@
  * Based on @react-aria/numberfield useNumberField.
  */
 
-import { type JSX, createMemo, createSignal, onCleanup } from "solid-js";
+import { type JSX, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
@@ -27,6 +27,7 @@ import type { NumberFieldState } from "@proyecto-viviana/solid-stately";
 import type { AriaButtonProps } from "../button/types";
 import type { PressEvent } from "../interactions";
 import { createFocusWithin } from "../interactions/createFocusWithin";
+import { announce, clearAnnouncer } from "../live-announcer";
 
 export interface AriaNumberFieldProps {
   /** A label for the number field. */
@@ -78,6 +79,12 @@ export interface AriaNumberFieldProps {
    * RAC `useNumberField` `isWheelDisabled`.
    */
   isWheelDisabled?: boolean;
+  /**
+   * `"native"` sets the `required` attribute and omits `aria-required`.
+   * `"aria"` does the reverse. RAC `useNumberField` default is native.
+   * @default "native"
+   */
+  validationBehavior?: "aria" | "native";
 }
 
 export interface NumberFieldAria {
@@ -170,7 +177,12 @@ export function createNumberField(
   };
 
   // Handle input blur - commit value
+  // Non-reactive focus flag — matches useSpinButton. Focus itself must not
+  // announce; only a later change to inputValue while focused does.
+  let isFocused = false;
+
   const onInputBlur: JSX.EventHandler<HTMLInputElement, FocusEvent> = (e) => {
+    isFocused = false;
     state.commit();
     const p = getProps();
     p.onBlur?.(e);
@@ -178,10 +190,19 @@ export function createNumberField(
   };
 
   const onInputFocus: JSX.EventHandler<HTMLInputElement, FocusEvent> = (e) => {
+    isFocused = true;
     const p = getProps();
     p.onFocus?.(e);
     p.onFocusChange?.(true);
   };
+
+  createEffect(() => {
+    const value = state.inputValue();
+    if (isFocused) {
+      clearAnnouncer("assertive");
+      announce(value, "assertive");
+    }
+  });
 
   // Handle keyboard events
   const onKeyDown: JSX.EventHandler<HTMLInputElement, KeyboardEvent> = (e) => {
@@ -440,11 +461,12 @@ export function createNumberField(
           // en-US roledescription byte-identical to React Spectrum in the meantime.
           "aria-roledescription": "Number field",
           "aria-invalid": p.isInvalid || undefined,
-          "aria-required": p.isRequired || undefined,
+          "aria-required":
+            ((p.validationBehavior ?? "native") === "aria" && p.isRequired) || undefined,
           "aria-describedby": getAriaDescribedBy(),
           disabled: isDisabled || undefined,
           readOnly: isReadOnly || undefined,
-          required: p.isRequired || undefined,
+          required: ((p.validationBehavior ?? "native") === "native" && p.isRequired) || undefined,
           value: state.inputValue(),
           onInput: onInputChange,
           onChange: onInputChange,

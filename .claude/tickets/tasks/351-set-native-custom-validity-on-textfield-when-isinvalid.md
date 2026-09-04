@@ -4,7 +4,7 @@ type: task
 title: "Set native custom validity on TextField when isInvalid"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -35,6 +35,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 form: native required-empty already blocks both via valueMissing; after that blocked submit React paints error HelpText/aria-invalid/red border and Solid does not. Same missing createFormValidation call, different user-visible. Filed #383. Do not treat Form native-submit HelpText as this ticket.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTextField calls createFormValidationState + createFormValidation and Input/SearchFieldInput apply the input ref. Package test fails if isInvalid leaves customError false.",
     }
 ---
 

@@ -83,6 +83,7 @@ import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import { LOADER_ROW_HEIGHTS } from "../combobox";
 import { HelpText } from "../form/HelpText";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -650,9 +651,7 @@ function PickerLabel(props: {
           </span>
         </Show>
       </span>
-      <Show when={props.contextualHelp}>
-        <span data-slot="contextualHelp">{props.contextualHelp}</span>
-      </Show>
+      <FieldContextualHelp size={props.size}>{props.contextualHelp}</FieldContextualHelp>
     </span>
   );
 }

@@ -4,7 +4,7 @@ type: task
 title: "Do not toggle Checkbox on Enter"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: open,
       at: 2026-09-03,
       note: "#260 checkboxgroup: same Enter hole on group items. Isolated Tab onto Email then Enter unchecks Solid and leaves React checked; Space then matches native toggle on both. createCheckboxGroupItem uses createToggle. No new id.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createToggle label press returns on keyboard/virtual, matching RAC useToggle. Package test fails if Enter checks the box.",
     }
 ---
 

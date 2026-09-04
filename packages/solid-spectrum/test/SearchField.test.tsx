@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { Content, ContextualHelp, Form, Heading, SearchField, SearchFieldContext } from "../src";
 
 describe("SearchField (solid-spectrum)", () => {
@@ -240,6 +240,47 @@ describe("SearchField (solid-spectrum)", () => {
       const input = screen.getByRole("searchbox");
       fireEvent.keyDown(input, { key: "Enter" });
       expect(onSubmitSpy).toHaveBeenCalledWith("test");
+    });
+  });
+
+  describe("contextual help", () => {
+    it("names the help trigger Search Help", async () => {
+      render(() => (
+        <SearchField
+          label="Search"
+          contextualHelp={
+            <ContextualHelp>
+              <Heading>Search syntax</Heading>
+              <Content>Use project names.</Content>
+            </ContextualHelp>
+          }
+        />
+      ));
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Search Help" })).toBeInTheDocument();
+      });
+    });
+
+    it("opens the help dialog on press without remounting the trigger", async () => {
+      render(() => (
+        <SearchField
+          label="Search"
+          contextualHelp={
+            <ContextualHelp>
+              <Heading>Search syntax</Heading>
+              <Content>Use project names.</Content>
+            </ContextualHelp>
+          }
+        />
+      ));
+      const help = await waitFor(() => screen.getByRole("button", { name: "Search Help" }));
+      const triggerId = help.id;
+      fireEvent.click(help);
+      await waitFor(() => {
+        expect(help).toHaveAttribute("aria-expanded", "true");
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+      });
+      expect(help.id).toBe(triggerId);
     });
   });
 });

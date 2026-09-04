@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { render, screen, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { ToggleSwitch, TabSwitch } from "../src/switch";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
@@ -168,6 +169,22 @@ describe("ToggleSwitch", () => {
       ));
       const switchEl = screen.getByRole("switch");
       expect(switchEl).toHaveAttribute("aria-describedby", "desc");
+    });
+  });
+
+  describe("live disabled", () => {
+    it("sets data-disabled when isDisabled changes after mount", async () => {
+      const [isDisabled, setIsDisabled] = createSignal(false);
+      render(() => <ToggleSwitch isDisabled={isDisabled()}>Airplane mode</ToggleSwitch>);
+      expect(screen.getByRole("switch").closest("[data-disabled]")).toBeNull();
+      setIsDisabled(true);
+      await waitFor(() => {
+        expect(screen.getByRole("switch")).toBeDisabled();
+        expect(screen.getByRole("switch").closest("[data-disabled]")).toHaveAttribute(
+          "data-disabled",
+          "true",
+        );
+      });
     });
   });
 

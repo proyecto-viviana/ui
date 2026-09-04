@@ -260,3 +260,5 @@ export { Field } from "./Field";
 export type { FieldProps, FieldSize } from "./Field";
 export { HelpText } from "./HelpText";
 export type { HelpTextProps } from "./HelpText";
+export { FieldContextualHelp } from "./FieldContextualHelp";
+export type { FieldContextualHelpProps, FieldContextualHelpSize } from "./FieldContextualHelp";

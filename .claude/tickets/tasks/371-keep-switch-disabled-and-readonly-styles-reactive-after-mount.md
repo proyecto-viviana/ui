@@ -4,12 +4,17 @@ type: task
 title: "Keep Switch disabled and read-only styles reactive after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 switch functional pass: live isDisabled sets native input.disabled on both and Tab skips both, but Solid keeps enabled colors rgb(41,41,41) and omits data-disabled (React gray-400 rgb(198,198,198) + data-disabled). Live isReadOnly sets aria-readonly on both and click/Space are no-ops, but Solid omits data-readonly and still paints hover rgb(19,19,19). URL remount of the same props already matches. createToggle returns isDisabled/isReadOnly as one-shot booleans; SwitchField/SwitchButton read those for data-* and style render props while inputProps still re-reads",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createToggle, createSwitch, and createCheckbox expose isDisabled/isReadOnly/isInvalid as getters so live isDisabled paints data-disabled. Switch test fails if the host omits it.",
     }
 ---
 

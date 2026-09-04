@@ -4,12 +4,17 @@ type: task
 title: "Omit NumberField aria-required when validation is native"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 numberfield functional pass: ?isRequired=true both set native required=true; React aria-required omitted, Solid aria-required=true. TextArea on this catalogue already omits aria-required under native. Distinct from ComboBox #273 (native required missing)",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createNumberField omits aria-required when validationBehavior is native (default) and keeps required. Package test fails if native required still emits aria-required.",
     }
 ---
 

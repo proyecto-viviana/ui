@@ -4,12 +4,17 @@ type: task
 title: "Format ColorField hex values in uppercase"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorfield functional pass: after ArrowUp React input #33669A, Solid #33669a; Enter commit of #ff0000 paints #FF0000 vs #ff0000; URL defaultValue=#ff00ff mounts #FF00FF vs #ff00ff. Same color, different displayed casing. RAC addColorValue uppercases; Solid Color.toString('hex') is lowercase. #237 noted this on the Enter-commit land",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "formatColorValue uppercases hex/hexa. ColorField test fails if defaultValue #ff00ff stays lowercase.",
     }
 ---
 

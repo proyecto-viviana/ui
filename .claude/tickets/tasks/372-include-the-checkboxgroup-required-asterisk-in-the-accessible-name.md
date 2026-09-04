@@ -4,12 +4,17 @@ type: task
 title: "Include the CheckboxGroup required asterisk in the accessible name"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 checkboxgroup functional pass: URL ?isRequired=true paints an 8×8 asterisk on both (field 80×182); React Asterisk has aria-label (required) / aria-hidden=false so AX group is Notifications (required) with img (required); Solid aria-hidden=true / no aria-label so AX group is Notifications. S2 CheckboxGroup FieldLabel sets includeNecessityIndicatorInAccessibilityName",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "CheckboxGroup required AsteriskIcon is named (required) and not aria-hidden. Package test fails if the group stays Notifications.",
     }
 ---
 

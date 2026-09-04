@@ -20,9 +20,11 @@
  * This is a 1:1 port of @react-aria/textfield's useTextField hook.
  */
 
-import { JSX } from "solid-js";
+import { type JSX, createSignal } from "solid-js";
+import { createFormValidationState } from "@proyecto-viviana/solid-stately";
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
 import { createFocusable, type FocusableDOMProps, type FocusableProps } from "../interactions";
+import { createFormValidation, type ValidatableElement } from "../form/createFormValidation";
 import { mergeProps, filterDOMProps } from "../utils";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 
@@ -109,6 +111,37 @@ export function createTextField<
 >(props: MaybeAccessor<AriaTextFieldProps>, ref?: (el: T) => void): TextFieldAria<T> {
   const getProps = () => access(props);
   let lastInputValue: string | undefined;
+  const [inputEl, setInputEl] = createSignal<T | undefined>();
+
+  const setInputRef = (el: T | undefined) => {
+    setInputEl(() => el);
+    if (el) {
+      ref?.(el);
+    }
+  };
+
+  const validationState = createFormValidationState({
+    get value() {
+      return getProps().value ?? getProps().defaultValue ?? "";
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+  });
+
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return getProps().validationBehavior ?? "native";
+      },
+      focus: () => inputEl()?.focus(),
+    },
+    validationState,
+    () => inputEl() as ValidatableElement | undefined,
+  );
 
   const eventWithCurrentTarget = (
     event: InputEvent,
@@ -149,7 +182,7 @@ export function createTextField<
       onKeyDown: getProps().onKeyDown,
       onKeyUp: getProps().onKeyUp,
     },
-    ref as ((el: HTMLElement) => void) | undefined,
+    setInputRef as ((el: HTMLElement) => void) | undefined,
   );
 
   // Filter DOM props
@@ -172,6 +205,7 @@ export function createTextField<
         "aria-required": (validationBehavior === "aria" && p.isRequired) || undefined,
         "aria-invalid": isInvalid || undefined,
         value: p.value ?? p.defaultValue ?? "",
+        ref: setInputRef,
         onChange: (e: Event) => {
           const target = e.target as HTMLInputElement | HTMLTextAreaElement;
           if (target.value !== lastInputValue) {

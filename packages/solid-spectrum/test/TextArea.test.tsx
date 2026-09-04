@@ -3,7 +3,7 @@
  */
 import { createSignal } from "solid-js";
 import { describe, it, expect, vi } from "vite-plus/test";
-import { render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen } from "@solidjs/testing-library";
 import { TextArea } from "../src/textfield/TextArea";
 
 describe("TextArea (solid-spectrum)", () => {

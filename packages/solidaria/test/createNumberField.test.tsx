@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createNumberField } from "../src/numberfield/createNumberField";
 import { createNumberFieldState } from "@proyecto-viviana/solid-stately";
 import { Show } from "solid-js";
@@ -21,6 +21,7 @@ function TestNumberField(props: {
   isReadOnly?: boolean;
   isRequired?: boolean;
   isInvalid?: boolean;
+  validationBehavior?: "aria" | "native";
   "aria-label"?: string;
   label?: string;
   description?: string;
@@ -66,6 +67,7 @@ function TestNumberField(props: {
       isReadOnly: props.isReadOnly,
       isRequired: props.isRequired,
       isInvalid: props.isInvalid,
+      validationBehavior: props.validationBehavior,
       description: props.description,
       errorMessage: props.errorMessage,
       name: props.name,
@@ -220,11 +222,12 @@ describe("createNumberField", () => {
       expect(input).toHaveAttribute("aria-roledescription", "Number field");
     });
 
-    it("has aria-required when required", () => {
+    it("omits aria-required when required and validation is native", () => {
       render(() => <TestNumberField aria-label="Amount" isRequired />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-required", "true");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
     });
 
     it("has aria-invalid when invalid", () => {
@@ -638,6 +641,35 @@ describe("createNumberField", () => {
       expect(onChange.mock.calls.at(-1)?.[0]).toBeGreaterThanOrEqual(13);
       pressUp?.({ pointerType: "mouse" });
       vi.useRealTimers();
+    });
+  });
+
+  describe("native vs aria required", () => {
+    it("omits aria-required when validation is native", () => {
+      render(() => <TestNumberField aria-label="Amount" isRequired />);
+      const input = screen.getByRole("textbox");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("sets aria-required when validation is aria", () => {
+      render(() => <TestNumberField aria-label="Amount" isRequired validationBehavior="aria" />);
+      const input = screen.getByRole("textbox");
+      expect(input.hasAttribute("required")).toBe(false);
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+  });
+
+  describe("live announcement", () => {
+    it("announces the new value assertively when it changes while focused", async () => {
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} />);
+      const input = screen.getByRole("textbox");
+      input.focus();
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      await waitFor(() => {
+        const live = document.querySelector('[aria-live="assertive"]');
+        expect(live?.textContent).toContain("6");
+      });
     });
   });
 });

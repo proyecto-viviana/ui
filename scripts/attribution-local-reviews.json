@@ -342,7 +342,7 @@
   {
     "localPath": "packages/solid-stately/src/dnd/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "8998d4a60e43ecd8ab5b8b773657b3d751d7e9036b19b76014add5bfa10260bf"
+    "contentSha256": "76a15960ee77537d97519f4484a32a97bdc27517fd78197156bcc4b34d64a183"
   },
   {
     "localPath": "packages/solid-stately/src/form/index.ts",
@@ -357,7 +357,7 @@
   {
     "localPath": "packages/solid-stately/src/index.ts",
     "classification": "local-module-surface",
-    "contentSha256": "698d439f9304fec8baa58e8c62236fa23a13e52082fcb0260ca652205e780166"
+    "contentSha256": "40a95d80a01ccf85e6f3eb79fd76a0a06a5f4e897e5a2df70bd05587ecf664c2"
   },
   {
     "localPath": "packages/solid-stately/src/menu/index.ts",

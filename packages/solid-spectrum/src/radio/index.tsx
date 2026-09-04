@@ -56,6 +56,7 @@ import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -459,9 +460,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
               </span>
             </Show>
           </span>
-          <Show when={local.contextualHelp}>
-            <span data-slot="contextualHelp">{local.contextualHelp}</span>
-          </Show>
+          <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
         </div>
       </Show>
       <div

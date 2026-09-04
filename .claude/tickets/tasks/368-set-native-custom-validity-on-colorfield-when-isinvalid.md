@@ -4,12 +4,17 @@ type: task
 title: "Set native custom validity on ColorField when isInvalid"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 colorfield functional pass: URL ?isInvalid=true leaves React input.validity.customError=true, checkValidity=false, :invalid, validationMessage Invalid value., requestSubmit blocked; Solid stays valid and submits {brandColor:#336699}. createColorField never calls createFormValidation; RAC useColorField reaches it through useFormattedTextField",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createColorField calls createFormValidation. ColorField test fails if isInvalid leaves customError false.",
     }
 ---
 

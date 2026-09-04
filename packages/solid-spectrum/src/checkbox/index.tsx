@@ -66,6 +66,7 @@ import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import DashIcon from "../icon/ui-icons/Dash";
 import { useProviderProps } from "../provider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -495,6 +496,32 @@ function checkboxPressScaleStyle(
   return pressStyle;
 }
 
+function LiveCheckboxGlyph(props: {
+  kind: "check" | "dash";
+  fieldSize: () => S2CheckboxSize;
+}): JSX.Element {
+  const glyphSize = () => props.fieldSize();
+  return (
+    <Show when={glyphSize()} keyed>
+      {(size) =>
+        props.kind === "dash" ? (
+          <DashIcon
+            size={iconSize[size]}
+            class={checkboxIcon}
+            style={checkboxIconSizeStyle(dashIconPixelSize[size])}
+          />
+        ) : (
+          <CheckmarkIcon
+            size={iconSize[size]}
+            class={checkboxIcon}
+            style={checkboxIconSizeStyle(checkmarkIconPixelSize[size])}
+          />
+        )
+      }
+    </Show>
+  );
+}
+
 function checkboxIconSizeStyle(size: number): JSX.CSSProperties {
   return {
     width: `${size}px`,
@@ -647,18 +674,10 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
                   style={checkboxPressScaleStyle(boxElement, renderProps)}
                 >
                   <Show when={renderProps.isIndeterminate}>
-                    <DashIcon
-                      size={iconSize[size()]}
-                      class={checkboxIcon}
-                      style={checkboxIconSizeStyle(dashIconPixelSize[size()])}
-                    />
+                    <LiveCheckboxGlyph kind="dash" fieldSize={size} />
                   </Show>
                   <Show when={renderProps.isSelected && !renderProps.isIndeterminate}>
-                    <CheckmarkIcon
-                      size={iconSize[size()]}
-                      class={checkboxIcon}
-                      style={checkboxIconSizeStyle(checkmarkIconPixelSize[size()])}
-                    />
+                    <LiveCheckboxGlyph kind="check" fieldSize={size} />
                   </Show>
                 </div>
               );
@@ -793,15 +812,19 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
                     size={size() === "S" ? "M" : size()}
                     class={checkboxGroupRequiredIcon}
                     style={requiredIconStyle(size())}
-                    aria-hidden="true"
+                    aria-hidden={headlessProps.isRequired ? false : true}
+                    role={headlessProps.isRequired ? "img" : undefined}
+                    aria-label={
+                      headlessProps.isRequired
+                        ? stringFormatter().format("label.(required)")
+                        : undefined
+                    }
                   />
                 </Show>
               </span>
             </Show>
           </span>
-          <Show when={local.contextualHelp}>
-            <span data-slot="contextualHelp">{local.contextualHelp}</span>
-          </Show>
+          <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
         </div>
       </Show>
       <div

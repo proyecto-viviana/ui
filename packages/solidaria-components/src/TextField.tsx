@@ -260,6 +260,12 @@ export function Input(props: InputProps): JSX.Element {
       {...mergedProps()}
       ref={(element) => {
         inputElement = element;
+        const contextRef = context?.inputProps?.ref;
+        if (typeof contextRef === "function") {
+          contextRef(element);
+        } else if (contextRef && typeof contextRef === "object" && "current" in contextRef) {
+          (contextRef as { current: HTMLInputElement | null }).current = element;
+        }
         const ref = props.ref;
         if (typeof ref === "function") {
           ref(element);
@@ -356,6 +362,12 @@ export function TextArea(props: TextAreaProps): JSX.Element {
       {...mergedProps()}
       ref={(element) => {
         textAreaElement = element;
+        const contextRef = context?.inputProps?.ref;
+        if (typeof contextRef === "function") {
+          (contextRef as (el: HTMLInputElement | HTMLTextAreaElement) => void)(element);
+        } else if (contextRef && typeof contextRef === "object" && "current" in contextRef) {
+          (contextRef as { current: HTMLTextAreaElement | null }).current = element;
+        }
         const ref = props.ref;
         if (typeof ref === "function") {
           ref(element);
