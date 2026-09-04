@@ -4,12 +4,22 @@ type: task
 title: "Set autocomplete autocorrect spellcheck and enterKeyHint on the Autocomplete SearchField"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 autocomplete functional pass: RAC search input is autocomplete=off autocorrect=off spellcheck=false enterkeyhint=go; Solid omits all four",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "SearchFieldInput autocompleteInputAttrs copies ARIA only; createAutocomplete already returns the four native attrs",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "SearchFieldInput last-wins autoComplete/autoCorrect/spellCheck/enterKeyHint over SearchField undefined getters. Fruits searchbox test fails if any of the four is omitted while ARIA still matches.",
     }
 ---
 
@@ -17,9 +27,10 @@ RAC Autocomplete puts `autoComplete="off"`, `autoCorrect="off"`,
 `spellCheck="false"`, and `enterKeyHint="go"` on the composed SearchField
 input (browser autofill, autocorrect, spellcheck, and the mobile enter
 glyph). `createAutocomplete` already returns those on `inputProps`. Solid
-`SearchFieldInput` only forwards `aria-controls`, `aria-autocomplete`, and
-`aria-activedescendant` from Autocomplete context
-(`packages/solidaria-components/src/SearchField.tsx` `autocompleteInputAttrs`).
+`SearchFieldInput` now last-wins the four native attrs from Autocomplete
+context after SearchField's createTextField getters
+(`packages/solidaria-components/src/SearchField.tsx` `autocompleteInputAttrs`
+inside `mergedInputProps`). Do not re-emit them in the hook.
 
 RAC `Autocomplete.test` / `AriaAutocompleteTests` assert the four attributes
 on the searchbox.
@@ -40,6 +51,22 @@ on the searchbox.
 
 Same at rest and after typing. `aria-autocomplete` / `aria-controls` already
 match.
+
+Local (2026-09-04), cwd `/home/emoporemilio/projects/viviana-hub/ui`,
+parent `ff02dc06`. Source: `autocompleteInputAttrs` copies the four native
+attrs and spreads last in `mergedInputProps` so SearchField getters at
+`:412:428` (`undefined`) cannot wipe them. Named SearchField+ListBox fruits
+test failed on missing `autocomplete` while ARIA still matched. After
+last-win:
+
+`vp test run packages/solidaria-components/test/Autocomplete.test.tsx`
+PASS (15): searchbox `autocomplete=off` `autocorrect=off` `spellcheck=false`
+`enterkeyhint=go` at rest and after typing `a`; ARIA still matches. Stub
+`TestList` filter stayed green. #288 unmount fruits stayed green.
+
+Owned-file `vp check` PASS. `git diff --check` PASS on named paths.
+Repo-wide `vp run check` not run. Comparison walk not run. #86 / #427 /
+#428 not started.
 
 ## Done when
 

@@ -335,4 +335,29 @@ describe("Autocomplete SearchField + ListBox", () => {
     expect(screen.queryAllByRole("option")).toHaveLength(0);
     expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
   });
+
+  // RAC AriaAutocompleteTests assert autoCorrect/spellCheck/enterkeyhint on the
+  // searchbox; live RAC also sets autocomplete=off. createAutocomplete already
+  // returns all four; SearchFieldInput must last-win them over SearchField's
+  // undefined getters (#289). ARIA already matches — fail if any native attr
+  // is omitted while aria-autocomplete/aria-controls still pass.
+  it("sets autocomplete autocorrect spellcheck and enterkeyhint on the searchbox", () => {
+    render(() => <FruitAutocomplete />);
+
+    const input = screen.getByRole("searchbox");
+    expect(input).toHaveAttribute("aria-autocomplete", "list");
+    expect(input).toHaveAttribute("aria-controls");
+    expect(input).toHaveAttribute("autocomplete", "off");
+    expect(input).toHaveAttribute("autocorrect", "off");
+    expect(input).toHaveAttribute("spellcheck", "false");
+    expect(input).toHaveAttribute("enterkeyhint", "go");
+
+    fireEvent.input(input, { target: { value: "a" } });
+
+    expect(input).toHaveAttribute("aria-autocomplete", "list");
+    expect(input).toHaveAttribute("autocomplete", "off");
+    expect(input).toHaveAttribute("autocorrect", "off");
+    expect(input).toHaveAttribute("spellcheck", "false");
+    expect(input).toHaveAttribute("enterkeyhint", "go");
+  });
 });

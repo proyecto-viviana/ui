@@ -269,8 +269,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   // filter), and onKeyDown/onFocus/onBlur chain the autocomplete's virtual-focus
   // navigation into the input. This mirrors RAC's
   // useContextProps(props, inputRef, FieldInputContext). The remaining passthroughs
-  // (aria-activedescendant/aria-controls/aria-autocomplete) and the input-ref
-  // registration are applied at the <input> in SearchFieldInput.
+  // (aria-activedescendant/aria-controls/aria-autocomplete and the four native
+  // input attrs) and the input-ref registration are applied last at the <input>
+  // in SearchFieldInput so SearchField's undefined getters cannot wipe them.
   const autocompleteInput = useAutocompleteInput();
   const autocompleteProps = autocompleteInput
     ? ({
@@ -671,12 +672,14 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
   }
 
   // Inside an <Autocomplete>, expose the ARIA attributes that identify the
-  // controlled collection and its virtually-focused option. value/onChange and the
-  // keyboard handlers are already merged upstream in SearchField(); here we only add
-  // the passthrough attributes that createTextField doesn't forward, and register the
-  // input element as the autocomplete inputRef so the beforeinput + reverse-path
-  // (aria-activedescendant mirror) listeners bind. Mirrors RAC's
-  // [InputContext, {...inputProps, ref: inputRef}].
+  // controlled collection and its virtually-focused option, plus the four native
+  // input attrs createAutocomplete already returns (autoComplete/autoCorrect/
+  // spellCheck/enterKeyHint). value/onChange and the keyboard handlers are already
+  // merged upstream in SearchField(); SearchField's split getters never receive
+  // those Autocomplete values, so they must last-win here over undefined
+  // createTextField copies. Register the input as the autocomplete inputRef so the
+  // beforeinput + reverse-path (aria-activedescendant mirror) listeners bind.
+  // Mirrors RAC's [InputContext, {...inputProps, ref: inputRef}].
   const autocompleteInput = useAutocompleteInput();
 
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
@@ -726,6 +729,12 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
       "aria-controls": inputProps["aria-controls"],
       "aria-autocomplete": inputProps["aria-autocomplete"],
       "aria-activedescendant": inputProps["aria-activedescendant"](),
+      // Last-win over SearchField createTextField getters that return undefined
+      // when Autocomplete did not merge these into ariaProps.
+      autoComplete: inputProps.autoComplete,
+      autoCorrect: inputProps.autoCorrect,
+      spellCheck: inputProps.spellCheck,
+      enterKeyHint: inputProps.enterKeyHint,
     };
   };
 
