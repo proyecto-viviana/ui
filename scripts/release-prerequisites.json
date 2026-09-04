@@ -6,13 +6,13 @@
       "prerequisites": [
         {
           "id": "npm-package-registered",
-          "satisfied": false,
-          "evidence": null
+          "satisfied": true,
+          "evidence": "2026-09-04 public read: npm view @proyecto-viviana/kumo name version time dist-tags deprecated --json → name=@proyecto-viviana/kumo version=0.0.0-bootstrap.0 time.created=2026-09-04T02:14:43.024Z time.modified=2026-09-04T02:26:27.063Z time[0.0.0-bootstrap.0]=2026-09-04T02:14:43.291Z dist-tags.latest=0.0.0-bootstrap.0 dist-tags.bootstrap=0.0.0-bootstrap.0 deprecated=\"Name reservation only. Use >=0.1.0.\" public https://www.npmjs.com/package/@proyecto-viviana/kumo"
         },
         {
           "id": "trusted-publisher-registered",
-          "satisfied": false,
-          "evidence": null
+          "satisfied": true,
+          "evidence": "2026-09-04T02:23Z owner-captured (2FA-gated, not re-run): npm trust list @proyecto-viviana/kumo → type: github, id: b211877d-f6ae-4e99-81c9-671a5482a729, file: release.yml, repository: proyecto-viviana/ui, permissions: publish, stage publish. First OIDC publish from release.yml is the independent confirmation."
         }
       ]
     }

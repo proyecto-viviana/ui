@@ -16,6 +16,11 @@ history:
       at: 2026-08-20,
       note: "recorded the fail-closed first-publish prerequisite and current package evidence",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "#447 recorded both release prerequisites as satisfied. npm-package-registered: 2026-09-04 public read npm view @proyecto-viviana/kumo name version time dist-tags deprecated --json → name=@proyecto-viviana/kumo version=0.0.0-bootstrap.0 time.created=2026-09-04T02:14:43.024Z time.modified=2026-09-04T02:26:27.063Z time[0.0.0-bootstrap.0]=2026-09-04T02:14:43.291Z dist-tags.latest=0.0.0-bootstrap.0 dist-tags.bootstrap=0.0.0-bootstrap.0 deprecated=\"Name reservation only. Use >=0.1.0.\" public https://www.npmjs.com/package/@proyecto-viviana/kumo. trusted-publisher-registered: 2026-09-04T02:23Z owner-captured (2FA-gated, not re-run) npm trust list @proyecto-viviana/kumo → type: github, id: b211877d-f6ae-4e99-81c9-671a5482a729, file: release.yml, repository: proyecto-viviana/ui, permissions: publish, stage publish. First OIDC publish from release.yml is the independent confirmation.",
+    }
 ---
 
 Land the Kumo Button package as a releasable sibling in the workspace.

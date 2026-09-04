@@ -47,6 +47,9 @@
     "./styles.css": "./dist/styles.css",
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "rm -rf dist && vp pack && mkdir -p dist && cp src/styles.css dist/styles.css && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json",
     "prepublishOnly": "echo 'Use the root Changesets npm release workflow'"
