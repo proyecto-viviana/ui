@@ -101,14 +101,12 @@
 
 [data-glasselated] .gls-topbar-nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: visible;
   flex: 1;
-}
-[data-glasselated] .gls-topbar-nav::-webkit-scrollbar {
-  display: none;
+  min-width: 0;
 }
 
 [data-glasselated] .gls-navlink {
@@ -135,9 +133,8 @@
   box-shadow: var(--edge-glass);
 }
 
-/* Narrow-width nav: the tab strip becomes a select. On wide desktop the strip
-   stays and this control is hidden; below the threshold they swap so the panels
-   never have to scroll off a small screen. */
+/* Narrow-width nav: the wrapping strip becomes a select. On wide desktop the
+   strip stays and this control is hidden; at 820px and below they swap. */
 [data-glasselated] .gls-nav-select {
   display: none;
   flex: 1;

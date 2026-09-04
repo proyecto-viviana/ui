@@ -9,9 +9,8 @@ import ContrastIcon from "@proyecto-viviana/ui/ContrastIcon";
 import { useTheme } from "@/utils/theme";
 import { PANELS, type PanelDef } from "./registry";
 
-/* The nav is a scrolling tab strip on wide desktop; below --gls-nav-collapse
-   (see glasselated.css) CSS swaps it for the select below, which is the only
-   one that reads well once the strip would have to scroll on a small screen. */
+/* The nav wraps on wide desktop; at 820px and below, CSS swaps it for the
+   select, which is the only control that reads well on a small screen. */
 
 export function ShowcaseTopbar(): JSX.Element {
   const { toggleTheme } = useTheme();

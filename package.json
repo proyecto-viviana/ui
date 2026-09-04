@@ -81,7 +81,7 @@
     "a11y:axe:comparison": "vp run comparison:test:a11y",
     "a11y:axe:playground": "RUN_AXE=1 AXE_INCLUDE_CONTRAST=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/playground-axe.spec.ts --reporter=line",
     "a11y:contrast": "RUN_AXE=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/contrast.spec.ts --reporter=line",
-    "a11y:smoke": "vp exec --filter @proyecto-viviana/web -- playwright test e2e/docs-menu.spec.ts e2e/playground-components.spec.ts e2e/calendar-regression.spec.ts e2e/menu-focus.spec.ts e2e/viviana-ui-docs.spec.ts e2e/theme-wipe.spec.ts --reporter=line",
+    "a11y:smoke": "vp exec --filter @proyecto-viviana/web -- playwright test e2e/docs-menu.spec.ts e2e/playground-components.spec.ts e2e/calendar-regression.spec.ts e2e/menu-focus.spec.ts e2e/viviana-ui-docs.spec.ts e2e/theme-wipe.spec.ts e2e/showcase-topbar.spec.ts --reporter=line",
     "a11y:check": "vp run a11y:axe:aa && vp run a11y:axe:comparison && vp run a11y:contrast && vp run a11y:smoke",
     "a11y:full": "vp run a11y:axe:playground && vp run a11y:axe:comparison && vp run a11y:smoke",
     "a11y:ci": "vp run a11y:check",
