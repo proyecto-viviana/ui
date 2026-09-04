@@ -19,7 +19,7 @@
  * - packages/react-aria/src/actiongroup/useActionGroupItem.ts
  */
 
-import { onCleanup, type JSX, type Accessor } from "solid-js";
+import { onCleanup, createSignal, type JSX, type Accessor } from "solid-js";
 import { createButton } from "../button";
 import {
   filterDOMProps,
@@ -92,18 +92,10 @@ export function createActionGroup<T>(
 ): ActionGroupAria {
   const locale = useLocale();
   let groupRef: HTMLElement | undefined;
-  const applyRoleAttributes = (): void => {
-    if (!groupRef) return;
-    const selectionMode = state.selectionMode();
-    const mappedRole = GROUP_ROLE_BY_MODE[selectionMode];
-    const nestedToolbar = Boolean(groupRef.parentElement?.closest('[role="toolbar"]'));
-    const role = mappedRole === "toolbar" && nestedToolbar ? "group" : mappedRole;
-    groupRef.setAttribute("role", role);
-    if (mappedRole === "toolbar" && !nestedToolbar) {
-      groupRef.setAttribute("aria-orientation", props.orientation ?? "horizontal");
-    } else {
-      groupRef.removeAttribute("aria-orientation");
-    }
+  const [isInToolbar, setIsInToolbar] = createSignal(false);
+  const groupRole = (): string => {
+    const mappedRole = GROUP_ROLE_BY_MODE[state.selectionMode()];
+    return mappedRole === "toolbar" && isInToolbar() ? "group" : mappedRole;
   };
 
   const getFocusableItems = (root: HTMLElement): HTMLElement[] => {
@@ -186,11 +178,20 @@ export function createActionGroup<T>(
     {
       ref: (el: HTMLElement) => {
         groupRef = el;
-        applyRoleAttributes();
+        const detectNestedToolbar = (): void => {
+          setIsInToolbar(Boolean(el.parentElement?.closest('[role="toolbar"]')));
+        };
+        detectNestedToolbar();
         queueMicrotask(() => {
           if (!groupRef) return;
-          applyRoleAttributes();
+          detectNestedToolbar();
         });
+      },
+      get role() {
+        return groupRole();
+      },
+      get "aria-orientation"() {
+        return groupRole() === "toolbar" ? (props.orientation ?? "horizontal") : undefined;
       },
       onKeyDown,
       get "aria-label"() {

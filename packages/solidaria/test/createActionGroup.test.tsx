@@ -45,6 +45,50 @@ function ActionGroupExample(props: {
   );
 }
 
+function LiveRoleExample(props: {
+  selectionMode: Accessor<"none" | "single" | "multiple">;
+  orientation: Accessor<"horizontal" | "vertical">;
+  nested?: boolean;
+}) {
+  const state = createListState({
+    get selectionMode() {
+      return props.selectionMode();
+    },
+    items: [
+      { id: "bold", label: "Bold" },
+      { id: "italic", label: "Italic" },
+      { id: "underline", label: "Underline" },
+    ],
+    getKey: (item) => item.id,
+    getTextValue: (item) => item.label,
+  });
+  const { actionGroupProps } = createActionGroup(
+    {
+      "aria-label": "Text style",
+      get orientation() {
+        return props.orientation();
+      },
+    },
+    state,
+  );
+  const bold = createActionGroupItem({ key: "bold" }, state);
+  const italic = createActionGroupItem({ key: "italic" }, state);
+  const underline = createActionGroupItem({ key: "underline" }, state);
+
+  const group = (
+    <div {...actionGroupProps} data-testid="action-group">
+      <button {...bold.buttonProps}>Bold</button>
+      <button {...italic.buttonProps}>Italic</button>
+      <button {...underline.buttonProps}>Underline</button>
+    </div>
+  );
+
+  if (props.nested) {
+    return <div role="toolbar">{group}</div>;
+  }
+  return group;
+}
+
 function LiveDisabledKeysExample(props: { disabledKeys: Accessor<string[]> }) {
   const state = createListState({
     get disabledKeys() {
@@ -239,5 +283,57 @@ describe("createActionGroup", () => {
     expect(screen.getByRole("button", { name: "Italic" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Underline" })).toBeDisabled();
     expect(screen.getByTestId("action-group")).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("updates host role to radiogroup and drops aria-orientation when selectionMode becomes single after mount", () => {
+    const [selectionMode, setSelectionMode] = createSignal<"none" | "single" | "multiple">("none");
+    const [orientation] = createSignal<"horizontal" | "vertical">("horizontal");
+    render(() => <LiveRoleExample selectionMode={selectionMode} orientation={orientation} />);
+
+    const group = screen.getByTestId("action-group");
+    expect(group).toHaveAttribute("role", "toolbar");
+    expect(group).toHaveAttribute("aria-orientation", "horizontal");
+
+    setSelectionMode("single");
+
+    expect(group).toHaveAttribute("role", "radiogroup");
+    expect(group).not.toHaveAttribute("aria-orientation");
+    expect(screen.getByRole("radio", { name: "Italic" })).toBeInTheDocument();
+  });
+
+  it("updates aria-orientation when orientation becomes vertical after mount", () => {
+    const [selectionMode] = createSignal<"none" | "single" | "multiple">("none");
+    const [orientation, setOrientation] = createSignal<"horizontal" | "vertical">("horizontal");
+    render(() => <LiveRoleExample selectionMode={selectionMode} orientation={orientation} />);
+
+    const group = screen.getByTestId("action-group");
+    expect(group).toHaveAttribute("role", "toolbar");
+    expect(group).toHaveAttribute("aria-orientation", "horizontal");
+
+    setOrientation("vertical");
+
+    expect(group).toHaveAttribute("role", "toolbar");
+    expect(group).toHaveAttribute("aria-orientation", "vertical");
+  });
+
+  it("keeps nested toolbar role=group when live selectionMode returns to none", async () => {
+    const [selectionMode, setSelectionMode] = createSignal<"none" | "single" | "multiple">(
+      "single",
+    );
+    const [orientation] = createSignal<"horizontal" | "vertical">("horizontal");
+    render(() => (
+      <LiveRoleExample nested selectionMode={selectionMode} orientation={orientation} />
+    ));
+
+    const group = screen.getByTestId("action-group");
+    await waitFor(() => {
+      expect(group).toHaveAttribute("role", "radiogroup");
+    });
+    expect(group).not.toHaveAttribute("aria-orientation");
+
+    setSelectionMode("none");
+
+    expect(group).toHaveAttribute("role", "group");
+    expect(group).not.toHaveAttribute("aria-orientation");
   });
 });

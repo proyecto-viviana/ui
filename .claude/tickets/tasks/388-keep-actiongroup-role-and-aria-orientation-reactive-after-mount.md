@@ -4,12 +4,17 @@ type: task
 title: "Keep ActionGroup role and aria-orientation reactive after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 actiongroup functional pass: URL remount of selectionMode/orientation already matches (none→toolbar+aria-orientation, single→radiogroup with aria-orientation omitted, multiple→toolbar, vertical toolbar aria-orientation=vertical). Live {selectionMode:'single'} updates React to radiogroup and leaves Solid role=toolbar aria-orientation=horizontal while item roles already become radio. Live {orientation:'vertical'} updates React aria-orientation=vertical and leaves Solid aria-orientation=horizontal (data-orientation and flex-direction already vertical). createActionGroup applyRoleAttributes only runs from the group ref / queueMicrotask",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "actionGroupProps role and aria-orientation are getters. Nested toolbar is an isInToolbar signal the getters read; ref/microtask set the signal, not setAttribute. Package tests fail if live single leaves role=toolbar or live vertical keeps aria-orientation=horizontal.",
     }
 ---
 
@@ -54,6 +59,26 @@ Live `{selectionMode:"none", orientation:"vertical"}`:
 
 Live `{selectionMode:"multiple"}` after single: both `toolbar` +
 checkbox items (Solid group role was already toolbar).
+
+Local (2026-09-04), cwd `/home/emoporemilio/projects/viviana-hub/ui`,
+parent `e27611e9`. Source: `actionGroupProps` `role` /
+`aria-orientation` getters; nested toolbar is `isInToolbar` the
+getters read. Fixture stays mounted with `get selectionMode()` and
+`get orientation()`.
+
+Named tests failed on `setAttribute` (`role` stayed `toolbar`;
+`aria-orientation` stayed `horizontal`; nested none←single stayed
+`radiogroup`). After the getters:
+
+`vp test run packages/solidaria/test/createActionGroup.test.tsx` PASS
+(17): live single `role=radiogroup` and `aria-orientation` removed;
+live vertical `aria-orientation=vertical`; nested none←single
+`role=group`. Mount toolbar / radiogroup / nested `waitFor` /
+disabledKeys stayed green.
+
+Owned-file `vp check` PASS. `git diff --check` PASS on named paths.
+Repo-wide `vp run check` not run. Comparison walk not run.
+RTL `flipDirection` and group `isDisabled` onto items untouched.
 
 ## Done when
 
