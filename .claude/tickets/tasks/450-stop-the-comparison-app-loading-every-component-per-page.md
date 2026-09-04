@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the 2026-09 train: comparison:dev still loads the full graph per page; not bound to #250/#255/#261/#262",
     }
+  - {
+      state: open,
+      at: 2026-09-04,
+      note: "keep open until ClientRouter child #454 exists; Relationship both ways with #454. Do not fold into #255.",
+    }
 ---
 
 `vp run comparison:dev` locally is laggy/unusable. Every component and
@@ -41,4 +46,6 @@ table in this ticket is filled.
 ## Relationship
 
 Child of #26. Distinct from #250, #255, #261, and #262. Release train
-#443 lists this as ordered work.
+#443 lists this as ordered work. Related both ways to #454 (ClientRouter,
+hover prefetch, modulepreload): that child is where client-side navigation
+lands. Keep this ticket open until #454 exists. Do not fold into #255.

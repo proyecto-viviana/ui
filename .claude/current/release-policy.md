@@ -109,10 +109,12 @@ of the original five packages on npmjs.com (org `proyecto-viviana`, repo `ui`, w
 `release.yml`), and the github-hosted runner. Run 28836083269 published all five
 packages with provenance.
 
-The Kumo package does not have this registration yet. This is an executable
-release blocker. `guard:release-prerequisites` runs in `ci:changesets` and again
-inside `changeset:publish`. Do not mark either Kumo prerequisite satisfied
-until the recorded evidence has been checked.
+The Kumo package has the same two registrations as of 2026-09-04 (`3ca3a915`,
+ticket #447): public `@proyecto-viviana/kumo@0.0.0-bootstrap.0` on npmjs.com,
+and a GitHub Actions trusted publisher (`type: github`, `file: release.yml`,
+`repository: proyecto-viviana/ui`). `guard:release-prerequisites` runs in
+`ci:changesets` and again inside `changeset:publish`. Workspace Kumo remains
+the deliberate `0.0.0` non-candidate until the first real publish.
 
 ## Scope
 

@@ -4,7 +4,7 @@ type: task
 title: "Make the dependency audit survive registry slowness"
 created: 2026-09-03
 parent: 443
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "workspace fetch settings live; local guard:dependency-security passed after two error-23 retries",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE at 2c08b406; ticket Evidence records vp run guard:dependency-security exit 0. CI audit step on PR #33 rides with #448.",
     }
 ---
 
@@ -68,9 +73,9 @@ tree atop `3ca3a915` with the workspace yaml already edited:
 - `vp pm config get fetch-retry-maxtimeout` → `60000`
 - `vp run guard:dependency-security` exit 0, `elapsed_sec=411.35`
   (~6m51s). High audit: two error-23 retries (`Will retry in 10
-  seconds. 4 retries left.` then `Will retry in 1 minute. 3 retries
-  left.`), then `No known vulnerabilities found`. Prod audit: `No
-  known vulnerabilities found`. Peers: none.
+seconds. 4 retries left.` then `Will retry in 1 minute. 3 retries
+left.`), then `No known vulnerabilities found`. Prod audit: `No
+known vulnerabilities found`. Peers: none.
 
 Independent review: camelCase names match pnpm 11.22 network docs;
 `config get` and the `4 retries left` line prove audit honouring the

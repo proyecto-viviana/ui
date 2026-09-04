@@ -16,6 +16,11 @@ history:
       at: 2026-09-03,
       note: "production leftover of static *-demo imports is #262; do not fold that into this owner-gated astro-dev ticket",
     }
+  - {
+      state: open,
+      at: 2026-09-04,
+      note: "owner pick (a)(d)(e)(f) plus export-subpaths; minted #451–#455 under #136. Keep #450 open until ClientRouter #454 exists. Do not fold #450 into this ticket.",
+    }
 ---
 
 ## Finding
@@ -68,4 +73,9 @@ contract and certified green on the dev-served harness as well as preview.
 ## Relationship
 
 Child of #136. Follows #250. Blocks nothing; unblocks day-to-day use of the
-harness for the D13 work (#245, #246).
+harness for the D13 work (#245, #246). Owner-picked slices live on
+#451 (deep-import), #452 (pre-bundle), #453 (`import` condition),
+#454 (ClientRouter), and #455 (export remaining subpaths). A task cannot
+parent a task, so those are children of #136, not of this ticket.
+#261 and #262 stay separate. Related both ways to #450: do not fold #450
+here; keep it until #454 exists.

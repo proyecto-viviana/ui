@@ -21,6 +21,11 @@ history:
       at: 2026-09-04,
       note: "assert Select Project brief at :62/:142; nameless queryByRole checkbox at :102; ListView.test.tsx 11/11",
     }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "leave merged: Done-when still names vp run test:run green; independent review APPROVE. Remaining 19 failures are T8 (#457), none ListView. Do not claim the suite green here.",
+    }
 ---
 
 The two failing tests in `packages/solid-spectrum/test/ListView.test.tsx`
@@ -80,4 +85,4 @@ Release train #443 lists this as ordered work. Follow-up, not this
 ticket: `packages/solid-spectrum/src/gridlist/index.tsx:1362`
 hardcodes English `aria-label` `"Select"` on top of solidaria intl;
 upstream S2 `ListView.tsx:847-852` renders `<Checkbox slot="selection" />`
-with no `aria-label`.
+with no `aria-label`. Full-suite `vp run test:run` green is T8 (#457).
