@@ -2,6 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vite-plus/test";
+import { createSignal, type Accessor } from "solid-js";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createListState } from "../../solid-stately/src";
 import { createActionGroup, createActionGroupItem } from "../src/actiongroup";
@@ -14,7 +15,9 @@ function ActionGroupExample(props: {
 }) {
   const state = createListState({
     selectionMode: props.selectionMode ?? "none",
-    disabledKeys: props.disabledKeys,
+    get disabledKeys() {
+      return props.disabledKeys;
+    },
     defaultSelectedKeys: props.defaultSelectedKeys,
     items: [
       { id: "a", label: "A" },
@@ -38,6 +41,33 @@ function ActionGroupExample(props: {
       <output data-testid="selected-keys">
         {JSON.stringify(state.selectedKeys() === "all" ? "all" : [...state.selectedKeys()])}
       </output>
+    </div>
+  );
+}
+
+function LiveDisabledKeysExample(props: { disabledKeys: Accessor<string[]> }) {
+  const state = createListState({
+    get disabledKeys() {
+      return props.disabledKeys();
+    },
+    items: [
+      { id: "bold", label: "Bold" },
+      { id: "italic", label: "Italic" },
+      { id: "underline", label: "Underline" },
+    ],
+    getKey: (item) => item.id,
+    getTextValue: (item) => item.label,
+  });
+  const { actionGroupProps } = createActionGroup({ "aria-label": "Text style" }, state);
+  const bold = createActionGroupItem({ key: "bold" }, state);
+  const italic = createActionGroupItem({ key: "italic" }, state);
+  const underline = createActionGroupItem({ key: "underline" }, state);
+
+  return (
+    <div {...actionGroupProps} data-testid="action-group">
+      <button {...bold.buttonProps}>Bold</button>
+      <button {...italic.buttonProps}>Italic</button>
+      <button {...underline.buttonProps}>Underline</button>
     </div>
   );
 }
@@ -176,5 +206,38 @@ describe("createActionGroup", () => {
     await waitFor(() => {
       expect(screen.getByTestId("action-group")).toHaveAttribute("role", "group");
     });
+  });
+
+  it("natively disables an item when disabledKeys change after mount", () => {
+    const [disabledKeys, setDisabledKeys] = createSignal<string[]>([]);
+    render(() => <LiveDisabledKeysExample disabledKeys={disabledKeys} />);
+
+    const italic = screen.getByRole("button", { name: "Italic" });
+    expect(italic).not.toBeDisabled();
+    expect((italic as HTMLButtonElement).disabled).toBe(false);
+
+    setDisabledKeys(["italic"]);
+
+    expect((italic as HTMLButtonElement).disabled).toBe(true);
+    expect(italic).toBeDisabled();
+    expect(italic).not.toHaveAttribute("data-disabled");
+
+    const bold = screen.getByRole("button", { name: "Bold" });
+    const underline = screen.getByRole("button", { name: "Underline" });
+    bold.focus();
+    fireEvent.keyDown(bold, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(underline);
+  });
+
+  it("natively disables every item when live disabledKeys cover the collection", () => {
+    const [disabledKeys, setDisabledKeys] = createSignal<string[]>([]);
+    render(() => <LiveDisabledKeysExample disabledKeys={disabledKeys} />);
+
+    setDisabledKeys(["bold", "italic", "underline"]);
+
+    expect(screen.getByRole("button", { name: "Bold" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Italic" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Underline" })).toBeDisabled();
+    expect(screen.getByTestId("action-group")).toHaveAttribute("aria-disabled", "true");
   });
 });

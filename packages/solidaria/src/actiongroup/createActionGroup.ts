@@ -224,7 +224,7 @@ export function createActionGroupItem<T>(
 ): ActionGroupItemAria {
   const button = createButton({
     elementType: "button",
-    isDisabled: state.isDisabled(props.key),
+    isDisabled: () => state.isDisabled(props.key),
     onPress: () => {
       state.setFocusedKey(props.key);
       actionGroupData.get(state)?.onAction?.(props.key);

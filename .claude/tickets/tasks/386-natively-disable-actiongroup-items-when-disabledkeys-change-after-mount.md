@@ -4,12 +4,17 @@ type: task
 title: "Natively disable ActionGroup items when disabledKeys change after mount"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 actiongroup functional pass: URL ?disabledKeys=italic remount matches native disabled + AX [disabled] + ArrowRight Bold→Underline skip on both; live {disabledKeys:'italic'} updates React Italic.disabled and skip, and leaves Solid native disabled=false (data-disabled=true on the button) so AX omits [disabled] and ArrowRight lands on Italic. createActionGroupItem passes isDisabled: state.isDisabled(props.key) as a one-shot boolean into createButton; ActionGroupItemWrapper data-disabled already re-reads state",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createActionGroupItem passes () => state.isDisabled(props.key) into createButton. Package tests fail if live disabledKeys leaves Italic.disabled false or ArrowRight from Bold lands on Italic.",
     }
 ---
 
@@ -53,6 +58,24 @@ Live `{disabledKeys:"bold,italic,underline"}`: group
 React items native `disabled=true` and Tab skips. Solid items stay
 `disabled=false` with `data-disabled=true`; keyboard still lands on
 Italic.
+
+Local (2026-09-04), cwd `/home/emoporemilio/projects/viviana-hub/ui`,
+parent `3ed5bbdf`. Source: `createActionGroupItem` passes
+`() => state.isDisabled(props.key)` into `createButton`. Fixture stays
+mounted with `get disabledKeys()`.
+
+Named tests failed on the boolean snapshot (`Italic.disabled` stayed
+false; all-keys left Bold enabled). After the Accessor:
+
+`vp test run packages/solidaria/test/createActionGroup.test.tsx` PASS
+(14): live italic `disabled===true` and ArrowRight Bold→Underline;
+live all-keys native disabled + group `aria-disabled`. Mount toolbar /
+radiogroup / disabledKeys `["a"]` stayed green.
+
+Owned-file `vp check` PASS. `git diff --check` PASS on named paths.
+Repo-wide `vp run check` not run (unrelated fmt dirt in other tickets
+and `apps/comparison`). Comparison walk not run. #388 not started.
+RTL `flipDirection` and group `isDisabled` onto items untouched.
 
 ## Done when
 
