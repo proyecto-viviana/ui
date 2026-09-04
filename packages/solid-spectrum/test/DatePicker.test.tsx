@@ -90,7 +90,10 @@ describe("DatePicker (solid-spectrum)", () => {
 
     const contextualHelp = document.querySelector('[data-slot="contextualHelp"]') as HTMLElement;
     expect(contextualHelp).toBeInTheDocument();
-    expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Date help" }));
+    // labelledby is label id + help id; dropping aria-labelledby collapses the name to "Date help".
+    expect(contextualHelp).toContainElement(
+      screen.getByRole("button", { name: "Appointment Date help" }),
+    );
   });
 
   it("forwards shouldForceLeadingZeros to visible date segments", async () => {

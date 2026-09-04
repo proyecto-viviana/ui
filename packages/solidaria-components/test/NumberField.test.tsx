@@ -371,11 +371,12 @@ describe("NumberField", () => {
   // ============================================
 
   describe("required state", () => {
-    it("should support isRequired", () => {
+    it("omits aria-required when required and validation is native", () => {
       render(() => <TestNumberField fieldProps={{ isRequired: true }} />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-required", "true");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
     });
 
     it("should have data-required attribute on field", () => {

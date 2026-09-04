@@ -33,26 +33,11 @@ function TestSwitch(props: {
     () => inputRef,
   );
 
-  // Create local accessor for checked state (same pattern as checkbox tests)
-  const isChecked = () => state.isSelected();
-
-  // Access inputProps once per render
   const getInputProps = () => switchAria.inputProps;
 
   return (
     <label {...switchAria.labelProps}>
-      <input
-        ref={(el) => (inputRef = el)}
-        type="checkbox"
-        role="switch"
-        checked={isChecked()}
-        disabled={getInputProps().disabled}
-        tabIndex={getInputProps().tabIndex}
-        aria-label={getInputProps()["aria-label"]}
-        aria-readonly={getInputProps()["aria-readonly"]}
-        onClick={getInputProps().onClick}
-        onChange={getInputProps().onChange}
-      />
+      <input ref={(el) => (inputRef = el)} {...getInputProps()} />
       {props.children}
     </label>
   );

@@ -826,7 +826,7 @@ describe("createColorFieldState", () => {
       }));
 
       expect(state.value).toBeTruthy();
-      expect(state.inputValue).toBe("#ff0000");
+      expect(state.inputValue).toBe("#FF0000");
       expect(state.isInvalid).toBe(false);
       dispose();
     });
@@ -872,7 +872,7 @@ describe("createColorFieldState", () => {
       state.setInputValue("invalid");
       state.commit();
       expect(state.isInvalid).toBe(false);
-      expect(state.inputValue).toBe("#ff0000");
+      expect(state.inputValue).toBe("#FF0000");
       dispose();
     });
   });
@@ -891,7 +891,7 @@ describe("createColorFieldState", () => {
       state.commit();
       expect(changedColor).toBeTruthy();
       expect(changedColor!.toString("hex")).toBe("#00ff00");
-      expect(state.inputValue).toBe("#00ff00");
+      expect(state.inputValue).toBe("#00FF00");
       dispose();
     });
   });
@@ -996,10 +996,10 @@ describe("createColorFieldState", () => {
       expect(state.inputValue).toBe("#000001");
 
       state.incrementToMax();
-      expect(state.inputValue).toBe("#ffffff");
+      expect(state.inputValue).toBe("#FFFFFF");
 
       state.decrement();
-      expect(state.inputValue).toBe("#fffffe");
+      expect(state.inputValue).toBe("#FFFFFE");
 
       state.decrementToMin();
       expect(state.inputValue).toBe("#000000");

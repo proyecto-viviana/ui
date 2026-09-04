@@ -167,7 +167,10 @@ describe("Picker (solid-spectrum)", () => {
 
     expect(button).toHaveTextContent("API section");
     expect(button.getAttribute("aria-describedby")?.split(" ")).toContain(description.id);
-    expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Section help" }));
+    // labelledby is label id + help id; dropping aria-labelledby collapses the name to "Section help".
+    expect(contextualHelp).toContainElement(
+      screen.getByRole("button", { name: "Docs section Section help" }),
+    );
   });
 
   it("renders description as span[slot=description] and wires trigger aria-describedby", async () => {

@@ -230,6 +230,14 @@ describe("createNumberField", () => {
       expect(input).not.toHaveAttribute("aria-required");
     });
 
+    it("sets aria-required when required and validation is aria", () => {
+      render(() => <TestNumberField aria-label="Amount" isRequired validationBehavior="aria" />);
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveAttribute("aria-required", "true");
+      // jest-dom toBeRequired() is true when aria-required="true"; native required is the sibling omit.
+      expect(input).not.toHaveAttribute("required");
+    });
+
     it("has aria-invalid when invalid", () => {
       render(() => <TestNumberField aria-label="Amount" isInvalid />);
 

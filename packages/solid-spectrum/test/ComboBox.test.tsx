@@ -249,7 +249,8 @@ describe("ComboBox (solid-spectrum)", () => {
   it("renders contextual help in the label row", () => {
     render(() => <FruitComboBox contextualHelp={<button type="button">Help</button>} />);
 
-    expect(screen.getByRole("button", { name: "Help" })).toBeInTheDocument();
+    // labelledby is label id + help id; dropping aria-labelledby collapses the name to "Help".
+    expect(screen.getByRole("button", { name: "Fruit Help" })).toBeInTheDocument();
   });
 
   it("renders a prefix before the input and labels the input with it", () => {

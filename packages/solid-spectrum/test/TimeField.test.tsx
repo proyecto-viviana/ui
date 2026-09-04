@@ -71,7 +71,10 @@ describe("TimeField (solid-spectrum)", () => {
 
     const contextualHelp = document.querySelector('[data-slot="contextualHelp"]') as HTMLElement;
     expect(contextualHelp).toBeInTheDocument();
-    expect(contextualHelp).toContainElement(screen.getByRole("button", { name: "Time help" }));
+    // labelledby is label id + help id; dropping aria-labelledby collapses the name to "Time help".
+    expect(contextualHelp).toContainElement(
+      screen.getByRole("button", { name: "Meeting time Time help" }),
+    );
   });
 
   it("forwards shouldForceLeadingZeros to visible time segments", async () => {

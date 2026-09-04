@@ -1165,7 +1165,7 @@ describe("Color Components", () => {
         fireEvent.keyDown(input, { key: "Enter" });
         expect(onChange).toHaveBeenCalledTimes(1);
         expect(onChange.mock.calls[0][0].toString("hex")).toBe("#0000ff");
-        expect(input).toHaveValue("#0000ff");
+        expect(input).toHaveValue("#0000FF");
       });
 
       it("should restore the previous value on Enter if the typed value cannot be parsed", () => {
@@ -1182,7 +1182,7 @@ describe("Color Components", () => {
         fireEvent.input(input, { target: { value: "ab" } });
         fireEvent.keyDown(input, { key: "Enter" });
         expect(onChange).not.toHaveBeenCalled();
-        expect(input).toHaveValue("#ff0000");
+        expect(input).toHaveValue("#FF0000");
       });
     });
   });
