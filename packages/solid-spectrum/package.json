@@ -259,6 +259,336 @@
       "import": "./dist/GitHubIcon.js",
       "default": "./dist/GitHubIcon.js"
     },
+    "./Accordion": {
+      "types": "./dist/Accordion.d.ts",
+      "solid": "./dist/Accordion.jsx",
+      "import": "./dist/Accordion.js",
+      "default": "./dist/Accordion.js"
+    },
+    "./ActionBar": {
+      "types": "./dist/ActionBar.d.ts",
+      "solid": "./dist/ActionBar.jsx",
+      "import": "./dist/ActionBar.js",
+      "default": "./dist/ActionBar.js"
+    },
+    "./ActionButtonGroup": {
+      "types": "./dist/ActionButtonGroup.d.ts",
+      "solid": "./dist/ActionButtonGroup.jsx",
+      "import": "./dist/ActionButtonGroup.js",
+      "default": "./dist/ActionButtonGroup.js"
+    },
+    "./ActionGroup": {
+      "types": "./dist/ActionGroup.d.ts",
+      "solid": "./dist/ActionGroup.jsx",
+      "import": "./dist/ActionGroup.js",
+      "default": "./dist/ActionGroup.js"
+    },
+    "./AlertDialog": {
+      "types": "./dist/AlertDialog.d.ts",
+      "solid": "./dist/AlertDialog.jsx",
+      "import": "./dist/AlertDialog.js",
+      "default": "./dist/AlertDialog.js"
+    },
+    "./Avatar": {
+      "types": "./dist/Avatar.d.ts",
+      "solid": "./dist/Avatar.jsx",
+      "import": "./dist/Avatar.js",
+      "default": "./dist/Avatar.js"
+    },
+    "./AvatarGroup": {
+      "types": "./dist/AvatarGroup.d.ts",
+      "solid": "./dist/AvatarGroup.jsx",
+      "import": "./dist/AvatarGroup.js",
+      "default": "./dist/AvatarGroup.js"
+    },
+    "./Badge": {
+      "types": "./dist/Badge.d.ts",
+      "solid": "./dist/Badge.jsx",
+      "import": "./dist/Badge.js",
+      "default": "./dist/Badge.js"
+    },
+    "./ButtonGroup": {
+      "types": "./dist/ButtonGroup.d.ts",
+      "solid": "./dist/ButtonGroup.jsx",
+      "import": "./dist/ButtonGroup.js",
+      "default": "./dist/ButtonGroup.js"
+    },
+    "./Checkbox": {
+      "types": "./dist/Checkbox.d.ts",
+      "solid": "./dist/Checkbox.jsx",
+      "import": "./dist/Checkbox.js",
+      "default": "./dist/Checkbox.js"
+    },
+    "./CheckboxGroup": {
+      "types": "./dist/CheckboxGroup.d.ts",
+      "solid": "./dist/CheckboxGroup.jsx",
+      "import": "./dist/CheckboxGroup.js",
+      "default": "./dist/CheckboxGroup.js"
+    },
+    "./CloseIcon": {
+      "types": "./dist/CloseIcon.d.ts",
+      "solid": "./dist/CloseIcon.jsx",
+      "import": "./dist/CloseIcon.js",
+      "default": "./dist/CloseIcon.js"
+    },
+    "./ComboBox": {
+      "types": "./dist/ComboBox.d.ts",
+      "solid": "./dist/ComboBox.jsx",
+      "import": "./dist/ComboBox.js",
+      "default": "./dist/ComboBox.js"
+    },
+    "./Content": {
+      "types": "./dist/Content.d.ts",
+      "solid": "./dist/Content.jsx",
+      "import": "./dist/Content.js",
+      "default": "./dist/Content.js"
+    },
+    "./ContextualHelp": {
+      "types": "./dist/ContextualHelp.d.ts",
+      "solid": "./dist/ContextualHelp.jsx",
+      "import": "./dist/ContextualHelp.js",
+      "default": "./dist/ContextualHelp.js"
+    },
+    "./DateField": {
+      "types": "./dist/DateField.d.ts",
+      "solid": "./dist/DateField.jsx",
+      "import": "./dist/DateField.js",
+      "default": "./dist/DateField.js"
+    },
+    "./DatePicker": {
+      "types": "./dist/DatePicker.d.ts",
+      "solid": "./dist/DatePicker.jsx",
+      "import": "./dist/DatePicker.js",
+      "default": "./dist/DatePicker.js"
+    },
+    "./DateRangePicker": {
+      "types": "./dist/DateRangePicker.d.ts",
+      "solid": "./dist/DateRangePicker.jsx",
+      "import": "./dist/DateRangePicker.js",
+      "default": "./dist/DateRangePicker.js"
+    },
+    "./Dialog": {
+      "types": "./dist/Dialog.d.ts",
+      "solid": "./dist/Dialog.jsx",
+      "import": "./dist/Dialog.js",
+      "default": "./dist/Dialog.js"
+    },
+    "./Divider": {
+      "types": "./dist/Divider.d.ts",
+      "solid": "./dist/Divider.jsx",
+      "import": "./dist/Divider.js",
+      "default": "./dist/Divider.js"
+    },
+    "./DropZone": {
+      "types": "./dist/DropZone.d.ts",
+      "solid": "./dist/DropZone.jsx",
+      "import": "./dist/DropZone.js",
+      "default": "./dist/DropZone.js"
+    },
+    "./Footer": {
+      "types": "./dist/Footer.d.ts",
+      "solid": "./dist/Footer.jsx",
+      "import": "./dist/Footer.js",
+      "default": "./dist/Footer.js"
+    },
+    "./Form": {
+      "types": "./dist/Form.d.ts",
+      "solid": "./dist/Form.jsx",
+      "import": "./dist/Form.js",
+      "default": "./dist/Form.js"
+    },
+    "./Heading": {
+      "types": "./dist/Heading.d.ts",
+      "solid": "./dist/Heading.jsx",
+      "import": "./dist/Heading.js",
+      "default": "./dist/Heading.js"
+    },
+    "./Icon": {
+      "types": "./dist/Icon.d.ts",
+      "solid": "./dist/Icon.jsx",
+      "import": "./dist/Icon.js",
+      "default": "./dist/Icon.js"
+    },
+    "./IllustratedMessage": {
+      "types": "./dist/IllustratedMessage.d.ts",
+      "solid": "./dist/IllustratedMessage.jsx",
+      "import": "./dist/IllustratedMessage.js",
+      "default": "./dist/IllustratedMessage.js"
+    },
+    "./Image": {
+      "types": "./dist/Image.d.ts",
+      "solid": "./dist/Image.jsx",
+      "import": "./dist/Image.js",
+      "default": "./dist/Image.js"
+    },
+    "./ImageCoordinator": {
+      "types": "./dist/ImageCoordinator.d.ts",
+      "solid": "./dist/ImageCoordinator.jsx",
+      "import": "./dist/ImageCoordinator.js",
+      "default": "./dist/ImageCoordinator.js"
+    },
+    "./InlineAlert": {
+      "types": "./dist/InlineAlert.d.ts",
+      "solid": "./dist/InlineAlert.jsx",
+      "import": "./dist/InlineAlert.js",
+      "default": "./dist/InlineAlert.js"
+    },
+    "./Keyboard": {
+      "types": "./dist/Keyboard.d.ts",
+      "solid": "./dist/Keyboard.jsx",
+      "import": "./dist/Keyboard.js",
+      "default": "./dist/Keyboard.js"
+    },
+    "./LabeledValue": {
+      "types": "./dist/LabeledValue.d.ts",
+      "solid": "./dist/LabeledValue.jsx",
+      "import": "./dist/LabeledValue.js",
+      "default": "./dist/LabeledValue.js"
+    },
+    "./Link": {
+      "types": "./dist/Link.d.ts",
+      "solid": "./dist/Link.jsx",
+      "import": "./dist/Link.js",
+      "default": "./dist/Link.js"
+    },
+    "./MenuHamburgerIcon": {
+      "types": "./dist/MenuHamburgerIcon.d.ts",
+      "solid": "./dist/MenuHamburgerIcon.jsx",
+      "import": "./dist/MenuHamburgerIcon.js",
+      "default": "./dist/MenuHamburgerIcon.js"
+    },
+    "./Meter": {
+      "types": "./dist/Meter.d.ts",
+      "solid": "./dist/Meter.jsx",
+      "import": "./dist/Meter.js",
+      "default": "./dist/Meter.js"
+    },
+    "./NumberField": {
+      "types": "./dist/NumberField.d.ts",
+      "solid": "./dist/NumberField.jsx",
+      "import": "./dist/NumberField.js",
+      "default": "./dist/NumberField.js"
+    },
+    "./Popover": {
+      "types": "./dist/Popover.d.ts",
+      "solid": "./dist/Popover.jsx",
+      "import": "./dist/Popover.js",
+      "default": "./dist/Popover.js"
+    },
+    "./ProgressBar": {
+      "types": "./dist/ProgressBar.d.ts",
+      "solid": "./dist/ProgressBar.jsx",
+      "import": "./dist/ProgressBar.js",
+      "default": "./dist/ProgressBar.js"
+    },
+    "./ProgressCircle": {
+      "types": "./dist/ProgressCircle.d.ts",
+      "solid": "./dist/ProgressCircle.jsx",
+      "import": "./dist/ProgressCircle.js",
+      "default": "./dist/ProgressCircle.js"
+    },
+    "./RadioGroup": {
+      "types": "./dist/RadioGroup.d.ts",
+      "solid": "./dist/RadioGroup.jsx",
+      "import": "./dist/RadioGroup.js",
+      "default": "./dist/RadioGroup.js"
+    },
+    "./RangeSlider": {
+      "types": "./dist/RangeSlider.d.ts",
+      "solid": "./dist/RangeSlider.jsx",
+      "import": "./dist/RangeSlider.js",
+      "default": "./dist/RangeSlider.js"
+    },
+    "./SearchIcon": {
+      "types": "./dist/SearchIcon.d.ts",
+      "solid": "./dist/SearchIcon.jsx",
+      "import": "./dist/SearchIcon.js",
+      "default": "./dist/SearchIcon.js"
+    },
+    "./SelectBoxGroup": {
+      "types": "./dist/SelectBoxGroup.d.ts",
+      "solid": "./dist/SelectBoxGroup.jsx",
+      "import": "./dist/SelectBoxGroup.js",
+      "default": "./dist/SelectBoxGroup.js"
+    },
+    "./Skeleton": {
+      "types": "./dist/Skeleton.d.ts",
+      "solid": "./dist/Skeleton.jsx",
+      "import": "./dist/Skeleton.js",
+      "default": "./dist/Skeleton.js"
+    },
+    "./Slider": {
+      "types": "./dist/Slider.d.ts",
+      "solid": "./dist/Slider.jsx",
+      "import": "./dist/Slider.js",
+      "default": "./dist/Slider.js"
+    },
+    "./StatusLight": {
+      "types": "./dist/StatusLight.d.ts",
+      "solid": "./dist/StatusLight.jsx",
+      "import": "./dist/StatusLight.js",
+      "default": "./dist/StatusLight.js"
+    },
+    "./StepList": {
+      "types": "./dist/StepList.d.ts",
+      "solid": "./dist/StepList.jsx",
+      "import": "./dist/StepList.js",
+      "default": "./dist/StepList.js"
+    },
+    "./TableView": {
+      "types": "./dist/TableView.d.ts",
+      "solid": "./dist/TableView.jsx",
+      "import": "./dist/TableView.js",
+      "default": "./dist/TableView.js"
+    },
+    "./TagGroup": {
+      "types": "./dist/TagGroup.d.ts",
+      "solid": "./dist/TagGroup.jsx",
+      "import": "./dist/TagGroup.js",
+      "default": "./dist/TagGroup.js"
+    },
+    "./Text": {
+      "types": "./dist/Text.d.ts",
+      "solid": "./dist/Text.jsx",
+      "import": "./dist/Text.js",
+      "default": "./dist/Text.js"
+    },
+    "./TimeField": {
+      "types": "./dist/TimeField.d.ts",
+      "solid": "./dist/TimeField.jsx",
+      "import": "./dist/TimeField.js",
+      "default": "./dist/TimeField.js"
+    },
+    "./Toast": {
+      "types": "./dist/Toast.d.ts",
+      "solid": "./dist/Toast.jsx",
+      "import": "./dist/Toast.js",
+      "default": "./dist/Toast.js"
+    },
+    "./ToggleButton": {
+      "types": "./dist/ToggleButton.d.ts",
+      "solid": "./dist/ToggleButton.jsx",
+      "import": "./dist/ToggleButton.js",
+      "default": "./dist/ToggleButton.js"
+    },
+    "./ToggleButtonGroup": {
+      "types": "./dist/ToggleButtonGroup.d.ts",
+      "solid": "./dist/ToggleButtonGroup.jsx",
+      "import": "./dist/ToggleButtonGroup.js",
+      "default": "./dist/ToggleButtonGroup.js"
+    },
+    "./Toolbar": {
+      "types": "./dist/Toolbar.d.ts",
+      "solid": "./dist/Toolbar.jsx",
+      "import": "./dist/Toolbar.js",
+      "default": "./dist/Toolbar.js"
+    },
+    "./Tooltip": {
+      "types": "./dist/Tooltip.d.ts",
+      "solid": "./dist/Tooltip.jsx",
+      "import": "./dist/Tooltip.js",
+      "default": "./dist/Tooltip.js"
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

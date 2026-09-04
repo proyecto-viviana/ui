@@ -1,13 +1,53 @@
 [
   {
+    "localPath": "packages/solid-spectrum/src/Accordion.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "291db808c13aa164ce4e27fa21c85c4a66e0e5ef551ce0d12d547e8f2ee3dbd9"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ActionBar.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "fd6cfaf5f5b4d4a7102c6867354b9c69aae7dd0b2479a43867392611fff20ef4"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/ActionButton.ts",
     "classification": "local-module-surface",
     "contentSha256": "883f1cd5c32fbcd21099d64923c1e8d6306596699a0557df8c28dac6ce6fe22c"
   },
   {
+    "localPath": "packages/solid-spectrum/src/ActionButtonGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "5152f9c79e7d72b8a79cab523ab7dc4b29dfb7a6c2eba0a04946d510f10b6f58"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ActionGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "9861c1ae04d125e6feba36d61a0f8a05cbd574ec4b1479b42ced063bbff6f2b7"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/ActionMenu.ts",
     "classification": "local-module-surface",
     "contentSha256": "012d6b0a09fee462ce74365f4ccf2ce67ba581dffdc9c529f43d71be7b3a2579"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/AlertDialog.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "9cc6da9e453c4931ec27821a16cb8302fb05c8ae1444d22a40a953804d1a7beb"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Avatar.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "dcbd6a5fcb6e9747f44ac794814de4118e3ce742719e65679604db86acd8d01c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/AvatarGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "dcbd6a5fcb6e9747f44ac794814de4118e3ce742719e65679604db86acd8d01c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Badge.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "81ad73491cb8a1b830298a77ce0d1a91f6808f5351e39113afdc011600e25f37"
   },
   {
     "localPath": "packages/solid-spectrum/src/Breadcrumbs.ts",
@@ -40,6 +80,11 @@
     "contentSha256": "332da7d536e0ea06ce53623ee3ab9b622fe3e5b15082d5d99f8661a17bb630d0"
   },
   {
+    "localPath": "packages/solid-spectrum/src/ButtonGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "a84649d84ee9c74c4275aabc3aa0d0f0181db1bdacec3fe0facd6336ac75dad5"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/Calendar.ts",
     "classification": "local-module-surface",
     "contentSha256": "cf03a421b389ada4194163847b608260f8198f5f72852ba8f44d9dc4e28ca6c9"
@@ -58,6 +103,21 @@
     "localPath": "packages/solid-spectrum/src/CenterBaseline.ts",
     "classification": "local-module-surface",
     "contentSha256": "06ba09ca426b881955d80c6276551e62396be961983369f639ca54ea3dbb2b71"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Checkbox.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "e78a38c8db45aa00599d8a6d2c80a57267dc54d98b664416accdf79ca5e548af"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/CheckboxGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "e78a38c8db45aa00599d8a6d2c80a57267dc54d98b664416accdf79ca5e548af"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/CloseIcon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "a90a29abec2226ea5b2d6c2b9996a0e3f04a7acdc56e443cb2cbdd29aea1798d"
   },
   {
     "localPath": "packages/solid-spectrum/src/color/ColorEditor.tsx",
@@ -95,14 +155,49 @@
     "contentSha256": "d1c081234ef52cb18583eac788b11a5f1a93e21691db1848743e580cf56561b1"
   },
   {
+    "localPath": "packages/solid-spectrum/src/ComboBox.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "7a630c9e30ffcdfaa902e0128ac72a9129944d21ddfee52d1b79c3301cc5d751"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Content.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "d4644bc99bcde9e5f18da784c44fb317ded0f4ea292292de918527af28fe7c09"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ContextualHelp.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "b819b77c8dd26f931c96f5e98a55895f5f578307052e4b493f84b0c0f0a5c4d2"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/ContrastIcon.ts",
     "classification": "local-module-surface",
     "contentSha256": "2cf1b1545d3f7cb9bee845d01c25ca09132e6e9649b651749aa4bdedcc2561af"
   },
   {
+    "localPath": "packages/solid-spectrum/src/DateField.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ab862b4518e46dc9cee0b983c87ad8e18558983092dd710e8ab557bed5079613"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/DatePicker.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "df17cbf21babf7fed91159b108cc408a6493420fdbc083a34753175362ec127f"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/datepicker/index.tsx",
     "classification": "local-module-surface",
     "contentSha256": "7f64918923dc33cb03473ce2fb57f30a63573d8bcb685779696f937c57a4a7a1"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/DateRangePicker.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "516b6153b892c479c402e7b19156db8b3c0c507839da8ec1f0b54f964ee4c7ac"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Dialog.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ffd30a6eb12dff18dcd8534e9880bdff0b4733c188f6fb62f7d4b61b3f783f22"
   },
   {
     "localPath": "packages/solid-spectrum/src/dialog/index.tsx",
@@ -115,9 +210,19 @@
     "contentSha256": "472e4be3dfdff03da953acdd90567e76d734ad7f67da3d6a8ab6764feb4e8a49"
   },
   {
+    "localPath": "packages/solid-spectrum/src/Divider.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "56e19788826c0e22ac47391567a03f0322e2d5021479d8752ce6a1af02f744cb"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/dnd/index.tsx",
     "classification": "local-module-surface",
     "contentSha256": "1f1e02a5435ae59a9f20fc4f46cb825adf4b934bb76a8667beecdb6111eda791"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/DropZone.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c7e3a0badc94ab3fdf54ab246a57e6c6c85424cb6c0289e37c4df83482ddea10"
   },
   {
     "localPath": "packages/solid-spectrum/src/FileTrigger.ts",
@@ -130,9 +235,29 @@
     "contentSha256": "d8987a03814efd36c7f6ef36b4c4197475f0e93006ab69b18caf08cc4363ae30"
   },
   {
+    "localPath": "packages/solid-spectrum/src/Footer.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "89161517d6f6f8eedf73a62258495a2377e593f4e53fcae071745ca9d922fbf2"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Form.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ac9acc5f20a152159ebcadf813b14ba8617526cdcabe84e2370868b0db1989f7"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/GitHubIcon.ts",
     "classification": "local-module-surface",
     "contentSha256": "8003409e000859116452b985b122f0221e034d60a7bbe0d199a039b2cff259ed"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Heading.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "8238aae2a34884c92fbe39ddde9640d34209cc220759cd5ebb00d290c0fb8abd"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Icon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "52b2c0b53d48b3168b4bcf4f73f17abeb94c18b85f0fb78ce97f68430088870b"
   },
   {
     "localPath": "packages/solid-spectrum/src/icon/icons/CrossIcon.tsx",
@@ -150,9 +275,39 @@
     "contentSha256": "6f13d87fb2176761f310eb44b709020146d2a9c2af152fcd00451fedd745b80c"
   },
   {
+    "localPath": "packages/solid-spectrum/src/IllustratedMessage.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1915f33fba3c6b25db424bca05180edcba28276564b5230b731333ad122e083c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Image.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "de8980138e05c654b3fe0b837633b48a8f2885704f7c87a20b3cbd1249822f0e"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ImageCoordinator.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "de8980138e05c654b3fe0b837633b48a8f2885704f7c87a20b3cbd1249822f0e"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/index.ts",
     "classification": "local-module-surface",
     "contentSha256": "fd5fa9cf929092c44da603deeb09cdbc1132753facd1fd8ffed67a998e4a4dbf"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/InlineAlert.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "b4ee93eda1eac036232a234bcd9433a392a3fabdf7eaa0927a0f487b1b876a3b"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Keyboard.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "55f8f871c854853d9cc2333ec88a465047949621553661e4d259d7b4d691727e"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/LabeledValue.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "96bfb398640822778b3c2b6758c1ce26c0fc769dddaf48b816e93800dbf772c8"
   },
   {
     "localPath": "packages/solid-spectrum/src/landmark/index.tsx",
@@ -168,6 +323,11 @@
     "localPath": "packages/solid-spectrum/src/LightenIcon.ts",
     "classification": "local-module-surface",
     "contentSha256": "75ce4a8092c8c575798f6777d166f003466dda83e9eddad6838a09f36ea13b07"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Link.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ee527aad452a6f9913a1f066e2612b0eba818f9e936d6c6e1f49160d325dbdfa"
   },
   {
     "localPath": "packages/solid-spectrum/src/LinkButton.ts",
@@ -190,6 +350,21 @@
     "contentSha256": "8d79a3fef73d4f3147144e9d6e9dbde002554af73862dc652e14489c39d3d652"
   },
   {
+    "localPath": "packages/solid-spectrum/src/MenuHamburgerIcon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "cb9d5bad736ec22a4c50f5e96fcb13a1ba83bb177c813f3159f5aaf891363c48"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Meter.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "817c1d3dacd640ede8dda49b73b49e8ca5de52db56be97acd4b067b79708411b"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/NumberField.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c5bd73797b170117f376f165bbe39d4d944266aaddddd58279b71d013e726cbe"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/overlays/index.tsx",
     "classification": "local-module-surface",
     "contentSha256": "aa7bc314f16be685ddcef23ae44bd55b41969001cfacecb718ac5e2c2aa3df95"
@@ -200,9 +375,24 @@
     "contentSha256": "760bfc5a1edae086d4267fa0c39c4720d613f5c3e3a2b1d9a41148bbc01ac426"
   },
   {
+    "localPath": "packages/solid-spectrum/src/Popover.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f2062fe83ae3e98ea90b66a0a8d27a4b659ad8dccae0a88b85500dba9808d645"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/progress/index.tsx",
     "classification": "local-module-surface",
     "contentSha256": "d2dea8b1dbed5e14a63cc6250d434b91daa8c15ebe64ec6b80deb0d14527fe75"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ProgressBar.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "89df1546d11703b18bb08183cdb66bf8b67bfa6e9a612135e2f816435dfadf16"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ProgressCircle.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2142f3e9813a004c10cc7751518beac5f96dd417666dfeb820cb15d512627299"
   },
   {
     "localPath": "packages/solid-spectrum/src/Provider.ts",
@@ -210,9 +400,19 @@
     "contentSha256": "8f6fc8f5b7c780eeb35ac50c906ef5022d5d88da39a4a0cdb5a75b1aeea2274b"
   },
   {
+    "localPath": "packages/solid-spectrum/src/RadioGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "e8ec2ca1862143481dbcf29947b520e316af0e83c7867cd09d51336ec34edc68"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/RangeCalendar.ts",
     "classification": "local-module-surface",
     "contentSha256": "1affad11d99d18575ff0e7d0456bce5dd4504be4417a7d907747de6228292929"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/RangeSlider.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "1aaf5855831d82f28279bf37bb49aa4c14f737c356a74d05ebd7ebdd64d0a313"
   },
   {
     "localPath": "packages/solid-spectrum/src/SearchField.ts",
@@ -220,14 +420,44 @@
     "contentSha256": "b5e1e44c1dac789928eb6570ebe814ca4ba95e329e8a47b8858a4743a3b82429"
   },
   {
+    "localPath": "packages/solid-spectrum/src/SearchIcon.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ccf96f8c9c07fac16fe4a91a7588feb100f9ba31901f0eaf378329c8a633e58f"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/SegmentedControl.ts",
     "classification": "local-module-surface",
     "contentSha256": "94218cee53a52fe40176a26bc528d8f23f4cc0f9b3ebeb793145c84112518946"
   },
   {
+    "localPath": "packages/solid-spectrum/src/SelectBoxGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2e9ee00b4d2542b29ced6b1f296e2be75d7cc95ac1e86563d893db4cbc5075f8"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/shared-element/index.tsx",
     "classification": "local-solid-helper",
     "contentSha256": "cca6d3529b0b791318a1337ef3998fb1e9cbf5e15fc76cc264761ffa839dadd9"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Skeleton.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "f27133b75cbf456bc641a82161b53e49528204cc38f9ac4927b58cdae794fdec"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Slider.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "baffd558c697b04b3832c5aa4ce1c71ba0fa5f967272d2859a56a9af871e1892"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/StatusLight.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "5e7520f6430e3bc5e0fb2135d86303d8c740e8d0b9bb836881e7af8fc0cf1a2f"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/StepList.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "764802ce3308167c8a120280caf2eccc3a8127e0d51beb3784faaaf809cdfadf"
   },
   {
     "localPath": "packages/solid-spectrum/src/story-utils/ErrorBoundary.tsx",
@@ -255,6 +485,11 @@
     "contentSha256": "2c9bd16b48657eee23a719d20a0490ff4b7d5b1880915568484c289978344f33"
   },
   {
+    "localPath": "packages/solid-spectrum/src/TableView.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "d4368a50f2b3961987bf79dbbe3215e5340b0a33bb64c4268cb378ec4866ed56"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/Tabs.ts",
     "classification": "local-module-surface",
     "contentSha256": "fd22fed0739043860e4806a4f9d047a628c0ea37427c17e560d5180dfee6abd1"
@@ -265,6 +500,16 @@
     "contentSha256": "c2a911130b2de5204ab65d6af99db1a1d56f009fec7197dd4822f2e1fc1b0555"
   },
   {
+    "localPath": "packages/solid-spectrum/src/TagGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "ee663048826cc2caba26c89fbb0e6188622da9ad42324b631fd6b29435ae2d05"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Text.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "2b4fdb12e32dba6960dcb6a835898008dcaa34e3db2301e72f43103979327f82"
+  },
+  {
     "localPath": "packages/solid-spectrum/src/TextArea.ts",
     "classification": "local-module-surface",
     "contentSha256": "2e16fb0e18b4a269410d4723fc19e8086afbe6527bde5ed1d25b0519f7005ae1"
@@ -273,6 +518,36 @@
     "localPath": "packages/solid-spectrum/src/TextField.ts",
     "classification": "local-module-surface",
     "contentSha256": "f414a6b1a16e851272d7d0a79845f85a94f4cde9d06eee81449c866d092f317c"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/TimeField.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "97ad699b58e754c7f809202bcc3201d40246b29d542096f2d6998117f12fc7fe"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Toast.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "dc34b905a3b08228ffd646869946218c6a739341a6c9d56cde87baa985739c48"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ToggleButton.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "c28ab74c1dbc64f684912ac498b579608fe9888e0527f02d00a464581e6f61e2"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/ToggleButtonGroup.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "95d76b547a4c2f18d5ced25d36cae580905ca793461deb9aa3714a2d5d3280a8"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Toolbar.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "01ec5b92a33733aae0dd34f16f51a9c336e64376cfe790f88fe09c1581ff9458"
+  },
+  {
+    "localPath": "packages/solid-spectrum/src/Tooltip.ts",
+    "classification": "local-module-surface",
+    "contentSha256": "25fafcee9ce83db8a01c3d6a5fd2b10697f7d2038d2654a531ff3a347370fa51"
   },
   {
     "localPath": "packages/solid-spectrum/src/TreeView.ts",
