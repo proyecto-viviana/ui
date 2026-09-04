@@ -6,6 +6,15 @@ import { getContainerRenderer } from "@astrojs/react/container-renderer";
 import solid from "@astrojs/solid-js";
 import reactVitePlugin from "@vitejs/plugin-react";
 import macros from "unplugin-parcel-macros";
+import {
+  COMPARISON_CHROME_CSS_FILE,
+  COMPARISON_CHROME_CSS_ID,
+  coalesceChromeMacroCssImports,
+  concatenateCachedCss,
+  isComparisonChromeCssId,
+  isComparisonChromeMacroModule,
+  orderedUniqueIds,
+} from "./scripts/chrome-css-coalesce.mjs";
 
 const oneLineWarningFilters = [
   "`transformWithEsbuild` is deprecated",
@@ -290,6 +299,7 @@ const getMacroCssContent = (content) => {
 const comparisonS2Macros = () => {
   const plugin = macros.raw();
   const macroCssCache = new Map();
+  const chromeCssIdsByFile = new Map();
 
   const cacheMacroCss = (id, content) => {
     const fileName = getMacroCssFileName(id);
@@ -298,6 +308,16 @@ const comparisonS2Macros = () => {
       macroCssCache.set(fileName, css);
     }
     return css;
+  };
+
+  const replaceTransformedCode = (result, nextCode) => {
+    if (typeof result === "string") {
+      return nextCode;
+    }
+    if (result && typeof result === "object" && "code" in result) {
+      return { ...result, code: nextCode };
+    }
+    return { code: nextCode };
   };
 
   return {
@@ -338,9 +358,26 @@ const comparisonS2Macros = () => {
         }
       }
 
-      return result;
+      // Bundle generated chrome `style()` CSS into one virtual sheet. This is
+      // bundling, not handwritten S2 (ADR 0001). Fixture/component macros stay
+      // per-module so Calendar CSS cannot ride the chrome graph.
+      if (!isComparisonChromeMacroModule(filePath)) {
+        return result;
+      }
+
+      const coalesced = coalesceChromeMacroCssImports(transformedCode);
+      if (coalesced.cssIds.length === 0) {
+        chromeCssIdsByFile.delete(filePath);
+        return result;
+      }
+      chromeCssIdsByFile.set(filePath, coalesced.cssIds);
+      return replaceTransformedCode(result, coalesced.code);
     },
     async resolveId(id, importer, options) {
+      if (id === COMPARISON_CHROME_CSS_ID || isComparisonChromeCssId(id)) {
+        return COMPARISON_CHROME_CSS_FILE;
+      }
+
       const resolved = await plugin.resolveId?.call(this, id, importer, options);
       if (resolved) {
         return resolved;
@@ -354,6 +391,9 @@ const comparisonS2Macros = () => {
       return null;
     },
     loadInclude(id) {
+      if (isComparisonChromeCssId(id)) {
+        return true;
+      }
       const fileName = getMacroCssFileName(id);
       return (
         (fileName != null && macroCssCache.has(fileName)) ||
@@ -362,6 +402,10 @@ const comparisonS2Macros = () => {
     },
     async load(id) {
       const normalizedId = stripViteRequestSuffix(id);
+      if (isComparisonChromeCssId(id) || isComparisonChromeCssId(normalizedId)) {
+        return concatenateCachedCss(orderedUniqueIds(chromeCssIdsByFile), macroCssCache);
+      }
+
       const fileName = getMacroCssFileName(id);
 
       // Serve macro CSS from our own cache FIRST. It is populated during
