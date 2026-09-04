@@ -56,6 +56,9 @@ output/
 .DS_Store
 .mcp.json
 
+# Agent research artifacts (untracked memory)
+.agents/vivianastack/
+
 # .claude/ is local scratch; only the curated, current surface is tracked.
 # Ignored: docs/ + journal/ (superseded historical notes), skills/, settings.local.json.
 .claude/*
