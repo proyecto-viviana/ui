@@ -17,6 +17,7 @@ import { type JSX, splitProps, createContext, useContext, createSignal, Show } f
 import {
   StepList as HeadlessStepList,
   Step as HeadlessStep,
+  useStepListState,
   type StepListProps as HeadlessStepListProps,
   type StepListItemRenderProps,
   type StepProps as HeadlessStepProps,
@@ -203,6 +204,7 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
   renderProps: StepListItemRenderProps;
 }): JSX.Element {
   const ctx = useContext(StepListSizeContext);
+  const listState = useStepListState();
   const [isFocusVisible, setIsFocusVisible] = createSignal(false);
 
   // Accessible name composed from marker + visually-hidden state + label,
@@ -237,6 +239,18 @@ function DefaultStep<T extends { key: Key; label: string }>(props: {
         style={{ cursor: props.renderProps.isSelectable ? "pointer" : "default" }}
         onClick={(e) => {
           e.preventDefault();
+          // Click/Enter select via state. Do not wrap HeadlessStep: its Space
+          // handler would select, unlike usePress Enter-only on role="link".
+          if (props.renderProps.isSelectable) {
+            listState.setSelectedKey(props.item.key);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter") return;
+          e.preventDefault();
+          if (props.renderProps.isSelectable) {
+            listState.setSelectedKey(props.item.key);
+          }
         }}
         onFocus={(e) => setIsFocusVisible(e.currentTarget.matches(":focus-visible"))}
         onBlur={() => setIsFocusVisible(false)}

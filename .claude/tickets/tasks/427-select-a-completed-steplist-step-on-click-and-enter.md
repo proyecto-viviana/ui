@@ -4,12 +4,22 @@ type: task
 title: "Select a completed StepList step on click and Enter"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 steplist functional pass: progress URL remount AX/Tab 1→2→3→After match; click Details or Enter on Select offers moves React aria-current and leaves Solid on Fallback offer. Solid Spectrum DefaultStep preventDefault-only click, no Enter handler; Headless Step already has both. Space is a no-op on both (upstream link). Did not start #254",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "DefaultStep preventDefault-only click, no keydown. Wire useStepListState().setSelectedKey on click/Enter when selectable. Do not wrap HeadlessStep (Space would select). Do not start #428 or #99.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "DefaultStep setSelectedKey on click and Enter when selectable; Space stays a no-op. Package test fails if click Details or Enter on Select offers leave Fallback offer current, or if Space selects.",
     }
 ---
 
