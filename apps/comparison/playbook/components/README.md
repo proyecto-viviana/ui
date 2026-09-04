@@ -94,6 +94,7 @@ missing/gap catalogue entries or blocked visual-state rows.
 - [ColorWheel](./colorwheel-validation-notes.md)
 - [ColorSwatch](./colorswatch-validation-notes.md)
 - [ColorSwatchPicker](./colorswatchpicker-validation-notes.md)
+- [Color family](./color-family-validation-notes.md)
 - [ComboBox](./combobox-validation-notes.md)
 - [ContextualHelp](./contextualhelp-validation-notes.md)
 - [Disclosure](./disclosure-validation-notes.md)

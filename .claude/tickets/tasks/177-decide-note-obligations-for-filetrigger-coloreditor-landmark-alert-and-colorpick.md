@@ -4,13 +4,18 @@ type: task
 title: "Decide note obligations for FileTrigger ColorEditor Landmark Alert and ColorPicker"
 created: 2026-09-01
 parent: 136
-status: in-progress
+status: merged
 history:
   - { state: open, at: 2026-09-01, note: "opened from the 2026-09 full-repo audit" }
   - {
       state: in-progress,
       at: 2026-09-01,
       note: "owner 2026-09-01: recorded classification; FileTrigger, Landmark, and Alert are exceptions; ColorEditor and ColorPicker still need notes",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "color-family-validation-notes.md names ColorEditor and ColorPicker as composition; ten gates not-started; FileTrigger, Landmark, and Alert stay ticket exceptions. Did not bump 69/69.",
     }
 ---
 
@@ -37,13 +42,26 @@ certification march.
 
 ## Work remaining
 
-Write the ColorEditor composition note and the ColorPicker composition note
-(one color-family file is allowed). FileTrigger, Landmark, and Alert already
-have recorded exceptions.
+Color-family note written. FileTrigger, Landmark, and Alert stay recorded
+exceptions. Ten gates on that note stay `not-started`.
 
 ## Done when
 
 Each name has a note or a recorded support-export exception.
+
+## Evidence
+
+cwd: `/home/emoporemilio/projects/viviana-hub/ui`
+
+- Source: passed.
+  `apps/comparison/playbook/components/color-family-validation-notes.md`
+  names ColorEditor (local composition of ColorPicker + ColorArea +
+  ColorSlider hue/alpha + native format `<select>` + ColorField; ColorSwatch
+  context-only, not default DOM) and ColorPicker (RAC composition via
+  `ColorPickerContext`). README Files links the note. Catalogue 69/69 lines
+  unchanged. FileTrigger, Landmark, and Alert have no notes files.
+- Local: not required. Notes-only. `git diff --check` on named paths.
+- Product tests: not run.
 
 ## Relationship
 
