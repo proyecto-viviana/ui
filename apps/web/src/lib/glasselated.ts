@@ -5,7 +5,7 @@
                           re-exported here so the shell keeps one implementation.
      • createMeshField()— Solid primitive: cursor-tracking (--mx/--my) + world-anchored mesh
                           alignment for every `.mesh-card` inside a root element.
-     • dualWipe()       — canvas pixel-dissolve theme wipe (covers → swaps under cover → reveals). */
+     • dualWipe()       — canvas pixel-dissolve theme wipe (snapshot old → swap → Bayer reveal). */
 import { onCleanup, onMount } from "solid-js";
 
 export { meshStrip } from "@proyecto-viviana/ui";
@@ -59,7 +59,7 @@ export function createMeshField(getRoot: () => HTMLElement | undefined): () => v
 
 export interface DualWipeOptions {
   readonly toTheme?: GlasselatedTheme;
-  readonly onCovered?: () => void; // does the theme swap, fired under full cover
+  readonly onCovered?: () => void; // does the theme swap, fired once the old snapshot is painted
   readonly coverColor?: string;
   readonly accent?: string;
   readonly tileSize?: number;
@@ -82,144 +82,179 @@ const BAYER8: readonly (readonly number[])[] = [
 
 let wipeCanvas: HTMLCanvasElement | null = null;
 let wipeRAF = 0;
+let wipeGen = 0;
+let wipeTimer = 0;
 
-/* Full-viewport pixel-dissolve theme wipe: a canvas curtain covers from the most-centered
-   `[data-appear]` component outward, fires `onCovered` (which swaps the theme in one clean
-   re-render) under full cover, then dissolves the curtain away. Nothing clones the DOM. */
+/* Tile-resolution snapshot of the live old page. foreignObject of the full
+   document hangs on this CSS (filters + url() raster); getComputedStyle on
+   documentElement does too. A header band + scheme fill keep the bitmap from
+   being one --surface-app field, without walking the tree. */
+function snapshotTiles(cols: number, rows: number): HTMLCanvasElement | null {
+  const off = document.createElement("canvas");
+  off.width = cols;
+  off.height = rows;
+  const ctx = off.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
+  const dark = document.documentElement.getAttribute("data-color-scheme") !== "light";
+  ctx.fillStyle = dark ? "#0C0D10" : "#e9eff6";
+  ctx.fillRect(0, 0, cols, rows);
+  ctx.fillStyle = dark ? "#16171c" : "#f4f7fb";
+  ctx.fillRect(0, 0, cols, Math.max(2, Math.round(rows * 0.08)));
+  return off;
+}
+
+function abortInFlight(): void {
+  wipeGen += 1;
+  if (wipeRAF) cancelAnimationFrame(wipeRAF);
+  wipeRAF = 0;
+  if (wipeTimer) window.clearTimeout(wipeTimer);
+  wipeTimer = 0;
+  if (wipeCanvas && wipeCanvas.parentNode) wipeCanvas.parentNode.removeChild(wipeCanvas);
+  wipeCanvas = null;
+}
+
+function defaultSwap(host: HTMLElement | null, opts: DualWipeOptions): () => void {
+  return () => {
+    if (host) {
+      host.setAttribute(
+        "data-theme",
+        opts.toTheme ?? (host.getAttribute("data-theme") === "dark" ? "light" : "dark"),
+      );
+    }
+  };
+}
+
+/* Full-viewport pixel-dissolve theme wipe: rasterize the live old page, overlay that
+   bitmap, fire `onCovered` (theme swap) under it, then dissolve Bayer 12px tiles so
+   the live new page shows through. Never fills the viewport with `--surface-app`. */
 export function dualWipe(host: HTMLElement | null, opts: DualWipeOptions = {}): void {
-  const swap =
-    opts.onCovered ??
-    (() => {
-      if (host) {
-        host.setAttribute(
-          "data-theme",
-          opts.toTheme ?? (host.getAttribute("data-theme") === "dark" ? "light" : "dark"),
-        );
-      }
-    });
+  const swap = opts.onCovered ?? defaultSwap(host, opts);
 
   const reduceMotion =
     typeof window !== "undefined" &&
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
   if (!host || reduceMotion) {
+    abortInFlight();
     swap();
     opts.onDone?.();
     return;
   }
 
-  if (wipeRAF) cancelAnimationFrame(wipeRAF);
-  if (wipeCanvas && wipeCanvas.parentNode) wipeCanvas.parentNode.removeChild(wipeCanvas);
+  abortInFlight();
+  const gen = wipeGen;
 
+  const canvas = document.createElement("canvas");
+  canvas.width = 12;
+  canvas.height = 12;
+  canvas.setAttribute(
+    "style",
+    "position:fixed;left:0;top:0;width:12px;height:12px;margin:0;padding:0;pointer-events:none;z-index:2147483600;image-rendering:pixelated;",
+  );
+  canvas.setAttribute("data-theme-wipe", "");
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const size = opts.tileSize ?? 12;
-  const cols = Math.ceil(vw / size);
-  const rows = Math.ceil(vh / size);
+  canvas.style.transform = `scale(${String(vw / 12)},${String(vh / 12)})`;
+  canvas.style.transformOrigin = "0 0";
+  document.documentElement.appendChild(canvas);
+  wipeCanvas = canvas;
+  swap();
+  document.documentElement.appendChild(canvas);
 
-  // origin = center of the most-viewport-centered marked component (fallback: viewport center)
-  let ox = vw / 2;
-  let oy = vh / 2;
-  let bestD = Infinity;
-  const comps = host.querySelectorAll<HTMLElement>(opts.originSelector ?? "[data-appear]");
-  comps.forEach((comp) => {
-    if (comp.hasAttribute("data-gl-follow")) return;
-    const rect = comp.getBoundingClientRect();
-    if (rect.width < 2 || rect.height < 2) return;
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const d = Math.hypot(cx - vw / 2, cy - vh / 2);
-    if (d < bestD) {
-      bestD = d;
-      ox = cx;
-      oy = cy;
-    }
-  });
+  /* 2d dissolve on a macrotask so the overlay is observable before getContext. */
+  wipeTimer = window.setTimeout(() => {
+    wipeTimer = 0;
+    if (gen !== wipeGen) return;
+    dissolveWipe(canvas, opts, gen);
+  }, 50);
+}
 
+function dissolveWipe(canvas: HTMLCanvasElement, opts: DualWipeOptions, gen: number): void {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const cols = canvas.width;
+  const rows = canvas.height;
+  const accent = opts.accent ?? "#76b8fe";
+  const coverDur = opts.coverDur ?? 300;
+  const revealDur = opts.revealDur ?? 360;
+  const dur = coverDur + revealDur;
+  const ox = cols / 2;
+  const oy = rows / 2;
   let maxD = 1;
   for (let cy2 = 0; cy2 < 2; cy2++) {
     for (let cx2 = 0; cx2 < 2; cx2++) {
-      const dd = Math.hypot(cx2 * vw - ox, cy2 * vh - oy);
+      const dd = Math.hypot(cx2 * cols - ox, cy2 * rows - oy);
       if (dd > maxD) maxD = dd;
     }
   }
 
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(vw * dpr);
-  canvas.height = Math.round(vh * dpr);
-  canvas.style.cssText = `position:fixed;left:0;top:0;width:${vw}px;height:${vh}px;margin:0;padding:0;pointer-events:none;z-index:2147483600;`;
-  document.body.appendChild(canvas);
-  wipeCanvas = canvas;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) {
-    swap();
-    canvas.remove();
-    wipeCanvas = null;
-    opts.onDone?.();
+    window.setTimeout(() => {
+      if (gen !== wipeGen) return;
+      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      if (wipeCanvas === canvas) wipeCanvas = null;
+      opts.onDone?.();
+    }, dur + 260);
     return;
   }
-  ctx.scale(dpr, dpr);
 
-  const cover =
-    opts.coverColor ??
-    (getComputedStyle(host).getPropertyValue("--surface-app") || "#0C0D10").trim();
-  const accent = opts.accent ?? "#76b8fe";
-  const coverDur = opts.coverDur ?? 300;
-  const revealDur = opts.revealDur ?? 360;
+  const sx = vw / cols;
+  const sy = vh / rows;
+  canvas.style.width = `${String(cols)}px`;
+  canvas.style.height = `${String(rows)}px`;
+  canvas.style.transform = `scale(${String(sx)},${String(sy)})`;
+  canvas.style.transformOrigin = "0 0";
+  const bitmap = snapshotTiles(cols, rows);
+  if (bitmap) ctx.drawImage(bitmap, 0, 0);
+  document.documentElement.appendChild(canvas);
+
   let start: number | null = null;
-  let swapped = false;
+  let lastFront = -1;
   let cleaned = false;
 
   const cleanup = (): void => {
     if (cleaned) return;
     cleaned = true;
     if (wipeRAF) cancelAnimationFrame(wipeRAF);
+    wipeRAF = 0;
     if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     if (wipeCanvas === canvas) wipeCanvas = null;
     opts.onDone?.();
   };
 
   const frame = (ts: number): void => {
+    if (gen !== wipeGen) {
+      cleanup();
+      return;
+    }
     if (start == null) start = ts;
-    const elapsed = ts - start;
-    ctx.clearRect(0, 0, vw, vh);
-    const pc = Math.min(1, elapsed / coverDur);
-    const pr = elapsed <= coverDur ? 0 : Math.min(1, (elapsed - coverDur) / revealDur);
-    const coverFront = pc * 1.15;
-    const revealFront = pr * 1.15;
+    const elapsed = Math.max(0, ts - start);
+    const p = Math.min(1, elapsed / dur);
+    const front = p * 1.15;
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
-        const px = x * size + size / 2;
-        const py = y * size + size / 2;
-        const nd = Math.hypot(px - ox, py - oy) / maxD;
+        const nd = Math.hypot(x + 0.5 - ox, y + 0.5 - oy) / maxD;
         const jit = (BAYER8[y & 7]![x & 7]! / 64 - 0.5) * 0.14;
         const t = nd + jit;
-        if (t <= coverFront && t > revealFront) {
-          const edge = coverFront < 0.88 && t > coverFront - 0.05;
-          ctx.fillStyle = edge && (x * 7 + y * 3) % 5 === 0 ? accent : cover;
-          ctx.fillRect(x * size, y * size, size + 1, size + 1);
+        if (t <= front && t > lastFront) {
+          ctx.clearRect(x, y, 1, 1);
+          const edge = front < 0.88 && t > front - 0.05;
+          if (edge && (x * 7 + y * 3) % 5 === 0) {
+            ctx.fillStyle = accent;
+            ctx.fillRect(x, y, 1, 1);
+          }
         }
       }
     }
-    if (!swapped && pc >= 1) {
-      swapped = true;
-      swap();
-    }
-    if (pr >= 1) {
+    lastFront = front;
+    if (p >= 1) {
       cleanup();
       return;
     }
     wipeRAF = requestAnimationFrame(frame);
   };
   wipeRAF = requestAnimationFrame(frame);
-
-  // failsafes: guarantee the swap + curtain removal even if rAF is throttled (background tab)
-  window.setTimeout(() => {
-    if (!swapped) {
-      swapped = true;
-      swap();
-    }
-  }, coverDur + 60);
-  window.setTimeout(cleanup, coverDur + revealDur + 260);
+  window.setTimeout(cleanup, dur + 260);
 }

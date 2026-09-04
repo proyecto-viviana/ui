@@ -37,6 +37,7 @@ function ThemeToggle() {
 
   return (
     <button
+      type="button"
       onClick={toggleTheme}
       title={isDark() ? "Switch to light mode" : "Switch to dark mode"}
       class="pv-iconbtn"

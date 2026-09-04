@@ -38,23 +38,31 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
-  const { theme } = useTheme();
   return (
     <RootDocument>
-      {/* Every viviana-ui component is painted by the S2 style() macro, whose
-          light-dark() fills lightningcss downlevels into a var() pair guarded by
-          --lightningcss-light/dark. Those guards exist only on the atoms
-          setColorScheme() emits, which the library Provider is what applies —
-          without an ancestor Provider a fill like light-dark(#2e90fa,#407fc1)
-          collapses to the garbage "#2e90fa#407fc1" and the control paints
-          transparent. /showcase and /solid-spectrum wrap their own Providers;
-          this root one covers the remaining top-level pages (landing, Theme
-          Studio, admin). No `background` prop, so it paints nothing itself —
-          only isolation + the scheme toggles. It tracks the site's own theme. */}
-      <Provider locale="en-US" colorScheme={theme()}>
-        <Outlet />
-      </Provider>
+      <ThemedApp />
     </RootDocument>
+  );
+}
+
+function ThemedApp() {
+  const { theme } = useTheme();
+  /* Every viviana-ui component is painted by the S2 style() macro, whose
+     light-dark() fills lightningcss downlevels into a var() pair guarded by
+     --lightningcss-light/dark. Those guards exist only on the atoms
+     setColorScheme() emits, which the library Provider is what applies —
+     without an ancestor Provider a fill like light-dark(#2e90fa,#407fc1)
+     collapses to the garbage "#2e90fa#407fc1" and the control paints
+     transparent. /showcase and /solid-spectrum wrap their own Providers;
+     this root one covers the remaining top-level pages (landing, Theme
+     Studio, admin). No `background` prop, so it paints nothing itself —
+     only isolation + the scheme toggles. It tracks the site's own theme.
+     Theme lives here, not in RootComponent, so a toggle does not re-render
+     `<html>`/`<body>` and eat the pixel wipe canvas. */
+  return (
+    <Provider locale="en-US" colorScheme={theme()}>
+      <Outlet />
+    </Provider>
   );
 }
 

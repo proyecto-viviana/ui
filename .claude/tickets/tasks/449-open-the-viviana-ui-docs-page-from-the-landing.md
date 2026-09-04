@@ -4,7 +4,7 @@ type: task
 title: "Open the VIVIANA UI docs page from the landing"
 created: 2026-09-03
 parent: 26
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -25,6 +25,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "leave merged until test+review finish; T9 minted as #458 (implement after this ticket).",
+    }
+  - {
+      state: verified,
+      at: 2026-09-04,
+      note: "independent review APPROVE; #458 theme wipe did not retarget the viviana-ui docs entry.",
     }
 ---
 

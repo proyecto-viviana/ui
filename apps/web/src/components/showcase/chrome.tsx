@@ -6,9 +6,7 @@ import { For, type JSX } from "solid-js";
 import { Link, useLocation, useNavigate } from "@tanstack/solid-router";
 import { ActionButton } from "@proyecto-viviana/ui";
 import ContrastIcon from "@proyecto-viviana/ui/ContrastIcon";
-import { dualWipe } from "@/lib/glasselated";
 import { useTheme } from "@/utils/theme";
-import { glasselatedRoot } from "./GlasselatedShell";
 import { PANELS, type PanelDef } from "./registry";
 
 /* The nav is a scrolling tab strip on wide desktop; below --gls-nav-collapse
@@ -19,10 +17,6 @@ export function ShowcaseTopbar(): JSX.Element {
   const { toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-
-  const wipeTheme = (): void => {
-    dualWipe(glasselatedRoot() ?? null, { onCovered: toggleTheme });
-  };
 
   /* The trailing segment of /showcase/<slug>; "" on the /showcase index. */
   const currentSlug = (): string => {
@@ -69,7 +63,7 @@ export function ShowcaseTopbar(): JSX.Element {
         </For>
         <option value="parity">≡≡ Parity</option>
       </select>
-      <ActionButton isQuiet aria-label="Toggle color scheme" onPress={wipeTheme}>
+      <ActionButton isQuiet aria-label="Toggle color scheme" onPress={toggleTheme}>
         <ContrastIcon />
       </ActionButton>
     </header>

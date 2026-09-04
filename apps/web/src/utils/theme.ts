@@ -1,4 +1,5 @@
 import { createSignal, onMount } from "solid-js";
+import { dualWipe } from "@/lib/glasselated";
 
 export type Theme = "dark" | "light";
 
@@ -23,6 +24,7 @@ let initialized = false;
 
 function applyTheme(theme: Theme): void {
   if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-theme", theme);
   document.documentElement.setAttribute("data-color-scheme", theme);
 }
 
@@ -42,11 +44,18 @@ export function useTheme() {
 
   const toggleTheme = () => {
     const next: Theme = globalTheme() === "dark" ? "light" : "dark";
-    setGlobalTheme(next);
-    applyTheme(next);
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, next);
+    const swap = (): void => {
+      setGlobalTheme(next);
+      applyTheme(next);
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem(STORAGE_KEY, next);
+      }
+    };
+    if (typeof document === "undefined") {
+      swap();
+      return;
     }
+    dualWipe(document.documentElement, { onCovered: swap });
   };
 
   const isDark = () => globalTheme() === "dark";
