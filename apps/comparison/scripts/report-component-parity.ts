@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
 
-import { componentControlGroups } from "../src/data/component-controls";
+import { loadComponentControlGroups } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 import { reactSpectrumCatalogue } from "../src/data/react-spectrum-catalogue";
 import {
@@ -303,6 +303,7 @@ const officialEntriesBySlug = new Map(reactSpectrumCatalogue.map((entry) => [ent
 const comparisonEntriesBySlug = new Map(comparisonEntries.map((entry) => [entry.slug, entry]));
 const officialSlugs = new Set(officialEntriesBySlug.keys());
 const comparisonSlugs = new Set(comparisonEntriesBySlug.keys());
+const componentControlGroups = await loadComponentControlGroups();
 const controlGroupSlugs = new Set(Object.keys(componentControlGroups));
 const sidebarSlugCounts = new Map<string, number>();
 

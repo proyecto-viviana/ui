@@ -1,4 +1,5 @@
 import h from "solid-js/h";
+import { createResource } from "solid-js";
 import { Badge } from "@proyecto-viviana/solid-spectrum/Badge";
 import { Meter } from "@proyecto-viviana/solid-spectrum/Meter";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -40,8 +41,7 @@ export default function ComponentDetailMeta(props: ComponentDetailMetaProps) {
     return h("div", { class: "s2-empty-state" }, "Component metadata is unavailable.")();
   }
 
-  const controlGroup = getComponentControlGroup(entry);
-  const coverage = getComponentCoverage(entry, controlGroup);
+  const [controlGroup] = createResource(() => getComponentControlGroup(entry));
   const visualStates = getVisualStateTargets(entry);
   const supportingLayers = layerOrder.filter((layer) => layer !== playgroundLayer);
 
@@ -55,10 +55,19 @@ export default function ComponentDetailMeta(props: ComponentDetailMetaProps) {
       background: "base",
     },
     [
-      coverageSection(coverage.metrics, coverage.overall),
-      visualStateSection(visualStates),
-      apiSection(entry, controlGroup.apiProps),
-      ...supportingLayers.map((layer) => supportingLayerSection(entry, layer)),
+      () => {
+        const group = controlGroup();
+        if (!group) {
+          return undefined;
+        }
+        const coverage = getComponentCoverage(entry, group);
+        return [
+          coverageSection(coverage.metrics, coverage.overall),
+          visualStateSection(visualStates),
+          apiSection(entry, group.apiProps),
+          ...supportingLayers.map((layer) => supportingLayerSection(entry, layer)),
+        ];
+      },
     ],
   )();
 }

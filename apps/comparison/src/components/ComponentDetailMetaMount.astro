@@ -14,7 +14,7 @@ interface Props {
 }
 
 const { entry } = Astro.props as Props;
-const controlGroup = getComponentControlGroup(entry);
+const controlGroup = await getComponentControlGroup(entry);
 const coverage = getComponentCoverage(entry, controlGroup);
 const visualStates = getVisualStateTargets(entry);
 const playgroundLayer: ComparisonLayerId = "styled";

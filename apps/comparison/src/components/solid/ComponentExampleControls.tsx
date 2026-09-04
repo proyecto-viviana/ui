@@ -1,20 +1,18 @@
 import h from "solid-js/h";
-import { createSignal, type JSX } from "solid-js";
+import { createResource, createSignal, type JSX } from "solid-js";
 import { ActionButton } from "@proyecto-viviana/solid-spectrum/ActionButton";
 import { Content } from "@proyecto-viviana/solid-spectrum/Content";
 import { ContextualHelp } from "@proyecto-viviana/solid-spectrum/ContextualHelp";
 import { Heading } from "@proyecto-viviana/solid-spectrum/Heading";
 import { Picker } from "@proyecto-viviana/solid-spectrum/Picker";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
-import {
-  Radio,
-  RadioGroup,
-} from "@proyecto-viviana/solid-spectrum/RadioGroup";
+import { Radio, RadioGroup } from "@proyecto-viviana/solid-spectrum/RadioGroup";
 import { Switch } from "@proyecto-viviana/solid-spectrum/Switch";
 import { TextField } from "@proyecto-viviana/solid-spectrum/TextField";
 import {
   getComponentControlGroup,
   type ComponentControl,
+  type ComponentControlGroup,
   type ComponentControlOption,
 } from "@comparison/data/component-controls";
 import { getComparisonEntry } from "@comparison/data/comparison-manifest";
@@ -36,7 +34,35 @@ export default function ComponentExampleControls(props: ComponentExampleControls
     return h("div", { class: "s2-empty-state" }, "Interactive controls are unavailable.")();
   }
 
-  const controlGroup = getComponentControlGroup(entry);
+  const [controlGroup] = createResource(() => getComponentControlGroup(entry));
+
+  return hc(
+    Provider,
+    {
+      class: "s2-component-example-controls",
+      get colorScheme() {
+        return resolvedTheme();
+      },
+      background: "base",
+    },
+    [
+      h("h2", { id: "example-title" }, "Example"),
+      () => {
+        const group = controlGroup();
+        if (!group) {
+          return undefined;
+        }
+        return ControlsForm({ entry, controlGroup: group });
+      },
+    ],
+  )();
+}
+
+function ControlsForm(props: {
+  entry: NonNullable<ReturnType<typeof getComparisonEntry>>;
+  controlGroup: ComponentControlGroup;
+}) {
+  const { entry, controlGroup } = props;
   const visibleControls = controlGroup.controls.filter((control) => !control.isHidden);
   const hiddenControls = controlGroup.controls.filter((control) => control.isHidden);
   const controlDefaults = Object.fromEntries(
@@ -61,54 +87,41 @@ export default function ComponentExampleControls(props: ComponentExampleControls
     }
   };
 
-  return hc(
-    Provider,
-    {
-      class: "s2-component-example-controls",
-      get colorScheme() {
-        return resolvedTheme();
-      },
-      background: "base",
-    },
-    [
-      h("h2", { id: "example-title" }, "Example"),
-      controlGroup.controls.length > 0
-        ? h(
-            "form",
-            {
-              class: "s2-prop-controls",
-              ref: (node: HTMLFormElement) => {
-                formElement = node;
+  return controlGroup.controls.length > 0
+    ? h(
+        "form",
+        {
+          class: "s2-prop-controls",
+          ref: (node: HTMLFormElement) => {
+            formElement = node;
+          },
+          "data-comparison-controls": entry.slug,
+          "data-control-coverage": controlGroup.coverage,
+          "data-control-defaults": JSON.stringify(controlDefaults),
+        },
+        [
+          ...hiddenControls.map((control) => hiddenControlField(control, currentValue)),
+          ...visibleControls.map((control) =>
+            h(
+              "div",
+              {
+                class: "s2-prop-control",
+                "data-control-kind": control.kind,
+                "data-control-name": control.name,
               },
-              "data-comparison-controls": entry.slug,
-              "data-control-coverage": controlGroup.coverage,
-              "data-control-defaults": JSON.stringify(controlDefaults),
-            },
-            [
-              ...hiddenControls.map((control) => hiddenControlField(control, currentValue)),
-              ...visibleControls.map((control) =>
-                h(
-                  "div",
-                  {
-                    class: "s2-prop-control",
-                    "data-control-kind": control.kind,
-                    "data-control-name": control.name,
-                  },
-                  controlField(control, currentValue, updateControlValue, {
-                    slug: entry.slug,
-                    currentNamedValue: (name, fallback) => controlValues()[name] ?? fallback,
-                  }),
-                ),
-              ),
-            ],
-          )
-        : h(
-            "div",
-            { class: "s2-empty-state" },
-            "Interactive S2 prop controls are missing for this component.",
+              controlField(control, currentValue, updateControlValue, {
+                slug: entry.slug,
+                currentNamedValue: (name, fallback) => controlValues()[name] ?? fallback,
+              }),
+            ),
           ),
-    ],
-  )();
+        ],
+      )
+    : h(
+        "div",
+        { class: "s2-empty-state" },
+        "Interactive S2 prop controls are missing for this component.",
+      );
 }
 
 function initialControlValues(defaults: Record<string, ControlValue>): ControlValues {

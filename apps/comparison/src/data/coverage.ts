@@ -1,4 +1,5 @@
 import type { ComponentControlGroup } from "./component-controls";
+import { hasComponentControlGroup } from "./component-demo-loaders";
 import type { ComparisonEntry } from "./comparison-manifest";
 import { getVisualStateTargets } from "./visual-state-matrix";
 
@@ -35,7 +36,7 @@ function metric(id: string, label: string, complete: number, total: number): Cov
 
 export function getComponentCoverage(
   entry: ComparisonEntry,
-  controlGroup: ComponentControlGroup,
+  controlGroup?: Pick<ComponentControlGroup, "coverage" | "apiProps">,
 ): ComponentCoverage {
   const visualStates = getVisualStateTargets(entry);
   const styledLayer = entry.layers.styled;
@@ -44,14 +45,13 @@ export function getComponentCoverage(
     (state) => state.react !== "missing" && state.solid !== "missing",
   );
   const strictPairDiffStates = visualStates.filter((state) => state.pairDiff === "strict");
+  const apiModeled = controlGroup
+    ? controlGroup.coverage === "modeled"
+    : hasComponentControlGroup(entry.slug);
+  const apiTotal = controlGroup ? Math.max(controlGroup.apiProps.length, 1) : 1;
 
   const metrics = [
-    metric(
-      "api",
-      "API",
-      controlGroup.coverage === "modeled" ? Math.max(controlGroup.apiProps.length, 1) : 0,
-      Math.max(controlGroup.apiProps.length, 1),
-    ),
+    metric("api", "API", apiModeled ? apiTotal : 0, apiTotal),
     metric("react", "React reference", styledLayer.react === "live" ? 1 : 0, 1),
     metric(
       "solid",

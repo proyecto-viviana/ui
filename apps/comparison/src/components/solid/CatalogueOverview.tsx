@@ -6,7 +6,6 @@ import { Meter } from "@proyecto-viviana/solid-spectrum/Meter";
 import { Picker } from "@proyecto-viviana/solid-spectrum/Picker";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
 import { SearchField } from "@proyecto-viviana/solid-spectrum/SearchField";
-import { getComponentControlGroup } from "@comparison/data/component-controls";
 import {
   comparisonEntries,
   missingOfficialComparisonEntries,
@@ -58,7 +57,7 @@ const sortOptions: PickerOption<CatalogueSort>[] = [
 const catalogueEntries: CatalogueEntryView[] = comparisonEntries.map((entry, index) => ({
   entry,
   index,
-  coverage: getComponentCoverage(entry, getComponentControlGroup(entry)),
+  coverage: getComponentCoverage(entry),
 }));
 
 const overallCoverage = Math.round(

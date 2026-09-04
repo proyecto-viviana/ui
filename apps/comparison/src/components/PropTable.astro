@@ -110,7 +110,7 @@ const fallbackEntry =
   rows.length === 0 && component
     ? (getComparisonEntry(component) ?? getComparisonEntry(component.toLowerCase()))
     : null;
-const fallbackGroup = fallbackEntry ? getComponentControlGroup(fallbackEntry) : null;
+const fallbackGroup = fallbackEntry ? await getComponentControlGroup(fallbackEntry) : null;
 const fallbackProps = fallbackGroup?.apiProps ?? [];
 ---
 

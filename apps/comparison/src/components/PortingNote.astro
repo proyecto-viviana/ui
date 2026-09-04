@@ -11,7 +11,7 @@ interface Props {
 
 const { component } = Astro.props as Props;
 const entry = getComparisonEntry(component) ?? getComparisonEntry(component.toLowerCase());
-const note = entry ? getComponentControlGroup(entry).note : null;
+const note = entry ? (await getComponentControlGroup(entry)).note : null;
 ---
 
 {

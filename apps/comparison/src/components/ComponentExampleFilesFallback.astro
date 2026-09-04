@@ -11,7 +11,7 @@ interface Props {
 }
 
 const { entry } = Astro.props as Props;
-const controlGroup = getComponentControlGroup(entry);
+const controlGroup = await getComponentControlGroup(entry);
 const source = generateSolidExampleSource(controlGroup, defaultExampleSourceValues(controlGroup));
 ---
 

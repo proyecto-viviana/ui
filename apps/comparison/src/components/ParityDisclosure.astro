@@ -20,7 +20,7 @@ interface Props {
 const { slug } = Astro.props as Props;
 const entry = getComparisonEntry(slug);
 const playgroundLayer: ComparisonLayerId = "styled";
-const controlGroup = entry ? getComponentControlGroup(entry) : null;
+const controlGroup = entry ? await getComponentControlGroup(entry) : null;
 const coverage = entry && controlGroup ? getComponentCoverage(entry, controlGroup) : null;
 const visualStates = entry ? getVisualStateTargets(entry) : [];
 const supportingLayers = layerOrder.filter((layer) => layer !== playgroundLayer);

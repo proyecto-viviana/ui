@@ -4,13 +4,12 @@ import {
   missingOfficialComparisonEntries,
   officialComparisonEntries,
 } from "@comparison/data/comparison-manifest";
-import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 
 const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
 const overallCoverage = Math.round(
   comparisonEntries.reduce(
-    (sum, entry) => sum + getComponentCoverage(entry, getComponentControlGroup(entry)).overall,
+    (sum, entry) => sum + getComponentCoverage(entry).overall,
     0,
   ) / comparisonEntries.length,
 );

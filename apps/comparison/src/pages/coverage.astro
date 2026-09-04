@@ -4,7 +4,6 @@ import {
   missingOfficialComparisonEntries,
   officialComparisonEntries,
 } from "@comparison/data/comparison-manifest";
-import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
 import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
@@ -20,7 +19,7 @@ const strictStateCount = officialVisualStateSummary.strictPairDiffStates;
 
 const entriesWithCoverage = comparisonEntries.map((entry) => ({
   entry,
-  coverage: getComponentCoverage(entry, getComponentControlGroup(entry)),
+  coverage: getComponentCoverage(entry),
 }));
 
 const overallCoverage = Math.round(

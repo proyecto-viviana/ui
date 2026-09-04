@@ -1,12 +1,13 @@
 import { expect, test, type Locator } from "@playwright/test";
 import {
-  componentControlGroups,
+  loadComponentControlGroups,
   type ComponentControl,
   type ComponentControlGroup,
 } from "../src/data/component-controls";
 import { comparisonEntries } from "../src/data/comparison-manifest";
 import { frameworkPanel, waitForComparisonRouteReady } from "./comparison-page";
 
+const componentControlGroups = await loadComponentControlGroups();
 const modeledControlGroups = Object.values(componentControlGroups)
   .filter((group) => group.coverage === "modeled")
   .sort((a, b) => a.slug.localeCompare(b.slug));

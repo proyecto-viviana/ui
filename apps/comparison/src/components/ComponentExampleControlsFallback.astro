@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { entry } = Astro.props as Props;
-const controlGroup = getComponentControlGroup(entry);
+const controlGroup = await getComponentControlGroup(entry);
 const visibleControls = controlGroup.controls.filter((control) => !control.isHidden);
 const hiddenControls = controlGroup.controls.filter((control) => control.isHidden);
 const controlDefaults = Object.fromEntries(

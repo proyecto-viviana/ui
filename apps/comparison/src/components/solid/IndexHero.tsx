@@ -2,7 +2,6 @@ import h from "solid-js/h";
 import { Badge } from "@proyecto-viviana/solid-spectrum/Badge";
 import { LinkButton } from "@proyecto-viviana/solid-spectrum/LinkButton";
 import { Provider } from "@proyecto-viviana/solid-spectrum/Provider";
-import { getComponentControlGroup } from "@comparison/data/component-controls";
 import { getComponentCoverage } from "@comparison/data/coverage";
 import {
   comparisonEntries,
@@ -15,10 +14,8 @@ import { createComparisonColorScheme } from "./useComparisonColorScheme";
 
 const liveCount = comparisonEntries.filter((entry) => entry.priority === "live").length;
 const overallCoverage = Math.round(
-  comparisonEntries.reduce(
-    (sum, entry) => sum + getComponentCoverage(entry, getComponentControlGroup(entry)).overall,
-    0,
-  ) / comparisonEntries.length,
+  comparisonEntries.reduce((sum, entry) => sum + getComponentCoverage(entry).overall, 0) /
+    comparisonEntries.length,
 );
 
 export default function IndexHero() {
