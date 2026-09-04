@@ -21,6 +21,16 @@ history:
       at: 2026-09-04,
       note: "one-pass Bayer wipe on toggleTheme; chrome wipeTheme deleted; applyTheme writes both attrs",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "review changes-required; replace --surface-app tile fill with old-page snapshot",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "old-page layout overlay + Bayer tiles; fill-only wipe fails the spec",
+    }
 ---
 
 The docs / Header / showcase theme toggle paints a full-viewport
@@ -41,15 +51,18 @@ verdict `go`).
 
 ## Evidence
 
-cwd `/home/emoporemilio/projects/viviana-hub/ui`, parent `ead40e9f`.
-Plan/grill: `.agents/vivianastack/docs-theme-transition/` (grill `go`).
-No wrangler/deploy. No changeset. `packages/solid-spectrum` untouched.
+cwd `/home/emoporemilio/projects/viviana-hub/ui`, parent `de696c30`.
+Review changes-required on `622bc7af`: overlay was a 12×12 `--surface-app` fill
+after swap. Follow-up: `dualWipe` snapshots the live old chrome (header / nav /
+labels) as the overlay, never a `--surface-app` fill. Failed / empty snapshot
+takes the no-canvas path. SVG-as-image foreignObject of this CSS hangs (filters
++ url() raster); getContext during the click evaluate never returns.
 
-`CI=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/theme-wipe.spec.ts --reporter=line --workers=1` PASS (3): Header toggle on `/solid-spectrum/docs` mounts wipe canvas and flips both attrs; `/showcase` never viewport `fillRect` of `--surface-app`; `prefers-reduced-motion` skips canvas and still flips scheme.
+`CI=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/theme-wipe.spec.ts --reporter=line --workers=1 --retries=0` PASS (3): Header toggle on `/solid-spectrum/docs` mounts wipe canvas and flips both attrs; `/showcase` wipe records >2 non-surface colors and never a covering 12×12 `--surface-app` `fillRect`; `prefers-reduced-motion` skips canvas and still flips scheme.
 
-`vp run check` PASS. `git diff --check` PASS.
-
-Full `vp run a11y:smoke` not run; the new spec is listed on that script. No View Transitions.
+Owned-file `vp check` PASS. `vp run typecheck` PASS. `git diff --check` PASS.
+Full `vp run check` not clean: #451 comparison files fail format (untouched).
+No wrangler/deploy. No changeset. `apps/comparison` untouched. No View Transitions.
 
 ## Done when
 

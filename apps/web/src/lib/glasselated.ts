@@ -81,26 +81,68 @@ const BAYER8: readonly (readonly number[])[] = [
 ];
 
 let wipeCanvas: HTMLCanvasElement | null = null;
+let wipeLayout: HTMLElement | null = null;
 let wipeRAF = 0;
 let wipeGen = 0;
 let wipeTimer = 0;
 
-/* Tile-resolution snapshot of the live old page. foreignObject of the full
-   document hangs on this CSS (filters + url() raster); getComputedStyle on
-   documentElement does too. A header band + scheme fill keep the bitmap from
-   being one --surface-app field, without walking the tree. */
-function snapshotTiles(cols: number, rows: number): HTMLCanvasElement | null {
-  const off = document.createElement("canvas");
-  off.width = cols;
-  off.height = rows;
-  const ctx = off.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return null;
+const WIPE_TILES = 12;
+const SURFACE_FILLS = new Set(["#0c0d10", "#e9eff6", "#16171c", "#f4f7fb"]);
+
+function judgeColors(colors: string[]): boolean {
+  if (colors.length < 3) return false;
+  return !colors.every((color) => SURFACE_FILLS.has(color.toLowerCase()));
+}
+
+type LayoutMark = { left: number; top: number; width: number; height: number; color: string };
+
+/* Live old-page layout snapshot. SVG-as-image foreignObject of this CSS never
+   finishes; getComputedStyle under the wipe canvas hangs SwiftShader. Empty
+   marks take the no-canvas path — never a --surface-app fill. */
+function captureOldLayout(): LayoutMark[] {
   const dark = document.documentElement.getAttribute("data-color-scheme") !== "light";
-  ctx.fillStyle = dark ? "#0C0D10" : "#e9eff6";
-  ctx.fillRect(0, 0, cols, rows);
-  ctx.fillStyle = dark ? "#16171c" : "#f4f7fb";
-  ctx.fillRect(0, 0, cols, Math.max(2, Math.round(rows * 0.08)));
-  return off;
+  const ink = dark ? "#e8eef7" : "#1a1d24";
+  const elevated = dark ? "#3a4254" : "#c5d0de";
+  const muted = dark ? "#8b93a4" : "#4a5568";
+  const marks: LayoutMark[] = [];
+  const push = (el: Element | null, color: string): void => {
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width < 1 || rect.height < 1) return;
+    marks.push({ left: rect.left, top: rect.top, width: rect.width, height: rect.height, color });
+  };
+  push(document.querySelector("header, .gls-topbar"), elevated);
+  push(document.querySelector("aside, nav, .gls-topbar-nav"), muted);
+  push(document.querySelector(".gls-brand, header a, h1"), ink);
+  const labels = document.querySelectorAll(
+    "header a, header button, .gls-brand, .gls-navlink, .gls-back, h1",
+  );
+  const cap = Math.min(labels.length, 24);
+  for (let i = 0; i < cap; i++) {
+    const el = labels[i] as HTMLElement;
+    if (!(el.textContent ?? "").trim()) continue;
+    push(el, ink);
+  }
+  return marks;
+}
+
+function mountLayoutOverlay(marks: LayoutMark[]): HTMLElement {
+  const root = document.createElement("div");
+  root.setAttribute("data-theme-wipe-layout", "");
+  root.setAttribute(
+    "style",
+    "position:fixed;left:0;top:0;width:100%;height:100%;margin:0;padding:0;pointer-events:none;z-index:2147483601;overflow:hidden;",
+  );
+  for (const mark of marks) {
+    const box = document.createElement("div");
+    box.setAttribute(
+      "style",
+      `position:absolute;left:${String(mark.left)}px;top:${String(mark.top)}px;width:${String(mark.width)}px;height:${String(mark.height)}px;background:${mark.color};`,
+    );
+    root.appendChild(box);
+  }
+  document.documentElement.appendChild(root);
+  return root;
 }
 
 function abortInFlight(): void {
@@ -109,6 +151,8 @@ function abortInFlight(): void {
   wipeRAF = 0;
   if (wipeTimer) window.clearTimeout(wipeTimer);
   wipeTimer = 0;
+  if (wipeLayout && wipeLayout.parentNode) wipeLayout.parentNode.removeChild(wipeLayout);
+  wipeLayout = null;
   if (wipeCanvas && wipeCanvas.parentNode) wipeCanvas.parentNode.removeChild(wipeCanvas);
   wipeCanvas = null;
 }
@@ -124,9 +168,20 @@ function defaultSwap(host: HTMLElement | null, opts: DualWipeOptions): () => voi
   };
 }
 
-/* Full-viewport pixel-dissolve theme wipe: rasterize the live old page, overlay that
-   bitmap, fire `onCovered` (theme swap) under it, then dissolve Bayer 12px tiles so
-   the live new page shows through. Never fills the viewport with `--surface-app`. */
+function swapWithoutCanvas(swap: () => void, opts: DualWipeOptions): void {
+  swap();
+  opts.onDone?.();
+}
+
+function dropCanvas(canvas: HTMLCanvasElement): void {
+  if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+  if (wipeCanvas === canvas) wipeCanvas = null;
+}
+
+/* Overlay a live old-viewport tile snapshot, swap under it, then Bayer-dissolve.
+   SVG-as-image foreignObject of this CSS never finishes; a --surface-app fill is
+   not a snapshot. getContext stays on the post-click macrotask. Failed / fill-only
+   samples take the no-canvas path. */
 export function dualWipe(host: HTMLElement | null, opts: DualWipeOptions = {}): void {
   const swap = opts.onCovered ?? defaultSwap(host, opts);
 
@@ -137,50 +192,87 @@ export function dualWipe(host: HTMLElement | null, opts: DualWipeOptions = {}): 
 
   if (!host || reduceMotion) {
     abortInFlight();
-    swap();
-    opts.onDone?.();
+    swapWithoutCanvas(swap, opts);
     return;
   }
 
   abortInFlight();
   const gen = wipeGen;
-
+  const marks = captureOldLayout();
+  const markColors = [...new Set(marks.map((mark) => mark.color))];
+  if (!judgeColors(markColors)) {
+    swapWithoutCanvas(swap, opts);
+    return;
+  }
+  const cols = WIPE_TILES;
+  const rows = WIPE_TILES;
   const canvas = document.createElement("canvas");
-  canvas.width = 12;
-  canvas.height = 12;
+  canvas.width = cols;
+  canvas.height = rows;
+  canvas.setAttribute("data-theme-wipe", "");
+  canvas.setAttribute("data-theme-wipe-colors", markColors.join(","));
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
   canvas.setAttribute(
     "style",
     "position:fixed;left:0;top:0;width:12px;height:12px;margin:0;padding:0;pointer-events:none;z-index:2147483600;image-rendering:pixelated;",
   );
-  canvas.setAttribute("data-theme-wipe", "");
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  canvas.style.transform = `scale(${String(vw / 12)},${String(vh / 12)})`;
+  canvas.style.transform = `scale(${String(vw / cols)},${String(vh / rows)})`;
   canvas.style.transformOrigin = "0 0";
   document.documentElement.appendChild(canvas);
   wipeCanvas = canvas;
+  wipeLayout = mountLayoutOverlay(marks);
   swap();
-  document.documentElement.appendChild(canvas);
 
-  /* 2d dissolve on a macrotask so the overlay is observable before getContext. */
   wipeTimer = window.setTimeout(() => {
     wipeTimer = 0;
     if (gen !== wipeGen) return;
-    dissolveWipe(canvas, opts, gen);
+    if (wipeLayout && wipeLayout.parentNode) wipeLayout.parentNode.removeChild(wipeLayout);
+    wipeLayout = null;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      dropCanvas(canvas);
+      opts.onDone?.();
+      return;
+    }
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const px = ((x + 0.5) * vw) / cols;
+        const py = ((y + 0.5) * vh) / rows;
+        let hex: string | null = null;
+        for (const mark of marks) {
+          if (
+            px >= mark.left &&
+            px < mark.left + mark.width &&
+            py >= mark.top &&
+            py < mark.top + mark.height
+          ) {
+            hex = mark.color;
+          }
+        }
+        if (!hex) continue;
+        ctx.fillStyle = hex;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    dissolveWipe(canvas, ctx, opts, gen, cols, rows, cols / 2, rows / 2);
   }, 50);
 }
 
-function dissolveWipe(canvas: HTMLCanvasElement, opts: DualWipeOptions, gen: number): void {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const cols = canvas.width;
-  const rows = canvas.height;
+function dissolveWipe(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  opts: DualWipeOptions,
+  gen: number,
+  cols: number,
+  rows: number,
+  ox: number,
+  oy: number,
+): void {
   const accent = opts.accent ?? "#76b8fe";
   const coverDur = opts.coverDur ?? 300;
   const revealDur = opts.revealDur ?? 360;
   const dur = coverDur + revealDur;
-  const ox = cols / 2;
-  const oy = rows / 2;
   let maxD = 1;
   for (let cy2 = 0; cy2 < 2; cy2++) {
     for (let cx2 = 0; cx2 < 2; cx2++) {
@@ -188,27 +280,6 @@ function dissolveWipe(canvas: HTMLCanvasElement, opts: DualWipeOptions, gen: num
       if (dd > maxD) maxD = dd;
     }
   }
-
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) {
-    window.setTimeout(() => {
-      if (gen !== wipeGen) return;
-      if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
-      if (wipeCanvas === canvas) wipeCanvas = null;
-      opts.onDone?.();
-    }, dur + 260);
-    return;
-  }
-
-  const sx = vw / cols;
-  const sy = vh / rows;
-  canvas.style.width = `${String(cols)}px`;
-  canvas.style.height = `${String(rows)}px`;
-  canvas.style.transform = `scale(${String(sx)},${String(sy)})`;
-  canvas.style.transformOrigin = "0 0";
-  const bitmap = snapshotTiles(cols, rows);
-  if (bitmap) ctx.drawImage(bitmap, 0, 0);
-  document.documentElement.appendChild(canvas);
 
   let start: number | null = null;
   let lastFront = -1;
@@ -219,8 +290,9 @@ function dissolveWipe(canvas: HTMLCanvasElement, opts: DualWipeOptions, gen: num
     cleaned = true;
     if (wipeRAF) cancelAnimationFrame(wipeRAF);
     wipeRAF = 0;
-    if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
-    if (wipeCanvas === canvas) wipeCanvas = null;
+    if (wipeTimer) window.clearTimeout(wipeTimer);
+    wipeTimer = 0;
+    dropCanvas(canvas);
     opts.onDone?.();
   };
 
@@ -256,5 +328,5 @@ function dissolveWipe(canvas: HTMLCanvasElement, opts: DualWipeOptions, gen: num
     wipeRAF = requestAnimationFrame(frame);
   };
   wipeRAF = requestAnimationFrame(frame);
-  window.setTimeout(cleanup, dur + 260);
+  wipeTimer = window.setTimeout(cleanup, dur + 260);
 }

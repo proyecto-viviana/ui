@@ -3,6 +3,7 @@ import { routes } from "./helpers/routes";
 
 /**
  * One-pass Bayer theme wipe owned by `useTheme().toggleTheme`.
+ * Overlay is a live old-page snapshot, not a `--surface-app` fill.
  * No `page.screenshot`, no in-page `import("/src/lib/glasselated.ts")`,
  * no in-page full-viewport `fillRect` loops.
  */
@@ -18,6 +19,22 @@ test.use({
 async function startDark(page: Page) {
   await page.addInitScript(() => {
     localStorage.setItem("pv-theme", "dark");
+  });
+}
+
+async function spyWipePaint(page: Page) {
+  await page.addInitScript(() => {
+    type Op = { op: string; w?: number; h?: number; style?: string };
+    const box = globalThis as typeof globalThis & { __pvWipePaint: Op[] };
+    box.__pvWipePaint = [];
+    const proto = CanvasRenderingContext2D.prototype;
+    const fill = proto.fillRect;
+    proto.fillRect = function (this: CanvasRenderingContext2D, x, y, w, h) {
+      if (this.canvas && this.canvas.width === 12 && this.canvas.height === 12) {
+        box.__pvWipePaint.push({ op: "fillRect", w, h, style: String(this.fillStyle) });
+      }
+      return fill.call(this, x, y, w, h);
+    };
   });
 }
 
@@ -46,24 +63,9 @@ test.describe("theme wipe", () => {
     await expect(page.locator("html")).toHaveAttribute("data-color-scheme", "light");
   });
 
-  test("/showcase never full-viewport fillRect of --surface-app", async ({ page }) => {
+  test("/showcase wipe canvas is an old-page snapshot, not a surface fill", async ({ page }) => {
     await startDark(page);
-    await page.addInitScript(() => {
-      const orig = CanvasRenderingContext2D.prototype.fillRect;
-      (window as unknown as { __wipeViewportFill?: boolean }).__wipeViewportFill = false;
-      CanvasRenderingContext2D.prototype.fillRect = function fillRect(x, y, w, h) {
-        const canvas = this.canvas;
-        if (
-          canvas.style.zIndex === "2147483600" &&
-          w >= window.innerWidth &&
-          h >= window.innerHeight
-        ) {
-          (window as unknown as { __wipeViewportFill?: boolean }).__wipeViewportFill = true;
-        }
-        return orig.call(this, x, y, w, h);
-      };
-    });
-
+    await spyWipePaint(page);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await gotoReady(page, "/showcase");
     await page.emulateMedia({ reducedMotion: "no-preference" });
@@ -71,34 +73,32 @@ test.describe("theme wipe", () => {
     await toggle.waitFor();
     await toggle.evaluate((el) => (el as HTMLElement).click());
     await expect(page.locator(wipeCanvas)).toBeVisible({ timeout: 10_000 });
-
-    await page.clock.install();
-    await page.clock.fastForward(300);
-
-    const viewportFill = await page.evaluate(
-      () => (window as unknown as { __wipeViewportFill?: boolean }).__wipeViewportFill === true,
-    );
-    expect(viewportFill).toBe(false);
-
-    const samples = await page.evaluate(() => {
-      const canvas = document.querySelector("[data-theme-wipe]") as HTMLCanvasElement | null;
-      if (!canvas) return [] as string[];
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return [] as string[];
-      const colors: string[] = [];
-      for (let i = 0; i < 32; i++) {
-        const x = Math.floor((i % 8) * (canvas.width / 8) + canvas.width / 16);
-        const y = Math.floor(Math.floor(i / 8) * (canvas.height / 4) + canvas.height / 8);
-        const d = ctx.getImageData(x, y, 1, 1).data;
-        colors.push(`rgb(${d[0]}, ${d[1]}, ${d[2]})`);
-      }
-      return colors;
+    await expect(page.locator(wipeCanvas)).toHaveAttribute("data-theme-wipe-colors", /.+/, {
+      timeout: 10_000,
     });
+    await expect(page.locator("html")).toHaveAttribute("data-color-scheme", "light");
 
-    expect(samples.length).toBe(32);
-    const unique = new Set(samples);
-    const solidHold = unique.size === 1 && [...unique][0] === "rgb(12, 13, 16)";
-    expect(solidHold).toBe(false);
+    const paint = await page.evaluate(() => {
+      return (
+        (
+          globalThis as typeof globalThis & {
+            __pvWipePaint?: { op: string; w?: number; h?: number; style?: string }[];
+          }
+        ).__pvWipePaint ?? []
+      );
+    });
+    const coveringFill = paint.filter(
+      (entry) => entry.op === "fillRect" && (entry.w ?? 0) >= 12 && (entry.h ?? 0) >= 12,
+    );
+    const surface = /#0[cC]0[dD]10|#e9eff6|#16171c|#f4f7fb|rgb\(\s*12\s*,\s*13\s*,\s*16\s*\)/i;
+    expect(coveringFill.some((entry) => surface.test(entry.style ?? ""))).toBe(false);
+
+    const recorded = await page.locator(wipeCanvas).getAttribute("data-theme-wipe-colors");
+    expect(recorded).toBeTruthy();
+    const colors = new Set((recorded ?? "").split(",").filter(Boolean));
+    expect(colors.size).toBeGreaterThan(2);
+    const surfaceHex = new Set(["#0C0D10", "#0c0d10", "#e9eff6", "#E9EFF6", "#16171c", "#f4f7fb"]);
+    expect([...colors].some((color) => !surfaceHex.has(color))).toBe(true);
   });
 
   test("prefers-reduced-motion skips canvas and still flips scheme", async ({ page }) => {
