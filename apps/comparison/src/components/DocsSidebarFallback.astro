@@ -53,6 +53,7 @@ const navIndicatorCurrentClass = staticClassName(docsNavIndicatorCurrent);
               href={comparisonComponentPath(item.slug)}
               class:list={["s2-nav-link", navLinkClass, item.slug === normalizedActiveSlug && navLinkCurrentClass]}
               aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
+              data-astro-prefetch="hover"
             >
               <span
                 aria-hidden="true"

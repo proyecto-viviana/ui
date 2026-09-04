@@ -9,7 +9,11 @@ interface Props {
 const { entry } = Astro.props as Props;
 ---
 
-<div class="js-component-example-section-mount" data-component-slug={entry.slug}>
+<div
+  class="js-component-example-section-mount"
+  data-component-slug={entry.slug}
+  transition:animate="none"
+>
   <ComponentExampleSectionFallback entry={entry} />
 </div>
 <script>

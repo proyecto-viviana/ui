@@ -38,6 +38,8 @@
     "comparison:test:fixture-registry-split": "vp test run apps/comparison/src/data/fixture-registry-split.test.ts",
     "comparison:test:demo-control-split": "vp test run apps/comparison/src/data/demo-control-split.test.ts",
     "comparison:test:chrome-css-coalesce": "vp test run apps/comparison/src/data/chrome-css-coalesce.test.ts",
+    "comparison:test:client-router": "vp test run apps/comparison/src/data/client-router.test.ts",
+    "comparison:test:client-router-nav": "vp run --filter @proyecto-viviana/comparison test:client-router",
     "comparison:test:buttons": "vp run --filter @proyecto-viviana/comparison test:buttons",
     "comparison:test:catalogue": "vp run --filter @proyecto-viviana/comparison test:catalogue",
     "comparison:test:calendar": "vp run --filter @proyecto-viviana/comparison test:calendar",

@@ -21,6 +21,11 @@ history:
       at: 2026-09-04,
       note: "owner pick (a)(d)(e)(f) plus export-subpaths; minted #451–#455 under #136. Keep #450 open until ClientRouter #454 exists. Do not fold #450 into this ticket.",
     }
+  - {
+      state: open,
+      at: 2026-09-04,
+      note: "#454 ClientRouter landed; #450 folded into #454 (not this ticket). #452 still parked; #453 skipped.",
+    }
 ---
 
 ## Finding
@@ -78,4 +83,4 @@ harness for the D13 work (#245, #246). Owner-picked slices live on
 #454 (ClientRouter), and #455 (export remaining subpaths). A task cannot
 parent a task, so those are children of #136, not of this ticket.
 #261 and #262 stay separate. Related both ways to #450: do not fold #450
-here; keep it until #454 exists.
+here; #450 merged as `duplicate of #454` when ClientRouter landed.

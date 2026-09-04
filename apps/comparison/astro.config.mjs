@@ -444,6 +444,10 @@ const comparisonS2Macros = () => {
 
 export default defineConfig({
   trailingSlash: "always",
+  prefetch: {
+    prefetchAll: false,
+    defaultStrategy: "hover",
+  },
   integrations: [
     comparisonReact({
       // The current React comparison island is precompiled JS. Keep the React

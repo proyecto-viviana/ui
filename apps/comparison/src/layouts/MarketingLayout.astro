@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import DocsFooterFallback from "@comparison/components/DocsFooterFallback.astro";
 import DocsTopBarFallback from "@comparison/components/DocsTopBarFallback.astro";
 import { comparisonSiteDescription } from "@comparison/data/site-meta";
@@ -59,6 +60,7 @@ const s2PrimaryFontPreloadUrl =
       })();
     </script>
     <title>{title}</title>
+    <ClientRouter />
   </head>
   <body class="comparison-app s2-docs s2-marketing" data-theme="system" data-resolved-theme="light">
     <script is:inline>

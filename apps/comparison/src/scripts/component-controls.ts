@@ -3,6 +3,15 @@ type ControlDefaults = Record<string, ControlValue>;
 type ControlValues = Record<string, ControlValue | undefined>;
 
 const initializedForms = new WeakSet<HTMLFormElement>();
+let pageLoadReady = true;
+
+document.addEventListener("astro:before-preparation", () => {
+  pageLoadReady = false;
+});
+document.addEventListener("astro:page-load", () => {
+  pageLoadReady = true;
+  initializeComparisonControls();
+});
 
 export function initializeComparisonControls(root: ParentNode = document) {
   for (const form of root.querySelectorAll<HTMLFormElement>("[data-comparison-controls]")) {
@@ -114,7 +123,7 @@ function dispatchControls(
     return;
   }
 
-  if (updateUrl) {
+  if (updateUrl && pageLoadReady) {
     const url = new URL(window.location.href);
 
     for (const [key, value] of Object.entries(values)) {

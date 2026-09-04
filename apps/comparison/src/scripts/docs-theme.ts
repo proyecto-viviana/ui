@@ -7,7 +7,6 @@ import {
 } from "@comparison/data/theme";
 
 const documentRoot = document.documentElement;
-const root = document.body;
 const themeOrder: ComparisonThemeChoice[] = ["system", "light", "dark"];
 const mediaQuery = window.matchMedia?.("(prefers-color-scheme: dark)");
 
@@ -45,12 +44,17 @@ function syncThemeControls(theme: ComparisonThemeChoice) {
   }
 }
 
+function themeBody(): HTMLElement {
+  return document.body;
+}
+
 function applyTheme(theme: ComparisonThemeChoice) {
   const resolvedTheme = resolveComparisonThemeChoice(theme);
+  const body = themeBody();
   documentRoot.dataset.theme = theme;
   documentRoot.dataset.resolvedTheme = resolvedTheme;
-  root.dataset.theme = theme;
-  root.dataset.resolvedTheme = resolvedTheme;
+  body.dataset.theme = theme;
+  body.dataset.resolvedTheme = resolvedTheme;
 
   updateThemeToggles(theme, resolvedTheme);
   syncThemeControls(theme);
@@ -72,7 +76,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  const current = (root.dataset.theme as ComparisonThemeChoice | undefined) ?? "system";
+  const current = (themeBody().dataset.theme as ComparisonThemeChoice | undefined) ?? "system";
   const nextTheme = themeOrder[(themeOrder.indexOf(current) + 1) % themeOrder.length] ?? "system";
   applyTheme(nextTheme);
 });
@@ -98,14 +102,20 @@ window.addEventListener(comparisonThemeRequestEvent, (event) => {
 });
 
 window.addEventListener("comparison:theme-controls-mounted", () => {
-  const theme = isComparisonThemeChoice(root.dataset.theme) ? root.dataset.theme : readSavedTheme();
+  const theme = isComparisonThemeChoice(themeBody().dataset.theme)
+    ? themeBody().dataset.theme
+    : readSavedTheme();
   syncThemeControls(theme);
 });
 
 mediaQuery?.addEventListener("change", () => {
-  if (root.dataset.theme === "system") {
+  if (themeBody().dataset.theme === "system") {
     applyTheme("system");
   }
+});
+
+document.addEventListener("astro:after-swap", () => {
+  applyTheme(readSavedTheme());
 });
 
 applyTheme(readSavedTheme());

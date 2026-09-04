@@ -101,6 +101,7 @@ function navLink(item: (typeof comparisonEntries)[number], isCurrent: boolean) {
       href: comparisonComponentPath(item.slug),
       class: cx("s2-nav-link", navLinkClass, isCurrent && navLinkCurrentClass),
       "aria-current": isCurrent ? "page" : undefined,
+      "data-astro-prefetch": "hover",
     },
     [
       h("span", {

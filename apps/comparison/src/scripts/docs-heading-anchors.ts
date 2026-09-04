@@ -42,3 +42,4 @@ if (document.readyState === "loading") {
 } else {
   enhanceHeadingAnchors();
 }
+document.addEventListener("astro:after-swap", enhanceHeadingAnchors);
