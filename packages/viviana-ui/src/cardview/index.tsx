@@ -18,6 +18,7 @@
 
 import {
   type JSX,
+  Show,
   createContext,
   createEffect,
   createMemo,
@@ -174,15 +175,7 @@ const cardViewStyles = style<
         },
       },
     },
-    gridTemplateColumns: {
-      size: {
-        XS: "[repeat(auto-fit,minmax(100px,140px))]",
-        S: "[repeat(auto-fit,minmax(150px,210px))]",
-        M: "[repeat(auto-fit,minmax(200px,280px))]",
-        L: "[repeat(auto-fit,minmax(270px,370px))]",
-        XL: "[repeat(auto-fit,minmax(340px,460px))]",
-      },
-    },
+    gridTemplateColumns: "[repeat(var(--cardview-columns,1),minmax(0,1fr))]",
     ...focusRing(),
     outlineStyle: {
       default: "none",
@@ -245,6 +238,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
   const isLoading = () =>
     local.isLoading || local.loadingState === "loading" || local.loadingState === "loadingMore";
   const [maxSizeIndex, setMaxSizeIndex] = createSignal(SIZES.length - 1);
+  const [viewportWidth, setViewportWidth] = createSignal(0);
   let rootElement: HTMLDivElement | undefined;
   const assignRootRef = mergeContextRefs(local.ref, (element: HTMLDivElement) => {
     rootElement = element;
@@ -252,6 +246,7 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
 
   const updateSize = () => {
     const width = rootElement?.clientWidth ?? 0;
+    setViewportWidth(width);
     if (width <= 0) {
       setMaxSizeIndex(SIZES.length - 1);
       return;
@@ -287,6 +282,13 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
 
   const size = (): CardViewSize =>
     SIZES[Math.min(maxSizeIndex(), Math.max(0, SIZES.indexOf(requestedSize())))];
+  const packing = () => layoutOptions[size()][density()];
+  const columnCount = () => {
+    const width = viewportWidth();
+    const { minItemSize, minSpace } = packing();
+    if (width <= 0) return 1;
+    return Math.max(1, Math.floor((width + minSpace) / (minItemSize + minSpace)));
+  };
   const [actionSelectedKeys, setActionSelectedKeys] = createSignal<"all" | Set<Key>>(
     selectedKeySet(headlessProps.selectedKeys ?? headlessProps.defaultSelectedKeys),
   );
@@ -327,7 +329,12 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
             {...headlessProps}
             ref={(element: HTMLDivElement) => assignRootRef(element)}
             class={className}
-            style={local.UNSAFE_style}
+            style={{
+              ...local.UNSAFE_style,
+              "--cardview-columns": String(columnCount()),
+            }}
+            layout="grid"
+            columnCount={layout() === "waterfall" ? 1 : columnCount()}
             selectionBehavior={selectionStyle() === "highlight" ? "replace" : "toggle"}
             onSelectionChange={onSelectionChange}
             isLoading={isLoading()}
@@ -347,15 +354,13 @@ export function CardView<T extends object>(props: CardViewProps<T>): JSX.Element
     </InternalCardViewContext.Provider>
   );
 
-  if (!local.renderActionBar) {
-    return cardView;
-  }
-
   return (
-    <div class={wrapperStyles({}, local.styles)} style={local.UNSAFE_style}>
-      {cardView}
-      {local.renderActionBar(actionSelectedKeys())}
-    </div>
+    <Show when={Boolean(local.renderActionBar)} fallback={cardView}>
+      <div class={wrapperStyles({}, local.styles)} style={local.UNSAFE_style}>
+        {cardView}
+        {local.renderActionBar?.(actionSelectedKeys())}
+      </div>
+    </Show>
   );
 }
 
