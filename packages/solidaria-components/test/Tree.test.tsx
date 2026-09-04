@@ -886,6 +886,32 @@ describe("Tree", () => {
       expect(onSelectionChange).toHaveBeenCalled();
     });
 
+    it("extends selection with Shift+ArrowDown", async () => {
+      const onSelectionChange = vi.fn();
+      const user = setupUser();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          defaultSelectedKeys={["item-1"]}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      screen.getAllByRole("row")[0].focus();
+      await user.keyboard("{Shift>}{ArrowDown}{/Shift}");
+      const next = onSelectionChange.mock.calls.at(-1)?.[0] as Set<string>;
+      expect(next).toBeInstanceOf(Set);
+      expect([...next]).toEqual(expect.arrayContaining(["item-1", "item-2"]));
+    });
+
     it("should show selected state via data attribute", async () => {
       const user = setupUser();
 
@@ -1306,6 +1332,30 @@ describe("Tree", () => {
       item1.focus();
       await user.keyboard("{ArrowRight}");
       expect(screen.getAllByRole("checkbox")[0]).toHaveFocus();
+    });
+
+    it("tabs out of the focused row to the following button", async () => {
+      const user = setupUser();
+      render(() => (
+        <>
+          <button type="button">Before</button>
+          <Tree items={createTestItems()} aria-label="Test Tree" defaultSelectedKeys={["item-1"]}>
+            {(item) => (
+              <TreeItem id={item.key} textValue={item.textValue}>
+                {item.textValue}
+              </TreeItem>
+            )}
+          </Tree>
+          <button type="button">After</button>
+        </>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getAllByRole("row")[0]).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("button", { name: "After" })).toHaveFocus();
     });
   });
 

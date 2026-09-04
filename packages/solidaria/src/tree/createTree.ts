@@ -159,6 +159,9 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
               )
             : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
         if (nextKey != null) {
+          if (e.shiftKey) {
+            s.extendSelection(nextKey);
+          }
           s.setFocusedKey(nextKey);
         }
         break;
@@ -172,6 +175,9 @@ export function createTree<T extends object, C extends TreeCollection<T> = TreeC
               )
             : findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k));
         if (prevKey != null) {
+          if (e.shiftKey) {
+            s.extendSelection(prevKey);
+          }
           s.setFocusedKey(prevKey);
         }
         break;

@@ -4,12 +4,17 @@ type: task
 title: "Extend TreeView selection with Shift+Arrow and Shift+click"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: Shift+ArrowDown from Weekly Report extends React to weekly-report,budget then +client-notes; Solid only moves focus, selection stays weekly-report. Shift-click Budget then Archive: both first add budget; React keeps weekly-report+budget…archive (skips project); Solid replaces with budget…archive and drops weekly-report. createTree ArrowDown preventDefault without extendSelection",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "createTree Shift+Arrow calls extendSelection; Tree/Grid state falls back to focusedKey when the selection anchor is unset.",
     }
 ---
 

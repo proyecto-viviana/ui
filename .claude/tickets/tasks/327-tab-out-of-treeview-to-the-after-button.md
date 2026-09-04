@@ -4,12 +4,17 @@ type: task
 title: "Tab out of TreeView to the After button"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 treeview functional pass: isolated Tab from Weekly Report reaches After on React; Solid loops Weekly Report ↔ BODY and never leaves the collection. hideOther panel visibility:hidden + pointer-events:none; After is in the same canvas",
+    }
+  - {
+      state: merged,
+      at: 2026-09-03,
+      note: "Tab from the focused tree row leaves the collection onto the next tab stop. Intra-row widgets stay tabIndex=-1 under arrow keyboardNavigationBehavior.",
     }
 ---
 

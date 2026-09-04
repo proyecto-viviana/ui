@@ -317,7 +317,7 @@ export function createGridState<T extends object, C extends GridCollection<T> = 
       return;
     }
 
-    const anchor = anchorKey();
+    const anchor = anchorKey() ?? focusedKey();
     if (!anchor) {
       replaceSelection(toKey);
       return;
