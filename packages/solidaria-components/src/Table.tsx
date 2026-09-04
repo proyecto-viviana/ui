@@ -35,6 +35,8 @@ import {
   mergeProps,
   type AriaTableProps,
   createTableColumnResize,
+  useLocale,
+  createStringFormatter,
 } from "@proyecto-viviana/solidaria";
 import {
   createTableState,
@@ -62,6 +64,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { racIntlStrings } from "./intl";
 import { SharedElementTransition } from "./SharedElementTransition";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import { ButtonContext, type ButtonContextValue, type ButtonProps } from "./Button";
@@ -69,8 +72,10 @@ import {
   CollectionRendererContext,
   type CollectionRendererContextValue,
   useCollectionRenderer,
+  useCollectionRoot,
+  renderCollectionDropSlots,
 } from "./Collection";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import {
   type LinkDOMProps,
   type RouterOptions,
@@ -80,10 +85,12 @@ import {
 } from "./RouterProvider";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
 } from "./DragAndDrop";
+import { createTreeDropTargetDelegate } from "./Tree";
 
 export interface TableRenderProps {
   /** Whether the table has focus. */
@@ -132,6 +139,37 @@ function resolveItemKey<T>(item: T, getKey: ((item: T) => Key) | undefined, inde
   if (getKey) return getKey(item);
   const record = item as { id?: Key; key?: Key };
   return record.id ?? record.key ?? index;
+}
+
+type TableHostTag = "table" | "thead" | "tbody" | "tfoot" | "tr" | "th" | "td";
+
+/** RAC Table.tsx TableElementType / THead / TBody / row / cell: div when virtualized. */
+function TableHost(props: {
+  hostTag: TableHostTag;
+  virtualized?: boolean;
+  children?: JSX.Element;
+  [key: string]: unknown;
+}): JSX.Element {
+  const [local, rest] = splitProps(props, ["hostTag", "virtualized", "children"]);
+  if (local.virtualized) {
+    return <div {...rest}>{local.children}</div>;
+  }
+  switch (local.hostTag) {
+    case "table":
+      return <table {...rest}>{local.children}</table>;
+    case "thead":
+      return <thead {...rest}>{local.children}</thead>;
+    case "tbody":
+      return <tbody {...rest}>{local.children}</tbody>;
+    case "tfoot":
+      return <tfoot {...rest}>{local.children}</tfoot>;
+    case "tr":
+      return <tr {...rest}>{local.children}</tr>;
+    case "th":
+      return <th {...rest}>{local.children}</th>;
+    default:
+      return <td {...rest}>{local.children}</td>;
+  }
 }
 
 /**
@@ -506,6 +544,7 @@ interface TableContextValue<T extends object> {
   dragState?: unknown;
   dropState?: unknown;
   isVirtualized: boolean;
+  getScrollElement: () => HTMLElement | null;
 }
 
 export const TableContext = createContext<TableContextValue<object> | null>(null);
@@ -563,6 +602,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     ],
   );
 
+  const locale = useLocale();
   const [ref, setRef] = createSignal<HTMLTableElement | null>(null);
   const normalizedColumns = createMemo(() => normalizeColumnDefinitions(stateProps.columns));
   const rowHeaderColumnKeys = createMemo(() => getRowHeaderColumnKeys(normalizedColumns()));
@@ -624,7 +664,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
         showSelectionCheckboxes: stateProps.showSelectionCheckboxes,
       }));
   const collection = () => state.collection;
-  const parentCollectionRenderer = useCollectionRenderer<T>();
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
 
   // Keep the hook's return object (do NOT destructure `gridProps`): the grid's
   // sort-description `aria-describedby` is emitted via a `createDescription`
@@ -710,11 +750,18 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: stateProps.items,
+      collection: state.collection,
+      selectedKeys: state.selectedKeys,
+      isSelected: (key) => state.isSelected(key),
     });
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection;
+      },
+    });
   });
   createEffect(() => {
     if (!hasDraggableDnd()) return;
@@ -728,15 +775,8 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const el = ref();
-      if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-        const dir = window.getComputedStyle(el).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
-    const dropTargetDelegate =
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
+    const baseDropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??
       (hooks.ListDropTargetDelegate
@@ -746,7 +786,19 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
             { layout: "grid", orientation: "vertical", direction: resolveDirection() },
           )
         : undefined);
-    if (!dropTargetDelegate) return undefined;
+    if (!baseDropTargetDelegate) return undefined;
+    const expandedKeys = state.expandedKeys;
+    const dropTargetDelegate = createTreeDropTargetDelegate(
+      baseDropTargetDelegate,
+      {
+        collection: state.collection,
+        expandedKeys:
+          expandedKeys === "all"
+            ? new Set(Array.from(state.collection, (node) => node.key))
+            : (expandedKeys ?? new Set()),
+      } as unknown as Parameters<typeof createTreeDropTargetDelegate>[1],
+      resolveDirection(),
+    );
     return hooks.useDroppableCollection(
       {
         dropTargetDelegate,
@@ -827,6 +879,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     get isVirtualized() {
       return ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized ?? false;
     },
+    getScrollElement: () => ref(),
   };
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     ...parentCollectionRenderer,
@@ -875,7 +928,9 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
           {local.render ? (
             local.render({ ...tableProps(), children: tableChildren() }, renderValues())
           ) : (
-            <table {...tableProps()}>{tableChildren()}</table>
+            <TableHost hostTag="table" virtualized={contextValue.isVirtualized} {...tableProps()}>
+              {tableChildren()}
+            </TableHost>
           )}
         </CollectionRendererContext.Provider>
       </TableStateContext.Provider>
@@ -948,14 +1003,20 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
       class: renderProps.class(),
       style: renderProps.style(),
       "data-hovered": isHovered() || undefined,
-      children: <tr role="row">{local.children}</tr>,
+      children: (
+        <TableHost hostTag="tr" virtualized={context.isVirtualized} role="row">
+          {local.children}
+        </TableHost>
+      ),
     }) as JSX.HTMLAttributes<HTMLTableSectionElement>;
 
   return local.render ? (
     local.render(headerProps(), renderValues())
   ) : (
-    <thead
-      ref={(el) => assignRef(local.ref, el)}
+    <TableHost
+      hostTag="thead"
+      virtualized={context.isVirtualized}
+      ref={(el: HTMLElement) => assignRef(local.ref, el as HTMLTableSectionElement)}
       {...domProps}
       {...cleanRowGroupProps()}
       {...cleanHoverProps()}
@@ -963,10 +1024,19 @@ export function TableHeader(props: TableHeaderProps): JSX.Element {
       style={renderProps.style()}
       data-hovered={isHovered() || undefined}
     >
-      <tr role="row">{local.children}</tr>
-    </thead>
+      <TableHost hostTag="tr" virtualized={context.isVirtualized} role="row">
+        {local.children}
+      </TableHost>
+    </TableHost>
   );
 }
+
+const TableColumnDefinitionContext = createContext<{
+  key: Key;
+  width?: ColumnSize;
+  minWidth?: number;
+  maxWidth?: number;
+} | null>(null);
 
 /**
  * A column header in a table.
@@ -1105,9 +1175,11 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
     return { ...base, ...widthStyle };
   });
 
-  const columnChildren = () =>
-    typeof local.children === "function" ? local.children(renderValues()) : local.children;
-  const columnProps = () =>
+  const columnChildren = () => {
+    const rawChildren = local.children;
+    return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
+  };
+  const columnAttrs = () =>
     ({
       ref: (el: HTMLTableCellElement) => {
         setRef(el);
@@ -1124,31 +1196,35 @@ export function TableColumn(props: TableColumnProps): JSX.Element {
       "data-hovered": isHovered() || undefined,
       "data-focused": state.focusedKey === local.id || undefined,
       "data-focus-visible": (isFocusVisible() && state.focusedKey === local.id) || undefined,
-      children: columnChildren(),
+      "data-key": local.id,
     }) as JSX.ThHTMLAttributes<HTMLTableCellElement>;
 
-  return local.render ? (
-    local.render(columnProps(), renderValues())
-  ) : (
-    <th
-      ref={(el) => {
-        setRef(el);
-        assignRef(local.ref, el);
-      }}
-      {...domProps}
-      {...mergeProps(cleanColumnHeaderProps(), cleanHoverProps(), cleanFocusProps())}
-      class={renderProps.class()}
-      style={columnStyle()}
-      data-sortable={local.allowsSorting || undefined}
-      data-sort-direction={sortDirection() || undefined}
-      data-resizable={local.allowsResizing || undefined}
-      data-resizing={isResizing() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-focused={state.focusedKey === local.id || undefined}
-      data-focus-visible={(isFocusVisible() && state.focusedKey === local.id) || undefined}
-    >
-      {columnChildren()}
-    </th>
+  const columnDefinition = {
+    key: local.id,
+    width: local.width ?? local.defaultWidth,
+    minWidth: local.minWidth,
+    maxWidth: local.maxWidth,
+  };
+
+  if (local.render) {
+    return (
+      <TableColumnDefinitionContext.Provider value={columnDefinition}>
+        {local.render({ ...columnAttrs(), children: columnChildren() }, renderValues())}
+      </TableColumnDefinitionContext.Provider>
+    );
+  }
+
+  // Children are JSX children of the host, not an eager `children` entry in the
+  // spread object: the DOM build claims the element's hydration key before it
+  // evaluates children, while `ssrElement` receives an already-built props
+  // object, so an eager entry would key the children ahead of the element on
+  // the server and the client would claim the wrong nodes.
+  return (
+    <TableColumnDefinitionContext.Provider value={columnDefinition}>
+      <TableHost hostTag="th" virtualized={context.isVirtualized} {...columnAttrs()}>
+        {columnChildren()}
+      </TableHost>
+    </TableColumnDefinitionContext.Provider>
   );
 }
 
@@ -1199,7 +1275,7 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
 
   const isEmpty = () => items().length === 0;
   const virtualizer = useVirtualizerContext();
-  const parentCollectionRenderer = useCollectionRenderer<T>();
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const rowNodes = createMemo(() =>
     Array.from(context.collection).filter((node) => node.type === "item"),
   );
@@ -1215,14 +1291,8 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return null;
     const rowCount = items().length;
     const baseRange = virtualizer.getVisibleRange(rowCount);
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => rowNodes().findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = (context.dropState as { target?: DropTarget | null } | undefined)?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, context.collection);
-    const focusedKey = context.state.focusedKey;
-    const focusedIndex =
-      focusedKey != null ? rowNodes().findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item"
         ? rowNodes().findIndex((node) => node.key === dropTarget.key)
@@ -1230,19 +1300,19 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
       normalizedDropKey != null
         ? rowNodes().findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(
-      baseRange,
-      persistedIndexes,
-      rowCount,
-      virtualizer,
-      80,
-      {
-        forceIncludeIndexes,
-        forceIncludeMaxSpan: 320,
-      },
-    );
+    return mergePersistedKeysIntoVirtualRange(baseRange, [], rowCount, virtualizer, 80, {
+      forceIncludeIndexes,
+      forceIncludeMaxSpan: 320,
+    });
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => rowNodes().findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   createEffect(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
@@ -1276,61 +1346,65 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
     return items().slice(range.start, range.end);
   });
   const spacerColSpan = () => context.columns.length + (context.showSelectionCheckboxes ? 1 : 0);
+  const CollectionRoot = useCollectionRoot();
+
+  const collectionRows = () => {
+    const rows = (
+      <For each={visibleItems()}>
+        {(item, index) => {
+          const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+          return renderCollectionDropSlots({
+            index: itemIndex(),
+            lastIndex: rowNodes().length - 1,
+            renderDropIndicator: (i, position) =>
+              parentCollectionRenderer?.renderDropIndicator?.(i, position),
+            children: local.children?.(item),
+          });
+        }}
+      </For>
+    );
+    if (!context.isVirtualized) return rows;
+    return (
+      <CollectionRoot
+        collection={virtualRange() ? items() : []}
+        scrollRef={() => context.getScrollElement()}
+        persistedKeys={persistedKeys()}
+      >
+        {rows}
+        <For each={persistedOutsideIndexes()}>
+          {(index) => (
+            <PersistedVirtualItem index={index}>
+              {renderCollectionDropSlots({
+                index,
+                lastIndex: rowNodes().length - 1,
+                renderDropIndicator: (i, position) =>
+                  parentCollectionRenderer?.renderDropIndicator?.(i, position),
+                children: local.children?.(items()[index]),
+              })}
+            </PersistedVirtualItem>
+          )}
+        </For>
+      </CollectionRoot>
+    );
+  };
 
   const bodyChildren = () => (
     <>
       <SharedElementTransition>
         <Show
           when={isEmpty() && local.renderEmptyState && !local.isLoading}
-          fallback={
-            <>
-              {virtualRange()?.offsetTop ? (
-                <tr role="presentation" aria-hidden="true" data-virtualizer-spacer="top">
-                  <td
-                    colSpan={spacerColSpan()}
-                    style={{ height: `${virtualRange()!.offsetTop}px`, padding: "0", border: "0" }}
-                  />
-                </tr>
-              ) : null}
-              <For each={visibleItems()}>
-                {(item, index) => {
-                  const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                  const beforeIndicator = () =>
-                    parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "before");
-                  const onIndicator = () =>
-                    parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "on");
-                  const afterIndicator = () =>
-                    parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "after");
-                  return (
-                    <>
-                      {beforeIndicator()}
-                      {onIndicator()}
-                      {local.children?.(item)}
-                      {afterIndicator()}
-                    </>
-                  );
-                }}
-              </For>
-              {virtualRange()?.offsetBottom ? (
-                <tr role="presentation" aria-hidden="true" data-virtualizer-spacer="bottom">
-                  <td
-                    colSpan={spacerColSpan()}
-                    style={{
-                      height: `${virtualRange()!.offsetBottom}px`,
-                      padding: "0",
-                      border: "0",
-                    }}
-                  />
-                </tr>
-              ) : null}
-            </>
-          }
+          fallback={collectionRows()}
         >
-          <tr role="row" data-empty-state>
-            <th role="rowheader" colSpan={spacerColSpan()}>
+          <TableHost hostTag="tr" virtualized={context.isVirtualized} role="row" data-empty-state>
+            <TableHost
+              hostTag="th"
+              virtualized={context.isVirtualized}
+              role="rowheader"
+              colSpan={spacerColSpan()}
+            >
               {local.renderEmptyState?.()}
-            </th>
-          </tr>
+            </TableHost>
+          </TableHost>
         </Show>
       </SharedElementTransition>
       <Show when={local.hasMore && local.onLoadMore}>
@@ -1356,76 +1430,18 @@ export function TableBody<T extends object>(props: TableBodyProps<T>): JSX.Eleme
   return local.render ? (
     local.render(bodyProps(), renderValues())
   ) : (
-    <tbody
-      ref={(el) => assignRef(local.ref, el)}
+    <TableHost
+      hostTag="tbody"
+      virtualized={context.isVirtualized}
+      ref={(el: HTMLElement) => assignRef(local.ref, el as HTMLTableSectionElement)}
       {...domProps}
       {...cleanRowGroupProps()}
       class={renderProps.class()}
       style={renderProps.style()}
       data-empty={isEmpty() || undefined}
     >
-      <SharedElementTransition>
-        <Show
-          when={isEmpty() && local.renderEmptyState && !local.isLoading}
-          fallback={
-            <>
-              {virtualRange()?.offsetTop ? (
-                <tr role="presentation" aria-hidden="true" data-virtualizer-spacer="top">
-                  <td
-                    colSpan={spacerColSpan()}
-                    style={{ height: `${virtualRange()!.offsetTop}px`, padding: "0", border: "0" }}
-                  />
-                </tr>
-              ) : null}
-              <For each={visibleItems()}>
-                {(item, index) => {
-                  const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                  const beforeIndicator = () =>
-                    parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "before");
-                  const onIndicator = () =>
-                    parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "on");
-                  const afterIndicator = () =>
-                    parentCollectionRenderer?.renderDropIndicator?.(itemIndex(), "after");
-                  return (
-                    <>
-                      {beforeIndicator()}
-                      {onIndicator()}
-                      {local.children?.(item)}
-                      {afterIndicator()}
-                    </>
-                  );
-                }}
-              </For>
-              {virtualRange()?.offsetBottom ? (
-                <tr role="presentation" aria-hidden="true" data-virtualizer-spacer="bottom">
-                  <td
-                    colSpan={spacerColSpan()}
-                    style={{
-                      height: `${virtualRange()!.offsetBottom}px`,
-                      padding: "0",
-                      border: "0",
-                    }}
-                  />
-                </tr>
-              ) : null}
-            </>
-          }
-        >
-          <tr role="row" data-empty-state>
-            <th role="rowheader" colSpan={spacerColSpan()}>
-              {local.renderEmptyState?.()}
-            </th>
-          </tr>
-        </Show>
-      </SharedElementTransition>
-      <Show when={local.hasMore && local.onLoadMore}>
-        <TableLoadMoreItem
-          onLoadMore={local.onLoadMore!}
-          isLoading={local.isLoading}
-          colSpan={spacerColSpan()}
-        />
-      </Show>
-    </tbody>
+      {bodyChildren()}
+    </TableHost>
   );
 }
 
@@ -1462,7 +1478,9 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
   };
 
   return (
-    <tfoot
+    <TableHost
+      hostTag="tfoot"
+      virtualized={context.isVirtualized}
       {...domProps}
       {...cleanRowGroupProps()}
       class={renderProps.class()}
@@ -1474,7 +1492,7 @@ export function TableFooter<T extends object>(props: TableFooterProps<T>): JSX.E
       >
         <For each={items()}>{(item) => (local.children as (item: T) => JSX.Element)(item)}</For>
       </Show>
-    </tfoot>
+    </TableHost>
   );
 }
 
@@ -1485,6 +1503,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
   };
   const [isPending, setIsPending] = createSignal(false);
   const isLoading = () => !!props.isLoading || isPending();
+  const tableContext = useContext(TableContext);
 
   const triggerLoadMore = async () => {
     if (isPending()) return;
@@ -1526,30 +1545,70 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
 
   return (
     <>
-      <tr style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <td>
-          <div
-            ref={setSentinelRef}
-            data-testid="loadMoreSentinel"
-            style={{ position: "absolute", height: "1px", width: "1px" }}
-          />
-        </td>
-      </tr>
-      <Show when={isLoading()}>
-        <tr
-          role="row"
-          tabIndex={0}
-          onFocus={() => {
-            void triggerLoadMore();
-          }}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          data-loading
+      <Show
+        when={tableContext?.isVirtualized}
+        fallback={
+          <>
+            <tr style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
+              <td>
+                <div
+                  ref={setSentinelRef}
+                  data-testid="loadMoreSentinel"
+                  style={{ position: "absolute", height: "1px", width: "1px" }}
+                />
+              </td>
+            </tr>
+            <Show when={isLoading()}>
+              <tr
+                role="row"
+                tabIndex={0}
+                onFocus={() => {
+                  void triggerLoadMore();
+                }}
+                class={renderProps.class()}
+                style={renderProps.style()}
+                data-loading
+              >
+                <td role="rowheader" colSpan={props.colSpan ?? 1}>
+                  {renderProps.renderChildren()}
+                </td>
+              </tr>
+            </Show>
+          </>
+        }
+      >
+        <TableHost
+          hostTag="tr"
+          virtualized
+          style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }}
+          inert
         >
-          <td role="rowheader" colSpan={props.colSpan ?? 1}>
-            {renderProps.renderChildren()}
-          </td>
-        </tr>
+          <TableHost hostTag="td" virtualized>
+            <div
+              ref={setSentinelRef}
+              data-testid="loadMoreSentinel"
+              style={{ position: "absolute", height: "1px", width: "1px" }}
+            />
+          </TableHost>
+        </TableHost>
+        <Show when={isLoading()}>
+          <TableHost
+            hostTag="tr"
+            virtualized
+            role="row"
+            tabIndex={0}
+            onFocus={() => {
+              void triggerLoadMore();
+            }}
+            class={renderProps.class()}
+            style={renderProps.style()}
+            data-loading
+          >
+            <TableHost hostTag="td" virtualized role="rowheader" colSpan={props.colSpan ?? 1}>
+              {renderProps.renderChildren()}
+            </TableHost>
+          </TableHost>
+        </Show>
       </Show>
     </>
   );
@@ -1748,8 +1807,12 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
   };
 
   const rowContextValue: TableRowContextValue = {
-    rowKey: rowKey(),
-    rowNode: rowNode(),
+    get rowKey() {
+      return rowKey();
+    },
+    get rowNode() {
+      return rowNode();
+    },
     get isRowDisabled() {
       return isDisabled();
     },
@@ -1764,7 +1827,11 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
         registeredCellIds.push(cellId);
       }
 
-      return explicitId ?? tableContext.columns[index]?.key;
+      // Selection cells use `id="__selection__"` and never register. Map the
+      // remaining cells onto data columns so a live checkbox column cannot
+      // steal Name's index and drop `role=rowheader` after a collection rebuild.
+      const dataColumns = tableContext.columns.filter((column) => column.key !== "__selection__");
+      return explicitId ?? dataColumns[index]?.key;
     },
   };
   const dragButtonProps = createMemo<ButtonProps>(() => {
@@ -1916,53 +1983,11 @@ export function TableRow<T extends object>(props: TableRowProps<T>): JSX.Element
             <Show
               when={local.render}
               fallback={
-                // Bind attributes individually on a STABLE <tr> (mirroring TableCell) so a
-                // render-props change updates attributes in place instead of recreating the element
-                // and its subtree.
-                <tr
-                  ref={(el: HTMLTableRowElement) => {
-                    setRef(el);
-                    assignRef(local.ref, el);
-                  }}
-                  {...domProps}
-                  {...mergeProps(
-                    cleanRowProps(),
-                    cleanHoverProps(),
-                    cleanFocusProps(),
-                    focusWithinProps as Record<string, unknown>,
-                    (draggableItem()?.dragProps as Record<string, unknown> | undefined) ?? {},
-                    (droppableItem()?.dropProps as Record<string, unknown> | undefined) ?? {},
-                  )}
-                  class={renderProps.class()}
-                  style={rowStyle()}
-                  data-key={rowKey()}
-                  data-selected={isSelected() || undefined}
-                  data-focused={isFocused() || undefined}
-                  data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
-                  data-focus-visible-within={dataAttr(isFocusWithin() && isGlobalFocusVisible())}
-                  data-pressed={isPressed() || undefined}
-                  data-hovered={isHovered() || undefined}
-                  data-disabled={isDisabled() || undefined}
-                  data-href={linkProps().href}
-                  data-target={linkProps().target}
-                  data-rel={linkProps().rel}
-                  data-download={
-                    typeof linkProps().download === "string"
-                      ? linkProps().download
-                      : linkProps().download
-                        ? ""
-                        : undefined
-                  }
-                  data-ping={linkProps().ping}
-                  data-referrer-policy={linkProps().referrerPolicy}
-                  data-dragging={draggableItem()?.isDragging || undefined}
-                  data-drop-target={droppableItem()?.isDropTarget || undefined}
-                  data-expanded={(isTreeRow() && isExpanded()) || undefined}
-                  data-has-child-items={(isTreeRow() && hasChildItems()) || undefined}
-                  data-level={isTreeRow() ? rowLevel() : undefined}
-                >
-                  {rowChildrenContent}
-                </tr>
+                tableContext.isVirtualized ? (
+                  <div {...(tableRowProps() as unknown as JSX.HTMLAttributes<HTMLDivElement>)} />
+                ) : (
+                  <tr {...tableRowProps()} />
+                )
               }
             >
               {local.render!(tableRowProps(), renderValues())}
@@ -2008,15 +2033,28 @@ export function TableCell(props: TableCellProps): JSX.Element {
 
   const cellNode = createMemo(() => {
     const key = columnKey();
+    const collection = state.collection;
     if (key != null) {
       const cellKey = `${rowKey}-${key}`;
-      const node = state.collection.getItem(cellKey);
+      const node = collection.getItem(cellKey);
       if (node) return node;
+      const isRowHeader = collection.rowHeaderColumnKeys.has(key);
+      return {
+        type: isRowHeader ? ("rowheader" as const) : ("cell" as const),
+        key: cellKey,
+        value: rowNode.value,
+        textValue: "",
+        level: 1,
+        index: 0,
+        parentKey: rowKey,
+        hasChildNodes: false,
+        childNodes: [],
+      } as GridNode<unknown>;
     }
 
     return {
       type: "cell" as const,
-      key: key ?? `${rowKey}-cell`,
+      key: `${rowKey}-cell`,
       value: rowNode.value,
       textValue: "",
       level: 1,
@@ -2097,9 +2135,11 @@ export function TableCell(props: TableCellProps): JSX.Element {
     return rest;
   };
 
-  const cellChildren = () =>
-    typeof local.children === "function" ? local.children(renderValues()) : local.children;
-  const tableCellProps = () =>
+  const cellChildren = () => {
+    const rawChildren = local.children;
+    return typeof rawChildren === "function" ? rawChildren(renderValues()) : rawChildren;
+  };
+  const cellAttrs = () =>
     ({
       ref: (el: HTMLTableCellElement) => {
         setRef(el);
@@ -2120,35 +2160,19 @@ export function TableCell(props: TableCellProps): JSX.Element {
       "data-expanded": (isTreeGridCell() && cellIsExpanded()) || undefined,
       "data-has-child-items": (isTreeGridCell() && cellHasChildItems()) || undefined,
       "data-level": isTreeGridCell() ? cellLevel() : undefined,
-      children: cellChildren(),
     }) as JSX.TdHTMLAttributes<HTMLTableCellElement>;
 
-  return local.render ? (
-    local.render(tableCellProps(), renderValues())
-  ) : (
-    <td
-      ref={(el) => {
-        setRef(el);
-        assignRef(local.ref, el);
-      }}
-      {...domProps}
-      {...mergeProps(cleanCellProps(), cleanHoverProps(), cleanFocusProps())}
-      colSpan={local.colSpan}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      data-key={cellNode().key}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={(isFocusVisible() && isFocused()) || undefined}
-      data-column-index={cellColumnIndex()}
-      data-pressed={isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-tree-column={isTreeColumn() || undefined}
-      data-expanded={(isTreeGridCell() && cellIsExpanded()) || undefined}
-      data-has-child-items={(isTreeGridCell() && cellHasChildItems()) || undefined}
-      data-level={isTreeGridCell() ? cellLevel() : undefined}
-    >
+  if (local.render) {
+    return local.render({ ...cellAttrs(), children: cellChildren() }, renderValues());
+  }
+
+  // JSX children, not an eager `children` entry in the spread object — see
+  // TableColumn: the element's hydration key must precede its children on
+  // both the server and the client.
+  return (
+    <TableHost hostTag="td" virtualized={tableContext.isVirtualized} {...cellAttrs()}>
       {cellChildren()}
-    </td>
+    </TableHost>
   );
 }
 
@@ -2182,7 +2206,7 @@ export function TableSelectionCheckbox(props: TableSelectionCheckboxProps): JSX.
       {...selectionCheckboxAria.checkboxProps}
       class={props.class}
       style={props.style}
-      tabIndex={props.excludeFromTabOrder ? -1 : selectionCheckboxAria.checkboxProps.tabIndex}
+      tabIndex={-1}
       aria-label={props["aria-label"] ?? selectionCheckboxAria.checkboxProps["aria-label"]}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
@@ -2298,10 +2322,18 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
     "children",
   ]);
 
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
+
   // Register this column with the ResizableTableContainer (auto-collect columns)
   const registerColumn = useContext(ResizableTableRegisterContext);
+  const columnDef = useContext(TableColumnDefinitionContext);
   if (registerColumn) {
-    registerColumn(local.column.key, { key: local.column.key });
+    registerColumn(local.column.key, {
+      key: local.column.key,
+      width: columnDef?.width,
+      minWidth: columnDef?.minWidth,
+      maxWidth: columnDef?.maxWidth,
+    });
   }
 
   const resizeCtx = useContext(TableColumnResizeStateContext);
@@ -2334,7 +2366,7 @@ export function ColumnResizer(props: ColumnResizerProps): JSX.Element {
   const columnResize = createTableColumnResize(
     () => ({
       column: local.column,
-      "aria-label": local["aria-label"] ?? "Resizer",
+      "aria-label": local["aria-label"] ?? stringFormatter().format("tableResizer"),
       isDisabled: local.isDisabled,
       onResizeStart: (widths) => {
         resizeCtx?.getCallbacks?.().onResizeStart?.(widths);

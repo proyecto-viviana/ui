@@ -191,6 +191,10 @@ export interface AriaColorFieldOptions {
   excludeFromTabOrder?: boolean;
   /** Placeholder text. */
   placeholder?: string;
+  /** Description text for the field. Wired through `createField` / `createSlotId`. */
+  description?: JSX.Element;
+  /** Error message for the field. Wired through `createField` / `createSlotId`. */
+  errorMessage?: JSX.Element;
   /** The color channel being edited (for single channel mode). */
   channel?: ColorChannel;
   /** Color space used for channel mode. */

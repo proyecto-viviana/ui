@@ -1,6 +1,7 @@
 ---
 import DocsFooterFallback from "@comparison/components/DocsFooterFallback.astro";
 import DocsTopBarFallback from "@comparison/components/DocsTopBarFallback.astro";
+import { comparisonSiteDescription } from "@comparison/data/site-meta";
 import "@comparison/styles/global.css";
 
 export interface Props {
@@ -17,6 +18,7 @@ const s2PrimaryFontPreloadUrl =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={comparisonSiteDescription} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />
     <link
@@ -69,13 +71,15 @@ const s2PrimaryFontPreloadUrl =
       })();
     </script>
 
+    <a class="s2-skip-link" href="#main-content">Skip to content</a>
+
     <DocsTopBarFallback
       isMobileNavigationEnabled={false}
       isSearchEnabled={false}
       reactSpectrumUrl={reactSpectrumUrl}
     />
 
-    <main class="s2-marketing-main">
+    <main id="main-content" class="s2-marketing-main">
       <slot />
     </main>
 

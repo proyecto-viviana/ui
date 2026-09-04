@@ -99,7 +99,14 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
       isJustified: 0,
     },
     fontWeight: "medium",
-    width: "fit",
+    width: {
+      default: "fit",
+      isInGroup: {
+        orientation: {
+          vertical: "100%",
+        },
+      },
+    },
     userSelect: "none",
     transition: "default",
     forcedColorAdjust: "none",
@@ -224,7 +231,7 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
     },
     "--iconWidth": {
       type: "width",
-      value: fontRelative(20),
+      value: "1lh",
     },
     "--badgePosition": {
       type: "width",
@@ -313,16 +320,8 @@ export const s2ActionButtonPendingIndicator = style<{ isProgressVisible?: boolea
   },
 });
 
-export const s2ActionButtonProgressCircle = style<{ size: ActionButtonSize }>({
-  size: {
-    size: {
-      XS: 12,
-      S: 14,
-      M: 18,
-      L: 20,
-      XL: 24,
-    },
-  },
+export const s2ActionButtonProgressCircle = style({
+  size: "1lh",
 });
 
 export const s2ActionButtonGroup = style(

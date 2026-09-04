@@ -3,6 +3,7 @@
  */
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { Skeleton } from "../src/skeleton";
 import { StatusLight, StatusLightContext, type StatusLightProps } from "../src/statuslight";
 
@@ -126,5 +127,18 @@ describe("StatusLight (solid-spectrum)", () => {
     expect(text).toHaveAttribute("inert", "true");
     expect(text?.querySelector("span[inert]")).toBeInTheDocument();
     expect(container.querySelector('svg[aria-hidden="true"]')?.className.baseVal).not.toBe("");
+  });
+
+  it("updates direct reactive text children", () => {
+    // A direct signal child compiles to a `children` getter that returns the
+    // current string. An untracked setup-time read of that getter freezes the
+    // first value; the label must follow the signal.
+    const [label, setLabel] = createSignal("Online");
+    const { container } = render(() => <StatusLight>{label()}</StatusLight>);
+
+    const text = container.querySelector('[data-rsp-slot="text"]');
+    expect(text).toHaveTextContent("Online");
+    setLabel("Offline");
+    expect(text).toHaveTextContent("Offline");
   });
 });

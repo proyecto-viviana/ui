@@ -16,20 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Menu.tsx.
 
-import type {
-  MenuItemRenderProps,
-  MenuRenderProps,
-  PopoverRenderProps,
-} from "@proyecto-viviana/solidaria-components";
-import {
-  baseColor,
-  focusRing,
-  fontRelative,
-  lightDark,
-  setColorScheme,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import type { MenuItemRenderProps, MenuRenderProps } from "@proyecto-viviana/solidaria-components";
+import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import {
   control,
   controlBorderRadius,
@@ -58,74 +46,6 @@ const menuItemGrid = {
     XL: [edgeToText(48), "auto", "auto", "minmax(0, 1fr)", "auto", "auto", "auto", edgeToText(48)],
   },
 } as const;
-
-export const menuPopover = style<
-  PopoverRenderProps & { colorScheme?: "light" | "dark" | "light dark" }
->({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      default: "layer-2",
-      forcedColors: "Background",
-    },
-  },
-  backgroundColor: "--s2-container-bg",
-  boxShadow: "elevated",
-  borderRadius: "lg",
-  display: "flex",
-  opacity: {
-    default: 1,
-    isEntering: 0,
-    isExiting: 0,
-  },
-  translateY: {
-    default: 0,
-    placement: {
-      top: {
-        isEntering: 4,
-        isExiting: 4,
-      },
-      bottom: {
-        isEntering: -4,
-        isExiting: -4,
-      },
-    },
-  },
-  translateX: {
-    default: 0,
-    placement: {
-      left: {
-        isEntering: 4,
-        isExiting: 4,
-      },
-      right: {
-        isEntering: -4,
-        isExiting: -4,
-      },
-    },
-  },
-  transition: "[opacity, translate]",
-  transitionDuration: 200,
-  transitionTimingFunction: {
-    isExiting: "in",
-  },
-  pointerEvents: {
-    default: "auto",
-    isExiting: "none",
-  },
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
-    forcedColors: "ButtonBorder",
-  },
-});
 
 export const menuFrame = style({
   display: "flex",
@@ -212,7 +132,7 @@ export const menuItem = style<S2MenuItemStyleProps>({
 
 export const menuItemIcon = style({
   display: "block",
-  size: fontRelative(20),
+  size: "1lh",
   marginEnd: "text-to-visual",
   "--iconPrimary": {
     type: "fill",

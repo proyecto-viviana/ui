@@ -63,6 +63,7 @@
  */
 
 import {
+  type Context,
   type JSX,
   createContext,
   createEffect,
@@ -86,6 +87,7 @@ import {
   createHover,
   mergeProps,
   useLocale,
+  createStringFormatter,
   type AriaColorSliderOptions,
   type AriaColorAreaOptions,
   type AriaColorWheelOptions,
@@ -97,6 +99,7 @@ import {
   createColorAreaState,
   createColorWheelState,
   createColorFieldState,
+  VALID_VALIDITY_STATE,
   normalizeColor,
   type Color,
   type ColorChannel,
@@ -116,7 +119,11 @@ import {
   type SlotProps,
   useRenderProps,
   filterDOMProps,
+  Provider,
 } from "./utils";
+import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
+import { TextContext } from "./Text";
+import { racIntlStrings } from "./intl";
 
 interface ColorPickerChannelContextValue {
   value?: Color | string;
@@ -1581,20 +1588,12 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       placeholder: ariaProps.placeholder,
       channel: stateProps.channel,
       colorSpace: stateProps.colorSpace,
+      description: local.description,
+      errorMessage: local.errorMessage,
     }),
     () => state,
     () => inputRef ?? null,
   );
-
-  const describedBy = () => {
-    const invalid = ariaProps.isInvalid || state.isInvalid;
-    const ids = [
-      ariaProps["aria-describedby"],
-      local.description && !invalid ? colorFieldAria.descriptionProps.id : undefined,
-      invalid && local.errorMessage ? colorFieldAria.errorMessageProps.id : undefined,
-    ];
-    return ids.filter(Boolean).join(" ") || undefined;
-  };
 
   const fieldInputProps = () => {
     const labelledBy =
@@ -1606,11 +1605,6 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       ...colorFieldAria.inputProps,
       "aria-label": labelledBy ? undefined : colorFieldAria.inputProps["aria-label"],
       "aria-labelledby": labelledBy,
-      "aria-describedby": describedBy(),
-      "aria-errormessage":
-        (ariaProps.isInvalid || state.isInvalid) && local.errorMessage
-          ? colorFieldAria.errorMessageProps.id
-          : colorFieldAria.inputProps["aria-errormessage"],
     } as JSX.InputHTMLAttributes<HTMLInputElement>;
   };
 
@@ -1676,6 +1670,40 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
     filterDOMProps(rest as Record<string, unknown>, { global: true }),
   );
 
+  // RAC ColorField `useChildren` (ColorField.tsx:258-282) provides
+  // description / errorMessage as `TextContext` slots and a
+  // `FieldErrorContext`, so `<Text slot="description">` / `<FieldError>`
+  // pick up the `id` `aria-describedby` references. `createField` +
+  // `createSlotId` only keep those ids on the input when the slot is in
+  // the DOM.
+  const textSlots = {
+    slots: {
+      get description() {
+        return colorFieldAria.descriptionProps;
+      },
+      get errorMessage() {
+        return colorFieldAria.errorMessageProps;
+      },
+    },
+  };
+  const fieldErrorContext: FieldErrorContextValue = {
+    get validation() {
+      const invalid = ariaProps.isInvalid || state.isInvalid;
+      const errorMessage = local.errorMessage;
+      const validationErrors = invalid && typeof errorMessage === "string" ? [errorMessage] : [];
+      return {
+        isInvalid: invalid,
+        validationErrors,
+        validationDetails: invalid
+          ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
+          : VALID_VALIDITY_STATE,
+      };
+    },
+    get errorMessageProps() {
+      return colorFieldAria.errorMessageProps;
+    },
+  };
+
   return (
     <ColorFieldContext.Provider
       value={{
@@ -1712,7 +1740,16 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
             <label {...colorFieldAria.labelProps}>{local.label}</label>
           </Show>
 
-          {renderChildren()}
+          <Provider
+            values={
+              [
+                [TextContext, textSlots],
+                [FieldErrorContext, fieldErrorContext],
+              ] as Array<[Context<unknown>, unknown]>
+            }
+          >
+            {renderChildren()}
+          </Provider>
         </div>
         <Show when={state.channel && ariaProps.name}>
           <input
@@ -2080,6 +2117,8 @@ export function ColorPicker(props: ColorPickerProps): JSX.Element {
 
 export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   const pickerContext = useContext(ColorPickerContextInternal);
+  const locale = useLocale();
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
   const [local, rest] = splitProps(props, [
     "value",
     "defaultValue",
@@ -2178,7 +2217,8 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     () => ({
       id: local.id,
       "aria-label":
-        local["aria-label"] ?? (!local["aria-labelledby"] ? "Color swatches" : undefined),
+        local["aria-label"] ??
+        (!local["aria-labelledby"] ? stringFormatter().format("colorSwatchPicker") : undefined),
       "aria-labelledby": local["aria-labelledby"],
       "aria-describedby": local["aria-describedby"],
       "aria-details": local["aria-details"],
@@ -2186,11 +2226,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     state,
   );
 
-  const resolveDirection = (): "ltr" | "rtl" => {
-    if (typeof document === "undefined") return "ltr";
-    const rootDir = document.dir;
-    return rootDir === "rtl" ? "rtl" : "ltr";
-  };
+  const resolveDirection = (): "ltr" | "rtl" => locale().direction;
 
   const isItemDisabled = (key: Key | null) => {
     if (key == null) return false;

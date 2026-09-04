@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices, type ReporterDescription } from "@playwright/test";
 
 if (process.env.NO_COLOR != null) {
   // Playwright forces color in worker and web-server child processes. Dropping
@@ -11,15 +11,25 @@ const host = process.env.COMPARISON_HOST ?? "127.0.0.1";
 const baseURL = process.env.COMPARISON_BASE_URL ?? `http://${host}:${port}`;
 const managesPreviewServer = process.env.COMPARISON_BASE_URL == null;
 
+const reporter: ReporterDescription[] = [["line"], ["./e2e/reporters/wcag-aaa-report.ts"]];
+if (process.env.CI) {
+  reporter.push(["blob", { outputDir: "blob-report" }]);
+}
+reporter.push(["./e2e/reporters/certified-summary.ts"]);
+
 export default defineConfig({
   testDir: "./e2e",
+  // Driver unit tests live beside the drivers as `*.unit.test.ts` and run under
+  // Vitest (root vitest.config.ts include); only `*.spec.ts` are browser specs.
+  testMatch: "**/*.spec.ts",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // `line` for the console; the WCAG AAA reporter self-gates on `WCAG_REPORT`
-  // (a no-op otherwise) and, when enabled, publishes the AAA report aggregated
-  // from the D7/D8 driver annotations.
-  reporter: [["line"], ["./e2e/reporters/wcag-aaa-report.ts"]],
+  workers: process.env.CI ? 2 : undefined,
+  // `line` for the console; certified-summary writes component × driver JSON
+  // (local and CI share that file). The WCAG AAA reporter self-gates on
+  // `WCAG_REPORT`. Blob reporter is CI-only so shards can merge-reports.
+  reporter,
   use: {
     baseURL,
     trace: "on-first-retry",
@@ -29,6 +39,14 @@ export default defineConfig({
     // here, not in a `test.use` inside the motion describe, because a describe
     // -level `video` override forces a new Playwright worker.
     video: process.env.MOTION_REVIEW ? "on" : "off",
+    // Extra Chromium switches for one machine, whitespace-separated. Known use:
+    // `COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer` on WSL2 where
+    // Chrome for Testing 151 (Playwright 1.62 build 1234) never issues a
+    // compositor frame through SwiftShader — rAF and CSS transitions never
+    // fire — while 149 does. Unset in CI so rendering there is unchanged.
+    launchOptions: {
+      args: (process.env.COMPARISON_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
+    },
   },
   projects: [
     {

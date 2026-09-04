@@ -39,11 +39,11 @@ const env: Record<string, string | undefined> =
 
 // Postfix all class names with the pinned S2 version, matching upstream, which
 // derives it as `json.version.replace(/[0.]/g, '')` from @react-spectrum/s2's
-// package.json. Our current pin is @react-spectrum/s2@1.6.0 (scripts/upstream-pin.json),
-// so 1.6.0 → "16". Hardcoded because this module is also loaded in the dts/dom
+// package.json. Our current pin is @react-spectrum/s2@1.7.0 (scripts/upstream-pin.json),
+// so 1.7.0 → "17". Hardcoded because this module is also loaded in the dts/dom
 // builds that omit Node globals (no fs.readFileSync). `guard:style-macro-parity`
 // enforces that this tracks the pin — bump it in lockstep with any S2 pin bump.
-const POSTFIX = "16";
+const POSTFIX = "17";
 
 export class ArbitraryProperty<T extends Value> implements Property<T> {
   property: string;
@@ -129,7 +129,9 @@ export type LengthPercentageUnit =
   | "cqw"
   | "cqh"
   | "cqmin"
-  | "cqmax";
+  | "cqmax"
+  | "lh"
+  | "rlh";
 export type LengthPercentage = `${number}${LengthPercentageUnit}`;
 
 export class PercentageProperty<T extends CSSValue>
@@ -143,7 +145,7 @@ export class PercentageProperty<T extends CSSValue>
   toCSSValue(value: T | LengthPercentage): PropertyValueDefinition<Value> {
     if (
       typeof value === "string" &&
-      /^-?\d+(?:\.\d+)?(%|vw|svw|dvw|vh|svh|dvh|vmin|svmin|dvmin|vmax|svmax|dvmax|cqw|cqh|cqmin|cqmax)$/.test(
+      /^-?\d+(?:\.\d+)?(%|vw|svw|dvw|vh|svh|dvh|vmin|svmin|dvmin|vmax|svmax|dvmax|cqw|cqh|cqmin|cqmax|lh|rlh)$/.test(
         value,
       )
     ) {
@@ -474,7 +476,8 @@ export function createTheme<T extends Theme>(
       css += rules.join("\n\n");
       css += "}\n\n";
     }
-    // @ts-expect-error
+    // Macro `this` is untyped on the compiled call site.
+    // @ts-expect-error MacroContext loc is injected by the style compiler.
     let loc = this?.loc?.filePath + ":" + this?.loc?.line + ":" + this?.loc?.col;
     if (isStatic && env.NODE_ENV !== "production") {
       let id = toBase62(hash(className + loc));
@@ -1113,7 +1116,7 @@ export function css(this: MacroContext | void, content: string, layer = "_.a"): 
   // Check if `this` is undefined, which means style was not called as a macro but as a normal function.
   // We also check if this is globalThis, which happens in non-strict mode bundles.
   // Also allow style to be called as a normal function in tests.
-  // @ts-ignore
+  // @ts-ignore Macro `this` is not in the public css() signature.
 
   let className = generateArbitraryValueSelector(content, true);
   content = `@layer ${layer} {
@@ -1140,7 +1143,7 @@ export function keyframes(this: MacroContext | void, css: string): string {
   // Check if `this` is undefined, which means style was not called as a macro but as a normal function.
   // We also check if this is globalThis, which happens in non-strict mode bundles.
   // Also allow style to be called as a normal function in tests.
-  // @ts-ignore
+  // @ts-ignore Macro `this` is not in the public keyframes() signature.
 
   let name = generateArbitraryValueSelector(css, true);
   css = `@keyframes ${name} {

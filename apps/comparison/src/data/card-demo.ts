@@ -1,4 +1,5 @@
 import { comparisonControlsEvent } from "./button-demo";
+import { sanitizeDemoHref } from "./demo-url";
 
 export { comparisonControlsEvent };
 
@@ -69,7 +70,10 @@ export function normalizeCardDemoProps(props: Partial<CardDemoProps> = {}): Card
     showPreview: props.showPreview !== false,
     showFooter: props.showFooter === true,
     isDisabled: props.isDisabled === true,
-    href: typeof props.href === "string" ? props.href : cardDemoDefaults.href,
+    href: sanitizeDemoHref(
+      typeof props.href === "string" ? props.href : undefined,
+      cardDemoDefaults.href,
+    ),
     textValue: textProp(props.textValue, title),
     skeleton: props.skeleton === true,
   };

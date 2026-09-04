@@ -21,6 +21,7 @@ import {
 import { FieldError } from "../src/FieldError";
 import { Form } from "../src/Form";
 import { Text } from "../src/Text";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -104,7 +105,7 @@ describe("SearchField", () => {
       expect(screen.getByText("Search")).toBeInTheDocument();
     });
 
-    it('links aria-describedby to a <Text slot="description"> via TextContext slots', () => {
+    it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
       // SearchField provides descriptionProps as a TextContext slot, so the
       // <Text slot="description"> picks up the id the input's aria-describedby
       // references — the faithful upstream wiring path.
@@ -120,8 +121,16 @@ describe("SearchField", () => {
       ));
 
       const input = screen.getByRole("searchbox");
-      const describedById = input.getAttribute("aria-describedby");
-      expect(describedById).toBeTruthy();
+      await waitFor(() => {
+        const ids = (input.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+        expect(ids.map((id) => document.getElementById(id)?.textContent).join("")).toContain(
+          "Help text",
+        );
+      });
+      const describedById = input
+        .getAttribute("aria-describedby")!
+        .split(" ")
+        .find((id) => document.getElementById(id));
       const description = document.getElementById(describedById!);
       expect(description).toHaveTextContent("Help text");
       expect(description).toHaveClass("solidaria-Text");
@@ -523,15 +532,29 @@ describe("SearchField", () => {
       await assertNoA11yViolations(container);
     });
 
-    it("ARIA ID: no dangling refs", () => {
+    it("ARIA ID: no dangling refs", async () => {
       render(() => <TestSearchField fieldProps={{ defaultValue: "hello" }} />);
-      assertAriaIdIntegrity(document.body);
+      await waitFor(() => {
+        assertAriaIdIntegrity(document.body);
+      });
     });
 
     it("DOM: data-testid forwards", () => {
       render(() => <TestSearchField fieldProps={{ "data-testid": "search" } as any} />);
       const field = document.querySelector(".solidaria-SearchField");
       expect(field).toHaveAttribute("data-testid", "search");
+    });
+  });
+
+  describe("i18n catalogs", () => {
+    it("labels the clear button from I18nProvider, not the English literal", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TestSearchField fieldProps={{ defaultValue: "query" }} />
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("button", { name: "Suche zurücksetzen" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Clear search" })).not.toBeInTheDocument();
     });
   });
 });

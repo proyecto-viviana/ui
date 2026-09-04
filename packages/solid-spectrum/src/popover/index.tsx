@@ -240,6 +240,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   let arrowElement: SVGSVGElement | null = null;
   const [local, rest] = splitProps(props, [
     "placement",
+    "shouldFlip",
     "size",
     "class",
     "styles",
@@ -252,6 +253,7 @@ export function Popover(props: PopoverProps): JSX.Element {
   ]);
 
   const placement = () => local.placement ?? "bottom";
+  const shouldFlip = () => local.shouldFlip ?? true;
   const padding = () => local.padding ?? "default";
   const offset = () => (local.offset ?? 8) + (local.hideArrow ? 0 : 8);
   const setArrowElement = (element: SVGSVGElement | null) => {
@@ -263,6 +265,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     <HeadlessPopover
       {...rest}
       placement={placement()}
+      shouldFlip={shouldFlip()}
       offset={offset()}
       arrowRef={arrowRef}
       // Mirror upstream `PopoverBase`: the surface class is PURELY `popoverStyles`

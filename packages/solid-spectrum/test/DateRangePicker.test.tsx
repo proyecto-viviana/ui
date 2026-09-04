@@ -228,6 +228,14 @@ describe("DateRangePicker (solid-spectrum)", () => {
         button.getAttribute("aria-label")?.includes("February 10, 2025"),
       );
       expect(unavailable).toHaveAttribute("aria-disabled", "true");
+      const minCell = Array.from(dialog.querySelectorAll('[role="button"]')).find((button) =>
+        button.getAttribute("aria-label")?.includes("February 3, 2025"),
+      );
+      expect(minCell?.getAttribute("aria-label")).toContain("First available date");
+      const maxCell = Array.from(dialog.querySelectorAll('[role="button"]')).find((button) =>
+        button.getAttribute("aria-label")?.includes("February 20, 2025"),
+      );
+      expect(maxCell?.getAttribute("aria-label")).toContain("Last available date");
     });
 
     it("renders popup time fields and wires time changes back to the range value", async () => {
@@ -265,6 +273,17 @@ describe("DateRangePicker (solid-spectrum)", () => {
         expect(screen.getByText("Start time")).toBeInTheDocument();
         expect(screen.getByText("End time")).toBeInTheDocument();
       });
+
+      const startTime = screen.getByText("Start time");
+      const endTime = screen.getByText("End time");
+      let timeRow: HTMLElement | null = startTime;
+      while (timeRow && !timeRow.contains(endTime)) {
+        timeRow = timeRow.parentElement;
+      }
+      expect(timeRow).toBeTruthy();
+      // S2 lays start/end time in one row (contain inline-size, no 272px wrap cap).
+      expect(getComputedStyle(timeRow!).maxWidth).not.toBe("272px");
+      expect(getComputedStyle(timeRow!).flexWrap).not.toBe("wrap");
 
       let popupStartHourSegment: HTMLElement | undefined;
       await waitFor(() => {
@@ -317,6 +336,51 @@ describe("DateRangePicker (solid-spectrum)", () => {
       expect(labelledByText(fieldGroup)).toContain("Trip dates");
       expect(error.id).toBeTruthy();
       expect(describedby.split(" ")).toContain(error.id);
+    });
+  });
+
+  describe("calendar popover", () => {
+    it("sizes the one-month RangeCalendar with cell-gap (272px)", async () => {
+      render(() => (
+        <DateRangePicker
+          aria-label="Trip dates"
+          defaultValue={{ start: parseDate("2025-02-03"), end: parseDate("2025-02-14") }}
+        />
+      ));
+      await waitForHydration();
+
+      fireEvent.click(screen.getByRole("button"));
+      await waitFor(() => {
+        expect(screen.getByRole("grid")).toBeInTheDocument();
+      });
+
+      const grid = screen.getByRole("grid");
+      const calendar = grid.parentElement?.parentElement as HTMLElement;
+      expect(calendar.style.width).toBe("272px");
+    });
+
+    it("anchors the popover trigger width to the FieldGroup", async () => {
+      render(() => (
+        <DateRangePicker
+          aria-label="Trip dates"
+          defaultValue={{ start: parseDate("2025-02-03"), end: parseDate("2025-02-14") }}
+        />
+      ));
+      await waitForHydration();
+
+      const calendarButton = screen.getByRole("button");
+      const fieldGroup = calendarButton.closest('[role="presentation"]') as HTMLElement;
+      expect(fieldGroup).toBeTruthy();
+      Object.defineProperty(fieldGroup, "offsetWidth", { configurable: true, value: 208 });
+      Object.defineProperty(calendarButton, "offsetWidth", { configurable: true, value: 36 });
+
+      fireEvent.click(calendarButton);
+      await waitFor(() => {
+        const popover = document.querySelector('[data-trigger="DateRangePicker"]') as HTMLElement;
+        expect(popover).toBeTruthy();
+        // RAC `triggerRef: groupRef` — FieldGroup width, not the calendar button.
+        expect(popover.style.getPropertyValue("--trigger-width")).toBe("208px");
+      });
     });
   });
 });

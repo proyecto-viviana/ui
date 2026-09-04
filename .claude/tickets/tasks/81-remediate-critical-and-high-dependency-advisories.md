@@ -54,6 +54,9 @@ conflicting override.
 
 ## Relationship
 
-Replaces `dependency-advisory-remediation` from
-`.claude/current/tech-debt.md`. GitHub issue #22 holds the original external
+Replaces `dependency-advisory-remediation`. GitHub issue #22 holds the original external
 scope.
+
+## Round-2 note (2026-09-01)
+
+Resume-here still says to wait for the dirty build graph; `git status` is clean and round 1 found no lockfile advisories. Owner: verify, or rewrite resume-here to the actual remaining gate (F-DOCS-008).

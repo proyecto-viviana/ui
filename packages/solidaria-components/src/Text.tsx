@@ -38,13 +38,14 @@ export const TextContext = createContext<ContextValue<TextProps, HTMLElement>>({
  */
 export function Text(props: TextProps): JSX.Element {
   const [merged] = useContextProps(props, undefined, TextContext);
-  // `slot` stays a logical prop (not a DOM attribute) and `ref`/`class`/`children`
-  // are rendered explicitly; everything else (notably the slotted `id`) is spread.
-  const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "slot", "ref"]);
+  // RAC `Text.tsx:28-31` spreads remaining props — including `slot` — onto the
+  // element. `ref`/`class`/`children`/`elementType` are rendered explicitly.
+  const [local, domProps] = splitProps(merged, ["elementType", "class", "children", "ref"]);
   return (
     <ElementTag
       class={local.class ?? "solidaria-Text"}
       {...filterDOMProps(domProps, { global: true })}
+      slot={merged.slot}
       // last, so a stray `tag` in the spread can never redirect the element
       tag={local.elementType ?? "span"}
     >

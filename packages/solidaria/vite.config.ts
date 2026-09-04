@@ -8,7 +8,7 @@ const neverBundle = [
   "solid-js",
   "solid-js/web",
   "solid-js/store",
-  "@proyecto-viviana/solid-stately",
+  /^@proyecto-viviana\/solid-stately(\/.*)?$/,
 ];
 
 // Per-primitive entries instead of a single bundled `dist/index.jsx`. Every

@@ -21,11 +21,16 @@ import {
   SelectListBox,
   SelectOption,
   SelectStateContext,
+  SelectContext,
 } from "../src/Select";
+import { Popover } from "../src/Popover";
 import { FieldError } from "../src/FieldError";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { setupUser, assertAriaIdIntegrity } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { Dialog } from "../src/Dialog";
+import { Text } from "../src/Text";
 
 // Setup userEvent
 const user = setupUser();
@@ -133,6 +138,35 @@ describe("Select", () => {
       expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
     });
 
+    // RAC Select.test.js "provides slots" (lines 76-82): trigger aria-describedby
+    // resolves to the rendered `<Text slot="description">` / error Text contents.
+    it('links trigger aria-describedby to a <Text slot="description">', async () => {
+      render(() => (
+        <Select<TestItem>
+          aria-label="Favorite Animal"
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <Text slot="description">Description</Text>
+          <SelectListBox>
+            {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+          </SelectListBox>
+        </Select>
+      ));
+
+      const trigger = screen.getByRole("button");
+      await waitFor(() => expect(trigger).toHaveAttribute("aria-describedby"));
+      const ids = trigger.getAttribute("aria-describedby")!.split(" ");
+      expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toBe(
+        "Description",
+      );
+      expect(document.getElementById(ids[0])?.getAttribute("slot")).toBe("description");
+    });
+
     it("should wire visible label via aria-labelledby", () => {
       render(() => (
         <Select<TestItem>
@@ -154,7 +188,9 @@ describe("Select", () => {
       // the trigger's accessible name (`aria-labelledby=[valueId, labelId]`), so the
       // name is "Select an option Animals" (placeholder value + label), not "Animals".
       const trigger = screen.getByRole("button", { name: /Animals/ });
-      const label = screen.getByText("Animals");
+      // The HiddenSelect container also renders a <label> with the same text
+      // (RAC HiddenSelect.tsx:175-177). The visible field label is the <span>.
+      const label = screen.getByText("Animals", { selector: "span" });
       expect(trigger.getAttribute("aria-labelledby")).toContain(label.id);
     });
 
@@ -354,6 +390,56 @@ describe("Select", () => {
       await user.click(options[0]);
 
       expect(onSelectionChange).toHaveBeenCalledWith("cat");
+    });
+
+    it("keeps the named hidden select in sync after selection changes", async () => {
+      render(() => (
+        <TestSelect selectProps={{ name: "plan", defaultSelectedKey: "dog", defaultOpen: true }} />
+      ));
+
+      const select = document.querySelector('select[name="plan"]') as HTMLSelectElement;
+      expect(select.value).toBe("dog");
+
+      await user.click(screen.getByRole("option", { name: "Cat" }));
+      expect(select.value).toBe("cat");
+      expect(select.options[select.selectedIndex]?.value).toBe("cat");
+    });
+
+    it("updates HiddenSelect when selectedKey changes after mount", async () => {
+      function ControlledSelect() {
+        const [selectedKey, setSelectedKey] = createSignal<Key | null>("dog");
+        return (
+          <>
+            <Select<TestItem>
+              aria-label="Test Select"
+              items={testItems}
+              getKey={(item) => item.id}
+              getTextValue={(item) => item.name}
+              name="plan"
+              selectedKey={selectedKey()}
+              onSelectionChange={setSelectedKey}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an option" />
+              </SelectTrigger>
+              <SelectListBox>
+                {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+              </SelectListBox>
+            </Select>
+            <button type="button" onClick={() => setSelectedKey("kangaroo")}>
+              Set Kangaroo
+            </button>
+          </>
+        );
+      }
+
+      render(() => <ControlledSelect />);
+
+      const select = document.querySelector('select[name="plan"]') as HTMLSelectElement;
+      expect(select.value).toBe("dog");
+
+      await user.click(screen.getByRole("button", { name: "Set Kangaroo" }));
+      expect(select.value).toBe("kangaroo");
     });
 
     it("should support controlled selectedKey", () => {
@@ -936,7 +1022,9 @@ describe("Select", () => {
     it("should support isDisabled on Select", () => {
       render(() => <TestSelect selectProps={{ isDisabled: true }} />);
 
-      const trigger = screen.getByRole("button");
+      const trigger = screen.getByRole("button", { hidden: true });
+      expect(trigger).toBeDisabled();
+      expect(trigger).not.toHaveAttribute("aria-disabled");
       expect(trigger).toHaveAttribute("data-disabled");
     });
 
@@ -1219,6 +1307,187 @@ describe("Select", () => {
       render(() => <TestSelect />);
 
       assertAriaIdIntegrity(document.body);
+    });
+  });
+
+  describe("i18n catalogs", () => {
+    it("uses the catalog placeholder when SelectValue has none", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <Select aria-label="Test Select" items={testItems} getKey={(item) => item.id}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("button")).toHaveTextContent("Element wählen");
+      expect(screen.getByRole("button")).not.toHaveTextContent("Select an item");
+    });
+
+    it("formats a multi-select value with the provider locale conjunction", () => {
+      render(() => (
+        <I18nProvider locale="es-ES">
+          <Select
+            aria-label="Test Select"
+            selectionMode="multiple"
+            defaultSelectedKeys={["cat", "dog"]}
+            items={testItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </I18nProvider>
+      ));
+      const trigger = screen.getByRole("button");
+      expect(trigger.textContent).toContain(" y ");
+      expect(trigger.textContent).not.toMatch(/ and /);
+    });
+  });
+
+  describe("list markup parity", () => {
+    it("listbox exposes data-layout and data-orientation", async () => {
+      render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
+      await waitFor(() => {
+        const listbox = screen.getByRole("listbox");
+        expect(listbox).toHaveAttribute("data-layout", "stack");
+        expect(listbox).toHaveAttribute("data-orientation", "vertical");
+      });
+    });
+
+    it("option does not reference a description id when no description slot is rendered", async () => {
+      render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        for (const option of options) {
+          expect(option).not.toHaveAttribute("aria-describedby");
+          expect(option).toHaveAttribute("aria-labelledby");
+          const labelledBy = option.getAttribute("aria-labelledby");
+          expect(document.getElementById(labelledBy!)).not.toBeNull();
+        }
+      });
+    });
+
+    it("option exposes data-selection-mode", async () => {
+      render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
+      await waitFor(() => {
+        const option = screen.getAllByRole("option")[0];
+        expect(option).toHaveAttribute("data-selection-mode", "single");
+      });
+    });
+
+    it("hidden select renders no extra input", () => {
+      render(() => <TestSelect selectProps={{ name: "pet" }} />);
+      expect(document.querySelector("select")).not.toBeNull();
+      expect(document.querySelector("input")).toBeNull();
+    });
+
+    it("overlay root carries aria-labelledby from the select menu", async () => {
+      const SelectPopover = () => {
+        const ctx = useContext(SelectContext);
+        return (
+          <Popover
+            trigger="Select"
+            isOpen={ctx?.isOpen() ?? false}
+            triggerRef={() => ctx?.triggerRef() ?? null}
+            onOpenChange={(open) => {
+              if (!open) {
+                ctx?.state.close();
+              }
+            }}
+          >
+            <SelectListBox isInPopover>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Popover>
+        );
+      };
+
+      render(() => (
+        <Select
+          aria-label="Plan"
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultOpen
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <SelectPopover />
+        </Select>
+      ));
+
+      await waitFor(() => {
+        const overlay = document.querySelector("[data-placement]");
+        expect(overlay).not.toBeNull();
+        expect(overlay).toHaveAttribute("aria-labelledby");
+        const labelledBy = overlay!.getAttribute("aria-labelledby")!;
+        expect(labelledBy.length).toBeGreaterThan(0);
+        for (const id of labelledBy.split(/\s+/)) {
+          expect(document.getElementById(id)).not.toBeNull();
+        }
+      });
+    });
+  });
+
+  describe("dialog host", () => {
+    it("should not throw when rendered inside a Dialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog aria-label="Dialog">
+          <Select
+            aria-label="Test Select"
+            items={testItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <Text slot="errorMessage">Error</Text>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+
+    it("should not throw when rendered inside an alertdialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog role="alertdialog" aria-label="Dialog">
+          <Select
+            aria-label="Test Select"
+            items={testItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option" />
+            </SelectTrigger>
+            <Text slot="errorMessage">Error</Text>
+            <SelectListBox>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Select>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
     });
   });
 });

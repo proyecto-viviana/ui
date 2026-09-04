@@ -20,10 +20,13 @@
 import { createMemo, createEffect, type Accessor } from "solid-js";
 import type { JSX } from "solid-js";
 import { createId } from "@proyecto-viviana/solid-stately";
-import type { GridState, GridCollection, Key } from "@proyecto-viviana/solid-stately";
+import type { GridState, GridCollection, Key, Collection } from "@proyecto-viviana/solid-stately";
 import type { AriaGridListProps, GridListAria } from "./types";
 import { scrollIntoViewport } from "../utils";
 import { getInteractionModality } from "../interactions/createInteractionModality";
+import { mergeProps } from "../utils/mergeProps";
+import { createTypeSelect } from "../selection/createTypeSelect";
+import { isNonContiguousSelectionModifier } from "../selection/utils";
 
 /**
  * Metadata stored for a grid list instance.
@@ -39,6 +42,8 @@ interface GridListData {
   keyboardNavigationBehavior: "arrow" | "tab";
   /** Text direction for row-child arrow navigation. */
   direction: "ltr" | "rtl";
+  /** `"grid"` lets Left/Right reach the collection for 2D navigation. */
+  layout: "stack" | "grid";
   /** Actions registered for the grid list. */
   actions: {
     onAction?: (key: Key) => void;
@@ -91,6 +96,64 @@ function findNextNavigableKey<T extends object, C extends GridCollection<T>>(
   return key;
 }
 
+function navigableKeys<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+): Key[] {
+  const keys: Key[] = [];
+  let key = state.collection.getFirstKey();
+  while (key != null) {
+    if (!isNavigationDisabled(state, key)) {
+      keys.push(key);
+    }
+    key = state.collection.getKeyAfter(key);
+  }
+  return keys;
+}
+
+function gridNeighborKey(
+  keys: Key[],
+  from: Key,
+  columns: number,
+  deltaCol: number,
+  deltaRow: number,
+): Key | null {
+  const index = keys.indexOf(from);
+  if (index < 0 || columns < 1) return null;
+  const row = Math.floor(index / columns);
+  const col = index % columns;
+  const nextCol = col + deltaCol;
+  const nextRow = row + deltaRow;
+  if (nextCol < 0 || nextCol >= columns || nextRow < 0) return null;
+  return keys[nextRow * columns + nextCol] ?? null;
+}
+
+function firstSelectedKey<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+): Key | null {
+  let key = state.collection.getFirstKey();
+  while (key != null) {
+    if (state.isSelected(key)) return key;
+    key = state.collection.getKeyAfter(key);
+  }
+  return null;
+}
+
+function lastSelectedKey<T extends object, C extends GridCollection<T>>(
+  state: GridState<T, C>,
+): Key | null {
+  let key = state.collection.getLastKey();
+  while (key != null) {
+    if (state.isSelected(key)) return key;
+    key = state.collection.getKeyBefore(key);
+  }
+  return null;
+}
+
+function queryCollectionItem(root: HTMLElement, key: Key): HTMLElement | null {
+  const escaped = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(String(key)) : String(key);
+  return root.querySelector<HTMLElement>(`[data-key="${escaped}"]`);
+}
+
 /**
  * Creates accessibility props for a grid list.
  */
@@ -106,7 +169,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   const gridListData: GridListData = {
     gridListId,
     get selectionBehavior() {
-      return props().selectionBehavior ?? "replace";
+      return props().selectionBehavior ?? "toggle";
     },
     get shouldSelectOnPressUp() {
       return props().shouldSelectOnPressUp ?? false;
@@ -116,6 +179,9 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     },
     get direction() {
       return props().direction ?? "ltr";
+    },
+    get layout() {
+      return props().layout ?? "stack";
     },
     actions: {
       get onAction() {
@@ -127,6 +193,13 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
   // Store in WeakMap using the state as key
   gridListDataMap.set(state(), gridListData);
 
+  const { typeSelectProps } = createTypeSelect({
+    collection: () => state().collection as unknown as Collection<T>,
+    focusedKey: () => state().focusedKey,
+    onFocusedKeyChange: (key) => state().setFocusedKey(key),
+    isKeyDisabled: (key) => isNavigationDisabled(state(), key),
+  });
+
   // Handle keyboard navigation
   const onKeyDown = (e: KeyboardEvent) => {
     const s = state();
@@ -136,35 +209,71 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
 
     if (p.isDisabled) return;
 
+    const selectOnFocus =
+      (p.selectionBehavior ?? s.selectionBehavior) === "replace" && s.selectionMode !== "none";
+    const moveFocus = (nextKey: Key | null) => {
+      if (nextKey == null) return;
+      s.setFocusedKey(nextKey);
+      if (selectOnFocus && !e.shiftKey && !isNonContiguousSelectionModifier(e)) {
+        s.replaceSelection(nextKey);
+      }
+    };
+    const isGrid = p.layout === "grid";
+    const columns = Math.max(1, p.columnCount ?? 1);
+
     switch (e.key) {
       case "ArrowDown": {
         e.preventDefault();
+        if (isGrid) {
+          const keys = navigableKeys(s);
+          const from = focusedKey ?? keys[0];
+          if (from != null) {
+            moveFocus(gridNeighborKey(keys, from, columns, 0, 1));
+          }
+          break;
+        }
         const nextKey =
           focusedKey != null
             ? findNextNavigableKey(s, collection.getKeyAfter(focusedKey), (k) =>
                 collection.getKeyAfter(k),
               )
             : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
-        if (nextKey != null) {
-          s.setFocusedKey(nextKey);
-        }
+        moveFocus(nextKey);
         break;
       }
       case "ArrowUp": {
         e.preventDefault();
+        if (isGrid) {
+          const keys = navigableKeys(s);
+          const from = focusedKey ?? keys[keys.length - 1];
+          if (from != null) {
+            moveFocus(gridNeighborKey(keys, from, columns, 0, -1));
+          }
+          break;
+        }
         const prevKey =
           focusedKey != null
             ? findNextNavigableKey(s, collection.getKeyBefore(focusedKey), (k) =>
                 collection.getKeyBefore(k),
               )
             : findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k));
-        if (prevKey != null) {
-          s.setFocusedKey(prevKey);
-        }
+        moveFocus(prevKey);
         break;
       }
       case "ArrowRight":
       case "ArrowLeft": {
+        const behavior = p.keyboardNavigationBehavior ?? "arrow";
+        const isRtl = p.direction === "rtl";
+        if (isGrid) {
+          e.preventDefault();
+          const keys = navigableKeys(s);
+          const from = focusedKey ?? keys[0];
+          if (from != null) {
+            const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
+            moveFocus(gridNeighborKey(keys, from, columns, forward ? 1 : -1, 0));
+          }
+          break;
+        }
         // The inline axis (Left/Right) belongs to the ROW under the default
         // "arrow" navigation behavior: createGridListItem's onKeyDownCapture
         // intercepts Left/Right for intra-row focus movement (a no-op for
@@ -178,10 +287,8 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         // (In Solid the row's capture-phase stopPropagation does not reliably
         // prevent the container's delegated onKeyDown, so this gate — not the
         // row's stopPropagation — is what keeps the axes from double-firing.)
-        const behavior = p.keyboardNavigationBehavior ?? "arrow";
         if (p.orientation !== "horizontal" || behavior !== "tab") break;
         e.preventDefault();
-        const isRtl = p.direction === "rtl";
         const forward = e.key === "ArrowRight" ? !isRtl : isRtl;
         const step = forward
           ? (k: Key) => collection.getKeyAfter(k)
@@ -190,9 +297,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
           focusedKey != null
             ? findNextNavigableKey(s, step(focusedKey), step)
             : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
-        if (nextKey != null) {
-          s.setFocusedKey(nextKey);
-        }
+        moveFocus(nextKey);
         break;
       }
       case "Home": {
@@ -200,9 +305,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         const firstKey = findNextNavigableKey(s, collection.getFirstKey(), (k) =>
           collection.getKeyAfter(k),
         );
-        if (firstKey != null) {
-          s.setFocusedKey(firstKey);
-        }
+        moveFocus(firstKey);
         break;
       }
       case "End": {
@@ -210,9 +313,7 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
         const lastKey = findNextNavigableKey(s, collection.getLastKey(), (k) =>
           collection.getKeyBefore(k),
         );
-        if (lastKey != null) {
-          s.setFocusedKey(lastKey);
-        }
+        moveFocus(lastKey);
         break;
       }
       case "a":
@@ -271,8 +372,10 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       relatedTarget &&
       container &&
       container.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING
-        ? findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k))
-        : findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k));
+        ? (lastSelectedKey(s) ??
+          findNextNavigableKey(s, collection.getLastKey(), (k) => collection.getKeyBefore(k)))
+        : (firstSelectedKey(s) ??
+          findNextNavigableKey(s, collection.getFirstKey(), (k) => collection.getKeyAfter(k)));
     if (enterKey != null) {
       s.setFocusedKey(enterKey);
     }
@@ -308,8 +411,13 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
       return;
     }
 
-    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    const target = queryCollectionItem(el, key);
     if (target && target !== active) {
+      // A disabled selected key keeps logical focus on the collection (the
+      // row is not tabbable). Focusing it would steal Tab from the grid.
+      if (isNavigationDisabled(s, key)) {
+        return;
+      }
       target.focus();
 
       // Reveal the newly focused row when navigating with the keyboard, mirroring
@@ -325,23 +433,30 @@ export function createGridList<T extends object, C extends GridCollection<T> = G
     const p = props();
     const s = state();
 
-    const baseProps: Record<string, unknown> = {
-      role: "grid",
-      id: gridListId,
-      "aria-label": p["aria-label"],
-      "aria-labelledby": p["aria-labelledby"],
-      "aria-describedby": p["aria-describedby"],
-      "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
-      "aria-disabled": p.isDisabled || undefined,
-      // Roving container tabIndex mirrors useSelectableCollection: the container
-      // is tabbable (0) only while nothing is focused, then rolls to -1 once a row
-      // takes focus so Tab exits the grid. A standalone grid drives AT through
-      // real row focus, so it never needs (nor emits) aria-activedescendant.
-      tabIndex: p.isDisabled ? undefined : s.focusedKey != null ? -1 : 0,
-      onKeyDown,
-      onFocus,
-      onBlur,
-    };
+    const baseProps: Record<string, unknown> = mergeProps(
+      typeSelectProps as Record<string, unknown>,
+      {
+        role: "grid",
+        id: gridListId,
+        "aria-label": p["aria-label"],
+        "aria-labelledby": p["aria-labelledby"],
+        "aria-describedby": p["aria-describedby"],
+        "aria-multiselectable": s.selectionMode === "multiple" ? true : undefined,
+        "aria-disabled": p.isDisabled || undefined,
+        // Roving container tabIndex mirrors useSelectableCollection: the container
+        // is tabbable (0) only while nothing is focused, then rolls to -1 once a row
+        // takes focus so Tab exits the grid. A standalone grid drives AT through
+        // real row focus, so it never needs (nor emits) aria-activedescendant.
+        tabIndex: p.isDisabled
+          ? undefined
+          : s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey)
+            ? -1
+            : 0,
+        onKeyDown,
+        onFocus,
+        onBlur,
+      },
+    );
 
     // Add row count for virtualized lists
     if (p.isVirtualized) {

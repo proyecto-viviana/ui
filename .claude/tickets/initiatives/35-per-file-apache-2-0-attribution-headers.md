@@ -23,3 +23,7 @@ Each derivative source file has the required attribution and an executable check
 ## Relationship
 
 Replaces roadmap item `license-compliance`. Ticket #19 owns the focused audit and plan cleanup.
+
+## Round-2 note (2026-09-01)
+
+The claim that per-file attribution is guarded in source was unenforced: `guard:attribution-headers` was red from `19ed5c48` (2026-08-30) to 2026-09-01 and was in no workflow. Round 2 made mirror results inherit review contracts and added the guard to Certification Gates (F-GATE-001). Re-verify before citing this ticket as evidence.

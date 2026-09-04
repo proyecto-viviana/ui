@@ -52,8 +52,11 @@ import { Text } from "../text";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -390,6 +393,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const idBase = createUniqueId();
   const labelId = `${idBase}-label`;
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
@@ -440,7 +444,9 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
                   when={necessityIndicator() === "icon"}
                   fallback={
                     <span aria-hidden={headlessProps.isRequired ? true : undefined}>
-                      {headlessProps.isRequired ? "(required)" : "(optional)"}
+                      {stringFormatter().format(
+                        headlessProps.isRequired ? "label.(required)" : "label.(optional)",
+                      )}
                     </span>
                   }
                 >
@@ -454,9 +460,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
               </span>
             </Show>
           </span>
-          <Show when={local.contextualHelp}>
-            <span data-slot="contextualHelp">{local.contextualHelp}</span>
-          </Show>
+          <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
         </div>
       </Show>
       <div

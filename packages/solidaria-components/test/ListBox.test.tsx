@@ -10,8 +10,9 @@
  * - Full accessibility
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
+import { createComponent } from "solid-js/web";
 import {
   ListBox,
   ListBoxContext,
@@ -301,16 +302,7 @@ describe("ListBox", () => {
       expect(screen.getByRole("listbox")).toHaveAttribute("aria-labelledby");
     });
 
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
+    it("passes locale direction into the droppable ListDropTargetDelegate", () => {
       let capturedDirection: "ltr" | "rtl" | undefined;
       const dragAndDropHooks = {
         useDroppableCollectionState: () => ({
@@ -343,65 +335,12 @@ describe("ListBox", () => {
         },
       };
 
-      try {
-        render(() => <TestListBox listBoxProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
-    });
-
-    it("prefers computed direction over document direction when available", () => {
-      const originalDir = document.dir;
-      document.dir = "ltr";
-      const computedStyleSpy = vi
-        .spyOn(window, "getComputedStyle")
-        .mockImplementation(() => ({ direction: "rtl" }) as CSSStyleDeclaration);
-
-      let capturedDirection: "ltr" | "rtl" | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: () => ({ collectionProps: {} }),
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          constructor(
-            _collection: unknown,
-            _ref: unknown,
-            options?: { direction?: "ltr" | "rtl" },
-          ) {
-            capturedDirection = options?.direction;
-          }
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => <TestListBox listBoxProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        computedStyleSpy.mockRestore();
-        document.dir = originalDir;
-      }
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestListBox listBoxProps={{ dragAndDropHooks: dragAndDropHooks as any }} />
+        </I18nProvider>
+      ));
+      expect(capturedDirection).toBe("rtl");
     });
 
     it("should render option text content", () => {
@@ -511,7 +450,13 @@ describe("ListBox", () => {
         />
       ));
 
-      expect(screen.getByText("Load more")).toBeInTheDocument();
+      expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+      expect(screen.queryByText("Load more")).not.toBeInTheDocument();
+      expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+        "Cat",
+        "Dog",
+        "Kangaroo",
+      ]);
     });
 
     it("should apply draggable item semantics when drag hooks are provided", () => {
@@ -569,16 +514,181 @@ describe("ListBox", () => {
       expect(container.querySelector(".solidaria-DropIndicator")).toBeInTheDocument();
     });
 
-    it("should trigger onLoadMore when load more sentinel is visible", async () => {
-      const onLoadMore = vi.fn();
+    it("moves DOM focus to the insert-between drop indicator after Enter starts a keyboard drag", async () => {
+      // Failure mode: after Enter pickup, RAC focuses
+      // `option:Insert between Read and Write` (useDropIndicator +
+      // useDroppableItem). Port bugs that left DOM focus on
+      // `listbox:Permissions`:
+      // 1. useRenderDropIndicator gated on the collection-level `isDropTarget`
+      //    boolean, which keyboard `setTarget` never flipped — the indicator
+      //    never mounted.
+      // 2. ListBoxDropIndicator was a nested component identity, so each ListBox
+      //    re-render remounted it and DragManager `dropItems` lost the node;
+      //    `onFocus` then bounced to the collection.
+      // 3. createDroppableCollection's register effect subscribed to `collection`,
+      //    re-installing a new DropTarget object mid-drag so
+      //    `validDropTargets.includes(currentDropTarget)` failed and focused
+      //    the collection. The selectable-collection `onFocusOut` restore then
+      //    focused the inert source option, which Chromium maps to the listbox.
+      const items: TestItem[] = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      const { dragAndDropHooks } = useDragAndDrop<TestItem>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder: () => {},
+      });
+
       render(() => (
-        <ul role="listbox" aria-label="Load test">
-          <ListBoxLoadMoreItem onLoadMore={onLoadMore} />
-        </ul>
+        <ListBox
+          aria-label="Permissions"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          selectionMode="multiple"
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {(item) => (
+            <ListBoxOption id={item.id} textValue={item.name}>
+              {item.name}
+            </ListBoxOption>
+          )}
+        </ListBox>
       ));
 
-      fireEvent.focus(screen.getByRole("option"));
-      expect(onLoadMore).toHaveBeenCalled();
+      const read = screen.getByRole("option", { name: "Read" });
+      read.focus();
+      expect(document.activeElement).toBe(read);
+
+      await user.keyboard("{Enter}");
+
+      try {
+        await waitFor(() => {
+          // During a virtual drag RAC mounts every valid indicator
+          // (`useRenderDropIndicator.ts:87`); the active one is labeled
+          // insert-between, not the first `.solidaria-DropIndicator` in DOM order.
+          const indicator = document.querySelector('[aria-label="Insert between Read and Write"]');
+          expect(indicator).toBeTruthy();
+          expect(indicator).toHaveAttribute("data-drop-target");
+          expect(indicator).toHaveAttribute("role", "option");
+        });
+        // The dragged option must keep its DOM node (RAC ListBoxItem stays
+        // mounted). Remounting leaves DragManager's dragTarget disconnected
+        // and inerts the new option — Chromium then focuses listbox:Permissions.
+        // Testing Library skips aria-hidden options (`dropProps` during virtual
+        // drag); the node is still `id="read"`.
+        expect(document.getElementById("read")).toBe(read);
+        // RAC Collection renders before + last-after, not before+on+after per item.
+        const indicatorNames = [
+          ...document.querySelectorAll('[role="option"][aria-label^="Insert "]'),
+        ].map((node) => node.getAttribute("aria-label"));
+        expect(indicatorNames).toEqual([
+          "Insert before Read",
+          "Insert between Read and Write",
+          "Insert between Write and Admin",
+          "Insert after Admin",
+        ]);
+        await waitFor(() => {
+          expect(document.querySelector("[aria-live='polite']")?.textContent).toContain(
+            "Insert between Read and Write",
+          );
+        });
+      } finally {
+        // End the keyboard drag so DragManager's ariaHideOutside does not leak
+        // into later tests in this file (listbox stays aria-hidden otherwise).
+        await user.keyboard("{Escape}");
+      }
+    });
+
+    it("keeps the dragged option node when children are one-shot component thunks", async () => {
+      // Comparison `hc` returns `() => createComponent(...)`. If indicator
+      // `Show` shares that insert, the thunk is consumed twice, the option
+      // remounts, and Chromium maps focus to `listbox:Permissions`.
+      const items: TestItem[] = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      const { dragAndDropHooks } = useDragAndDrop<TestItem>({
+        getItems: (keys) => [...keys].map((key) => ({ "text/plain": String(key) })),
+        onReorder: () => {},
+      });
+
+      render(() => (
+        <ListBox
+          aria-label="Permissions"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          selectionMode="multiple"
+          dragAndDropHooks={dragAndDropHooks}
+        >
+          {(item) => {
+            const thunk = () =>
+              createComponent(ListBoxOption, {
+                id: item.id,
+                textValue: item.name,
+                get children() {
+                  return item.name;
+                },
+              });
+            return thunk as unknown as JSX.Element;
+          }}
+        </ListBox>
+      ));
+
+      const read = screen.getByRole("option", { name: "Read" });
+      read.focus();
+      await user.keyboard("{Enter}");
+      try {
+        await waitFor(() => {
+          expect(
+            document.querySelector('[aria-label="Insert between Read and Write"]'),
+          ).toBeTruthy();
+        });
+        expect(document.getElementById("read")).toBe(read);
+      } finally {
+        await user.keyboard("{Escape}");
+      }
+    });
+
+    it("should trigger onLoadMore when load more sentinel is visible", async () => {
+      const onLoadMore = vi.fn();
+      const observerCallbacks: IntersectionObserverCallback[] = [];
+      class TestIntersectionObserver {
+        constructor(callback: IntersectionObserverCallback) {
+          observerCallbacks.push(callback);
+        }
+        observe = vi.fn();
+        disconnect = vi.fn();
+        unobserve = vi.fn();
+        takeRecords = () => [];
+        root = null;
+        rootMargin = "";
+        thresholds = [];
+      }
+      vi.stubGlobal("IntersectionObserver", TestIntersectionObserver);
+
+      try {
+        render(() => (
+          <ul role="listbox" aria-label="Load test">
+            <ListBoxLoadMoreItem onLoadMore={onLoadMore} />
+          </ul>
+        ));
+
+        expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+        expect(screen.queryByRole("option")).not.toBeInTheDocument();
+
+        await waitFor(() => expect(observerCallbacks.length).toBeGreaterThan(0));
+        observerCallbacks[0]?.(
+          [{ isIntersecting: true } as IntersectionObserverEntry],
+          {} as IntersectionObserver,
+        );
+        await waitFor(() => expect(onLoadMore).toHaveBeenCalledTimes(1));
+      } finally {
+        vi.unstubAllGlobals();
+      }
     });
   });
 
@@ -1485,6 +1595,32 @@ describe("ListBox", () => {
       // ...and ArrowRight walks back to the previous item.
       await user.keyboard("{ArrowRight}");
       expect(options[0]).toHaveAttribute("data-focused");
+    });
+  });
+
+  describe("list markup parity", () => {
+    it("listbox exposes data-layout and data-orientation", () => {
+      render(() => <TestListBox />);
+      const listbox = screen.getByRole("listbox");
+      expect(listbox).toHaveAttribute("data-layout", "stack");
+      expect(listbox).toHaveAttribute("data-orientation", "vertical");
+    });
+
+    it("option does not reference a description id when no description slot is rendered", async () => {
+      render(() => <TestListBox />);
+      const options = screen.getAllByRole("option");
+      for (const option of options) {
+        expect(option).not.toHaveAttribute("aria-describedby");
+        expect(option).toHaveAttribute("aria-labelledby");
+        const labelledBy = option.getAttribute("aria-labelledby");
+        expect(document.getElementById(labelledBy!)).not.toBeNull();
+      }
+    });
+
+    it("option exposes data-selection-mode", () => {
+      render(() => <TestListBox listBoxProps={{ selectionMode: "single" }} />);
+      const option = screen.getAllByRole("option")[0];
+      expect(option).toHaveAttribute("data-selection-mode", "single");
     });
   });
 });

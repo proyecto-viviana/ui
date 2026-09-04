@@ -1,6 +1,7 @@
 import h from "solid-js/h";
 import { LinkButton, Provider } from "@proyecto-viviana/solid-spectrum";
 import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
+import { comparisonCoveragePath } from "@comparison/data/site-meta";
 import { hc } from "../solid-h";
 import { createComparisonColorScheme } from "../useComparisonColorScheme";
 
@@ -30,13 +31,13 @@ export default function MarketingHero() {
             h(
               "p",
               { class: "s2-marketing-hero-lede" },
-              "A faithful SolidJS port of Adobe's Spectrum 2 design system. Accessible primitives, styled components, and a parity-tracked migration path from React Spectrum.",
+              "A component-by-component parity harness for React Spectrum S2 and @proyecto-viviana/solid-spectrum.",
             ),
             h("div", { class: "s2-marketing-hero-actions" }, [
               hc(
                 LinkButton,
                 {
-                  href: "/coverage",
+                  href: comparisonCoveragePath,
                   size: "L",
                   variant: "accent",
                   fillStyle: "fill",

@@ -74,4 +74,57 @@ describe("createDroppableItem", () => {
       dispose();
     });
   });
+
+  it("isDropTarget matches dropPosition, not just the item key", () => {
+    // RAC `useDroppableItem.ts:83` `state.isDropTarget(options.target)` includes
+    // dropPosition. A key-only item hook is `{dropPosition:"on"}`; an insert-
+    // between indicator must not light up the option.
+    const state = {
+      get target() {
+        return { type: "item" as const, key: 1, dropPosition: "before" as const };
+      },
+      get isDropTarget() {
+        return true;
+      },
+      get isDisabled() {
+        return false;
+      },
+      setTarget() {},
+      activateTarget() {},
+      exitTarget() {},
+      enterTarget() {},
+      moveToTarget() {},
+      drop() {},
+      isAccepted() {
+        return true;
+      },
+      shouldAcceptItemDrop() {
+        return true;
+      },
+      getDropOperation() {
+        return "move" as const;
+      },
+    } satisfies Partial<DroppableCollectionState> as DroppableCollectionState;
+
+    createRoot((dispose) => {
+      const el = document.createElement("div");
+      const item = createDroppableItem(
+        () => ({
+          key: 1,
+          ref: () => el,
+        }),
+        state,
+      );
+      const indicator = createDroppableItem(
+        () => ({
+          target: { type: "item", key: 1, dropPosition: "before" },
+          ref: () => el,
+        }),
+        state,
+      );
+      expect(item.isDropTarget).toBe(false);
+      expect(indicator.isDropTarget).toBe(true);
+      dispose();
+    });
+  });
 });

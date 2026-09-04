@@ -35,6 +35,7 @@ import {
   readFromDataTransfer,
   type HoverEvents,
   type AriaDropOptions,
+  createStringFormatter,
 } from "@proyecto-viviana/solidaria";
 import {
   type ClassNameOrFunction,
@@ -45,6 +46,7 @@ import {
   filterDOMProps,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
+import { racIntlStrings } from "./intl";
 
 export interface DropZoneRenderProps {
   isHovered: boolean;
@@ -66,7 +68,6 @@ export interface DropZoneProps
 }
 
 export const DropZoneContext = createContext<DropZoneProps | null>(null);
-const DEFAULT_DROPZONE_LABEL = "Drop files";
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -103,6 +104,7 @@ export function DropZone(props: DropZoneProps): JSX.Element {
     ["onHoverStart", "onHoverEnd", "onHoverChange"],
   );
 
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
   const [dropZoneRef, setDropZoneRef] = createSignal<HTMLDivElement | null>(null);
   const [dropButtonRef, setDropButtonRef] = createSignal<HTMLButtonElement | null>(null);
 
@@ -214,7 +216,9 @@ export function DropZone(props: DropZoneProps): JSX.Element {
   };
 
   const dropButtonAriaLabel = createMemo(
-    () => local["aria-label"] ?? (!local["aria-labelledby"] ? DEFAULT_DROPZONE_LABEL : undefined),
+    () =>
+      local["aria-label"] ??
+      (!local["aria-labelledby"] ? stringFormatter().format("dropzoneLabel") : undefined),
   );
 
   return (

@@ -732,6 +732,35 @@ describe("createMenu - disabled key navigation", () => {
     });
   });
 
+  it("wraps from the last item by default, matching RAC useMenu", () => {
+    createRoot((dispose) => {
+      const items = [
+        { key: "copy", label: "Copy" },
+        { key: "cut", label: "Cut" },
+        { key: "paste", label: "Paste" },
+      ];
+
+      const state = createMenuState({
+        items,
+        getKey: (item) => item.key,
+      });
+
+      const { menuProps } = createMenu({ "aria-label": "Actions" }, state);
+      state.setFocusedKey("paste");
+
+      const preventDefault = vi.fn();
+      const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
+      onKeyDown({
+        key: "ArrowDown",
+        preventDefault,
+      } as unknown as KeyboardEvent);
+
+      expect(preventDefault).toHaveBeenCalled();
+      expect(state.focusedKey()).toBe("copy");
+      dispose();
+    });
+  });
+
   it("does not skip disabled keys under disabledBehavior 'selection'", () => {
     createRoot((dispose) => {
       const items = [
@@ -832,7 +861,10 @@ describe("createMenu - navigation-key consumption", () => {
   it("leaves ArrowDown alone at the last item when wrapping is off", () => {
     createRoot((dispose) => {
       const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+      const { menuProps } = createMenu(
+        { "aria-label": "Test menu", shouldFocusWrap: false },
+        state,
+      );
 
       state.setFocusedKey("item3");
       const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;
@@ -849,7 +881,10 @@ describe("createMenu - navigation-key consumption", () => {
   it("leaves ArrowUp alone at the first item when wrapping is off", () => {
     createRoot((dispose) => {
       const state = createMenuState({ items: threeItems(), getKey: (item) => item.key });
-      const { menuProps } = createMenu({ "aria-label": "Test menu" }, state);
+      const { menuProps } = createMenu(
+        { "aria-label": "Test menu", shouldFocusWrap: false },
+        state,
+      );
 
       state.setFocusedKey("item1");
       const onKeyDown = menuProps.onKeyDown as (e: KeyboardEvent) => void;

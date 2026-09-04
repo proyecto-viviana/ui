@@ -39,6 +39,7 @@ import {
   createCalendar as intlCreateCalendar,
   toCalendar as intlToCalendar,
   toCalendarDate as intlToCalendarDate,
+  minDate,
 } from "@internationalized/date";
 import { access, type MaybeAccessor } from "../utils";
 
@@ -152,6 +153,10 @@ export interface CalendarState<
   isOutsideVisibleRange: (date: DateValue) => boolean;
   /** Whether a date is invalid. */
   isInvalid: (date: DateValue) => boolean;
+  /** Whether the previous page is entirely outside min/max. */
+  isPreviousVisibleRangeInvalid: () => boolean;
+  /** Whether the next page is entirely outside min/max. */
+  isNextVisibleRangeInvalid: () => boolean;
   /** Moves focus to the previous page (month). */
   focusPreviousPage: () => void;
   /** Moves focus to the next page (month). */
@@ -422,22 +427,45 @@ export function createCalendarState<
     return formatter.format(formattableMonth.toDate(timeZone));
   });
 
+  // Walks previousAvailableDate from minValue ?? minDate(constrained, startDate)
+  // rather than from startDate alone, so a date before the visible month remains
+  // selectable when isDateUnavailable is set. Mirrors useCalendarState.normalizeValue.
+  const normalizeValue = (newValue: CalendarDate): T | null => {
+    const constrained = constrainDate(newValue);
+    const minBound = access(props.minValue);
+    const lowerBound =
+      minBound != null
+        ? toDisplayCalendarDate(minBound)
+        : (minDate(constrained, visibleRange().start) ?? constrained);
+    const prev = previousAvailableDate(constrained, lowerBound, props.isDateUnavailable);
+    if (!prev) {
+      return null;
+    }
+
+    const oldValue = sourceValue();
+    const referenceValue = Array.isArray(oldValue) ? (oldValue[0] ?? null) : oldValue;
+    return convertValue(prev, referenceValue) as T;
+  };
+
   // Set value with onChange callback
   const setValue = (newValue: T | T[] | null) => {
     if (isDisabled() || isReadOnly()) return;
 
     const oldValue = sourceValue();
-    const referenceValue = Array.isArray(oldValue) ? (oldValue[0] ?? null) : oldValue;
 
     let nextValue: T | T[] | null;
     if (newValue == null) {
       nextValue = selectionMode() === "multiple" ? ([] as T[]) : null;
     } else if (Array.isArray(newValue)) {
-      nextValue = newValue.map(
-        (v) => convertValue(constrainDate(toDisplayCalendarDate(v)), referenceValue) as T,
-      );
+      nextValue = newValue
+        .map((v) => normalizeValue(toDisplayCalendarDate(v)))
+        .filter((v): v is T => v != null);
     } else {
-      nextValue = convertValue(constrainDate(toDisplayCalendarDate(newValue)), referenceValue) as T;
+      const localValue = normalizeValue(toDisplayCalendarDate(newValue));
+      if (!localValue) {
+        return;
+      }
+      nextValue = localValue;
     }
 
     const controlled = access(props.value);
@@ -522,6 +550,29 @@ export function createCalendarState<
   // Check if a date is invalid
   const isInvalid = (date: DateValue): boolean => {
     return isCellDisabled(date) || isCellUnavailable(date);
+  };
+
+  // RAC `useCalendarState.ts` `isPreviousVisibleRangeInvalid` /
+  // `isNextVisibleRangeInvalid`: prev = startDate−1 invalid; next = endDate+1.
+  const isDateOutsideAllowedRange = (date: DateValue): boolean => {
+    const min = minValueState();
+    const max = maxValueState();
+    const calDate = toDisplayCalendarDate(date);
+    if (min && calDate.compare(toDisplayCalendarDate(min)) < 0) return true;
+    if (max && calDate.compare(toDisplayCalendarDate(max)) > 0) return true;
+    return false;
+  };
+
+  const isPreviousVisibleRangeInvalid = () => {
+    const start = visibleRange().start;
+    const previous = start.subtract({ days: 1 });
+    return isSameDay(previous, start) || isDateOutsideAllowedRange(previous);
+  };
+
+  const isNextVisibleRangeInvalid = () => {
+    const end = visibleRange().end;
+    const next = end.add({ days: 1 });
+    return isSameDay(next, end) || isDateOutsideAllowedRange(next);
   };
 
   // Navigation methods
@@ -669,6 +720,8 @@ export function createCalendarState<
     isCellDisabled,
     isOutsideVisibleRange,
     isInvalid,
+    isPreviousVisibleRangeInvalid,
+    isNextVisibleRangeInvalid,
     focusPreviousPage,
     focusNextPage,
     focusPreviousSection,
@@ -708,4 +761,27 @@ function convertValue(newValue: CalendarDate, oldValue?: DateValue | null): Date
   }
 
   return localValue;
+}
+
+/**
+ * Walks backward from `date` while it is unavailable and still at/after `minValue`.
+ * Mirrors @react-stately/calendar previousAvailableDate.
+ */
+function previousAvailableDate(
+  date: CalendarDate,
+  minValue: CalendarDate,
+  isDateUnavailable?: (date: DateValue) => boolean,
+): CalendarDate | null {
+  if (!isDateUnavailable) {
+    return date;
+  }
+
+  while (date.compare(minValue) >= 0 && isDateUnavailable(date)) {
+    date = date.subtract({ days: 1 });
+  }
+
+  if (date.compare(minValue) >= 0) {
+    return date;
+  }
+  return null;
 }

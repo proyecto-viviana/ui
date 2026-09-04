@@ -47,6 +47,11 @@ describe("Form SSR", () => {
     expect(html).toContain("Nombre");
     expect(html).toContain("Username");
     expect(html).toContain("Guardar");
+    const labels = html.match(/<label\b[^>]*>/g) ?? [];
+    expect(labels.length).toBeGreaterThan(0);
+    for (const tag of labels) {
+      expect(tag.match(/ for="/g)?.length ?? 0).toBe(1);
+    }
     write("form-textfield-ssr.html", html);
   });
 

@@ -18,9 +18,11 @@ import {
   CalendarButton,
   CalendarGrid,
   CalendarCell,
+  useCalendarContext,
   type CalendarProps,
 } from "../src/Calendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -271,31 +273,28 @@ describe("Calendar", () => {
       });
     });
 
-    it("should follow RTL arrow direction for day navigation", async () => {
-      const previousDir = document.documentElement.getAttribute("dir");
-      document.documentElement.setAttribute("dir", "rtl");
+    it("should follow RTL arrow direction from I18nProvider without document.dir", async () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
 
-      try {
-        render(() => (
+      render(() => (
+        <I18nProvider locale="he-IL">
           <TestCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
-        ));
-        await waitForCalendarHydration();
+        </I18nProvider>
+      ));
+      await waitForCalendarHydration();
 
-        const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
-        day15.focus();
-        fireEvent.keyDown(day15, { key: "ArrowRight" });
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
+      // Mirrors react-aria useCalendar.test.js keyboard arrows under useLocale().direction === 'rtl'
+      // (useCalendarGrid.ts ArrowRight → focusPreviousDay).
+      fireEvent.keyDown(day15, { key: "ArrowRight" });
 
-        await waitFor(() => {
-          const day14 = screen.getByRole("button", { name: /June 14, 2024/i });
-          expect(day14).toHaveFocus();
-        });
-      } finally {
-        if (previousDir) {
-          document.documentElement.setAttribute("dir", previousDir);
-        } else {
-          document.documentElement.removeAttribute("dir");
-        }
-      }
+      await waitFor(() => {
+        const day14 = screen.getByRole("button", { name: /June 14, 2024/i });
+        expect(day14).toHaveFocus();
+      });
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
     });
   });
 
@@ -687,6 +686,87 @@ describe("Calendar", () => {
 
       const gridcells = screen.getAllByRole("gridcell");
       expect(gridcells.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("selectDate", () => {
+    const focusedDate = new CalendarDate(2026, 4, 15);
+
+    function SelectDateExample() {
+      const state = useCalendarContext();
+      return (
+        <>
+          <button type="button" onClick={() => state.selectDate(focusedDate)}>
+            Select focused
+          </button>
+          <button
+            type="button"
+            onClick={() => state.selectDate(focusedDate.subtract({ months: 1 }))}
+          >
+            Select one month before
+          </button>
+          <button type="button" onClick={() => state.selectDate(focusedDate.add({ months: 1 }))}>
+            Select one month after
+          </button>
+          <span data-testid="selected-value">{state.value() ? String(state.value()) : "none"}</span>
+        </>
+      );
+    }
+
+    it("selects a date before the visible range when isDateUnavailable is provided", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Appointment date"
+          defaultFocusedValue={focusedDate}
+          isDateUnavailable={() => false}
+        >
+          <header>
+            <CalendarButton slot="previous">◀</CalendarButton>
+            <CalendarHeading />
+            <CalendarButton slot="next">▶</CalendarButton>
+          </header>
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <SelectDateExample />
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
+      await user.click(screen.getByRole("button", { name: "Select focused" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(focusedDate.toString());
+
+      await user.click(screen.getByRole("button", { name: "Select one month before" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(
+        focusedDate.subtract({ months: 1 }).toString(),
+      );
+    });
+
+    it("selects a date after the visible range when isDateUnavailable is provided", async () => {
+      render(() => (
+        <Calendar
+          aria-label="Appointment date"
+          defaultFocusedValue={focusedDate}
+          isDateUnavailable={() => false}
+        >
+          <header>
+            <CalendarButton slot="previous">◀</CalendarButton>
+            <CalendarHeading />
+            <CalendarButton slot="next">▶</CalendarButton>
+          </header>
+          <CalendarGrid>{(date) => <CalendarCell date={date} />}</CalendarGrid>
+          <SelectDateExample />
+        </Calendar>
+      ));
+      await waitForCalendarHydration();
+
+      await user.click(screen.getAllByRole("button", { name: "Previous" })[0]);
+      await user.click(screen.getByRole("button", { name: "Select focused" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(focusedDate.toString());
+
+      await user.click(screen.getByRole("button", { name: "Select one month after" }));
+      expect(screen.getByTestId("selected-value")).toHaveTextContent(
+        focusedDate.add({ months: 1 }).toString(),
+      );
     });
   });
 });

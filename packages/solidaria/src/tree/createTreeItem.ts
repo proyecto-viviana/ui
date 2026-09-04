@@ -32,6 +32,8 @@ import { getTreeData } from "./createTree";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
 import { mergeCollectionRowInteractionProps } from "../selection/createCollectionRowInteraction";
 import { mergeProps } from "../utils/mergeProps";
+import { createStringFormatter } from "../i18n";
+import { treeIntlStrings } from "./intl";
 
 /**
  * Creates accessibility props for a tree item.
@@ -41,6 +43,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
   state: Accessor<TreeState<T, C>>,
   ref: Accessor<HTMLElement | null>,
 ): TreeItemAria {
+  const stringFormatter = createStringFormatter(treeIntlStrings, "@react-aria/tree");
   const fallbackRowId = createId();
   const expandButtonId = createId();
 
@@ -134,6 +137,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
                 treeAction?.(p.node.key);
                 if (shouldToggleOnAction) {
                   s.toggleKey(p.node.key);
+                  queueMicrotask(() => ref()?.focus());
                 }
               }
             : undefined,
@@ -199,10 +203,49 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
       baseProps,
     );
 
+    const direction = () => treeData?.direction ?? "ltr";
+    const expandKey = () => (direction() === "rtl" ? "ArrowLeft" : "ArrowRight");
+    const collapseKey = () => (direction() === "rtl" ? "ArrowRight" : "ArrowLeft");
+
     return mergeCollectionRowInteractionProps(mergedProps, {
       ref,
       keyboardNavigationBehavior: () => treeData?.keyboardNavigationBehavior ?? "arrow",
-      direction: () => treeData?.direction ?? "ltr",
+      direction,
+      onBeforeArrowNavigation: (event) => {
+        const s = state();
+        const node = props().node;
+        const row = ref();
+        if (!row || s.focusedKey !== node.key) {
+          return false;
+        }
+        if (event.key === expandKey() && isExpandable() && !s.isExpanded(node.key)) {
+          event.preventDefault();
+          event.stopPropagation();
+          s.toggleKey(node.key);
+          queueMicrotask(() => row.focus());
+          return true;
+        }
+        if (event.key === collapseKey()) {
+          if (isExpandable() && s.isExpanded(node.key)) {
+            event.preventDefault();
+            event.stopPropagation();
+            s.toggleKey(node.key);
+            queueMicrotask(() => row.focus());
+            return true;
+          }
+          if (
+            !s.isExpanded(node.key) &&
+            node.parentKey != null &&
+            s.collection.getItem(node.parentKey)?.type === "item"
+          ) {
+            event.preventDefault();
+            event.stopPropagation();
+            s.setFocusedKey(node.parentKey);
+            return true;
+          }
+        }
+        return false;
+      },
     });
   });
 
@@ -222,6 +265,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     if (selectableItem.isDisabled()) return;
 
     s.toggleKey(p.node.key);
+    queueMicrotask(() => ref()?.focus());
   };
 
   const stopPointerPropagation = (e: Event) => {
@@ -234,7 +278,7 @@ export function createTreeItem<T extends object, C extends TreeCollection<T> = T
     const baseProps: Record<string, unknown> = {
       type: "button",
       id: expandButtonId,
-      "aria-label": isExpanded() ? "Collapse" : "Expand",
+      "aria-label": stringFormatter().format(isExpanded() ? "collapse" : "expand"),
       "aria-labelledby": isExpandable() ? `${expandButtonId} ${rowId()}` : undefined,
       "data-react-aria-prevent-focus": true,
       onClick: onExpandClick,

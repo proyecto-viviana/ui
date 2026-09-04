@@ -24,13 +24,17 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createSignal,
   on,
   onCleanup,
   splitProps,
+  untrack,
   useContext,
   For,
   Show,
+  type Context,
+  type Accessor,
 } from "solid-js";
 import {
   createListBox,
@@ -38,10 +42,6 @@ import {
   createFocusRing,
   createScrollIntoViewOnFocus,
   createStringFormatter,
-  createDragSession,
-  getGlobalDraggingCollectionRef,
-  getGlobalDraggingKeys,
-  registerDropItem,
   dndIntlStrings,
   mergeProps,
   moveVirtualFocus,
@@ -58,6 +58,8 @@ import {
   type ListFilterFn,
   type Key,
   type DropTarget,
+  type DroppableCollectionState,
+  type Collection,
 } from "@proyecto-viviana/solid-stately";
 import { useAutocompleteCollection } from "./Autocomplete";
 import {
@@ -65,18 +67,23 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  DEFAULT_SLOT,
+  OptionContent,
+  Provider,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
+import { TextContext } from "./Text";
 import { SharedElementTransition } from "./SharedElementTransition";
 import {
   SelectionIndicatorContext,
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import { type DragAndDropHooks } from "./useDragAndDrop";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -93,6 +100,7 @@ import {
   type CollectionRendererContextValue,
   type SectionProps,
   useCollectionRenderer,
+  useCollectionRoot,
   isCollectionSection,
   flattenCollectionEntries,
 } from "./Collection";
@@ -227,6 +235,161 @@ interface ListBoxContextValue<T> {
 export const ListBoxContext = createContext<ListBoxContextValue<unknown> | null>(null);
 export const ListBoxStateContext = createContext<ListState<unknown> | null>(null);
 export const ListStateContext = ListBoxStateContext;
+
+function dropIndicatorLabel(
+  target: ItemDropTarget,
+  collection: Collection<unknown>,
+  format: (
+    key: "dropOnItem" | "insertBetween" | "insertAfter" | "insertBefore",
+    args?: Record<string, string>,
+  ) => string,
+): string {
+  const getText = (key: Key | null): string => {
+    if (key == null) return "";
+    return collection.getTextValue(key) ?? collection.getItem(key)?.textValue ?? "";
+  };
+  if (target.dropPosition === "on") {
+    return format("dropOnItem", { itemText: getText(target.key) });
+  }
+  let before: Key | null;
+  let after: Key | null;
+  if (target.dropPosition === "before") {
+    const prevKey = collection.getKeyBefore(target.key);
+    const prevNode = prevKey != null ? collection.getItem(prevKey) : null;
+    before = prevNode?.type === "item" ? prevNode.key : null;
+  } else {
+    before = target.key;
+  }
+  if (target.dropPosition === "after") {
+    const nextKey = collection.getKeyAfter(target.key);
+    const nextNode = nextKey != null ? collection.getItem(nextKey) : null;
+    after = nextNode?.type === "item" ? nextNode.key : null;
+  } else {
+    after = target.key;
+  }
+  if (before != null && after != null) {
+    return format("insertBetween", {
+      beforeItemText: getText(before),
+      afterItemText: getText(after),
+    });
+  }
+  if (before != null) {
+    return format("insertAfter", { itemText: getText(before) });
+  }
+  if (after != null) {
+    return format("insertBefore", { itemText: getText(after) });
+  }
+  return "";
+}
+
+/**
+ * RAC `ListBox.tsx:662-717` `ListBoxDropIndicatorWrapper` — a stable module-level
+ * component so Solid does not remount (and unregister) the indicator on every
+ * parent ListBox re-render. `useDropIndicator` owns register + focus
+ * (`useDroppableItem.ts:49-88`).
+ */
+function ListBoxDropIndicatorWrapper(props: DropIndicatorProps): JSX.Element {
+  const listContext = useContext(ListBoxContext);
+  const listState = useContext(ListBoxStateContext);
+  const [el, setEl] = createSignal<HTMLDivElement | null>(null);
+  const dndFormatter = createStringFormatter(dndIntlStrings);
+  const dropState = listContext?.dropState as DroppableCollectionState | undefined;
+  const indicator = listContext?.dragAndDropHooks?.useDropIndicator?.(
+    { target: props.target },
+    dropState as DroppableCollectionState,
+    el,
+  );
+
+  return (
+    <Show when={indicator && !indicator.isHidden}>
+      <div
+        {...indicator?.dropIndicatorProps}
+        ref={setEl}
+        role="option"
+        class="solidaria-DropIndicator"
+        aria-label={
+          listState
+            ? dropIndicatorLabel(props.target, listState.collection(), (key, args) =>
+                dndFormatter().format(key, args),
+              )
+            : undefined
+        }
+        data-drop-target={indicator?.isDropTarget || undefined}
+      />
+    </Show>
+  );
+}
+
+/**
+ * Owns only the collection item. Drop-indicator siblings live in their own
+ * components so their tracking cannot remount this node.
+ *
+ * Comparison hyperscript children (`hc` thunks) are one-shot: if the fragment
+ * insert that owns the option also tracks indicator `Show`, the effect
+ * re-runs, disposes the option, and Chromium maps focus to
+ * `listbox:Permissions`. RAC `ListBoxItem` stays mounted while Collection
+ * inserts indicator siblings (`react-aria-components/src/ListBox.tsx`).
+ */
+function ListBoxRenderedItem<T>(props: {
+  item: T;
+  renderItem: (item: T) => JSX.Element;
+}): JSX.Element {
+  // Comparison `hc` returns a one-shot thunk. Solid's insert treats a function
+  // child as an accessor and will call it again when a sibling indicator
+  // invalidates. Instantiate once under this owner so the option node stays.
+  const child = untrack(() => {
+    const rendered = props.renderItem(props.item);
+    return typeof rendered === "function" ? (rendered as () => JSX.Element)() : rendered;
+  });
+  return child as JSX.Element;
+}
+
+function ListBoxDropIndicatorSlot(props: {
+  itemIndex: number | Accessor<number>;
+  position: "before" | "after" | "on";
+  renderDropIndicator?: (
+    index: number,
+    position: "before" | "after" | "on",
+  ) => JSX.Element | undefined;
+}): JSX.Element {
+  const itemIndex = () =>
+    typeof props.itemIndex === "function" ? props.itemIndex() : props.itemIndex;
+  return <>{props.renderDropIndicator?.(itemIndex(), props.position)}</>;
+}
+
+/**
+ * Stable per-item row so drop-indicator mount does not remount the option.
+ */
+function ListBoxItemWithDropIndicators<T>(props: {
+  item: T;
+  itemIndex: number | Accessor<number>;
+  isLastInLevel: boolean | Accessor<boolean>;
+  renderItem: (item: T) => JSX.Element;
+  renderDropIndicator?: (
+    index: number,
+    position: "before" | "after" | "on",
+  ) => JSX.Element | undefined;
+}): JSX.Element {
+  const isLast = () =>
+    typeof props.isLastInLevel === "function" ? props.isLastInLevel() : props.isLastInLevel;
+  return (
+    <>
+      <ListBoxDropIndicatorSlot
+        itemIndex={props.itemIndex}
+        position="before"
+        renderDropIndicator={props.renderDropIndicator}
+      />
+      <ListBoxRenderedItem item={props.item} renderItem={props.renderItem} />
+      <Show when={isLast()}>
+        <ListBoxDropIndicatorSlot
+          itemIndex={props.itemIndex}
+          position="after"
+          renderDropIndicator={props.renderDropIndicator}
+        />
+      </Show>
+    </>
+  );
+}
 
 /**
  * A listbox displays a list of options and allows a user to select one or more of them.
@@ -379,7 +542,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
 
   const renderValues = createMemo<ListBoxRenderProps>(() => ({
-    isFocused: state.isFocused() || isFocused(),
+    // RAC ListBox.tsx:366-414: `data-focused` / render-prop `isFocused` come from
+    // `useFocusRing` on the listbox element, not collection focus. Virtual focus
+    // (ComboBox) leaves the listbox itself unfocused.
+    isFocused: isFocused(),
     isFocusVisible: isFocusVisible(),
     isDisabled: resolveDisabled(),
     isEmpty: state.collection().size === 0,
@@ -498,6 +664,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   const getItemNodes = createMemo(() =>
     Array.from(state.collection()).filter((node) => node.type === "item"),
   );
+  const isLastDropItem = (itemIndex: number | Accessor<number>) => {
+    const i = typeof itemIndex === "function" ? itemIndex() : itemIndex;
+    return getItemNodes().length > 0 && i === getItemNodes().length - 1;
+  };
   const getDropTargetByIndex = (
     index: number,
     position: "before" | "after" | "on",
@@ -518,7 +688,11 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection();
+      },
+    });
   });
   const hasDraggableDnd = createMemo(() => {
     const hooks = local.dragAndDropHooks;
@@ -528,6 +702,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: flatItems(),
+      collection: state.collection(),
+      selectedKeys: state.selectionManager.selectedKeys,
+      isSelected: (key) => state.selectionManager.isSelected(key),
     });
   });
   createEffect(() => {
@@ -542,14 +719,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     const hooks = local.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const el = listRef();
-      if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-        const dir = window.getComputedStyle(el).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??
@@ -601,162 +771,14 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!target || target.type !== "item") return undefined;
     return dndRenderDropIndicator()?.(target);
   };
+  // Stable callback so `For` item templates do not track drop-indicator
+  // reactivity (that remounts the option). The row component reads this.
+  const renderItemDropIndicator = (index: number, position: "before" | "after" | "on") =>
+    dndDropIndicator(index, position) ??
+    parentCollectionRenderer?.renderDropIndicator?.(index, position);
 
-  // ── Drop indicator (Fix B: labeled, self-focusing) ─────────────────────────
-  // The upstream ListBoxDropIndicatorWrapper and
-  // useDropIndicator. The droppable-collection state layer diverged to a minimal
-  // reactive target-holder with no collection reference, so the label (which
-  // needs the collection's text values) and the self-focus (which needs the live
-  // drag session) are computed here in the host layer, where both are available.
-  const dndFormatter = createStringFormatter(dndIntlStrings);
-  const dragSession = createDragSession();
-  const dropIndicatorTargetsEqual = (
-    a: DropTarget | null | undefined,
-    b: ItemDropTarget,
-  ): boolean => !!a && a.type === "item" && a.key === b.key && a.dropPosition === b.dropPosition;
-  // Faithful port of useDropIndicator's label logic: "Drop on X" for an on-item
-  // target, else "Insert between X and Y" / "Insert before X" / "Insert after X"
-  // resolved from the target's neighbours in the collection.
-  const dropIndicatorLabel = (target: ItemDropTarget): string => {
-    const collection = state.collection();
-    const getText = (key: Key | null): string => {
-      if (key == null) return "";
-      return collection.getTextValue(key) ?? collection.getItem(key)?.textValue ?? "";
-    };
-    if (target.dropPosition === "on") {
-      return dndFormatter().format("dropOnItem", { itemText: getText(target.key) });
-    }
-    let before: Key | null;
-    let after: Key | null;
-    if (target.dropPosition === "before") {
-      const prevKey = collection.getKeyBefore(target.key);
-      const prevNode = prevKey != null ? collection.getItem(prevKey) : null;
-      before = prevNode?.type === "item" ? prevNode.key : null;
-    } else {
-      before = target.key;
-    }
-    if (target.dropPosition === "after") {
-      const nextKey = collection.getKeyAfter(target.key);
-      const nextNode = nextKey != null ? collection.getItem(nextKey) : null;
-      after = nextNode?.type === "item" ? nextNode.key : null;
-    } else {
-      after = target.key;
-    }
-    if (before != null && after != null) {
-      return dndFormatter().format("insertBetween", {
-        beforeItemText: getText(before),
-        afterItemText: getText(after),
-      });
-    }
-    if (before != null) {
-      return dndFormatter().format("insertAfter", { itemText: getText(before) });
-    }
-    if (after != null) {
-      return dndFormatter().format("insertBefore", { itemText: getText(after) });
-    }
-    return "";
-  };
-  // Wrap the raw Set<string> the DragManager hands drop items into the DragTypes
-  // delegate the port state expects (mirrors createDroppableCollection.wrapTypes).
-  const wrapDropTypes = (types: Set<string>) => ({
-    has: (type: string | string[]) => {
-      if (typeof type === "string") return types.has(type);
-      if (Array.isArray(type)) return type.some((t) => typeof t === "string" && types.has(t));
-      return false;
-    },
-  });
-  const ListBoxDropIndicator = (props: { target: ItemDropTarget }): JSX.Element => {
-    const [indicatorRef, setIndicatorRef] = createSignal<HTMLDivElement | null>(null);
-    const isDropTarget = createMemo(() =>
-      dropIndicatorTargetsEqual(dropState()?.target, props.target),
-    );
-    // aria-hidden mirrors useDropIndicator: outside a drag session, or on a
-    // non-active target, the indicator is hidden from AT ('true'); the active
-    // target during a session is exposed (undefined). isHidden then tells us
-    // whether to omit the element entirely (RAC returns null when hidden).
-    const ariaHidden = createMemo(() =>
-      !dragSession() ? "true" : isDropTarget() ? undefined : "true",
-    );
-    const isHidden = createMemo(() => !isDropTarget() && !!ariaHidden());
-    // Faithful port of useDroppableItem. Registration (of the indicator element as
-    // a DragManager droppable item) and the self-focus must happen in one effect,
-    // registration first: the DragManager's onFocus keys off the dropItems map, so
-    // if the element self-focused before it was registered, onFocus would treat it
-    // as an unknown target and redirect focus back to the collection (a pickup
-    // bounce). React's two useDroppableItem effects run in guaranteed order after
-    // the ref is attached; Solid's independent effects race, so we fuse them. The
-    // dropItems map keys off live elements — the ref nulls itself on Show cleanup
-    // (below), so a hidden indicator unregisters instead of lingering as a stale
-    // detached entry.
-    createEffect(() => {
-      const el = indicatorRef();
-      if (!el) return;
-      const unregister = registerDropItem({
-        element: el,
-        target: props.target,
-        getDropOperation: (types, allowedOperations) => {
-          const st = dropState();
-          if (!st) return "cancel";
-          // Thread the same drag identity the collection uses (see
-          // createDroppableCollection.isInternalDropOperation): an internal
-          // keyboard reorder must report `isInternal` so the state's feature
-          // detection keeps before/after indicators valid (and rejects "on" for a
-          // reorder-only host). Without it every indicator would return "cancel"
-          // and drop out of the DragManager's ariaHideOutside keep-set.
-          const isInternal = getGlobalDraggingCollectionRef() === listRef();
-          return st.getDropOperation(
-            props.target,
-            wrapDropTypes(types) as Parameters<typeof st.getDropOperation>[1],
-            allowedOperations,
-            isInternal,
-            getGlobalDraggingKeys(),
-          );
-        },
-      });
-      onCleanup(unregister);
-      // While a drag session is active, the current drop target moves real DOM
-      // focus onto itself, so keyboard drop navigation lands on the labeled
-      // insertion point rather than the collection element. The self-focus is
-      // deferred to an animation frame to mirror upstream's timing: in
-      // useDroppableItem the focus is a *passive* useEffect, so it commits only
-      // after the browser's microtask checkpoint. That ordering matters because
-      // the DragManager keeps the active drop indicator visible via
-      // ariaHideOutside, whose keep-set is `[dragSource, ...registered drop
-      // items]` (the collection is dropped from the set once it owns items). A
-      // freshly-mounted indicator is momentarily `inert` — it only leaves the
-      // keep-set's blind spot once the DragManager's MutationObserver re-runs
-      // updateValidDropTargets on a later microtask. Focusing synchronously (or
-      // on a microtask) would call .focus() while the element is still inert and
-      // silently no-op; the animation frame runs after that refresh, exactly as
-      // React's passive effect does.
-      if (dragSession() && isDropTarget()) {
-        requestAnimationFrame(() => {
-          if (dragSession() && isDropTarget() && indicatorRef() === el) {
-            el.focus();
-          }
-        });
-      }
-    });
-    return (
-      <Show when={!isHidden()}>
-        <div
-          ref={(el) => {
-            setIndicatorRef(el);
-            onCleanup(() => setIndicatorRef(null));
-          }}
-          role="option"
-          class="solidaria-DropIndicator"
-          aria-roledescription={dndFormatter().format("dropIndicator")}
-          aria-label={dropIndicatorLabel(props.target)}
-          aria-hidden={ariaHidden()}
-          tabindex={-1}
-          data-drop-target={isDropTarget() || undefined}
-        />
-      </Show>
-    );
-  };
   const dropIndicatorContextValue = {
-    render: (p: DropIndicatorProps) => <ListBoxDropIndicator target={p.target} />,
+    render: (p: DropIndicatorProps) => <ListBoxDropIndicatorWrapper {...p} />,
   };
 
   const virtualizer = useVirtualizerContext();
@@ -770,24 +792,17 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized || hasSections()) return null;
     const baseRange = virtualizer.getVisibleRange(stateProps.items.length);
     const itemNodes = getItemNodes();
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => itemNodes.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection());
-    const focusedKey = state.focusedKey();
-    const focusedIndex =
-      focusedKey != null ? itemNodes.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? itemNodes.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
     return mergePersistedKeysIntoVirtualRange(
       baseRange,
-      persistedIndexes,
+      [],
       stateProps.items.length,
       virtualizer,
       80,
@@ -796,6 +811,15 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         forceIncludeMaxSpan: 320,
       },
     );
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const itemNodes = getItemNodes();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => itemNodes.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   createEffect(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
@@ -825,10 +849,6 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     if (!range) return stateProps.items;
     return stateProps.items.slice(range.start, range.end);
   });
-  // Spacers reserve the windowed-out extent along the virtualizer's primary axis,
-  // so a horizontal layout offsets along width rather than height.
-  const virtualSpacerStyle = (size: number): JSX.CSSProperties =>
-    virtualizer?.orientation === "horizontal" ? { width: `${size}px` } : { height: `${size}px` };
   const sectionedRenderEntries = createMemo(() => {
     let globalIndex = 0;
     return stateProps.items.map((entry) => {
@@ -860,6 +880,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
 
   return (
     <ListBoxContext.Provider
@@ -896,17 +917,102 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                 }}
                 class={renderProps.class()}
                 style={renderProps.style()}
-                data-focused={state.isFocused() || undefined}
+                data-focused={isFocused() || undefined}
                 data-focus-visible={isFocusVisible() || undefined}
                 data-disabled={resolveDisabled() || undefined}
                 data-empty={isEmpty() || undefined}
-                data-layout={stateProps.layout}
-                data-orientation={stateProps.orientation}
+                data-layout={stateProps.layout || "stack"}
+                data-orientation={stateProps.orientation || "vertical"}
                 data-drop-target={isRootDropTarget() || undefined}
                 slot={local.slot}
               >
                 <SharedElementTransition>
-                  {isEmpty() && local.renderEmptyState ? (
+                  {parentCollectionRenderer?.isVirtualized ? (
+                    <>
+                      <CollectionRoot
+                        collection={virtualRange() ? stateProps.items : []}
+                        scrollRef={() => listRef()}
+                        persistedKeys={persistedKeys()}
+                      >
+                        {isEmpty() && local.renderEmptyState ? null : hasSections() ? (
+                          <For each={sectionedRenderEntries()}>
+                            {(entry) =>
+                              entry.type === "section" ? (
+                                <div role="presentation" data-section-wrapper>
+                                  <Section class="solidaria-ListBox-section">
+                                    {entry.section.title != null && (
+                                      <Header class="solidaria-ListBox-sectionHeader">
+                                        {entry.section.title}
+                                      </Header>
+                                    )}
+                                    <Group class="solidaria-ListBox-sectionGroup">
+                                      <div role="group" aria-label={entry.section["aria-label"]}>
+                                        <For each={entry.items}>
+                                          {(indexedItem) => (
+                                            <ListBoxItemWithDropIndicators
+                                              item={indexedItem.item}
+                                              itemIndex={indexedItem.index}
+                                              isLastInLevel={() =>
+                                                isLastDropItem(indexedItem.index)
+                                              }
+                                              renderItem={local.children}
+                                              renderDropIndicator={renderItemDropIndicator}
+                                            />
+                                          )}
+                                        </For>
+                                      </div>
+                                    </Group>
+                                  </Section>
+                                </div>
+                              ) : (
+                                <ListBoxItemWithDropIndicators
+                                  item={entry.item.item}
+                                  itemIndex={entry.item.index}
+                                  isLastInLevel={() => isLastDropItem(entry.item.index)}
+                                  renderItem={local.children}
+                                  renderDropIndicator={renderItemDropIndicator}
+                                />
+                              )
+                            }
+                          </For>
+                        ) : (
+                          <>
+                            <For each={visibleItems()}>
+                              {(item, index) => (
+                                <ListBoxItemWithDropIndicators
+                                  item={item as T}
+                                  itemIndex={() => (virtualRange()?.start ?? 0) + index()}
+                                  isLastInLevel={() =>
+                                    isLastDropItem((virtualRange()?.start ?? 0) + index())
+                                  }
+                                  renderItem={local.children}
+                                  renderDropIndicator={renderItemDropIndicator}
+                                />
+                              )}
+                            </For>
+                            <For each={persistedOutsideIndexes()}>
+                              {(index) => (
+                                <PersistedVirtualItem index={index}>
+                                  <ListBoxItemWithDropIndicators
+                                    item={stateProps.items[index] as T}
+                                    itemIndex={() => index}
+                                    isLastInLevel={() => isLastDropItem(index)}
+                                    renderItem={local.children}
+                                    renderDropIndicator={renderItemDropIndicator}
+                                  />
+                                </PersistedVirtualItem>
+                              )}
+                            </For>
+                          </>
+                        )}
+                      </CollectionRoot>
+                      {isEmpty() && local.renderEmptyState ? (
+                        <div role="option" style={{ display: "contents" }} data-empty-state>
+                          {local.renderEmptyState()}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : isEmpty() && local.renderEmptyState ? (
                     <div role="option" style={{ display: "contents" }} data-empty-state>
                       {local.renderEmptyState()}
                     </div>
@@ -925,21 +1031,13 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                                 <div role="group" aria-label={entry.section["aria-label"]}>
                                   <For each={entry.items}>
                                     {(indexedItem) => (
-                                      <>
-                                        {collectionRenderer().renderDropIndicator?.(
-                                          indexedItem.index,
-                                          "before",
-                                        )}
-                                        {collectionRenderer().renderDropIndicator?.(
-                                          indexedItem.index,
-                                          "on",
-                                        )}
-                                        {local.children(indexedItem.item)}
-                                        {collectionRenderer().renderDropIndicator?.(
-                                          indexedItem.index,
-                                          "after",
-                                        )}
-                                      </>
+                                      <ListBoxItemWithDropIndicators
+                                        item={indexedItem.item}
+                                        itemIndex={indexedItem.index}
+                                        isLastInLevel={() => isLastDropItem(indexedItem.index)}
+                                        renderItem={local.children}
+                                        renderDropIndicator={renderItemDropIndicator}
+                                      />
                                     )}
                                   </For>
                                 </div>
@@ -947,52 +1045,31 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                             </Section>
                           </div>
                         ) : (
-                          <>
-                            {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
-                            {collectionRenderer().renderDropIndicator?.(entry.item.index, "on")}
-                            {local.children(entry.item.item)}
-                            {collectionRenderer().renderDropIndicator?.(entry.item.index, "after")}
-                          </>
+                          <ListBoxItemWithDropIndicators
+                            item={entry.item.item}
+                            itemIndex={entry.item.index}
+                            isLastInLevel={() => isLastDropItem(entry.item.index)}
+                            renderItem={local.children}
+                            renderDropIndicator={renderItemDropIndicator}
+                          />
                         )
                       }
                     </For>
                   ) : (
                     <>
-                      {virtualRange() != null ? (
-                        <div
-                          role="presentation"
-                          aria-hidden="true"
-                          style={virtualSpacerStyle(virtualRange()!.offsetTop)}
-                          data-virtualizer-spacer="top"
-                        />
-                      ) : null}
                       <For each={visibleItems()}>
-                        {(item, index) => {
-                          const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                          const beforeIndicator = () =>
-                            collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
-                          const onIndicator = () =>
-                            collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
-                          const afterIndicator = () =>
-                            collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
-                          return (
-                            <>
-                              {beforeIndicator()}
-                              {onIndicator()}
-                              {local.children(item as T)}
-                              {afterIndicator()}
-                            </>
-                          );
-                        }}
+                        {(item, index) => (
+                          <ListBoxItemWithDropIndicators
+                            item={item as T}
+                            itemIndex={() => (virtualRange()?.start ?? 0) + index()}
+                            isLastInLevel={() =>
+                              isLastDropItem((virtualRange()?.start ?? 0) + index())
+                            }
+                            renderItem={local.children}
+                            renderDropIndicator={renderItemDropIndicator}
+                          />
+                        )}
                       </For>
-                      {virtualRange() != null ? (
-                        <div
-                          role="presentation"
-                          aria-hidden="true"
-                          style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
-                          data-virtualizer-spacer="bottom"
-                        />
-                      ) : null}
                     </>
                   )}
                 </SharedElementTransition>
@@ -1037,7 +1114,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         return Boolean(ariaProps.isDisabled || listContext?.isDisabled());
       },
       get "aria-label"() {
-        return ariaProps["aria-label"] ?? local.textValue;
+        return ariaProps["aria-label"];
       },
       get shouldSelectOnPressUp() {
         return ariaProps.shouldSelectOnPressUp;
@@ -1079,9 +1156,6 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
     },
     renderValues,
   );
-  const hasPrimitiveLabel = () => {
-    return typeof props.children === "string" || typeof props.children === "number";
-  };
 
   const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
     isSelected: optionAria.isSelected,
@@ -1112,17 +1186,44 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
   });
 
   const cleanOptionProps = () => {
-    const {
-      ref: _ref1,
-      "aria-describedby": _ariaDescribedby,
-      ...rest
-    } = optionAria.optionProps as Record<string, unknown>;
-    if (!hasPrimitiveLabel() && rest["aria-label"] == null) {
-      delete rest["aria-labelledby"];
-    }
+    const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
     return rest;
   };
+
+  const optionTextSlots = {
+    slots: {
+      get [DEFAULT_SLOT]() {
+        return optionAria.labelProps;
+      },
+      get label() {
+        return optionAria.labelProps;
+      },
+      get description() {
+        return optionAria.descriptionProps;
+      },
+    },
+  };
+
+  // Styled hosts (S2 ComboBoxItem / PickerItem) emit `<span slot="label">` rather
+  // than `<Text>`. Stamp the slot id onto that node before `createSlotId` probes
+  // the DOM, matching RAC TextContext + useSlotId.
+  createRenderEffect(() => {
+    const el = ref();
+    const labelId = optionAria.labelProps.id;
+    const descriptionId = optionAria.descriptionProps.id;
+    if (!el) return;
+    if (labelId) {
+      const label = el.querySelector("[slot='label']");
+      if (label && !label.id) label.id = labelId;
+    }
+    if (descriptionId) {
+      const description = el.querySelector("[slot='description']");
+      if (description && !description.id) description.id = descriptionId;
+    }
+  });
   const domProps = () => filterDOMProps(ariaProps as Record<string, unknown>, { global: true });
+
+  const selectionMode = () => state.selectionMode();
 
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
@@ -1147,13 +1248,12 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
         data-disabled={optionAria.isDisabled() || undefined}
         data-dragging={draggableItem()?.isDragging || undefined}
         data-drop-target={droppableItem()?.isDropTarget || undefined}
+        data-selection-mode={selectionMode() === "none" ? undefined : selectionMode()}
         slot={local.slot}
       >
-        {hasPrimitiveLabel() ? (
-          <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
-        ) : (
-          renderProps.renderChildren()
-        )}
+        <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
+          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
+        </Provider>
       </div>
     </SelectionIndicatorContext.Provider>
   );
@@ -1202,7 +1302,7 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
   const renderProps = useRenderProps(
     {
       get children() {
-        return props.children ?? (() => (isLoading() ? "Loading more..." : "Load more"));
+        return props.children;
       },
       class: props.class,
       style: props.style,
@@ -1211,24 +1311,29 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
     () => ({ isLoading: isLoading() }),
   );
 
+  // RAC ListBoxLoadMoreItem (ListBox.tsx:781-803): always mount the 0×0
+  // sentinel; render the loader `option` only while `isLoading` and children
+  // exist. A visible "Load more" row when idle/`loading` is a local invention.
   return (
     <>
       <div style={{ position: "relative", width: 0, height: 0, overflow: "hidden" }} inert>
-        <div ref={setSentinelRef} style={{ position: "absolute", height: "1px", width: "1px" }} />
+        <div
+          data-testid="loadMoreSentinel"
+          ref={setSentinelRef}
+          style={{ position: "absolute", height: "1px", width: "1px" }}
+        />
       </div>
-      <div
-        role="option"
-        aria-disabled={true}
-        tabIndex={0}
-        onFocus={() => {
-          void triggerLoadMore();
-        }}
-        class={renderProps.class()}
-        style={renderProps.style()}
-        data-loading={isLoading() || undefined}
-      >
-        {renderProps.renderChildren()}
-      </div>
+      <Show when={isLoading() && props.children}>
+        <div
+          role="option"
+          tabIndex={-1}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-loading
+        >
+          {renderProps.renderChildren()}
+        </div>
+      </Show>
     </>
   );
 }

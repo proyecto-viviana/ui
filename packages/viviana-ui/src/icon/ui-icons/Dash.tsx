@@ -2,16 +2,16 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize50.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize50.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_DashSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize50.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize50.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_DashSize300.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

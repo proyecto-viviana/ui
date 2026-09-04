@@ -6,6 +6,7 @@ import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, within } from "@solidjs/testing-library";
 import { createSignal, For } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { Button } from "../src/Button";
 import { Checkbox } from "../src/Checkbox";
 import { RouterProvider } from "../src/RouterProvider";
@@ -1856,8 +1857,6 @@ describe("Table", () => {
     });
 
     it("wires horizontal droppable keyboard delegate methods in rtl", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
       let keyboardDelegate:
         | {
             getKeyLeftOf?: (key: string | number) => string | number | null;
@@ -1896,78 +1895,16 @@ describe("Table", () => {
         },
       };
 
-      try {
-        render(() => <TestTable dragAndDropHooks={dragAndDropHooks as any} />);
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestTable dragAndDropHooks={dragAndDropHooks as any} />
+        </I18nProvider>
+      ));
 
-        expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        document.dir = originalDir;
-      }
-    });
-
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
-      let keyboardDelegate:
-        | {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          }
-        | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: (props: {
-          keyboardDelegate?: {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          };
-        }) => {
-          keyboardDelegate = props.keyboardDelegate;
-          return { collectionProps: {} };
-        },
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => <TestTable dragAndDropHooks={dragAndDropHooks as any} />);
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
+      expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
+      expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
     });
   });
 
@@ -2633,6 +2570,119 @@ describe("Table", () => {
       await Promise.resolve();
 
       expect(document.activeElement).toBe(rows[2]);
+    });
+
+    it("skips a disabled row on ArrowDown under disabledBehavior all", async () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+          disabledKeys={[2]}
+          disabledBehavior="all"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const table = screen.getByRole("grid", { name: "Pokemon" });
+      const rows = screen.getAllByRole("row");
+      rows[1].focus();
+      fireEvent.focus(rows[1]);
+      fireEvent.keyDown(table, { key: "ArrowDown" });
+      await Promise.resolve();
+
+      expect(document.activeElement).toBe(rows[3]);
+    });
+
+    it("selects every enabled row with Ctrl+A from the focused row", async () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      const table = screen.getByRole("grid", { name: "Pokemon" });
+      const rows = screen.getAllByRole("row");
+      rows[1].focus();
+      fireEvent.focus(rows[1]);
+      fireEvent.keyDown(rows[1], { key: "a", ctrlKey: true });
+      await Promise.resolve();
+
+      expect(rows[1]).toHaveAttribute("aria-selected", "true");
+      expect(rows[2]).toHaveAttribute("aria-selected", "true");
+      expect(rows[3]).toHaveAttribute("aria-selected", "true");
+      expect(table).toHaveAttribute("aria-multiselectable", "true");
+    });
+
+    it("keeps row selection checkboxes out of the tab order", () => {
+      render(() => (
+        <Table
+          items={testData}
+          columns={testColumns}
+          getKey={(item: any) => item.id}
+          aria-label="Pokemon"
+          selectionMode="multiple"
+        >
+          {() => (
+            <>
+              <TableHeader>
+                <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {(item: any) => (
+                  <TableRow id={item.id} item={item}>
+                    {() => (
+                      <>
+                        <TableCell>{() => <TableSelectionCheckbox rowKey={item.id} />}</TableCell>
+                        <TableCell>{() => <>{item.name}</>}</TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                )}
+              </TableBody>
+            </>
+          )}
+        </Table>
+      ));
+
+      for (const checkbox of document.querySelectorAll('input[type="checkbox"]')) {
+        expect(checkbox).toHaveAttribute("tabindex", "-1");
+      }
     });
   });
 
@@ -4061,6 +4111,48 @@ describe("Table", () => {
       expect(labels).toContain("Resize Type");
     });
 
+    it("honors Column minWidth and maxWidth on the Name resizer", () => {
+      render(() => (
+        <ResizableTableContainer>
+          <Table
+            items={testData}
+            columns={resizableColumns}
+            getKey={(item: any) => item.id}
+            aria-label="Resizable Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name" allowsResizing minWidth={180} maxWidth={320}>
+                    {() => (
+                      <div>
+                        <span>Name</span>
+                        <ColumnResizer column={{ key: "name" }} aria-label="Resize Name" />
+                      </div>
+                    )}
+                  </TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </ResizableTableContainer>
+      ));
+
+      const input = screen.getByRole("slider", { name: "Resize Name" }) as HTMLInputElement;
+      expect(input.min).toBe("180");
+      expect(input.max).toBe("320");
+      const value = Number(input.value);
+      expect(value).toBeGreaterThanOrEqual(180);
+      expect(value).toBeLessThanOrEqual(320);
+    });
+
     it("Column resizer accepts data attributes", () => {
       render(() => (
         <ResizableTableContainer>
@@ -4232,6 +4324,66 @@ describe("Table", () => {
       expect(resizers[0].getAttribute("role")).toBe("presentation");
       expect(document.querySelector('input[type="range"]')).toBeNull();
     });
+  });
+
+  it("keeps Name as rowheader with a stable *-name key after selection updates", () => {
+    const columns = [
+      { key: "name", name: "Name", isRowHeader: true },
+      { key: "type", name: "Type" },
+    ];
+
+    render(() => (
+      <Table
+        items={testData}
+        columns={columns}
+        getKey={(item: (typeof testData)[number]) => item.id}
+        getTextValue={(item, column) =>
+          String(item[column.key as keyof (typeof testData)[number]] ?? "")
+        }
+        aria-label="Pokemon"
+        selectionMode="multiple"
+        showSelectionCheckboxes
+        defaultSelectedKeys={new Set([1])}
+      >
+        {() => (
+          <>
+            <TableHeader>
+              <TableColumn id="name">{() => <>Name</>}</TableColumn>
+              <TableColumn id="type">{() => <>Type</>}</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {(item: (typeof testData)[number]) => (
+                <TableRow id={item.id} item={item}>
+                  {() => (
+                    <>
+                      <TableCell id="__selection__">
+                        {() => <TableSelectionCheckbox rowKey={item.id} />}
+                      </TableCell>
+                      <TableCell>{() => <>{item.name}</>}</TableCell>
+                      <TableCell>{() => <>{item.type}</>}</TableCell>
+                    </>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </>
+        )}
+      </Table>
+    ));
+
+    const nameKeys = () =>
+      screen.getAllByRole("rowheader").map((cell) => cell.getAttribute("data-key"));
+
+    expect(nameKeys()).toEqual(["1-name", "2-name", "3-name"]);
+
+    const rows = screen.getAllByRole("row");
+    fireEvent.click(rows[2]);
+
+    expect(nameKeys()).toEqual(["1-name", "2-name", "3-name"]);
+    expect(screen.getByRole("rowheader", { name: "Charizard" })).toHaveAttribute(
+      "data-key",
+      "2-name",
+    );
   });
 });
 
@@ -4495,5 +4647,47 @@ describe("Table (tree grid / expandable rows)", () => {
     expect(row).not.toHaveAttribute("data-expanded");
     expect(row.style.getPropertyValue("--table-row-level")).toBe("");
     expect(document.querySelector("[data-tree-column]")).toBeNull();
+  });
+
+  it("labels ColumnResizer from I18nProvider when no aria-label is passed", () => {
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <ResizableTableContainer>
+          <Table
+            items={testData}
+            columns={[
+              { key: "name", name: "Name" },
+              { key: "type", name: "Type" },
+            ]}
+            getKey={(item: any) => item.id}
+            aria-label="Resizable"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name" allowsResizing>
+                    {() => (
+                      <>
+                        Name
+                        <ColumnResizer column={{ key: "name" }} />
+                      </>
+                    )}
+                  </TableColumn>
+                </TableHeader>
+                <TableBody>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        </ResizableTableContainer>
+      </I18nProvider>
+    ));
+    const input = document.querySelector('input[type="range"]');
+    expect(input).toHaveAttribute("aria-label", "Größenanpassung");
   });
 });

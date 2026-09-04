@@ -12,9 +12,18 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
-import { Menu, MenuItem, MenuSection, MenuTrigger, MenuButton } from "../src/Menu";
+import { createSignal, For } from "solid-js";
+import {
+  Menu,
+  MenuItem,
+  MenuLoadMoreItem,
+  MenuSection,
+  MenuTrigger,
+  MenuButton,
+  SubmenuTrigger,
+} from "../src/Menu";
 import { Separator } from "../src/Separator";
+import { Popover } from "../src/Popover";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 import type { Key, Selection } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
@@ -240,16 +249,7 @@ describe("Menu", () => {
       expect(items[0]).not.toHaveAttribute("aria-describedby");
     });
 
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
+    it("passes locale direction into the droppable ListDropTargetDelegate", () => {
       let capturedDirection: "ltr" | "rtl" | undefined;
       const dragAndDropHooks = {
         useDroppableCollectionState: () => ({
@@ -282,65 +282,12 @@ describe("Menu", () => {
         },
       };
 
-      try {
-        render(() => <TestMenu menuProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
-    });
-
-    it("prefers computed direction over document direction when available", () => {
-      const originalDir = document.dir;
-      document.dir = "ltr";
-      const computedStyleSpy = vi
-        .spyOn(window, "getComputedStyle")
-        .mockImplementation(() => ({ direction: "rtl" }) as CSSStyleDeclaration);
-
-      let capturedDirection: "ltr" | "rtl" | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: () => ({ collectionProps: {} }),
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          constructor(
-            _collection: unknown,
-            _ref: unknown,
-            options?: { direction?: "ltr" | "rtl" },
-          ) {
-            capturedDirection = options?.direction;
-          }
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => <TestMenu menuProps={{ dragAndDropHooks: dragAndDropHooks as any }} />);
-        expect(capturedDirection).toBe("rtl");
-      } finally {
-        computedStyleSpy.mockRestore();
-        document.dir = originalDir;
-      }
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestMenu menuProps={{ dragAndDropHooks: dragAndDropHooks as any }} />
+        </I18nProvider>
+      ));
+      expect(capturedDirection).toBe("rtl");
     });
 
     it("should render item text content", () => {
@@ -630,6 +577,38 @@ describe("Menu", () => {
 
       const items = screen.getAllByRole("menuitem");
       expect(items[0]).toHaveAttribute("data-focused");
+    });
+
+    it("wraps ArrowDown from the last item when shouldFocusWrap is omitted", async () => {
+      render(() => <TestMenu />);
+
+      const menu = screen.getByRole("menu");
+      menu.focus();
+      await user.keyboard("{End}");
+      await user.keyboard("{ArrowDown}");
+      expect(screen.getAllByRole("menuitem")[0]).toHaveAttribute("data-focused");
+    });
+
+    it("keeps Tab inside an open Menu overlay", async () => {
+      render(() => (
+        <>
+          <MenuTrigger defaultOpen>
+            <MenuButton>Open Menu</MenuButton>
+            <Popover>
+              <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
+                {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
+              </Menu>
+            </Popover>
+          </MenuTrigger>
+          <button type="button">After</button>
+        </>
+      ));
+
+      const menu = await screen.findByRole("menu");
+      await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+      await user.tab();
+      expect(menu.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toBe(document.body);
     });
 
     it("should focus last with End", async () => {
@@ -1821,6 +1800,49 @@ describe("MenuTrigger", () => {
     });
   });
 
+  describe("submenu RTL keyboard", () => {
+    it("opens on ArrowLeft under I18nProvider he-IL without document.dir", async () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <MenuTrigger defaultOpen>
+            <MenuButton>Open Menu</MenuButton>
+            <Menu aria-label="Test">
+              <SubmenuTrigger>
+                <MenuItem id="share">Share</MenuItem>
+                <Menu aria-label="Share submenu">
+                  <MenuItem id="email">Email</MenuItem>
+                </Menu>
+              </SubmenuTrigger>
+            </Menu>
+          </MenuTrigger>
+        </I18nProvider>
+      ));
+
+      const triggerItem = screen.getByRole("menuitem", { name: "Share" });
+      // Closed submenu omits aria-expanded (useSubmenuTrigger: `state.isOpen || undefined`).
+      expect(triggerItem).not.toHaveAttribute("aria-expanded", "true");
+      expect(triggerItem).toHaveAttribute("data-has-submenu", "true");
+      triggerItem.focus();
+      // Mirrors react-aria useSubmenuTrigger.ts ArrowLeft: opens when direction === 'rtl'
+      // (SubMenuTrigger.test.tsx rtl ArrowKeys case at ar-AE).
+      fireEvent.keyDown(triggerItem, { key: "ArrowLeft" });
+
+      await waitFor(() => {
+        // Nested menu is labelled by the trigger item (SubmenuTrigger menuProps
+        // aria-labelledby), so the accessible name is "Share", not the authored
+        // aria-label.
+        expect(screen.getByRole("menu", { name: "Share" })).toHaveAttribute(
+          "aria-label",
+          "Share submenu",
+        );
+      });
+      expect(triggerItem).toHaveAttribute("aria-expanded", "true");
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
+    });
+  });
+
   // ============================================
   // A11Y RISK AREA: Focus management + ARIA IDs
   // ============================================
@@ -2033,5 +2055,134 @@ describe("MenuTrigger", () => {
       await user.keyboard("{Home}");
       expect(items[0]).toHaveAttribute("data-focused");
     });
+  });
+});
+
+describe("Menu async loading", () => {
+  const asyncItems = [{ name: "Foo" }, { name: "Bar" }, { name: "Baz" }];
+
+  function AsyncMenu(props: {
+    items?: typeof asyncItems;
+    isLoading?: boolean;
+    onLoadMore?: () => void;
+  }) {
+    return (
+      <Menu aria-label="async menu" renderEmptyState={() => <div>empty state</div>}>
+        <For each={props.items ?? asyncItems}>
+          {(item) => <MenuItem id={item.name}>{item.name}</MenuItem>}
+        </For>
+        <MenuLoadMoreItem isLoading={props.isLoading} onLoadMore={props.onLoadMore}>
+          Loading...
+        </MenuLoadMoreItem>
+      </Menu>
+    );
+  }
+
+  function setupIntersectionObserverMock(observe = vi.fn()) {
+    class MockIntersectionObserver implements IntersectionObserver {
+      readonly root: Element | Document | null = null;
+      readonly rootMargin = "";
+      readonly thresholds: ReadonlyArray<number> = [];
+      callback: IntersectionObserverCallback;
+      static instance: MockIntersectionObserver;
+      constructor(cb: IntersectionObserverCallback) {
+        MockIntersectionObserver.instance = this;
+        this.callback = cb;
+      }
+      observe = observe;
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+      takeRecords = () => [];
+      triggerCallback(entries: Array<{ isIntersecting: boolean }>) {
+        this.callback(entries as IntersectionObserverEntry[], this);
+      }
+    }
+    window.IntersectionObserver =
+      MockIntersectionObserver as unknown as typeof IntersectionObserver;
+    return MockIntersectionObserver;
+  }
+
+  const originalIntersectionObserver = window.IntersectionObserver;
+  afterEach(() => {
+    cleanup();
+    window.IntersectionObserver = originalIntersectionObserver;
+  });
+
+  it("should render the loading element when isLoading is true", () => {
+    render(() => <AsyncMenu isLoading items={asyncItems} />);
+
+    const options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(4);
+    expect(options[3]).toHaveTextContent("Loading...");
+    expect(options[3]).toHaveAttribute("data-loading");
+
+    const sentinel = screen.getByTestId("loadMoreSentinel");
+    expect(sentinel.parentElement).toHaveAttribute("inert");
+  });
+
+  it("should render the sentinel but not the loading indicator when not loading", () => {
+    render(() => <AsyncMenu items={asyncItems} />);
+
+    const options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(3);
+    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+  });
+
+  it("should properly render the renderEmptyState if menu is empty", () => {
+    const [isLoading, setIsLoading] = createSignal(false);
+    render(() => <AsyncMenu items={[]} isLoading={isLoading()} />);
+
+    let options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(1);
+    expect(options[0]).toHaveTextContent("empty state");
+    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+
+    setIsLoading(true);
+    options = screen.getAllByRole("menuitem");
+    expect(options).toHaveLength(2);
+    expect(options[1]).toHaveTextContent("empty state");
+    expect(screen.queryByText("Loading...")).toBeTruthy();
+    expect(screen.getByTestId("loadMoreSentinel")).toBeInTheDocument();
+  });
+
+  it("should only fire onLoadMore when intersection is detected regardless of loading state", () => {
+    const observe = vi.fn();
+    const MockObserver = setupIntersectionObserverMock(observe);
+    const onLoadMore = vi.fn();
+    const [isLoading, setIsLoading] = createSignal(true);
+
+    render(() => <AsyncMenu items={asyncItems} onLoadMore={onLoadMore} isLoading={isLoading()} />);
+
+    const sentinel = screen.getByTestId("loadMoreSentinel");
+    expect(observe).toHaveBeenLastCalledWith(sentinel);
+    expect(onLoadMore).toHaveBeenCalledTimes(0);
+
+    MockObserver.instance.triggerCallback([{ isIntersecting: true }]);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    setIsLoading(false);
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+
+    MockObserver.instance.triggerCallback([{ isIntersecting: true }]);
+    expect(onLoadMore).toHaveBeenCalledTimes(2);
+  });
+
+  it("keyboard navigation skips the loader row", () => {
+    render(() => <AsyncMenu isLoading items={asyncItems} />);
+
+    const menu = screen.getByRole("menu");
+    menu.focus();
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+
+    const loader = screen.getByText("Loading...").closest("[role='menuitem']");
+    expect(screen.getByRole("menuitem", { name: "Baz" })).toHaveAttribute("data-focused");
+    expect(loader).not.toHaveAttribute("data-focused");
+
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    expect(loader).not.toHaveAttribute("data-focused");
   });
 });

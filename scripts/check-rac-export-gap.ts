@@ -1,95 +1,112 @@
 /**
  * Full react-aria-components export-gap report.
  *
- * This is intentionally broader than guard:rac-parity. It compares named
- * value exports re-exported from local module files and fails when upstream has
- * an export the port lacks. Solid-specific additions remain a reported surface
- * for explicit documentation, but do not fail this upstream-completeness gate.
+ * Name-presence only (Rule #1): this gate checks that every RAC barrel value
+ * export — local modules and sibling re-exports from react-aria / react-stately —
+ * exists on the solidaria-components barrel. It does not prove behavior.
+ *
+ * Ticketed gaps live in scripts/rac-export-gap-pending.json so a pin move can
+ * land before the matching port (#216 pin-first train).
  */
 
 import { readFile } from "node:fs/promises";
+import path from "node:path";
+import {
+  PENDING_PATH,
+  RAC_INDEX,
+  SOLIDARIA_INDEX,
+  classifyExportGap,
+  formatList,
+  formatPendingTable,
+  gapHasFailures,
+  loadPendingFile,
+  parseNamedValueExports,
+  parseSiblingReexports,
+  readTicketStatus,
+} from "./rac-export-presence";
 
-const RAC_INDEX = "react-spectrum/packages/react-aria-components/exports/index.ts";
-const SOLIDARIA_INDEX = "packages/solidaria-components/src/index.ts";
+const ROOT = process.cwd();
 
-function parseNamedValueExports(source: string): Set<string> {
-  const symbols = new Set<string>();
-  // Keep matching within one export statement to avoid crossing a prior `export {X};`.
-  const exportRegex = /export\s*\{([^;]*?)\}\s*from\s*['"]([^'"]+)['"]\s*;?/g;
-  let match: RegExpExecArray | null;
+function isExecutedDirectly(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return path.resolve(entry) === path.resolve(new URL(import.meta.url).pathname);
+  } catch {
+    return false;
+  }
+}
 
-  while ((match = exportRegex.exec(source)) !== null) {
-    const [, exportClause, fromPath] = match;
-    // Accept both "./" and "../" so the barrel's `../src/<module>` re-exports
-    // count as local module files; external siblings (react-aria/…,
-    // react-stately/…, @react-types/…) start without a dot and stay excluded.
-    if (!fromPath.startsWith(".")) continue;
-    if (match[0].startsWith("export type")) continue;
+async function main(): Promise<void> {
+  const [racSource, solidariaSource, pendingSource] = await Promise.all([
+    readFile(RAC_INDEX, "utf8"),
+    readFile(SOLIDARIA_INDEX, "utf8"),
+    readFile(PENDING_PATH, "utf8"),
+  ]);
 
-    const cleanedClause = exportClause
-      .replace(/\/\*[\s\S]*?\*\//g, "")
-      .replace(/^\s*\/\/.*$/gm, "");
+  const racExports = parseNamedValueExports(racSource);
+  const siblingExports = parseSiblingReexports(racSource);
+  const solidariaExports = parseNamedValueExports(solidariaSource);
+  const pending = loadPendingFile(pendingSource);
 
-    const specifiers = cleanedClause
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean);
+  const gap = classifyExportGap({
+    racExports,
+    solidariaExports,
+    pending,
+    ticketStatus: (ticketId) => readTicketStatus(ROOT, ticketId),
+  });
 
-    for (const specifier of specifiers) {
-      if (specifier.startsWith("type ")) continue;
-      const parts = specifier.split(/\s+as\s+/i).map((part) => part.trim());
-      const exportedName = parts.length === 2 ? parts[1] : parts[0];
-      if (exportedName) symbols.add(exportedName);
+  console.log("RAC full export-gap guard (barrel name presence)");
+  console.log(`- RAC index: ${RAC_INDEX}`);
+  console.log(`- solidaria index: ${SOLIDARIA_INDEX}`);
+  console.log(`- pending file: ${PENDING_PATH}`);
+  console.log("");
+  console.log(`RAC named value exports: ${racExports.size}`);
+  console.log(`  of which sibling re-exports (react-aria / react-stately): ${siblingExports.size}`);
+  console.log(`solidaria-components named value exports: ${solidariaExports.size}`);
+  console.log(`export missing (unlisted): ${gap.unlistedMissing.length}`);
+  console.log(`export missing (pending, open ticket): ${gap.pending.length}`);
+  console.log(`export extra (Solid-only, reported, non-blocking): ${gap.extra.length}`);
+  console.log("");
+  console.log("Pending (ticketed, open):");
+  console.log(formatPendingTable(gap.pending));
+  console.log("");
+  console.log("export missing (unlisted):");
+  console.log(formatList(gap.unlistedMissing));
+  console.log("");
+  console.log("export extra in solidaria-components:");
+  console.log(formatList(gap.extra));
+
+  if (gapHasFailures(gap)) {
+    console.error("");
+    for (const symbol of gap.unlistedMissing) {
+      console.error(
+        `FAIL: ${symbol} is export missing from solidaria-components and is not in ${PENDING_PATH}.`,
+      );
     }
+    for (const entry of gap.closedStillMissing) {
+      console.error(
+        `FAIL: ${entry.symbol} is listed as pending on #${entry.ticket} (status: ${entry.status}) — ticket closed, export still missing.`,
+      );
+    }
+    for (const entry of gap.missingTicket) {
+      console.error(
+        `FAIL: ${entry.symbol} is listed as pending on #${entry.ticket} but that ticket file was not found.`,
+      );
+    }
+    for (const entry of gap.stalePresent) {
+      console.error(
+        `FAIL: ${entry.symbol} is listed as pending on #${entry.ticket} but is now exported — stale pending entry, remove it.`,
+      );
+    }
+    process.exit(1);
   }
 
-  return symbols;
-}
-
-function formatList(values: string[], limit = 50): string {
-  if (values.length === 0) return "  - (none)";
-  const shown = values
-    .slice(0, limit)
-    .map((value) => `  - ${value}`)
-    .join("\n");
-  if (values.length > limit) {
-    return `${shown}\n  - ... (${values.length - limit} more)`;
-  }
-  return shown;
-}
-
-const [racSource, solidariaSource] = await Promise.all([
-  readFile(RAC_INDEX, "utf8"),
-  readFile(SOLIDARIA_INDEX, "utf8"),
-]);
-
-const racExports = parseNamedValueExports(racSource);
-const solidariaExports = parseNamedValueExports(solidariaSource);
-
-const missingInSolidaria = [...racExports].filter((name) => !solidariaExports.has(name)).sort();
-const extraInSolidaria = [...solidariaExports].filter((name) => !racExports.has(name)).sort();
-
-console.log("RAC full export-gap guard");
-console.log(`- RAC index: ${RAC_INDEX}`);
-console.log(`- solidaria index: ${SOLIDARIA_INDEX}`);
-console.log("");
-console.log(`RAC named exports (local modules only): ${racExports.size}`);
-console.log(`solidaria-components named exports: ${solidariaExports.size}`);
-console.log(`Missing in solidaria-components: ${missingInSolidaria.length}`);
-console.log(`Extra in solidaria-components: ${extraInSolidaria.length}`);
-console.log("");
-console.log("Missing in solidaria-components:");
-console.log(formatList(missingInSolidaria));
-console.log("");
-console.log("Extra in solidaria-components:");
-console.log(formatList(extraInSolidaria));
-
-if (missingInSolidaria.length > 0) {
-  console.error("");
-  console.error(
-    `FAIL: ${missingInSolidaria.length} upstream RAC value export(s) are missing from solidaria-components.`,
+  console.log(
+    `\nPASS: no unlisted RAC value exports are missing. ${gap.pending.length} ticketed pending export(s).`,
   );
-  process.exit(1);
 }
 
-console.log("\nPASS: solidaria-components covers every upstream RAC value export.");
+if (isExecutedDirectly()) {
+  await main();
+}

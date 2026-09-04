@@ -2,7 +2,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { defineConfig } from "vite-plus";
 import solid from "vite-plugin-solid";
 import { packageAttributionBanner } from "../../scripts/package-attribution-banner.mjs";
-import { packageMacros, sourceMapWarningGuard } from "../../scripts/package-macro-plugin.mjs";
+import {
+  packageMacros,
+  selectPackPasses,
+  sourceMapWarningGuard,
+} from "../../scripts/package-macro-plugin.mjs";
 
 // Viviana UI is a reskinned FORK of @proyecto-viviana/solid-spectrum: the styled
 // top layer is duplicated (src/) and its S2 theme remapped to the Glasselated
@@ -102,7 +106,7 @@ const deps = {
     "solid-js",
     "solid-js/web",
     "solid-js/store",
-    "@proyecto-viviana/solidaria-components",
+    /^@proyecto-viviana\/solidaria-components(\/.*)?$/,
     // src/vite.ts imports unplugin-parcel-macros; it's an (optional) peer that
     // must stay external so dist/vite.js uses the app's installed instance (the
     // macro runs at the app's build, not ours).
@@ -126,9 +130,12 @@ const copiedCssFiles = ["components.css", "font-faces.css", "theme.css", "vivian
   }),
 );
 
+// The two passes run one process each (`PACK_PASS=dom` then `PACK_PASS=jsx` in
+// the build script) — see selectPackPasses. The DOM pass cleans `dist`; the JSX
+// pass adds to it, so the order is fixed.
 export default defineConfig({
-  pack: [
-    {
+  pack: selectPackPasses({
+    dom: {
       entry,
       format: ["esm"],
       target: "esnext",
@@ -157,7 +164,7 @@ export default defineConfig({
       deps,
       copy: copiedCssFiles,
     },
-    {
+    jsx: {
       // JSX preserved (macro-expanded) -> dist/*.jsx — the `solid` export
       // condition. The consumer's compiler turns this into DOM
       // or SSR per-environment, so no separate pre-built SSR bundle is needed.
@@ -189,5 +196,5 @@ export default defineConfig({
       plugins: [sourceMapWarningGuard(), packageMacros({ stripCssImports: true })],
       deps,
     },
-  ],
+  }),
 });

@@ -11,6 +11,11 @@ history:
       at: 2026-08-20,
       note: "migrated from legacy task migrate-describedby-slots",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-01,
+      note: "owner 2026-09-01: keep in-progress; done-when is #57 and #58 complete, and those children are still open",
+    }
 ---
 
 Complete the shared `aria-describedby` slot path across field and toggle
@@ -30,5 +35,5 @@ reactive browser evidence.
 
 ## Relationship
 
-Replaces `migrate-describedby-slots` from `.claude/current/tech-debt.md`. Its
+Replaces `migrate-describedby-slots`. Its
 legacy context-slot prerequisite is complete.

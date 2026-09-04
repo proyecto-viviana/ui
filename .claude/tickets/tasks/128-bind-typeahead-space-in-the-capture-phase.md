@@ -7,6 +7,11 @@ parent: 31
 status: open
 history:
   - { state: open, at: 2026-08-20, note: "migrated from the completed upstream behavior sweep" }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 virtualizer: Tab then type Item 5 (or Item then Space) moves React focus to Item 5 / keeps the typeahead buffer; Solid selects Item 0 because Space is handled as selection on the bubble path. Letter typeahead (i) still matches. Isolated, one panel at a time.",
+    }
 ---
 
 Make the typeahead Space handler run before a collection's own keydown handler.

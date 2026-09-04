@@ -1,3 +1,5 @@
+import { sanitizeDemoHref } from "./demo-url";
+
 export const linkVariantOptions = ["primary", "secondary"] as const;
 export const linkStaticColorOptions = ["", "black", "white", "auto"] as const;
 
@@ -36,7 +38,10 @@ function booleanParam(value: string | null | undefined) {
 export function normalizeLinkDemoProps(props: Partial<LinkDemoProps> = {}): LinkDemoProps {
   return {
     children: typeof props.children === "string" ? props.children : linkDemoDefaults.children,
-    href: typeof props.href === "string" ? props.href : linkDemoDefaults.href,
+    href: sanitizeDemoHref(
+      typeof props.href === "string" ? props.href : undefined,
+      linkDemoDefaults.href,
+    ),
     variant: isOneOf(props.variant, linkVariantOptions) ? props.variant : linkDemoDefaults.variant,
     staticColor: isOneOf(props.staticColor, linkStaticColorOptions)
       ? props.staticColor || undefined

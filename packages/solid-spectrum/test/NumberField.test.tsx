@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect } from "vite-plus/test";
-import { render, screen, cleanup } from "@solidjs/testing-library";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { NumberField } from "../src/numberfield";
 
 describe("NumberField (solid-spectrum)", () => {
@@ -37,5 +38,32 @@ describe("NumberField (solid-spectrum)", () => {
     expect(
       prefixContainer.compareDocumentPosition(input) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+  });
+
+  it("maps PageUp and PageDown to one step", () => {
+    render(() => <NumberField label="Quantity" defaultValue={5} minValue={0} maxValue={20} />);
+    const input = screen.getByRole("textbox", { name: "Quantity" });
+    fireEvent.keyDown(input, { key: "PageUp" });
+    expect(input).toHaveValue("6");
+    fireEvent.keyDown(input, { key: "PageDown" });
+    expect(input).toHaveValue("5");
+  });
+
+  it("swaps HelpText when isInvalid changes after mount", () => {
+    const [isInvalid, setIsInvalid] = createSignal(false);
+    render(() => (
+      <NumberField
+        label="Quantity"
+        defaultValue={5}
+        isInvalid={isInvalid()}
+        description="Enter a quantity."
+        errorMessage="Quantity is required."
+      />
+    ));
+
+    expect(screen.getByText("Enter a quantity.")).toBeInTheDocument();
+    setIsInvalid(true);
+    expect(screen.queryByText("Enter a quantity.")).not.toBeInTheDocument();
+    expect(screen.getByText("Quantity is required.")).toBeInTheDocument();
   });
 });

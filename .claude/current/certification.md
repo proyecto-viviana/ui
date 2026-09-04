@@ -101,8 +101,9 @@ vp run guard:rac-export-gap
 vp run guard:dnd-keyboard-parity
 vp run guard:virtualizer-keyboard-parity
 vp run guard:upstream-test-parity   # baselined contract-vocabulary hard edge vs pinned tests
-vp run guard:spectrum-tokens-pin    # @adobe/spectrum-tokens matches the pinned S2's exact version
+vp run guard:spectrum-tokens-pin    # both styled packages match the pinned S2 exact version
 vp run guard:style-macro-parity     # generated S2 styles match the pinned source corpus
+vp run guard:s2-intl-catalog        # shipped S2 intl catalogs equal the pinned JSON key for key
 vp run guard:ts-nocheck-budget      # public-package suppression inventory may only decrease
 ```
 
@@ -146,20 +147,21 @@ missing or mismatched upstream inputs are a gate failure, never a green skip.
 Each driver runs the same scenario against React and Solid. The driver compares
 observable output. A component must run every applicable driver.
 
-| ID  | Driver             | Compared signal                                                                         |
-| --- | ------------------ | --------------------------------------------------------------------------------------- |
-| D1  | State matrix       | Computed styles for each state, theme, and size.                                        |
-| D2  | Motion             | Animation frames, keyframes, timing, and reduced-motion behavior.                       |
-| D3  | Strict pixels      | Zero-tolerance pair screenshots unless a tracked waiver names a measured harness limit. |
-| D4  | Events             | Ordered pointer, keyboard, focus, and callback events, including `defaultPrevented`.    |
-| D5  | Focus and keyboard | Active-element trails, roving `tabindex`, and `aria-activedescendant`.                  |
-| D6  | Accessibility tree | Role, name, description, state, and live-region announcements.                          |
-| D7  | Contrast           | Computed foreground and background ratios. AA blocks and AAA reports.                   |
-| D8  | Target size        | Pair-diffed hit boxes, with WCAG 2.5.8 and 2.5.5 reports.                               |
-| D9  | Forced colors      | State styles under `forced-colors: active`.                                             |
-| D10 | RTL and i18n       | Styles, focus, icons, navigation, and formatting under RTL and `ar-AE`.                 |
-| D11 | Timing             | Warmup, cooldown, auto-dismiss, pause, long-press, and cleanup under a mocked clock.    |
-| D12 | SSR and hydration  | Server HTML, stable ids, hydrated DOM, and post-hydration behavior.                     |
+| ID  | Driver             | Compared signal                                                                                                                                                               |
+| --- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | State matrix       | Computed styles for each state, theme, and size.                                                                                                                              |
+| D2  | Motion             | Animation frames, keyframes, timing, and reduced-motion behavior.                                                                                                             |
+| D3  | Strict pixels      | Zero-tolerance pair screenshots unless a tracked waiver names a measured harness limit.                                                                                       |
+| D4  | Events             | Ordered pointer, keyboard, focus, and callback events, including `defaultPrevented`.                                                                                          |
+| D5  | Focus and keyboard | Active-element trails, roving `tabindex`, and `aria-activedescendant`.                                                                                                        |
+| D6  | Accessibility tree | Role, name, description, state, and live-region announcements.                                                                                                                |
+| D7  | Contrast           | Computed foreground and background ratios. AA blocks and AAA reports.                                                                                                         |
+| D8  | Target size        | Pair-diffed hit boxes, with WCAG 2.5.8 and 2.5.5 reports.                                                                                                                     |
+| D9  | Forced colors      | State styles under `forced-colors: active`.                                                                                                                                   |
+| D10 | RTL and i18n       | Styles, focus, icons, navigation, and formatting under RTL and `ar-AE`.                                                                                                       |
+| D11 | Timing             | Warmup, cooldown, auto-dismiss, pause, long-press, and cleanup under a mocked clock.                                                                                          |
+| D12 | SSR and hydration  | Server HTML, stable ids, hydrated DOM, and post-hydration behavior.                                                                                                           |
+| D13 | Journeys           | Multi-step mouse, keyboard, touch, and time sequences; every step diffs DOM, ARIA, focus, form value, overlay geometry and opacity, list scroll, events, AX tree, and pixels. |
 
 Specialized drivers cover behavior that the base catalog does not model.
 D-scroll compares virtualized visible windows, position metadata, scroll
@@ -178,6 +180,14 @@ Paint drivers alone cannot detect real DOM focus that stops following
 ActionMenu before D5 and D6 were added. A keyboard-heavy component that omits D5
 or D6 is `partial`, not `accepted`.
 
+D13 is mandatory for overlay composites: Picker, ComboBox, Menu, ActionMenu,
+DatePicker, Popover, Tooltip, and Dialog. A static open-state pixel pass cannot
+see a step-N placement or opacity divergence after reopen, page scroll, or
+resize. The first divergent step fails by journey id, step index, and step
+label.
+
 ## Refresh
 
-Commands and reports refresh status. The snapshot lives in `status.md`.
+Commands and reports refresh status. Ticket state lives in `status.md`.
+Acceptance evidence lives in validation notes, certified-suite records, and the
+playbook reports.

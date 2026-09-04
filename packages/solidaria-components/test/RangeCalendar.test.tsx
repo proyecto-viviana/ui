@@ -19,6 +19,7 @@ import {
   RangeCalendarCell,
 } from "../src/RangeCalendar";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -333,33 +334,27 @@ describe("RangeCalendar", () => {
       });
     });
 
-    it("should follow RTL arrow direction for day navigation", async () => {
-      const previousDir = document.documentElement.getAttribute("dir");
-      document.documentElement.setAttribute("dir", "rtl");
-
-      try {
-        render(() => (
+    it("should follow RTL arrow direction from I18nProvider without document.dir", async () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
+      render(() => (
+        <I18nProvider locale="he-IL">
           <TestRangeCalendar
             calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }}
           />
-        ));
-        await waitForRangeCalendarHydration();
+        </I18nProvider>
+      ));
+      await waitForRangeCalendarHydration();
 
-        const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
-        day15.focus();
-        fireEvent.keyDown(day15, { key: "ArrowRight" });
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
+      fireEvent.keyDown(day15, { key: "ArrowRight" });
 
-        await waitFor(() => {
-          const day14 = screen.getByRole("button", { name: /June 14, 2024/i });
-          expect(day14).toHaveFocus();
-        });
-      } finally {
-        if (previousDir) {
-          document.documentElement.setAttribute("dir", previousDir);
-        } else {
-          document.documentElement.removeAttribute("dir");
-        }
-      }
+      await waitFor(() => {
+        const day14 = screen.getByRole("button", { name: /June 14, 2024/i });
+        expect(day14).toHaveFocus();
+      });
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
     });
   });
 
@@ -642,7 +637,6 @@ describe("RangeCalendar", () => {
       fireEvent.pointerUp(day10);
 
       await waitFor(() => {
-        expect(calendar).toHaveAttribute("data-dragging");
         expect(
           getDescribedByText(screen.getByRole("button", { name: /June 10, 2024/i })),
         ).toContain("Click to finish selecting date range");

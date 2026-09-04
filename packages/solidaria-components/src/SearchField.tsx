@@ -787,6 +787,12 @@ export function SearchFieldInput(props: SearchFieldInputProps): JSX.Element {
         inputElement = element;
         context.setInputRef?.(element);
         autocompleteInput?.inputRef(element);
+        const contextRef = context.inputProps?.ref;
+        if (typeof contextRef === "function") {
+          contextRef(element);
+        } else if (contextRef && typeof contextRef === "object" && "current" in contextRef) {
+          (contextRef as { current: HTMLInputElement | null }).current = element;
+        }
         const ref = (domProps as { ref?: unknown }).ref;
         if (typeof ref === "function") {
           ref(element);

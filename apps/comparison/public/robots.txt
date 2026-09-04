@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /astro-smoke
+Disallow: /d12
+Disallow: /experiments
+Disallow: /keyboard-shortcuts

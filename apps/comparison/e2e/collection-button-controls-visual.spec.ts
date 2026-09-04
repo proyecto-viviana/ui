@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
+import { checkControl, frameworkCanvas, frameworkPanel, styledSection } from "./comparison-page";
 import { clearPointer, expectScreenshotPair, pinComparisonTheme } from "./visual-diff";
 
 async function collectionFixtures(
@@ -414,6 +414,8 @@ test.describe("comparison collection button controls visual parity", () => {
 
     const reactItems = await segmentedControlItemComposition(fixtures.reactRoot);
     const solidItems = await segmentedControlItemComposition(fixtures.solidRoot);
+    const reactGeometry = await segmentedControlGeometry(fixtures.reactRoot);
+    const solidGeometry = await segmentedControlGeometry(fixtures.solidRoot);
     const reactGrid = reactItems.find((item) => item.label === "Grid");
     const solidGrid = solidItems.find((item) => item.label === "Grid");
     const reactBoard = reactItems.find((item) => item.label === "Board");
@@ -450,6 +452,15 @@ test.describe("comparison collection button controls visual parity", () => {
       1,
       "disabled Board icon width",
     );
+    expect(solidGeometry.itemWidths).toHaveLength(reactGeometry.itemWidths.length);
+    for (const [index, reactWidth] of reactGeometry.itemWidths.entries()) {
+      expectNear(
+        solidGeometry.itemWidths[index] ?? null,
+        reactWidth,
+        1,
+        `icon-only radio ${index + 1} width`,
+      );
+    }
 
     await fixtures.reactRoot.getByRole("radio", { name: "Board" }).click({ force: true });
     await fixtures.solidRoot.getByRole("radio", { name: "Board" }).click({ force: true });
@@ -758,12 +769,12 @@ test.describe("comparison collection button controls visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="segmentedcontrol"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
-    await form.locator('input[name="selectedKey"][value="grid"]').check();
-    await form.locator('input[name="defaultSelectedKey"][value="board"]').check();
-    await form.locator('input[name="disabledKey"][value="board"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
-    await form.locator('input[name="isJustified"]').check();
-    await form.locator('input[name="isDisabled"]').check();
+    await checkControl(page, "selectedKey", "grid");
+    await checkControl(page, "defaultSelectedKey", "board");
+    await checkControl(page, "disabledKey", "board");
+    await checkControl(page, "iconPlacement", "start");
+    await checkControl(page, "isJustified");
+    await checkControl(page, "isDisabled");
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -863,11 +874,11 @@ test.describe("comparison collection button controls visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="selectboxgroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
-    await form.locator('input[name="selectionMode"][value="multiple"]').check();
+    await checkControl(page, "selectionMode", "multiple");
     await form.locator('input[name="selectedKeys"]').fill("starter,pro");
     await form.locator('input[name="defaultSelectedKeys"]').fill("pro");
     await form.locator('input[name="disabledKeys"]').fill("pro");
-    await form.locator('input[name="disabledItem"][value="pro"]').check();
+    await checkControl(page, "disabledItem", "pro");
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");

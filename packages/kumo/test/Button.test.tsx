@@ -194,4 +194,17 @@ describe("Kumo Button", () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(payload).toEqual({ worker: "edge", intent: "deploy" });
   });
+
+  it("updates direct reactive text children", () => {
+    // `<Button>{label()}</Button>` compiles to a `children` getter returning the
+    // current string. An untracked setup-time read would freeze the first value
+    // in the label span.
+    const [label, setLabel] = createSignal("Save");
+    render(() => <Button>{label()}</Button>);
+
+    const button = screen.getByRole("button");
+    expect(button.querySelector(".pv-kumo-Button__label")).toHaveTextContent("Save");
+    setLabel("Saved");
+    expect(button.querySelector(".pv-kumo-Button__label")).toHaveTextContent("Saved");
+  });
 });

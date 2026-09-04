@@ -43,7 +43,8 @@ import {
   type RangeCalendarCellRenderProps,
   type RangeValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { DateFormatter, type RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import {
@@ -590,8 +591,7 @@ const rangeCalendarNavIcon = style({
     type: "fill",
     value: "currentColor",
   },
-  width: "[1.4285714285714286em]",
-  height: "[1.4285714285714286em]",
+  size: "1lh",
   forcedColorAdjust: "none",
 });
 
@@ -767,6 +767,7 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
   const validationState = () =>
     typeof local.validationState === "function" ? local.validationState() : local.validationState;
   const isInvalid = () => local.isInvalid || validationState() === "invalid";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const errorMessageId = createUniqueId();
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -871,12 +872,13 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
         </For>
       </div>
 
-      <Show when={isInvalid() && local.errorMessage}>
+      <Show when={isInvalid()}>
         <span
           id={errorMessageId}
           class={rangeCalendarHelpText({ isInvalid: true, isDisabled: Boolean(rest.isDisabled) })}
         >
-          {local.errorMessage}
+          {local.errorMessage ||
+            stringFormatter().format("calendar.invalidSelection", { selectedCount: 2 })}
         </span>
       </Show>
     </HeadlessRangeCalendar>

@@ -95,11 +95,31 @@ for (const expected of packages) {
   }
 }
 
+const comparisonManifestPath = "apps/comparison/package.json";
+const comparisonManifestFile = path.join(ROOT, comparisonManifestPath);
+if (!existsSync(comparisonManifestFile)) {
+  failures.push(`required comparison manifest is missing: ${comparisonManifestPath}.`);
+} else {
+  const comparisonManifest = readJson(comparisonManifestFile);
+  const comparisonDeps = comparisonManifest.dependencies ?? {};
+  for (const [name, pinnedVersion] of Object.entries(pin.tags)) {
+    const declared = comparisonDeps[name];
+    if (declared !== pinnedVersion) {
+      failures.push(
+        `${comparisonManifestPath} has ${name}@${declared ?? "(missing)"}; expected ${name}@${pinnedVersion}.`,
+      );
+    } else {
+      console.log(`- comparison ${name}@${declared} matches the pin`);
+    }
+  }
+}
+
 const requiredEvidence = [
   "react-spectrum/packages/react-aria-components/exports/index.ts",
   "react-spectrum/packages/react-aria-components/test",
   "react-spectrum/packages/@react-spectrum/s2/style/spectrum-theme.ts",
   "react-spectrum/packages/@react-spectrum/s2/test",
+  "react-spectrum/packages/@react-spectrum/s2/intl",
 ];
 
 for (const evidencePath of requiredEvidence) {

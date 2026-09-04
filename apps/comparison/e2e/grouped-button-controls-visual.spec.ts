@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
+  checkControl,
   frameworkCanvas,
   frameworkPanel,
   styledSection,
@@ -372,12 +373,12 @@ test.describe("comparison grouped button controls visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="actionbuttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
-    await form.locator('input[name="size"][value="XL"]').check();
-    await form.locator('input[name="density"][value="compact"]').check();
-    await form.locator('input[name="orientation"][value="vertical"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
-    await form.locator('input[name="isQuiet"]').check();
-    await form.locator('input[name="isJustified"]').check();
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "density", "compact");
+    await checkControl(page, "orientation", "vertical");
+    await checkControl(page, "iconPlacement", "start");
+    await checkControl(page, "isQuiet");
+    await checkControl(page, "isJustified");
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -410,8 +411,8 @@ test.describe("comparison grouped button controls visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="buttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
-    await form.locator('input[name="size"][value="XL"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "iconPlacement", "start");
     await form.locator('input[name="wrapWidth"]').fill("96");
 
     const section = await styledSection(page);
@@ -441,18 +442,18 @@ test.describe("comparison grouped button controls visual parity", () => {
 
     const form = page.locator('[data-comparison-controls="togglebuttongroup"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
-    await form.locator('input[name="selectionMode"][value="multiple"]').check();
+    await checkControl(page, "selectionMode", "multiple");
     await form.locator('input[name="selectedKeys"]').fill("left,center");
-    await form.locator('input[name="size"][value="XL"]').check();
-    await form.locator('input[name="density"][value="compact"]').check();
-    await form.locator('input[name="orientation"][value="vertical"]').check();
-    await form.locator('input[name="staticColor"][value="white"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
-    await form.locator('input[name="disallowEmptySelection"]').check();
-    await form.locator('input[name="isQuiet"]').check();
-    await form.locator('input[name="isEmphasized"]').check();
-    await form.locator('input[name="isJustified"]').check();
-    await form.locator('input[name="isDisabled"]').check();
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "density", "compact");
+    await checkControl(page, "orientation", "vertical");
+    await checkControl(page, "staticColor", "white");
+    await checkControl(page, "iconPlacement", "start");
+    await checkControl(page, "disallowEmptySelection");
+    await checkControl(page, "isQuiet");
+    await checkControl(page, "isEmphasized");
+    await checkControl(page, "isJustified");
+    await checkControl(page, "isDisabled");
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");

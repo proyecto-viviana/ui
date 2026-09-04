@@ -41,7 +41,8 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { createHover, useLocale } from "@proyecto-viviana/solidaria";
+import { createHover, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import {
   type CalendarDateTime,
   type TimeValue,
@@ -288,7 +289,7 @@ const calendarButtonWrapper = style({
 });
 
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -447,8 +448,8 @@ const dateRangePickerPopover = style<{
   // Byte-copied from the single DatePicker's `datePickerPopover` motion, which
   // is itself the shared `popover()` enter/exit fade. S2's DateRangePicker
   // popover is a plain `<Popover>`, so the enter transition IS this generic
-  // opacity/translate fade — driven here by `createEnterAnimation`
-  // (data-entering) inside the shared `DateRangePickerContent`.
+  // opacity/translate fade — driven by headless Popover `isEntering` / `isExiting`
+  // render props inside the shared `DateRangePickerContent`.
   opacity: {
     isEntering: 0,
     isExiting: 0,
@@ -493,7 +494,6 @@ const dateRangePickerPopoverFrame = style({
   overflow: "auto",
   display: "flex",
   flexDirection: "column",
-  gap: 16,
   boxSizing: "content-box",
   width: "[max-content]",
 });
@@ -501,9 +501,8 @@ const dateRangePickerPopoverFrame = style({
 const dateRangePickerTimeFields = style({
   display: "flex",
   gap: 16,
-  alignItems: "start",
-  flexWrap: "wrap",
-  maxWidth: "[272px]",
+  contain: "inline-size",
+  marginTop: 24,
 });
 
 function DateRangeDisplay(props: {
@@ -531,6 +530,7 @@ function DateRangeDisplay(props: {
 }): JSX.Element {
   const context = useDateRangePickerContext();
   const theme = useTheme();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const state = context.calendarState;
   const isDisabled = () => state.isDisabled();
   // S2's FieldGroup renders on RAC's <Group>, whose `useHover` publishes
@@ -613,6 +613,7 @@ function DateRangeDisplay(props: {
         // the faithful role="group" that `createDateRangePicker` returns (RAC
         // useDateRangePicker groupProps). Placed after the spread so it wins.
         role="presentation"
+        ref={(element: HTMLDivElement) => context.setGroupRef(element)}
         class={dateRangePickerFieldGroup({
           size: props.size,
           isInvalid: props.isInvalid,
@@ -691,7 +692,7 @@ function DateRangeDisplay(props: {
           class={(rp) =>
             dateRangePickerPopover({
               colorScheme: theme.colorScheme,
-              placement: rp.placement ?? undefined,
+              placement: rp.placement ?? "bottom",
               isEntering: rp.isEntering,
               isExiting: rp.isExiting,
             })
@@ -717,7 +718,7 @@ function DateRangeDisplay(props: {
               <div class={dateRangePickerTimeFields}>
                 <TimeField
                   size="md"
-                  label="Start time"
+                  label={stringFormatter().format("datepicker.startTime")}
                   value={timeValueFor("start") ?? undefined}
                   minValue={timeMinValue()}
                   maxValue={timeMaxValue()}
@@ -733,7 +734,7 @@ function DateRangeDisplay(props: {
                 />
                 <TimeField
                   size="md"
-                  label="End time"
+                  label={stringFormatter().format("datepicker.endTime")}
                   value={timeValueFor("end") ?? undefined}
                   minValue={timeMinValue()}
                   maxValue={timeMaxValue()}

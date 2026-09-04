@@ -1,6 +1,7 @@
 import h from "solid-js/h";
 import { Provider } from "@proyecto-viviana/solid-spectrum";
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
+import { comparisonComponentPath } from "@comparison/data/site-meta";
 import {
   docsNavIndicator,
   docsNavIndicatorCurrent,
@@ -97,7 +98,7 @@ function navLink(item: (typeof comparisonEntries)[number], isCurrent: boolean) {
   return h(
     "a",
     {
-      href: `/components/${item.slug}`,
+      href: comparisonComponentPath(item.slug),
       class: cx("s2-nav-link", navLinkClass, isCurrent && navLinkCurrentClass),
       "aria-current": isCurrent ? "page" : undefined,
     },

@@ -357,8 +357,6 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
   };
 
   function SegmentContent(renderProps: ToggleButtonRenderProps) {
-    const resolvedChildren = resolveChildren(() => local.children);
-    const content = () => resolvedChildren();
     const iconContextValue = {
       slot: "icon",
       render: centerBaseline({ slot: "icon", styles: style({ order: 0, flexShrink: 0 }) }),
@@ -368,6 +366,23 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
       }),
     };
 
+    function ResolvedContent() {
+      const resolvedChildren = resolveChildren(() => local.children);
+      const content = () => resolvedChildren();
+
+      return (
+        <span class={itemContent}>
+          {typeof content() === "string" ? (
+            <span class={itemText} data-rsp-slot="text">
+              {content()}
+            </span>
+          ) : (
+            content()
+          )}
+        </span>
+      );
+    }
+
     return (
       <>
         <SelectionIndicator
@@ -375,15 +390,7 @@ export function SegmentedControlItem(props: SegmentedControlItemProps): JSX.Elem
           class={selectionIndicator({ isDisabled: renderProps.isDisabled })}
         />
         <IconContext.Provider value={iconContextValue}>
-          <span class={itemContent}>
-            {typeof content() === "string" ? (
-              <span class={itemText} data-rsp-slot="text">
-                {content()}
-              </span>
-            ) : (
-              content()
-            )}
-          </span>
+          <ResolvedContent />
         </IconContext.Provider>
       </>
     );

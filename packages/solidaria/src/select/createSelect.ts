@@ -21,12 +21,13 @@
 import { type JSX, type Accessor, createEffect, onCleanup } from "solid-js";
 import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
-import { createLabel } from "../label/createLabel";
+import { createField } from "../label/createField";
 import { createTypeSelect } from "../selection/createTypeSelect";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { nodeContains } from "../utils/dom";
 import type { SelectState, CollectionNode } from "@proyecto-viviana/solid-stately";
 
 export interface AriaSelectProps {
@@ -40,6 +41,10 @@ export interface AriaSelectProps {
   isInvalid?: boolean;
   /** The label for the select. */
   label?: JSX.Element;
+  /** A description for the select. Provides a hint such as specific requirements for what to choose. */
+  description?: JSX.Element;
+  /** An error message for the select. */
+  errorMessage?: JSX.Element;
   /** An accessible label for the select when no visible label is provided. */
   "aria-label"?: string;
   /** The ID of an element that labels the select. */
@@ -119,8 +124,6 @@ export function createSelect<T>(
   const buttonId = `${id}-button`;
   const listBoxId = `${id}-listbox`;
   const valueId = `${id}-value`;
-  const descriptionId = `${id}-description`;
-  const errorMessageId = `${id}-error`;
 
   // Filter DOM props
   const domProps = () =>
@@ -135,19 +138,34 @@ export function createSelect<T>(
     });
   });
 
-  // Label handling
-  const { labelProps, fieldProps } = createLabel({
+  // RAC `useSelect.ts:181-186`: field wiring (label + description/error slot
+  // ids + trigger `aria-describedby`) comes from `useField`, with
+  // `labelElementType: 'span'`. `createField` already ports `useField`, including
+  // `createSlotId` so ids exist only when the slot is in the DOM.
+  const field = createField({
     get id() {
       return buttonId;
     },
     get label() {
       return getProps().label;
     },
+    get description() {
+      return getProps().description;
+    },
+    get errorMessage() {
+      return getProps().errorMessage;
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
     get "aria-label"() {
       return getProps()["aria-label"];
     },
     get "aria-labelledby"() {
       return getProps()["aria-labelledby"];
+    },
+    get "aria-describedby"() {
+      return getProps()["aria-describedby"];
     },
     labelElementType: "span",
   });
@@ -379,12 +397,13 @@ export function createSelect<T>(
 
   return {
     get labelProps() {
-      return labelProps as JSX.HTMLAttributes<HTMLElement>;
+      return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get triggerProps() {
       const p = getProps();
       const isOpen = state.isOpen();
       const isDisabled = p.isDisabled ?? state.isDisabled;
+      const fieldProps = field.fieldProps;
 
       const baseProps = mergeProps(
         domProps(),
@@ -400,11 +419,12 @@ export function createSelect<T>(
           "aria-controls": isOpen ? listBoxId : undefined,
           "aria-disabled": isDisabled || undefined,
           "aria-required": p.isRequired || undefined,
-          "aria-describedby": p["aria-describedby"] || undefined,
           // Mirror upstream `useSelect` exactly: the trigger name starts with
           // the selected value, then the visible label. When only `aria-label`
           // is present, the trigger references itself so that label follows the
           // value as well ("Pro Plan"), rather than masking visible text.
+          // `aria-describedby` comes from `createField` (`useField.ts:51-60`) —
+          // do not overwrite it with the raw user prop.
           "aria-labelledby": [
             valueId,
             fieldProps["aria-labelledby"],
@@ -441,6 +461,7 @@ export function createSelect<T>(
     // the RAC Button, which needs the button's live `isPressed`.
     isPressed,
     get menuProps() {
+      const fieldProps = field.fieldProps;
       return {
         id: listBoxId,
         role: "listbox",
@@ -456,7 +477,7 @@ export function createSelect<T>(
         tabIndex: -1,
         onBlur: (e: FocusEvent) => {
           // Only a blur that leaves the listbox entirely blurs the select.
-          if ((e.currentTarget as Node | null)?.contains(e.relatedTarget as Node)) {
+          if (nodeContains(e.currentTarget as Node, e.relatedTarget as Node)) {
             return;
           }
 
@@ -467,14 +488,10 @@ export function createSelect<T>(
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return {
-        id: descriptionId,
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return field.descriptionProps;
     },
     get errorMessageProps() {
-      return {
-        id: errorMessageId,
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return field.errorMessageProps;
     },
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),

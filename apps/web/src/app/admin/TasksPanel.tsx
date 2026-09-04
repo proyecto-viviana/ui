@@ -68,6 +68,7 @@ export function TasksPanel(props: {
                         <select
                           value={task.status}
                           disabled={busy() === `status-${task.id}`}
+                          aria-label={`Set #${task.id} status`}
                           onChange={(event) =>
                             void setStatus(
                               task.path,

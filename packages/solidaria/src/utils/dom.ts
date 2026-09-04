@@ -86,18 +86,168 @@
  * - packages/react-aria/src/focus/FocusScope.tsx
  */
 
+import { shadowDOM } from "@proyecto-viviana/solid-stately/private/flags/flags";
+
 /**
  * Gets the owner document of an element, or the global document.
+ * Accepts Window / Document / Node so window-target focus events resolve correctly.
  */
-export function getOwnerDocument(el: Element | null | undefined): Document {
-  return el?.ownerDocument ?? document;
+export function getOwnerDocument(target?: EventTarget | null): Document {
+  if (isWindow(target)) {
+    return target.document;
+  }
+
+  if (isDocument(target)) {
+    return target;
+  }
+
+  return (target as Node | null | undefined)?.ownerDocument ?? document;
 }
 
 /**
  * Gets the owner window of an element, or the global window.
  */
-export function getOwnerWindow(el: Element | null | undefined): Window & typeof globalThis {
-  return getOwnerDocument(el).defaultView ?? window;
+export function getOwnerWindow(target?: EventTarget | null): Window & typeof globalThis {
+  const ownerDocument = getOwnerDocument(target);
+  return (ownerDocument?.defaultView as (Window & typeof globalThis) | null) ?? window;
+}
+
+function isNode(value: unknown): value is Node {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "nodeType" in value &&
+    typeof (value as Node).nodeType === "number"
+  );
+}
+
+function isWindow(value: unknown): value is Window & typeof globalThis {
+  return typeof value === "object" && value != null && "window" in value && value.window === value;
+}
+
+function isDocument(value: unknown): value is Document {
+  return isNode(value) && value.nodeType === 9;
+}
+
+/**
+ * Type guard that checks if a value is a ShadowRoot.
+ */
+export function isShadowRoot(value: unknown): value is ShadowRoot {
+  // 11 = DOCUMENT_FRAGMENT_NODE
+  return isNode(value) && value.nodeType === 11 && "host" in value;
+}
+
+/**
+ * Attaches an event listener on target(s) and returns a cleanup function.
+ * Mirrors @react-aria/utils `addEvent`.
+ */
+export function addEvent(
+  target: EventTarget | EventTarget[] | null,
+  event: string,
+  listener?: EventListenerOrEventListenerObject | null,
+  options?: boolean | AddEventListenerOptions,
+): () => void {
+  if (listener == null || target == null) {
+    return () => {};
+  }
+
+  const eventTargets = Array.isArray(target) ? target : [target];
+
+  for (const eventTarget of eventTargets) {
+    eventTarget.addEventListener(event, listener, options);
+  }
+
+  return () => {
+    for (const eventTarget of eventTargets) {
+      eventTarget.removeEventListener(event, listener, options);
+    }
+  };
+}
+
+/**
+ * Returns the set of event targets a listener must be attached to in order to
+ * globally observe an event.
+ *
+ * @param from - The target element to start from.
+ * @param to - The element to stop at when bubbling. @default getOwnerWindow(from)
+ *   `to` is generally going to be either `document` or `window`, but
+ *   it can be any intermediate node.
+ * @returns [global, ...shadowRoots]
+ */
+export function getPropagationTargets(
+  from: EventTarget | null | undefined,
+  to?: Document | Window | Element | null,
+): EventTarget[] {
+  // If `to` is coming from a ref, its type technically allows `null`.
+  // In practice, this function will generally be called from within an effect.
+  // If the ref has not resolved by that point, then a coding error has been made.
+  // Better to return an empty array than `[window]`, which may appear to work
+  // in the light DOM, but fail in the shadow DOM.
+  if (to === null) {
+    return [];
+  }
+  to = to ?? getOwnerWindow(from);
+  const targets: EventTarget[] = [to];
+  if (!shadowDOM() || !from || from === to) {
+    return targets;
+  }
+
+  // The root `to` itself lives in. The event already reaches `to` once
+  // it is inside this root, so we must NOT collect this root or anything above
+  // it — only the shadow roots strictly between `refNode` and `to`.
+  // `window` has no getRootNode; its boundary is the document, which the walk
+  // reaches naturally (the document is not a ShadowRoot, so the loop exits).
+  if (!("getRootNode" in from) || typeof (from as Node).getRootNode !== "function") {
+    return targets;
+  }
+  const toRoot = "getRootNode" in to ? (to as Node).getRootNode() : null;
+  let current: Node | null = (from as Node).getRootNode() ?? null;
+  while (isShadowRoot(current) && current !== toRoot) {
+    targets.push(current);
+    current = current.host.getRootNode();
+  }
+
+  return targets;
+}
+
+/**
+ * Sets a CSS property on an element and returns a cleanup function.
+ * Property names are kebab-case (`scrollbar-gutter`, `padding-right`), matching
+ * @react-aria/utils `setStyle` which uses `style.setProperty`.
+ */
+export function setStyle(
+  target: HTMLElement | HTMLElement[] | null,
+  property: string,
+  value: string,
+  priority?: string,
+): () => void {
+  if (target == null) {
+    return () => {};
+  }
+
+  const restore: Array<() => void> = [];
+  const styleTargets = Array.isArray(target) ? target : [target];
+
+  for (const styleTarget of styleTargets) {
+    const initialValue = styleTarget.style.getPropertyValue(property);
+    const initialPriority = styleTarget.style.getPropertyPriority(property);
+
+    styleTarget.style.setProperty(property, value, priority);
+
+    restore.unshift(() => {
+      if (initialValue) {
+        styleTarget.style.setProperty(property, initialValue, initialPriority);
+      } else {
+        styleTarget.style.removeProperty(property);
+      }
+    });
+  }
+
+  return () => {
+    for (const cleanup of restore) {
+      cleanup();
+    }
+  };
 }
 
 /**

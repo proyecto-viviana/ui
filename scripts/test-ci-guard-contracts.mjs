@@ -2,7 +2,15 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -115,6 +123,46 @@ try {
     "Certification Gates must build package artifacts before measuring JSX deopt size",
   );
   console.log("PASS: Certification builds package evidence before JSX size checks.");
+
+  // release-readiness runs test:run on a plain checkout: the gitignored
+  // ./react-spectrum oracle is absent there, so an oracle-backed check placed
+  // in `packages/*/test` or `scripts/**/*.test.*` fails with ENOENT instead of
+  // proving anything (2026-09-02: intl-catalog.test.tsx). Oracle-backed
+  // evidence is a guard in Certification Gates, after the oracle materializes.
+  const oracleAcquire = certificationWorkflow.indexOf("check-upstream-oracle.mjs --acquire");
+  const intlCatalogGuard = certificationWorkflow.indexOf("run: pnpm run guard:s2-intl-catalog\n");
+  assert(
+    oracleAcquire >= 0 && intlCatalogGuard >= 0 && oracleAcquire < intlCatalogGuard,
+    "Certification Gates must materialize the upstream oracle before guard:s2-intl-catalog",
+  );
+  const testRunFiles = [];
+  const collectTests = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const file = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules" && entry.name !== "dist") collectTests(file);
+      } else if (/\.test\.[cm]?[jt]sx?$/.test(entry.name)) {
+        testRunFiles.push(file);
+      }
+    }
+  };
+  for (const packageEntry of readdirSync(path.join(ROOT, "packages"), { withFileTypes: true })) {
+    const testDir = path.join(ROOT, "packages", packageEntry.name, "test");
+    if (packageEntry.isDirectory() && existsSync(testDir)) collectTests(testDir);
+  }
+  collectTests(path.join(ROOT, "scripts"));
+  const oracleReaders = testRunFiles.filter((file) =>
+    readFileSync(file, "utf8").includes("react-spectrum/packages/"),
+  );
+  assert(
+    oracleReaders.length === 0,
+    `test:run suites must not read the gitignored upstream oracle (release-readiness has none); move the check to an oracle-backed guard:\n${oracleReaders
+      .map((file) => `  ${path.relative(ROOT, file)}`)
+      .join("\n")}`,
+  );
+  console.log(
+    `PASS: ${testRunFiles.length} test:run suites are oracle-free; guard:s2-intl-catalog runs after the oracle materializes.`,
+  );
 
   const oracleFixture = path.join(fixtureRoot, "missing-oracle");
   json(path.join(oracleFixture, "scripts", "upstream-pin.json"), {

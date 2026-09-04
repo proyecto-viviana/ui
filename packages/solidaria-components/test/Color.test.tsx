@@ -7,6 +7,7 @@
 import { describe, it, expect, afterEach, vi } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { createSignal } from "solid-js";
 import {
   ColorSlider,
@@ -27,8 +28,8 @@ import {
   ColorSwatchPicker,
   ColorSwatchPickerItem,
 } from "../src/Color";
+import { Text } from "../src/Text";
 import { parseColor } from "@proyecto-viviana/solid-stately";
-import { I18nProvider } from "@proyecto-viviana/solidaria";
 
 // Helper components using render props pattern
 function TestColorSlider(props: Parameters<typeof ColorSlider>[0]) {
@@ -942,6 +943,62 @@ describe("Color Components", () => {
       });
     });
 
+    describe("slots", () => {
+      function describedByText(input: HTMLElement): string {
+        return (input.getAttribute("aria-describedby") ?? "")
+          .split(" ")
+          .filter(Boolean)
+          .map((id) => document.getElementById(id)?.textContent)
+          .join(" ");
+      }
+
+      it("provides description and errorMessage slots (RAC ColorField.test.js)", async () => {
+        // RAC ColorField.test.js "provides slots": both <Text> slots are in the
+        // DOM, so createSlotId folds both ids into aria-describedby.
+        render(() => (
+          <ColorField defaultValue="#f00" data-foo="bar">
+            {() => (
+              <>
+                <label>Color</label>
+                <ColorFieldInput />
+                <Text slot="description">Description</Text>
+                <Text slot="errorMessage">Error</Text>
+              </>
+            )}
+          </ColorField>
+        ));
+
+        const input = screen.getByRole("textbox");
+        expect(input.closest(".solidaria-ColorField")).toHaveAttribute("data-foo", "bar");
+
+        await waitFor(() => {
+          expect(describedByText(input)).toBe("Description Error");
+        });
+      });
+
+      it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
+        render(() => (
+          <ColorField defaultValue="#f00" aria-label="Color">
+            {() => (
+              <>
+                <ColorFieldInput />
+                <Text slot="description">Enter a hex color</Text>
+              </>
+            )}
+          </ColorField>
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" });
+        await waitFor(() => {
+          expect(describedByText(input)).toBe("Enter a hex color");
+        });
+        const describedById = (input.getAttribute("aria-describedby") ?? "")
+          .split(" ")
+          .find((id) => document.getElementById(id));
+        expect(document.getElementById(describedById!)).toHaveClass("solidaria-Text");
+      });
+    });
+
     describe("data attributes", () => {
       it("should have data-disabled when disabled", () => {
         render(() => (
@@ -1089,6 +1146,43 @@ describe("Color Components", () => {
           "aria-required",
           "true",
         );
+      });
+
+      it("should commit the typed value on Enter", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#ff0000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "#0000ff" } });
+        expect(onChange).not.toHaveBeenCalled();
+
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange.mock.calls[0][0].toString("hex")).toBe("#0000ff");
+        expect(input).toHaveValue("#0000ff");
+      });
+
+      it("should restore the previous value on Enter if the typed value cannot be parsed", () => {
+        const onChange = vi.fn();
+        render(() => (
+          <TestColorField
+            defaultValue={parseColor("#ff0000")}
+            aria-label="Color"
+            onChange={onChange}
+          />
+        ));
+
+        const input = screen.getByRole("textbox", { name: "Color" }) as HTMLInputElement;
+        fireEvent.input(input, { target: { value: "ab" } });
+        fireEvent.keyDown(input, { key: "Enter" });
+        expect(onChange).not.toHaveBeenCalled();
+        expect(input).toHaveValue("#ff0000");
       });
     });
   });
@@ -1378,6 +1472,37 @@ describe("Color Components", () => {
       expect(onChange).not.toHaveBeenCalled();
     });
 
+    it("flips grid ArrowLeft/ArrowRight from I18nProvider without document.dir", () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
+      const onChange = vi.fn();
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestColorSwatchPicker onChange={onChange} aria-label="Palette" layout="grid" />
+        </I18nProvider>
+      ));
+
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      listbox.focus();
+      expect(focusedIndex()).toBe(0);
+
+      // RTL: ArrowLeft moves to the next swatch (useLocale().direction, not document.dir).
+      fireEvent.keyDown(listbox, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
+      expect(selectedIndex()).toBe(0);
+      expect(onChange).not.toHaveBeenCalled();
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
+    });
+
+    it("formats the default listbox name from I18nProvider", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TestColorSwatchPicker />
+        </I18nProvider>
+      ));
+      expect(screen.getByRole("listbox", { name: "Farbfelder" })).toBeInTheDocument();
+    });
+
     it("should not wrap ArrowLeft past the left edge in grid layout", () => {
       render(() => <TestColorSwatchPicker aria-label="Palette" layout="grid" />);
 
@@ -1428,28 +1553,25 @@ describe("Color Components", () => {
     });
 
     it("should invert horizontal arrow focus movement in RTL grid layout", () => {
-      const previousDir = document.dir;
-      document.dir = "rtl";
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <TestColorSwatchPicker aria-label="Palette" layout="grid" />
+        </I18nProvider>
+      ));
 
-      try {
-        render(() => <TestColorSwatchPicker aria-label="Palette" layout="grid" />);
+      const listbox = screen.getByRole("listbox", { name: "Palette" });
+      listbox.focus();
+      expect(focusedIndex()).toBe(0);
 
-        const listbox = screen.getByRole("listbox", { name: "Palette" });
-        listbox.focus();
-        expect(focusedIndex()).toBe(0);
+      // RTL flips the horizontal axis: ArrowLeft advances to the next swatch
+      // and ArrowRight retreats — the mirror of the LTR mapping.
+      fireEvent.keyDown(listbox, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
 
-        // RTL flips the horizontal axis: ArrowLeft advances to the next swatch
-        // and ArrowRight retreats — the mirror of the LTR mapping.
-        fireEvent.keyDown(listbox, { key: "ArrowLeft" });
-        expect(focusedIndex()).toBe(1);
+      fireEvent.keyDown(listbox, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
 
-        fireEvent.keyDown(listbox, { key: "ArrowRight" });
-        expect(focusedIndex()).toBe(0);
-
-        expect(selectedIndex()).toBe(0);
-      } finally {
-        document.dir = previousDir;
-      }
+      expect(selectedIndex()).toBe(0);
     });
 
     it("should use vertical roving focus without selecting in stack layout", () => {

@@ -74,7 +74,9 @@ No subagents were used for this component pass.
 
 - S2 docs: DropZone MCP page checked on 2026-05-28. Public example composes
   `DropZone`, `IllustratedMessage`, `Heading`, `Content`, `ButtonGroup`,
-  `FileTrigger`, and a cloud-upload illustration.
+  `FileTrigger`, and a cloud-upload illustration. FileTrigger is a support
+  export of this family; it does not get a separate 10-gate catalogue page
+  (ticket #177).
 - Installed upstream source:
   `apps/comparison/node_modules/@react-spectrum/s2/src/DropZone.tsx`.
 - Solid owner files:

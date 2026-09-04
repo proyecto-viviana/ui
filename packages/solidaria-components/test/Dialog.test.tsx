@@ -185,6 +185,10 @@ describe("DialogTrigger", () => {
     const dialog = screen.getByRole("alertdialog");
     expect(dialog).toBeInTheDocument();
 
+    const controls = button.getAttribute("aria-controls");
+    expect(controls).toBeTruthy();
+    expect(document.getElementById(controls!)).toBe(dialog);
+
     const closeButton = within(dialog).getByRole("button", { name: "Close" });
     await user.click(closeButton);
 

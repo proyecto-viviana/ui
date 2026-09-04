@@ -2,18 +2,18 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize50.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize50.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize300.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize400.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_CheckmarkSize400.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize50.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize50.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize400.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_CheckmarkSize400.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

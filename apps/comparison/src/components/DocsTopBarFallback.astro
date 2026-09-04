@@ -1,4 +1,5 @@
 ---
+import { comparisonCoveragePath } from "@comparison/data/site-meta";
 import {
   docsBrandLink,
   docsBrandMark,
@@ -40,7 +41,7 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
 
 <div class:list={["s2-topbar", topBarRootClass]} data-docs-topbar-fallback role="banner">
   <a href="/" class:list={["s2-brand", brandLinkClass]} aria-label="Solid Spectrum home">
-    <span class:list={["s2-brand-mark", brandMarkClass]} aria-hidden="true">S</span>
+    <span class:list={["s2-brand-mark", brandMarkClass]} aria-hidden="true">SS</span>
     <span>Solid Spectrum</span>
   </a>
   {
@@ -76,7 +77,7 @@ const topNavLinkClass = staticClassName(docsTopNavLink);
   }
   <div class:list={["s2-top-actions", topActionsRootClass]}>
     <nav class:list={["s2-topnav", topNavRootClass]} aria-label="Top navigation">
-      <a href="/" class={topNavLinkClass}>Docs</a>
+      <a href={comparisonCoveragePath} class={topNavLinkClass}>Docs</a>
       {reactSpectrumUrl ? <a href={reactSpectrumUrl} class={topNavLinkClass}>React Spectrum</a> : null}
       <a class={topNavLinkClass} href="https://www.npmjs.com/package/@proyecto-viviana/solid-spectrum">npm</a>
     </nav>

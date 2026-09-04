@@ -22,6 +22,9 @@ import {
   SelectionIndicator,
   TabsStateContext,
 } from "../src/Tabs";
+import { Dialog, DialogTrigger } from "../src/Dialog";
+import { Button } from "../src/Button";
+import { Modal } from "../src/Modal";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
@@ -871,6 +874,30 @@ describe("Tabs", () => {
       expect(tabs[2]).toHaveAttribute("data-focused");
     });
 
+    it("allows user to change tab item selection via arrow keys with vertical tabs (rtl)", async () => {
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <TestTabs tabsProps={{ orientation: "vertical", defaultSelectedKey: "tab1" }} />
+        </I18nProvider>
+      ));
+
+      const tabs = screen.getAllByRole("tab");
+      tabs[0].focus();
+
+      expect(screen.getByRole("tablist")).toHaveAttribute("aria-orientation", "vertical");
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+
+      await user.keyboard("{ArrowDown}");
+      expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+      await user.keyboard("{ArrowUp}");
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+
+      await user.keyboard("{ArrowLeft}");
+      expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+      await user.keyboard("{ArrowRight}");
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+    });
+
     it("vertical orientation should NOT be affected by RTL", async () => {
       render(() => (
         <I18nProvider locale="ar-AE">
@@ -884,6 +911,35 @@ describe("Tabs", () => {
       // ArrowDown should still move to next in vertical, regardless of RTL
       await user.keyboard("{ArrowDown}");
       expect(tabs[1]).toHaveAttribute("data-focused");
+    });
+  });
+
+  it("supports DialogTrigger inside Tabs", async () => {
+    render(() => (
+      <Tabs defaultSelectedKey="key1">
+        <div>
+          <TabList>
+            <Tab id="key1">First Tab</Tab>
+            <Tab id="key2">Second Tab</Tab>
+          </TabList>
+          <DialogTrigger>
+            <Button>Dialog button</Button>
+            <Modal>
+              <Dialog aria-label="Filters">Dialog content</Dialog>
+            </Modal>
+          </DialogTrigger>
+        </div>
+        <TabPanel id="key1">First Tab content</TabPanel>
+        <TabPanel id="key2">Second Tab content</TabPanel>
+      </Tabs>
+    ));
+
+    expect(screen.getAllByRole("tab")).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Dialog button" })).toHaveLength(1);
+
+    await user.click(screen.getByRole("button", { name: "Dialog button" }));
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Filters" })).toBeInTheDocument();
     });
   });
 });

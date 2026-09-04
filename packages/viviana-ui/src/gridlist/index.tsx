@@ -57,14 +57,7 @@ import LinkOut from "../icon/ui-icons/LinkOut";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
-import {
-  baseColor,
-  colorMix,
-  focusRing,
-  fontRelative,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, colorMix, focusRing, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import type { UnsafeClassName } from "../s2-internal/style-utils";
 import {
@@ -265,7 +258,7 @@ const listView = style<GridListRenderProps & { isQuiet?: boolean; isActionBar?: 
       type: "width",
       value: {
         default: "auto",
-        [hasTrailingIconRows]: fontRelative(20),
+        [hasTrailingIconRows]: "1lh",
       },
     },
   },
@@ -316,6 +309,7 @@ type ListViewRowLayerProps = GridListItemRenderProps & {
 };
 
 const listViewItem = style<ListViewRowLayerProps>({
+  font: controlFont(),
   outlineStyle: "none",
   boxSizing: "border-box",
   columnGap: 0,
@@ -686,7 +680,7 @@ const listViewSlotIcon = style<GridListItemRenderProps>({
   gridArea: "icon",
   gridRowEnd: "span 2",
   display: "block",
-  size: fontRelative(20),
+  size: "1lh",
   alignSelf: "center",
   marginEnd: "text-to-visual",
   "--iconPrimary": {

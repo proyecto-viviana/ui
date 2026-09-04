@@ -790,7 +790,7 @@ export function TabList<T>(props: TabListProps<T>): JSX.Element {
 
   createEffect(() => {
     const fonts = typeof document === "undefined" ? undefined : document.fonts;
-    fonts?.ready.then(queueOverflowUpdate);
+    void fonts?.ready.then(queueOverflowUpdate);
   });
 
   return (
@@ -921,9 +921,6 @@ export function Tab(props: TabProps): JSX.Element {
     },
     "data-rsp-slot": "text",
   };
-  const hasRenderChildren = () =>
-    typeof local.children === "function" &&
-    (local.children as (...args: unknown[]) => JSX.Element).length > 0;
   const iconContextValue = {
     slot: "icon",
     render: centerBaseline({ slot: "icon", styles: iconRenderStyles }),
@@ -932,9 +929,18 @@ export function Tab(props: TabProps): JSX.Element {
 
   function TabContent(renderProps: TabRenderProps): JSX.Element {
     function ResolvedTabContent(): JSX.Element {
-      const contentValue = hasRenderChildren()
-        ? (local.children as (renderProps: TabRenderProps) => JSX.Element)(renderProps)
-        : local.children;
+      // Read `local.children` exactly once. On the server every access to a props-children
+      // getter re-instantiates any component it holds (e.g. <Text>), whereas the client
+      // memoizes after the first read. Reading twice (a render-prop probe plus the value) makes
+      // the server emit one extra element than the client, desynchronizing Solid's hydration-key
+      // counter and aborting hydration for the entire route. One read keeps both sides equal.
+      const rawChildren = local.children;
+      const isRenderProp =
+        typeof rawChildren === "function" &&
+        (rawChildren as (...args: unknown[]) => JSX.Element).length > 0;
+      const contentValue = isRenderProp
+        ? (rawChildren as (renderProps: TabRenderProps) => JSX.Element)(renderProps)
+        : rawChildren;
       const value = resolveChildAccessor(contentValue);
 
       return typeof value === "string" ? (

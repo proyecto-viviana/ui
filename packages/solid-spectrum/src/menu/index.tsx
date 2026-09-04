@@ -30,7 +30,6 @@ import {
   SubmenuTrigger as HeadlessSubmenuTrigger,
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
-  Popover as HeadlessPopover,
   MenuTriggerContext,
   PopoverTriggerContext,
   type MenuProps as HeadlessMenuProps,
@@ -41,12 +40,12 @@ import {
   type MenuRenderProps,
   type MenuItemRenderProps,
   type MenuTriggerRenderProps,
-  type PopoverRenderProps,
   usePopoverTrigger,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
-import { useProviderProps, useTheme } from "../provider";
+import { useProviderProps } from "../provider";
+import { Popover } from "../popover";
 import type { StyleString } from "../style";
 import { style, focusRing } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
@@ -81,7 +80,6 @@ import {
   menuItemKeyboard,
   menuItemLabel,
   menuItemValue,
-  menuPopover,
   menuSection,
   menuSectionHeader,
   menuSectionHeading,
@@ -305,18 +303,6 @@ function menuPlacement(direction: MenuDirection | undefined, align: MenuAlign | 
   }
 }
 
-function menuPlacementAxis(
-  direction: MenuDirection | undefined,
-): NonNullable<PopoverRenderProps["placement"]> {
-  if (direction === "start") {
-    return "left";
-  }
-  if (direction === "end") {
-    return "right";
-  }
-  return direction ?? "bottom";
-}
-
 /**
  * A menu trigger wraps a button and menu, handling the open/close state.
  */
@@ -472,7 +458,6 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   ]);
   const triggerSize = useContext(MenuSizeContext);
   const size = () => normalizeMenuSize(local.size ?? triggerSize);
-  const theme = useTheme();
   const popoverTrigger = usePopoverTrigger();
   const triggerOptions = useContext(MenuTriggerOptionsContext);
   const isSubmenu = () => popoverTrigger?.trigger === "SubmenuTrigger";
@@ -508,15 +493,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const getFrameStyle = () => mergedUnsafeStyle();
   const popoverPlacement = () =>
     menuPlacement(triggerOptions?.direction(), triggerOptions?.align());
-  const popoverPlacementAxis = () => menuPlacementAxis(triggerOptions?.direction());
   const popoverShouldFlip = () => triggerOptions?.shouldFlip();
-  const getPopoverClassName = (renderProps: PopoverRenderProps): string => {
-    return menuPopover({
-      ...renderProps,
-      placement: renderProps.placement ?? popoverPlacementAxis(),
-      colorScheme: theme.colorScheme,
-    });
-  };
   const menuContent = () => (
     <MenuSizeContext.Provider value={size()}>
       <HeaderContext.Provider value={{ styles: () => menuSectionHeader({ size: size() }) }}>
@@ -565,19 +542,20 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   if (isSubmenu()) {
     return (
       <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
-        <HeadlessPopover
+        <Popover
+          hideArrow
+          padding="none"
           trigger="SubmenuTrigger"
           placement="end top"
           offset={-2}
           crossOffset={-8}
           isNonModal
           autoFocus={false}
-          class={getPopoverClassName}
         >
           <div class={getFrameClassName()} style={getFrameStyle()}>
             {menuContent()}
           </div>
-        </HeadlessPopover>
+        </Popover>
       </MenuLinkOutIconContext.Provider>
     );
   }
@@ -585,19 +563,20 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   if (isMenuTriggerPopover()) {
     return (
       <MenuLinkOutIconContext.Provider value={local.hideLinkOutIcon ?? false}>
-        <HeadlessPopover
+        <Popover
+          hideArrow
+          padding="none"
           trigger="MenuTrigger"
           triggerRef={() => popoverTrigger?.triggerRef() ?? null}
           placement={popoverPlacement() as never}
           offset={triggerOptions?.trigger() === "contextMenu" ? 0 : 8}
           shouldFlip={popoverShouldFlip()}
           autoFocus={false}
-          class={getPopoverClassName}
         >
           <div class={getFrameClassName()} style={getFrameStyle()}>
             {menuContent()}
           </div>
-        </HeadlessPopover>
+        </Popover>
       </MenuLinkOutIconContext.Provider>
     );
   }

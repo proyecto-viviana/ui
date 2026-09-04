@@ -1204,7 +1204,7 @@ describe("RadioGroup", () => {
       expect(onBlurB).not.toHaveBeenCalled();
     });
 
-    it("should support aria-describedby on a radio", () => {
+    it("should support aria-describedby on a radio", async () => {
       render(() => (
         <RadioGroup aria-label="Options">
           <Radio value="a" aria-describedby="test">
@@ -1217,7 +1217,9 @@ describe("RadioGroup", () => {
       ));
 
       for (const radio of screen.getAllByRole("radio")) {
-        expect(radio).toHaveAttribute("aria-describedby", "test");
+        await waitFor(() => {
+          expect(radio).toHaveAttribute("aria-describedby", "test");
+        });
       }
     });
 
@@ -1412,7 +1414,9 @@ describe("RadioGroup", () => {
       ));
 
       const group = screen.getByRole("radiogroup");
-      expect(group).not.toHaveAttribute("aria-describedby");
+      await waitFor(() => {
+        expect(group).not.toHaveAttribute("aria-describedby");
+      });
       expect(group).not.toHaveAttribute("data-invalid");
 
       const radios = screen.getAllByRole("radio");
@@ -1455,7 +1459,9 @@ describe("RadioGroup", () => {
       ));
 
       const group = screen.getByRole("radiogroup");
-      expect(group).not.toHaveAttribute("aria-describedby");
+      await waitFor(() => {
+        expect(group).not.toHaveAttribute("aria-describedby");
+      });
       expect(group).not.toHaveAttribute("data-invalid");
 
       const radios = screen.getAllByRole("radio");
@@ -1537,14 +1543,16 @@ describe("RadioGroup", () => {
       await assertNoA11yViolations(container);
     });
 
-    it("ARIA ID: no dangling refs", () => {
+    it("ARIA ID: no dangling refs", async () => {
       render(() => (
         <RadioGroup aria-label="Options" defaultValue="a">
           <Radio value="a">Option A</Radio>
           <Radio value="b">Option B</Radio>
         </RadioGroup>
       ));
-      assertAriaIdIntegrity(document.body);
+      await waitFor(() => {
+        assertAriaIdIntegrity(document.body);
+      });
     });
 
     it("DOM: id forwards on group", () => {

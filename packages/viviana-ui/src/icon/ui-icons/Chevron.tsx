@@ -2,18 +2,18 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize50.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize50.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize75.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize75.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize300.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize400.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_ChevronSize400.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize50.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize50.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize75.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize75.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize400.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_ChevronSize400.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

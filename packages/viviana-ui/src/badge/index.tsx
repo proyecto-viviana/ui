@@ -24,7 +24,7 @@ import {
 } from "solid-js";
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
-import { fontRelative, lightDark, style } from "../style" with { type: "macro" };
+import { lightDark, style } from "../style" with { type: "macro" };
 import { keyframes } from "../style/style-macro" with { type: "macro" };
 import { centerBaseline } from "../icon/center-baseline";
 import { IconContext } from "../icon/spectrum-icon";
@@ -394,7 +394,7 @@ const textStyles = style<{ overflowMode: BadgeOverflowMode }>({
 
 const iconCenterStyles = style({ order: 0 });
 const iconStyles = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "--iconMargin",
   flexShrink: 0,
 });

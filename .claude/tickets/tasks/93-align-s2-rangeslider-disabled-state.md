@@ -7,6 +7,11 @@ parent: 24
 status: open
 history:
   - { state: open, at: 2026-08-20, note: "migrated from the remaining-work hygiene census" }
+  - {
+      state: open,
+      at: 2026-09-03,
+      note: "#260 rangeslider: polarity is now the inverse of this write-up. URL ?isDisabled=true and live isDisabled stamp data-disabled=true on the S2 group and omit it on Solid. Fill/upperTrack/label/thumb paint and Tab skip already match; the attribute is not user-visible on this route. Do not file a new id.",
+    }
 ---
 
 The Viviana RangeSlider stamps `data-disabled="true"` on its group. The S2

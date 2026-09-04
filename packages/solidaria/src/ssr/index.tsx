@@ -116,11 +116,24 @@ export function createId(defaultId?: string): string {
 export function createSlotId(deps: Array<Accessor<unknown>> = []): Accessor<string | undefined> {
   const id = createId();
   const [resolvedId, setResolvedId] = createSignal<string | undefined>(id);
+  const [probeTick, setProbeTick] = createSignal(0);
 
+  // RAC `useSlotId` (`useId.ts:135-149`) via `useValueEffect`: yield the raw
+  // id first so a slot that just mounted can receive it, then probe the DOM
+  // after that render commits. `probeTick` is a separate signal so this
+  // effect does not re-yield when the probe clears `resolvedId`.
   createEffect(() => {
-    // Re-probe when any explicit dependency changes.
     for (const dep of deps) {
       dep();
+    }
+    setResolvedId(id);
+    setProbeTick((tick) => tick + 1);
+  });
+
+  createEffect(() => {
+    probeTick();
+    if (resolvedId() !== id) {
+      return;
     }
     setResolvedId(document.getElementById(id) ? id : undefined);
   });

@@ -1080,4 +1080,61 @@ describe("createCalendarState", () => {
       });
     });
   });
+
+  describe("selectDate with isDateUnavailable", () => {
+    const focusedDate = new CalendarDate(2026, 4, 15);
+
+    it("selects a date before the visible range when isDateUnavailable is provided", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: focusedDate,
+          isDateUnavailable: () => false,
+        });
+
+        state.focusNextPage();
+        state.selectDate(focusedDate);
+        expect(state.value()?.toString()).toBe(focusedDate.toString());
+
+        state.selectDate(focusedDate.subtract({ months: 1 }));
+        expect(state.value()?.toString()).toBe(focusedDate.subtract({ months: 1 }).toString());
+
+        dispose();
+      });
+    });
+
+    it("selects a date after the visible range when isDateUnavailable is provided", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: focusedDate,
+          isDateUnavailable: () => false,
+        });
+
+        state.focusPreviousPage();
+        state.selectDate(focusedDate);
+        expect(state.value()?.toString()).toBe(focusedDate.toString());
+
+        state.selectDate(focusedDate.add({ months: 1 }));
+        expect(state.value()?.toString()).toBe(focusedDate.add({ months: 1 }).toString());
+
+        dispose();
+      });
+    });
+  });
+
+  describe("visible range invalid", () => {
+    it("disables paging when the next page is outside min/max", () => {
+      createRoot((dispose) => {
+        const state = createCalendarState({
+          defaultFocusedValue: new CalendarDate(2025, 2, 14),
+          minValue: new CalendarDate(2025, 2, 3),
+          maxValue: new CalendarDate(2025, 2, 20),
+        });
+
+        expect(state.isPreviousVisibleRangeInvalid()).toBe(true);
+        expect(state.isNextVisibleRangeInvalid()).toBe(true);
+
+        dispose();
+      });
+    });
+  });
 });

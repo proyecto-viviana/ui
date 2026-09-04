@@ -12,6 +12,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // SSR hydration: the existing vitest.config.ts is the DOM-compiled half.
 export default defineConfig({
   plugins: [solidPlugin({ ssr: true })],
+  optimizeDeps: {
+    // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
+    // discovery before Vitest applies its file include. That crosses ignored
+    // build output and the vendored React Spectrum oracle, where JSX-in-.js is
+    // intentionally valid for upstream's own toolchain but not ours.
+    noDiscovery: true,
+    entries: ["packages/**/test/**/*.ssr.test.{ts,tsx}"],
+  },
   test: {
     name: "ssr",
     environment: "node",

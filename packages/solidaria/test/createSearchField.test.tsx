@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSearchField } from "../src/searchfield/createSearchField";
 import { createSearchFieldState } from "@proyecto-viviana/solid-stately";
+import { I18nProvider } from "../src/i18n";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // Test component that uses createSearchField
@@ -380,5 +381,14 @@ describe("createSearchField edge cases", () => {
     render(() => <TestSearchFieldNoRef aria-label="Search" />);
     const input = screen.getByTestId("search-input");
     expect(input).toBeInTheDocument();
+  });
+
+  it("labels the clear button from I18nProvider, not the English literal", () => {
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <TestSearchField aria-label="Search" />
+      </I18nProvider>
+    ));
+    expect(screen.getByTestId("clear-button")).toHaveAttribute("aria-label", "Suche zurücksetzen");
   });
 });

@@ -2,9 +2,9 @@
  * Tests for createSelect and createHiddenSelect.
  */
 
-import { describe, it, expect, vi } from "vite-plus/test";
+import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
-import { render, fireEvent } from "@solidjs/testing-library";
+import { render, fireEvent, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createSelect, createHiddenSelect, HiddenSelect } from "../src/select";
 import { createSelectState } from "@proyecto-viviana/solid-stately";
 
@@ -585,5 +585,147 @@ describe("HiddenSelect component", () => {
     expect(div).toBeTruthy();
 
     unmount();
+  });
+});
+
+describe("createSelect field slot ids", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const items = [
+    { key: "a", label: "Apple" },
+    { key: "b", label: "Banana" },
+  ];
+
+  function createTestState() {
+    return createSelectState({
+      items,
+      getKey: (item) => item.key,
+      getTextValue: (item) => item.label,
+    });
+  }
+
+  // RAC `useField.ts:38-60` + `useSlotId` (`useId.ts:135-149`): the description
+  // id exists only when a description element with that id is in the DOM.
+  it("trigger aria-describedby contains the description id only when the description slot renders", async () => {
+    function Harness() {
+      const state = createTestState();
+      const select = createSelect({ id: "fruit" }, state);
+      return (
+        <div>
+          <button {...select.triggerProps} data-testid="trigger">
+            Fruit
+          </button>
+        </div>
+      );
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("trigger")).not.toHaveAttribute("aria-describedby");
+    });
+  });
+
+  it("descriptionProps.id is undefined when no description is rendered", async () => {
+    let select!: ReturnType<typeof createSelect>;
+    function Harness() {
+      const state = createTestState();
+      select = createSelect({ id: "fruit" }, state);
+      return <button {...select.triggerProps} data-testid="trigger" />;
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      expect(select.descriptionProps.id).toBeUndefined();
+      expect(screen.getByTestId("trigger")).not.toHaveAttribute("aria-describedby");
+    });
+  });
+
+  it("trigger aria-describedby contains the description id when the description slot renders", async () => {
+    function Harness() {
+      const state = createTestState();
+      const select = createSelect({ id: "fruit", description: "Pick a fruit" }, state);
+      return (
+        <div>
+          <button {...select.triggerProps} data-testid="trigger">
+            Fruit
+          </button>
+          <span {...select.descriptionProps}>Pick a fruit</span>
+        </div>
+      );
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      const trigger = screen.getByTestId("trigger");
+      const describedBy = trigger.getAttribute("aria-describedby");
+      expect(describedBy).toBeTruthy();
+      expect(document.getElementById(describedBy!)).toHaveTextContent("Pick a fruit");
+    });
+  });
+
+  // RAC `useField.ts:51-60` order: description id, then error id, then the user
+  // `aria-describedby`. When only the error slot is in the DOM (invalid), the
+  // error id is first (and only from the field).
+  it("trigger aria-describedby contains the error id first when invalid and an error message renders", async () => {
+    function Harness() {
+      const state = createTestState();
+      const select = createSelect(
+        { id: "fruit", isInvalid: true, errorMessage: "Required" },
+        state,
+      );
+      return (
+        <div>
+          <button {...select.triggerProps} data-testid="trigger">
+            Fruit
+          </button>
+          <span {...select.errorMessageProps}>Required</span>
+        </div>
+      );
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      const trigger = screen.getByTestId("trigger");
+      const describedBy = trigger.getAttribute("aria-describedby");
+      expect(describedBy).toBeTruthy();
+      const ids = describedBy!.split(" ");
+      expect(document.getElementById(ids[0])).toHaveTextContent("Required");
+    });
+  });
+
+  it("preserves a user aria-describedby", async () => {
+    function Harness() {
+      const state = createTestState();
+      const select = createSelect(
+        { id: "fruit", description: "Pick a fruit", "aria-describedby": "extra-hint" },
+        state,
+      );
+      return (
+        <div>
+          <button {...select.triggerProps} data-testid="trigger">
+            Fruit
+          </button>
+          <span {...select.descriptionProps}>Pick a fruit</span>
+          <span id="extra-hint">More</span>
+        </div>
+      );
+    }
+
+    render(() => <Harness />);
+
+    await waitFor(() => {
+      const trigger = screen.getByTestId("trigger");
+      const ids = trigger.getAttribute("aria-describedby")?.split(" ") ?? [];
+      expect(ids).toContain("extra-hint");
+      expect(ids.some((id) => document.getElementById(id)?.textContent === "Pick a fruit")).toBe(
+        true,
+      );
+    });
   });
 });

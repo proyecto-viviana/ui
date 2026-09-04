@@ -44,6 +44,7 @@ import {
   mergeProps,
   type AriaGridListProps,
   type GridListSectionAria,
+  useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
   createGridState,
@@ -68,10 +69,14 @@ import {
   type CollectionRendererContextValue,
   type SectionProps,
   useCollectionRenderer,
+  useCollectionRoot,
+  renderCollectionDropSlots,
 } from "./Collection";
-import { useVirtualizerContext, type Orientation } from "./Virtualizer";
+import { TextContext } from "./Text";
+import { useVirtualizerContext, PersistedVirtualItem, type Orientation } from "./Virtualizer";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
@@ -173,6 +178,8 @@ export interface GridListItemRenderProps {
   selectionMode: "none" | "single" | "multiple";
   /** How selection behaves when pressing an item. */
   selectionBehavior: "replace" | "toggle";
+  /** Id for the item description, to join into the row accessible name. */
+  descriptionId?: string;
 }
 
 export interface GridListItemProps<T extends object>
@@ -193,6 +200,8 @@ export interface GridListItemProps<T extends object>
   textValue?: string;
   /** Handler called when the item is activated. */
   onAction?: () => void;
+  /** Whether this item is disabled. */
+  isDisabled?: boolean;
   /** Ref for the rendered row element. */
   ref?: RefLike<HTMLDivElement>;
 }
@@ -331,6 +340,8 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "onLoadMore",
       "dragAndDropHooks",
       "orientation",
+      "layout",
+      "columnCount",
     ],
     [
       "items",
@@ -347,7 +358,10 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     ],
   );
 
+  const locale = useLocale();
+
   const [ref, setRef] = createSignal<HTMLDivElement | null>(null);
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
 
   const collection = createMemo(() =>
     buildGridCollection(
@@ -377,21 +391,14 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   });
 
   const orientation = (): Orientation => local.orientation ?? "vertical";
-  const resolveDirection = (): "ltr" | "rtl" => {
-    const el = ref();
-    if (el && typeof window !== "undefined" && typeof window.getComputedStyle === "function") {
-      const dir = window.getComputedStyle(el).direction;
-      if (dir === "rtl") return "rtl";
-    }
-    return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-  };
+  const resolveDirection = (): "ltr" | "rtl" => locale().direction;
 
   const state = createGridState<T, GridCollection<T>>(() => ({
     collection: collection(),
     disabledKeys: allDisabledKeys(),
     disabledBehavior: stateProps.disabledBehavior,
     selectionMode: stateProps.selectionMode,
-    selectionBehavior: stateProps.selectionBehavior ?? "replace",
+    selectionBehavior: stateProps.selectionBehavior,
     selectedKeys: stateProps.selectedKeys,
     defaultSelectedKeys: stateProps.defaultSelectedKeys,
     onSelectionChange: stateProps.onSelectionChange,
@@ -409,13 +416,15 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       "aria-label": ariaProps["aria-label"],
       "aria-labelledby": ariaProps["aria-labelledby"],
       "aria-describedby": ariaProps["aria-describedby"],
-      isVirtualized: ariaProps.isVirtualized,
+      isVirtualized: ariaProps.isVirtualized ?? parentCollectionRenderer?.isVirtualized,
       onAction: ariaProps.onAction,
       isDisabled: ariaProps.isDisabled,
       selectionBehavior: state.selectionBehavior,
       keyboardNavigationBehavior: ariaProps.keyboardNavigationBehavior,
       orientation: orientation(),
       direction: resolveDirection(),
+      layout: local.layout,
+      columnCount: local.columnCount,
     }),
     () => state,
     ref,
@@ -455,7 +464,6 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
 
   const isEmpty = () => stateProps.items.length === 0;
   const virtualizer = useVirtualizerContext();
-  const parentCollectionRenderer = useCollectionRenderer<T>();
   const getItemNodes = createMemo(() =>
     Array.from(state.collection).filter((node) => node.type === "item"),
   );
@@ -485,11 +493,18 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!hasDraggableDnd()) return undefined;
     return local.dragAndDropHooks?.useDraggableCollectionState?.({
       items: stateProps.items,
+      collection: state.collection,
+      selectedKeys: state.selectedKeys,
+      isSelected: (key) => state.isSelected(key),
     });
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return local.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return local.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection;
+      },
+    });
   });
   createEffect(() => {
     if (!hasDraggableDnd()) return;
@@ -559,24 +574,17 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return null;
     const baseRange = virtualizer.getVisibleRange(stateProps.items.length);
     const itemNodes = getItemNodes();
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => itemNodes.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection);
-    const focusedKey = state.focusedKey;
-    const focusedIndex =
-      focusedKey != null ? itemNodes.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? itemNodes.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
     return mergePersistedKeysIntoVirtualRange(
       baseRange,
-      persistedIndexes,
+      [],
       stateProps.items.length,
       virtualizer,
       80,
@@ -585,6 +593,15 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
         forceIncludeMaxSpan: 320,
       },
     );
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const itemNodes = getItemNodes();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => itemNodes.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   createEffect(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized) return;
@@ -613,11 +630,6 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
     if (!range) return stateProps.items;
     return stateProps.items.slice(range.start, range.end);
   });
-  // Spacers reserve the windowed-out extent along the virtualizer's primary axis,
-  // so a horizontal layout offsets along width rather than height.
-  const virtualSpacerStyle = (size: number): JSX.CSSProperties =>
-    virtualizer?.orientation === "horizontal" ? { width: `${size}px` } : { height: `${size}px` };
-
   const contextValue = createMemo<GridListContextValue<T>>(() => ({
     state,
     collection: collection(),
@@ -634,6 +646,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
 
   return (
     <GridListContext.Provider value={contextValue() as unknown as GridListContextValue<object>}>
@@ -664,43 +677,52 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
             <SharedElementTransition>
               {isEmpty() && local.renderEmptyState ? (
                 local.renderEmptyState()
-              ) : (
-                <>
-                  {virtualRange()?.offsetTop ? (
-                    <div
-                      role="presentation"
-                      aria-hidden="true"
-                      style={virtualSpacerStyle(virtualRange()!.offsetTop)}
-                      data-virtualizer-spacer="top"
-                    />
-                  ) : null}
+              ) : parentCollectionRenderer?.isVirtualized ? (
+                <CollectionRoot
+                  collection={virtualRange() ? stateProps.items : []}
+                  scrollRef={() => ref()}
+                  persistedKeys={persistedKeys()}
+                >
                   <For each={visibleItems()}>
                     {(item, index) => {
                       const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-                      const beforeIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
-                      const onIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
-                      const afterIndicator = () =>
-                        collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
-                      return (
-                        <>
-                          {beforeIndicator()}
-                          {onIndicator()}
-                          {props.children(item)}
-                          {afterIndicator()}
-                        </>
-                      );
+                      return renderCollectionDropSlots({
+                        index: itemIndex(),
+                        lastIndex: getItemNodes().length - 1,
+                        renderDropIndicator: (i, position) =>
+                          collectionRenderer().renderDropIndicator?.(i, position),
+                        children: props.children(item),
+                      });
                     }}
                   </For>
-                  {virtualRange()?.offsetBottom ? (
-                    <div
-                      role="presentation"
-                      aria-hidden="true"
-                      style={virtualSpacerStyle(virtualRange()!.offsetBottom)}
-                      data-virtualizer-spacer="bottom"
-                    />
-                  ) : null}
+                  <For each={persistedOutsideIndexes()}>
+                    {(index) => (
+                      <PersistedVirtualItem index={index}>
+                        {renderCollectionDropSlots({
+                          index,
+                          lastIndex: getItemNodes().length - 1,
+                          renderDropIndicator: (i, position) =>
+                            collectionRenderer().renderDropIndicator?.(i, position),
+                          children: props.children(stateProps.items[index]),
+                        })}
+                      </PersistedVirtualItem>
+                    )}
+                  </For>
+                </CollectionRoot>
+              ) : (
+                <>
+                  <For each={visibleItems()}>
+                    {(item, index) => {
+                      const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                      return renderCollectionDropSlots({
+                        index: itemIndex(),
+                        lastIndex: getItemNodes().length - 1,
+                        renderDropIndicator: (i, position) =>
+                          collectionRenderer().renderDropIndicator?.(i, position),
+                        children: props.children(item),
+                      });
+                    }}
+                  </For>
                 </>
               )}
             </SharedElementTransition>
@@ -726,6 +748,7 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     "item",
     "textValue",
     "onAction",
+    "isDisabled",
     "children",
     "ref",
   ]);
@@ -759,8 +782,10 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
   const itemAria = createGridListItem<T, GridCollection<T>>(
     () => ({
       node: itemNode(),
+      textValue: local.textValue,
       onAction: local.onAction,
-      selectionBehavior: listContext?.selectionBehavior ?? "replace",
+      isDisabled: local.isDisabled,
+      selectionBehavior: listContext?.selectionBehavior ?? "toggle",
     }),
     () => state,
     ref,
@@ -808,7 +833,8 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
     isHovered: isHovered(),
     isDisabled: isDisabled(),
     selectionMode: state.selectionMode,
-    selectionBehavior: listContext?.selectionBehavior ?? "replace",
+    selectionBehavior: listContext?.selectionBehavior ?? "toggle",
+    descriptionId: itemAria.descriptionProps.id,
   }));
 
   const renderProps = useRenderProps(
@@ -862,7 +888,15 @@ export function GridListItem<T extends object>(props: GridListItemProps<T>): JSX
       data-dragging={draggableItem()?.isDragging || undefined}
       data-drop-target={droppableItem()?.isDropTarget || undefined}
     >
-      <div {...itemAria.gridCellProps}>{renderProps.renderChildren()}</div>
+      <TextContext.Provider
+        value={{
+          slots: {
+            description: itemAria.descriptionProps,
+          },
+        }}
+      >
+        <div {...itemAria.gridCellProps}>{renderProps.renderChildren()}</div>
+      </TextContext.Provider>
     </div>
   );
 }
@@ -895,7 +929,7 @@ export function GridListSelectionCheckbox(props: {
       class={props.class}
       style={props.style}
       tabIndex={props.excludeFromTabOrder ? -1 : undefined}
-      aria-label={props["aria-label"] ?? "Select"}
+      aria-label={props["aria-label"] ?? checkboxAria.checkboxProps["aria-label"]}
     />
   );
 }

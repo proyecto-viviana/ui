@@ -1,16 +1,18 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
+  checkControl,
   frameworkCanvas,
   frameworkPanel,
   styledSection,
   waitForComparisonRouteReady,
 } from "./comparison-page";
 import {
-  expectExactPreparedInPlaceScreenshotPair,
   clearPointer,
+  expectExactPreparedClonedScreenshotPair,
   expectExactPreparedScreenshotPair,
   expectExactScreenshotPair,
   pinComparisonTheme,
+  requestComparisonTheme,
 } from "./visual-diff";
 
 type ActionButtonCase = {
@@ -73,10 +75,6 @@ async function actionButtonFixtures(page: Page, params: Record<string, string | 
     reactButton: reactPanel.getByRole("button").first(),
     solidButton: solidPanel.getByRole("button").first(),
   };
-}
-
-async function setComparisonTheme(page: Page, theme: "light" | "dark") {
-  await page.locator(`input[name="comparisonTheme"][value="${theme}"]`).check();
 }
 
 async function serializedControlProps(root: Locator) {
@@ -212,7 +210,7 @@ test.describe("comparison ActionButton visual parity", () => {
       }) => {
         const fixtures = await actionButtonFixtures(page, matrixCase.params);
 
-        await setComparisonTheme(page, colorScheme);
+        await requestComparisonTheme(page, colorScheme);
         await expect
           .poll(async () => {
             const react = await actionButtonComputedContract(fixtures.reactButton);
@@ -348,10 +346,10 @@ test.describe("comparison ActionButton visual parity", () => {
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
 
     await form.locator('input[name="children"]').fill("Archive");
-    await form.locator('input[name="size"][value="XL"]').check();
-    await form.locator('input[name="staticColor"][value="black"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
-    await form.locator('input[name="isQuiet"]').check();
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "staticColor", "black");
+    await checkControl(page, "iconPlacement", "start");
+    await checkControl(page, "isQuiet");
 
     const expected = JSON.stringify({
       children: "Archive",
@@ -434,7 +432,7 @@ test.describe("comparison ActionButton visual parity", () => {
   test("ActionButton hover state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectExactPreparedInPlaceScreenshotPair(
+    await expectExactPreparedClonedScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,
@@ -472,7 +470,7 @@ test.describe("comparison ActionButton visual parity", () => {
   test("ActionButton pressed state matches current React Spectrum", async ({ page }) => {
     const fixtures = await actionButtonFixtures(page);
 
-    await expectExactPreparedInPlaceScreenshotPair(
+    await expectExactPreparedClonedScreenshotPair(
       page,
       fixtures.reactCanvas,
       fixtures.solidCanvas,

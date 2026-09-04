@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import {
+  checkControl,
   frameworkCanvas,
   frameworkPanel,
   styledSection,
@@ -306,9 +307,9 @@ test.describe("comparison single button-derived visual parity", () => {
     await form.locator('input[name="children"]').fill("Open billing");
     await form.locator('input[name="href"]').fill("https://example.com/billing");
     await form.locator('select[name="variant"]').selectOption("accent");
-    await form.locator('input[name="fillStyle"][value="outline"]').check();
-    await form.locator('input[name="size"][value="XL"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
+    await checkControl(page, "fillStyle", "outline");
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "iconPlacement", "start");
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");
@@ -350,13 +351,13 @@ test.describe("comparison single button-derived visual parity", () => {
     const form = page.locator('[data-comparison-controls="togglebutton"]').first();
     await expect(form).toHaveAttribute("data-control-coverage", "modeled");
     await form.locator('input[name="children"]').fill("Track");
-    await form.locator('input[name="size"][value="XL"]').check();
-    await form.locator('input[name="staticColor"][value="white"]').check();
-    await form.locator('input[name="iconPlacement"][value="start"]').check();
-    await form.locator('input[name="isQuiet"]').check();
-    await form.locator('input[name="isEmphasized"]').check();
-    await form.locator('input[name="isSelected"]').check();
-    await form.locator('input[name="isDisabled"]').check();
+    await checkControl(page, "size", "XL");
+    await checkControl(page, "staticColor", "white");
+    await checkControl(page, "iconPlacement", "start");
+    await checkControl(page, "isQuiet");
+    await checkControl(page, "isEmphasized");
+    await checkControl(page, "isSelected");
+    await checkControl(page, "isDisabled");
 
     const section = await styledSection(page);
     const reactPanel = await frameworkPanel(section, "React Spectrum stack");

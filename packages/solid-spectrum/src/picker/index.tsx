@@ -19,11 +19,10 @@
 import {
   type JSX,
   createContext,
-  createEffect,
+  createMemo,
   createSignal,
   createUniqueId,
   mergeProps,
-  onCleanup,
   Show,
   splitProps,
   useContext,
@@ -36,8 +35,8 @@ import {
   SelectListBox as HeadlessSelectListBox,
   SelectOption as HeadlessSelectOption,
   ListBoxSection as HeadlessListBoxSection,
-  FieldError as HeadlessFieldError,
-  Popover as HeadlessPopover,
+  ListLayout,
+  Virtualizer,
   type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type SelectProps as HeadlessSelectProps,
   type SelectRenderProps,
@@ -54,8 +53,6 @@ import {
   css,
   focusRing,
   fontRelative,
-  lightDark,
-  setColorScheme,
   space,
   style,
 } from "../style" with { type: "macro" };
@@ -73,13 +70,20 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
 import { ProgressCircle } from "../progress/ProgressCircle";
-import { useProviderProps, useTheme } from "../provider";
+import { useProviderProps } from "../provider";
+import { Popover } from "../popover";
+import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { LOADER_ROW_HEIGHTS } from "../combobox";
+import { HelpText } from "../form/HelpText";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 
 export type PickerSize = "S" | "M" | "L" | "XL";
 type S2PickerSize = "S" | "M" | "L" | "XL";
@@ -354,28 +358,6 @@ const pickerProgressCircle = style<{ size?: S2PickerSize }>({
   },
 });
 
-const pickerHelpText = style<PickerStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  margin: 0,
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
-});
-
 const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>({
   width: "full",
   boxSizing: "border-box",
@@ -390,29 +372,15 @@ const pickerListBox = style<SelectListBoxRenderProps & { size?: S2PickerSize }>(
   padding: 8,
 });
 
-const pickerPopover = style({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      default: "layer-2",
-      forcedColors: "Background",
-    },
+// S2 Picker.tsx:475-484 — width additions on the composed Popover `styles` prop.
+const pickerMenuWidth = style<{ isQuiet?: boolean }>({
+  minWidth: {
+    default: "--trigger-width",
+    isQuiet: 192,
   },
-  backgroundColor: "--s2-container-bg",
-  boxShadow: "elevated",
-  borderRadius: "lg",
-  display: "flex",
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
-    forcedColors: "ButtonBorder",
+  width: {
+    default: "--trigger-width",
+    isQuiet: "[calc(var(--trigger-width) - 24)]",
   },
 });
 
@@ -506,7 +474,7 @@ const pickerCheckmark = style<PickerOptionStyleProps>({
 });
 
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -587,7 +555,6 @@ function PickerListBoxPopover(props: {
   shouldFlip: () => boolean;
   children: JSX.Element;
 }) {
-  const theme = useTheme();
   const selectContext = useContext(HeadlessSelectContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -598,49 +565,11 @@ function PickerListBoxPopover(props: {
     selectContext?.triggerRef?.() ??
     selectContext?.rootRef?.()?.querySelector<HTMLElement>("button[aria-haspopup='listbox']") ??
     null;
-  const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
-
-  const updateTriggerWidth = () => {
-    const trigger = triggerRef();
-    if (trigger) {
-      setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
-    }
-  };
-
-  createEffect(() => {
-    const trigger = triggerRef();
-    if (!trigger) {
-      setTriggerWidth(undefined);
-      return;
-    }
-
-    updateTriggerWidth();
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver(updateTriggerWidth);
-    resizeObserver.observe(trigger);
-    onCleanup(() => resizeObserver.disconnect());
-  });
-
-  const resolvedTriggerWidth = () => {
-    const explicitMenuWidth = props.menuWidth();
-    if (explicitMenuWidth != null) {
-      return `${explicitMenuWidth}px`;
-    }
-
-    const measuredWidth = triggerWidth();
-    if (measuredWidth) {
-      return measuredWidth;
-    }
-
-    const trigger = triggerRef();
-    return trigger ? `${trigger.getBoundingClientRect().width}px` : undefined;
-  };
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
+      padding="none"
       trigger="Select"
       triggerRef={triggerRef}
       isOpen={selectContext?.isOpen?.() ?? false}
@@ -654,22 +583,13 @@ function PickerListBoxPopover(props: {
       crossOffset={props.isQuiet() ? -12 : undefined}
       shouldFlip={props.shouldFlip()}
       autoFocus={false}
-      class={(renderProps) =>
-        pickerPopover({
-          ...renderProps,
-          colorScheme: theme.colorScheme,
-          isArrowShown: false,
-          isSubmenu: false,
-        })
-      }
-      style={() => ({
-        "--trigger-width": resolvedTriggerWidth(),
-        minWidth: props.isQuiet() ? "192px" : "var(--trigger-width)",
-        width: props.isQuiet() ? "calc(var(--trigger-width) - 24px)" : "var(--trigger-width)",
-      })}
+      UNSAFE_style={{
+        width: props.menuWidth() != null && !props.isQuiet() ? `${props.menuWidth()}px` : undefined,
+      }}
+      styles={pickerMenuWidth({ isQuiet: props.isQuiet() })}
     >
       <div class={pickerListBoxFrame}>{props.children}</div>
-    </HeadlessPopover>
+    </Popover>
   );
 }
 
@@ -684,6 +604,7 @@ function PickerLabel(props: {
   necessityIndicator: PickerNecessityIndicator;
   contextualHelp?: JSX.Element;
 }) {
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   return (
     <span
       class={pickerLabelWrapper({
@@ -714,7 +635,9 @@ function PickerLabel(props: {
               when={props.necessityIndicator === "icon"}
               fallback={
                 <span aria-hidden={props.isRequired ? true : undefined}>
-                  {props.isRequired ? "(required)" : "(optional)"}
+                  {stringFormatter().format(
+                    props.isRequired ? "label.(required)" : "label.(optional)",
+                  )}
                 </span>
               }
             >
@@ -728,9 +651,7 @@ function PickerLabel(props: {
           </span>
         </Show>
       </span>
-      <Show when={props.contextualHelp}>
-        <span data-slot="contextualHelp">{props.contextualHelp}</span>
-      </Show>
+      <FieldContextualHelp size={props.size}>{props.contextualHelp}</FieldContextualHelp>
     </span>
   );
 }
@@ -745,6 +666,7 @@ function pickerValueContent<T>(
   valueProps: SelectValueRenderProps<T>,
   renderValue: ((selectedItems: T[]) => JSX.Element) | undefined,
   renderItem: (item: T) => JSX.Element,
+  selectedCountLabel: string,
 ) {
   // Upstream wraps a custom `renderValue` in `<div style={{display:'contents'}}>`
   // (Picker.tsx:743) so it lays out transparently in the flex value container.
@@ -764,7 +686,7 @@ function pickerValueContent<T>(
   if (valueProps.selectedItems.length > 1) {
     return (
       <span slot="label" class={pickerValueText}>
-        {`${valueProps.selectedItems.length} selected`}
+        {selectedCountLabel}
       </span>
     );
   }
@@ -793,17 +715,10 @@ function pickerValueContent<T>(
   );
 }
 
-function loadingSpinnerLabel(loadingState: PickerLoadingState | undefined) {
-  return loadingState === "loadingMore" ? "Loading more" : "Loading";
-}
-
-function PickerProgressCircle(props: {
-  size: S2PickerSize;
-  loadingState: PickerLoadingState | undefined;
-}) {
+function PickerProgressCircle(props: { size: S2PickerSize; "aria-label": string }) {
   return (
     <ProgressCircle
-      aria-label={loadingSpinnerLabel(props.loadingState)}
+      aria-label={props["aria-label"]}
       isIndeterminate
       size="S"
       styles={pickerProgressCircle({ size: props.size })}
@@ -848,9 +763,13 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
   ]);
 
   const size = () => normalizePickerSize(local.size);
+  // S2 `useScale()` (`packages/@react-spectrum/s2/src/utils.ts`): coarse pointer → large.
+  const matchesCoarsePointer = createMediaQuery("not ((hover: hover) and (pointer: fine))");
+  const scale = (): "medium" | "large" => (matchesCoarsePointer() ? "large" : "medium");
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const direction = () => local.direction ?? "bottom";
   const align = () => local.align ?? "start";
   const shouldFlip = () => local.shouldFlip ?? true;
@@ -889,20 +808,8 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       return isMultiple() ? onSelectionChangeKeys() : undefined;
     },
   });
-  const descriptionId = createUniqueId();
   const labelId = createUniqueId();
   const [triggerEl, setTriggerEl] = createSignal<HTMLButtonElement | null>(null);
-  const selectDescribedBy = () => {
-    const explicitDescribedBy = (headlessProps as Record<string, unknown>)["aria-describedby"] as
-      | string
-      | undefined;
-    const ids = [explicitDescribedBy, local.description && !isInvalid() ? descriptionId : undefined]
-      .filter(Boolean)
-      .join(" ")
-      .split(" ")
-      .filter(Boolean);
-    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
-  };
 
   const rootClass = (renderProps: SelectRenderProps) =>
     [
@@ -938,14 +845,6 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
       />
     ) : undefined;
 
-  const helpClass = (renderProps: SelectRenderProps) =>
-    pickerHelpText({
-      isDisabled: renderProps.isDisabled,
-      isRequired: renderProps.isRequired,
-      isSelected: renderProps.isSelected,
-      size: size(),
-      isInvalid: isInvalid(),
-    });
   // Labelling mirrors upstream `useSelect`: a REAL visible label is associated by
   // id (`aria-labelledby` → `labelId`), letting the headless hook fold the value
   // into the trigger name ("Pro Plan") while the listbox is named by the label
@@ -996,9 +895,12 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     <PickerSizeContext.Provider value={size()}>
       <HeadlessSelect
         {...selectProps}
+        placeholder={
+          (headlessProps as { placeholder?: string }).placeholder ??
+          stringFormatter().format("picker.placeholder")
+        }
         aria-label={ariaLabel()}
         aria-labelledby={ariaLabelledBy()}
-        aria-describedby={selectDescribedBy()}
         isInvalid={isInvalid()}
         class={rootClass}
         style={local.UNSAFE_style}
@@ -1031,7 +933,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                     }
                   >
                     {(valueProps) =>
-                      pickerValueContent(valueProps, local.renderValue, listBoxChildren)
+                      pickerValueContent(
+                        valueProps,
+                        local.renderValue,
+                        listBoxChildren,
+                        stringFormatter().format("picker.selectedCount", {
+                          count: valueProps.selectedItems.length,
+                        }),
+                      )
                     }
                   </HeadlessSelectValue>
                   <Show when={isInvalid() && !triggerProps.isDisabled}>
@@ -1041,7 +950,10 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                   </Show>
                   <Show when={isTriggerLoading() && !triggerProps.isOpen}>
                     <CenterBaseline>
-                      <PickerProgressCircle size={size()} loadingState={local.loadingState} />
+                      <PickerProgressCircle
+                        size={size()}
+                        aria-label={stringFormatter().format("table.loading")}
+                      />
                     </CenterBaseline>
                   </Show>
                   {/* Faithful to upstream S2 `Picker.tsx` (the ChevronIcon carries
@@ -1068,16 +980,14 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                 </>
               )}
             </HeadlessSelectTrigger>
-            <Show when={local.description && !isInvalid()}>
-              <p id={descriptionId} class={helpClass(renderProps)}>
-                {local.description}
-              </p>
-            </Show>
-            <Show when={local.errorMessage && isInvalid()}>
-              <HeadlessFieldError class={helpClass(renderProps)}>
-                {local.errorMessage}
-              </HeadlessFieldError>
-            </Show>
+            <HelpText
+              size={size()}
+              isDisabled={renderProps.isDisabled}
+              isInvalid={isInvalid()}
+              description={local.description}
+            >
+              {local.errorMessage}
+            </HelpText>
             <PickerListBoxPopover
               size={size}
               isQuiet={isQuiet}
@@ -1086,20 +996,33 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
               menuWidth={() => local.menuWidth}
               shouldFlip={shouldFlip}
             >
-              <HeadlessSelectListBox
-                isInPopover
-                class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
-                onLoadMore={local.onLoadMore}
-                isLoading={isLoadingMore()}
-                loadMoreClass={pickerLoadingWrapper}
-                renderLoadMore={() =>
-                  isLoadingMore() ? (
-                    <PickerProgressCircle size={size()} loadingState={local.loadingState} />
-                  ) : undefined
-                }
+              <Virtualizer
+                layout={ListLayout}
+                layoutOptions={{
+                  estimatedRowHeight: 32,
+                  estimatedHeadingHeight: 50,
+                  padding: 8,
+                  loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
+                }}
               >
-                {listBoxChildren}
-              </HeadlessSelectListBox>
+                <HeadlessSelectListBox
+                  isInPopover
+                  class={(listBoxProps) => pickerListBox({ ...listBoxProps, size: size() })}
+                  onLoadMore={local.onLoadMore}
+                  isLoading={isLoadingMore()}
+                  loadMoreClass={pickerLoadingWrapper}
+                  renderLoadMore={() =>
+                    isLoadingMore() ? (
+                      <PickerProgressCircle
+                        size={size()}
+                        aria-label={stringFormatter().format("table.loadingMore")}
+                      />
+                    ) : undefined
+                  }
+                >
+                  {listBoxChildren}
+                </HeadlessSelectListBox>
+              </Virtualizer>
             </PickerListBoxPopover>
           </>
         )}
@@ -1119,6 +1042,10 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   const size = useContext(PickerSizeContext);
   const insideValue = useContext(InsidePickerValueContext);
   const [optionEl, setOptionEl] = createSignal<HTMLDivElement | null>(null);
+  // One tracked read of the children getter. Reading it per use creates the
+  // child DOM once per read and desynchronizes hydration keys; an untracked
+  // setup-time read freezes a direct signal child such as `{label()}`.
+  const content = createMemo(() => local.children);
 
   // Trigger/value mode: mirror upstream, where `SelectValue`'s default children
   // are the selected item's *content* (`item.props.children`), not a rendered
@@ -1129,12 +1056,12 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
   if (insideValue) {
     return (
       <>
-        {isTextOnlyChildren(local.children) ? (
+        {isTextOnlyChildren(content()) ? (
           <span slot="label" class={pickerValueText} data-rsp-slot="text">
-            {local.children}
+            {content()}
           </span>
         ) : (
-          local.children
+          content()
         )}
       </>
     );
@@ -1184,12 +1111,12 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             // (D6). Unselected rows' checkmarks are `visibility: hidden`, so they
             // are pruned from the tree automatically — matching the React oracle.
           />
-          {isTextOnlyChildren(local.children) ? (
+          {isTextOnlyChildren(content()) ? (
             <span slot="label" class={pickerOptionLabel({ size })} data-rsp-slot="text">
-              {local.children}
+              {content()}
             </span>
           ) : (
-            local.children
+            content()
           )}
         </>
       )}

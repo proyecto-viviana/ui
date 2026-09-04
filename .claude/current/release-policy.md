@@ -95,6 +95,10 @@ After that evidence barrier, the workflow runs in two Changesets stages. If
 unpublished changesets exist, it creates or updates the version PR. When that
 PR merges, it publishes the changed npm packages.
 
+Certification Gates, Site Gate, Release Readiness, and Changesets Check may
+run on Blacksmith. That is an accepted speed trade (ticket #140). Provenance
+publish stays on a GitHub-hosted runner.
+
 The workflow publishes via **npm trusted publishing (OIDC)** — `id-token: write`,
 npm `>=11.5.1`, **no `NPM_TOKEN` secret** — and the release job runs on a
 **github-hosted runner** (`ubuntu-latest`), which is mandatory: OIDC auto-enables

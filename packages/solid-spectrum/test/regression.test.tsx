@@ -333,8 +333,12 @@ describe("Regression: Select", () => {
       </Select>
     ));
 
-    expect(screen.getByText("Size")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Size" })).toHaveAttribute(
+    // Visible label plus the HiddenSelect's Firefox <label>{label}<select> copy
+    // (react-aria/src/select/HiddenSelect.tsx:175-176), aria-hidden.
+    expect(screen.getAllByText("Size")).toHaveLength(2);
+    // useSelect.ts:222-225 labels the trigger `[valueId, labelId]`, and RAC
+    // SelectValue defaults the value to the `selectPlaceholder` catalog string.
+    expect(screen.getByRole("button", { name: "Select an item Size" })).toHaveAttribute(
       "aria-haspopup",
       "listbox",
     );

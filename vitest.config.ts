@@ -16,7 +16,8 @@ export default defineConfig({
     entries: [
       "packages/**/test/**/*.test.{ts,tsx}",
       "apps/comparison/src/data/**/*.test.ts",
-      "benchmarks/**/*.bench.{ts,tsx}",
+      "apps/comparison/src/worker.test.ts",
+      "scripts/**/*.test.ts",
     ],
   },
   test: {
@@ -27,7 +28,8 @@ export default defineConfig({
     include: [
       "packages/**/test/**/*.test.{ts,tsx}",
       "apps/comparison/src/data/**/*.test.ts",
-      "benchmarks/**/*.bench.{ts,tsx}",
+      "apps/comparison/src/worker.test.ts",
+      "scripts/**/*.test.ts",
     ],
     // SSR-compiled tests run under vitest.ssr.config.ts (node env, generate:"ssr");
     // hydration tests run under vitest.hydrate.config.ts (jsdom, dom+hydratable).

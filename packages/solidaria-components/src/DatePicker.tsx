@@ -26,24 +26,17 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  onCleanup,
   splitProps,
   useContext,
   Show,
 } from "solid-js";
-import { Portal } from "solid-js/web";
 import {
   createDatePicker,
   createDateField,
   createDateRangePicker,
-  createEnterAnimation,
-  createExitAnimation,
   createFocusRing,
   createHover,
-  createPopover,
   mergeProps,
-  FocusScope,
-  useUNSAFE_PortalContext,
   type AriaDatePickerProps,
   type AriaDateRangePickerProps,
   type DatePickerState as AriaDatePickerState,
@@ -83,6 +76,8 @@ import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
 import { HiddenDateInput } from "./HiddenDateInput";
 import { FormContext, type FormProps } from "./Form";
+import { Popover, type PopoverRenderProps } from "./Popover";
+import { Dialog } from "./Dialog";
 import {
   DateRangePickerContext,
   useDateRangePickerContext,
@@ -119,6 +114,9 @@ export interface DatePickerContextValue {
   };
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (element: HTMLElement | null) => void;
+  /** RAC Popover `triggerRef: groupRef` — the FieldGroup, not the calendar button. */
+  groupRef: () => HTMLElement | null;
+  setGroupRef: (element: HTMLElement | null) => void;
   pickerAria: ReturnType<typeof createDatePicker>;
 }
 
@@ -397,6 +395,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   );
 
   const [triggerRef, setTriggerRef] = createSignal<HTMLElement | null>(null);
+  const [groupRef, setGroupRefState] = createSignal<HTMLElement | null>(null);
   const [fieldRef, setFieldRef] = createSignal<HTMLDivElement | null>(null);
 
   // Unified state using createDatePickerState as single source of truth.
@@ -553,6 +552,11 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
       if (!current || !current.isConnected) {
         setTriggerRef(() => element);
       }
+    },
+    groupRef,
+    setGroupRef: (element) => {
+      if (!element) return;
+      setGroupRefState(() => element);
     },
     pickerAria,
   };
@@ -741,6 +745,7 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
   };
 
   let triggerRef: HTMLElement | null = null;
+  let groupRef: HTMLElement | null = null;
   // The roleless root element — scopes the shared segment focus manager and the
   // outer arrow-navigation across BOTH fields, mirroring the single DatePicker's
   // `fieldRef`.
@@ -945,6 +950,11 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     setTriggerRef: (element) => {
       if (!element) return;
       if (!triggerRef || !triggerRef.isConnected) triggerRef = element;
+    },
+    groupRef: () => groupRef,
+    setGroupRef: (element) => {
+      if (!element) return;
+      groupRef = element;
     },
     pickerAria,
   };
@@ -1320,233 +1330,73 @@ export function DateRangePickerErrorMessage(props: DateRangePickerErrorMessagePr
   );
 }
 
-function createEscapeDismissFallback(isOpen: () => boolean, close: () => void): void {
-  createEffect(() => {
-    if (!isOpen() || typeof document === "undefined") return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented || event.isComposing) return;
-      close();
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    onCleanup(() => document.removeEventListener("keydown", onKeyDown));
-  });
+function datePickerContentClass(
+  className: DatePickerContentProps["class"],
+  defaultClassName: string,
+): string | ((renderProps: PopoverRenderProps) => string) {
+  if (typeof className === "function") {
+    return (renderProps) =>
+      className({
+        isEntering: renderProps.isEntering,
+        isExiting: renderProps.isExiting,
+        placement: renderProps.placement,
+      });
+  }
+  return className ?? defaultClassName;
 }
 
 /**
  * The content area of the date picker (typically contains a Calendar).
+ * Overlay enter/exit is owned by Popover, matching RAC DatePicker which renders
+ * a Popover + Dialog and has no private animation machine.
  */
 export function DatePickerContent(props: DatePickerContentProps): JSX.Element {
   const context = useDatePickerContext();
-  const portalContext = useUNSAFE_PortalContext();
-  // A signal (not a plain `let`) so the enter-animation effect re-runs when the
-  // section mounts on open — `createEnterAnimation` reads this to know the
-  // element exists before removing the initial `data-entering` styles.
-  const [contentRef, setContentRef] = createSignal<HTMLElement>();
-  const portalContainer = () => portalContext.getContainer?.() ?? undefined;
-
-  const popoverAria = createPopover(
-    {
-      triggerRef: () => context.triggerRef()?.parentElement ?? context.triggerRef(),
-      popoverRef: () => contentRef() ?? null,
-      placement: "bottom start",
-      offset: 8,
-      isNonModal: false,
-      isKeyboardDismissDisabled: false,
-    },
-    {
-      isOpen: () => context.overlayState.isOpen,
-      open: context.overlayState.open,
-      close: context.overlayState.close,
-      toggle: context.overlayState.toggle,
-    },
-  );
-
-  createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
-
-  // Mirror RAC Popover's enter and exit state. Keep the surface mounted while
-  // it exits so the Escape keyup stays on the calendar. This also lets the S2
-  // exit tokens run before FocusScope restores the trigger.
-  const isEntering = createEnterAnimation(contentRef, () => context.overlayState.isOpen);
-  const isExiting = createExitAnimation(contentRef, () => context.overlayState.isOpen);
-
-  const renderProps = (): DatePickerContentRenderProps => ({
-    isEntering: isEntering(),
-    isExiting: isExiting(),
-    // Seed the base placement so the ENTER frame already carries the
-    // placement-ward `translate` (S2's popover motion is placement-gated:
-    // `translateY: { placement: { bottom: { isEntering: -4 } } }`). RAC resolves
-    // placement in a `useLayoutEffect` BEFORE the first paint, so no painted
-    // frame is ever null-placement; the port's positioning `createEffect` lands
-    // one frame later, so without this seed the entering frame drops `translateY`
-    // and only `opacity` transitions (D2 caught the missing translate). The
-    // desired placement is `bottom start` (see `createPopover` above), so the
-    // base axis is always `bottom` until the measure refines it.
-    placement: popoverAria.placement() ?? "bottom",
-  });
-
-  const resolvedClass = (): string => {
-    const c = props.class;
-    if (typeof c === "function") return c(renderProps());
-    return c ?? "solidaria-DatePickerContent";
-  };
-
-  const cleanPopoverProps = () => {
-    const {
-      style: _style,
-      ref: _ref,
-      ...rest
-    } = popoverAria.popoverProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const mergedStyle = (): JSX.CSSProperties => {
-    const popoverStyle = (popoverAria.popoverProps as Record<string, unknown>).style as
-      | JSX.CSSProperties
-      | undefined;
-    return {
-      ...popoverStyle,
-      ...props.style,
-    };
-  };
-
-  // Close-focus restoration is delegated to the overlay's `FocusScope`
-  // (`restoreFocus`) — exactly as RAC's DatePicker does, and as certified Select
-  // and Menu do. The prior ad-hoc effect (`if (!open) triggerRef().focus()`)
-  // fired once on mount with `open === false`, stealing focus to the trigger and
-  // painting a phantom focus ring at rest.
 
   return (
-    <Show when={context.overlayState.isOpen || isExiting()}>
-      <Portal mount={portalContainer()}>
-        <FocusScope contain={!isExiting()} restoreFocus>
-          {/* Un-folded to mirror S2's `<Popover>` DOM. The OUTER role-null `<div>`
-           * is the positioned surface that carries the enter motion + chrome —
-           * this is the element RAC/S2 animate (`AriaPopover`'s div: role null, no
-           * tabindex, accessible name computed from the calendar's textContent).
-           * A nested `role="dialog"` element (RAC's `Dialog`, which S2's
-           * CalendarPopover wraps the Calendar in) carries the dialog semantics.
-           * Folding both onto one `<section role="dialog">` made D2 animate the
-           * dialog node instead of the role-null div; the role-null wrapper is
-           * pruned from the AX tree so D5/D6 are unaffected. */}
-          <div
-            ref={setContentRef}
-            {...cleanPopoverProps()}
-            class={resolvedClass()}
-            style={mergedStyle()}
-            data-placement={popoverAria.placement() ?? "bottom"}
-            data-entering={dataAttr(isEntering())}
-            data-exiting={dataAttr(isExiting())}
-          >
-            {/* RAC's `Dialog` renders a `<section role="dialog">` by default — the
-             * D5 roving trail records this element's tag, so it must be `section`
-             * (a `<div>` here regressed the focus-trail tag match). */}
-            <section {...context.pickerAria.dialogProps} tabIndex={-1}>
-              {props.children}
-            </section>
-          </div>
-        </FocusScope>
-      </Portal>
-    </Show>
+    <Popover
+      trigger="DatePicker"
+      triggerRef={() => context.groupRef() ?? context.triggerRef()}
+      placement="bottom start"
+      offset={8}
+      isOpen={context.overlayState.isOpen}
+      onOpenChange={(open) => {
+        if (open) {
+          context.overlayState.open();
+        } else {
+          context.overlayState.close();
+        }
+      }}
+      class={datePickerContentClass(props.class, "solidaria-DatePickerContent")}
+      style={props.style}
+    >
+      <Dialog {...context.pickerAria.dialogProps}>{props.children}</Dialog>
+    </Popover>
   );
 }
 
 export function DateRangePickerContent(props: DateRangePickerContentProps): JSX.Element {
   const context = useDateRangePickerContext();
-  const portalContext = useUNSAFE_PortalContext();
-  // A signal (not a plain `let`) so the enter-animation effect re-runs when the
-  // surface mounts on open — `createEnterAnimation` reads this to know the
-  // element exists before removing the initial `data-entering` styles.
-  const [contentRef, setContentRef] = createSignal<HTMLElement>();
-  const portalContainer = () => portalContext.getContainer?.() ?? undefined;
-
-  const popoverAria = createPopover(
-    {
-      triggerRef: () => context.triggerRef()?.parentElement ?? context.triggerRef(),
-      popoverRef: () => contentRef() ?? null,
-      placement: "bottom start",
-      offset: 8,
-      isNonModal: false,
-      isKeyboardDismissDisabled: false,
-    },
-    {
-      isOpen: () => context.overlayState.isOpen,
-      open: context.overlayState.open,
-      close: context.overlayState.close,
-      toggle: context.overlayState.toggle,
-    },
-  );
-
-  createEscapeDismissFallback(() => context.overlayState.isOpen, context.overlayState.close);
-
-  // Use the same enter and exit state as DatePickerContent.
-  const isEntering = createEnterAnimation(contentRef, () => context.overlayState.isOpen);
-  const isExiting = createExitAnimation(contentRef, () => context.overlayState.isOpen);
-
-  const renderProps = (): DatePickerContentRenderProps => ({
-    isEntering: isEntering(),
-    isExiting: isExiting(),
-    // Seed the base placement so the ENTER frame already carries the
-    // placement-ward `translate` (see the single DatePickerContent note).
-    placement: popoverAria.placement() ?? "bottom",
-  });
-
-  const resolvedClass = (): string => {
-    const c = props.class;
-    if (typeof c === "function") return c(renderProps());
-    return c ?? "solidaria-DateRangePickerContent";
-  };
-
-  const cleanPopoverProps = () => {
-    const {
-      style: _style,
-      ref: _ref,
-      ...rest
-    } = popoverAria.popoverProps as Record<string, unknown>;
-    return rest;
-  };
-
-  const mergedStyle = (): JSX.CSSProperties => {
-    const popoverStyle = (popoverAria.popoverProps as Record<string, unknown>).style as
-      | JSX.CSSProperties
-      | undefined;
-    return {
-      ...popoverStyle,
-      ...props.style,
-    };
-  };
-
-  // Close-focus restoration is delegated to the overlay's `FocusScope`
-  // (`restoreFocus`) — see the single-value `DatePickerContent` note. The prior
-  // ad-hoc effect fired on mount and painted a phantom focus ring at rest.
 
   return (
-    <Show when={context.overlayState.isOpen || isExiting()}>
-      <Portal mount={portalContainer()}>
-        <FocusScope contain={!isExiting()} restoreFocus>
-          {/* Un-folded to mirror S2's `<Popover>` DOM (see DatePickerContent).
-           * OUTER role-null `<div>` = positioned surface carrying the enter
-           * motion + chrome (the element RAC/S2 animate; pruned from the AX
-           * tree). Nested `<section role="dialog">` carries the dialog
-           * semantics — the D5 roving trail records this tag, so it must be
-           * `section`, not a folded `div`. */}
-          <div
-            ref={setContentRef}
-            {...cleanPopoverProps()}
-            class={resolvedClass()}
-            style={mergedStyle()}
-            data-placement={popoverAria.placement() ?? "bottom"}
-            data-entering={dataAttr(isEntering())}
-            data-exiting={dataAttr(isExiting())}
-          >
-            <section {...context.pickerAria.dialogProps} tabIndex={-1}>
-              {props.children}
-            </section>
-          </div>
-        </FocusScope>
-      </Portal>
-    </Show>
+    <Popover
+      trigger="DateRangePicker"
+      triggerRef={() => context.groupRef() ?? context.triggerRef()}
+      placement="bottom start"
+      offset={8}
+      isOpen={context.overlayState.isOpen}
+      onOpenChange={(open) => {
+        if (open) {
+          context.overlayState.open();
+        } else {
+          context.overlayState.close();
+        }
+      }}
+      class={datePickerContentClass(props.class, "solidaria-DateRangePickerContent")}
+      style={props.style}
+    >
+      <Dialog {...context.pickerAria.dialogProps}>{props.children}</Dialog>
+    </Popover>
   );
 }
 

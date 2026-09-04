@@ -8,6 +8,44 @@ evidence from the original 2026-05-13 pass remains below; this closeout records
 the current S2 docs/source parity fixes, root DOM contract checks, and refreshed
 Button-specific gates.
 
+## Reactive-Child And Pending-Icon Closeout
+
+- Date: 2026-08-31.
+- Finding: VUI-006 showed that direct mixed text children such as
+  `<Button>count: {count()}</Button>` kept their server value after hydration.
+- Cause: Solid's recursive `children()` resolver flattened the dynamic member
+  into an array snapshot before `ResolvedContent` returned it.
+- Fix: both public styled Button copies now memoize the authored child value
+  without recursively resolving it. The static single-text wrapper and public
+  API are unchanged.
+- Regression: the existing SSR-to-hydration fixture now requires the direct
+  label to update from `count: 0` to `count: 1`, while retaining the recreation
+  control and no-hydration-mismatch assertions. Client regressions exercise the
+  same direct signal-text shape through `solid-spectrum` and
+  `@proyecto-viviana/ui`.
+- Companion finding: pending-state visibility for an authored workflow icon
+  was attached to the generated icon styles. The icon could retain its
+  pre-pending class while the progress indicator became visible.
+- Companion fix: both public styled Button copies now attach the reactive
+  visibility class to the Button-owned `centerBaseline` wrapper. Icon sizing
+  and spacing remain on the generated icon itself.
+- Ownership: ticket #135 records the implementation and verification evidence.
+- Focused evidence on 2026-09-01: the two public-package client suites passed
+  37/37 tests; the Solid SSR suite passed 1/1; and the hydration suite passed
+  2/2 with the direct label updating to `count: 1` and the recreation control
+  remaining green.
+- Build and catalogue evidence: both affected package builds passed; the
+  comparison build emitted 100 pages; gaps reported 78/78 official entries and
+  zero missing entries; exports completed with the existing 13 support gaps;
+  strict parity passed its frozen baseline with no new catalogue gaps.
+- Guard evidence: layer boundary, the main-worktree pinned upstream oracle, and
+  package attribution passed. Attribution headers remain blocked by the
+  out-of-scope existing `contextualhelp/index.tsx` mapping mismatch. The full
+  check remains blocked by out-of-scope ticket #142 formatting.
+- Changeset evidence: `.changeset/reactive-button-children.md` is present and
+  intentionally unstaged for owner review. `changeset:status` therefore cannot
+  discover it and remains red until authorized staging.
+
 ## Current-Gate Closeout
 
 - Scope: direct styled S2 `Button`, plus the Solidaria hook/headless typing

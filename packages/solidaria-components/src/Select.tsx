@@ -25,13 +25,14 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createRenderEffect,
   createSignal,
-  createUniqueId,
   splitProps,
   useContext,
   For,
   Show,
   untrack,
+  type Context,
 } from "solid-js";
 import {
   createSelect,
@@ -40,12 +41,15 @@ import {
   createOption,
   createHover,
   createInteractOutside,
+  createFocusRing,
   FocusScope,
   focusSafely,
   mergeProps,
   type AriaSelectProps,
   type AriaListBoxProps,
   type AriaOptionProps,
+  createStringFormatter,
+  createListFormatter,
 } from "@proyecto-viviana/solidaria";
 import {
   createSelectState,
@@ -62,6 +66,9 @@ import {
   type ClassNameOrFunction,
   type StyleOrFunction,
   type SlotProps,
+  DEFAULT_SLOT,
+  OptionContent,
+  Provider,
   useRenderProps,
   filterDOMProps,
 } from "./utils";
@@ -70,6 +77,9 @@ import {
   type SelectionIndicatorContextValue,
 } from "./SelectionIndicator";
 import { ListBoxLoadMoreItem } from "./ListBox";
+import { TextContext } from "./Text";
+import { useCollectionRenderer } from "./Collection";
+import { racIntlStrings } from "./intl";
 
 type RefLike<T> = ((el: T) => void) | { current?: T | null } | undefined;
 
@@ -82,7 +92,7 @@ function assignRef<T>(ref: RefLike<T>, el: T): void {
   }
 }
 
-function getNativeSelectValidation(select: HTMLSelectElement): ValidationResult {
+function getNativeSelectValidation(select: HTMLSelectElement | HTMLInputElement): ValidationResult {
   return {
     isInvalid: !select.validity.valid,
     validationDetails: {
@@ -345,7 +355,6 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   let rootRef: HTMLDivElement | undefined;
   const [selectValidation, setSelectValidation] =
     createSignal<ValidationResult>(DEFAULT_VALIDATION_RESULT);
-  const errorMessageId = createUniqueId();
 
   const resolveDisabled = (): boolean => {
     const disabled = ariaProps.isDisabled;
@@ -419,9 +428,31 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return clean as typeof ariaProps;
   });
 
+  const validation = createMemo<ValidationResult>(() => {
+    const current = selectValidation();
+    if (current.isInvalid || !ariaProps.isInvalid) {
+      return current;
+    }
+
+    return {
+      ...DEFAULT_VALIDATION_RESULT,
+      isInvalid: true,
+    };
+  });
+  const isInvalid = createMemo(() => validation().isInvalid);
+
   // Keep the hook result intact. Its DOM prop surfaces are getters; destructuring
   // them freezes the initial closed-state attributes and event composition.
-  const selectHook = createSelect<T>(selectAriaProps, state);
+  // RAC `useSelect` feeds `state.displayValidation.isInvalid` into `useField`;
+  // pass the composed invalid flag so `createSlotId` re-probes when native
+  // validation mounts the error slot.
+  const selectHook = createSelect<T>(
+    () => ({
+      ...selectAriaProps(),
+      isInvalid: isInvalid(),
+    }),
+    state,
+  );
   const { isFocused, isFocusVisible, isOpen, isPressed } = selectHook;
 
   const { isHovered, hoverProps } = createHover({
@@ -491,40 +522,14 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     rootRef = el;
     assignRef(local.ref, el);
   };
-  const validation = createMemo<ValidationResult>(() => {
-    const current = selectValidation();
-    if (current.isInvalid || !ariaProps.isInvalid) {
-      return current;
-    }
-
-    return {
-      ...DEFAULT_VALIDATION_RESULT,
-      isInvalid: true,
-    };
-  });
-  const isInvalid = createMemo(() => validation().isInvalid);
-  const triggerDescribedBy = () => {
-    const ids = [
-      (selectHook.triggerProps as { "aria-describedby"?: string })["aria-describedby"],
-      isInvalid() ? errorMessageId : undefined,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .split(" ")
-      .filter(Boolean);
-    return ids.length ? Array.from(new Set(ids)).join(" ") : undefined;
-  };
   const triggerPropsWithValidation = () =>
-    ({
-      ...selectHook.triggerProps,
-      "aria-describedby": triggerDescribedBy(),
-    }) as JSX.HTMLAttributes<HTMLElement>;
+    selectHook.triggerProps as JSX.HTMLAttributes<HTMLElement>;
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
       return validation();
     },
     get errorMessageProps() {
-      return { id: errorMessageId };
+      return selectHook.errorMessageProps;
     },
   };
   const focusTrigger = () => {
@@ -535,7 +540,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       ? state.selectedKeys() === "all" || (state.selectedKeys() as Set<Key>).size > 0
       : state.selectedKey() != null;
   const hasNativeValidation = () => (ariaProps.validationBehavior ?? "native") === "native";
-  const getSelectValidation = (select: HTMLSelectElement): ValidationResult => {
+  const getSelectValidation = (select: HTMLSelectElement | HTMLInputElement): ValidationResult => {
     if (ariaProps.isRequired && !hasSelection()) {
       return {
         isInvalid: true,
@@ -558,7 +563,11 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return getNativeSelectValidation(select);
   };
 
-  const { containerProps, selectProps: hiddenSelectProps } = createHiddenSelect({
+  const {
+    containerProps,
+    selectProps: hiddenSelectProps,
+    inputProps: hiddenInputProps,
+  } = createHiddenSelect({
     state,
     name: stateProps.name,
     form: ariaProps.form,
@@ -568,7 +577,9 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       return resolveDisabled();
     },
   });
-  const handleHiddenSelectInvalid: JSX.EventHandler<HTMLSelectElement, Event> = (event) => {
+  const handleHiddenSelectInvalid: JSX.EventHandler<HTMLSelectElement | HTMLInputElement, Event> = (
+    event,
+  ) => {
     setSelectValidation(getSelectValidation(event.currentTarget));
     focusTrigger();
     event.preventDefault();
@@ -582,6 +593,32 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
         ? DEFAULT_VALIDATION_RESULT
         : getSelectValidation(event.currentTarget),
     );
+  };
+  // RAC HiddenSelect binds `value` on the <select> (HiddenSelect.tsx:144), not
+  // `selected` on each <option>. Spreading selectProps once snapshots the key.
+  const hiddenSelectItemNodes = () =>
+    Array.from(state.collection()).filter((item) => item.type === "item");
+  const nativeSelectValue = (): string | string[] => {
+    if (state.selectionMode() === "multiple") {
+      const selectedKeys = state.selectedKeys();
+      if (selectedKeys === "all") {
+        return hiddenSelectItemNodes().map((item) => String(item.key));
+      }
+      return Array.from(selectedKeys as Set<Key>).map(String);
+    }
+    const key = state.selectedKey();
+    return key != null ? String(key) : "";
+  };
+  const hiddenSelectFallbackValues = (): Array<Key | null> => {
+    if (state.selectionMode() === "multiple") {
+      const keys = state.selectedKeys();
+      if (keys === "all") {
+        return hiddenSelectItemNodes().map((item) => item.key);
+      }
+      const listed = Array.from(keys as Set<Key>);
+      return listed.length === 0 ? [null] : listed;
+    }
+    return [state.selectedKey()];
   };
   createEffect(() => {
     if (hasSelection() && selectValidation().isInvalid) {
@@ -612,91 +649,72 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
           `{renderProps.children}` then `<HiddenSelect>` (Select.tsx:288-289). Order
           matters for the DOM tab/focus trail: the visible button must precede the
           form-only hidden control.
+
+          RAC HiddenSelect.tsx:172-244: ≤300 items render a <select> inside a
+          <label> inside the visually hidden container — never an extra <input>.
+          Hidden <input>s exist only when the collection is larger than 300.
         */}
-        <div {...containerProps}>
-          <select
-            {...hiddenSelectProps}
-            name={hasSelection() ? undefined : stateProps.name}
-            required={
-              (hasNativeValidation() && ariaProps.isRequired && !hasSelection()) || undefined
-            }
-            onInvalid={handleHiddenSelectInvalid}
-            onChange={handleHiddenSelectChange}
-          >
-            <Show when={state.selectionMode() !== "multiple"}>
-              <option selected={state.selectedKey() == null} />
+        <Show
+          when={state.collection().size <= 300}
+          fallback={
+            <Show when={stateProps.name}>
+              <For
+                each={(() => {
+                  // RAC HiddenSelect.tsx:205-208: always render at least one
+                  // hidden input so a required empty field still participates
+                  // in native form validation / FormData.
+                  const keys =
+                    state.selectionMode() === "multiple"
+                      ? state.selectedKeys() === "all"
+                        ? Array.from(state.collection()).map((item) => item.key)
+                        : Array.from(state.selectedKeys() as Set<Key>)
+                      : [state.selectedKey()];
+                  return keys.length === 0 ? [null] : keys;
+                })()}
+              >
+                {(key) => (
+                  <input
+                    {...hiddenInputProps}
+                    name={stateProps.name}
+                    form={ariaProps.form}
+                    value={key != null ? String(key) : ""}
+                    disabled={resolveDisabled()}
+                    onInvalid={handleHiddenSelectInvalid}
+                  />
+                )}
+              </For>
             </Show>
-            <For each={stateProps.items}>
-              {(item) => {
-                const itemRecord = isObjectRecord(item) ? item : null;
-                const fallbackKey =
-                  itemRecord != null ? (toKey(itemRecord.key) ?? toKey(itemRecord.id)) : undefined;
-                const key = stateProps.getKey?.(item) ?? fallbackKey ?? String(item);
-                // This hidden <select> re-derives each option's label straight
-                // from the raw items array, bypassing the collection's textValue.
-                // Mirror createListState's derivation: read the conventional
-                // display fields (textValue/label/name/title) and, for an object
-                // item with none of them, fall back to the key rather than
-                // String(item) — which would render the useless "[object Object]".
-                const fallbackTextValue =
-                  itemRecord != null
-                    ? (toTextValue(itemRecord.textValue) ??
-                      toTextValue(itemRecord.label) ??
-                      toTextValue(itemRecord.name) ??
-                      toTextValue(itemRecord.title))
-                    : undefined;
-                const textValue =
-                  stateProps.getTextValue?.(item) ??
-                  fallbackTextValue ??
-                  (itemRecord != null ? String(key) : String(item));
-                const selectedKeys = state.selectedKeys();
-                const isSelected =
-                  state.selectionMode() === "multiple"
-                    ? selectedKeys === "all"
-                      ? true
-                      : (selectedKeys as Set<Key>).has(key)
-                    : key === state.selectedKey();
-                return (
-                  <option value={String(key)} selected={isSelected}>
-                    {textValue}
-                  </option>
-                );
-              }}
-            </For>
-          </select>
-          <Show when={state.selectionMode() === "multiple" && stateProps.name}>
-            <For
-              each={
-                state.selectedKeys() === "all"
-                  ? Array.from(state.collection()).map((item) => item.key)
-                  : Array.from(state.selectedKeys() as Set<Key>)
-              }
-            >
-              {(key) => (
-                <input
-                  type="hidden"
-                  name={stateProps.name}
-                  form={ariaProps.form}
-                  value={String(key)}
-                  disabled={resolveDisabled()}
-                />
-              )}
-            </For>
-          </Show>
-          <Show
-            when={
-              state.selectionMode() !== "multiple" && stateProps.name && state.selectedKey() != null
-            }
-          >
-            <input
-              type="hidden"
-              name={stateProps.name}
-              form={ariaProps.form}
-              value={String(state.selectedKey())}
-              disabled={resolveDisabled()}
-            />
-          </Show>
-        </div>
+          }
+        >
+          <div {...containerProps} data-testid="hidden-select-container">
+            <label>
+              {ariaProps.label}
+              <select
+                {...hiddenSelectProps}
+                name={stateProps.name}
+                required={
+                  (hasNativeValidation() && ariaProps.isRequired && !hasSelection()) || undefined
+                }
+                value={nativeSelectValue()}
+                onInvalid={handleHiddenSelectInvalid}
+                onChange={handleHiddenSelectChange}
+                onInput={handleHiddenSelectChange}
+              >
+                <option value="" label={"\u00A0"}>
+                  {"\u00A0"}
+                </option>
+                <For each={hiddenSelectItemNodes()}>
+                  {(item) => <option value={String(item.key)}>{item.textValue}</option>}
+                </For>
+                <Show when={state.collection().size === 0 && stateProps.name}>
+                  <For each={hiddenSelectFallbackValues()}>
+                    {(value) => <option value={value != null ? String(value) : ""} />}
+                  </For>
+                </Show>
+              </select>
+            </label>
+          </div>
+        </Show>
       </>
     );
   };
@@ -715,7 +733,21 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       "data-hovered": isHovered() || undefined,
     }) as JSX.HTMLAttributes<HTMLDivElement>;
   const RootContent = () => {
-    const renderedRootChildren = <RootChildren />;
+    const textSlots = {
+      slots: {
+        get description() {
+          return selectHook.descriptionProps;
+        },
+        get errorMessage() {
+          return selectHook.errorMessageProps;
+        },
+      },
+    };
+    const renderedRootChildren = (
+      <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+        <RootChildren />
+      </Provider>
+    );
     const rootProps = () =>
       ({
         ...baseRootProps(),
@@ -750,7 +782,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             return selectHook.menuProps;
           },
           get errorMessageProps() {
-            return { id: errorMessageId };
+            return selectHook.errorMessageProps;
           },
           get validation() {
             return validation();
@@ -827,7 +859,11 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
   );
 
   const cleanTriggerProps = () => {
-    const { ref: _ref1, ...rest } = context.triggerProps as Record<string, unknown>;
+    const {
+      ref: _ref1,
+      "aria-disabled": _ariaDisabled,
+      ...rest
+    } = context.triggerProps as Record<string, unknown>;
     return rest;
   };
   const cleanHoverProps = () => {
@@ -845,12 +881,12 @@ export function SelectTrigger(props: SelectTriggerProps): JSX.Element {
       type="button"
       id={triggerAriaProps().id as string | undefined}
       tabIndex={state.isDisabled ? undefined : 0}
+      disabled={state.isDisabled || undefined}
       aria-label={triggerAriaProps()["aria-label"] as string | undefined}
       aria-labelledby={triggerAriaProps()["aria-labelledby"] as string | undefined}
       aria-haspopup="listbox"
       aria-expanded={isOpen()}
       aria-controls={isOpen() ? (menuAriaProps().id as string | undefined) : undefined}
-      aria-disabled={state.isDisabled || undefined}
       aria-required={triggerAriaProps()["aria-required"] as boolean | undefined}
       aria-describedby={triggerAriaProps()["aria-describedby"] as string | undefined}
       class={renderProps.class()}
@@ -889,8 +925,11 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
   }
   const { valueProps, placeholder: contextPlaceholder } = context;
   const state = context.state as SelectState<T>;
+  const stringFormatter = createStringFormatter(racIntlStrings, "react-aria-components");
+  const listFormatter = createListFormatter({ style: "long", type: "conjunction" });
 
-  const placeholder = () => local.placeholder ?? contextPlaceholder;
+  const placeholder = () =>
+    local.placeholder ?? contextPlaceholder ?? stringFormatter().format("selectPlaceholder");
 
   const renderValues = createMemo<SelectValueRenderProps<T>>(() => {
     const collection = state.collection();
@@ -906,9 +945,7 @@ export function SelectValue<T>(props: SelectValueProps<T>): JSX.Element {
     const selectedText =
       state.selectionMode() === "multiple"
         ? selectedItems.length > 0
-          ? new Intl.ListFormat(undefined, { style: "long", type: "conjunction" }).format(
-              selectedItems.map((item) => item.textValue),
-            )
+          ? listFormatter().format(selectedItems.map((item) => item.textValue))
           : null
         : (selectedItem?.textValue ?? null);
     return {
@@ -1014,6 +1051,7 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
   // focused key, so a frozen snapshot would leave the listbox tabbable (`0`) when
   // upstream flips it to `-1`. Reading `listBoxHook.listBoxProps` per access keeps
   // it reactive.
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const listBoxHook = createListBox(
     {
       ...(menuProps as unknown as AriaListBoxProps),
@@ -1026,14 +1064,23 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       get isDisabled() {
         return state.isDisabled;
       },
+      get isVirtualized() {
+        return parentCollectionRenderer?.isVirtualized;
+      },
     },
     createSelectListStateAdapter(state),
   );
 
+  const {
+    isFocused: isListBoxFocused,
+    isFocusVisible: isListBoxFocusVisible,
+    focusProps: listBoxFocusProps,
+  } = createFocusRing();
+
   const renderValues = createMemo<SelectListBoxRenderProps>(() => ({
-    // Focus within the listbox itself (the selection manager's focus state),
-    // not the select-level trigger focus.
-    isFocused: state.selectionManager.isFocused,
+    // RAC ListBox.tsx:366 — data-focused comes from useFocusRing on the listbox
+    // element, not the selection manager.
+    isFocused: isListBoxFocused(),
   }));
 
   const renderProps = useRenderProps(
@@ -1082,6 +1129,10 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       tabIndex: state.isDisabled ? undefined : state.focusedKey() != null ? -1 : 0,
     };
   };
+  const cleanListBoxFocusProps = () => {
+    const { ref: _ref3, ...rest } = listBoxFocusProps as Record<string, unknown>;
+    return rest;
+  };
 
   const items = () => Array.from(state.collection());
   createEffect(() => {
@@ -1110,10 +1161,14 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
       {...domProps}
       {...cleanMenuProps()}
       {...cleanListBoxProps()}
+      {...cleanListBoxFocusProps()}
       class={renderProps.class()}
       style={renderProps.style()}
-      data-focused={state.selectionManager.isFocused || undefined}
+      data-focused={isListBoxFocused() || undefined}
+      data-focus-visible={isListBoxFocusVisible() || undefined}
       data-empty={state.collection().size === 0 || undefined}
+      data-layout="stack"
+      data-orientation="vertical"
     >
       {state.collection().size === 0 && local.renderEmptyState ? (
         <div role="option" style={{ display: "contents" }} data-empty-state>
@@ -1187,14 +1242,22 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     assignRef(local.ref, el as HTMLDivElement);
   };
 
+  // SelectOption allocates its own list-state adapter, so `createOption` cannot
+  // find `isVirtualized` in the listbox data keyed by SelectListBox's adapter
+  // (RAC reads it from `listData`, useOption.ts:130-131). Pass it explicitly
+  // from the same CollectionRenderer a parent Virtualizer publishes.
+  const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const optionAria = createOption<T>(
     {
       key: local.id,
+      get isVirtualized() {
+        return parentCollectionRenderer?.isVirtualized;
+      },
       get isDisabled() {
         return Boolean(ariaProps.isDisabled || selectContext?.isDisabled());
       },
       get "aria-label"() {
-        return ariaProps["aria-label"] ?? local.textValue;
+        return ariaProps["aria-label"];
       },
       shouldSelectOnPressUp: true,
       shouldFocusOnHover: true,
@@ -1265,23 +1328,12 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     },
     renderValues,
   );
-  const hasPrimitiveLabel = () => {
-    return typeof props.children === "string" || typeof props.children === "number";
-  };
-
   const selectionIndicatorContext = createMemo<SelectionIndicatorContextValue>(() => ({
     isSelected: optionAria.isSelected,
   }));
 
   const cleanOptionProps = () => {
-    const {
-      ref: _ref1,
-      "aria-describedby": _ariaDescribedby,
-      ...rest
-    } = optionAria.optionProps as Record<string, unknown>;
-    if (!hasPrimitiveLabel() && rest["aria-label"] == null) {
-      delete rest["aria-labelledby"];
-    }
+    const { ref: _ref1, ...rest } = optionAria.optionProps as Record<string, unknown>;
     const onClick = rest.onClick as ((event: MouseEvent) => void) | undefined;
     rest.onClick = ((event: MouseEvent) => {
       const wasSelected = optionAria.isSelected();
@@ -1297,6 +1349,35 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
     }) as JSX.EventHandler<HTMLDivElement, MouseEvent>;
     return rest;
   };
+
+  const optionTextSlots = {
+    slots: {
+      get [DEFAULT_SLOT]() {
+        return optionAria.labelProps;
+      },
+      get label() {
+        return optionAria.labelProps;
+      },
+      get description() {
+        return optionAria.descriptionProps;
+      },
+    },
+  };
+
+  createRenderEffect(() => {
+    const el = ref();
+    const labelId = optionAria.labelProps.id;
+    const descriptionId = optionAria.descriptionProps.id;
+    if (!el) return;
+    if (labelId) {
+      const label = el.querySelector("[slot='label']");
+      if (label && !label.id) label.id = labelId;
+    }
+    if (descriptionId) {
+      const description = el.querySelector("[slot='description']");
+      if (description && !description.id) description.id = descriptionId;
+    }
+  });
   const selectOption = () => {
     if (optionAria.isDisabled()) {
       return;
@@ -1329,12 +1410,11 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
         data-pressed={optionAria.isPressed() || undefined}
         data-hovered={optionAria.isHovered() || undefined}
         data-disabled={optionAria.isDisabled() || undefined}
+        data-selection-mode={state.selectionMode()}
       >
-        {hasPrimitiveLabel() ? (
-          <span {...optionAria.labelProps}>{renderProps.renderChildren()}</span>
-        ) : (
-          renderProps.renderChildren()
-        )}
+        <Provider values={[[TextContext, optionTextSlots] as [Context<unknown>, unknown]]}>
+          <OptionContent render={renderProps.renderChildren} labelProps={optionAria.labelProps} />
+        </Provider>
       </div>
     </SelectionIndicatorContext.Provider>
   );

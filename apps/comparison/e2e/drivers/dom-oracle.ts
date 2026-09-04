@@ -1,6 +1,14 @@
 import type { ElementHandle, Locator, Page } from "@playwright/test";
 
 /**
+ * RAC `data-rac` is a React-Aria-Components framework marker written by
+ * `useRenderProps` onto every RAC host (react-aria-components `utils.tsx:278`).
+ * Solid must not emit it. Journey DOM snapshots ignore this attribute so the
+ * stacks compare as equal; no other `data-*` is ignored here.
+ */
+export const ORACLE_IGNORED_DATA_ATTRIBUTES = ["data-rac"] as const;
+
+/**
  * In-page oracle shared by the interaction drivers (D4 event sequence, D5
  * focus/keyboard trails — see `.claude/current/certification.md`).
  *

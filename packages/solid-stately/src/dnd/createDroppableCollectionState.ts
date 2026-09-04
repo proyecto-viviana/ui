@@ -37,7 +37,18 @@ import type {
   DroppableCollectionReorderEvent,
   ItemDropTarget,
 } from "./types";
-import type { Collection } from "../collections/types";
+import type { Key } from "../collections/types";
+
+/**
+ * The slice of a host collection drop-target state needs: neighbor walk and
+ * parent-key identity. Grid/Table/Tree collections are not `CollectionNode`
+ * lists (cells exist), so this stays structural instead of `Collection<unknown>`.
+ */
+export interface DroppableCollectionLike {
+  getItem(key: Key): { type?: string; parentKey?: Key | null } | null;
+  getKeyBefore(key: Key): Key | null;
+  getKeyAfter(key: Key): Key | null;
+}
 
 export interface DroppableCollectionStateOptions {
   /**
@@ -75,12 +86,13 @@ export interface DroppableCollectionStateOptions {
   shouldAcceptItemDrop?: (target: ItemDropTarget, types: DragTypes) => boolean;
   /**
    * The host collection. Used by the default drop-operation feature detection to
-   * confirm a reorder stays within the same parent and to prevent dropping an
-   * item onto itself or a descendant. Optional: a flat collection (e.g. a plain
-   * ListBox) is always "within parent" and has no descendants, so omitting it is
-   * faithful for flat hosts.
+   * confirm a reorder stays within the same parent, to prevent dropping an item
+   * onto itself or a descendant, and to treat after(item)/before(next) as one
+   * gap. Optional: a flat collection (e.g. a plain ListBox) is always "within
+   * parent" and has no descendants, so omitting it is faithful for those hosts
+   * except opposite-gap matching.
    */
-  collection?: Collection<unknown>;
+  collection?: DroppableCollectionLike;
   /** Whether the droppable collection is disabled. */
   isDisabled?: boolean;
 }
@@ -127,6 +139,13 @@ export interface DroppableCollectionState {
   ): DropOperation;
   /** Check if an item drop should be accepted. */
   shouldAcceptItemDrop(target: ItemDropTarget, types: DragTypes): boolean;
+  /**
+   * RAC `isDropTarget(target)`: whether `target` is the current drop target,
+   * including the before/after pair that names the same gap between two items.
+   * Named `isDropTargetFor` because `isDropTarget` is already the collection-
+   * level boolean on this port.
+   */
+  isDropTargetFor(target: DropTarget | null): boolean;
 }
 
 /**
@@ -454,6 +473,37 @@ export function createDroppableCollectionState(
     return true;
   };
 
+  const isDropTargetFor = (dropTarget: DropTarget | null): boolean => {
+    const current = target();
+    if (!current || !dropTarget) return false;
+    if (targetsEqual(current, dropTarget)) return true;
+
+    // RAC `useDroppableCollectionState.ts:216-228`: after(item) and
+    // before(next) name the same gap. Collection only mounts one of them.
+    if (
+      dropTarget.type !== "item" ||
+      current.type !== "item" ||
+      dropTarget.key === current.key ||
+      dropTarget.dropPosition === current.dropPosition ||
+      dropTarget.dropPosition === "on" ||
+      current.dropPosition === "on"
+    ) {
+      return false;
+    }
+
+    const collection = getProps().collection;
+    if (!collection) return false;
+    return (
+      dropTargetsEqual(getOppositeTarget(collection, dropTarget), current) ||
+      dropTargetsEqual(dropTarget, getOppositeTarget(collection, current))
+    );
+  };
+
+  const assignTarget = (newTarget: DropTarget | null) => {
+    if (isDropTargetFor(newTarget)) return;
+    setTarget(newTarget);
+  };
+
   return {
     get isDropTarget() {
       return isDropTarget();
@@ -464,7 +514,7 @@ export function createDroppableCollectionState(
     get isDisabled() {
       return getProps().isDisabled ?? false;
     },
-    setTarget,
+    setTarget: assignTarget,
     isAccepted,
     enterTarget,
     moveToTarget,
@@ -473,6 +523,7 @@ export function createDroppableCollectionState(
     drop,
     getDropOperation,
     shouldAcceptItemDrop,
+    isDropTargetFor,
   };
 }
 
@@ -480,10 +531,48 @@ export function createDroppableCollectionState(
  * Check if two drop targets are equal.
  */
 function targetsEqual(a: DropTarget, b: DropTarget): boolean {
+  return dropTargetsEqual(a, b);
+}
+
+function dropTargetsEqual(
+  a: DropTarget | null | undefined,
+  b: DropTarget | null | undefined,
+): boolean {
+  if (!a || !b) return false;
   if (a.type !== b.type) return false;
   if (a.type === "root" && b.type === "root") return true;
   if (a.type === "item" && b.type === "item") {
     return a.key === b.key && a.dropPosition === b.dropPosition;
   }
   return false;
+}
+
+function nextItemKey(
+  collection: DroppableCollectionLike,
+  fromKey: Key,
+  direction: "before" | "after",
+) {
+  let key =
+    direction === "before" ? collection.getKeyBefore(fromKey) : collection.getKeyAfter(fromKey);
+  while (key != null) {
+    const node = collection.getItem(key);
+    if (node?.type === "item") return key;
+    key = direction === "before" ? collection.getKeyBefore(key) : collection.getKeyAfter(key);
+  }
+  return null;
+}
+
+function getOppositeTarget(
+  collection: DroppableCollectionLike,
+  target: ItemDropTarget,
+): ItemDropTarget | null {
+  if (target.dropPosition === "before") {
+    const prevKey = nextItemKey(collection, target.key, "before");
+    return prevKey != null ? { type: "item", key: prevKey, dropPosition: "after" } : null;
+  }
+  if (target.dropPosition === "after") {
+    const nextKey = nextItemKey(collection, target.key, "after");
+    return nextKey != null ? { type: "item", key: nextKey, dropPosition: "before" } : null;
+  }
+  return null;
 }

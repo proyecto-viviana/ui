@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createNumberField } from "../src/numberfield/createNumberField";
 import { createNumberFieldState } from "@proyecto-viviana/solid-stately";
 import { Show } from "solid-js";
@@ -21,6 +21,7 @@ function TestNumberField(props: {
   isReadOnly?: boolean;
   isRequired?: boolean;
   isInvalid?: boolean;
+  validationBehavior?: "aria" | "native";
   "aria-label"?: string;
   label?: string;
   description?: string;
@@ -66,6 +67,7 @@ function TestNumberField(props: {
       isReadOnly: props.isReadOnly,
       isRequired: props.isRequired,
       isInvalid: props.isInvalid,
+      validationBehavior: props.validationBehavior,
       description: props.description,
       errorMessage: props.errorMessage,
       name: props.name,
@@ -220,11 +222,12 @@ describe("createNumberField", () => {
       expect(input).toHaveAttribute("aria-roledescription", "Number field");
     });
 
-    it("has aria-required when required", () => {
+    it("omits aria-required when required and validation is native", () => {
       render(() => <TestNumberField aria-label="Amount" isRequired />);
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-required", "true");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
     });
 
     it("has aria-invalid when invalid", () => {
@@ -324,7 +327,7 @@ describe("createNumberField", () => {
       expect(onChange).toHaveBeenCalledWith(100);
     });
 
-    it("PageUp sets to maximum value", () => {
+    it("PageUp increments by one step", () => {
       const onChange = vi.fn();
       render(() => (
         <TestNumberField
@@ -339,10 +342,10 @@ describe("createNumberField", () => {
       const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "PageUp" });
 
-      expect(onChange).toHaveBeenCalledWith(100);
+      expect(onChange).toHaveBeenCalledWith(51);
     });
 
-    it("PageDown sets to minimum value", () => {
+    it("PageDown decrements by one step", () => {
       const onChange = vi.fn();
       render(() => (
         <TestNumberField
@@ -357,7 +360,7 @@ describe("createNumberField", () => {
       const input = screen.getByRole("textbox");
       fireEvent.keyDown(input, { key: "PageDown" });
 
-      expect(onChange).toHaveBeenCalledWith(0);
+      expect(onChange).toHaveBeenCalledWith(49);
     });
 
     it("does not respond to keyboard when disabled", () => {
@@ -585,6 +588,88 @@ describe("createNumberField", () => {
 
       const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("readonly");
+    });
+  });
+
+  describe("wheel and stepper repeat", () => {
+    it("increments a focused input on wheel deltaY > 0", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      fireEvent.wheel(input, { deltaY: 120, deltaX: 0 });
+
+      expect(onChange).toHaveBeenCalledWith(6);
+    });
+
+    it("decrements a focused input on wheel deltaY < 0", () => {
+      const onChange = vi.fn();
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} onChange={onChange} />);
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      input.focus();
+      fireEvent.wheel(input, { deltaY: -120, deltaX: 0 });
+
+      expect(onChange).toHaveBeenCalledWith(4);
+    });
+
+    it("repeats increment while the mouse stepper is held", () => {
+      vi.useFakeTimers();
+      const onChange = vi.fn();
+      let pressStart: ((e: { pointerType: string }) => void) | undefined;
+      let pressUp: ((e: { pointerType: string }) => void) | undefined;
+
+      function Capture() {
+        const state = createNumberFieldState({ defaultValue: 5, onChange, step: 1 });
+        const aria = createNumberField(
+          () => ({ "aria-label": "Amount" }),
+          state,
+          () => null,
+        );
+        pressStart = aria.incrementButtonProps.onPressStart as typeof pressStart;
+        pressUp = aria.incrementButtonProps.onPressUp as typeof pressUp;
+        return <input {...aria.inputProps} />;
+      }
+
+      render(() => <Capture />);
+      pressStart?.({ pointerType: "mouse" });
+      expect(onChange).toHaveBeenCalledWith(6);
+      vi.advanceTimersByTime(400);
+      expect(onChange).toHaveBeenCalledWith(7);
+      vi.advanceTimersByTime(400);
+      expect(onChange.mock.calls.at(-1)?.[0]).toBeGreaterThanOrEqual(13);
+      pressUp?.({ pointerType: "mouse" });
+      vi.useRealTimers();
+    });
+  });
+
+  describe("native vs aria required", () => {
+    it("omits aria-required when validation is native", () => {
+      render(() => <TestNumberField aria-label="Amount" isRequired />);
+      const input = screen.getByRole("textbox");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("sets aria-required when validation is aria", () => {
+      render(() => <TestNumberField aria-label="Amount" isRequired validationBehavior="aria" />);
+      const input = screen.getByRole("textbox");
+      expect(input.hasAttribute("required")).toBe(false);
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+  });
+
+  describe("live announcement", () => {
+    it("announces the new value assertively when it changes while focused", async () => {
+      render(() => <TestNumberField aria-label="Amount" defaultValue={5} />);
+      const input = screen.getByRole("textbox");
+      input.focus();
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      await waitFor(() => {
+        const live = document.querySelector('[aria-live="assertive"]');
+        expect(live?.textContent).toContain("6");
+      });
     });
   });
 });

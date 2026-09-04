@@ -6,7 +6,7 @@
  * trailing adornment inside the field — the `⌘K` / `↵` key hint flush against
  * the input's end. This slot is that register addition: same styling contract
  * as the prefix (`gray-600`, `flex-shrink: 0`, icon sized to
- * `fontRelative(20)`) mirrored to the trailing side (`margin-start:
+ * `'1lh'`) mirrored to the trailing side (`margin-start:
  * text-to-visual`).
  *
  * Accessibility follows the prefix's certified pattern: the suffix's id is
@@ -17,7 +17,7 @@
 import { type JSX } from "solid-js";
 import { CenterBaseline } from "../icon/center-baseline";
 import { IconContext, type IconContextValue } from "../icon";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 
 const suffixStyles = style({
   color: "gray-600",
@@ -26,7 +26,7 @@ const suffixStyles = style({
 });
 
 const suffixIconStyles = style({
-  size: fontRelative(20),
+  size: "1lh",
   "--iconPrimary": {
     type: "fill",
     value: "currentColor",

@@ -17,6 +17,14 @@ export default defineConfig({
   // slot vs the server. Keeping it would make this harness test a dev artifact,
   // not the real prod SSR→hydrate path.
   plugins: [solidPlugin({ ssr: true, hot: false })],
+  optimizeDeps: {
+    // Vite+ 0.2's test bootstrap otherwise performs Vite's default HTML-entry
+    // discovery before Vitest applies its file include. That crosses ignored
+    // build output and the vendored React Spectrum oracle, where JSX-in-.js is
+    // intentionally valid for upstream's own toolchain but not ours.
+    noDiscovery: true,
+    entries: ["packages/**/test/**/*.hydrate.test.{ts,tsx}"],
+  },
   test: {
     name: "hydrate",
     environment: "jsdom",

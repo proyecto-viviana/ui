@@ -22,14 +22,14 @@ import { type JSX, type Accessor, createEffect, onCleanup } from "solid-js";
 import { isServer } from "solid-js/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
-import { createLabel } from "../label/createLabel";
+import { createField } from "../label/createField";
 import { createLabels } from "../label/createLabels";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { isAppleDevice } from "../utils/platform";
-import { openLink } from "../utils/dom";
+import { nodeContains, openLink } from "../utils/dom";
 import { ariaHideOutside } from "../overlays/ariaHideOutside";
 import { announce } from "../live-announcer";
 import { createStringFormatter } from "../i18n";
@@ -71,6 +71,11 @@ export interface AriaComboBoxProps {
   errorMessage?: string;
   /** Whether the current value is invalid. */
   isInvalid?: boolean;
+  /**
+   * Whether to use native HTML constraint validation or ARIA.
+   * @default 'native'
+   */
+  validationBehavior?: "aria" | "native";
   /** Placeholder text for the input when no value is entered. */
   placeholder?: string;
   /** Whether the combobox should be auto-focused. */
@@ -159,23 +164,6 @@ export function createComboBox<T>(
   const inputId = `${id}-input`;
   const buttonId = `${id}-button`;
   const listBoxId = `${id}-listbox`;
-  const descriptionId = `${id}-description`;
-  const errorMessageId = `${id}-error`;
-
-  const getAriaDescribedBy = () => {
-    const p = getProps();
-    const ids: string[] = [];
-    if (p["aria-describedby"]) {
-      ids.push(p["aria-describedby"]);
-    }
-    if (p.description) {
-      ids.push(descriptionId);
-    }
-    if (p.isInvalid && p.errorMessage) {
-      ids.push(errorMessageId);
-    }
-    return ids.length > 0 ? ids.join(" ") : undefined;
-  };
 
   // Set up global pointerdown listener to track clicks inside listbox
   // This is needed because the option's createPress stops propagation
@@ -213,19 +201,33 @@ export function createComboBox<T>(
     });
   });
 
-  // Label handling
-  const { labelProps, fieldProps } = createLabel({
+  // RAC `useComboBox.ts:302-331` reaches `useField` through `useTextField`.
+  // Field wiring (description/error slot ids + input `aria-describedby`) lives
+  // in `createField`; do not hand-build `${id}-description` / `${id}-error`.
+  const field = createField({
     get id() {
       return inputId;
     },
     get label() {
       return getProps().label;
     },
+    get description() {
+      return getProps().description;
+    },
+    get errorMessage() {
+      return getProps().errorMessage;
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
     get "aria-label"() {
       return getProps()["aria-label"];
     },
     get "aria-labelledby"() {
       return getProps()["aria-labelledby"];
+    },
+    get "aria-describedby"() {
+      return getProps()["aria-describedby"];
     },
     labelElementType: "label",
   });
@@ -414,18 +416,20 @@ export function createComboBox<T>(
     const shouldWrap = p.shouldFocusWrap ?? false;
 
     switch (e.key) {
-      case "Enter":
-        if (state.isOpen() && focusedKey != null) {
+      case "Enter": {
+        // RAC useComboBox.ts:189-216 — preventDefault only while open; always
+        // `state.commit()`. With allowsCustomValue and no focused key, commit
+        // routes to commitCustomValue and closes (#272).
+        const wasOpen = state.isOpen();
+        if (wasOpen) {
           e.preventDefault();
-
-          // Check if the focused item is a link
-          // Link href can be in props (for components) or value (for dynamic items)
+        }
+        if (wasOpen && focusedKey != null) {
           const collectionItem = collection.getItem(focusedKey);
           const itemHref =
             collectionItem?.props?.href ??
             (collectionItem?.value as Record<string, unknown> | null)?.href;
           if (itemHref) {
-            // Find the actual anchor element in the DOM and trigger navigation
             const listBox = listBoxRef?.();
             if (listBox) {
               const item = listBox.querySelector(`[data-key="${CSS.escape(String(focusedKey))}"]`);
@@ -434,11 +438,12 @@ export function createComboBox<T>(
               }
             }
             state.close();
-          } else {
-            state.commit();
+            break;
           }
         }
+        state.commit();
         break;
+      }
 
       case "Escape":
         if (state.isOpen()) {
@@ -577,11 +582,12 @@ export function createComboBox<T>(
     const button = buttonRef?.();
     const listBox = listBoxRef?.();
 
-    // Don't blur if focus is moving to the button
-    const blurFromButton = button && button === relatedTarget;
+    // Don't blur if focus is moving to the button or a descendant (e.g. an icon span).
+    // RAC useComboBox.ts:270 uses nodeContains so a child of the trigger does not commit.
+    const blurFromButton = nodeContains(button ?? null, relatedTarget);
 
     // Don't blur if focus is moving into the listbox/popover
-    const blurIntoPopover = listBox?.contains(relatedTarget);
+    const blurIntoPopover = nodeContains(listBox ?? null, relatedTarget);
 
     if (blurFromButton || blurIntoPopover) {
       return;
@@ -637,7 +643,7 @@ export function createComboBox<T>(
 
   return {
     get labelProps() {
-      return labelProps as JSX.HTMLAttributes<HTMLElement>;
+      return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get inputProps() {
       const p = getProps();
@@ -645,6 +651,7 @@ export function createComboBox<T>(
       const isDisabled = p.isDisabled ?? state.isDisabled;
       const isReadOnly = p.isReadOnly ?? state.isReadOnly;
       const focusedKey = state.focusedKey();
+      const fieldProps = field.fieldProps;
 
       return mergeProps(
         domProps(),
@@ -663,15 +670,19 @@ export function createComboBox<T>(
           placeholder: p.placeholder,
           autoComplete: "off",
           "aria-autocomplete": p.autoComplete ?? "list",
-          "aria-haspopup": "listbox",
+          // RAC useComboBox copies `aria-expanded` and `aria-controls` from
+          // menuTriggerProps onto the input, not `aria-haspopup`. That key stays
+          // on the trigger button only (useComboBox.ts:520-526).
           "aria-expanded": isOpen,
           "aria-controls": isOpen ? listBoxId : undefined,
           "aria-activedescendant":
             isOpen && focusedKey != null ? `${listBoxId}-option-${focusedKey}` : undefined,
           "aria-disabled": isDisabled || undefined,
-          "aria-required": p.isRequired || undefined,
+          // RAC useComboBox + useTextField: native required by default; aria-required only in aria mode.
+          required: (p.validationBehavior ?? "native") === "native" && !!p.isRequired,
+          "aria-required":
+            ((p.validationBehavior ?? "native") === "aria" && p.isRequired) || undefined,
           "aria-invalid": p.isInvalid || undefined,
-          "aria-describedby": getAriaDescribedBy(),
           name: p.name,
           onInput: onInputChange,
           onKeyDown: onInputKeyDown,
@@ -697,7 +708,7 @@ export function createComboBox<T>(
       const triggerLabels = createLabels({
         id: buttonId,
         "aria-label": stringFormatter?.().format("buttonLabel") ?? "Show suggestions",
-        "aria-labelledby": p["aria-labelledby"] ?? labelProps.id,
+        "aria-labelledby": p["aria-labelledby"] ?? field.labelProps.id,
       });
 
       return mergeProps(
@@ -726,7 +737,7 @@ export function createComboBox<T>(
       const boxLabels = createLabels({
         id: listBoxId,
         "aria-label": stringFormatter?.().format("listboxLabel") ?? "Suggestions",
-        "aria-labelledby": p["aria-labelledby"] ?? labelProps.id,
+        "aria-labelledby": p["aria-labelledby"] ?? field.labelProps.id,
       });
       return {
         id: listBoxId,
@@ -754,15 +765,10 @@ export function createComboBox<T>(
       } as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return {
-        id: descriptionId,
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return field.descriptionProps;
     },
     get errorMessageProps() {
-      return {
-        id: errorMessageId,
-        role: "alert",
-      } as JSX.HTMLAttributes<HTMLElement>;
+      return field.errorMessageProps;
     },
     isFocused,
     isFocusVisible: () => isFocused() && isFocusVisible(),

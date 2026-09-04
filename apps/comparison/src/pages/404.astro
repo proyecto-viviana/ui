@@ -1,0 +1,24 @@
+---
+import DocsPageLayout from "@comparison/layouts/DocsPageLayout.astro";
+import { reactSpectrumCatalogueSource } from "@comparison/data/react-spectrum-catalogue";
+import { comparisonCoveragePath } from "@comparison/data/site-meta";
+---
+
+<DocsPageLayout
+  reactSpectrumUrl={reactSpectrumCatalogueSource.url}
+  sidebarNavigationLabel="Documentation"
+  sidebarReferenceLabel="S2 catalogue"
+  sidebarReferenceUrl={reactSpectrumCatalogueSource.url}
+  title="Page not found | Solid Spectrum"
+  tocSourceLabel="S2 source"
+  tocSourceUrl={reactSpectrumCatalogueSource.url}
+  tocVariant="page"
+>
+  <section class="s2-hero" aria-labelledby="page-title">
+    <h1 id="page-title">Page not found</h1>
+    <p>This URL is not a comparison route.</p>
+    <p>
+      <a href={comparisonCoveragePath}>Browse components</a>
+    </p>
+  </section>
+</DocsPageLayout>

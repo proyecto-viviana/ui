@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Proyecto Viviana
 
 `AGENTS.md` is the canonical entry — rules first, then the repo facts `ls` won't

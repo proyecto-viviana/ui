@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/data/theme";
 
 export type ComparisonColorScheme = "light" | "dark";
 
@@ -50,6 +51,19 @@ export async function pinComparisonTheme(page: Page, colorScheme: ComparisonColo
   await page.addInitScript((theme) => {
     window.localStorage.setItem("solid-spectrum-theme", theme);
   }, colorScheme);
+}
+
+export async function requestComparisonTheme(page: Page, theme: ComparisonThemeChoice) {
+  await page.evaluate(
+    ({ eventName, nextTheme }) => {
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { theme: nextTheme },
+        }),
+      );
+    },
+    { eventName: comparisonThemeRequestEvent, nextTheme: theme },
+  );
 }
 
 export async function clearPointer(page: Page) {
@@ -421,6 +435,21 @@ export async function capturePreparedInPlaceScreenshotPair(
   return { reactPng, solidPng };
 }
 
+async function preparedClonedElementScreenshot(
+  page: Page,
+  target: Locator,
+  prepare: () => Promise<void>,
+) {
+  await page.mouse.move(4, 4);
+  try {
+    await prepare();
+    return await clonedElementScreenshot(target);
+  } finally {
+    await page.mouse.up();
+    await page.mouse.move(4, 4);
+  }
+}
+
 export async function expectExactPreparedScreenshotPair(
   page: Page,
   reactTarget: Locator,
@@ -476,6 +505,23 @@ export async function expectExactPreparedInPlaceScreenshotPair(
     prepareReact,
     prepareSolid,
   );
+  const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
+
+  return { ...pair, diff };
+}
+
+export async function expectExactPreparedClonedScreenshotPair(
+  page: Page,
+  reactTarget: Locator,
+  solidTarget: Locator,
+  label: string,
+  prepareReact: () => Promise<void>,
+  prepareSolid: () => Promise<void>,
+): Promise<ScreenshotPairResult> {
+  const pair = {
+    reactPng: await preparedClonedElementScreenshot(page, reactTarget, prepareReact),
+    solidPng: await preparedClonedElementScreenshot(page, solidTarget, prepareSolid),
+  };
   const diff = await compareScreenshots(page, pair.reactPng, pair.solidPng, label, exactPairDiff);
 
   return { ...pair, diff };

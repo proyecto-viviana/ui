@@ -22,6 +22,7 @@ import { createHover, type HoverEvents } from "../interactions/createHover";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { mergeProps } from "../utils/mergeProps";
 import { access, type MaybeAccessor } from "../utils/reactivity";
+import { createSlotId } from "../ssr";
 import { getListBoxData } from "./createListBox";
 import { getItemCount, type ListState, type Key } from "@proyecto-viviana/solid-stately";
 import { createSelectableItem, type SelectableItemState } from "../selection/createSelectableItem";
@@ -169,8 +170,12 @@ export function createOption<T>(
 
   const { isFocusVisible, focusProps } = createFocusRing();
 
-  const labelId = `${getProps().key}-label`;
-  const descriptionId = `${getProps().key}-desc`;
+  // Mirror useOption: `useSlotId()` for the label and description slots so
+  // `aria-labelledby` / `aria-describedby` resolve only when an element with
+  // that id is actually in the DOM. A generated-but-unrendered id is the
+  // `(missing)` oracle failure on ComboBox/Picker options.
+  const labelId = createSlotId();
+  const descriptionId = createSlotId();
 
   return {
     get optionProps() {
@@ -201,8 +206,11 @@ export function createOption<T>(
           "aria-selected": selectionMode !== "none" ? selectableItem.isSelected() : undefined,
           "aria-disabled": selectableItem.isDisabled() || undefined,
           "aria-label": ariaLabel,
-          "aria-labelledby": !ariaLabel ? labelId : undefined,
-          "aria-describedby": descriptionId,
+          // RAC useOption.ts:124-126 always publishes the resolved slot ids
+          // (undefined when the slot was not rendered) — it does not drop
+          // labelledby just because aria-label is also set.
+          "aria-labelledby": labelId(),
+          "aria-describedby": descriptionId(),
           "aria-posinset": ariaPosInSet,
           "aria-setsize": ariaSetSize,
           "data-selected": selectableItem.isSelected() || undefined,
@@ -214,11 +222,13 @@ export function createOption<T>(
         } as Record<string, unknown>,
       ) as JSX.HTMLAttributes<HTMLElement>;
     },
-    labelProps: {
-      id: labelId,
+    // Getters so the slot id stays reactive: `createSlotId` may clear the id
+    // after mount if no element registered it.
+    get labelProps() {
+      return { id: labelId() };
     },
-    descriptionProps: {
-      id: descriptionId,
+    get descriptionProps() {
+      return { id: descriptionId() };
     },
     isSelected: selectableItem.isSelected,
     isFocused: selectableItem.isFocused,

@@ -380,8 +380,7 @@ function countMessage(
     return formatter.format("actionbar.selectedAll");
   }
 
-  const message = formatter.format("actionbar.selected", { count });
-  return message.includes("{count}") ? message.replace("{count}", String(count)) : message;
+  return formatter.format("actionbar.selected", { count });
 }
 
 function ActionBarCloseButton(props: {
@@ -483,8 +482,10 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
             cancelAnimationFrame(enterFrame);
           }
           enterFrame = requestAnimationFrame(() => {
-            enterFrame = undefined;
-            setIsEntering(false);
+            enterFrame = requestAnimationFrame(() => {
+              enterFrame = undefined;
+              setIsEntering(false);
+            });
           });
         } else {
           setTimeout(() => setIsEntering(false), 0);
@@ -550,7 +551,7 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
           {...headlessProps}
           selectedItemCount={selectedItemCountForHeadless()}
           onClearSelection={headlessProps.onClearSelection}
-          actionsAvailableMessage={actionsAvailableLabel()}
+          actionsAvailableMessage={local.scrollRef ? actionsAvailableLabel() : undefined}
           ref={actionBarRef}
           slot={local.slot ?? undefined}
           class={(rp: ActionBarRenderProps) =>

@@ -39,7 +39,6 @@ import type { StyleString } from "../style";
 import { baseColor, focusRing, fontRelative, style } from "../style" with { type: "macro" };
 import {
   control,
-  controlFont,
   field,
   fieldInput,
   fieldLabel,
@@ -48,8 +47,11 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { HelpText } from "../form/HelpText";
 
 export type TextFieldSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2TextFieldSize = "S" | "M" | "L" | "XL";
@@ -199,37 +201,8 @@ const textFieldInput = style({
   truncate: true,
 });
 
-const helpTextStyles = style<TextFieldStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
-  cursor: {
-    default: "text",
-    isDisabled: "default",
-  },
-});
-
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -252,43 +225,6 @@ const requiredIcon = style({
 const noWrap = style({
   whiteSpace: "nowrap",
 });
-
-// Byte-faithful to upstream Field.tsx HelpText: the description renders a RAC
-// `<Text slot="description">` (a `<span>`), NOT a `<p>` (whose UA `margin` the
-// port previously had to zero out in `helpTextStyles`). The `slot` mirrors RAC's
-// Text; the id/aria wiring is read from the headless TextField context.
-function TextFieldDescription(props: {
-  class?: string;
-  children?: JSX.Element;
-}): JSX.Element | null {
-  const context = useContext(HeadlessTextFieldContext);
-  if (!context) return null;
-  const descriptionProps = () => {
-    const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
-    return rest;
-  };
-  return (
-    <span {...descriptionProps()} slot="description" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
-
-// Upstream renders the invalid message through a RAC `<FieldError>`, which is a
-// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
-function TextFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(HeadlessTextFieldContext);
-  if (!context) return null;
-  const errorMessageProps = () => {
-    const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
-    return rest;
-  };
-  return (
-    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
 
 export { TextArea, TextAreaContext } from "./TextArea";
 export type { TextAreaProps, TextAreaSize, TextAreaVariant } from "./TextArea";
@@ -359,6 +295,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const normalizedHeadlessProps = mergeProps(headlessProps, {
     get isInvalid() {
       return headlessProps.isInvalid ?? local.validationState === "invalid";
@@ -407,13 +344,6 @@ export function TextField(props: TextFieldProps): JSX.Element {
       isFocusWithin: renderProps.isFocused,
     });
 
-  const helpClass = (renderProps: TextFieldRenderProps, isInvalid: boolean) =>
-    helpTextStyles({
-      ...renderProps,
-      size: size(),
-      isInvalid,
-    });
-
   return (
     <HeadlessTextField
       {...normalizedHeadlessProps}
@@ -435,7 +365,9 @@ export function TextField(props: TextFieldProps): JSX.Element {
                       when={necessityIndicator() === "icon"}
                       fallback={
                         <span aria-hidden={renderProps.isRequired ? true : undefined}>
-                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                          {stringFormatter().format(
+                            renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                          )}
                         </span>
                       }
                     >
@@ -487,17 +419,14 @@ export function TextField(props: TextFieldProps): JSX.Element {
             </Show>
           </div>
 
-          <Show when={local.description && !renderProps.isInvalid}>
-            <TextFieldDescription class={helpClass(renderProps, false)}>
-              {local.description}
-            </TextFieldDescription>
-          </Show>
-
-          <Show when={local.errorMessage && renderProps.isInvalid}>
-            <TextFieldError class={helpClass(renderProps, true)}>
-              {local.errorMessage}
-            </TextFieldError>
-          </Show>
+          <HelpText
+            size={size()}
+            isDisabled={renderProps.isDisabled}
+            isInvalid={renderProps.isInvalid}
+            description={local.description}
+          >
+            {local.errorMessage}
+          </HelpText>
         </>
       )}
     />

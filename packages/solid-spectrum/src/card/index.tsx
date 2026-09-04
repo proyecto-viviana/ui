@@ -19,6 +19,7 @@
 import {
   type Accessor,
   type JSX,
+  Show,
   createContext,
   mergeProps,
   splitProps,
@@ -616,29 +617,34 @@ function renderCardChildren(
 }
 
 function CardProviders(props: {
-  size: CardSize;
+  size: CardSize | Accessor<CardSize>;
   layout: "grid" | "waterfall";
   isSkeleton: Accessor<boolean>;
   children: JSX.Element;
 }): JSX.Element {
+  const size = () => (typeof props.size === "function" ? props.size() : props.size);
   return (
     <ImageContext.Provider value={{ alt: "", styles: image({ layout: props.layout }) }}>
       <TextContext.Provider
         value={{
           slots: {
             default: {},
-            title: { styles: title({ size: props.size }) },
-            description: { styles: description({ size: props.size }) },
+            get title() {
+              return { styles: title({ size: size() }) };
+            },
+            get description() {
+              return { styles: description({ size: size() }) };
+            },
           },
         }}
       >
-        <ContentContext.Provider value={{ styles: content({ size: props.size }) }}>
+        <ContentContext.Provider value={{ styles: content({ size: size() }) }}>
           <DividerContext.Provider value={{ size: "S" }}>
             <FooterContext.Provider value={{ styles: footer }}>
               <ActionMenuContext.Provider
                 value={{
                   isQuiet: true,
-                  size: actionButtonSize[props.size],
+                  size: actionButtonSize[size()],
                   isDisabled: props.isSkeleton(),
                   "data-slot": "menu",
                   styles: actionMenu,
@@ -778,90 +784,86 @@ export function Card(props: CardProps): JSX.Element {
   const isQuiet = () => variant() === "quiet";
   const itemKey = () => local.id as Key | undefined;
   const children = () => (
-    <CardProviders size={size()} layout={layout} isSkeleton={isSkeleton}>
+    <CardProviders size={size} layout={layout} isSkeleton={isSkeleton}>
       {renderCardChildren(local.children, { size: size() })}
     </CardProviders>
   );
   const press = () => pressScale(() => rootElement, local.UNSAFE_style);
 
-  if (ElementType === "div" && !isSkeleton() && local.href) {
-    return (
-      <HeadlessLink
-        {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
-        href={local.href}
-        download={local.download}
-        target={local.target}
-        rel={local.rel}
-        isDisabled={local.isDisabled}
-        ref={(element: HTMLElement) => assignRootRef(element)}
-        class={(renderProps) =>
-          cardClassName(local, {
-            ...renderProps,
-            size: size(),
-            density: density(),
-            variant: variant(),
-            isCardView: false,
-            isLink: true,
-          })
-        }
-        style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
-        data-size={size()}
-        data-density={density()}
-        data-variant={variant()}
-      >
-        {(renderProps: LinkRenderProps) => (
-          <InternalCardContext.Provider
-            value={toInternalCardContext({
-              size: size(),
-              itemKey: itemKey(),
-              isQuiet: isQuiet(),
-              isHovered: renderProps.isHovered,
-              isFocusVisible: renderProps.isFocusVisible,
-              isPressed: renderProps.isPressed,
-            })}
-          >
-            {children()}
-          </InternalCardContext.Provider>
-        )}
-      </HeadlessLink>
-    );
-  }
-
-  if (ElementType === "div" || isSkeleton()) {
-    return (
-      <div
-        {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
-        id={local.id != null ? String(local.id) : undefined}
-        ref={(element) => assignRootRef(element)}
-        class={cardClassName(local, {
+  const linkCard = () => (
+    <HeadlessLink
+      {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
+      href={local.href}
+      download={local.download}
+      target={local.target}
+      rel={local.rel}
+      ref={(element: HTMLElement) => assignRootRef(element)}
+      class={(renderProps) =>
+        cardClassName(local, {
+          ...renderProps,
           size: size(),
           density: density(),
           variant: variant(),
-          isCardView: ElementType !== "div",
-        })}
-        style={local.UNSAFE_style}
-        data-size={size()}
-        data-density={density()}
-        data-variant={variant()}
-      >
+          isCardView: false,
+          isLink: true,
+        })
+      }
+      style={(renderProps) => (isQuiet() ? (local.UNSAFE_style ?? {}) : press()(renderProps))}
+      data-size={size()}
+      data-density={density()}
+      data-variant={variant()}
+    >
+      {(renderProps: LinkRenderProps) => (
         <InternalCardContext.Provider
           value={toInternalCardContext({
             size: size(),
             itemKey: itemKey(),
             isQuiet: isQuiet(),
+            isHovered: renderProps.isHovered,
+            isFocusVisible: renderProps.isFocusVisible,
+            isPressed: renderProps.isPressed,
           })}
         >
           {children()}
         </InternalCardContext.Provider>
-      </div>
-    );
-  }
+      )}
+    </HeadlessLink>
+  );
 
-  return (
+  const staticCard = () => (
+    <div
+      {...filterDOMProps(otherProps as Record<string, unknown>, { global: true })}
+      id={local.id != null ? String(local.id) : undefined}
+      ref={(element) => assignRootRef(element)}
+      class={cardClassName(local, {
+        size: size(),
+        density: density(),
+        variant: variant(),
+        isCardView: ElementType !== "div",
+      })}
+      style={local.UNSAFE_style}
+      data-size={size()}
+      data-density={density()}
+      data-variant={variant()}
+    >
+      <InternalCardContext.Provider
+        value={toInternalCardContext({
+          size: size(),
+          itemKey: itemKey(),
+          isQuiet: isQuiet(),
+        })}
+      >
+        {children()}
+      </InternalCardContext.Provider>
+    </div>
+  );
+
+  const gridCard = () => (
     <HeadlessGridListItem
       {...otherProps}
       id={local.id}
       textValue={local.textValue}
+      isDisabled={local.isDisabled}
       ref={(element: HTMLElement) => assignRootRef(element)}
       class={(renderProps) =>
         cardClassName(local, {
@@ -901,6 +903,19 @@ export function Card(props: CardProps): JSX.Element {
         );
       }}
     </HeadlessGridListItem>
+  );
+
+  return (
+    <Show
+      when={ElementType === "div" && !isSkeleton() && local.href}
+      fallback={
+        <Show when={ElementType === "div" || isSkeleton()} fallback={gridCard()}>
+          {staticCard()}
+        </Show>
+      }
+    >
+      {linkCard()}
+    </Show>
   );
 }
 

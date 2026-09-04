@@ -2,8 +2,8 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/icons/TextStrikeThrough.mjs
-// Generator input: @react-spectrum/s2@1.6.0/icons/TextStrikeThrough.cjs
+// Generator input: @react-spectrum/s2@1.7.0/icons/TextStrikeThrough.mjs
+// Generator input: @react-spectrum/s2@1.7.0/icons/TextStrikeThrough.cjs
 
 import { type JSX } from "solid-js";
 import { createIcon } from "../spectrum-icon";

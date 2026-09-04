@@ -147,11 +147,9 @@ export function ActionBar(props: ActionBarProps): JSX.Element {
   let wasOpen = false;
   createEffect(() => {
     const open = isOpen();
-    if (open && !wasOpen) {
-      const message = local.actionsAvailableMessage ?? "Actions available.";
-      if (message) {
-        announce(message);
-      }
+    const message = local.actionsAvailableMessage;
+    if (open && !wasOpen && message) {
+      announce(message);
     }
     wasOpen = open;
   });

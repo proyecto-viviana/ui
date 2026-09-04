@@ -27,7 +27,9 @@ order problem, not a missing context value in normal rendering.
 - A direct `<Meter><Label>…</Label></Meter>` child hydrates over server markup.
 - The label remains a `span` with the ID used by `aria-labelledby`.
 - The render-child path remains green.
-- A focused regression test fails if either path changes.
+- A focused regression test fails if either path changes. The existing
+  Meter hydrate fixture uses a render-child `{() => (<><Label>…` path; add a
+  static `<Meter><Label>` case that fails until this ticket lands.
 
 ## Relationship
 

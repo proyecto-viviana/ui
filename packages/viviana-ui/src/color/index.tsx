@@ -37,7 +37,8 @@ import {
   Show,
 } from "solid-js";
 import { Portal } from "solid-js/web";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import {
   ColorSlider as HeadlessColorSlider,
   ColorSliderLabel as HeadlessColorSliderLabel,
@@ -101,6 +102,7 @@ import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { HelpText } from "../form/HelpText";
 import {
   InternalColorSwatchContext,
   type InternalColorSwatchRounding,
@@ -1169,36 +1171,8 @@ function createColorFieldStyles() {
       borderStyle: "none",
       truncate: true,
     }),
-    helpText: style<ColorFieldStyleProps>({
-      gridArea: "helptext",
-      display: "flex",
-      alignItems: "baseline",
-      gap: "text-to-visual",
-      font: controlFont(),
-      color: {
-        default: "neutral-subdued",
-        isInvalid: {
-          default: "negative-1000",
-          forcedColors: "Mark",
-        },
-        isDisabled: {
-          default: "disabled",
-          forcedColors: "GrayText",
-        },
-      },
-      "--iconPrimary": {
-        type: "fill",
-        value: "currentColor",
-      },
-      contain: "inline-size",
-      paddingTop: "--field-gap",
-      cursor: {
-        default: "text",
-        isDisabled: "default",
-      },
-    }),
     errorIcon: style({
-      size: fontRelative(20),
+      size: "1lh",
       marginStart: "text-to-visual",
       marginEnd: fontRelative(-2),
       flexShrink: 0,
@@ -1296,6 +1270,7 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const fieldStyles = () => getColorFieldStyles();
 
   const rootClassName = (renderProps: ColorFieldRenderProps) =>
@@ -1337,13 +1312,6 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
       isFocusWithin: isFocusWithin(),
     });
 
-  const helpClass = (renderProps: ColorFieldRenderProps, isInvalid: boolean) =>
-    fieldStyles().helpText({
-      ...renderProps,
-      size: size(),
-      isInvalid,
-    });
-
   return (
     <HeadlessColorField
       {...headlessProps}
@@ -1364,7 +1332,9 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
                       when={necessityIndicator() === "icon"}
                       fallback={
                         <span aria-hidden={renderProps.isRequired ? true : undefined}>
-                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                          {stringFormatter().format(
+                            renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                          )}
                         </span>
                       }
                     >
@@ -1412,17 +1382,14 @@ export function ColorField(props: ColorFieldProps): JSX.Element {
             </Show>
           </div>
 
-          <Show when={local.description && !renderProps.isInvalid}>
-            <ColorFieldDescription class={helpClass(renderProps, false)}>
-              {local.description}
-            </ColorFieldDescription>
-          </Show>
-
-          <Show when={local.errorMessage && renderProps.isInvalid}>
-            <ColorFieldError class={helpClass(renderProps, true)}>
-              {local.errorMessage}
-            </ColorFieldError>
-          </Show>
+          <HelpText
+            size={size()}
+            isDisabled={renderProps.isDisabled}
+            isInvalid={renderProps.isInvalid}
+            description={local.description}
+          >
+            {local.errorMessage}
+          </HelpText>
         </>
       )}
     />
@@ -1487,44 +1454,6 @@ function ColorFieldLabel(props: { class?: string; children?: JSX.Element }): JSX
     <label {...labelProps()} class={props.class}>
       {props.children}
     </label>
-  );
-}
-
-// Upstream S2 renders help text via the shared `<HelpText>`, whose description is a
-// `<Text slot="description">` (a `<span>`), NOT a `<p>`: a `<p>` carries the UA
-// `margin` the hand-roll then had to zero out (see `helpText` style — upstream's
-// `helpTextStyles` has none) and an implicit `paragraph` role a `<span>` does not.
-// Reverted to match, exactly as NumberField/DateField/DatePicker did.
-function ColorFieldDescription(props: {
-  class?: string;
-  children?: JSX.Element;
-}): JSX.Element | null {
-  const context = useContext(HeadlessColorFieldContext);
-  if (!context) return null;
-  const descriptionProps = () => {
-    const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
-    return rest;
-  };
-  return (
-    <span {...descriptionProps()} slot="description" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
-
-// Upstream S2's `<HelpText>` renders the error message via `<FieldError>` →
-// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
-function ColorFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(HeadlessColorFieldContext);
-  if (!context) return null;
-  const errorMessageProps = () => {
-    const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
-    return rest;
-  };
-  return (
-    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
-      {props.children}
-    </span>
   );
 }
 

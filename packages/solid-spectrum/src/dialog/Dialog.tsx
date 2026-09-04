@@ -487,7 +487,7 @@ const closeButton = style<
         default: baseColor("neutral"),
         isDisabled: "disabled",
         isStaticColor: {
-          default: "white",
+          default: "transparent-overlay-1000",
           isDisabled: "transparent-overlay-400",
         },
         forcedColors: {
@@ -523,7 +523,10 @@ const dialogFooterWrapper = style({
   flexWrap: "wrap",
   gap: 24,
   paddingX: 32,
-  paddingTop: 0,
+  paddingTop: {
+    default: 32,
+    ":empty": 0,
+  },
   paddingBottom: 32,
 });
 

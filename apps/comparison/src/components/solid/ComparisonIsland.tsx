@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createSignal } from "solid-js";
+import { createEffect, createSignal, onMount } from "solid-js";
 import {
   Button as HeadlessButton,
   Popover as HeadlessPopover,
@@ -24,17 +24,46 @@ import { solidStyledFixtures } from "./fixtures/styled";
 interface ComparisonIslandProps {
   componentSlug: ComparisonSlug;
   layer: ComparisonLayerId;
+  onFixtureReady?: () => void;
 }
 
 type TabItem = (typeof tabItems)[number];
 
 export default function ComparisonIsland(props: ComparisonIslandProps) {
   let overlayRoot: HTMLDivElement | undefined;
+  const [styledMod, setStyledMod] = createSignal<{ default: () => unknown } | null | undefined>(
+    props.layer === "styled" ? undefined : null,
+  );
+
+  onMount(() => {
+    if (props.layer !== "styled") {
+      return;
+    }
+    const loader = solidStyledFixtures[props.componentSlug];
+    const pending = loader == null ? Promise.resolve(null) : loader();
+    void pending.then(
+      (mod) => setStyledMod(() => mod ?? null),
+      (error: unknown) => {
+        console.error(`Failed to load Solid styled fixture "${props.componentSlug}"`, error);
+        setStyledMod(null);
+      },
+    );
+  });
+
+  createEffect(() => {
+    if (styledMod() !== undefined) {
+      props.onFixtureReady?.();
+    }
+  });
 
   return h(
     "div",
     { class: "comparison-island" },
-    h(UNSAFE_PortalProvider, { getContainer: () => overlayRoot ?? null }, renderLayer(props)),
+    h(
+      UNSAFE_PortalProvider,
+      { getContainer: () => overlayRoot ?? null },
+      renderLayer(props, styledMod),
+    ),
     h("div", {
       class: "comparison-overlay-root",
       ref: (element: HTMLDivElement) => {
@@ -44,10 +73,13 @@ export default function ComparisonIsland(props: ComparisonIslandProps) {
   )();
 }
 
-function renderLayer(props: ComparisonIslandProps) {
+function renderLayer(
+  props: ComparisonIslandProps,
+  styledMod: () => { default: () => unknown } | null | undefined,
+) {
   let rendered;
   if (props.layer === "styled") {
-    rendered = renderStyled(props.componentSlug);
+    rendered = () => renderStyled(styledMod);
   } else if (props.layer === "components") {
     rendered = renderComponents(props.componentSlug);
   } else if (props.layer === "headless") {
@@ -74,7 +106,7 @@ function comparisonReferenceFrame(
     layer: ComparisonLayerId;
     reference: ComparisonReferenceKind;
   },
-  children: ReturnType<typeof h>,
+  children: ReturnType<typeof h> | (() => unknown),
 ) {
   return h(
     "div",
@@ -86,12 +118,19 @@ function comparisonReferenceFrame(
   );
 }
 
-function renderStyled(componentSlug: ComparisonSlug) {
-  return (
-    solidStyledFixtures[componentSlug]?.() ??
-    emptyState(
-      "Styled Solid Spectrum implementation is missing. Start from the React Spectrum S2 source and implement this component in solid-spectrum.",
-    )
+function renderStyled(styledMod: () => { default: () => unknown } | null | undefined) {
+  const mod = styledMod();
+  if (mod === undefined) {
+    return h("div", {
+      class: "comparison-fixture-placeholder",
+      "aria-hidden": "true",
+    });
+  }
+  if (mod?.default != null) {
+    return mod.default();
+  }
+  return emptyState(
+    "Styled Solid Spectrum implementation is missing. Start from the React Spectrum S2 source and implement this component in solid-spectrum.",
   );
 }
 

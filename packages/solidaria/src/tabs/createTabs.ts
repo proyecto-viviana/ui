@@ -257,15 +257,15 @@ export function createTabList<T>(props: AriaTabListProps, state: TabListState<T>
     const isRTL = locale().direction === "rtl";
 
     switch (e.key) {
+      // getKeyLeftOf/getKeyRightOf follow locale text direction regardless of
+      // orientation (TabsKeyboardDelegate.flipDirection = direction === 'rtl'),
+      // so ArrowLeft always moves to the next tab in RTL. ArrowUp/ArrowDown stay
+      // unflipped and only apply when vertical.
       case "ArrowLeft":
-        if (isHorizontal) {
-          nextKey = isRTL ? getNextKey(state, currentKey) : getPreviousKey(state, currentKey);
-        }
+        nextKey = isRTL ? getNextKey(state, currentKey) : getPreviousKey(state, currentKey);
         break;
       case "ArrowRight":
-        if (isHorizontal) {
-          nextKey = isRTL ? getPreviousKey(state, currentKey) : getNextKey(state, currentKey);
-        }
+        nextKey = isRTL ? getPreviousKey(state, currentKey) : getNextKey(state, currentKey);
         break;
       case "ArrowUp":
         if (!isHorizontal) {

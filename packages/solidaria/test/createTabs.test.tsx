@@ -422,6 +422,29 @@ describe("createTabs", () => {
 
       expect(onSelectionChange).toHaveBeenCalledWith("tab1");
     });
+
+    it("ArrowLeft and ArrowRight follow RTL in vertical orientation", () => {
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <TestTabs aria-label="Test Tabs" orientation="vertical" />
+        </I18nProvider>
+      ));
+
+      const tabs = screen.getAllByRole("tab");
+      tabs[0].focus();
+
+      fireEvent.keyDown(tabs[0], { key: "ArrowDown" });
+      expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(tabs[1], { key: "ArrowUp" });
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(tabs[0], { key: "ArrowLeft" });
+      expect(tabs[1]).toHaveAttribute("aria-selected", "true");
+
+      fireEvent.keyDown(tabs[1], { key: "ArrowRight" });
+      expect(tabs[0]).toHaveAttribute("aria-selected", "true");
+    });
   });
 
   describe("Home and End keys", () => {

@@ -30,7 +30,6 @@ import {
   SearchFieldLabel as HeadlessSearchFieldLabel,
   SearchFieldInput as HeadlessSearchFieldInput,
   SearchFieldClearButton as HeadlessSearchFieldClearButton,
-  SearchFieldContext as HeadlessSearchFieldContext,
   type SearchFieldProps as HeadlessSearchFieldProps,
   type SearchFieldRenderProps,
   type SearchFieldClearButtonRenderProps,
@@ -41,7 +40,6 @@ import { css } from "../style/style-macro" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import {
   control,
-  controlFont,
   controlSize,
   field,
   fieldInput,
@@ -49,12 +47,15 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { CenterBaseline } from "../icon/center-baseline";
-import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
+import { HelpText } from "../form/HelpText";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -231,7 +232,7 @@ const searchIconWrapper = style({
 });
 
 const searchIcon = style<SearchFieldStyleProps>({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "--iconMargin",
 });
 
@@ -282,49 +283,6 @@ const clearButton = style<ClearButtonStyleProps>({
   },
 });
 
-const helpTextStyles = style<SearchFieldStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
-  cursor: {
-    default: "text",
-    isDisabled: "default",
-  },
-});
-
-const fieldErrorIcon = style({
-  size: fontRelative(20),
-  marginStart: "text-to-visual",
-  marginEnd: fontRelative(-2),
-  flexShrink: 0,
-  "--iconPrimary": {
-    type: "fill",
-    value: {
-      default: "negative",
-      forcedColors: "Mark",
-    },
-  },
-});
-
 const requiredIcon = style({
   "--iconPrimary": {
     type: "fill",
@@ -335,43 +293,6 @@ const requiredIcon = style({
 const noWrap = style({
   whiteSpace: "nowrap",
 });
-
-// Byte-faithful to upstream Field.tsx HelpText: the description renders a RAC
-// `<Text slot="description">` (a `<span>`), NOT a `<p>` (whose UA `margin` the
-// port previously had to zero out in `helpTextStyles`). The `slot` mirrors RAC's
-// Text; the id/aria wiring is read from the headless SearchField context.
-function SearchFieldDescription(props: {
-  class?: string;
-  children?: JSX.Element;
-}): JSX.Element | null {
-  const context = useContext(HeadlessSearchFieldContext);
-  if (!context?.descriptionProps) return null;
-  const descriptionProps = () => {
-    const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
-    return rest;
-  };
-  return (
-    <span {...descriptionProps()} slot="description" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
-
-// Upstream renders the invalid message through a RAC `<FieldError>`, which is a
-// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
-function SearchFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(HeadlessSearchFieldContext);
-  if (!context?.errorMessageProps) return null;
-  const errorMessageProps = () => {
-    const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
-    return rest;
-  };
-  return (
-    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
 
 function normalizeSearchFieldSize(size: SearchFieldSize | undefined): S2SearchFieldSize {
   switch (size) {
@@ -451,6 +372,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
     mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
@@ -519,13 +441,6 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       isStaticColor: false,
     });
 
-  const helpClass = (renderProps: SearchFieldRenderProps, isInvalid: boolean) =>
-    helpTextStyles({
-      ...renderProps,
-      size: size(),
-      isInvalid,
-    });
-
   return (
     <HeadlessSearchField
       {...headlessProps}
@@ -550,7 +465,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
                       when={necessityIndicator() === "icon"}
                       fallback={
                         <span aria-hidden={renderProps.isRequired ? true : undefined}>
-                          {renderProps.isRequired ? "(required)" : "(optional)"}
+                          {stringFormatter().format(
+                            renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                          )}
                         </span>
                       }
                     >
@@ -564,9 +481,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
                   </span>
                 </Show>
               </HeadlessSearchFieldLabel>
-              <Show when={local.contextualHelp}>
-                <span data-slot="contextualHelp">{local.contextualHelp}</span>
-              </Show>
+              <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
             </div>
           </Show>
 
@@ -608,20 +523,14 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             </Show>
           </div>
 
-          <Show when={local.description && !renderProps.isInvalid}>
-            <SearchFieldDescription class={helpClass(renderProps, false)}>
-              {local.description}
-            </SearchFieldDescription>
-          </Show>
-
-          <Show when={local.errorMessage && renderProps.isInvalid}>
-            <SearchFieldError class={helpClass(renderProps, true)}>
-              <CenterBaseline>
-                <AlertTriangleIcon aria-hidden="true" styles={fieldErrorIcon} />
-              </CenterBaseline>
-              <span>{local.errorMessage}</span>
-            </SearchFieldError>
-          </Show>
+          <HelpText
+            size={size()}
+            isDisabled={renderProps.isDisabled}
+            isInvalid={renderProps.isInvalid}
+            description={local.description}
+          >
+            {local.errorMessage}
+          </HelpText>
         </>
       )}
     />

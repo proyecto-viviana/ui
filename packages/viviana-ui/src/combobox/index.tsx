@@ -19,7 +19,7 @@
 import {
   type JSX,
   createContext,
-  createEffect,
+  createMemo,
   createSignal,
   createUniqueId,
   mergeProps,
@@ -33,8 +33,6 @@ import {
   ComboBox as HeadlessComboBox,
   ComboBoxButton as HeadlessComboBoxButton,
   ComboBoxContext as HeadlessComboBoxContext,
-  ComboBoxDescription as HeadlessComboBoxDescription,
-  ComboBoxErrorMessage as HeadlessComboBoxErrorMessage,
   ComboBoxInput as HeadlessComboBoxInput,
   ComboBoxLabel as HeadlessComboBoxLabel,
   ComboBoxListBox as HeadlessComboBoxListBox,
@@ -42,7 +40,8 @@ import {
   ComboBoxTag as HeadlessComboBoxTag,
   ComboBoxTagGroup as HeadlessComboBoxTagGroup,
   ListBoxSection as HeadlessListBoxSection,
-  Popover as HeadlessPopover,
+  ListLayout,
+  Virtualizer,
   defaultContainsFilter,
   type ListBoxSectionProps as HeadlessListBoxSectionProps,
   type ComboBoxButtonProps as HeadlessComboBoxButtonProps,
@@ -60,15 +59,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import type { FilterFn, Key, MenuTriggerAction } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
-import {
-  baseColor,
-  focusRing,
-  fontRelative,
-  lightDark,
-  setColorScheme,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, focusRing, fontRelative, space, style } from "../style" with { type: "macro" };
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import {
   control,
@@ -84,10 +75,14 @@ import { CenterBaseline } from "../icon/center-baseline";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
 import { pressScale } from "../pressScale";
-import { useProviderProps, useTheme } from "../provider";
+import { useProviderProps } from "../provider";
+import { Popover } from "../popover";
+import { createMediaQuery } from "../utils/createMediaQuery";
 import { Divider } from "../divider";
 import { FormContext, useFormProps, useIsInForm } from "../form";
 import {
@@ -99,6 +94,7 @@ import {
   type RefLike,
   type SpectrumContextValue,
 } from "../button/spectrum-context";
+import { HelpText } from "../form/HelpText";
 
 export type ComboBoxSize = "S" | "M" | "L" | "XL" | "sm" | "md" | "lg";
 type S2ComboBoxSize = "S" | "M" | "L" | "XL";
@@ -351,33 +347,10 @@ const comboBoxListBox = style<ComboBoxListBoxRenderProps & { size?: S2ComboBoxSi
   listStyleType: "none",
 });
 
-const comboBoxPopover = style({
-  ...setColorScheme(),
-  "--s2-container-bg": {
-    type: "backgroundColor",
-    value: {
-      default: "layer-2",
-      forcedColors: "Background",
-    },
-  },
-  backgroundColor: "--s2-container-bg",
-  // Glasselated: frost the scene behind the surface — the container bg is the
-  // translucent `--surface-card`; the blur is what makes it read as glass.
-  backdropFilter: "var(--blur-card)",
-  boxShadow: "elevated",
-  borderRadius: "panel",
-  display: "flex",
-  padding: 0,
-  minHeight: 0,
-  overflow: "visible",
-  boxSizing: "border-box",
-  isolation: "isolate",
-  outlineStyle: "solid",
-  outlineWidth: 1,
-  outlineColor: {
-    default: lightDark("transparent-white-25", "gray-200"),
-    forcedColors: "ButtonBorder",
-  },
+// S2 ComboBox.tsx:765-768 — width additions on the composed Popover `styles` prop.
+const comboBoxMenuWidth = style({
+  minWidth: "--trigger-width",
+  width: "--trigger-width",
 });
 
 const comboBoxListBoxFrame = style({
@@ -385,6 +358,48 @@ const comboBoxListBoxFrame = style({
   width: "full",
   height: "full",
 });
+
+const comboBoxEmptyStateText = style<{ size?: S2ComboBoxSize }>({
+  height: {
+    size: {
+      S: 24,
+      M: 32,
+      L: 40,
+      XL: 48,
+    },
+  },
+  font: {
+    size: {
+      S: "ui-sm",
+      M: "ui",
+      L: "ui-lg",
+      XL: "ui-xl",
+    },
+  },
+  display: "flex",
+  alignItems: "center",
+  paddingStart: "edge-to-text",
+});
+
+// Not from any design, just following the sizing of the existing rows
+export const LOADER_ROW_HEIGHTS = {
+  S: {
+    medium: 24,
+    large: 30,
+  },
+  M: {
+    medium: 32,
+    large: 40,
+  },
+  L: {
+    medium: 40,
+    large: 50,
+  },
+  XL: {
+    medium: 48,
+    large: 60,
+  },
+};
 
 const comboBoxOption = style<ComboBoxOptionStyleProps>({
   ...focusRing(),
@@ -482,38 +497,8 @@ const comboBoxCheckmark = style<ComboBoxOptionStyleProps>({
   },
 });
 
-const helpTextStyles = style<ComboBoxStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  margin: 0,
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative-1000",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
-  cursor: {
-    default: "text",
-    isDisabled: "default",
-  },
-});
-
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -655,7 +640,7 @@ function ComboBoxFieldGroup(props: {
       }}
       onTouchEnd={focusFieldInput}
       data-hovered={isHovered() ? "true" : undefined}
-      data-focused={isFocused() ? "true" : undefined}
+      data-focus-within={isFocused() ? "true" : undefined}
       data-focus-visible={isFocusVisible() ? "true" : undefined}
       data-disabled={props.renderProps.isDisabled ? "true" : undefined}
       data-invalid={props.renderProps.isInvalid ? "true" : undefined}
@@ -673,7 +658,6 @@ function ComboBoxListBoxPopover(props: {
   shouldFlip: () => boolean;
   children: JSX.Element;
 }) {
-  const theme = useTheme();
   const comboBoxContext = useContext(HeadlessComboBoxContext) as {
     state?: { close?: () => void };
     isOpen?: () => boolean;
@@ -688,49 +672,11 @@ function ComboBoxListBoxPopover(props: {
     comboBoxContext?.inputRef?.() ??
     comboBoxContext?.buttonRef?.() ??
     null;
-  const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
-
-  const updateTriggerWidth = () => {
-    const trigger = triggerRef();
-    if (trigger) {
-      setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
-    }
-  };
-
-  createEffect(() => {
-    const trigger = triggerRef();
-    if (!trigger) {
-      setTriggerWidth(undefined);
-      return;
-    }
-
-    updateTriggerWidth();
-    if (typeof ResizeObserver === "undefined") {
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver(updateTriggerWidth);
-    resizeObserver.observe(trigger);
-    onCleanup(() => resizeObserver.disconnect());
-  });
-
-  const resolvedTriggerWidth = () => {
-    const explicitMenuWidth = props.menuWidth();
-    if (explicitMenuWidth != null) {
-      return `${explicitMenuWidth}px`;
-    }
-
-    const measuredWidth = triggerWidth();
-    if (measuredWidth) {
-      return measuredWidth;
-    }
-
-    const trigger = triggerRef();
-    return trigger ? `${trigger.getBoundingClientRect().width}px` : undefined;
-  };
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
+      padding="none"
       trigger="ComboBox"
       triggerRef={triggerRef}
       isOpen={comboBoxContext?.isOpen?.() ?? false}
@@ -744,22 +690,13 @@ function ComboBoxListBoxPopover(props: {
       offset={comboBoxMenuOffset(props.size())}
       shouldFlip={props.shouldFlip()}
       autoFocus={false}
-      class={(renderProps) =>
-        comboBoxPopover({
-          ...renderProps,
-          colorScheme: theme.colorScheme,
-          isArrowShown: false,
-          isSubmenu: false,
-        })
-      }
-      style={() => ({
-        "--trigger-width": resolvedTriggerWidth(),
-        minWidth: "var(--trigger-width)",
-        width: "var(--trigger-width)",
-      })}
+      UNSAFE_style={{
+        "--trigger-width": props.menuWidth() != null ? `${props.menuWidth()}px` : undefined,
+      }}
+      styles={comboBoxMenuWidth}
     >
       <div class={comboBoxListBoxFrame}>{props.children}</div>
-    </HeadlessPopover>
+    </Popover>
   );
 }
 
@@ -772,6 +709,7 @@ function ComboBoxFieldLabel(props: {
   // Renders the label text + necessity indicator as the direct children of the
   // `<label>` (the class lives on `HeadlessComboBoxLabel`), so the label text's
   // nearest element is the `<label>` — matching upstream FieldLabel.
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   return (
     <>
       {props.label}
@@ -782,7 +720,9 @@ function ComboBoxFieldLabel(props: {
             when={props.necessityIndicator === "icon"}
             fallback={
               <span aria-hidden={props.isRequired ? true : undefined}>
-                {props.isRequired ? "(required)" : "(optional)"}
+                {stringFormatter().format(
+                  props.isRequired ? "label.(required)" : "label.(optional)",
+                )}
               </span>
             }
           >
@@ -840,9 +780,13 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
 
   const prefixId = createUniqueId();
   const size = () => normalizeComboBoxSize(local.size);
+  // S2 `useScale()` (`packages/@react-spectrum/s2/src/utils.ts`): coarse pointer → large.
+  const matchesCoarsePointer = createMediaQuery("not ((hover: hover) and (pointer: fine))");
+  const scale = (): "medium" | "large" => (matchesCoarsePointer() ? "large" : "medium");
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const direction = () => local.direction ?? "bottom";
   const align = () => local.align ?? "start";
   const shouldFlip = () => local.shouldFlip ?? true;
@@ -890,13 +834,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
       isOpen: renderProps.isOpen,
     });
 
-  const helpClass = (renderProps: ComboBoxRenderProps, isInvalid: boolean) =>
-    helpTextStyles({
-      ...renderProps,
-      size: size(),
-      isInvalid,
-    });
-
   const listBoxChildren = typeof local.children === "function" ? local.children : undefined;
 
   return (
@@ -907,8 +844,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
         defaultItems={props.defaultItems}
         allowsEmptyCollection
         label={local.label}
-        description={local.isInvalid ? undefined : local.description}
-        errorMessage={local.errorMessage}
         isInvalid={local.isInvalid}
         slot={local.slot ?? undefined}
         rootRef={(element) => assignRootRef(element)}
@@ -974,17 +909,14 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
               </HeadlessComboBoxButton>
             </ComboBoxFieldGroup>
 
-            <Show when={local.description && !renderProps.isInvalid}>
-              <HeadlessComboBoxDescription class={helpClass(renderProps, false)}>
-                {local.description}
-              </HeadlessComboBoxDescription>
-            </Show>
-
-            <Show when={local.errorMessage && renderProps.isInvalid}>
-              <HeadlessComboBoxErrorMessage class={helpClass(renderProps, true)}>
-                {local.errorMessage}
-              </HeadlessComboBoxErrorMessage>
-            </Show>
+            <HelpText
+              size={size()}
+              isDisabled={renderProps.isDisabled}
+              isInvalid={renderProps.isInvalid || local.isInvalid}
+              description={local.description}
+            >
+              {local.errorMessage}
+            </HelpText>
 
             <ComboBoxListBoxPopover
               size={size}
@@ -1002,11 +934,31 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
                   isRequired: undefined,
                 }}
               >
-                <HeadlessComboBoxListBox
-                  class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+                <Virtualizer
+                  layout={ListLayout}
+                  layoutOptions={{
+                    estimatedRowHeight: 32,
+                    padding: 8,
+                    estimatedHeadingHeight: 50,
+                    loaderHeight: LOADER_ROW_HEIGHTS[size()][scale()],
+                  }}
                 >
-                  {listBoxChildren}
-                </HeadlessComboBoxListBox>
+                  <HeadlessComboBoxListBox
+                    class={(listBoxProps) => comboBoxListBox({ ...listBoxProps, size: size() })}
+                  >
+                    {listBoxChildren}
+                  </HeadlessComboBoxListBox>
+                  <Show
+                    when={(() => {
+                      const items = headlessProps.items ?? props.defaultItems;
+                      return Array.isArray(items) && items.length === 0;
+                    })()}
+                  >
+                    <span class={comboBoxEmptyStateText({ size: size() })}>
+                      {stringFormatter().format("combobox.noResults")}
+                    </span>
+                  </Show>
+                </Virtualizer>
               </FormContext.Provider>
             </ComboBoxListBoxPopover>
           </>
@@ -1088,12 +1040,10 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const size = useContext(ComboBoxSizeContext);
   const [optionEl, setOptionEl] = createSignal<HTMLElement | null>(null);
   const isLink = () => (props as Record<string, unknown>).href != null;
-  const textLabel = () =>
-    isTextOnlyChildren(local.children)
-      ? Array.isArray(local.children)
-        ? local.children.join("")
-        : String(local.children)
-      : undefined;
+  // One tracked read of the children getter. Reading it per use creates the
+  // child DOM once per read and desynchronizes hydration keys; an untracked
+  // setup-time read freezes a direct signal child such as `{label()}`.
+  const content = createMemo(() => local.children);
   const optionClass = (renderProps: ComboBoxOptionRenderProps) =>
     [
       comboBoxOption({
@@ -1115,7 +1065,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
         setOptionEl(el);
         assignRef(local.ref, el);
       }}
-      aria-label={headlessProps["aria-label"] ?? textLabel()}
+      aria-label={headlessProps["aria-label"]}
       class={optionClass}
       // Faithful to upstream S2 `ComboBoxItem` `style={pressScale(ref, UNSAFE_style)}`.
       style={pressScale(() => optionEl(), local.UNSAFE_style)}
@@ -1131,12 +1081,12 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
             class={checkClass(renderProps)}
             style={comboBoxCheckmarkIconStyle(size)}
           />
-          {isTextOnlyChildren(local.children) ? (
+          {isTextOnlyChildren(content()) ? (
             <span slot="label" class={comboBoxOptionLabel({ size })} data-rsp-slot="text">
-              {local.children}
+              {content()}
             </span>
           ) : (
-            local.children
+            content()
           )}
         </>
       )}

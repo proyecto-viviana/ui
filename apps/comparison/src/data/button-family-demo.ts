@@ -20,6 +20,7 @@ import {
   type ActionButtonDemoSize,
   type ActionButtonDemoStaticColor,
 } from "./actionbutton-demo";
+import { sanitizeDemoHref } from "./demo-url";
 
 export const groupDensityOptions = ["regular", "compact"] as const;
 export const groupOrientationOptions = ["horizontal", "vertical"] as const;
@@ -346,7 +347,10 @@ export function normalizeLinkButtonDemoProps(
       typeof props.children === "string" && props.children
         ? props.children
         : linkButtonDemoDefaults.children,
-    href: typeof props.href === "string" && props.href ? props.href : linkButtonDemoDefaults.href,
+    href: sanitizeDemoHref(
+      typeof props.href === "string" ? props.href : undefined,
+      linkButtonDemoDefaults.href,
+    ),
     variant: isOneOf(props.variant, buttonVariantOptions)
       ? props.variant
       : linkButtonDemoDefaults.variant,

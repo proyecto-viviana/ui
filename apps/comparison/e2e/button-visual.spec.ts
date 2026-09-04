@@ -1,11 +1,17 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, styledSection, waitForComparisonRouteReady } from "./comparison-page";
+import {
+  checkControl,
+  frameworkCanvas,
+  styledSection,
+  waitForComparisonRouteReady,
+} from "./comparison-page";
 import {
   clearPointer,
   expectExactPreparedFixedScreenshotPair,
   expectExactPreparedScreenshotPair,
   expectExactScreenshotPair,
   pinComparisonTheme,
+  requestComparisonTheme,
 } from "./visual-diff";
 
 type ButtonMatrixCase = {
@@ -230,10 +236,6 @@ async function buttonComputedContract(button: Locator) {
       textCenterDelta: centerDelta,
     };
   });
-}
-
-async function setComparisonTheme(page: Page, theme: "light" | "dark") {
-  await page.locator(`input[name="comparisonTheme"][value="${theme}"]`).check();
 }
 
 async function buttonGradientBackground(button: Locator) {
@@ -579,12 +581,13 @@ test.describe("comparison Button visual parity", () => {
 
   test("Button prop controls drive both implementations", async ({ page }) => {
     const fixtures = await buttonFixtures(page);
+    const form = page.locator('[data-comparison-controls="button"]').first();
 
-    await page.getByLabel("children").fill("Delete");
-    await page.getByLabel("variant").selectOption("negative");
-    await page.locator('input[name="fillStyle"][value="outline"]').check();
-    await page.locator('input[name="size"][value="L"]').check();
-    await page.locator('input[name="staticColor"][value="white"]').check();
+    await form.locator('input[name="children"]').fill("Delete");
+    await form.locator('select[name="variant"]').selectOption("negative");
+    await checkControl(page, "fillStyle", "outline");
+    await checkControl(page, "size", "L");
+    await checkControl(page, "staticColor", "white");
 
     const reactRoot = fixtures.reactCanvas.locator("[data-comparison-button-props]").first();
     const solidRoot = fixtures.solidCanvas.locator("[data-comparison-button-props]").first();
@@ -622,7 +625,7 @@ test.describe("comparison Button visual parity", () => {
   test("Button color scheme control drives React and Solid examples", async ({ page }) => {
     const fixtures = await buttonFixtures(page);
 
-    await setComparisonTheme(page, "light");
+    await requestComparisonTheme(page, "light");
     await expect(fixtures.solidCanvas.locator("[data-comparison-color-scheme]")).toHaveAttribute(
       "data-comparison-color-scheme",
       "light",
@@ -645,7 +648,7 @@ test.describe("comparison Button visual parity", () => {
         },
       });
 
-    await setComparisonTheme(page, "dark");
+    await requestComparisonTheme(page, "dark");
     await expect(fixtures.solidCanvas.locator("[data-comparison-color-scheme]")).toHaveAttribute(
       "data-comparison-color-scheme",
       "dark",
@@ -677,7 +680,7 @@ test.describe("comparison Button visual parity", () => {
       for (const variant of variants) {
         const fixtures = await buttonFixtures(page, { variant, fillStyle });
 
-        await setComparisonTheme(page, "light");
+        await requestComparisonTheme(page, "light");
         await expect
           .poll(async () => {
             const react = await buttonComputedContract(fixtures.reactButton);
@@ -701,7 +704,7 @@ test.describe("comparison Button visual parity", () => {
       for (const variant of variants) {
         const fixtures = await buttonFixtures(page, { variant, fillStyle });
 
-        await setComparisonTheme(page, "light");
+        await requestComparisonTheme(page, "light");
         await fixtures.reactButton.hover();
         await expect(fixtures.reactButton).toHaveAttribute("data-hovered", "true");
         await page.waitForTimeout(220);
@@ -719,7 +722,7 @@ test.describe("comparison Button visual parity", () => {
     for (const colorScheme of ["light", "dark"] as const) {
       for (const variant of ["premium", "genai"] as const) {
         const fixtures = await buttonFixtures(page, { variant, fillStyle: "fill" });
-        await setComparisonTheme(page, colorScheme);
+        await requestComparisonTheme(page, colorScheme);
         await clearPointer(page);
         await expectButtonParitySettled(fixtures.reactButton, fixtures.solidButton);
 
@@ -772,11 +775,33 @@ test.describe("comparison Button visual parity", () => {
     const variants = ["primary", "secondary", "accent", "negative", "premium", "genai"] as const;
     const fillStyles = ["fill", "outline"] as const;
     const staticColors = ["white", "black"] as const;
+    const fixtures = await buttonFixtures(page);
+    const form = page.locator('[data-comparison-controls="button"]').first();
+    const reactRoot = fixtures.reactCanvas.locator("[data-comparison-button-props]").first();
+    const solidRoot = fixtures.solidCanvas.locator("[data-comparison-button-props]").first();
 
     for (const staticColor of staticColors) {
       for (const fillStyle of fillStyles) {
         for (const variant of variants) {
-          const fixtures = await buttonFixtures(page, { variant, fillStyle, staticColor });
+          await form.locator('select[name="variant"]').selectOption(variant);
+          await checkControl(page, "fillStyle", fillStyle);
+          await checkControl(page, "staticColor", staticColor);
+
+          const expected = JSON.stringify({
+            children: "Save",
+            variant,
+            fillStyle,
+            size: "M",
+            staticColor,
+            iconPlacement: "none",
+            isDisabled: false,
+            isPending: false,
+          });
+          await Promise.all([
+            expect(reactRoot).toHaveAttribute("data-comparison-button-props", expected),
+            expect(solidRoot).toHaveAttribute("data-comparison-button-props", expected),
+          ]);
+          await expectButtonParitySettled(fixtures.reactButton, fixtures.solidButton);
 
           await expectComputedButtonParity(fixtures.reactButton, fixtures.solidButton);
           if (variant === "premium" || variant === "genai") {
@@ -794,10 +819,29 @@ test.describe("comparison Button visual parity", () => {
     const fillStyles = ["fill", "outline"] as const;
     let fillPendingBaseline: Awaited<ReturnType<typeof buttonPendingVisualContract>> | undefined;
     let outlinePendingBaseline: Awaited<ReturnType<typeof buttonPendingVisualContract>> | undefined;
+    const fixtures = await buttonFixtures(page, { isPending: true });
+    const form = page.locator('[data-comparison-controls="button"]').first();
+    const reactRoot = fixtures.reactCanvas.locator("[data-comparison-button-props]").first();
+    const solidRoot = fixtures.solidCanvas.locator("[data-comparison-button-props]").first();
 
     for (const fillStyle of fillStyles) {
       for (const variant of variants) {
-        const fixtures = await buttonFixtures(page, { variant, fillStyle, isPending: true });
+        await form.locator('select[name="variant"]').selectOption(variant);
+        await checkControl(page, "fillStyle", fillStyle);
+
+        const expected = JSON.stringify({
+          children: "Save",
+          variant,
+          fillStyle,
+          size: "M",
+          iconPlacement: "none",
+          isDisabled: false,
+          isPending: true,
+        });
+        await Promise.all([
+          expect(reactRoot).toHaveAttribute("data-comparison-button-props", expected),
+          expect(solidRoot).toHaveAttribute("data-comparison-button-props", expected),
+        ]);
 
         await expect(fixtures.reactRow.getByRole("progressbar", { name: "pending" })).toBeVisible();
         await expect(fixtures.solidRow.getByRole("progressbar", { name: "pending" })).toBeVisible();

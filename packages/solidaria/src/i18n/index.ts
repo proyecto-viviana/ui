@@ -17,6 +17,9 @@ export { NumberFormatter, type NumberFormatOptions } from "@internationalized/nu
 
 export { createNumberFormatter } from "./createNumberFormatter";
 
+// List formatting
+export { createListFormatter } from "./createListFormatter";
+
 // Date formatting
 export { createDateFormatter } from "./createDateFormatter";
 

@@ -7,7 +7,7 @@
  * Unless required by applicable law or agreed to in writing, software distributed under
  * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
  * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
+ * governing
  */
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/react-aria/src/tokenfield/useToken.ts

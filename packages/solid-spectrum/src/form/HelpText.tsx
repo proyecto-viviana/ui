@@ -12,60 +12,117 @@
 
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/Field.tsx
 
-// Port of packages/@react-spectrum/s2/src/Field.tsx.
-import { type JSX, splitProps, Show } from "solid-js";
+// Port of packages/@react-spectrum/s2/src/Field.tsx HelpText (Field.tsx:407-468).
+import { type JSX, splitProps, useContext } from "solid-js";
+import { FieldError, FieldErrorContext, Text } from "@proyecto-viviana/solidaria-components";
+import { DEFAULT_VALIDATION_RESULT, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import { style } from "../style" with { type: "macro" };
+import { controlFont } from "../s2-internal/style-utils" with { type: "macro" };
 
 export interface HelpTextProps {
   /** The description text. */
-  description?: string;
-  /** The error message text. */
-  errorMessage?: string;
+  description?: JSX.Element;
+  /** The error message text. Prefer `children`, matching S2. */
+  errorMessage?: JSX.Element;
   /** Whether the field is in an error state. */
   isInvalid?: boolean;
   /** Whether the help text is disabled (dimmed). */
   isDisabled?: boolean;
+  /** Field size, matching S2 `HelpText`. @default 'M' */
+  size?: "XS" | "S" | "M" | "L" | "XL";
   /** Additional CSS class name. */
   class?: string;
+  /** Error message. S2 passes this as `HelpText` children. */
+  children?: JSX.Element;
 }
 
-// Mirrors S2's `helpTextStyles` (Field.tsx): the small UI font with a
-// `neutral-subdued` description color that flips to `negative` for errors and
-// `disabled` when the field is disabled. Emitted via the `style()` macro so the
-// CSS ships in the package bundle for installed consumers.
-const helpTextStyles = style<{ isInvalid?: boolean; isDisabled?: boolean }>({
-  font: "ui-sm",
+// Mirrors S2 `helpTextStyles` (Field.tsx:378-405).
+const helpTextStyles = style<{
+  size?: "XS" | "S" | "M" | "L" | "XL";
+  isInvalid?: boolean;
+  isDisabled?: boolean;
+}>({
+  gridArea: "helptext",
+  display: "flex",
+  alignItems: "baseline",
+  gap: "text-to-visual",
+  font: controlFont(),
   color: {
     default: "neutral-subdued",
-    isInvalid: "negative",
-    isDisabled: "disabled",
+    isInvalid: {
+      default: "negative",
+      forcedColors: "Mark",
+    },
+    isDisabled: {
+      default: "disabled",
+      forcedColors: "GrayText",
+    },
+  },
+  "--iconPrimary": {
+    type: "fill",
+    value: "currentColor",
+  },
+  contain: "inline-size",
+  paddingTop: "--field-gap",
+  cursor: {
+    default: "text",
+    isDisabled: "default",
   },
 });
 
 /**
  * Displays description or error text below a form field.
+ *
+ * S2 `HelpText` (`Field.tsx:407-468`) renders `<Text slot="description">` when
+ * valid and `<FieldError>` (RAC `FieldError.tsx:57-72` → `<Text slot="errorMessage">`,
+ * no `role="alert"`) when invalid, with no wrapper. Slot ids attach through
+ * the headless `TextContext`.
  */
-export function HelpText(props: HelpTextProps): JSX.Element {
+export function HelpText(props: HelpTextProps): JSX.Element | null {
   const [local] = splitProps(props, [
     "description",
     "errorMessage",
     "isInvalid",
     "isDisabled",
+    "size",
     "class",
+    "children",
   ]);
 
-  const showError = () => local.isInvalid && local.errorMessage;
+  const size = () => local.size ?? "M";
+  const className = (isInvalid: boolean) =>
+    [helpTextStyles({ size: size(), isInvalid, isDisabled: local.isDisabled }), local.class]
+      .filter(Boolean)
+      .join(" ");
+  const fieldError = useContext(FieldErrorContext);
+  const isInvalid = () => {
+    let fromContext: boolean | undefined;
+    if (fieldError && typeof fieldError === "object") {
+      if ("validation" in fieldError) {
+        fromContext = fieldError.validation?.isInvalid;
+      } else if ("isInvalid" in fieldError) {
+        fromContext = (fieldError as ValidationResult).isInvalid;
+      }
+    }
+    return Boolean(fromContext || local.isInvalid);
+  };
+  const error = () => local.children ?? local.errorMessage;
 
   return (
-    <div class={local.class}>
-      <Show when={showError()}>
-        <p class={helpTextStyles({ isInvalid: true })} role="alert">
-          {local.errorMessage}
-        </p>
-      </Show>
-      <Show when={!showError() && local.description}>
-        <p class={helpTextStyles({ isDisabled: local.isDisabled })}>{local.description}</p>
-      </Show>
-    </div>
+    <>
+      {!isInvalid() && local.description ? (
+        <Text slot="description" class={className(false)}>
+          {local.description}
+        </Text>
+      ) : null}
+      {isInvalid() ? (
+        <FieldError
+          class={className(true)}
+          validation={fieldError ? undefined : { ...DEFAULT_VALIDATION_RESULT, isInvalid: true }}
+        >
+          {error()}
+        </FieldError>
+      ) : null}
+    </>
   );
 }

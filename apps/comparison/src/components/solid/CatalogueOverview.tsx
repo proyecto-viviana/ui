@@ -17,6 +17,7 @@ import {
   type ParityStatus,
 } from "@comparison/data/comparison-manifest";
 import { getComponentCoverage, type ComponentCoverage } from "@comparison/data/coverage";
+import { comparisonComponentPath } from "@comparison/data/site-meta";
 import { officialVisualStateSummary } from "@comparison/data/visual-state-matrix";
 import { hc, renderProp } from "./solid-h";
 import { createComparisonColorScheme } from "./useComparisonColorScheme";
@@ -276,7 +277,7 @@ function componentRow({ entry, coverage, index }: CatalogueEntryView) {
   return hc(
     Link,
     {
-      href: `/components/${entry.slug}`,
+      href: comparisonComponentPath(entry.slug),
       UNSAFE_className: "s2-component-row",
       variant: "secondary",
       isStandalone: true,

@@ -48,9 +48,9 @@ completed operational records.
   archive.
 
 Ticket [#15](../tickets/tasks/15-rewrite-retained-docs-in-simplified-english.md)
-tracks the remaining prose rewrite. Ticket
-[#16](../tickets/tasks/16-enforce-the-live-documentation-contract.md) tracks
-automated enforcement.
+rewrote the retained current docs in simplified English. Ticket
+[#16](../tickets/tasks/16-enforce-the-live-documentation-contract.md) added
+`docs:check`. Both are verified.
 
 ## Other authorities
 
@@ -61,5 +61,7 @@ automated enforcement.
 - [docs/adr/](../../docs/adr/) stores architecture decisions.
 - [reference/patterns.md](../reference/patterns.md) stores reusable Solid porting
   patterns.
+- [Ticket #136](../tickets/initiatives/136-run-the-2026-09-full-repo-audit.md) is
+  the 2026-09 full-repo audit reviewer handoff while that initiative is open.
 
 Run `vp run docs:check` after documentation or ticket changes.

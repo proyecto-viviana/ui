@@ -198,6 +198,7 @@ describe("useDragAndDrop", () => {
 
       const state = {
         target: { type: "item", key: "row-1", dropPosition: "before" as const },
+        getDropOperation: () => "move" as const,
       } as unknown as DroppableCollectionState;
 
       const result = dragAndDropHooks.useDropIndicator?.(
@@ -208,10 +209,11 @@ describe("useDragAndDrop", () => {
 
       expect(result?.isDropTarget).toBe(true);
       expect(result?.isHidden).toBe(false);
+      // RAC `useDropIndicator.ts:111-120` — role is on the host ListBox div, not these props.
       expect(result?.dropIndicatorProps).toEqual(
         expect.objectContaining({
-          role: "option",
           tabIndex: -1,
+          "aria-roledescription": "drop indicator",
         }),
       );
 
@@ -268,7 +270,7 @@ describe("useDragAndDrop", () => {
     });
   });
 
-  it("reports active global drag sessions via isVirtualDragging", () => {
+  it("reports isVirtualDragging from the DragManager session, not pointer-key globals", () => {
     createRoot((dispose) => {
       const { dragAndDropHooks } = useDragAndDrop({
         items: [{ id: "a" }],
@@ -279,12 +281,13 @@ describe("useDragAndDrop", () => {
 
       const el = document.createElement("div");
       setGlobalDraggingCollectionRef(el);
-      expect(dragAndDropHooks.isVirtualDragging?.()).toBe(true);
+      setGlobalDraggingKeys(new Set(["a"]));
+      // RAC `useDragAndDrop.tsx:182` / `DragManager.ts:117`: only an active
+      // keyboard/virtual session is virtual dragging. Pointer-key globals must
+      // not flip this — otherwise useRenderDropIndicator mounts every gap.
+      expect(dragAndDropHooks.isVirtualDragging?.()).toBe(false);
 
       setGlobalDraggingCollectionRef(null);
-      setGlobalDraggingKeys(new Set(["a"]));
-      expect(dragAndDropHooks.isVirtualDragging?.()).toBe(true);
-
       setGlobalDraggingKeys(new Set());
       expect(dragAndDropHooks.isVirtualDragging?.()).toBe(false);
 

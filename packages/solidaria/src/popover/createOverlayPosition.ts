@@ -21,6 +21,7 @@
 
 import { createEffect, createSignal, onCleanup, type JSX } from "solid-js";
 import { useLocale } from "../i18n";
+import { addEvent, getPropagationTargets } from "../utils/dom";
 import {
   calculatePosition,
   getRect,
@@ -320,10 +321,12 @@ export function createOverlayPosition(props: AriaPositionProps): PositionAria {
 
     visualViewport?.addEventListener("resize", onResize);
     visualViewport?.addEventListener("scroll", onScroll);
+    const cleanupScroll = addEvent(getPropagationTargets(window), "scroll", onScroll);
 
     onCleanup(() => {
       visualViewport?.removeEventListener("resize", onResize);
       visualViewport?.removeEventListener("scroll", onScroll);
+      cleanupScroll();
       clearTimeout(timeout);
     });
   });

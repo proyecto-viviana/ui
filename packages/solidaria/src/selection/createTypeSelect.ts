@@ -227,7 +227,7 @@ export function createTypeSelect<T>(options: TypeSelectOptions<T>): TypeSelectAr
       e.ctrlKey ||
       e.metaKey ||
       e.altKey ||
-      !e.currentTarget.contains(e.target as HTMLElement) ||
+      !e.currentTarget?.contains(e.target as HTMLElement) ||
       (state.search.length === 0 && character === " ")
     ) {
       return;

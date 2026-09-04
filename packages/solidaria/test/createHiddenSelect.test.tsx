@@ -273,6 +273,19 @@ describe("HiddenSelect component", () => {
     expect(select.options.length).toBe(4);
   });
 
+  it("keeps the native select value in sync when selectedKey changes after mount", () => {
+    const state = createMockState({ items: testItems, selectedKey: "dog" });
+
+    render(() => <HiddenSelect state={state} label="Pet" name="pet" />);
+
+    const select = document.querySelector("select") as HTMLSelectElement;
+    expect(select.value).toBe("dog");
+
+    state.setSelectedKey("bird");
+    expect(select.value).toBe("bird");
+    expect(select.options[select.selectedIndex]?.value).toBe("bird");
+  });
+
   it("should pass isRequired to hidden select", () => {
     const state = createMockState({ items: testItems });
 
@@ -297,5 +310,15 @@ describe("HiddenSelect component", () => {
 
     const container = document.querySelector('[aria-hidden="true"]');
     expect(container).toBeDefined();
+  });
+
+  it("hidden select renders no extra input", () => {
+    const state = createMockState({ items: testItems, selectedKey: "dog" });
+
+    render(() => <HiddenSelect state={state} label="Pet" name="pet" />);
+
+    expect(document.querySelector("input")).toBeNull();
+    expect(document.querySelector("select")).not.toBeNull();
+    expect(document.querySelector("[data-testid=hidden-select-container]")).not.toBeNull();
   });
 });

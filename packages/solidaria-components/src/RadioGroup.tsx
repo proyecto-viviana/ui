@@ -246,6 +246,7 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
     "ref",
     "slot",
     "renderHelpText",
+    "children",
   ]);
 
   const state = createRadioGroupState(() => ({
@@ -288,9 +289,6 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
 
   const renderProps = useRenderProps(
     {
-      get children() {
-        return props.children;
-      },
       class: local.class,
       style: local.style,
       defaultClassName: "solidaria-RadioGroup",
@@ -388,19 +386,21 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
         return state;
       },
     };
-    const renderedChildren = createMemo(() => {
-      const children = props.children;
-      if (typeof children === "function") {
-        return children.length > 0
-          ? children(childRenderValues)
-          : (children as unknown as () => JSX.Element)();
+    // `props.children` is `() => <Radio />` — every read is a new instance.
+    // Snapshot once so a `createSlotId` update cannot recreate the radios.
+    const childrenOnce = local.children;
+    const renderedChildren = () => {
+      if (typeof childrenOnce === "function") {
+        return childrenOnce.length > 0
+          ? childrenOnce(childRenderValues)
+          : (childrenOnce as unknown as () => JSX.Element)();
       }
-      return children;
-    });
+      return childrenOnce;
+    };
 
     return (
       <>
-        {renderedChildren()}
+        {typeof childrenOnce === "function" ? renderedChildren() : childrenOnce}
         <Show when={(local.renderHelpText ?? true) && mergedProps.description}>
           <div {...(groupAria.descriptionProps as unknown as JSX.HTMLAttributes<HTMLDivElement>)}>
             {mergedProps.description}
@@ -435,37 +435,93 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
       "data-readonly": state.isReadOnly || undefined,
       "data-required": state.isRequired || undefined,
       "data-invalid": isInvalid() || undefined,
-      children: <GroupChildren />,
     }) as unknown as JSX.HTMLAttributes<HTMLDivElement>;
 
+  // Do not call `groupDescribedBy()` in a `{local.render ? … : <div>}` ternary —
+  // that memo re-runs on the `createSlotId` probe (`useField.ts:51-60`) and
+  // `<GroupChildren />` becomes a new instance. RAC re-resolves `useField`
+  // without remounting children (`useField.ts:66-70`). RadioGroupDefaultRoot
+  // snapshots the child vnode once and reads describedby as an attribute.
   return (
     <RadioGroupStateContext.Provider value={state}>
       <FieldErrorContext.Provider value={fieldErrorContext}>
-        {local.render ? (
-          local.render(customRootProps(), renderValues())
-        ) : (
-          <div
-            {...domProps()}
-            {...cleanGroupProps()}
-            {...groupEventProps}
-            ref={setGroupRef}
-            onFocusIn={handleGroupFocusIn}
-            onFocusOut={handleGroupFocusOut}
-            aria-describedby={groupDescribedBy()}
-            class={renderProps.class()}
-            style={renderProps.style()}
-            slot={local.slot}
-            data-orientation={ariaProps.orientation ?? "vertical"}
-            data-disabled={state.isDisabled || undefined}
-            data-readonly={state.isReadOnly || undefined}
-            data-required={state.isRequired || undefined}
-            data-invalid={isInvalid() || undefined}
-          >
-            <GroupChildren />
-          </div>
-        )}
+        <RadioGroupDefaultRoot
+          render={local.render}
+          getCustomRootProps={customRootProps}
+          getRenderValues={renderValues}
+          getDomProps={domProps}
+          getCleanGroupProps={cleanGroupProps}
+          groupEventProps={groupEventProps}
+          setGroupRef={setGroupRef}
+          onFocusIn={handleGroupFocusIn}
+          onFocusOut={handleGroupFocusOut}
+          getDescribedBy={groupDescribedBy}
+          getClass={renderProps.class}
+          getStyle={renderProps.style}
+          slot={local.slot}
+          getOrientation={() => (ariaProps.orientation as Orientation) ?? "vertical"}
+          getDisabled={() => state.isDisabled || undefined}
+          getReadOnly={() => state.isReadOnly || undefined}
+          getRequired={() => state.isRequired || undefined}
+          getInvalid={() => isInvalid() || undefined}
+        >
+          <GroupChildren />
+        </RadioGroupDefaultRoot>
       </FieldErrorContext.Provider>
     </RadioGroupStateContext.Provider>
+  );
+}
+
+function RadioGroupDefaultRoot(props: {
+  children: JSX.Element;
+  render?: (
+    rootProps: JSX.HTMLAttributes<HTMLDivElement>,
+    renderProps: RadioGroupRenderProps,
+  ) => JSX.Element;
+  getCustomRootProps: () => JSX.HTMLAttributes<HTMLDivElement>;
+  getRenderValues: () => RadioGroupRenderProps;
+  getDomProps: () => JSX.HTMLAttributes<HTMLDivElement>;
+  getCleanGroupProps: () => Record<string, unknown>;
+  groupEventProps: JSX.HTMLAttributes<HTMLDivElement>;
+  setGroupRef: (el: HTMLDivElement) => void;
+  onFocusIn: JSX.EventHandler<HTMLDivElement, FocusEvent>;
+  onFocusOut: JSX.EventHandler<HTMLDivElement, FocusEvent>;
+  getDescribedBy: () => string | undefined;
+  getClass: () => string | undefined;
+  getStyle: () => JSX.CSSProperties | string | undefined;
+  slot?: string;
+  getOrientation: () => Orientation;
+  getDisabled: () => true | undefined;
+  getReadOnly: () => true | undefined;
+  getRequired: () => true | undefined;
+  getInvalid: () => true | undefined;
+}): JSX.Element {
+  const children = props.children;
+
+  if (props.render) {
+    return props.render({ ...props.getCustomRootProps(), children }, props.getRenderValues());
+  }
+
+  return (
+    <div
+      {...props.getDomProps()}
+      {...props.getCleanGroupProps()}
+      {...props.groupEventProps}
+      ref={props.setGroupRef}
+      onFocusIn={props.onFocusIn}
+      onFocusOut={props.onFocusOut}
+      aria-describedby={props.getDescribedBy()}
+      class={props.getClass()}
+      style={props.getStyle()}
+      slot={props.slot}
+      data-orientation={props.getOrientation()}
+      data-disabled={props.getDisabled()}
+      data-readonly={props.getReadOnly()}
+      data-required={props.getRequired()}
+      data-invalid={props.getInvalid()}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -592,14 +648,17 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     return rest;
   };
   const cleanInputProps = () => {
-    const {
-      ref: _ref3,
-      onFocus: _onFocus,
-      onBlur: _onBlur,
-      ...rest
-    } = radioAria.inputProps as Record<string, unknown>;
+    const inputProps = radioAria.inputProps as Record<string, unknown>;
+    const rest: Record<string, unknown> = {};
+    for (const key of Object.keys(inputProps)) {
+      if (key === "ref" || key === "onFocus" || key === "onBlur" || key === "aria-describedby") {
+        continue;
+      }
+      rest[key] = inputProps[key];
+    }
     return rest;
   };
+  const inputDescribedBy = () => radioAria.inputDescribedBy();
   const cleanFocusProps = () => {
     const {
       ref: _ref4,
@@ -669,7 +728,11 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
   const setLabelRef = (el: HTMLLabelElement) => {
     assignRef(local.ref, el);
   };
-  const setInputRef = (el: HTMLInputElement) => {
+  const setInputRef = (el: HTMLInputElement | undefined) => {
+    if (!el) {
+      setInputElement(null);
+      return;
+    }
     setInputElement(el);
     el.addEventListener("invalid", (event) => {
       state.updateValidation(getNativeValidation(el));
@@ -691,6 +754,7 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
         ref={setInputRef}
         {...cleanInputProps()}
         {...cleanFocusProps()}
+        aria-describedby={inputDescribedBy()}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
         onInvalid={handleInputInvalid}
@@ -741,34 +805,41 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
     onClickCapture: handleLabelClickCapture,
   } as unknown as JSX.LabelHTMLAttributes<HTMLLabelElement>;
 
+  // One-time `if` (not a JSX ternary). A `{local.render ? … : <label>}` memo
+  // that re-runs on a `createSlotId` probe recreates the label/input and
+  // leaves refs pointing at the detached first nodes.
+  if (local.render) {
+    return (
+      <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
+        {local.render(customLabelProps(), renderValues())}
+      </SelectionIndicatorContext.Provider>
+    );
+  }
+
   return (
     <SelectionIndicatorContext.Provider value={selectionIndicatorContext()}>
-      {local.render ? (
-        local.render(customLabelProps(), renderValues())
-      ) : (
-        <label
-          {...domProps()}
-          {...cleanLabelProps()}
-          {...cleanHoverProps()}
-          ref={setLabelRef}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          slot={local.slot}
-          onClick={handleLabelClick}
-          {...labelCaptureProps}
-          data-selected={radioAria.isSelected() || undefined}
-          data-pressed={radioAria.isPressed() || undefined}
-          data-hovered={isHovered() || undefined}
-          data-focused={isFocused() || undefined}
-          data-focus-visible={isFocusVisible() || undefined}
-          data-disabled={radioAria.isDisabled || undefined}
-          data-readonly={state.isReadOnly || undefined}
-          data-invalid={state.isInvalid || undefined}
-          data-required={state.isRequired || undefined}
-        >
-          {labelChildren()}
-        </label>
-      )}
+      <label
+        {...domProps()}
+        {...cleanLabelProps()}
+        {...cleanHoverProps()}
+        ref={setLabelRef}
+        class={renderProps.class()}
+        style={renderProps.style()}
+        slot={local.slot}
+        onClick={handleLabelClick}
+        {...labelCaptureProps}
+        data-selected={radioAria.isSelected() || undefined}
+        data-pressed={radioAria.isPressed() || undefined}
+        data-hovered={isHovered() || undefined}
+        data-focused={isFocused() || undefined}
+        data-focus-visible={isFocusVisible() || undefined}
+        data-disabled={radioAria.isDisabled || undefined}
+        data-readonly={state.isReadOnly || undefined}
+        data-invalid={state.isInvalid || undefined}
+        data-required={state.isRequired || undefined}
+      >
+        {labelChildren()}
+      </label>
     </SelectionIndicatorContext.Provider>
   );
 }
@@ -791,15 +862,14 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
  * ```
  */
 export function Radio(props: RadioProps): JSX.Element {
-  // Get context - will be null if not inside RadioGroup
-  // The context is accessed reactively to work with solid-refresh HMR
-  const getState = createMemo(() => useContext(RadioGroupStateContext));
-
-  return (
-    <Show when={getState()} fallback={null} keyed>
-      {(state) => <RadioImpl radioProps={props} state={state} />}
-    </Show>
-  );
+  // Created once under RadioGroup's provider (GroupChildren snapshots
+  // `props.children`). A `<Show when={getState()} keyed>` remounted RadioImpl
+  // on every `createSlotId` probe because the group state object is reactive.
+  const state = useContext(RadioGroupStateContext);
+  if (!state) {
+    return null as unknown as JSX.Element;
+  }
+  return <RadioImpl radioProps={props} state={state} />;
 }
 
 // ============================================================================
@@ -875,6 +945,7 @@ interface InternalRadioContextValue {
   isDisabled: () => boolean;
   labelProps: () => JSX.LabelHTMLAttributes<HTMLLabelElement>;
   inputProps: () => JSX.InputHTMLAttributes<HTMLInputElement>;
+  inputDescribedBy: () => string | undefined;
   setInputRef: (el: HTMLInputElement) => void;
   defaultClassName: string;
 }
@@ -1001,6 +1072,7 @@ function RadioFieldImpl(props: {
     isDisabled: () => radioAria.isDisabled,
     labelProps: () => radioAria.labelProps,
     inputProps: () => radioAria.inputProps,
+    inputDescribedBy: () => radioAria.inputDescribedBy(),
     setInputRef,
     defaultClassName: "solidaria-RadioButton",
   };
@@ -1233,6 +1305,7 @@ function RadioButtonImpl(props: {
           ref={ctx.setInputRef}
           {...cleanInputProps()}
           {...cleanFocusProps()}
+          aria-describedby={ctx.inputDescribedBy()}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           onInvalid={handleInputInvalid}

@@ -64,6 +64,46 @@ describe("CardView (solid-spectrum)", () => {
     expect(screen.getByText("Active")).toHaveAttribute("slot", "description");
   });
 
+  it("keeps a standalone href Card enabled when isDisabled is set", () => {
+    render(() => (
+      <Card href="#card-target" isDisabled data-testid="link-card">
+        <Content>
+          <Text slot="title">Apollo</Text>
+        </Content>
+      </Card>
+    ));
+
+    const card = screen.getByTestId("link-card");
+    expect(card.tagName).toBe("A");
+    expect(card).toHaveAttribute("href", "#card-target");
+    expect(card).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("switches a standalone Card to a link when href is set after mount", async () => {
+    const user = setupUser();
+    function Demo() {
+      const [href, setHref] = createSignal<string | undefined>();
+      return (
+        <>
+          <button type="button" onClick={() => setHref("#card-target")}>
+            Link
+          </button>
+          <Card href={href()} data-testid="live-card">
+            <Content>
+              <Text slot="title">Apollo</Text>
+            </Content>
+          </Card>
+        </>
+      );
+    }
+    render(() => <Demo />);
+    expect(screen.getByTestId("live-card").tagName).toBe("DIV");
+    await user.click(screen.getByRole("button", { name: "Link" }));
+    const card = screen.getByTestId("live-card");
+    expect(card.tagName).toBe("A");
+    expect(card).toHaveAttribute("href", "#card-target");
+  });
+
   it("renders cards with grid semantics and S2 data attributes", () => {
     render(() => (
       <CardView
@@ -97,7 +137,7 @@ describe("CardView (solid-spectrum)", () => {
     expect(apollo).toHaveAttribute("data-size", "S");
     expect(apollo).toHaveAttribute("data-density", "regular");
     expect(apollo).toHaveAttribute("data-variant", "secondary");
-    expect(screen.getByRole("row", { name: /Zephyr/ })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Zephyr Queued" })).toBeInTheDocument();
   });
 
   it("supports controlled highlight selection with replace behavior", async () => {
@@ -191,7 +231,7 @@ describe("CardView (solid-spectrum)", () => {
     const apollo = screen.getByRole("row", { name: /Apollo/ });
     const zephyr = screen.getByRole("row", { name: /Zephyr/ });
     expect(apollo).toHaveAttribute("data-selected", "true");
-    expect(within(apollo).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    expect(within(apollo).getByRole("checkbox", { name: /Select/ })).toBeChecked();
 
     await user.click(zephyr);
 
@@ -240,5 +280,73 @@ describe("CardView (solid-spectrum)", () => {
     await user.click(screen.getByRole("row", { name: /Zephyr/ }));
 
     expect(screen.getByTestId("selection")).toHaveTextContent("apollo,zephyr");
+  });
+
+  it("disables a CardView card via isDisabled and ignores click", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <CardView
+        aria-label="Projects"
+        items={projects}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.title}
+        selectionMode="single"
+        defaultSelectedKeys={["apollo"]}
+        onSelectionChange={onSelectionChange}
+      >
+        {(item) => (
+          <Card
+            id={item.id}
+            textValue={`${item.title} ${item.status}`}
+            isDisabled={item.id === "zephyr"}
+          >
+            <Content>
+              <Text slot="title">{item.title}</Text>
+              <Text slot="description">{item.status}</Text>
+            </Content>
+          </Card>
+        )}
+      </CardView>
+    ));
+
+    const zephyr = screen.getByRole("row", { name: /Zephyr/ });
+    expect(zephyr).toHaveAttribute("aria-disabled", "true");
+    await user.click(zephyr);
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it("moves highlight selection with End and ArrowRight in a two-column grid", async () => {
+    const user = setupUser();
+    const onSelectionChange = vi.fn();
+    render(() => (
+      <div style={{ width: "360px" }}>
+        <CardView
+          aria-label="Projects"
+          items={projects}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.title}
+          selectionMode="single"
+          selectionStyle="highlight"
+          defaultSelectedKeys={["apollo"]}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <Card id={item.id} textValue={`${item.title} ${item.status}`}>
+              <Content>
+                <Text slot="title">{item.title}</Text>
+                <Text slot="description">{item.status}</Text>
+              </Content>
+            </Card>
+          )}
+        </CardView>
+      </div>
+    ));
+
+    const apollo = screen.getByRole("row", { name: /Apollo/ });
+    apollo.focus();
+    await user.keyboard("{End}");
+    const next = onSelectionChange.mock.calls.at(-1)?.[0] as Set<string>;
+    expect([...next]).toEqual(["zephyr"]);
   });
 });

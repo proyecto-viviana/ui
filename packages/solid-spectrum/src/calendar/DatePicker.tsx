@@ -56,8 +56,11 @@ import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps, useTheme } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { FieldContextualHelp } from "../form/FieldContextualHelp";
 import {
   control,
   controlBorderRadius,
@@ -289,7 +292,7 @@ const dateSegment = style<{ isFocused?: boolean; isPunctuation?: boolean }>({
 });
 
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -448,9 +451,8 @@ const datePickerPopover = style<{
   // Byte-copied from the shared `popoverStyles` enter/exit motion (which is
   // itself S2 `Popover.tsx`'s `popover()` motion). S2's DatePicker popover is a
   // plain `<Popover>`, so its enter transition IS this generic opacity/translate
-  // fade — NOT a bespoke keyframe. The port's DatePicker owns a private
-  // `DatePickerContent` that bypasses the shared Popover, so the same tokens are
-  // mirrored here and driven by `createEnterAnimation` (data-entering) below.
+  // fade — NOT a bespoke keyframe. Headless `DatePickerContent` now renders that
+  // Popover, so these tokens key off its `isEntering` / `isExiting` render props.
   opacity: {
     isEntering: 0,
     isExiting: 0,
@@ -511,11 +513,6 @@ const datePickerPopoverFrame = style({
   size: "full",
 });
 
-const datePickerCalendarPopoverStyle: JSX.CSSProperties = {
-  width: "272px",
-  "max-width": "100%",
-};
-
 /**
  * A date picker combines a date field and a calendar popup.
  */
@@ -558,6 +555,7 @@ function DatePickerFieldGroup(props: {
       // the faithful role="group" that `createDatePicker` returns (RAC useDatePicker
       // groupProps). Placed after the spread so it wins (JSX later-attr precedence).
       role="presentation"
+      ref={(element: HTMLDivElement) => datePicker.setGroupRef(element)}
       class={datePickerFieldGroup({
         size: props.size,
         isInvalid: props.isInvalid,
@@ -579,7 +577,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   const providerProps = useProviderProps(props);
   const contextProps = getSlottedContextProps(useContext(DatePickerContext), (props as any).slot);
   const merged = mergeProps(providerProps, contextProps ?? {}, props);
-  const [local, calendarProps, rest] = splitProps(
+  const [local, calendarProps, createCalendarProps, rest] = splitProps(
     merged,
     [
       "size",
@@ -599,8 +597,8 @@ export function DatePicker<T extends DateValue = CalendarDate>(
       "firstDayOfWeek",
       "pageBehavior",
       "placeholderValue",
-      "createCalendar",
     ],
+    ["createCalendar"],
   );
 
   const size = () => normalizeDatePickerSize(local.size);
@@ -665,11 +663,7 @@ export function DatePicker<T extends DateValue = CalendarDate>(
               </span>
             </Show>
           </HeadlessDatePickerLabel>
-          <Show when={local.contextualHelp}>
-            <span data-slot="contextualHelp" class={noWrap}>
-              {local.contextualHelp}
-            </span>
-          </Show>
+          <FieldContextualHelp size={size()}>{local.contextualHelp}</FieldContextualHelp>
         </div>
       </Show>
 
@@ -750,7 +744,10 @@ export function DatePicker<T extends DateValue = CalendarDate>(
           size={size()}
           hasTime={hasTime()}
           maxVisibleMonths={visibleMonths()}
-          calendarProps={calendarProps}
+          calendarProps={{
+            ...calendarProps,
+            createCalendar: createCalendarProps.createCalendar,
+          }}
           hourCycle={(rest as { hourCycle?: 12 | 24 }).hourCycle}
           shouldForceLeadingZeros={
             (rest as { shouldForceLeadingZeros?: boolean }).shouldForceLeadingZeros
@@ -787,6 +784,7 @@ function DatePickerPopup(props: {
 }): JSX.Element {
   const theme = useTheme();
   const datePicker = useDatePickerContext();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const timeGranularity = () =>
     datePicker.datePickerState.granularity === "day"
       ? "minute"
@@ -797,7 +795,7 @@ function DatePickerPopup(props: {
       class={(rp) =>
         datePickerPopover({
           colorScheme: theme.colorScheme,
-          placement: rp.placement ?? undefined,
+          placement: rp.placement ?? "bottom",
           isEntering: rp.isEntering,
           isExiting: rp.isExiting,
         })
@@ -808,13 +806,12 @@ function DatePickerPopup(props: {
           <Calendar
             size="md"
             visibleMonths={props.maxVisibleMonths}
-            UNSAFE_style={datePickerCalendarPopoverStyle}
             {...(props.calendarProps ?? {})}
           />
           <Show when={props.hasTime}>
             <TimeField
               size="md"
-              label="Time"
+              label={stringFormatter().format("datepicker.time")}
               value={datePicker.datePickerState.timeValue() ?? undefined}
               granularity={timeGranularity()}
               hourCycle={props.hourCycle}

@@ -12,6 +12,7 @@ import {
   GridListHeader,
   GridListSelectionCheckbox,
 } from "../src/GridList";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { useDragAndDrop } from "../src/useDragAndDrop";
 
 // Test data
@@ -259,8 +260,6 @@ describe("GridList", () => {
     });
 
     it("wires horizontal droppable keyboard delegate methods in rtl", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
       let keyboardDelegate:
         | {
             getKeyLeftOf?: (key: string | number) => string | number | null;
@@ -299,8 +298,8 @@ describe("GridList", () => {
         },
       };
 
-      try {
-        render(() => (
+      render(() => (
+        <I18nProvider locale="he-IL">
           <GridList
             items={testItems}
             getKey={(item) => item.id}
@@ -313,91 +312,13 @@ describe("GridList", () => {
               </GridListItem>
             )}
           </GridList>
-        ));
+        </I18nProvider>
+      ));
 
-        expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        document.dir = originalDir;
-      }
-    });
-
-    it("falls back to document direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
-      let keyboardDelegate:
-        | {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          }
-        | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => ({
-          isDropTarget: false,
-          target: null,
-          isDisabled: false,
-          setTarget: () => {},
-          isAccepted: () => true,
-          enterTarget: () => {},
-          moveToTarget: () => {},
-          exitTarget: () => {},
-          activateTarget: () => {},
-          drop: () => {},
-          shouldAcceptItemDrop: () => true,
-          getDropOperation: () => "move" as const,
-        }),
-        useDroppableCollection: (props: {
-          keyboardDelegate?: {
-            getKeyLeftOf?: (key: string | number) => string | number | null;
-            getKeyRightOf?: (key: string | number) => string | number | null;
-          };
-        }) => {
-          keyboardDelegate = props.keyboardDelegate;
-          return { collectionProps: {} };
-        },
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        ListDropTargetDelegate: class {
-          getDropTargetFromPoint() {
-            return null;
-          }
-        },
-      };
-
-      try {
-        render(() => (
-          <GridList
-            items={testItems}
-            getKey={(item) => item.id}
-            aria-label="DnD Grid fallback direction"
-            dragAndDropHooks={dragAndDropHooks as any}
-          >
-            {(item) => (
-              <GridListItem id={item.id} textValue={item.name}>
-                {item.name}
-              </GridListItem>
-            )}
-          </GridList>
-        ));
-
-        expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
-        expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
+      expect(keyboardDelegate?.getKeyLeftOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyRightOf).toBeTypeOf("function");
+      expect(keyboardDelegate?.getKeyLeftOf?.(2)).toBe(3);
+      expect(keyboardDelegate?.getKeyRightOf?.(2)).toBe(1);
     });
   });
 
@@ -463,6 +384,7 @@ describe("GridList", () => {
         <GridList
           items={testItems}
           getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
           aria-label="Fruits"
           selectionMode="multiple"
         >
@@ -498,6 +420,31 @@ describe("GridList", () => {
       // Items with keys 1 and 2 should be selected
       const items = document.querySelectorAll("[data-selected]");
       expect(items.length).toBe(2);
+    });
+
+    it("adds to multiple selection without a modifier by default", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      pressWithMouse(rows[0]);
+      pressWithMouse(rows[1]);
+
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      expect(rows[1]).toHaveAttribute("aria-selected", "true");
     });
 
     it("should call onSelectionChange", () => {
@@ -595,6 +542,7 @@ describe("GridList", () => {
         <GridList
           items={testItems}
           getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
           aria-label="Fruits"
           selectionMode="multiple"
         >
@@ -681,6 +629,38 @@ describe("GridList", () => {
       expect(rows[0]).toHaveAttribute("aria-selected", "false");
       expect(onSelectionChange).not.toHaveBeenCalled();
       expect(onAction).not.toHaveBeenCalled();
+    });
+
+    it("lets a tabindex=-1 child control receive pointer press", () => {
+      const onButtonClick = vi.fn();
+
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          aria-label="Documents"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={`${item.name} menu`}
+                onClick={onButtonClick}
+              >
+                <span>Menu</span>
+              </button>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Apple menu" });
+      pressWithMouse(trigger.querySelector("span") ?? trigger);
+
+      expect(onButtonClick).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -781,22 +761,34 @@ describe("GridList", () => {
     });
 
     it("flips the inline axis under RTL in a horizontal stack under tab navigation", () => {
-      // Upstream feeds direction into the delegate so Right=prev / Left=next in
-      // RTL. resolveDirection falls back to document.dir in jsdom (computed
-      // `direction` isn't derived from the dir attribute there).
-      document.dir = "rtl";
-      try {
-        const grid = renderNav({ orientation: "horizontal", keyboardNavigationBehavior: "tab" });
-        expect(focusedIndex()).toBe(0);
+      // Upstream feeds useLocale().direction into the delegate so Right=prev / Left=next
+      // in RTL. Ticket #201: locale context, not document.dir.
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <GridList
+            items={testItems}
+            getKey={(item) => item.id}
+            aria-label="Fruits"
+            orientation="horizontal"
+            keyboardNavigationBehavior="tab"
+          >
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        </I18nProvider>
+      ));
+      const grid = screen.getByRole("grid", { name: "Fruits" });
+      fireEvent.focus(grid);
+      expect(focusedIndex()).toBe(0);
 
-        fireEvent.keyDown(grid, { key: "ArrowLeft" });
-        expect(focusedIndex()).toBe(1);
+      fireEvent.keyDown(grid, { key: "ArrowLeft" });
+      expect(focusedIndex()).toBe(1);
 
-        fireEvent.keyDown(grid, { key: "ArrowRight" });
-        expect(focusedIndex()).toBe(0);
-      } finally {
-        document.dir = "";
-      }
+      fireEvent.keyDown(grid, { key: "ArrowRight" });
+      expect(focusedIndex()).toBe(0);
     });
   });
 
@@ -883,7 +875,7 @@ describe("GridList", () => {
       fireEvent.keyDown(rows[1], { key: "Enter" });
       fireEvent.keyUp(rows[1], { key: "Enter" });
       expect(onAction).toHaveBeenCalledWith(2);
-      expect(rows[1]).toHaveAttribute("aria-selected", "false");
+      expect(rows[1]).not.toHaveAttribute("aria-selected");
     });
 
     it('keeps disabledBehavior="selection" rows actionable through mouse press', () => {
@@ -912,7 +904,7 @@ describe("GridList", () => {
 
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(onAction).toHaveBeenCalledWith(2);
-      expect(rows[1]).toHaveAttribute("aria-selected", "false");
+      expect(rows[1]).not.toHaveAttribute("aria-selected");
     });
   });
 
@@ -1055,6 +1047,88 @@ describe("GridList", () => {
 
       const grid = document.querySelector('[role="grid"]');
       expect(grid).toBeTruthy();
+    });
+  });
+
+  describe("selection checkbox and row names", () => {
+    it("names the checkbox Select plus the row and keeps Select out of the row name", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <GridListSelectionCheckbox itemKey={item.id} />
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const checkbox = row.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      expect(checkbox).toHaveAttribute("aria-labelledby");
+      const labelledBy = checkbox.getAttribute("aria-labelledby")!.split(" ");
+      expect(labelledBy).toHaveLength(2);
+      expect(document.getElementById(labelledBy[0])).toBe(checkbox);
+      expect(document.getElementById(labelledBy[1])).toBe(row);
+      expect(row).toHaveAttribute("aria-label", "Apple");
+    });
+
+    it("omits aria-selected on a disabled selected row", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+          selectedKeys={new Set([1])}
+          disabledKeys={new Set([1])}
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      expect(row).toHaveAttribute("aria-disabled", "true");
+      expect(row).not.toHaveAttribute("aria-selected");
+    });
+
+    it("moves ArrowRight from the row onto an intra-row widget", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              <GridListSelectionCheckbox itemKey={item.id} />
+              {item.name}
+              <button type="button">Archive</button>
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const row = screen.getByRole("row", { name: "Apple" });
+      const checkbox = row.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      row.focus();
+      fireEvent.keyDown(row, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(checkbox);
+      fireEvent.keyDown(checkbox, { key: "ArrowRight" });
+      expect(document.activeElement).toBe(row.querySelector("button"));
     });
   });
 });

@@ -19,3 +19,10 @@ types. Build on the shared headless spine.
 
 All six exports and every applicable API, ARIA, keyboard, focus, style, visual,
 i18n, SSR, hydration, and browser branch match upstream. Part of #82.
+
+## Train 9 note (2026-09-02, via #220)
+
+S2 1.7.0 rewrote SideNav onto RAC NavigationTree
+(`packages/@react-spectrum/s2/src/SideNav.tsx` at `f56660b`, −300 / +61).
+Port NavigationTree first (#228), then compose SideNav from that primitive
+instead of from Tree. This ticket still owns the six S2 exports.

@@ -559,7 +559,7 @@ function explicitSources(markers) {
 
   for (const marker of markers) {
     const exactRepositoryPaths = marker.matchAll(
-      /\b(packages\/(?:@react-(?:aria|spectrum|stately|types)\/[a-z0-9-]+|react-(?:aria|stately)|react-aria-components)\/[A-Za-z0-9@_./-]+\.(?:tsx?|jsx?|css|svg|json))\b/gi,
+      /\b(packages\/(?:@react-(?:aria|spectrum|stately|types)\/[a-z0-9-]+|@internationalized\/[a-z0-9-]+|react-(?:aria|stately)|react-aria-components)\/[A-Za-z0-9@_./-]+\.(?:tsx?|jsx?|css|svg|json))\b/gi,
     );
     for (const match of exactRepositoryPaths) {
       const candidate = fileAt(match[1]);
@@ -942,9 +942,10 @@ for (const packageEntry of packages) {
     if (packageEntry.dir === "packages/viviana-ui") {
       const spectrum = spectrumByRelativePath.get(relativeWithinPackage);
       if (spectrum && spectrum.content === content) {
+        const relativePath = slash(path.relative(root, file));
         results.push({
           package: packageEntry.name,
-          path: slash(path.relative(root, file)),
+          path: relativePath,
           status: "mirror",
           localHeader: adobeHeader(content),
           markers: spectrum.result.markers,
@@ -952,6 +953,15 @@ for (const packageEntry of packages) {
           markerEvidence: spectrum.result.markerEvidence,
           headerSources: spectrum.result.headerSources,
           headerContract: spectrum.result.headerContract,
+          headerlessReview: reviewedHeaderlessMappings.has(relativePath)
+            ? spectrum.result.headerlessReview
+            : undefined,
+          compositeReview: reviewedCompositeMappings.has(relativePath)
+            ? spectrum.result.compositeReview
+            : undefined,
+          localReview: reviewedLocalSources.has(relativePath)
+            ? spectrum.result.localReview
+            : undefined,
           reviewRequired: false,
           mirrorOf: spectrum.result.path,
           inheritedStatus: spectrum.result.status,

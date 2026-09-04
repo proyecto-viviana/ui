@@ -430,7 +430,7 @@ describe("RadioGroup", () => {
       expect(group).toHaveAttribute("aria-labelledby", "label");
     });
 
-    it("supports aria-describedby on group", () => {
+    it("supports aria-describedby on group", async () => {
       render(() => (
         <>
           <span id="desc">Group description</span>
@@ -440,7 +440,9 @@ describe("RadioGroup", () => {
         </>
       ));
       const group = screen.getByRole("radiogroup");
-      expect(group).toHaveAttribute("aria-describedby", "desc");
+      await waitFor(() => {
+        expect(group).toHaveAttribute("aria-describedby", "desc");
+      });
     });
 
     it("does not include error id in aria-describedby when group is not invalid", () => {

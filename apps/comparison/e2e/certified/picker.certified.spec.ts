@@ -2,6 +2,12 @@ import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
 import { registerForcedColorsDriver } from "../drivers/forced-colors";
+import {
+  registerJourneyDriver,
+  seedKeyboardOnlyJourney,
+  seedOpenReopenScrollJourney,
+} from "../drivers/journeys";
+import { overlayJourneyAlphabet, registerJourneyFuzz } from "../drivers/journeys-fuzz";
 import { registerPixelDriver } from "../drivers/pixel";
 import { registerRtlDriver } from "../drivers/rtl";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
@@ -255,3 +261,19 @@ registerContrastDriver(listScenario);
 registerTargetSizeDriver(listScenario);
 registerForcedColorsDriver(listScenario);
 registerRtlDriver(listScenario, { cases: ["size-m"] });
+
+/**
+ * D13 journeys drive the CLOSED trigger (no beforePanel). Overlay geometry is
+ * relative to the trigger button (scenario target).
+ */
+registerJourneyDriver(triggerScenario, [
+  seedOpenReopenScrollJourney(triggerButton),
+  seedKeyboardOnlyJourney("St"),
+]);
+registerJourneyFuzz(
+  triggerScenario,
+  overlayJourneyAlphabet({
+    trigger: triggerButton,
+    optionNames: ["Starter", "Pro", "Enterprise"],
+  }),
+);

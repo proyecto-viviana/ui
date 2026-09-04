@@ -1,6 +1,6 @@
 # SegmentedControl Validation Notes
 
-Updated: 2026-05-20
+Updated: 2026-09-01
 
 ## Target
 
@@ -76,8 +76,55 @@ Updated: 2026-05-20
 - `vp run check`
   - formatting, lint, and typecheck passed.
 
-## Remaining Gaps
+## Ticket #183 Validation
 
+- `vp install --frozen-lockfile`
+  - passed in `22.4s` with no tracked manifest or lockfile drift.
+- `vp test run packages/solid-spectrum/test/SegmentedControl.test.tsx`
+  - `1` file and `8/8` tests passed in `46.55s`, including the `createIcon`
+    slot, baseline-wrapper, and no-text-slot regression.
+- Clean-worktree declaration prerequisites:
+  - `vp run --filter @proyecto-viviana/solid-stately build` passed in `14.2s`.
+  - `vp run --filter @proyecto-viviana/solidaria build` passed in `19.1s`.
+  - `vp run --filter @proyecto-viviana/solidaria-components build` passed in
+    `27.4s`.
+  - no tracked drift followed the prerequisite builds.
+- `vp run --filter @proyecto-viviana/solid-spectrum build`
+  - passed in `67.1s`.
+- `vp run --filter @proyecto-viviana/comparison build`
+  - passed in about `180s` and produced `100` static pages, including
+    `/components/segmentedcontrol/`.
+- The initial two-file, `--grep SegmentedControl`, one-worker selection
+  completed in `52.3s`. The changed icon-only item/disabled parity case passed,
+  including every direct React/Solid radio-width comparison at the unchanged
+  one-pixel tolerance. Its only red classified the independent styled-label
+  interaction defect later corrected by ticket #182.
+- The final six-spec Button family passed `189/189` in `355.155s` with
+  `4` workers and `--retries=0`, including all SegmentedControl visual and
+  behavior cases. It recorded zero skipped, zero unexpected, and zero flaky
+  cases. Machine-readable result:
+  `/tmp/viviana-ui-button-family-strict-189-final-20260901/results.json`.
+- `vp run check`
+  - formatting (`3040` files), lint (`2736` files, no warnings or errors), and
+    typecheck passed in about `101.4s`.
+- `vp run comparison:report:parity:strict`
+  - passed in `4.08s`: `78` official/manifest/sidebar entries, `69` modeled
+    controls/notes/visual labels, zero unresolved visual-state pointers, zero
+    missing or invalid evidence, and no new catalogue gaps.
+- `vp run guard:layer-boundary`
+  - passed in `1.14s` with zero new forks and zero unbaselined dual paths.
+- `vp run changeset:status`
+  - passed in `3.18s` after temporarily staging the otherwise-untracked
+    changeset, reporting only a patch bump for
+    `@proyecto-viviana/solid-spectrum`; the index was restored immediately.
+- `git diff --check`
+  - passed.
+
+## Follow-Ups (Not Blockers)
+
+- Ticket #183 source, unit, build, direct icon geometry, repository, and full
+  combined browser evidence is green. Ticket #182 separately owns the harness
+  correction that removed the final browser blocker.
 - Assistive-technology transcript rows are not yet captured for
   SegmentedControl.
 - Hover/focus/pressed visual states are covered through shared ToggleButton

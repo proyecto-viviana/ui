@@ -18,8 +18,10 @@
  *
  * This is a discovery/triage aid with a blocking regression floor. The current
  * vocabulary debt is baselined as individual component/category/value facts;
- * removing a fact is allowed, while a new suspect, coverage gap, or unmatched
- * upstream suite exits non-zero. Names are reported but never scored (they are
+ * remaining we-only / unmatched facts may only shrink. A new unmatched upstream
+ * fact exits non-zero. Regenerating the baseline (`--write-baseline`) may not
+ * increase counts unless `--allow-growth <ticket>` records the new facts.
+ * Names are reported but never scored (they are
  * example-specific); roles dominate the suspect score because a role our test
  * asserts that upstream never does is almost always a genuine wrong-shape bug.
  *
@@ -35,6 +37,66 @@ import path from "node:path";
 const ROOT = process.cwd();
 const BASELINE_PATH = path.join(ROOT, "scripts", "upstream-test-parity-baseline.json");
 const WRITE_BASELINE = process.argv.includes("--write-baseline");
+
+function parseAllowGrowthTicket(argv: string[]): number | null {
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--allow-growth") {
+      const next = argv[i + 1];
+      if (!next || next.startsWith("-") || !/^\d+$/.test(next)) {
+        console.error("FAIL: --allow-growth requires a ticket id (e.g. --allow-growth 228).");
+        process.exit(1);
+      }
+      return Number(next);
+    }
+    if (arg.startsWith("--allow-growth=")) {
+      const raw = arg.slice("--allow-growth=".length);
+      if (!/^\d+$/.test(raw)) {
+        console.error("FAIL: --allow-growth requires a ticket id (e.g. --allow-growth=228).");
+        process.exit(1);
+      }
+      return Number(raw);
+    }
+  }
+  return null;
+}
+
+const ALLOW_GROWTH_TICKET = parseAllowGrowthTicket(process.argv);
+
+interface Floor {
+  suspects: string[];
+  coverageGaps: string[];
+  upstreamOnly: string[];
+}
+
+interface GrowthEntry {
+  ticket: number;
+  at: string;
+  added: Floor;
+}
+
+interface BaselineFile extends Floor {
+  description?: string;
+  growthLog?: GrowthEntry[];
+}
+
+function floorCounts(floor: Floor): {
+  suspects: number;
+  coverageGaps: number;
+  upstreamOnly: number;
+} {
+  return {
+    suspects: floor.suspects.length,
+    coverageGaps: floor.coverageGaps.length,
+    upstreamOnly: floor.upstreamOnly.length,
+  };
+}
+
+function formatDelta(label: string, from: number, to: number): string {
+  const delta = to - from;
+  const sign = delta > 0 ? `+${delta}` : String(delta);
+  return `${label} ${from} → ${to} (Δ${sign})`;
+}
 
 // ---------------------------------------------------------------------------
 // Sources
@@ -558,14 +620,96 @@ const currentFloor = {
   upstreamOnly: upstreamOnly.slice().sort(),
 };
 
+const BASELINE_DESCRIPTION =
+  "Frozen vocabulary findings at the pinned upstream oracle. Remaining we-only / unmatched facts may only shrink. A new unmatched upstream fact fails. --write-baseline may not increase counts unless --allow-growth <ticket> records the new facts in growthLog.";
+
+function additionsAgainst(baseline: Floor, current: Floor): Floor {
+  return {
+    suspects: current.suspects.filter((fact) => !baseline.suspects.includes(fact)),
+    coverageGaps: current.coverageGaps.filter((fact) => !baseline.coverageGaps.includes(fact)),
+    upstreamOnly: current.upstreamOnly.filter((key) => !baseline.upstreamOnly.includes(key)),
+  };
+}
+
+function floorGrew(baseline: Floor, current: Floor): boolean {
+  const from = floorCounts(baseline);
+  const to = floorCounts(current);
+  return (
+    to.suspects > from.suspects ||
+    to.coverageGaps > from.coverageGaps ||
+    to.upstreamOnly > from.upstreamOnly
+  );
+}
+
+function printCountDelta(baseline: Floor | null, current: Floor): void {
+  if (!baseline) {
+    console.log(
+      `\ncount delta: no baseline yet; current ${formatDelta("suspects", 0, current.suspects.length)}, ${formatDelta("coverageGaps", 0, current.coverageGaps.length)}, ${formatDelta("upstreamOnly", 0, current.upstreamOnly.length)}`,
+    );
+    return;
+  }
+  const from = floorCounts(baseline);
+  const to = floorCounts(current);
+  console.log(
+    `\ncount delta vs baseline: ${formatDelta("suspects", from.suspects, to.suspects)}, ${formatDelta("coverageGaps", from.coverageGaps, to.coverageGaps)}, ${formatDelta("upstreamOnly", from.upstreamOnly, to.upstreamOnly)}`,
+  );
+}
+
+const existingBaseline = existsSync(BASELINE_PATH)
+  ? (JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as BaselineFile)
+  : null;
+
+printCountDelta(existingBaseline, currentFloor);
+
 if (WRITE_BASELINE) {
+  if (
+    existingBaseline &&
+    floorGrew(existingBaseline, currentFloor) &&
+    ALLOW_GROWTH_TICKET == null
+  ) {
+    const added = additionsAgainst(existingBaseline, currentFloor);
+    console.error("");
+    console.error(
+      "FAIL: --write-baseline would grow the ratchet. Pass --allow-growth <ticket> to record the new facts.",
+    );
+    if (added.suspects.length > 0) {
+      console.error("New suspect facts:");
+      for (const fact of added.suspects) console.error(`  - ${fact}`);
+    }
+    if (added.coverageGaps.length > 0) {
+      console.error("New coverage-gap facts:");
+      for (const fact of added.coverageGaps) console.error(`  - ${fact}`);
+    }
+    if (added.upstreamOnly.length > 0) {
+      console.error("New unmatched upstream suites:");
+      for (const key of added.upstreamOnly) console.error(`  - ${key}`);
+    }
+    process.exit(1);
+  }
+
+  const growthLog = [...(existingBaseline?.growthLog ?? [])];
+  if (existingBaseline && ALLOW_GROWTH_TICKET != null) {
+    const added = additionsAgainst(existingBaseline, currentFloor);
+    if (
+      added.suspects.length > 0 ||
+      added.coverageGaps.length > 0 ||
+      added.upstreamOnly.length > 0
+    ) {
+      growthLog.push({
+        ticket: ALLOW_GROWTH_TICKET,
+        at: new Date().toISOString().slice(0, 10),
+        added,
+      });
+    }
+  }
+
   writeFileSync(
     BASELINE_PATH,
     `${JSON.stringify(
       {
-        description:
-          "Frozen vocabulary findings at the pinned upstream oracle. Removing facts is allowed; new suspect facts, coverage-gap facts, or unmatched upstream suites fail.",
+        description: BASELINE_DESCRIPTION,
         ...currentFloor,
+        ...(growthLog.length > 0 ? { growthLog } : {}),
       },
       null,
       2,
@@ -575,23 +719,14 @@ if (WRITE_BASELINE) {
   process.exit(0);
 }
 
-if (!existsSync(BASELINE_PATH)) {
+if (!existingBaseline) {
   console.error(
     `\nFAIL: missing ${path.relative(ROOT, BASELINE_PATH)}. Create it intentionally with --write-baseline.`,
   );
   process.exit(1);
 }
 
-const baseline = JSON.parse(readFileSync(BASELINE_PATH, "utf8")) as {
-  suspects: string[];
-  coverageGaps: string[];
-  upstreamOnly: string[];
-};
-const additions = {
-  suspects: currentFloor.suspects.filter((fact) => !baseline.suspects.includes(fact)),
-  coverageGaps: currentFloor.coverageGaps.filter((fact) => !baseline.coverageGaps.includes(fact)),
-  upstreamOnly: currentFloor.upstreamOnly.filter((key) => !baseline.upstreamOnly.includes(key)),
-};
+const additions = additionsAgainst(existingBaseline, currentFloor);
 
 if (
   drift ||
@@ -617,5 +752,5 @@ if (
 }
 
 console.log(
-  `\nPASS: no findings were added beyond ${path.relative(ROOT, BASELINE_PATH)}. Reconcile baselined suspects against authoritative source before changing behavior.`,
+  `\nPASS: no findings were added beyond ${path.relative(ROOT, BASELINE_PATH)} (ratchet is one-way: remaining we-only / unmatched facts may only shrink). Reconcile baselined suspects against authoritative source before changing behavior.`,
 );

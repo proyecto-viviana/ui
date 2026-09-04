@@ -4,17 +4,31 @@ type: task
 title: "Resolve unused native navigation components"
 created: 2026-08-20
 parent: 32
-status: open
+status: verified
 history:
   - { state: open, at: 2026-08-20, note: "migrated from legacy task dead-natives" }
+  - {
+      state: open,
+      at: 2026-09-01,
+      note: "owner 2026-09-01: absorbed #145 archive/custom names; seven components are not public; Header, NavHeader, LateralNav, Logo, and PageLayout remain the public-name question",
+    }
+  - {
+      state: merged,
+      at: 2026-09-01,
+      note: "deleted the twelve archive/custom implementations; current work is the Solid Spectrum API, not new viviana-native components",
+    }
+  - { state: verified, at: 2026-09-01, note: "owner 2026-09-01: delete those is fine" }
 ---
 
-Determine whether `Header`, `NavHeader`, and `LateralNav` belong in the public
-product surface. Wire the components into the intended composition or delete
-the unused implementations.
+Decide whether `Header`, `NavHeader`, `LateralNav`, `Logo`, and `PageLayout`
+belong on the public `@proyecto-viviana/ui` barrel as `viviana-native`
+components.
 
-Names and public-boundary decisions remain owner-steered.
+Owner 2026-09-01: delete the archive surface. Current work is the Solid
+Spectrum API, not new Viviana components. Do not add these names to the
+public barrel until the owner reopens that surface.
 
 ## Relationship
 
-Replaces `dead-natives` from `.claude/current/tech-debt.md`.
+Replaces `dead-natives` from `.claude/current/tech-debt.md`. Closed together
+with #145.

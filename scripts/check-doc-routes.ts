@@ -40,7 +40,10 @@ for (const tree of trees) {
 }
 
 const routeTree = await readFile(routeTreeFile, "utf8");
-const missingPaths = expectedPaths.filter((path) => !routeTree.includes(path));
+const routePaths = new Set(
+  Array.from(routeTree.matchAll(/['"]([^'"]+)['"]/g), (match) => match[1]),
+);
+const missingPaths = expectedPaths.filter((path) => !routePaths.has(path));
 
 if (missingPaths.length > 0) {
   console.error("Docs routeTree is missing discovered route files:");

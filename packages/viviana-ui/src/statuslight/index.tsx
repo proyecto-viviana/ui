@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/StatusLight.tsx.
 
-import { type JSX, createContext, mergeProps, splitProps, useContext } from "solid-js";
+import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
 import { filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
 import type { StyleString } from "../style";
@@ -226,7 +226,11 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
   const nodeEnv = (globalThis as typeof globalThis & { process?: { env?: { NODE_ENV?: string } } })
     .process?.env?.NODE_ENV;
 
-  if (!local.children && !local["aria-label"] && nodeEnv !== "production") {
+  // One tracked read of the children getter. Reading it per use creates the
+  // child DOM once per read and desynchronizes hydration keys; an untracked
+  // setup-time read freezes a direct signal child such as `{label()}`.
+  const content = createMemo(() => local.children);
+  if (!content() && !local["aria-label"] && nodeEnv !== "production") {
     console.warn("If no children are provided, an aria-label must be specified");
   }
 
@@ -265,7 +269,7 @@ export function StatusLight(props: StatusLightProps): JSX.Element {
             <circle r="50%" cx="50%" cy="50%" />
           </svg>
         </CenterBaseline>
-        <Text>{local.children}</Text>
+        <Text>{content()}</Text>
       </div>
     </TextContext.Provider>
   );

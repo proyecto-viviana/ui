@@ -23,6 +23,8 @@ import { createId } from "@proyecto-viviana/solid-stately";
 import type { TableState, TableCollection } from "@proyecto-viviana/solid-stately";
 import type { AriaTableSelectionCheckboxProps, TableSelectionCheckboxAria } from "./types";
 import { getRowLabelledBy } from "./utils";
+import { createStringFormatter } from "../i18n";
+import { gridIntlStrings } from "../grid/intl";
 
 /**
  * Creates accessibility props for a table row selection checkbox.
@@ -31,6 +33,7 @@ export function createTableSelectionCheckbox<T extends object>(
   props: Accessor<AriaTableSelectionCheckboxProps>,
   state: Accessor<TableState<T, TableCollection<T>>>,
 ): TableSelectionCheckboxAria {
+  const stringFormatter = createStringFormatter(gridIntlStrings, "@react-aria/grid");
   const checkboxId = createId();
 
   const isSelected = createMemo(() => {
@@ -78,7 +81,7 @@ export function createTableSelectionCheckbox<T extends object>(
       checked: isSelected(),
       disabled: isDisabled(),
       onChange,
-      "aria-label": "Select",
+      "aria-label": stringFormatter().format("select"),
       // Mirrors `useTableSelectionCheckbox`: the checkbox is labelled by its own
       // "Select" text plus the row's row-header cell(s), so screen readers read
       // "Select Foo.pdf" rather than a bare "Select".

@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useCalendarCell
  */
 
-import { createSignal, createMemo, createEffect, type Accessor } from "solid-js";
+import { createSignal, createMemo, createEffect, onCleanup, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { scrollIntoViewport, getScrollParent } from "../utils";
@@ -162,13 +162,17 @@ export function createCalendarCell<T extends CalendarState>(
   };
 
   // Keep DOM focus synchronized with focused date updates.
-  // Use focusSafely (preventScroll) to match @react-aria/calendar — bare focus()
-  // causes the browser to auto-scroll the page when bringing the cell into view,
-  // which is wrong inside a popover. Scroll-into-view should be opt-in based on
-  // interaction modality (handled at a higher layer when needed).
+  // RAC uses useEffect (after paint). Solid createEffect is sync, so a
+  // Next/Previous click would steal focus onto the new cell before the
+  // nav button receives click-focus (#279). Defer to a frame so a focused
+  // nav button can clear calendar-level isFocused first.
   createEffect(() => {
     const element = ref?.();
-    if (element && isFocused()) {
+    if (!element || !isFocused()) return;
+    const frame = requestAnimationFrame(() => {
+      if (!isFocused() || ref?.() !== element) return;
+      const navLabel = document.activeElement?.getAttribute("aria-label");
+      if (navLabel === "Next" || navLabel === "Previous") return;
       focusSafely(element);
 
       // Scroll into view if navigating with a keyboard, otherwise try not to
@@ -178,7 +182,8 @@ export function createCalendarCell<T extends CalendarState>(
       if (getInteractionModality() !== "pointer" && document.activeElement === element) {
         scrollIntoViewport(element, { containingElement: getScrollParent(element) });
       }
-    }
+    });
+    onCleanup(() => cancelAnimationFrame(frame));
   });
 
   // Cell props (for the td element)
@@ -209,6 +214,14 @@ export function createCalendarCell<T extends CalendarState>(
       });
     } else if (isSelected()) {
       label = formatCalendarLabel(locale(), "dateSelected", { date: label });
+    }
+    // RAC `useCalendarCell.ts:164-168`: min/max cells append First/Last available date.
+    const minValue = state.minValue();
+    const maxValue = state.maxValue();
+    if (minValue && isSameDay(d, minValue)) {
+      label += `, ${formatCalendarLabel(locale(), "minimumDate")}`;
+    } else if (maxValue && isSameDay(d, maxValue)) {
+      label += `, ${formatCalendarLabel(locale(), "maximumDate")}`;
     }
     const errorMessageId = getCalendarHookData(state)?.errorMessageId;
 

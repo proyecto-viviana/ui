@@ -7,6 +7,7 @@ import {
   CalendarDateTimeClass as CalendarDateTime,
 } from "@proyecto-viviana/solid-stately";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { style } from "../src/style";
 
 async function waitForHydration() {
   await waitFor(() => {
@@ -266,6 +267,84 @@ describe("DatePicker (solid-spectrum)", () => {
     expect(grid).toHaveStyle({ width: "224px" });
   });
 
+  it("widens the calendar popover when maxVisibleMonths is greater than 1", async () => {
+    render(() => (
+      <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} maxVisibleMonths={2} />
+    ));
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getAllByRole("grid")).toHaveLength(2);
+    });
+
+    const grid = screen.getAllByRole("grid")[0];
+    const calendar = grid.parentElement?.parentElement as HTMLElement;
+    expect(calendar.style.width).toBe("fit-content");
+    expect(calendar.style.width).not.toBe("272px");
+  });
+
+  it("disables calendar previous and next when the next page is outside min/max", async () => {
+    render(() => (
+      <DatePicker
+        label="Event"
+        defaultValue={new CalendarDate(2025, 2, 14)}
+        minValue={new CalendarDate(2025, 2, 3)}
+        maxValue={new CalendarDate(2025, 2, 20)}
+      />
+    ));
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    await waitFor(() => {
+      expect(screen.getByRole("grid")).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByRole("button", { name: "Previous" })[0]).toBeDisabled();
+    expect(screen.getAllByRole("button", { name: "Next" })[0]).toBeDisabled();
+  });
+
+  it("keeps field segments on the locale calendar when createCalendar is set", async () => {
+    render(() => (
+      <DatePicker
+        label="Due date"
+        defaultValue={new CalendarDate(2025, 2, 14)}
+        createCalendar={() => {
+          throw new Error("createCalendar leaked onto DateField state");
+        }}
+      />
+    ));
+    await waitForHydration();
+
+    const segments = screen.getAllByRole("spinbutton");
+    expect(segments.map((segment) => segment.getAttribute("aria-valuenow"))).toEqual([
+      "2",
+      "14",
+      "2025",
+    ]);
+  });
+
+  it("keeps focus on Next and names the grid for the new month after paging", async () => {
+    render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2025, 2, 14)} />);
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    const grid = await waitFor(() => screen.getByRole("grid"));
+    expect(grid).toHaveAttribute("aria-label", expect.stringMatching(/February 2025/));
+
+    await user.click(screen.getAllByRole("button", { name: "Next" })[0]);
+
+    await waitFor(() => {
+      expect(screen.getByRole("grid")).toHaveAttribute(
+        "aria-label",
+        expect.stringMatching(/March 2025/),
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getAllByRole("button", { name: "Next" })[0]).toHaveFocus();
+    });
+  });
+
   it("field group click focuses the last non-placeholder segment", async () => {
     render(() => <DatePicker label="Event" defaultValue={new CalendarDate(2024, 6, 15)} />);
     await waitForHydration();
@@ -281,5 +360,112 @@ describe("DatePicker (solid-spectrum)", () => {
     const segments = fieldGroup.querySelectorAll<HTMLElement>('[role="spinbutton"]');
     const lastSegment = segments[segments.length - 1];
     expect(document.activeElement).toBe(lastSegment);
+  });
+
+  const datePickerEnteringMotion = style<{
+    isEntering?: boolean;
+    placement?: "top" | "bottom" | "left" | "right";
+  }>({
+    opacity: {
+      isEntering: 0,
+    },
+    translateY: {
+      placement: {
+        top: {
+          isEntering: 4,
+        },
+        bottom: {
+          isEntering: -4,
+        },
+      },
+    },
+  });
+
+  function classTokens(className: string): string[] {
+    return className.split(/\s+/).filter(Boolean);
+  }
+
+  it("applies the bottom-axis S2 entering translate class, not the top sign", async () => {
+    let resolveEnter!: () => void;
+    const enterFinished = new Promise<void>((resolve) => {
+      resolveEnter = resolve;
+    });
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished: enterFinished }] as unknown as Animation[],
+    });
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+
+    try {
+      render(() => <DatePicker label="Event" />);
+      await waitForHydration();
+
+      await user.click(screen.getByRole("button"));
+      const popover = await waitFor(() => {
+        const node = document.querySelector("[data-trigger='DatePicker']") as HTMLElement | null;
+        expect(node).toBeInTheDocument();
+        return node!;
+      });
+
+      await waitFor(() => expect(popover).toHaveAttribute("data-entering"));
+      await waitFor(() => expect(popover.getAttribute("data-placement")).toBe("bottom"));
+
+      // Failure mode: DatePickerContent class got placement=null/`undefined` on
+      // enter, so `datePickerPopover({ placement: undefined, isEntering: true })`
+      // compiled the first placement branch (top, +4px) — certified D2 open-enter.
+      const bottomEntering = classTokens(
+        datePickerEnteringMotion({ isEntering: true, placement: "bottom" }),
+      );
+      const topEntering = classTokens(
+        datePickerEnteringMotion({ isEntering: true, placement: "top" }),
+      );
+      const popoverTokens = classTokens(popover.className);
+      expect(bottomEntering.some((token) => popoverTokens.includes(token))).toBe(true);
+      expect(topEntering.filter((token) => !bottomEntering.includes(token)).length).toBeGreaterThan(
+        0,
+      );
+      expect(
+        topEntering
+          .filter((token) => !bottomEntering.includes(token))
+          .every((token) => !popoverTokens.includes(token)),
+      ).toBe(true);
+    } finally {
+      resolveEnter();
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+    }
+  });
+
+  it("tabs Previous → month grid → Next inside the open popover", async () => {
+    render(() => <DatePicker label="Event" />);
+    await waitForHydration();
+
+    await user.click(screen.getByRole("button"));
+    const dialog = await waitFor(() => screen.getByRole("dialog"));
+
+    await waitFor(() => {
+      expect(dialog.contains(document.activeElement)).toBe(true);
+    });
+
+    await user.tab();
+    expect(document.activeElement).toHaveAccessibleName(/previous/i);
+
+    await user.tab();
+    const second = document.activeElement as HTMLElement | null;
+    expect(second).toBeTruthy();
+    const secondName = second?.getAttribute("aria-label") ?? second?.textContent ?? "";
+    const secondInGrid = Boolean(second?.closest('[role="grid"]'));
+    expect(secondInGrid || /next/i.test(secondName)).toBe(true);
+    if (secondInGrid) {
+      await user.tab();
+      expect(document.activeElement).toHaveAccessibleName(/next/i);
+    }
   });
 });

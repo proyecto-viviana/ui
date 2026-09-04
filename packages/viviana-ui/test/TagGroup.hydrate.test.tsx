@@ -7,76 +7,30 @@
  * decision would differ between renders and desync every hydration key after it. See
  * TagGroup.ssr.test.tsx for the mechanism.
  */
-import { hydrate } from "solid-js/web";
-import type { JSX } from "solid-js";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it } from "vite-plus/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { hydrateOverSsr } from "@proyecto-viviana/solidaria-test-utils";
 import { TagGroupFixture, TagGroupPrebuiltTagFixture } from "./fixtures/tag-group";
 
-function installHydrationGlobals(): void {
-  (globalThis as unknown as { _$HY: unknown })._$HY = {
-    events: [],
-    completed: new WeakSet(),
-    r: {},
-    fe() {},
-  };
-}
-
-function hydrateOverSsr(
-  ssrFile: string,
-  Fixture: () => JSX.Element,
-): { thrown: unknown; mismatches: string[]; container: HTMLElement } {
-  // Solid reports hydration mismatches through console.warn, and throws separately; capture
-  // both so a silent warn can never pass as success.
-  const messages: string[] = [];
-  const capture = (...args: unknown[]) => {
-    messages.push(args.map(String).join(" "));
-  };
-  const warnSpy = vi.spyOn(console, "warn").mockImplementation(capture);
-  const errorSpy = vi.spyOn(console, "error").mockImplementation(capture);
-
-  const container = document.createElement("div");
-  container.innerHTML = readFileSync(
-    resolve(import.meta.dirname, `../../../output/${ssrFile}`),
-    "utf8",
-  );
-  document.body.appendChild(container);
-
-  let thrown: unknown;
-  try {
-    hydrate(() => <Fixture />, container);
-  } catch (err) {
-    thrown = err;
-  }
-
-  warnSpy.mockRestore();
-  errorSpy.mockRestore();
-  return {
-    thrown,
-    mismatches: messages.filter((m) => /Hydration Mismatch/.test(m)),
-    container,
-  };
+function readSsr(name: string): string {
+  return readFileSync(resolve(import.meta.dirname, `../../../output/${name}`), "utf8");
 }
 
 describe("TagGroup hydrates over SSR markup", () => {
-  beforeEach(() => installHydrationGlobals());
   afterEach(() => {
     document.body.innerHTML = "";
-    vi.restoreAllMocks();
   });
 
   it("plain string tag content hydrates with no mismatch", () => {
-    const r = hydrateOverSsr("tag-group-ssr.html", TagGroupFixture);
-    expect(r.mismatches).toEqual([]);
-    expect(r.thrown).toBeUndefined();
-    expect(r.container.querySelectorAll('[role="row"]').length).toBe(3);
+    const container = hydrateOverSsr(readSsr("tag-group-ssr.html"), () => <TagGroupFixture />);
+    expect(container.querySelectorAll('[role="row"]').length).toBe(3);
   });
 
   it("prebuilt <Tag> render-prop content hydrates with no mismatch", () => {
-    const r = hydrateOverSsr("tag-group-prebuilt-ssr.html", TagGroupPrebuiltTagFixture);
-    expect(r.mismatches).toEqual([]);
-    expect(r.thrown).toBeUndefined();
-    expect(r.container.querySelectorAll('[role="row"]').length).toBe(3);
+    const container = hydrateOverSsr(readSsr("tag-group-prebuilt-ssr.html"), () => (
+      <TagGroupPrebuiltTagFixture />
+    ));
+    expect(container.querySelectorAll('[role="row"]').length).toBe(3);
   });
 });

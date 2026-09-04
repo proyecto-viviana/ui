@@ -38,6 +38,8 @@ import {
 } from "../utils";
 import { focusSafely, runAfterPaint } from "../utils/focus";
 
+const RESTORE_FOCUS_EVENT = "react-aria-focus-scope-restore";
+
 export interface FocusScopeProps {
   /** The contents of the focus scope. */
   children: JSX.Element;
@@ -245,14 +247,23 @@ function isElementInScope(element: Element | null, scope: Element[]): boolean {
  * prefer a tabbable node, then fall back to the first focusable node (e.g. a
  * `tabIndex={-1}` overlay root) when nothing is tabbable yet.
  */
-function firstInScope(scope: Element[]): HTMLElement | undefined {
-  return getFocusableElements(scope, true)[0] ?? getFocusableElements(scope, false)[0];
+function firstInScope(scope: Element[]): HTMLElement | null {
+  return getFocusableElements(scope, true)[0] ?? getFocusableElements(scope, false)[0] ?? null;
 }
 
 function focusFirstInScope(scope: Element[]): void {
   const target = firstInScope(scope);
   if (target) {
     focusSafely(target);
+  }
+}
+
+function restoreFocusToElement(node: HTMLElement): void {
+  // Dispatch a custom event that parent elements can intercept to customize focus restoration.
+  if (
+    node.dispatchEvent(new CustomEvent(RESTORE_FOCUS_EVENT, { bubbles: true, cancelable: true }))
+  ) {
+    focusSafely(node);
   }
 }
 
@@ -303,6 +314,7 @@ interface FocusScopeTreeNode {
   scopeRef: ScopeRef;
   parent: FocusScopeTreeNode | null;
   children: Set<FocusScopeTreeNode>;
+  nodeToRestore?: Element;
 }
 
 /**
@@ -326,9 +338,12 @@ class FocusScopeTree {
     return this.fastMap.get(scopeRef);
   }
 
-  addTreeNode(scopeRef: ScopeRef, parent: ScopeRef): void {
+  addTreeNode(scopeRef: ScopeRef, parent: ScopeRef, nodeToRestore?: Element): void {
     const parentNode = this.fastMap.get(parent) ?? this.root;
     const node: FocusScopeTreeNode = { scopeRef, parent: parentNode, children: new Set() };
+    if (nodeToRestore) {
+      node.nodeToRestore = nodeToRestore;
+    }
     parentNode.children.add(node);
     this.fastMap.set(scopeRef, node);
   }
@@ -348,6 +363,14 @@ class FocusScopeTree {
       }
     }
     this.fastMap.delete(scopeRef);
+  }
+
+  clone(): FocusScopeTree {
+    const newTree = new FocusScopeTree();
+    for (const node of this.traverse()) {
+      newTree.addTreeNode(node.scopeRef, node.parent?.scopeRef ?? null, node.nodeToRestore);
+    }
+    return newTree;
   }
 
   // Pre-order depth-first; skips the null-scoped root, like upstream.
@@ -562,6 +585,14 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     const scopeActive = getActiveElement(scopeDoc);
     const topActive = getActiveElement(document);
 
+    const persistRestoreTarget = (element: Element | null) => {
+      nodeToRestore = element;
+      const treeNode = focusScopeTree.getTreeNode(scopeElements);
+      if (treeNode && nodeToRestore) {
+        treeNode.nodeToRestore = nodeToRestore;
+      }
+    };
+
     // If the scope is in an iframe and that iframe is currently focused, prefer the iframe document's active element.
     if (
       scopeDoc !== document &&
@@ -570,11 +601,11 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
       scopeActive &&
       scopeActive !== scopeDoc.body
     ) {
-      nodeToRestore = getRestorableElement(scopeActive, scopeDoc);
+      persistRestoreTarget(getRestorableElement(scopeActive, scopeDoc));
       return;
     }
 
-    nodeToRestore = getRestorableElement(topActive, document);
+    persistRestoreTarget(getRestorableElement(topActive, document));
   });
 
   // Match @react-aria/focus `useAutoFocus`: one-shot after paint so overlay
@@ -716,19 +747,58 @@ export const FocusScope: ParentComponent<FocusScopeProps> = (props) => {
     });
   });
 
-  // Restore focus on unmount
+  // Restore focus on unmount. Walk ancestor scopes when nodeToRestore is gone
+  // or a parent scope has nothing focusable, matching @react-aria/focus.
   onCleanup(() => {
-    if (props.restoreFocus && nodeToRestore && (nodeToRestore as HTMLElement).focus) {
-      const doc = getOwnerDocument(nodeToRestore as Element);
-      const win = doc.defaultView ?? window;
-
-      // Use requestAnimationFrame to ensure the element is still in the DOM
-      win.requestAnimationFrame(() => {
-        if (nodeToRestore && doc.body.contains(nodeToRestore as Node)) {
-          focusSafely(nodeToRestore as HTMLElement);
-        }
-      });
+    if (!props.restoreFocus) {
+      return;
     }
+
+    const treeNode = focusScopeTree.getTreeNode(scopeElements);
+    const saved = (treeNode?.nodeToRestore ?? nodeToRestore) as HTMLElement | null;
+    if (!saved) {
+      return;
+    }
+
+    const scope = scopeElements();
+    const scopeDoc = getOwnerDocument(scope[0] ?? startEl() ?? saved);
+    const clonedTree = focusScopeTree.clone();
+    const win = scopeDoc.defaultView ?? window;
+
+    win.requestAnimationFrame(() => {
+      // RAC FocusScope restores when the document's focus is the body after
+      // unmount. Instant overlay unmount (no exit animation) can leave
+      // activeElement on a detached dialog node instead of body; treat that
+      // the same so DialogTrigger popovers restore the trigger (#274).
+      const active = scopeDoc.activeElement;
+      if (active && active !== scopeDoc.body && active.isConnected) {
+        return;
+      }
+
+      let node: FocusScopeTreeNode | null | undefined = clonedTree.getTreeNode(scopeElements);
+      while (node) {
+        if (node.nodeToRestore && node.nodeToRestore.isConnected) {
+          restoreFocusToElement(node.nodeToRestore as HTMLElement);
+          return;
+        }
+        node = node.parent;
+      }
+
+      // If no nodeToRestore was found, focus the first element in the nearest
+      // ancestor scope that is still in the tree. The scope may have nothing
+      // focusable in it; keep walking up in that case.
+      node = clonedTree.getTreeNode(scopeElements);
+      while (node) {
+        if (node.scopeRef && focusScopeTree.getTreeNode(node.scopeRef)) {
+          const first = firstInScope(node.scopeRef());
+          if (first) {
+            restoreFocusToElement(first);
+            return;
+          }
+        }
+        node = node.parent;
+      }
+    });
   });
 
   return (

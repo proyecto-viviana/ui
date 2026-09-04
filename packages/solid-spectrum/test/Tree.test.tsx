@@ -465,7 +465,7 @@ describe("TreeView (solid-spectrum)", () => {
       "data-loading-state",
       "loadingMore",
     );
-    expect(screen.getByRole("progressbar", { name: "Loading more" })).toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Loading more…" })).toBeInTheDocument();
   });
 
   it("passes selected keys to renderActionBar", () => {

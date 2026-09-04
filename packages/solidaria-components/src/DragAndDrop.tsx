@@ -112,10 +112,12 @@ export function useRenderDropIndicator(
     | {
         target?: DropTarget | null;
         isDropTarget?: ((target: DropTarget) => boolean) | boolean;
+        isDropTargetFor?: (target: DropTarget | null) => boolean;
       },
   maybeDropState?: {
     target?: DropTarget | null;
     isDropTarget?: ((target: DropTarget) => boolean) | boolean;
+    isDropTargetFor?: (target: DropTarget | null) => boolean;
   },
 ): ((target: ItemDropTarget) => JSX.Element | undefined) | undefined {
   const looksLikeDropState = (
@@ -123,6 +125,7 @@ export function useRenderDropIndicator(
   ): value is {
     target?: DropTarget | null;
     isDropTarget?: ((target: DropTarget) => boolean) | boolean;
+    isDropTargetFor?: (target: DropTarget | null) => boolean;
   } => {
     return Boolean(
       value &&
@@ -149,12 +152,20 @@ export function useRenderDropIndicator(
 
   return (target: ItemDropTarget) => {
     const stateIsDropTarget = dropState?.isDropTarget;
-    const isTarget =
-      typeof stateIsDropTarget === "function"
-        ? stateIsDropTarget(target)
-        : stateIsDropTarget === true
-          ? targetsEqual(dropState?.target, target)
+    // RAC `useDroppableCollectionState.ts:207` `isDropTarget(target)` is a
+    // per-target predicate. The port exposes `isDropTarget` as a collection-
+    // level boolean (`createDroppableCollectionState.ts:458`) that keyboard
+    // `setTarget` (`createDroppableCollection.ts` `onDropEnter`, RAC `:561`)
+    // never flips. Match `state.target` so the active indicator still mounts
+    // — otherwise Enter pickup leaves DOM focus on the collection
+    // (`listbox:Permissions`) instead of `option:Insert between Read and Write`.
+    const isTargetFromFn =
+      typeof dropState?.isDropTargetFor === "function"
+        ? dropState.isDropTargetFor(target)
+        : typeof stateIsDropTarget === "function"
+          ? Boolean(stateIsDropTarget(target))
           : false;
+    const isTarget = isTargetFromFn || targetsEqual(dropState?.target, target);
     const isVirtualDragging = dragAndDropHooks?.isVirtualDragging?.() ?? false;
     if (!isTarget && !isVirtualDragging) return undefined;
     return dragAndDropHooks?.renderDropIndicator ? (
@@ -340,6 +351,14 @@ export function mergePersistedKeysIntoVirtualRange(
     offsetTop: Math.max(0, startRect.y),
     offsetBottom: Math.max(0, lastRect.y + lastRect.height - (endRect.y + endRect.height)),
   };
+}
+
+/** Indexes that must stay mounted off-screen without expanding the in-flow window. */
+export function indexesOutsideRange(
+  range: { start: number; end: number },
+  indexes: number[],
+): number[] {
+  return indexes.filter((index) => index < range.start || index >= range.end);
 }
 
 export type DropTargetDelegate = {

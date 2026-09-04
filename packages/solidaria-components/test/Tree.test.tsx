@@ -29,6 +29,7 @@ import type {
   DropOperation,
 } from "@proyecto-viviana/solid-stately";
 import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { createSignal } from "solid-js";
 
 interface TestItem {
@@ -269,6 +270,8 @@ describe("Tree", () => {
         cancelDrag: () => {},
         getItems: () => [],
         getAllowedDropOperations: () => ["move"],
+        getKeysForDrag: (key) => new Set([key]),
+        isSelected: () => false,
       };
       const dropState: DroppableCollectionState = {
         isDropTarget: false,
@@ -416,9 +419,6 @@ describe("Tree", () => {
     });
 
     it("should use rtl expansion keys for keyboard drop-target branch toggle", async () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-
       const dropState: DroppableCollectionState = {
         isDropTarget: false,
         target: { type: "item", key: "item-1", dropPosition: "on" },
@@ -447,158 +447,26 @@ describe("Tree", () => {
         },
       };
 
-      try {
-        render(() => (
+      render(() => (
+        <I18nProvider locale="he-IL">
           <Tree
             items={createTestItems()}
             aria-label="RTL key tree"
-            dir="rtl"
-            direction="rtl"
             dragAndDropHooks={dragAndDropHooks as any}
           >
             {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
           </Tree>
-        ));
+        </I18nProvider>
+      ));
 
-        expect(onKeyDown).toBeTypeOf("function");
-        expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
+      expect(onKeyDown).toBeTypeOf("function");
+      expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
 
-        onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
-        await waitFor(() => expect(screen.getByText("Item 1.1")).toBeInTheDocument());
+      onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
+      await waitFor(() => expect(screen.getByText("Item 1.1")).toBeInTheDocument());
 
-        onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowRight" }));
-        await waitFor(() => expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument());
-      } finally {
-        document.dir = originalDir;
-      }
-    });
-
-    it("should prefer computed rtl direction for keyboard drop-target branch toggle", () => {
-      const originalDir = document.dir;
-      document.dir = "ltr";
-      const computedStyleSpy = vi
-        .spyOn(window, "getComputedStyle")
-        .mockImplementation(() => ({ direction: "rtl" }) as CSSStyleDeclaration);
-
-      const dropState: DroppableCollectionState = {
-        isDropTarget: false,
-        target: { type: "item", key: "item-1", dropPosition: "on" },
-        isDisabled: false,
-        setTarget: () => {},
-        isAccepted: () => true,
-        enterTarget: () => {},
-        moveToTarget: () => {},
-        exitTarget: () => {},
-        activateTarget: () => {},
-        drop: () => {},
-        shouldAcceptItemDrop: () => true,
-        getDropOperation: () => "move",
-      };
-
-      let onKeyDown: ((event: KeyboardEvent) => void) | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => dropState,
-        useDroppableCollection: (props: { onKeyDown?: (event: KeyboardEvent) => void }) => {
-          onKeyDown = props.onKeyDown;
-          return { collectionProps: {} };
-        },
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        dropTargetDelegate: {
-          getDropTargetFromPoint: () => null,
-        },
-      };
-
-      try {
-        render(() => (
-          <Tree
-            items={createTestItems()}
-            aria-label="Computed RTL key tree"
-            direction="rtl"
-            dragAndDropHooks={dragAndDropHooks as any}
-          >
-            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
-          </Tree>
-        ));
-
-        expect(onKeyDown).toBeTypeOf("function");
-        expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
-
-        onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
-        expect(screen.getByText("Item 1.1")).toBeInTheDocument();
-
-        onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowRight" }));
-        expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
-      } finally {
-        computedStyleSpy.mockRestore();
-        document.dir = originalDir;
-      }
-    });
-
-    it("should fall back to document rtl direction when getComputedStyle is unavailable", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-      const originalGetComputedStyle = window.getComputedStyle;
-      Object.defineProperty(window, "getComputedStyle", {
-        configurable: true,
-        writable: true,
-        value: undefined,
-      });
-
-      const dropState: DroppableCollectionState = {
-        isDropTarget: false,
-        target: { type: "item", key: "item-1", dropPosition: "on" },
-        isDisabled: false,
-        setTarget: () => {},
-        isAccepted: () => true,
-        enterTarget: () => {},
-        moveToTarget: () => {},
-        exitTarget: () => {},
-        activateTarget: () => {},
-        drop: () => {},
-        shouldAcceptItemDrop: () => true,
-        getDropOperation: () => "move",
-      };
-
-      let onKeyDown: ((event: KeyboardEvent) => void) | undefined;
-      const dragAndDropHooks = {
-        useDroppableCollectionState: () => dropState,
-        useDroppableCollection: (props: { onKeyDown?: (event: KeyboardEvent) => void }) => {
-          onKeyDown = props.onKeyDown;
-          return { collectionProps: {} };
-        },
-        useDroppableItem: () => ({ dropProps: {}, dropButtonProps: {}, isDropTarget: false }),
-        dropTargetDelegate: {
-          getDropTargetFromPoint: () => null,
-        },
-      };
-
-      try {
-        render(() => (
-          <Tree
-            items={createTestItems()}
-            aria-label="Fallback RTL key tree"
-            dragAndDropHooks={dragAndDropHooks as any}
-          >
-            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
-          </Tree>
-        ));
-
-        expect(onKeyDown).toBeTypeOf("function");
-        expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
-
-        onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowLeft" }));
-        expect(screen.getByText("Item 1.1")).toBeInTheDocument();
-
-        onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowRight" }));
-        expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument();
-      } finally {
-        Object.defineProperty(window, "getComputedStyle", {
-          configurable: true,
-          writable: true,
-          value: originalGetComputedStyle,
-        });
-        document.dir = originalDir;
-      }
+      onKeyDown!(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+      await waitFor(() => expect(screen.queryByText("Item 1.1")).not.toBeInTheDocument());
     });
 
     it("should resolve ambiguous tree boundary drop targets using pointer direction", () => {
@@ -739,9 +607,6 @@ describe("Tree", () => {
     });
 
     it("should reverse horizontal boundary switching direction in rtl", () => {
-      const originalDir = document.dir;
-      document.dir = "rtl";
-
       const dropState: DroppableCollectionState = {
         isDropTarget: false,
         target: null,
@@ -787,8 +652,8 @@ describe("Tree", () => {
         },
       };
 
-      try {
-        render(() => (
+      render(() => (
+        <I18nProvider locale="he-IL">
           <Tree
             items={createTestItems()}
             aria-label="RTL boundary tree"
@@ -797,27 +662,25 @@ describe("Tree", () => {
           >
             {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
           </Tree>
-        ));
+        </I18nProvider>
+      ));
 
-        const isValidDropTarget = (target: DropTarget) =>
-          target.type === "item" && target.key === "item-1-2" && target.dropPosition === "after";
+      const isValidDropTarget = (target: DropTarget) =>
+        target.type === "item" && target.key === "item-1-2" && target.dropPosition === "after";
 
-        const initialTarget = wrappedDelegate!.getDropTargetFromPoint(30, 50, isValidDropTarget);
-        const switchedByRight = wrappedDelegate!.getDropTargetFromPoint(50, 50, isValidDropTarget);
+      const initialTarget = wrappedDelegate!.getDropTargetFromPoint(30, 50, isValidDropTarget);
+      const switchedByRight = wrappedDelegate!.getDropTargetFromPoint(50, 50, isValidDropTarget);
 
-        expect(initialTarget).toMatchObject({
-          type: "item",
-          key: "item-1-2",
-          dropPosition: "after",
-        });
-        expect(switchedByRight).toMatchObject({
-          type: "item",
-          key: "item-1-2",
-          dropPosition: "after",
-        });
-      } finally {
-        document.dir = originalDir;
-      }
+      expect(initialTarget).toMatchObject({
+        type: "item",
+        key: "item-1-2",
+        dropPosition: "after",
+      });
+      expect(switchedByRight).toMatchObject({
+        type: "item",
+        key: "item-1-2",
+        dropPosition: "after",
+      });
     });
   });
 
@@ -934,6 +797,27 @@ describe("Tree", () => {
       expect(getFirstExpandButton()).toHaveAttribute("aria-label", "Collapse");
     });
 
+    it("expands on ArrowLeft under I18nProvider he-IL without document.dir", () => {
+      const dirGetter = vi.spyOn(document, "dir", "get");
+      render(() => (
+        <I18nProvider locale="he-IL">
+          <Tree items={createTestItems()} aria-label="Test Tree">
+            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+          </Tree>
+        </I18nProvider>
+      ));
+
+      const tree = screen.getByRole("treegrid");
+      const firstRow = screen.getAllByRole("row")[0];
+      expect(firstRow).toHaveAttribute("aria-expanded", "false");
+      fireEvent.focus(firstRow);
+      // RAC Tree.tsx EXPANSION_KEYS.expand.rtl === ArrowLeft
+      fireEvent.keyDown(tree, { key: "ArrowLeft" });
+      expect(screen.getAllByRole("row")[0]).toHaveAttribute("aria-expanded", "true");
+      expect(dirGetter).not.toHaveBeenCalled();
+      dirGetter.mockRestore();
+    });
+
     it("should have aria-level on items", () => {
       render(() => (
         <Tree items={createTestItems()} aria-label="Test Tree" defaultExpandedKeys={["item-1"]}>
@@ -1002,6 +886,32 @@ describe("Tree", () => {
       await user.click(rows[0]);
 
       expect(onSelectionChange).toHaveBeenCalled();
+    });
+
+    it("extends selection with Shift+ArrowDown", async () => {
+      const onSelectionChange = vi.fn();
+      const user = setupUser();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          defaultSelectedKeys={["item-1"]}
+          onSelectionChange={onSelectionChange}
+        >
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      screen.getAllByRole("row")[0].focus();
+      await user.keyboard("{Shift>}{ArrowDown}{/Shift}");
+      const next = onSelectionChange.mock.calls.at(-1)?.[0] as Set<string>;
+      expect(next).toBeInstanceOf(Set);
+      expect([...next]).toEqual(expect.arrayContaining(["item-1", "item-2"]));
     });
 
     it("should show selected state via data attribute", async () => {
@@ -1331,6 +1241,123 @@ describe("Tree", () => {
 
       const tree = screen.getByRole("treegrid");
       expect(tree).not.toHaveAttribute("tabIndex");
+    });
+
+    it("moves focus with typeahead letters", async () => {
+      const user = setupUser();
+      const items = [
+        { key: "weekly", value: { name: "Weekly Report" }, textValue: "Weekly Report" },
+        { key: "budget", value: { name: "Budget" }, textValue: "Budget" },
+        { key: "photos", value: { name: "Photos" }, textValue: "Photos" },
+      ];
+      render(() => (
+        <Tree items={items} aria-label="Test Tree">
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      screen.getByRole("treegrid").focus();
+      await user.keyboard("b");
+      expect(screen.getByRole("row", { name: /Budget/ })).toHaveFocus();
+    });
+
+    it("does not expand siblings on *", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree items={createTestItems()} aria-label="Test Tree" defaultExpandedKeys={["item-1"]}>
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const item1 = screen.getAllByRole("row")[0];
+      item1.focus();
+      await user.keyboard("*");
+      expect(screen.getByRole("row", { name: /^Item 3$/ })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      expect(screen.queryByRole("row", { name: /Item 3.1/ })).not.toBeInTheDocument();
+    });
+
+    it("keeps DOM focus on the row after collapse", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree items={createTestItems()} aria-label="Test Tree" defaultExpandedKeys={["item-1"]}>
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {item.textValue}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const item1 = screen.getAllByRole("row")[0];
+      item1.focus();
+      await user.keyboard("{ArrowLeft}");
+      await waitFor(() => {
+        expect(screen.getAllByRole("row")[0]).toHaveAttribute("aria-expanded", "false");
+        expect(screen.getAllByRole("row")[0]).toHaveFocus();
+      });
+    });
+
+    it("moves ArrowRight onto the row checkbox when already expanded", async () => {
+      const user = setupUser();
+      render(() => (
+        <Tree
+          items={createTestItems()}
+          aria-label="Test Tree"
+          selectionMode="multiple"
+          defaultExpandedKeys={["item-1"]}
+        >
+          {(item) => (
+            <TreeItem id={item.key} textValue={item.textValue}>
+              {() => (
+                <>
+                  <TreeSelectionCheckbox itemKey={item.key} />
+                  <span>{item.textValue}</span>
+                </>
+              )}
+            </TreeItem>
+          )}
+        </Tree>
+      ));
+
+      const item1 = screen.getAllByRole("row")[0];
+      item1.focus();
+      await user.keyboard("{ArrowRight}");
+      expect(screen.getAllByRole("checkbox")[0]).toHaveFocus();
+    });
+
+    it("tabs out of the focused row to the following button", async () => {
+      const user = setupUser();
+      render(() => (
+        <>
+          <button type="button">Before</button>
+          <Tree items={createTestItems()} aria-label="Test Tree" defaultSelectedKeys={["item-1"]}>
+            {(item) => (
+              <TreeItem id={item.key} textValue={item.textValue}>
+                {item.textValue}
+              </TreeItem>
+            )}
+          </Tree>
+          <button type="button">After</button>
+        </>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getAllByRole("row")[0]).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("button", { name: "After" })).toHaveFocus();
     });
   });
 

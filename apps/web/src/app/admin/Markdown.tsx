@@ -1,4 +1,5 @@
 import { createMemo } from "solid-js";
+import { safeAdminLinkTarget } from "./safe-link";
 
 // Minimal, dependency-free Markdown renderer for the dev-only /admin doc viewer.
 // It covers what the .claude/current docs use — headings, paragraphs, fenced and
@@ -34,9 +35,11 @@ function inline(src: string): string {
   let s = src.replace(/`([^`]+)`/g, (_match, code: string) =>
     stash(`<code>${escapeHtml(code)}</code>`),
   );
-  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_match, text: string, href: string) =>
-    stash(`<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`),
-  );
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_match, text: string, href: string) => {
+    const safe = safeAdminLinkTarget(href);
+    if (!safe) return stash(escapeHtml(text));
+    return stash(`<a href="${escapeAttr(safe)}">${escapeHtml(text)}</a>`);
+  });
   s = escapeHtml(s);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/\*([^*]+)\*/g, "<em>$1</em>");

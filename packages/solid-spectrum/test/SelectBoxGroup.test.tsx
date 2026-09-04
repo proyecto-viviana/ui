@@ -1,7 +1,7 @@
 import { createSignal } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { render, screen } from "@solidjs/testing-library";
-import { SelectBox, SelectBoxGroup, SelectBoxGroupContext } from "../src";
+import { SelectBox, SelectBoxGroup, SelectBoxGroupContext, Text } from "../src";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 
 interface PlanOption {
@@ -37,8 +37,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
         >
           {(item) => (
             <SelectBox id={item.id} textValue={item.label}>
-              <strong>{item.label}</strong>
-              <span>{item.description}</span>
+              <Text slot="label">{item.label}</Text>
+              <Text slot="description">{item.description}</Text>
             </SelectBox>
           )}
         </SelectBoxGroup>
@@ -75,8 +75,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
       >
         {(item) => (
           <SelectBox id={item.id} textValue={item.label}>
-            <strong>{item.label}</strong>
-            <span>{item.description}</span>
+            <Text slot="label">{item.label}</Text>
+            <Text slot="description">{item.description}</Text>
           </SelectBox>
         )}
       </SelectBoxGroup>
@@ -108,8 +108,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
       >
         {(item) => (
           <SelectBox id={item.id} textValue={item.label}>
-            <strong>{item.label}</strong>
-            <span>{item.description}</span>
+            <Text slot="label">{item.label}</Text>
+            <Text slot="description">{item.description}</Text>
           </SelectBox>
         )}
       </SelectBoxGroup>
@@ -144,8 +144,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
       >
         {(item) => (
           <SelectBox id={item.id} textValue={item.label}>
-            <strong>{item.label}</strong>
-            <span>{item.description}</span>
+            <Text slot="label">{item.label}</Text>
+            <Text slot="description">{item.description}</Text>
           </SelectBox>
         )}
       </SelectBoxGroup>
@@ -177,8 +177,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
       >
         {(item) => (
           <SelectBox id={item.id} textValue={item.label} isDisabled={item.id === "pro"}>
-            <strong>{item.label}</strong>
-            <span>{item.description}</span>
+            <Text slot="label">{item.label}</Text>
+            <Text slot="description">{item.description}</Text>
           </SelectBox>
         )}
       </SelectBoxGroup>
@@ -206,12 +206,12 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
         onSelectionChange={onSelectionChange}
       >
         <SelectBox id="starter" textValue="Starter">
-          <strong>Starter</strong>
-          <span>For small teams</span>
+          <Text slot="label">Starter</Text>
+          <Text slot="description">For small teams</Text>
         </SelectBox>
         <SelectBox id="pro" textValue="Pro">
-          <strong>Pro</strong>
-          <span>For growing teams</span>
+          <Text slot="label">Pro</Text>
+          <Text slot="description">For growing teams</Text>
         </SelectBox>
       </SelectBoxGroup>
     ));
@@ -249,8 +249,8 @@ describe("SelectBoxGroup (solid-spectrum)", () => {
         >
           {(item) => (
             <SelectBox id={item.id} textValue={item.label}>
-              <strong>{item.label}</strong>
-              <span>{item.description}</span>
+              <Text slot="label">{item.label}</Text>
+              <Text slot="description">{item.description}</Text>
             </SelectBox>
           )}
         </SelectBoxGroup>

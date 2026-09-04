@@ -286,7 +286,7 @@ export function createMenu<T>(
 
     const collection = state.collection();
     const p = getProps();
-    const wrap = p.shouldFocusWrap ?? false;
+    const wrap = p.shouldFocusWrap ?? true;
 
     // Disabled keys only block keyboard navigation under disabledBehavior "all"
     // (the default); under "selection" they stay focusable while their selection

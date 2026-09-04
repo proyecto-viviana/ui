@@ -321,3 +321,42 @@ describe("createSelectableList — collection props", () => {
     expect(item.dataset.collection).toBe(id);
   });
 });
+
+describe("createSelectableList — autoFocus with selectOnFocus", () => {
+  it.each([
+    { autoFocus: "first" as const, key: "a" },
+    { autoFocus: "last" as const, key: "d" },
+  ])(
+    "selects the autofocused item when selectOnFocus with autoFocus=$autoFocus",
+    ({ autoFocus, key }) => {
+      const { manager } = renderList(
+        { selectionMode: "single", selectionBehavior: "replace" },
+        { autoFocus },
+      );
+      expect(manager.focusedKey).toBe(key);
+      expect(manager.selectedKeys.has(key)).toBe(true);
+    },
+  );
+
+  it("does not select the autofocused item when selectionMode is none", () => {
+    const { manager } = renderList(
+      { selectionMode: "none", selectionBehavior: "replace" },
+      { autoFocus: "first" },
+    );
+    expect(manager.focusedKey).toBe("a");
+    expect(manager.selectedKeys.size).toBe(0);
+  });
+
+  it("does not change an existing all selection when autofocusing", () => {
+    const { manager } = renderList(
+      {
+        selectionMode: "multiple",
+        selectionBehavior: "replace",
+        defaultSelectedKeys: "all",
+      },
+      { autoFocus: "first" },
+    );
+    expect(manager.focusedKey).toBe("a");
+    expect(manager.selectedKeys.size).toBe(items.length);
+  });
+});

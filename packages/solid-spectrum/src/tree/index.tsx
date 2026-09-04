@@ -21,6 +21,7 @@ import {
   createSignal,
   mergeProps,
   onCleanup,
+  Show,
   splitProps,
   useContext,
   type JSX,
@@ -58,16 +59,11 @@ import Checkmark from "../icon/ui-icons/Checkmark";
 import Chevron from "../icon/ui-icons/Chevron";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
-import {
-  baseColor,
-  colorMix,
-  focusRing,
-  fontRelative,
-  space,
-  style,
-} from "../style" with { type: "macro" };
+import { baseColor, colorMix, focusRing, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { edgeToText } from "../style/spectrum-theme" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";
@@ -518,7 +514,7 @@ const treeSlotIcon = style({
   gridArea: "icon",
   gridRowEnd: "span 2",
   display: "block",
-  size: fontRelative(20),
+  size: "1lh",
   alignSelf: "center",
   marginEnd: "text-to-visual",
   "--iconPrimary": {
@@ -859,9 +855,16 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
 
     return renderRegistrationItems(local.items ?? []);
   };
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const loadMoreContent = () => (
     <div class={treeLoadMore} data-rsp-slot="load-more">
-      {isLoading() ? <ProgressCircle isIndeterminate size="S" aria-label="Loading more" /> : null}
+      {isLoading() ? (
+        <ProgressCircle
+          isIndeterminate
+          size="S"
+          aria-label={stringFormatter().format("table.loadingMore")}
+        />
+      ) : null}
     </div>
   );
 
@@ -905,7 +908,14 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     </div>
   );
 
-  return local.label || local.description || local.renderActionBar ? framed : collection;
+  return (
+    <Show
+      when={Boolean(local.label || local.description || local.renderActionBar)}
+      fallback={collection}
+    >
+      {framed}
+    </Show>
+  );
 }
 
 export function TreeItem<T extends object>(props: TreeItemProps<T>): JSX.Element {
@@ -1114,11 +1124,23 @@ export function TreeItemContent(props: TreeItemContentProps): JSX.Element {
 
   return (
     <HeadlessTreeItemContent {...headlessProps}>
-      {(renderProps: HeadlessTreeItemContentRenderProps) => (
-        <span class={[treeViewItemCell, local.class].filter(Boolean).join(" ")} style={local.style}>
-          {typeof local.children === "function" ? local.children(renderProps) : local.children}
-        </span>
-      )}
+      {(renderProps: HeadlessTreeItemContentRenderProps) => {
+        const content = () => {
+          // Read `local.children` once — a repeated props-children read re-instantiates child
+          // components on the server only, desynchronizing Solid's hydration keys and aborting
+          // hydration for the whole route. See Tab's ResolvedTabContent for the full note.
+          const rawChildren = local.children;
+          return typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
+        };
+        return (
+          <span
+            class={[treeViewItemCell, local.class].filter(Boolean).join(" ")}
+            style={local.style}
+          >
+            {content()}
+          </span>
+        );
+      }}
     </HeadlessTreeItemContent>
   );
 }
@@ -1224,6 +1246,7 @@ export function TreeSelectionCheckbox(props: {
 
 export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
   const staticCollection = useContext(StaticTreeCollectionContext);
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const isLoading = () =>
     props.isLoading || props.loadingState === "loading" || props.loadingState === "loadingMore";
 
@@ -1243,7 +1266,11 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
       <div class={treeLoadMore} data-rsp-slot="load-more">
         {props.children ??
           (isLoading() ? (
-            <ProgressCircle isIndeterminate size="S" aria-label="Loading more" />
+            <ProgressCircle
+              isIndeterminate
+              size="S"
+              aria-label={stringFormatter().format("table.loadingMore")}
+            />
           ) : null)}
       </div>
     </HeadlessTreeLoadMoreItem>

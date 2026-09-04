@@ -262,11 +262,11 @@
     "access": "public"
   },
   "scripts": {
-    "build": "NODE_ENV=production vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
+    "build": "NODE_ENV=production PACK_PASS=dom vp pack && NODE_ENV=production PACK_PASS=jsx vp pack && rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && node ../../scripts/write-package-declaration-attribution.mjs .",
     "dev": "vp pack --watch"
   },
   "dependencies": {
-    "@adobe/spectrum-tokens": "15.0.0",
+    "@adobe/spectrum-tokens": "14.15.0",
     "@parcel/macros": "^2.16.4",
     "@proyecto-viviana/solid-stately": "workspace:*",
     "@proyecto-viviana/solidaria": "workspace:*",

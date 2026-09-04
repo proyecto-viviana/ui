@@ -935,7 +935,11 @@ export const style = createTheme({
        * Repointed here rather than by moving gray-700: that stop still carries borders and
        * dividers, which the island does draw at `--slate-700`. */
       "neutral-subdued": { type: "ref", light: "gray-500", dark: "gray-500" },
-      negative: colorToken("negative-content-color-default"),
+      /* 900 is the negative *fill* (white ink on the stop). Error *ink* on the
+       * glass panel is 1000 — StatusLight, Badge outline, DateField HelpText
+       * already use that stop. Adobe `negative-content-color-default` is 900
+       * because it assumes a white page; HelpText on `--surface-panel` does not. */
+      negative: { type: "ref", light: "negative-1000", dark: "negative-1000" },
       disabled: colorToken("disabled-content-color"),
       /* Headings and titles resolve to gray-900 in Adobe — the extrapolated stop PAST the ink.
        * The register has nothing beyond `--text-primary`: a heading is the same ink as body

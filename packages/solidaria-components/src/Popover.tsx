@@ -35,10 +35,15 @@ import { Portal } from "solid-js/web";
 import {
   createOverlayTrigger,
   createPopover,
+  createEnterAnimation,
+  createExitAnimation,
   FocusScope,
+  useIsHidden,
   useLocale,
   useUNSAFE_PortalContext,
   visuallyHiddenStyles,
+  createStringFormatter,
+  overlaysIntlStrings,
   type AriaLabelingProps,
   type Placement,
   type PlacementAxis,
@@ -54,7 +59,12 @@ import {
   dataAttr,
   useIsHydrated,
 } from "./utils";
-import { DialogTriggerContext, PopoverTriggerContext } from "./contexts";
+import {
+  DialogTriggerContext,
+  OverlayTriggerStateContext,
+  PopoverTriggerContext,
+} from "./contexts";
+import { SelectContext } from "./Select";
 
 export interface PopoverRenderProps {
   /**
@@ -170,6 +180,11 @@ export interface PopoverProps extends SlotProps, AriaLabelingProps {
   isEntering?: boolean;
   /** Whether the popover is exiting (for animations). */
   isExiting?: boolean;
+  /**
+   * Whether the popover should appear and disappear without an entry or exit animation.
+   * Used by PreviewTrigger to skip animations when quickly swapping between overlays.
+   */
+  shouldSkipAnimation?: boolean;
 }
 
 export interface PopoverTriggerProps {
@@ -197,11 +212,42 @@ interface PopoverContextValue {
 export const PopoverContext = createContext<PopoverContextValue | null>(null);
 const PopoverGroupContext = createContext<(() => HTMLElement | null) | null>(null);
 
+/**
+ * RAC Overlay.tsx OverlayContext. Dialog's useOverlayFocusContain equivalent
+ * sets contain so a nested Dialog still traps Tab when the Popover itself is
+ * not the dialog (DatePicker / DateRangePicker CalendarPopover).
+ */
+export interface OverlayContextValue {
+  setContain: (contain: boolean) => void;
+}
+
+export const OverlayContext = createContext<OverlayContextValue | null>(null);
+
+function resolveTriggerElement(value: unknown): Element | null {
+  if (value == null) return null;
+  if (typeof value === "function") {
+    return resolveTriggerElement((value as () => unknown)());
+  }
+  if (value instanceof Element) {
+    return value;
+  }
+  return null;
+}
+
+function preferredPlacementAxis(placement: Placement | undefined): PlacementAxis {
+  const axis = (placement ?? "bottom").split(" ")[0];
+  if (axis === "top" || axis === "bottom" || axis === "left" || axis === "right") {
+    return axis;
+  }
+  return "bottom";
+}
+
 function PopoverDismissButton(props: { onDismiss: () => void }): JSX.Element {
+  const stringFormatter = createStringFormatter(overlaysIntlStrings, "@react-aria/overlays");
   return (
     <button
       type="button"
-      aria-label="Dismiss"
+      aria-label={stringFormatter().format("dismiss")}
       tabIndex={-1}
       onClick={props.onDismiss}
       style={visuallyHiddenStyles}
@@ -293,6 +339,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     "autoFocus",
     "isEntering",
     "isExiting",
+    "shouldSkipAnimation",
   ]);
 
   // A reactive ref (not a plain `let`) so the overlay-position effect in
@@ -320,7 +367,12 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   const triggerContext = useContext(PopoverTriggerContext);
   const dialogTriggerContext = useContext(DialogTriggerContext);
+  const overlayTriggerState = useContext(OverlayTriggerStateContext);
   const popoverGroupContext = useContext(PopoverGroupContext);
+  const selectContext = useContext(SelectContext);
+  const overlayLabelledBy = () =>
+    props["aria-labelledby"] ??
+    (selectContext?.menuProps as { "aria-labelledby"?: string } | undefined)?.["aria-labelledby"];
   const resolvedTrigger = () =>
     local.trigger ??
     triggerContext?.trigger ??
@@ -337,6 +389,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     if (dialogTriggerContext) {
       return dialogTriggerContext.state.isOpen();
     }
+    if (overlayTriggerState) {
+      return overlayTriggerState.isOpen;
+    }
     return internalOpen();
   };
 
@@ -349,6 +404,9 @@ export function Popover(props: PopoverProps): JSX.Element {
     } else if (dialogTriggerContext) {
       dialogTriggerContext.state.close();
       local.onOpenChange?.(false);
+    } else if (overlayTriggerState) {
+      overlayTriggerState.close();
+      local.onOpenChange?.(false);
     } else {
       setInternalOpen(false);
       local.onOpenChange?.(false);
@@ -356,7 +414,13 @@ export function Popover(props: PopoverProps): JSX.Element {
   };
 
   const getTriggerRef = () => {
-    if (local.triggerRef) return local.triggerRef();
+    if (local.triggerRef !== undefined) {
+      // Compiled JSX passes `() => element`. Comparison `hc` unwraps zero-arg
+      // function props into getters, so `triggerRef` can already be the node
+      // (`get triggerRef() { return el }`). Calling a node is a TypeError and
+      // leaves the overlay at the origin frame (#275).
+      return resolveTriggerElement(local.triggerRef);
+    }
     if (triggerContext) return triggerContext.triggerRef();
     if (dialogTriggerContext) return dialogTriggerContext.triggerRef();
     return null;
@@ -421,6 +485,9 @@ export function Popover(props: PopoverProps): JSX.Element {
         } else if (dialogTriggerContext) {
           dialogTriggerContext.state.open();
           local.onOpenChange?.(true);
+        } else if (overlayTriggerState) {
+          overlayTriggerState.open();
+          local.onOpenChange?.(true);
         } else {
           setInternalOpen(true);
           local.onOpenChange?.(true);
@@ -435,6 +502,8 @@ export function Popover(props: PopoverProps): JSX.Element {
           triggerContext.state.toggle();
         } else if (dialogTriggerContext) {
           dialogTriggerContext.state.toggle();
+        } else if (overlayTriggerState) {
+          overlayTriggerState.toggle();
         } else {
           setInternalOpen(true);
           local.onOpenChange?.(true);
@@ -444,41 +513,36 @@ export function Popover(props: PopoverProps): JSX.Element {
     },
   );
 
-  const renderValues = createMemo<PopoverRenderProps>(() => ({
-    trigger: resolvedTrigger() ?? null,
-    placement: popoverAria.placement(),
-    isEntering: local.isEntering ?? false,
-    isExiting: local.isExiting ?? false,
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      // Read children lazily. The popover content is gated behind
-      // `<Show when={isHydrated() && …}>` below, so it must NOT be instantiated
-      // during the component body. An eager `children: props.children` reads the
-      // child getter at object-construction time, building the content template
-      // (and walking `getNextElement`) before the gate — which the server, with
-      // the gate closed, never emitted → hydration mismatch. The getter defers
-      // the read until `renderChildren()` runs inside the gated overlay.
-      get children() {
-        return props.children;
-      },
-      class: local.class,
-      style: local.style,
-      defaultClassName: "solidaria-Popover",
-    },
-    renderValues,
-  );
+  // RAC: `useExitAnimation(ref, state.isOpen)` lives on the outer Popover so the
+  // `'closed' | 'open' | 'exiting'` machine survives Inner unmount. Enter lives
+  // on PopoverInner (below) so it re-initializes per open, matching
+  // `useEnterAnimation(ref, !!placement)` in RAC's PopoverInner.
+  const exitAnimation = createExitAnimation(() => popoverRef(), isOpen);
+  const isExiting = () =>
+    Boolean(local.isExiting) || (!(local.shouldSkipAnimation ?? false) && exitAnimation());
+  const isHidden = useIsHidden();
 
   const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
   const hasExplicitTriggerWidth = () => {
-    const style = renderProps.style() as (JSX.CSSProperties & Record<string, unknown>) | undefined;
-    return style?.["--trigger-width"] != null;
+    const style = typeof local.style === "function" ? undefined : local.style;
+    return (
+      (style as (JSX.CSSProperties & Record<string, unknown>) | undefined)?.["--trigger-width"] !=
+      null
+    );
   };
   const updateTriggerWidth = () => {
     const trigger = getTriggerRef();
     if (!trigger || hasExplicitTriggerWidth()) return;
-    setTriggerWidth(`${trigger.getBoundingClientRect().width}px`);
+    // Layout width, not getBoundingClientRect: S2 `pressScale` applies
+    // `perspective + translate3d(0,0,-2px)` while the trigger is pressed, which
+    // shrinks the transformed rect (~5.84px on size-S/M Picker). RAC measures
+    // in `useLayoutEffect` after pointer-up so the transform is already gone;
+    // Solid's `createEffect` can run on the pressed frame, and ResizeObserver
+    // does not fire for CSS transforms. `offsetWidth` is the box `--trigger-width`
+    // is supposed to copy (RAC `Popover.tsx:309-331`).
+    const width =
+      trigger instanceof HTMLElement ? trigger.offsetWidth : trigger.getBoundingClientRect().width;
+    setTriggerWidth(`${width}px`);
   };
   createEffect(() => {
     if (!isOpen()) return;
@@ -513,26 +577,27 @@ export function Popover(props: PopoverProps): JSX.Element {
     return remaining;
   };
 
-  const mergedStyle = (): JSX.CSSProperties => {
-    const ariaStyle = (popoverAria.popoverProps as Record<string, unknown>).style as
-      | JSX.CSSProperties
-      | undefined;
-    const renderStyle = (renderProps.style() || {}) as JSX.CSSProperties & Record<string, unknown>;
-    return {
-      ...ariaStyle,
-      ...renderStyle,
-      "--trigger-width": renderStyle["--trigger-width"] ?? triggerWidth(),
-    };
-  };
+  const shouldBeDialogBase = () =>
+    !local.isNonModal ||
+    resolvedTrigger() === "SubmenuTrigger" ||
+    resolvedTrigger() === "PreviewTrigger";
+  const [isDialog, setIsDialog] = createSignal(shouldBeDialogBase());
+  const [overlayContain, setOverlayContain] = createSignal(false);
+  createEffect(() => {
+    const node = popoverRef();
+    if (!node) return;
+    setIsDialog(shouldBeDialogBase() && node.querySelector("[role=dialog]") == null);
+  });
 
-  const shouldBeDialog = () => !local.isNonModal || resolvedTrigger() === "SubmenuTrigger";
+  const shouldBeDialog = () => isDialog();
   const shouldContainFocus = () => {
+    // RAC Popover.tsx:368 — `shouldContainFocus={isDialog && trigger !== 'PreviewTrigger'}`.
+    // MenuTrigger must contain Tab; excluding it leaked focus to document.body
+    // while the overlay stayed open (#267).
     if (!shouldBeDialog()) {
       return false;
     }
-
-    const trigger = resolvedTrigger();
-    return trigger !== "MenuTrigger" && trigger !== "SubmenuTrigger";
+    return resolvedTrigger() !== "PreviewTrigger";
   };
   const portalContext = useUNSAFE_PortalContext();
   const portalContainer = () => {
@@ -557,6 +622,9 @@ export function Popover(props: PopoverProps): JSX.Element {
       if (!isOpen() || !shouldBeDialog()) return;
       const node = popoverRef();
       if (!node || resolvedTrigger() === "SubmenuTrigger") return;
+      // Nested Dialog (DatePicker) owns initial focus via createDialog —
+      // RAC PopoverInner skips focusSafely when isDialog is false.
+      if (node.querySelector("[role=dialog]")) return;
       if (document.activeElement === node || node.contains(document.activeElement)) {
         return;
       }
@@ -600,40 +668,115 @@ export function Popover(props: PopoverProps): JSX.Element {
 
   const isNonModal = () => local.isNonModal ?? resolvedTrigger() === "PreviewTrigger";
 
-  const overlay = () => (
-    <PopoverContext.Provider
-      value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
-    >
-      <FocusScope contain={shouldContainFocus()} restoreFocus>
-        <div
-          {...domProps()}
-          {...cleanPopoverProps()}
-          {...(triggerContext?.overlayProps ?? {})}
-          ref={(el) => {
-            setPopoverRef(el);
-            triggerContext?.setOverlayRef?.(el);
-          }}
-          id={overlayId()}
-          role={shouldBeDialog() ? "dialog" : undefined}
-          tabIndex={shouldBeDialog() ? -1 : undefined}
-          class={renderProps.class()}
-          style={mergedStyle()}
-          lang={locale().locale}
-          dir={locale().direction}
-          data-trigger={resolvedTrigger()}
-          data-placement={popoverAria.placement()}
-          data-entering={dataAttr(local.isEntering)}
-          data-exiting={dataAttr(local.isExiting)}
-        >
-          <Show when={!isNonModal()}>
-            <PopoverDismissButton onDismiss={close} />
-          </Show>
-          {renderProps.renderChildren()}
-          <PopoverDismissButton onDismiss={close} />
-        </div>
-      </FocusScope>
-    </PopoverContext.Provider>
-  );
+  // Enter animation is owned by this inner tree so it remounts on each full
+  // open (RAC PopoverInner + useEnterAnimation). It stays mounted while
+  // `isExiting` so a reopen-during-exit does not start a second enter.
+  //
+  // Local addition (documented deviation): RAC's `useEnterAnimation(ref,
+  // !!placement)` reports `isEntering === false` while the popover is still
+  // unplaced (`animation.ts:22`), relying on `useLayoutEffect` positioning so
+  // that state never paints. Here the open-but-unplaced state is also reported
+  // as entering, so if positioning ever lands after a paint the `top:0;left:0`
+  // frame stays at the entering opacity instead of flashing at the origin.
+  function PopoverInner(): JSX.Element {
+    const enterAnimation = createEnterAnimation(
+      () => popoverRef(),
+      () => popoverAria.placement() != null,
+    );
+    const isEntering = () =>
+      Boolean(local.isEntering) ||
+      (!(local.shouldSkipAnimation ?? false) &&
+        (enterAnimation() || (isOpen() && popoverAria.placement() == null)));
+
+    const renderValues = createMemo<PopoverRenderProps>(() => {
+      const preferred = preferredPlacementAxis(local.placement);
+      const entering = isEntering();
+      return {
+        trigger: resolvedTrigger() ?? null,
+        // RAC usePopover reports placement from useLayoutEffect before paint.
+        // Until Solid's createEffect positioning lands, seed the preferred axis
+        // so S2 `translateY: { placement: { bottom: { isEntering: -4 } } }` does
+        // not miss the bottom branch. Hold that axis for the whole enter so a
+        // later measured flip cannot replace the keyframe mid-transition
+        // (DatePicker D2: Solid `0px 4px` vs React `0px -4px`).
+        placement: entering ? preferred : (popoverAria.placement() ?? preferred),
+        isEntering: entering,
+        isExiting: isExiting(),
+      };
+    });
+
+    const renderProps = useRenderProps(
+      {
+        get children() {
+          return props.children;
+        },
+        class: local.class,
+        style: local.style,
+        defaultClassName: "solidaria-Popover",
+      },
+      renderValues,
+    );
+
+    const mergedStyle = (): JSX.CSSProperties => {
+      const ariaStyle = (popoverAria.popoverProps as Record<string, unknown>).style as
+        | JSX.CSSProperties
+        | undefined;
+      const renderStyle = (renderProps.style() || {}) as JSX.CSSProperties &
+        Record<string, unknown>;
+      return {
+        ...ariaStyle,
+        ...renderStyle,
+        "--trigger-width": renderStyle["--trigger-width"] ?? triggerWidth(),
+      };
+    };
+
+    return (
+      <PopoverContext.Provider
+        value={{ placement: popoverAria.placement, arrowProps: () => popoverAria.arrowProps }}
+      >
+        <OverlayContext.Provider value={{ setContain: setOverlayContain }}>
+          <FocusScope
+            contain={(shouldContainFocus() || overlayContain()) && !isExiting()}
+            restoreFocus
+          >
+            <div
+              {...domProps()}
+              {...cleanPopoverProps()}
+              {...(triggerContext?.overlayProps ?? {})}
+              ref={(el) => {
+                setPopoverRef(el);
+                triggerContext?.setOverlayRef?.(el);
+              }}
+              id={overlayId()}
+              role={shouldBeDialog() ? "dialog" : undefined}
+              tabIndex={shouldBeDialog() ? -1 : undefined}
+              aria-labelledby={overlayLabelledBy()}
+              class={renderProps.class()}
+              style={mergedStyle()}
+              lang={locale().locale}
+              dir={locale().direction}
+              data-trigger={resolvedTrigger()}
+              data-placement={renderValues().placement}
+              data-entering={dataAttr(isEntering())}
+              data-exiting={dataAttr(isExiting())}
+            >
+              <Show when={!isNonModal()}>
+                <PopoverDismissButton onDismiss={close} />
+              </Show>
+              {/* A render-prop child runs once over a getter view of the render
+                  values. RAC re-invokes it on every placement / isEntering /
+                  isExiting change and React reconciles onto the same DOM; Solid
+                  would recreate the subtree, discarding a Menu's tree state and
+                  DOM focus when the enter animation settles (Tabs has the same
+                  contract for press flips). */}
+              {renderProps.renderChildrenStable()}
+              <PopoverDismissButton onDismiss={close} />
+            </div>
+          </FocusScope>
+        </OverlayContext.Provider>
+      </PopoverContext.Provider>
+    );
+  }
 
   const underlay = () => (
     <div
@@ -643,23 +786,38 @@ export function Popover(props: PopoverProps): JSX.Element {
     />
   );
 
+  const hiddenChildren = () => {
+    const children = props.children;
+    if (typeof children === "function") {
+      return children({
+        trigger: resolvedTrigger() ?? null,
+        placement: "bottom",
+        isEntering: false,
+        isExiting: false,
+      });
+    }
+    return children;
+  };
+
   return (
-    <Show when={isHydrated() && (isOpen() || local.isExiting)}>
-      <Portal mount={portalContainer()}>
-        <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
-        <Show
-          when={isSubPopover()}
-          fallback={
-            <div ref={setGroupRef} style={{ display: "contents" }}>
-              <PopoverGroupContext.Provider value={() => groupRef()}>
-                {overlay()}
-              </PopoverGroupContext.Provider>
-            </div>
-          }
-        >
-          {overlay()}
-        </Show>
-      </Portal>
+    <Show when={!isHidden()} fallback={hiddenChildren()}>
+      <Show when={isHydrated() && (isOpen() || isExiting())}>
+        <Portal mount={portalContainer()}>
+          <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
+          <Show
+            when={isSubPopover()}
+            fallback={
+              <div ref={setGroupRef} style={{ display: "contents" }}>
+                <PopoverGroupContext.Provider value={() => groupRef()}>
+                  <PopoverInner />
+                </PopoverGroupContext.Provider>
+              </div>
+            }
+          >
+            <PopoverInner />
+          </Show>
+        </Portal>
+      </Show>
     </Show>
   );
 }

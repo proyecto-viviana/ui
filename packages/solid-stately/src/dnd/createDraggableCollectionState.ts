@@ -30,9 +30,20 @@ import type {
   DragPreviewRenderer,
 } from "./types";
 
+type DragKey = string | number;
+
+export interface DraggableCollectionNode {
+  parentKey?: DragKey | null;
+}
+
+export interface DraggableCollectionLike {
+  getItem(key: DragKey): DraggableCollectionNode | null | undefined;
+  getKeys?(): Iterable<DragKey>;
+}
+
 export interface DraggableCollectionStateOptions<T = object> {
   /** A function that returns the items being dragged. */
-  getItems: (keys: Set<string | number>) => DragItem[];
+  getItems: (keys: Set<DragKey>) => DragItem[];
   /** Function that returns the allowed drop operations. */
   getAllowedDropOperations?: () => DropOperation[];
   /** Handler that is called when a drag operation is started. */
@@ -45,17 +56,23 @@ export interface DraggableCollectionStateOptions<T = object> {
   isDisabled?: boolean;
   /** Preview renderer function ref. */
   preview?: { current: DragPreviewRenderer | null };
+  /** Collection used to drop selected children whose ancestors are also dragging. */
+  collection?: DraggableCollectionLike;
+  /** Currently selected keys. `"all"` drags every collection key. */
+  selectedKeys?: "all" | Iterable<DragKey>;
+  /** Returns whether `key` is selected. */
+  isSelected?: (key: DragKey) => boolean;
 }
 
 export interface DraggableCollectionState {
   /** Whether items are currently being dragged. */
   readonly isDragging: boolean;
   /** The keys of the items being dragged. */
-  readonly draggingKeys: Set<string | number>;
+  readonly draggingKeys: Set<DragKey>;
   /** Whether dragging is disabled. */
   readonly isDisabled: boolean;
   /** Start a drag operation with the given keys. */
-  startDrag(keys: Set<string | number>, x: number, y: number): void;
+  startDrag(keys: Set<DragKey>, x: number, y: number): void;
   /** Update drag position. */
   moveDrag(x: number, y: number): void;
   /** End a drag operation. */
@@ -63,11 +80,87 @@ export interface DraggableCollectionState {
   /** Cancel a drag operation. */
   cancelDrag(): void;
   /** Get the items being dragged for the given keys. */
-  getItems(keys: Set<string | number>): DragItem[];
+  getItems(keys: Set<DragKey>): DragItem[];
   /** Get allowed drop operations. */
   getAllowedDropOperations(): DropOperation[];
   /** Preview renderer. */
   readonly preview: { current: DragPreviewRenderer | null } | undefined;
+  /**
+   * Keys that will be dragged with `key`. Mirrors RAC
+   * `useDraggableCollectionState.getKeys`: the clicked item, plus every other
+   * selected item that is not a descendant of another selected item.
+   */
+  getKeysForDrag(key: DragKey): Set<DragKey>;
+  /** Returns whether `key` is selected. */
+  isSelected(key: DragKey): boolean;
+}
+
+function selectedKeySet(
+  selectedKeys: "all" | Iterable<DragKey> | undefined,
+  collection: DraggableCollectionLike | undefined,
+): Set<DragKey> | "all" {
+  if (selectedKeys === "all") {
+    if (!collection?.getKeys) {
+      return "all";
+    }
+    return new Set(collection.getKeys());
+  }
+  return new Set(selectedKeys ?? []);
+}
+
+/**
+ * RAC `useDraggableCollectionState.ts` `getKeys`. The clicked item always
+ * drags. If it is selected, every selected item that is not a child of another
+ * selected item is included.
+ */
+export function getKeysForDrag(
+  key: DragKey,
+  options: {
+    collection?: DraggableCollectionLike;
+    selectedKeys?: "all" | Iterable<DragKey>;
+    isSelected?: (key: DragKey) => boolean;
+  },
+): Set<DragKey> {
+  const selected = selectedKeySet(options.selectedKeys, options.collection);
+  const isSelected = options.isSelected?.(key) ?? (selected === "all" ? true : selected.has(key));
+  if (!isSelected) {
+    return new Set([key]);
+  }
+
+  const keys = new Set<DragKey>();
+  const selectedKeys = selected === "all" ? options.collection?.getKeys?.() : selected;
+  if (!selectedKeys) {
+    keys.add(key);
+    return keys;
+  }
+
+  for (const currentKey of selectedKeys) {
+    const node = options.collection?.getItem(currentKey);
+    if (!node) {
+      keys.add(currentKey);
+      continue;
+    }
+    let isChild = false;
+    let parentKey = node.parentKey;
+    while (parentKey != null) {
+      const parentSelected =
+        options.isSelected?.(parentKey) ?? (selected === "all" ? true : selected.has(parentKey));
+      if (parentSelected) {
+        isChild = true;
+        break;
+      }
+      const parentNode = options.collection?.getItem(parentKey);
+      parentKey = parentNode ? parentNode.parentKey : null;
+    }
+    if (!isChild) {
+      keys.add(currentKey);
+    }
+  }
+
+  if (keys.size === 0) {
+    keys.add(key);
+  }
+  return keys;
 }
 
 /**
@@ -170,5 +263,21 @@ export function createDraggableCollectionState<T = object>(
     cancelDrag,
     getItems,
     getAllowedDropOperations,
+    getKeysForDrag: (key: DragKey) => {
+      const p = getProps();
+      return getKeysForDrag(key, {
+        collection: p.collection,
+        selectedKeys: p.selectedKeys,
+        isSelected: p.isSelected,
+      });
+    },
+    isSelected: (key: DragKey) => {
+      const p = getProps();
+      if (p.isSelected) {
+        return p.isSelected(key);
+      }
+      const selected = selectedKeySet(p.selectedKeys, p.collection);
+      return selected === "all" ? true : selected.has(key);
+    },
   };
 }

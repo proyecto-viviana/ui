@@ -39,6 +39,22 @@ the Vite Plus block (the `tsgolint` path checks files outside the
 `tsconfig.typecheck.json` contract). `vp run typecheck` runs `tsc` separately
 after `vp check`.
 
+Name-presence and keyboard-walk guards are not behavior evidence.
+`guard:rac-parity` and `guard:rac-export-gap` check barrel **name presence**
+(`export present` / `export missing`), including RAC sibling re-exports from
+`react-aria` / `react-stately`. Ticketed missing names live in
+`scripts/rac-export-gap-pending.json`: an open ticket is PENDING (non-blocking);
+an unlisted miss, a closed ticket, or a stale present entry fails. That lets a
+pin move land before the matching port. `guard:upstream-test-parity` is a
+one-way ratchet: remaining we-only / unmatched facts may only shrink.
+`guard:dnd-keyboard-parity` and `guard:virtualizer-keyboard-parity` diff the
+local keyboard walk against the pinned `useDroppableCollection` /
+`DropTargetKeyboardNavigation` sources.
+
+Blocking package evidence on `ci:release-readiness` and Certification Gates
+runs `test:run`, then `test:ssr`, then `test:hydrate`. SSR writes `output/*.html`
+and hydrate reads it. A failing hydrate test fails the job.
+
 ## Attribution audit
 
 ```bash
@@ -136,6 +152,16 @@ process exit is insufficient: `vp run build` finishes with
 `guard:package-artifacts`, which checks every declared manifest target.
 `guard:source-artifacts` rejects generated declarations and maps in source.
 
+`solid-spectrum` and `viviana-ui` pack in two passes: `dom` (compiled `.js`,
+`styles.css`, cleans `dist`) and `jsx` (macro-expanded `.jsx` for the `solid`
+export condition). Their `build` scripts run each pass in its own `vp pack`
+process (`PACK_PASS=dom`, then `PACK_PASS=jsx`) because `unplugin-parcel-macros`
+keeps generated CSS in module-level maps that concurrent passes in one process
+race on; the symptom was "A macro CSS import reached renderChunk" on CI. Only
+`vp pack --watch` (the `dev` script) runs both passes in one process.
+`selectPackPasses` in `scripts/package-macro-plugin.mjs` owns the switch and
+`guard:package-sourcemaps` holds its contract.
+
 The comparison app uses `astro build`, but its Playwright server uses foreground
 `vp preview`. Astro 7 automatically backgrounds preview when it detects an
 agent, which makes Playwright treat the server command as terminated.
@@ -144,3 +170,14 @@ agent, which makes Playwright treat the server command as terminated.
 
 Chromium Playwright may need to run outside the sandbox on this host when the
 browser reports `sandbox_host_linux.cc:41 shutdown: Operation not permitted`.
+
+On this WSL2 host, Chrome for Testing 151 (Playwright 1.62 build `1234`) never
+issues a compositor frame through SwiftShader: `requestAnimationFrame`,
+`requestIdleCallback` and CSS transitions never fire, `--screenshot` hangs, and
+every browser gate stalls on "waiting for element to be stable". Build `1228`
+(Chrome 149) is unaffected, `--dump-dom` works, clocks and `/dev/dxg` are not
+the cause. Run the comparison gates with
+`COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer`
+(`apps/comparison/playwright.config.ts` passes it to `launchOptions.args`);
+rendering then uses Skia CPU raster with the software compositor on both
+stacks, so pair diffs stay like-for-like. Leave it unset in CI.

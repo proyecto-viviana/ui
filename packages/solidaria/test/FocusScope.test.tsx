@@ -542,6 +542,84 @@ describe("FocusScope", () => {
       expect(document.activeElement).toBe(outside);
     });
 
+    it("does not throw when there is no focusable element to restore focus to", () => {
+      const TestComponent: Component<{
+        show: boolean;
+        showRestoreTarget: boolean;
+      }> = (props) => {
+        return (
+          <FocusScope>
+            <div>
+              {props.showRestoreTarget && (
+                <button data-testid="restore-target">restore target</button>
+              )}
+            </div>
+            {props.show && (
+              <FocusScope restoreFocus autoFocus>
+                <button data-testid="inside">inside</button>
+              </FocusScope>
+            )}
+          </FocusScope>
+        );
+      };
+
+      const [show, setShow] = createSignal(false);
+      const [showRestoreTarget, setShowRestoreTarget] = createSignal(true);
+      render(() => <TestComponent show={show()} showRestoreTarget={showRestoreTarget()} />);
+
+      const restoreTarget = screen.getByTestId("restore-target");
+      restoreTarget.focus();
+      expect(document.activeElement).toBe(restoreTarget);
+
+      setShow(true);
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(screen.getByTestId("inside"));
+
+      setShow(false);
+      setShowRestoreTarget(false);
+      expect(() => {
+        vi.runAllTimers();
+      }).not.toThrow();
+      expect(document.activeElement).toBe(document.body);
+    });
+
+    it("restores to the parent scope's first focusable when nodeToRestore is disconnected", () => {
+      const TestComponent: Component<{
+        show: boolean;
+        showRestoreTarget: boolean;
+      }> = (props) => {
+        return (
+          <FocusScope>
+            <div>
+              <button data-testid="parent-first">parent first</button>
+              {props.showRestoreTarget && (
+                <button data-testid="restore-target">restore target</button>
+              )}
+            </div>
+            {props.show && (
+              <FocusScope restoreFocus autoFocus>
+                <button data-testid="inside">inside</button>
+              </FocusScope>
+            )}
+          </FocusScope>
+        );
+      };
+
+      const [show, setShow] = createSignal(false);
+      const [showRestoreTarget, setShowRestoreTarget] = createSignal(true);
+      render(() => <TestComponent show={show()} showRestoreTarget={showRestoreTarget()} />);
+
+      screen.getByTestId("restore-target").focus();
+      setShow(true);
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(screen.getByTestId("inside"));
+
+      setShow(false);
+      setShowRestoreTarget(false);
+      vi.runAllTimers();
+      expect(document.activeElement).toBe(screen.getByTestId("parent-first"));
+    });
+
     it("should not restore focus if restoreFocus is false", () => {
       const TestComponent: Component = () => {
         const [show, setShow] = createSignal(false);

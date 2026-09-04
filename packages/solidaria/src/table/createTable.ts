@@ -80,6 +80,28 @@ function isRow<T>(node: GridNode<T> | null): boolean {
   return node?.type === "item";
 }
 
+function isNavigationDisabled<T>(state: TableState<T, TableCollection<T>>, key: Key): boolean {
+  return state.isDisabled(key) && state.disabledBehavior === "all";
+}
+
+function findNextNavigableKey<T>(
+  state: TableState<T, TableCollection<T>>,
+  collection: TableCollection<T>,
+  startKey: Key | null,
+  step: (key: Key) => Key | null,
+): Key | null {
+  let key = startKey;
+  while (key != null && isNavigationDisabled(state, key)) {
+    key = step(key);
+  }
+  return key;
+}
+
+function queryDataKey(root: HTMLElement, key: Key): HTMLElement | null {
+  const escaped = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(String(key)) : String(key);
+  return root.querySelector<HTMLElement>(`[data-key="${escaped}"]`);
+}
+
 /**
  * Creates accessibility props for a table component.
  */
@@ -230,15 +252,22 @@ export function createTable<T extends object>(
         e.preventDefault();
         // If focused on a cell, move to the same column in the next row
         if (isCell(focusedItem) && focusedItem.parentKey != null) {
-          const nextRowKey = collection.getKeyAfter(focusedItem.parentKey);
+          const nextRowKey = findNextNavigableKey(
+            s,
+            collection,
+            collection.getKeyAfter(focusedItem.parentKey),
+            (k) => collection.getKeyAfter(k),
+          );
           if (nextRowKey != null) {
             const cellIndex = focusedItem.index;
             const nextCell = getCellAtIndex(collection, nextRowKey, cellIndex);
             nextKey = nextCell?.key ?? nextRowKey;
           }
         } else {
-          // Move to next row
-          nextKey = collection.getKeyAfter(focusedKey);
+          // Move to next row, skipping navigation-disabled keys.
+          nextKey = findNextNavigableKey(s, collection, collection.getKeyAfter(focusedKey), (k) =>
+            collection.getKeyAfter(k),
+          );
         }
         break;
       }
@@ -247,15 +276,22 @@ export function createTable<T extends object>(
         e.preventDefault();
         // If focused on a cell, move to the same column in the previous row
         if (isCell(focusedItem) && focusedItem.parentKey != null) {
-          const prevRowKey = collection.getKeyBefore(focusedItem.parentKey);
+          const prevRowKey = findNextNavigableKey(
+            s,
+            collection,
+            collection.getKeyBefore(focusedItem.parentKey),
+            (k) => collection.getKeyBefore(k),
+          );
           if (prevRowKey != null) {
             const cellIndex = focusedItem.index;
             const prevCell = getCellAtIndex(collection, prevRowKey, cellIndex);
             nextKey = prevCell?.key ?? prevRowKey;
           }
         } else {
-          // Move to previous row
-          nextKey = collection.getKeyBefore(focusedKey);
+          // Move to previous row, skipping navigation-disabled keys.
+          nextKey = findNextNavigableKey(s, collection, collection.getKeyBefore(focusedKey), (k) =>
+            collection.getKeyBefore(k),
+          );
         }
         break;
       }
@@ -321,8 +357,9 @@ export function createTable<T extends object>(
       case "Home": {
         e.preventDefault();
         if (e.ctrlKey) {
-          // Ctrl+Home: Go to first row/cell
-          const firstRowKey = collection.getFirstKey();
+          const firstRowKey = findNextNavigableKey(s, collection, collection.getFirstKey(), (k) =>
+            collection.getKeyAfter(k),
+          );
           if (firstRowKey != null) {
             if (isCell(focusedItem) || focusMode === "cell") {
               const cells = getChildCells(collection, firstRowKey);
@@ -332,12 +369,12 @@ export function createTable<T extends object>(
             }
           }
         } else if (isCell(focusedItem) && focusedItem.parentKey != null) {
-          // Home: Go to first cell in current row
           const cells = getChildCells(collection, focusedItem.parentKey);
           nextKey = cells[0]?.key ?? null;
         } else {
-          // On row: go to first row
-          nextKey = collection.getFirstKey();
+          nextKey = findNextNavigableKey(s, collection, collection.getFirstKey(), (k) =>
+            collection.getKeyAfter(k),
+          );
         }
         break;
       }
@@ -345,8 +382,9 @@ export function createTable<T extends object>(
       case "End": {
         e.preventDefault();
         if (e.ctrlKey) {
-          // Ctrl+End: Go to last row/cell
-          const lastRowKey = collection.getLastKey();
+          const lastRowKey = findNextNavigableKey(s, collection, collection.getLastKey(), (k) =>
+            collection.getKeyBefore(k),
+          );
           if (lastRowKey != null) {
             if (isCell(focusedItem) || focusMode === "cell") {
               const cells = getChildCells(collection, lastRowKey);
@@ -356,12 +394,12 @@ export function createTable<T extends object>(
             }
           }
         } else if (isCell(focusedItem) && focusedItem.parentKey != null) {
-          // End: Go to last cell in current row
           const cells = getChildCells(collection, focusedItem.parentKey);
           nextKey = cells[cells.length - 1]?.key ?? null;
         } else {
-          // On row: go to last row
-          nextKey = collection.getLastKey();
+          nextKey = findNextNavigableKey(s, collection, collection.getLastKey(), (k) =>
+            collection.getKeyBefore(k),
+          );
         }
         break;
       }
@@ -386,7 +424,7 @@ export function createTable<T extends object>(
             if (next == null) break;
 
             // Estimate row height (default to 40px if we can't measure)
-            const rowElement = el.querySelector(`[data-key="${currentKey}"]`);
+            const rowElement = queryDataKey(el, currentKey);
             traveled += rowElement?.clientHeight ?? 40;
             currentKey = next;
           }
@@ -443,7 +481,7 @@ export function createTable<T extends object>(
             const prev = collection.getKeyBefore(currentKey);
             if (prev == null) break;
 
-            const rowElement = el.querySelector(`[data-key="${currentKey}"]`);
+            const rowElement = queryDataKey(el, currentKey);
             traveled += rowElement?.clientHeight ?? 40;
             currentKey = prev;
           }
@@ -487,6 +525,7 @@ export function createTable<T extends object>(
         return;
 
       case "a":
+      case "A": {
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault();
           if (s.selectionMode === "multiple") {
@@ -494,6 +533,7 @@ export function createTable<T extends object>(
           }
         }
         return;
+      }
 
       // NOTE: Space/Enter selection is intentionally NOT handled here. Upstream
       // useSelectableCollection has no ' '/Enter case — keyboard selection is owned
@@ -584,8 +624,11 @@ export function createTable<T extends object>(
       return;
     }
 
-    const target = el.querySelector<HTMLElement>(`[data-key="${key}"]`);
+    const target = queryDataKey(el, key);
     if (target && target !== active) {
+      if (isNavigationDisabled(s, key)) {
+        return;
+      }
       target.focus();
 
       // Reveal the newly focused row/cell when navigating with the keyboard,
@@ -639,9 +682,7 @@ export function createTable<T extends object>(
       "aria-labelledby": p["aria-labelledby"],
       "aria-describedby": describedBy,
       "aria-multiselectable": s.selectionMode === "multiple" ? "true" : undefined,
-      // Keep the grid itself tabbable so keyboard users can enter
-      // row/cell navigation without requiring a prior pointer interaction.
-      tabIndex: 0,
+      tabIndex: s.focusedKey != null && !isNavigationDisabled(s, s.focusedKey) ? -1 : 0,
       onKeyDown,
       onFocus,
       onBlur,

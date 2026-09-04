@@ -82,8 +82,14 @@ export function createSwitch(
     },
     isSelected: toggle.isSelected,
     isPressed: toggle.isPressed,
-    isDisabled: toggle.isDisabled,
-    isReadOnly: toggle.isReadOnly,
-    isInvalid: toggle.isInvalid,
+    get isDisabled() {
+      return toggle.isDisabled;
+    },
+    get isReadOnly() {
+      return toggle.isReadOnly;
+    },
+    get isInvalid() {
+      return toggle.isInvalid;
+    },
   };
 }

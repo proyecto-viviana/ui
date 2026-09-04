@@ -3,11 +3,13 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import type { JSX } from "solid-js";
+import { createSignal } from "solid-js";
 import { fireEvent, render, screen, waitFor, within } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { ActionButton, ToggleButton } from "../src";
 import { Button } from "../src/button";
 import { Popover, PopoverTrigger } from "../src/popover";
+import { style } from "../src/style";
 import * as MenuSubpath from "../src/Menu";
 import {
   ContextualHelpPopover,
@@ -86,7 +88,7 @@ describe("Menu (solid-spectrum)", () => {
       const menuItem = screen.getByRole("menuitem", { name: /Locked action/ });
       expect(menuItem).toHaveAttribute("aria-haspopup", "menu");
       expect(menuItem.querySelector('[data-rsp-slot="descriptor"] svg')).toHaveAccessibleName(
-        "Unavailable",
+        "Unavailable, expand for details",
       );
 
       await user.hover(menuItem);
@@ -133,6 +135,62 @@ describe("Menu (solid-spectrum)", () => {
       expect(trigger).toHaveAttribute("aria-controls", menu.id);
       expect(menu.closest("[data-trigger='MenuTrigger']")).toBeInTheDocument();
       expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+    });
+
+    it("places from live direction and align after mount, matching RAC", async () => {
+      const user = setupUser();
+      function LivePlacementMenu() {
+        const [direction, setDirection] = createSignal<"bottom" | "top">("bottom");
+        return (
+          <>
+            <button type="button" onClick={() => setDirection("top")}>
+              Place top
+            </button>
+            <MenuTrigger align="start" direction={direction()} shouldFlip={false}>
+              <ActionButton aria-label="Layer actions">Layer actions</ActionButton>
+              <Menu aria-label="Layer actions">
+                <MenuItem id="copy" textValue="Copy">
+                  Copy
+                </MenuItem>
+              </Menu>
+            </MenuTrigger>
+          </>
+        );
+      }
+
+      render(() => <LivePlacementMenu />);
+      await user.click(screen.getByRole("button", { name: "Place top" }));
+      await user.click(screen.getByRole("button", { name: "Layer actions" }));
+
+      const menu = await screen.findByRole("menu", { name: "Layer actions" });
+      expect(menu.closest("[data-placement]")).toHaveAttribute("data-placement", "top");
+    });
+
+    it("keeps Tab inside an open Menu overlay", async () => {
+      const user = setupUser();
+      render(() => (
+        <>
+          <MenuTrigger>
+            <ActionButton aria-label="Layer actions">Layer actions</ActionButton>
+            <Menu aria-label="Layer actions">
+              <MenuItem id="copy" textValue="Copy">
+                Copy
+              </MenuItem>
+              <MenuItem id="cut" textValue="Cut">
+                Cut
+              </MenuItem>
+            </Menu>
+          </MenuTrigger>
+          <button type="button">After</button>
+        </>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Layer actions" }));
+      const menu = await screen.findByRole("menu", { name: "Layer actions" });
+      await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+      await user.tab();
+      expect(menu.contains(document.activeElement)).toBe(true);
+      expect(document.activeElement).not.toBe(document.body);
     });
 
     it("opens an ActionButton context menu only from a context-menu request", async () => {
@@ -826,5 +884,240 @@ describe("Menu (solid-spectrum)", () => {
       expect(largeItem?.className).toContain("-macro-dynamic");
       expect(largeItem?.className).not.toBe(smallItemClassName);
     });
+  });
+
+  it("keeps the keyboard-focused item and menu instance when the popover's enter animation settles", async () => {
+    // web e2e menu-focus (CI, 2026-09-02): pointer open, ArrowDown focused
+    // "New file", then ~200ms later the S2 Popover's isEntering flip re-ran its
+    // render-prop child and remounted the Menu — focusedKey null, menu root
+    // focused, the item never regained focus.
+    const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+    let finishEnter!: () => void;
+    const finished = new Promise<void>((resolve) => {
+      finishEnter = resolve;
+    });
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished }] as unknown as Animation[],
+    });
+
+    try {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger>
+          <ActionButton>Actions</ActionButton>
+          <Menu aria-label="Actions">
+            <MenuItem id="new" textValue="New file">
+              New file
+            </MenuItem>
+            <MenuItem id="open" textValue="Open">
+              Open
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Actions" }));
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      const overlay = menu.closest("[data-placement]") as HTMLElement;
+      expect(overlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(menu).toHaveFocus());
+
+      await user.keyboard("{ArrowDown}");
+      const newFile = screen.getByRole("menuitem", { name: "New file" });
+      expect(newFile).toHaveFocus();
+
+      finishEnter();
+      await waitFor(() => expect(overlay).not.toHaveAttribute("data-entering"));
+
+      expect(screen.getByRole("menu")).toBe(menu);
+      expect(screen.getByRole("menuitem", { name: "New file" })).toBe(newFile);
+      expect(newFile).toHaveFocus();
+      expect(newFile).toHaveAttribute("tabindex", "0");
+
+      await user.keyboard("{ArrowDown}");
+      expect(screen.getByRole("menuitem", { name: "Open" })).toHaveFocus();
+    } finally {
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+      if (previousCssTransition === undefined) {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+      }
+    }
+  });
+
+  it("keeps the menu mounted through popover exit so ArrowUp after unmount focuses the last item", async () => {
+    // web e2e menu-focus.spec.ts:20 (CI, 2026-09-02): ArrowDown focuses first,
+    // Escape, ArrowUp should focus last. The port used to drop role="menu" on
+    // isOpen while PopoverInner was still exiting, so ArrowUp reused the same
+    // Menu instance and autoFocus="last" never ran. Hang exit through Escape
+    // so the test cannot pass by jsdom ending the animation immediately.
+    const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+    let finishExit!: () => void;
+    const finished = new Promise<void>((resolve) => {
+      finishExit = resolve;
+    });
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished }] as unknown as Animation[],
+    });
+
+    try {
+      const user = setupUser();
+      render(() => (
+        <MenuTrigger>
+          <ActionButton>Actions</ActionButton>
+          <Menu aria-label="Actions">
+            <MenuItem id="new" textValue="New file">
+              New file
+            </MenuItem>
+            <MenuItem id="open" textValue="Open">
+              Open
+            </MenuItem>
+            <MenuItem id="save" textValue="Save">
+              Save
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+
+      const trigger = screen.getByRole("button", { name: "Actions" });
+      trigger.focus();
+      await user.keyboard("{ArrowDown}");
+      const menu = await screen.findByRole("menu", { name: "Actions" });
+      const overlay = menu.closest("[data-placement]") as HTMLElement;
+      await waitFor(() => expect(screen.getByRole("menuitem", { name: "New file" })).toHaveFocus());
+
+      await user.keyboard("{Escape}");
+      expect(screen.getByRole("menu", { name: "Actions" })).toBe(menu);
+      expect(overlay).toHaveAttribute("data-exiting");
+      expect(trigger).not.toHaveFocus();
+
+      finishExit();
+      await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+      await waitFor(() => expect(trigger).toHaveFocus());
+
+      await user.keyboard("{ArrowUp}");
+      await waitFor(() => expect(screen.getByRole("menuitem", { name: "Save" })).toHaveFocus());
+    } finally {
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+      if (previousCssTransition === undefined) {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+      }
+    }
+  });
+
+  it("composes the S2 Popover surface, including entering motion, matching a bare Popover", async () => {
+    const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    if (typeof CSSTransition === "undefined") {
+      (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+    }
+    const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+    Object.defineProperty(Element.prototype, "getAnimations", {
+      configurable: true,
+      writable: true,
+      value: () => [{ finished: new Promise<void>(() => {}) }] as unknown as Animation[],
+    });
+    const popoverMotion = style<{
+      isEntering?: boolean;
+      isExiting?: boolean;
+      placement?: "top" | "bottom" | "left" | "right";
+    }>({
+      opacity: { isEntering: 0, isExiting: 0 },
+      translateY: {
+        placement: {
+          top: { isEntering: 4, isExiting: 4 },
+          bottom: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      translateX: {
+        placement: {
+          left: { isEntering: 4, isExiting: 4 },
+          right: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      transition: "[opacity, translate]",
+      transitionDuration: 200,
+      transitionTimingFunction: { isExiting: "in" },
+      pointerEvents: { isExiting: "none" },
+    });
+    const classTokens = (className: string) => className.split(/\s+/).filter(Boolean);
+    const motionContract = (className: string) =>
+      classTokens(className).filter((token) => !token.startsWith("-macro-dynamic-"));
+
+    try {
+      const enteringMotion = popoverMotion({
+        isEntering: true,
+        isExiting: false,
+        placement: "bottom",
+      });
+      const settledMotion = popoverMotion({
+        isEntering: false,
+        isExiting: false,
+        placement: "bottom",
+      });
+      expect(enteringMotion).not.toBe(settledMotion);
+      const enteringContract = motionContract(enteringMotion);
+      expect(enteringContract.length).toBeGreaterThan(0);
+
+      const { unmount: unmountMenu } = render(() => (
+        <MenuTrigger defaultOpen>
+          <Button>Actions</Button>
+          <Menu aria-label="Actions">
+            <MenuItem id="edit" textValue="Edit">
+              Edit
+            </MenuItem>
+          </Menu>
+        </MenuTrigger>
+      ));
+      const menuOverlay = screen.getByRole("menu").closest("[data-placement]") as HTMLElement;
+      expect(menuOverlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(menuOverlay.getAttribute("data-placement")).toBeTruthy());
+      const menuTokens = classTokens(menuOverlay.className);
+      expect(menuTokens).toEqual(expect.arrayContaining(enteringContract));
+      unmountMenu();
+
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover hideArrow>
+            <p>Bare popover</p>
+          </Popover>
+        </PopoverTrigger>
+      ));
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const bareOverlay = screen.getByRole("dialog");
+      expect(bareOverlay).toHaveAttribute("data-entering");
+      const bareTokens = classTokens(bareOverlay.className);
+      expect(bareTokens).toEqual(expect.arrayContaining(enteringContract));
+      expect(menuTokens).toEqual(bareTokens);
+    } finally {
+      if (previous) {
+        Object.defineProperty(Element.prototype, "getAnimations", previous);
+      } else {
+        delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+      }
+      if (previousCssTransition === undefined) {
+        delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+      }
+    }
   });
 });

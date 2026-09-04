@@ -2,6 +2,7 @@
 import CatalogueControlsFallback from "./CatalogueControlsFallback.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
 import type { ComponentCoverage } from "@comparison/data/coverage";
+import { comparisonComponentPath } from "@comparison/data/site-meta";
 
 interface EntryWithCoverage {
   entry: ComparisonEntry;
@@ -57,7 +58,7 @@ const {
   <div class="s2-component-list" data-entry-list>
     {entriesWithCoverage.map(({ entry, coverage }, index) => (
       <a
-        href={`/components/${entry.slug}`}
+        href={comparisonComponentPath(entry.slug)}
         class="s2-component-row"
         data-entry-card
         data-index={index}

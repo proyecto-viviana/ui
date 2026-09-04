@@ -33,7 +33,7 @@ import {
 import { useProviderProps } from "../provider";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
-import { fontRelative, space, style } from "../style" with { type: "macro" };
+import { space, style } from "../style" with { type: "macro" };
 import { mergeProps as mergeAriaProps, useLocale } from "@proyecto-viviana/solidaria";
 import { mergeStyles } from "../style/runtime";
 import { centerBaseline } from "../icon/center-baseline";
@@ -294,7 +294,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
       slot: "icon",
       render: centerBaseline({ slot: "icon", styles: style({ order: 0 }) }),
       styles: style({
-        size: fontRelative(20),
+        size: "1lh",
         marginStart: "--iconMargin",
         flexShrink: 0,
       }),

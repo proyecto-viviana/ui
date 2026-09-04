@@ -5,7 +5,9 @@
     "declaration": true,
     "declarationMap": true,
     "declarationDir": "./dist",
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "rootDir": "./src",
+    "outDir": "./dist"
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]

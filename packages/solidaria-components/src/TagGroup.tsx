@@ -138,6 +138,8 @@ export interface TagRenderProps {
   isDisabled: boolean;
   /** Whether the tag is focused. */
   isFocused: boolean;
+  /** Whether the tag is keyboard focused. */
+  isFocusVisible: boolean;
   /** Whether the tag is pressed. */
   isPressed: boolean;
   /** Whether the tag allows removal. */
@@ -406,6 +408,9 @@ export function Tag(props: TagProps): JSX.Element {
       get textValue() {
         return local.textValue;
       },
+      get onAction() {
+        return local.onAction ? () => local.onAction?.(local.id) : undefined;
+      },
     },
     state!,
     tagRef,
@@ -417,10 +422,6 @@ export function Tag(props: TagProps): JSX.Element {
     return {
       ...raw,
       onPress: () => {
-        if (!tagAria.isDisabled && groupContext?.onRemove) {
-          groupContext.onRemove(new Set([local.id]));
-          return;
-        }
         rawHandler?.();
       },
     };
@@ -430,6 +431,7 @@ export function Tag(props: TagProps): JSX.Element {
     isSelected: tagAria.isSelected,
     isDisabled: tagAria.isDisabled,
     isFocused: tagAria.isFocused,
+    isFocusVisible: tagAria.isFocusVisible,
     isPressed: tagAria.isPressed,
     allowsRemoving: tagAria.allowsRemoving,
     selectionMode: state?.selectionMode() ?? "none",
@@ -472,19 +474,10 @@ export function Tag(props: TagProps): JSX.Element {
           {...tagAria.rowProps}
           class={renderProps.class()}
           style={renderProps.style()}
-          onClick={(event) => {
-            const rowClick = tagAria.rowProps.onClick;
-            if (typeof rowClick === "function") {
-              (rowClick as JSX.EventHandler<HTMLDivElement, MouseEvent>)(event);
-            }
-
-            if (!tagAria.isDisabled && !(event.target as Element | null)?.closest("button")) {
-              local.onAction?.(local.id);
-            }
-          }}
           data-selected={dataAttr(tagAria.isSelected)}
           data-disabled={dataAttr(tagAria.isDisabled)}
           data-focused={dataAttr(tagAria.isFocused)}
+          data-focus-visible={dataAttr(tagAria.isFocusVisible)}
           data-pressed={dataAttr(tagAria.isPressed)}
           data-allows-removing={dataAttr(tagAria.allowsRemoving)}
         >
@@ -519,10 +512,12 @@ export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
   const rawId = getRemoveButtonProps().id;
   const rawAriaLabel = getRemoveButtonProps()["aria-label"];
   const rawAriaLabelledBy = getRemoveButtonProps()["aria-labelledby"];
+  const rawTabIndex = getRemoveButtonProps().tabIndex;
   const buttonId: string | undefined = typeof rawId === "string" ? rawId : undefined;
   const ariaLabel: string = typeof rawAriaLabel === "string" ? rawAriaLabel : "Remove";
   const ariaLabelledBy: string | undefined =
     typeof rawAriaLabelledBy === "string" ? rawAriaLabelledBy : undefined;
+  const tabIndex: number | undefined = typeof rawTabIndex === "number" ? rawTabIndex : undefined;
 
   const handleClick: JSX.EventHandler<HTMLButtonElement, MouseEvent> = (event) => {
     event.stopPropagation();
@@ -543,6 +538,7 @@ export function TagRemoveButton(props: TagRemoveButtonProps): JSX.Element {
       id={buttonId}
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
+      tabIndex={tabIndex}
       disabled={getIsDisabled()}
       data-allows-removing={dataAttr(tagContext?.allowsRemoving ?? false)}
       onPointerDown={stopRowPress}

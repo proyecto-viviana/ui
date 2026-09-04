@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { DropZone, DropZoneContext } from "../src/DropZone";
 
 function createDataTransferStub(): DataTransfer {
@@ -56,7 +57,7 @@ describe("DropZone", () => {
     expect(zone).toBeInTheDocument();
     expect(zone).toHaveClass("solidaria-DropZone");
 
-    const button = screen.getByRole("button", { name: "Drop files" });
+    const button = screen.getByRole("button", { name: "DropZone" });
     expect(button).toBeInTheDocument();
   });
 
@@ -124,7 +125,7 @@ describe("DropZone", () => {
     expect(zone).toBeInTheDocument();
     expect(zone).toHaveAttribute("data-disabled");
 
-    const button = screen.getByRole("button", { name: "Drop files" });
+    const button = screen.getByRole("button", { name: "DropZone" });
     expect(button).toBeDisabled();
   });
 
@@ -132,7 +133,7 @@ describe("DropZone", () => {
     const onDrop = vi.fn();
     render(() => <DropZone onDrop={onDrop}>Drop files</DropZone>);
 
-    const button = screen.getByRole("button", { name: "Drop files" });
+    const button = screen.getByRole("button", { name: "DropZone" });
     const clipboardData = createClipboardDataStub("pasted text");
     fireEvent.paste(button, { clipboardData });
 
@@ -161,5 +162,16 @@ describe("DropZone", () => {
 
     expect(screen.getByRole("button", { name: "Context upload" })).toBeInTheDocument();
     expect(document.querySelector(".context-dropzone")).toBeInTheDocument();
+  });
+
+  it("formats the default accessible name from I18nProvider, not the English literal", () => {
+    render(() => (
+      <I18nProvider locale="de-DE">
+        <DropZone>Dateien ablegen</DropZone>
+      </I18nProvider>
+    ));
+    expect(screen.getByRole("button", { name: "Ablegebereich" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Drop files" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "DropZone" })).not.toBeInTheDocument();
   });
 });

@@ -191,6 +191,11 @@ export interface RangeCalendarState<T extends DateValue = DateValue> {
   selectFocusedDate: () => void;
   /** Selects a specific date. */
   selectDate: (date: CalendarDate) => void;
+  /**
+   * After a keyboard range-start selection, move focus to the next available
+   * day so the in-progress range is visible. RAC `focusNearestAvailableDate`.
+   */
+  focusNearestAvailableDate: (anchorDate: CalendarDate) => void;
   /** Whether focus is currently within the calendar. */
   isFocused: Accessor<boolean>;
   /** Sets whether focus is within the calendar. */
@@ -855,6 +860,20 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     return week;
   };
 
+  const focusNearestAvailableDate = (anchor: CalendarDate) => {
+    // RAC `useRangeCalendarState.ts:261-273`: prefer anchor+1, else −1, skip invalid.
+    const isDateInvalid = (candidate: CalendarDate) =>
+      isInvalid(candidate) || isDateOutsideAllowedRange(candidate);
+    let nextDay = anchor.add({ days: 1 });
+    if (isDateInvalid(nextDay)) {
+      nextDay = anchor.subtract({ days: 1 });
+    }
+    if (!isDateInvalid(nextDay)) {
+      setFocusedDate(nextDay);
+      setFocused(true);
+    }
+  };
+
   // Get number of weeks in a month
   const getWeeksInMonthFn = (date?: CalendarDate): number => {
     const monthDate = date ?? focusedDate();
@@ -985,6 +1004,7 @@ export function createRangeCalendarState<T extends DateValue = CalendarDate>(
     focusPageEnd,
     selectFocusedDate,
     selectDate,
+    focusNearestAvailableDate,
     isFocused,
     setFocused,
     getDatesInWeek,

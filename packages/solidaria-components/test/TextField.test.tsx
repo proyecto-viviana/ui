@@ -8,7 +8,7 @@
  * TextField context for proper accessibility and focus tracking.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
-import { fireEvent, render, screen } from "@solidjs/testing-library";
+import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import {
   TextField,
@@ -100,7 +100,7 @@ describe("TextField", () => {
       expect(screen.getByText("Test")).toHaveAttribute("class", "solidaria-Label");
     });
 
-    it('links aria-describedby to a <Text slot="description"> via TextContext slots', () => {
+    it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
       // TextField provides descriptionProps as a TextContext slot, so the
       // <Text slot="description"> picks up the id the input's aria-describedby
       // references — the faithful upstream wiring path.
@@ -117,9 +117,15 @@ describe("TextField", () => {
       ));
 
       const input = screen.getByRole("textbox");
-      const describedById = input.getAttribute("aria-describedby");
-      expect(describedById).toBeTruthy();
-      const description = document.getElementById(describedById!);
+      await waitFor(() => {
+        const ids = (input.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+        expect(ids.map((id) => document.getElementById(id)?.textContent).join("")).toContain(
+          "Help text",
+        );
+      });
+      const describedById = input.getAttribute("aria-describedby")!;
+      const descriptionId = describedById.split(" ").find((id) => document.getElementById(id));
+      const description = document.getElementById(descriptionId!);
       expect(description).toHaveTextContent("Help text");
       expect(description).toHaveClass("solidaria-Text");
     });
@@ -389,7 +395,7 @@ describe("TextField", () => {
       expect(textarea).toHaveAttribute("aria-required", "true");
     });
 
-    it("supports validation errors", () => {
+    it("supports validation errors", async () => {
       render(() => (
         <TextField isInvalid errorMessage="Constraints not satisfied">
           {() => (
@@ -403,14 +409,16 @@ describe("TextField", () => {
       ));
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-describedby");
-      expect(document.getElementById(input.getAttribute("aria-describedby")!)).toHaveTextContent(
-        "Constraints not satisfied",
-      );
+      await waitFor(() => {
+        const ids = (input.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+        expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toContain(
+          "Constraints not satisfied",
+        );
+      });
       expect(input.closest(".solidaria-TextField")).toHaveAttribute("data-invalid");
     });
 
-    it("should not render the field error div if no error is provided and isInvalid is true", () => {
+    it("should not render the field error div if no error is provided and isInvalid is true", async () => {
       render(() => (
         <TextField isRequired isInvalid>
           {() => (
@@ -426,11 +434,13 @@ describe("TextField", () => {
       const input = screen.getByRole("textbox");
       expect(input).toHaveAttribute("aria-invalid");
       expect(input.closest(".solidaria-TextField")).toHaveAttribute("data-invalid");
-      expect(input).not.toHaveAttribute("aria-describedby");
+      await waitFor(() => {
+        expect(input).not.toHaveAttribute("aria-describedby");
+      });
       expect(document.querySelector(".solidaria-FieldError")).not.toBeInTheDocument();
     });
 
-    it("supports customizing validation errors", () => {
+    it("supports customizing validation errors", async () => {
       render(() => (
         <TextField isInvalid errorMessage="Default error">
           {() => (
@@ -446,10 +456,12 @@ describe("TextField", () => {
       ));
 
       const input = screen.getByRole("textbox");
-      expect(input).toHaveAttribute("aria-describedby");
-      expect(document.getElementById(input.getAttribute("aria-describedby")!)).toHaveTextContent(
-        "Please enter a name",
-      );
+      await waitFor(() => {
+        const ids = (input.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean);
+        expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toContain(
+          "Please enter a name",
+        );
+      });
     });
   });
 
@@ -663,9 +675,11 @@ describe("TextField", () => {
       await assertNoA11yViolations(container);
     });
 
-    it("ARIA ID: no dangling refs", () => {
+    it("ARIA ID: no dangling refs", async () => {
       render(() => <TextField aria-label="Name">{() => <Input />}</TextField>);
-      assertAriaIdIntegrity(document.body);
+      await waitFor(() => {
+        assertAriaIdIntegrity(document.body);
+      });
     });
 
     it("DOM: data-testid forwards", () => {
@@ -698,9 +712,42 @@ describe("TextField", () => {
       expect(textarea).toBeInTheDocument();
     });
 
-    it("ARIA ID: TextArea no dangling refs", () => {
+    it("ARIA ID: TextArea no dangling refs", async () => {
       render(() => <TextField aria-label="Description">{() => <TextArea />}</TextField>);
-      assertAriaIdIntegrity(document.body);
+      await waitFor(() => {
+        assertAriaIdIntegrity(document.body);
+      });
+    });
+  });
+
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      render(() => (
+        <form>
+          <TextField aria-label="Email" isInvalid defaultValue="Quarterly report">
+            {() => <Input />}
+          </TextField>
+        </form>
+      ));
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+    });
+
+    it("skips custom validity when disabled", async () => {
+      render(() => (
+        <TextField aria-label="Email" isInvalid isDisabled defaultValue="Quarterly report">
+          {() => <Input />}
+        </TextField>
+      ));
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(false);
+        expect(input.checkValidity()).toBe(true);
+      });
     });
   });
 });

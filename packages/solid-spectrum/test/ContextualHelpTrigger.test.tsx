@@ -229,4 +229,37 @@ describe("ContextualHelp (solid-spectrum)", () => {
     const arrowSvg = baseElement.querySelector('svg[viewBox="0 0 18 10"]');
     expect(arrowSvg).toBeNull();
   });
+
+  it("omits aria-haspopup on the trigger to match S2 DialogTrigger", () => {
+    render(() => (
+      <ContextualHelp>
+        <Heading>Help</Heading>
+        <Content>Details</Content>
+      </ContextualHelp>
+    ));
+
+    expect(screen.getByRole("button")).not.toHaveAttribute("aria-haspopup");
+  });
+
+  it("updates overlay placement when the placement prop changes after mount", async () => {
+    const [placement, setPlacement] = createSignal<"bottom start" | "top start">("bottom start");
+
+    render(() => (
+      <ContextualHelp isOpen placement={placement()}>
+        <Heading>Help</Heading>
+        <Content>Details</Content>
+      </ContextualHelp>
+    ));
+
+    const popover = await waitFor(() => document.querySelector('[data-trigger="PopoverTrigger"]'));
+    expect(popover).toHaveAttribute("data-placement", "bottom");
+
+    setPlacement("top start");
+    await waitFor(() => {
+      expect(document.querySelector('[data-trigger="PopoverTrigger"]')).toHaveAttribute(
+        "data-placement",
+        "top",
+      );
+    });
+  });
 });

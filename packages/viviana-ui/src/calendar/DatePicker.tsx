@@ -57,6 +57,8 @@ import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import S2CalendarIcon from "../icon/s2wf-icons/CalendarIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { useProviderProps, useTheme } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
 import {
@@ -288,7 +290,7 @@ const dateSegment = style<{ isFocused?: boolean; isPunctuation?: boolean }>({
 });
 
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -450,9 +452,8 @@ const datePickerPopover = style<{
   // Byte-copied from the shared `popoverStyles` enter/exit motion (which is
   // itself S2 `Popover.tsx`'s `popover()` motion). S2's DatePicker popover is a
   // plain `<Popover>`, so its enter transition IS this generic opacity/translate
-  // fade — NOT a bespoke keyframe. The port's DatePicker owns a private
-  // `DatePickerContent` that bypasses the shared Popover, so the same tokens are
-  // mirrored here and driven by `createEnterAnimation` (data-entering) below.
+  // fade — NOT a bespoke keyframe. Headless `DatePickerContent` now renders that
+  // Popover, so these tokens key off its `isEntering` / `isExiting` render props.
   opacity: {
     isEntering: 0,
     isExiting: 0,
@@ -789,6 +790,7 @@ function DatePickerPopup(props: {
 }): JSX.Element {
   const theme = useTheme();
   const datePicker = useDatePickerContext();
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const timeGranularity = () =>
     datePicker.datePickerState.granularity === "day"
       ? "minute"
@@ -799,7 +801,7 @@ function DatePickerPopup(props: {
       class={(rp) =>
         datePickerPopover({
           colorScheme: theme.colorScheme,
-          placement: rp.placement ?? undefined,
+          placement: rp.placement ?? "bottom",
           isEntering: rp.isEntering,
           isExiting: rp.isExiting,
         })
@@ -816,7 +818,7 @@ function DatePickerPopup(props: {
           <Show when={props.hasTime}>
             <TimeField
               size="md"
-              label="Time"
+              label={stringFormatter().format("datepicker.time")}
               value={datePicker.datePickerState.timeValue() ?? undefined}
               granularity={timeGranularity()}
               hourCycle={props.hourCycle}

@@ -24,8 +24,8 @@ parity evidence and is never imported by a package.
 
 The checkout is shallow and stays at the exact commit in that file. The
 comparison app must use the same exact upstream package versions. The
-`@adobe/spectrum-tokens` version in `solid-spectrum` must equal the exact version
-used by the pinned S2 source.
+`@adobe/spectrum-tokens` version in `solid-spectrum` and in `viviana-ui` must
+equal the exact version used by the pinned S2 source.
 
 Pin alignment is not behavior absorption. A train is absorbed only after each
 source and release-note delta is classified, ported or proved not applicable,
@@ -43,7 +43,8 @@ Keep these checks separate:
 3. **Comparison dependencies against pin.** The exact versions in
    `apps/comparison/package.json` must equal `scripts/upstream-pin.json`.
 4. **Spectrum tokens against pinned S2.** `guard:spectrum-tokens-pin` verifies
-   the declared, installed, and vendored token versions.
+   the declared, installed, and vendored token versions for both styled
+   packages.
 
 Missing source evidence is a failure. A guard must not silently skip because the
 ignored checkout is absent.
@@ -124,8 +125,13 @@ existing checkout through the release process below.
     layout, engine behavior, pointer modality, Shadow DOM, or mobile assistive
     technology.
 
-11. Mark the train verified only when all required atomic tasks and same-revision
-    gates pass.
+11. Mark the train verified when three things hold at the same revision: the
+    pin has moved (`scripts/upstream-pin.json`, the comparison manifest, the
+    token pin, and the vendored checkout agree), every delta from step 6 has a
+    ticket, and the certified suite is green against the new oracle. Behavior
+    tickets carry across trains; a train does not wait for them. (Owner
+    decision on #216, 2026-09-01. Before that date "verified" implicitly meant
+    every behavior absorbed, which left the pin unable to move.)
 
 If Adobe moves test files, update `UPSTREAM_TEST_ROOTS` or the matcher in
 `scripts/check-upstream-test-parity.ts`. Current S2 tests live under

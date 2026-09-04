@@ -12,6 +12,10 @@ history:
 Re-enable the 13 disabled lint rules. If a rule cannot apply to a specific
 line, keep the exception local and state why it is required.
 
+`no-floating-promises` would currently flag `document.fonts?.ready.then(...)`
+in Breadcrumbs and Tabs (both styled copies). Type-aware lint is advertised
+(`typeAware: true`) with every `typescript/*` rule off.
+
 ## Done when
 
 The repository has no unexplained global disable for these rules, and the lint

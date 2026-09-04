@@ -40,6 +40,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-web-${{ hashFiles('pnpm-lock.yaml', 'apps/web/package.json') }}
+
       - name: Install Playwright Chromium
         run: pnpm exec vp exec --filter @proyecto-viviana/web -- playwright install --with-deps chromium
 

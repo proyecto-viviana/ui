@@ -5,6 +5,7 @@ import DocsTocMount from "@comparison/components/DocsTocMount.astro";
 import DocsTopBarMount from "@comparison/components/DocsTopBarMount.astro";
 import type { ComparisonEntry } from "@comparison/data/comparison-manifest";
 import type { DocsTocItem, DocsTocVariant } from "@comparison/data/docs-toc";
+import { comparisonSiteDescription } from "@comparison/data/site-meta";
 import {
   docsArticleColumn,
   docsArticleContent,
@@ -23,6 +24,8 @@ export interface Props {
   sidebarReferenceLabel?: string;
   sidebarReferenceUrl?: string;
   title: string;
+  description?: string;
+  robots?: string;
   tocEntry?: ComparisonEntry;
   tocItems?: DocsTocItem[];
   tocSourceLabel?: string;
@@ -37,6 +40,8 @@ const {
   sidebarReferenceLabel,
   sidebarReferenceUrl,
   title,
+  description = comparisonSiteDescription,
+  robots,
   tocEntry,
   tocItems,
   tocSourceLabel,
@@ -57,6 +62,8 @@ const s2PrimaryFontPreloadUrl =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    {robots ? <meta name="robots" content={robots} /> : null}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://use.typekit.net" crossorigin />
     <link
@@ -109,6 +116,8 @@ const s2PrimaryFontPreloadUrl =
       })();
     </script>
 
+    <a class="s2-skip-link" href="#main-content">Skip to content</a>
+
     <DocsTopBarMount
       activeSlug={sidebarActiveSlug}
       navigationLabel={sidebarNavigationLabel}
@@ -130,7 +139,7 @@ const s2PrimaryFontPreloadUrl =
         />
       </aside>
 
-      <main class:list={["s2-main", mainContentClass]}>
+      <main id="main-content" class:list={["s2-main", mainContentClass]}>
         <div class:list={["s2-article-column", articleColumnClass]}>
           <article class:list={["s2-article", articleContentClass]}>
             <slot />
@@ -138,7 +147,7 @@ const s2PrimaryFontPreloadUrl =
           <DocsFooterMount />
         </div>
 
-        <aside class:list={["s2-docs-toc-rail", tocRailClass]} aria-label="On this page">
+        <aside class:list={["s2-docs-toc-rail", tocRailClass]}>
           <DocsTocMount
             entry={tocEntry}
             items={tocItems}

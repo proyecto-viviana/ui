@@ -44,7 +44,6 @@ import { baseColor, focusRing, fontRelative, space, style } from "../style" with
 import {
   control,
   controlBorderRadius,
-  controlFont,
   field,
   fieldInput,
   fieldLabel,
@@ -52,11 +51,14 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
+import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
 import { FieldPrefix, PrefixInputProvider } from "../field/prefix";
 import { useProviderProps } from "../provider";
 import { getSlottedContextProps, type SpectrumContextValue } from "../button/spectrum-context";
+import { HelpText } from "../form/HelpText";
 
 export type NumberFieldSize = "S" | "M" | "L" | "XL";
 type S2NumberFieldSize = NumberFieldSize;
@@ -290,42 +292,8 @@ const iconStyles = style({
   },
 });
 
-const helpTextStyles = style<NumberFieldStyleProps>({
-  gridArea: "helptext",
-  display: "flex",
-  alignItems: "baseline",
-  gap: "text-to-visual",
-  // Faithful to upstream `helpTextStyles` (S2 Field.tsx) which uses `font: controlFont()`
-  // — the full font shorthand (family, size, weight, line-height), not a bare fontSize
-  // map. The prior fontSize-only map left family/weight/line-height to cascade, producing
-  // a subpixel help-text rendering divergence (D3) vs React. Mirrors green `textFieldInput`
-  // helpTextStyles.
-  font: controlFont(),
-  color: {
-    default: "neutral-subdued",
-    isInvalid: {
-      default: "negative-1000",
-      forcedColors: "Mark",
-    },
-    isDisabled: {
-      default: "disabled",
-      forcedColors: "GrayText",
-    },
-  },
-  "--iconPrimary": {
-    type: "fill",
-    value: "currentColor",
-  },
-  contain: "inline-size",
-  paddingTop: "--field-gap",
-  cursor: {
-    default: "text",
-    isDisabled: "default",
-  },
-});
-
 const fieldErrorIcon = style({
-  size: fontRelative(20),
+  size: "1lh",
   marginStart: "text-to-visual",
   marginEnd: fontRelative(-2),
   flexShrink: 0,
@@ -348,45 +316,6 @@ const requiredIcon = style({
 const noWrap = style({
   whiteSpace: "nowrap",
 });
-
-// Upstream S2 renders help text via the shared `<HelpText>`, whose description is a
-// `<Text slot="description">` (a `<span>`), NOT a `<p>`: a `<p>` carries the UA
-// `margin` the hand-roll then had to zero out (see `helpTextStyles` — upstream's has
-// none), and an implicit `paragraph` role that a `<span>` does not. Reverted to match.
-function NumberFieldDescription(props: {
-  class?: string;
-  children?: JSX.Element;
-}): JSX.Element | null {
-  const context = useContext(HeadlessNumberFieldContext);
-  if (!context?.descriptionProps) return null;
-  const descriptionProps = () => {
-    const { ref: _ref, ...rest } = context.descriptionProps as Record<string, unknown>;
-    return rest;
-  };
-
-  return (
-    <span {...descriptionProps()} slot="description" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
-
-// Upstream S2's `<HelpText>` renders the error message via `<FieldError>` →
-// `<Text slot="errorMessage">` (a `<span>`), not a `<p>`.
-function NumberFieldError(props: { class?: string; children?: JSX.Element }): JSX.Element | null {
-  const context = useContext(HeadlessNumberFieldContext);
-  if (!context?.errorMessageProps) return null;
-  const errorMessageProps = () => {
-    const { ref: _ref, ...rest } = context.errorMessageProps as Record<string, unknown>;
-    return rest;
-  };
-
-  return (
-    <span {...errorMessageProps()} slot="errorMessage" class={props.class}>
-      {props.children}
-    </span>
-  );
-}
 
 function normalizeNumberFieldSize(size: NumberFieldSize | undefined): S2NumberFieldSize {
   return size ?? "M";
@@ -454,6 +383,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
   const labelPosition = () => local.labelPosition ?? "top";
   const labelAlign = () => local.labelAlign ?? "start";
   const necessityIndicator = () => local.necessityIndicator ?? "icon";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const [isFocusWithin, setIsFocusWithin] = createSignal(false);
 
   let decrementButtonElement: HTMLDivElement | undefined;
@@ -515,13 +445,6 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
         type,
       });
 
-  const helpClass = (renderProps: NumberFieldRenderProps, isInvalid: boolean) =>
-    helpTextStyles({
-      ...renderProps,
-      size: size(),
-      isInvalid,
-    });
-
   return (
     <HeadlessNumberField
       {...headlessProps}
@@ -550,7 +473,9 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
                         />
                       }
                     >
-                      (required)
+                      {stringFormatter().format(
+                        renderProps.isRequired ? "label.(required)" : "label.(optional)",
+                      )}
                     </Show>
                   </span>
                 </Show>
@@ -622,16 +547,14 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
             </Show>
           </HeadlessNumberFieldGroup>
 
-          <Show when={local.description && !renderProps.isInvalid}>
-            <NumberFieldDescription class={helpClass(renderProps, false)}>
-              {local.description}
-            </NumberFieldDescription>
-          </Show>
-          <Show when={local.errorMessage && renderProps.isInvalid}>
-            <NumberFieldError class={helpClass(renderProps, true)}>
-              {local.errorMessage}
-            </NumberFieldError>
-          </Show>
+          <HelpText
+            size={size()}
+            isDisabled={renderProps.isDisabled}
+            isInvalid={renderProps.isInvalid}
+            description={local.description}
+          >
+            {local.errorMessage}
+          </HelpText>
         </>
       )}
     />

@@ -1,19 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "jsx": "preserve",
-    "jsxImportSource": "solid-js",
-    "strict": true,
-    "noEmit": true,
-    "declaration": true,
-    "declarationDir": "./dist",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*"]
+  "extends": "../../tsconfig.typecheck.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

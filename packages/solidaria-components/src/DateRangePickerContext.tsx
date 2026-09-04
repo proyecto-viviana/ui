@@ -37,6 +37,9 @@ export interface DateRangePickerContextValue {
   };
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (element: HTMLElement | null) => void;
+  /** RAC Popover `triggerRef: groupRef` — the FieldGroup, not the calendar button. */
+  groupRef: () => HTMLElement | null;
+  setGroupRef: (element: HTMLElement | null) => void;
   pickerAria: ReturnType<typeof createDateRangePicker>;
 }
 

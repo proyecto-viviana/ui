@@ -274,6 +274,7 @@ export {
 export {
   Menu,
   MenuItem,
+  MenuLoadMoreItem,
   MenuSection,
   MenuTrigger,
   SubmenuTrigger,
@@ -286,6 +287,7 @@ export {
   type MenuRenderProps,
   type MenuItemProps,
   type MenuItemRenderProps,
+  type MenuLoadMoreItemProps,
   type MenuSectionProps,
   type MenuTriggerProps,
   type SubmenuTriggerProps,

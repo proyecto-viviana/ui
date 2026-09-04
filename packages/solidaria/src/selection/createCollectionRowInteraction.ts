@@ -18,6 +18,7 @@ import {
   getEventTarget,
   getFocusableTreeWalker,
   getScrollParent,
+  isFocusable,
   isTabbable,
   nodeContains,
 } from "../utils/dom";
@@ -30,11 +31,38 @@ interface CollectionRowInteractionOptions {
   ref: Accessor<HTMLElement | null>;
   keyboardNavigationBehavior: Accessor<KeyboardNavigationBehavior>;
   direction?: Accessor<"ltr" | "rtl">;
+  /**
+   * `"grid"` skips intra-row Left/Right so the collection can move between
+   * columns (S2 CardView `layout="grid"`).
+   */
+  layout?: Accessor<"stack" | "grid">;
+  /**
+   * Tree expansion/collapse runs in capture before intra-row arrow walking,
+   * matching RAC `handleTreeExpansionKeys`. Return true if the key was handled.
+   */
+  onBeforeArrowNavigation?: (event: KeyboardEvent) => boolean;
 }
 
 type CollectionRowInteractionProps<T extends HTMLElement> = JSX.HTMLAttributes<T> & {
   onKeyDownCapture?: JSX.EventHandler<T, KeyboardEvent>;
+  "oncapture:keydown"?: JSX.EventHandler<T, KeyboardEvent>;
 };
+
+/**
+ * Nested ActionMenu / checkbox widgets in an arrow-nav row are focusable but
+ * `tabIndex=-1`, so `isTabbable` misses them. Walk to the nearest focusable
+ * ancestor inside the row (the event target is often an SVG inside the trigger).
+ */
+function isNestedFocusableChild(row: Element, target: Element): boolean {
+  let el: Element | null = target;
+  while (el && el !== row) {
+    if (isFocusable(el)) {
+      return true;
+    }
+    el = el.parentElement;
+  }
+  return false;
+}
 
 function lastFocusable(walker: TreeWalker): HTMLElement | null {
   let last: Node | null = null;
@@ -80,12 +108,13 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   rowProps: CollectionRowInteractionProps<T>,
   options: CollectionRowInteractionOptions,
 ): CollectionRowInteractionProps<T> {
-  const baseOnKeyDownCapture = rowProps.onKeyDownCapture as
+  const baseOnKeyDownCapture = (rowProps["oncapture:keydown"] ?? rowProps.onKeyDownCapture) as
     | ((event: KeyboardEvent) => void)
     | undefined;
   const baseOnKeyDown = rowProps.onKeyDown as ((event: KeyboardEvent) => void) | undefined;
   const baseOnPointerDown = rowProps.onPointerDown as ((event: PointerEvent) => void) | undefined;
   const baseOnMouseDown = rowProps.onMouseDown as ((event: MouseEvent) => void) | undefined;
+  const baseOnClick = rowProps.onClick as ((event: MouseEvent) => void) | undefined;
 
   const onKeyDownCapture = (event: KeyboardEvent) => {
     const row = options.ref();
@@ -95,6 +124,18 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
       !row ||
       !activeElement ||
       shouldIgnoreRowEvent(event, row)
+    ) {
+      baseOnKeyDownCapture?.(event);
+      return;
+    }
+
+    if (options.onBeforeArrowNavigation?.(event)) {
+      return;
+    }
+
+    if (
+      options.layout?.() === "grid" &&
+      (event.key === "ArrowLeft" || event.key === "ArrowRight")
     ) {
       baseOnKeyDownCapture?.(event);
       return;
@@ -195,7 +236,7 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   const onPointerDown = (event: PointerEvent) => {
     const row = options.ref();
     const target = getEventTarget<Element>(event);
-    if (row && target && target !== row && isTabbable(target)) {
+    if (row && target && target !== row && isNestedFocusableChild(row, target)) {
       event.stopPropagation();
       return;
     }
@@ -205,19 +246,36 @@ export function mergeCollectionRowInteractionProps<T extends HTMLElement>(
   const onMouseDown = (event: MouseEvent) => {
     const row = options.ref();
     const target = getEventTarget<Element>(event);
-    if (row && target && target !== row && isTabbable(target)) {
+    if (row && target && target !== row && isNestedFocusableChild(row, target)) {
       event.stopPropagation();
       return;
     }
     baseOnMouseDown?.(event);
   };
 
+  const onClick = (event: MouseEvent) => {
+    const row = options.ref();
+    const target = getEventTarget<Element>(event);
+    if (row && target && target !== row && isNestedFocusableChild(row, target)) {
+      event.stopPropagation();
+      return;
+    }
+    baseOnClick?.(event);
+  };
+
+  const captureHandler =
+    options.keyboardNavigationBehavior() === "arrow" ? onKeyDownCapture : baseOnKeyDownCapture;
+
   return {
     ...rowProps,
-    onKeyDownCapture:
-      options.keyboardNavigationBehavior() === "arrow" ? onKeyDownCapture : baseOnKeyDownCapture,
+    // Solid ignores React's `onKeyDownCapture` on a spread; `oncapture:keydown` is
+    // the live capture binding (same prefix as createDraggableItem). Keep the
+    // RAC name so unit tests can still invoke the handler off rowProps.
+    "oncapture:keydown": captureHandler,
+    onKeyDownCapture: captureHandler,
     onKeyDown,
     onPointerDown,
     onMouseDown,
+    onClick,
   };
 }

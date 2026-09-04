@@ -230,6 +230,8 @@ export {
   type PortalProviderContextValue,
   type AriaModalOptions,
   type ModalAria,
+  overlaysIntlStrings,
+  type OverlaysIntlStrings,
 } from "./overlays";
 
 export {
@@ -539,6 +541,7 @@ export {
   createDroppableCollection,
   createDraggableItem,
   createDroppableItem,
+  createDropIndicator,
   createDragSession,
   isVirtualDragging,
   registerDropItem,
@@ -551,6 +554,7 @@ export {
   getGlobalDraggingTypes,
   setGlobalDropCollectionRef,
   getGlobalDropCollectionRef,
+  getDroppableCollectionRef,
   type AriaDragOptions,
   type DragAria,
   type AriaDropOptions,
@@ -564,6 +568,8 @@ export {
   type DraggableItemAria,
   type DroppableItemOptions,
   type DroppableItemAria,
+  type DropIndicatorOptions,
+  type DropIndicatorAria,
   type DragSession,
   type DndIntlStrings,
   CUSTOM_DRAG_TYPE,
@@ -634,6 +640,7 @@ export {
   NumberFormatter,
   createNumberFormatter,
   type NumberFormatOptions,
+  createListFormatter,
   createDateFormatter,
   createStringFormatter,
   createStringDictionary,
@@ -682,6 +689,14 @@ export {
   type Rect,
   type Size,
 } from "./selection";
+
+export {
+  createScrollView,
+  getScrollLeft,
+  setScrollLeft,
+  type CreateScrollViewOptions,
+  type ScrollViewAria,
+} from "./virtualizer";
 
 export { mergeProps, filterDOMProps, focusSafely, type FilterDOMPropsOptions } from "./utils";
 export { access, isAccessor, type MaybeAccessor, type MaybeAccessorValue } from "./utils";

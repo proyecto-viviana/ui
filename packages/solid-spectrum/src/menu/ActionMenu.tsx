@@ -19,7 +19,6 @@ import {
   createEffect,
   createSignal,
   mergeProps,
-  onCleanup,
   splitProps,
   useContext,
 } from "solid-js";
@@ -27,13 +26,10 @@ import {
   MenuTrigger as HeadlessMenuTrigger,
   MenuButton as HeadlessMenuButton,
   Menu as HeadlessMenu,
-  Popover as HeadlessPopover,
-  MenuTriggerContext,
   type MenuProps as HeadlessMenuProps,
   type MenuTriggerRenderProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
   type MenuRenderProps,
-  type PopoverRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
@@ -41,11 +37,10 @@ import { centerBaseline } from "../icon/center-baseline";
 import MoreIcon from "../icon/s2wf-icons/MoreIcon";
 import { IconContext } from "../icon/spectrum-icon";
 import type { StyleString } from "../style";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { s2IntlStrings } from "../intl";
 import { HeaderContext, HeadingContext, Keyboard, Text, TextContext } from "../text";
-import { useTheme } from "../provider";
 import { pressScale } from "../pressScale";
 import {
   getSlottedContextProps,
@@ -62,12 +57,12 @@ import {
   menuFrame,
   menuItemDescription,
   menuItemLabel,
-  menuPopover,
   menuSectionHeader,
   menuSectionHeading,
 } from "./s2-menu-styles";
 import { MenuLinkOutIconContext, MenuSizeContext } from "./menu-context";
 import { MenuItem } from "./index";
+import { Popover } from "../popover";
 
 export type ActionMenuMenuSize = "S" | "M" | "L" | "XL";
 export type ActionMenuAlign = "start" | "end";
@@ -165,18 +160,6 @@ function actionMenuPlacement(
     default:
       return `${resolvedDirection} ${resolvedAlign}`;
   }
-}
-
-function actionMenuPlacementAxis(
-  direction: ActionMenuDirection | undefined,
-): NonNullable<PopoverRenderProps["placement"]> {
-  if (direction === "start") {
-    return "left";
-  }
-  if (direction === "end") {
-    return "right";
-  }
-  return direction ?? "bottom";
 }
 
 function getDataAttributes(
@@ -280,7 +263,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         }),
     }),
     styles: style({
-      size: fontRelative(20),
+      size: "1lh",
       marginStart: "--iconMargin",
       flexShrink: 0,
     }),
@@ -447,145 +430,21 @@ interface ActionMenuPopoverProps<T extends object> {
   shouldFlip: () => boolean | undefined;
 }
 
-const ACTION_MENU_POPOVER_TRANSITION_DURATION = 200;
-
 function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): JSX.Element {
-  const theme = useTheme();
-  const triggerContext = useContext(MenuTriggerContext);
-  const isOpen = () => triggerContext?.state.isOpen() ?? false;
-  const close = () => triggerContext?.state.close();
-  const open = () => triggerContext?.state.open();
-  const [isEntering, setIsEntering] = createSignal(false);
-  const [isExiting, setIsExiting] = createSignal(false);
-  let exitTimeout: ReturnType<typeof setTimeout> | undefined;
-  let enterFrame: number | undefined;
-  let wasOpen = isOpen();
-  let renderedOpen = wasOpen;
-  let shouldRestoreFocusAfterExit = false;
-  const shouldRender = () => {
-    const open = isOpen();
-    if (open) {
-      renderedOpen = true;
-    }
-    return open || renderedOpen || isExiting();
-  };
-  const isEnteringForRender = () => (isOpen() && !wasOpen ? true : isEntering());
   const usesStaticChildren = () => props.items() == null;
   const menuClass = (renderProps: MenuRenderProps) =>
     [s2Menu({ ...renderProps, size: props.menuSize() }), props.class].filter(Boolean).join(" ");
-  const restoreTriggerFocusAfterExit = () => {
-    const trigger = props.triggerRef();
-    if (!trigger) {
-      return;
-    }
-
-    const restore = () => trigger.focus();
-    if (typeof queueMicrotask === "function") {
-      queueMicrotask(restore);
-    } else {
-      Promise.resolve().then(restore);
-    }
-  };
-
-  createEffect(() => {
-    if (exitTimeout) {
-      clearTimeout(exitTimeout);
-      exitTimeout = undefined;
-    }
-
-    if (isOpen()) {
-      wasOpen = true;
-      renderedOpen = true;
-      shouldRestoreFocusAfterExit = false;
-      setIsExiting(false);
-      setIsEntering(true);
-
-      if (typeof document !== "undefined") {
-        const markKeyboardFocusRestore = (event: KeyboardEvent) => {
-          if (event.key === "Escape") {
-            shouldRestoreFocusAfterExit = true;
-          }
-        };
-        document.addEventListener("keydown", markKeyboardFocusRestore, true);
-        onCleanup(() => {
-          document.removeEventListener("keydown", markKeyboardFocusRestore, true);
-        });
-      }
-
-      if (typeof requestAnimationFrame !== "undefined") {
-        if (enterFrame != null) {
-          cancelAnimationFrame(enterFrame);
-        }
-        enterFrame = requestAnimationFrame(() => {
-          enterFrame = undefined;
-          setIsEntering(false);
-        });
-      } else {
-        setTimeout(() => setIsEntering(false), 0);
-      }
-      return;
-    }
-
-    setIsEntering(false);
-    if (!wasOpen && !renderedOpen) {
-      setIsExiting(false);
-      return;
-    }
-
-    wasOpen = false;
-    renderedOpen = false;
-    const activeElement = typeof document !== "undefined" ? document.activeElement : null;
-    shouldRestoreFocusAfterExit =
-      shouldRestoreFocusAfterExit ||
-      (typeof Element !== "undefined" &&
-        activeElement instanceof Element &&
-        activeElement.closest('[role="menu"]') != null);
-    setIsExiting(true);
-    exitTimeout = setTimeout(() => {
-      const shouldRestoreFocus = shouldRestoreFocusAfterExit;
-      shouldRestoreFocusAfterExit = false;
-      exitTimeout = undefined;
-      setIsExiting(false);
-      if (shouldRestoreFocus) {
-        restoreTriggerFocusAfterExit();
-      }
-    }, ACTION_MENU_POPOVER_TRANSITION_DURATION);
-  });
-
-  onCleanup(() => {
-    if (exitTimeout) {
-      clearTimeout(exitTimeout);
-    }
-    if (enterFrame != null && typeof cancelAnimationFrame !== "undefined") {
-      cancelAnimationFrame(enterFrame);
-    }
-  });
 
   return (
-    <HeadlessPopover
+    <Popover
+      hideArrow
+      padding="none"
       trigger="MenuTrigger"
       triggerRef={props.triggerRef}
-      isOpen={shouldRender()}
-      onOpenChange={(openState) => {
-        if (openState) {
-          open();
-        } else {
-          close();
-        }
-      }}
       placement={actionMenuPlacement(props.direction(), props.align()) as never}
       offset={8}
       shouldFlip={props.shouldFlip()}
       autoFocus={false}
-      isEntering={isEnteringForRender()}
-      isExiting={isExiting()}
-      class={(renderProps: PopoverRenderProps) =>
-        menuPopover({
-          ...renderProps,
-          placement: renderProps.placement ?? actionMenuPlacementAxis(props.direction()),
-          colorScheme: theme.colorScheme,
-        })
-      }
     >
       <div class={menuFrame}>
         <MenuSizeContext.Provider value={props.menuSize()}>
@@ -637,6 +496,6 @@ function ActionMenuPopover<T extends object>(props: ActionMenuPopoverProps<T>): 
           </MenuLinkOutIconContext.Provider>
         </MenuSizeContext.Provider>
       </div>
-    </HeadlessPopover>
+    </Popover>
   );
 }

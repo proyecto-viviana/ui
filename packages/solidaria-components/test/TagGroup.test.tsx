@@ -11,8 +11,10 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor, fireEvent } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { TagGroup, TagList, Tag, TagRemoveButton } from "../src/TagGroup";
 import { SelectionIndicator } from "../src/SelectionIndicator";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // User event instance - created per test
@@ -321,6 +323,25 @@ describe("TagGroup", () => {
       expect(removeButton).toHaveAttribute("aria-label", "Remove");
     });
 
+    it("labels the remove button from I18nProvider, not the English literal", () => {
+      render(() => (
+        <I18nProvider locale="de-DE">
+          <TagGroup>
+            <TagList items={sampleItems} aria-label="Test" onRemove={vi.fn()}>
+              {(item) => (
+                <Tag id={item.id}>
+                  {item.name}
+                  <TagRemoveButton />
+                </Tag>
+              )}
+            </TagList>
+          </TagGroup>
+        </I18nProvider>
+      ));
+      const removeButton = document.querySelector(".solidaria-TagRemoveButton");
+      expect(removeButton).toHaveAttribute("aria-label", "Entfernen");
+    });
+
     it("should render custom remove button content", () => {
       render(() => (
         <TagGroup>
@@ -517,6 +538,231 @@ describe("TagGroup", () => {
 
       await user.keyboard("{End}");
       expect(screen.getByRole("row", { name: "Shopping" })).toHaveFocus();
+    });
+
+    it("keeps roving focus on the next tag after Delete", async () => {
+      const [items, setItems] = createSignal([...sampleItems]);
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={items()}
+            aria-label="Test"
+            onRemove={(keys) => setItems(items().filter((item) => !keys.has(item.id)))}
+          >
+            {(item) => (
+              <Tag id={item.id}>
+                {(renderProps) => (
+                  <>
+                    {item.name}
+                    {renderProps.allowsRemoving ? (
+                      <TagRemoveButton buttonProps={renderProps.removeButtonProps} />
+                    ) : null}
+                  </>
+                )}
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      const news = screen.getByRole("row", { name: /News/ });
+      news.focus();
+      fireEvent.keyDown(news, { key: "Delete" });
+
+      await waitFor(() => {
+        expect(screen.queryByRole("row", { name: /News/ })).not.toBeInTheDocument();
+        expect(screen.getByRole("row", { name: /Travel/ })).toHaveFocus();
+      });
+      expect(screen.getByRole("row", { name: /Travel/ })).toHaveAttribute("tabindex", "0");
+    });
+
+    it("tabs the focused tag then its Remove then exits", async () => {
+      render(() => (
+        <>
+          <button type="button">Before</button>
+          <TagGroup>
+            <TagList items={sampleItems} aria-label="Test" onRemove={vi.fn()}>
+              {(item) => (
+                <Tag id={item.id}>
+                  {item.name}
+                  <TagRemoveButton />
+                </Tag>
+              )}
+            </TagList>
+          </TagGroup>
+          <button type="button">After</button>
+        </>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("row", { name: /News/ })).toHaveFocus();
+      await user.tab();
+      expect(document.activeElement).toHaveClass("solidaria-TagRemoveButton");
+      await user.tab();
+      expect(screen.getByRole("button", { name: "After" })).toHaveFocus();
+
+      await user.keyboard("{Shift>}{Tab}{/Shift}");
+      expect(screen.getByRole("row", { name: /News/ })).toHaveFocus();
+    });
+
+    it("sets data-focus-visible on keyboard focus", async () => {
+      render(() => <TestTagGroup />);
+      await user.tab();
+      const news = screen.getByRole("row", { name: "News" });
+      expect(news).toHaveFocus();
+      expect(news).toHaveAttribute("data-focus-visible");
+    });
+  });
+
+  describe("selectionBehavior", () => {
+    it("replace-selects on pointer press and arrow selectOnFocus", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={sampleItems}
+            aria-label="Test"
+            selectionMode="multiple"
+            selectionBehavior="replace"
+            defaultSelectedKeys={new Set(["1"])}
+            onSelectionChange={onSelectionChange}
+          >
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagList>
+        </TagGroup>
+      ));
+
+      await user.click(screen.getByRole("row", { name: "Travel" }));
+      expect(onSelectionChange).toHaveBeenCalled();
+      const next = onSelectionChange.mock.calls.at(-1)?.[0] as Set<string>;
+      expect([...next]).toEqual(["2"]);
+
+      await user.keyboard("{ArrowRight}");
+      const afterArrow = onSelectionChange.mock.calls.at(-1)?.[0] as Set<string>;
+      expect([...afterArrow]).toEqual(["3"]);
+    });
+  });
+
+  describe("onAction", () => {
+    it("does not fire onAction on a selection press", async () => {
+      const onAction = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={sampleItems}
+            aria-label="Test"
+            selectionMode="multiple"
+            defaultSelectedKeys={new Set(["1"])}
+            onSelectionChange={onSelectionChange}
+          >
+            {(item) => (
+              <Tag id={item.id} onAction={onAction}>
+                {item.name}
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      await user.click(screen.getByRole("row", { name: "Travel" }));
+      expect(onAction).not.toHaveBeenCalled();
+      expect(onSelectionChange).toHaveBeenCalled();
+    });
+
+    it("fires onAction on Enter when selectionMode is none", async () => {
+      const onAction = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList items={sampleItems} aria-label="Test" selectionMode="none">
+            {(item) => (
+              <Tag id={item.id} onAction={onAction}>
+                {item.name}
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      screen.getByRole("row", { name: "Travel" }).focus();
+      await user.keyboard("{Enter}");
+      expect(onAction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("collection keys", () => {
+    it("clears selection on Escape", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={sampleItems}
+            aria-label="Test"
+            selectionMode="multiple"
+            defaultSelectedKeys={new Set(["1", "2"])}
+            onSelectionChange={onSelectionChange}
+          >
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagList>
+        </TagGroup>
+      ));
+
+      screen.getByRole("row", { name: "Travel" }).focus();
+      await user.keyboard("{Escape}");
+      const next = onSelectionChange.mock.calls.at(-1)?.[0] as Set<string>;
+      expect(next?.size ?? 0).toBe(0);
+    });
+
+    it("selects all tags with Ctrl+A", async () => {
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <TagGroup>
+          <TagList
+            items={sampleItems}
+            aria-label="Test"
+            selectionMode="multiple"
+            defaultSelectedKeys={new Set(["1"])}
+            onSelectionChange={onSelectionChange}
+          >
+            {(item) => <Tag id={item.id}>{item.name}</Tag>}
+          </TagList>
+        </TagGroup>
+      ));
+
+      screen.getByRole("row", { name: "News" }).focus();
+      await user.keyboard("{Control>}a{/Control}");
+      const next = onSelectionChange.mock.calls.at(-1)?.[0];
+      expect(next === "all" || (next instanceof Set && next.size === 4)).toBe(true);
+    });
+
+    it("drops Remove buttons when onRemove is cleared live", async () => {
+      const [onRemove, setOnRemove] = createSignal<((keys: Set<string>) => void) | undefined>(
+        vi.fn(),
+      );
+      render(() => (
+        <TagGroup>
+          <TagList items={sampleItems} aria-label="Test" onRemove={onRemove()}>
+            {(item) => (
+              <Tag id={item.id}>
+                {(renderProps) => (
+                  <>
+                    {item.name}
+                    {renderProps.allowsRemoving ? <TagRemoveButton /> : null}
+                  </>
+                )}
+              </Tag>
+            )}
+          </TagList>
+        </TagGroup>
+      ));
+
+      expect(document.querySelectorAll(".solidaria-TagRemoveButton").length).toBe(4);
+      setOnRemove(undefined);
+      await waitFor(() => {
+        expect(document.querySelectorAll(".solidaria-TagRemoveButton").length).toBe(0);
+      });
     });
   });
 });

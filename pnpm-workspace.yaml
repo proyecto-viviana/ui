@@ -9,7 +9,8 @@ overrides:
   vite: "catalog:"
   vitest: "catalog:"
   ws: "^8.21.3"
-  fast-uri: "^3.1.5"
+  fast-uri: "^3.1.6"
+  browserslist: "^4.28.7"
   brace-expansion: "^5.0.9"
   yaml: "^2.9.0"
   undici: "^7.29.0"
@@ -54,6 +55,12 @@ minimumReleaseAgeExclude:
   - "magic-string@1.2.1"
   - "miniflare@5.20260815.0-alpha"
   - "wrangler@4.124.0"
+  - "@internationalized/date@3.12.4"
+  - "@internationalized/number@3.6.8"
+  - "@react-spectrum/s2@1.7.0"
+  - react-aria-components@1.21.0
+  - react-aria@3.52.0
+  - react-stately@3.50.0
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.2.9
   vitest: 4.1.10

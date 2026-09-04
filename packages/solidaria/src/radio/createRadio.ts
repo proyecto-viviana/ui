@@ -22,6 +22,7 @@
  */
 
 import { JSX, Accessor, createEffect } from "solid-js";
+import { isServer } from "solid-js/web";
 import { createPress } from "../interactions/createPress";
 import { createFocusable } from "../interactions/createFocusable";
 import { mergeProps } from "../utils/mergeProps";
@@ -77,6 +78,12 @@ export interface RadioAria {
   labelProps: JSX.LabelHTMLAttributes<HTMLLabelElement>;
   /** Props for the input element. */
   inputProps: JSX.InputHTMLAttributes<HTMLInputElement>;
+  /**
+   * The input's `aria-describedby`. Kept off `inputProps` so a `createSlotId`
+   * probe (RAC `useSlotId` / `useId.ts:135-149`) can patch the attribute
+   * without a spread that recreates the input.
+   */
+  inputDescribedBy: Accessor<string | undefined>;
   /** Props for the radio's description element, if any. */
   descriptionProps: JSX.HTMLAttributes<HTMLElement>;
   /** Whether the radio is disabled. */
@@ -288,33 +295,48 @@ export function createRadio(
   // this id is rendered (e.g. a `<Text slot="description">` child).
   const descriptionId = createSlotId();
 
+  // The group's ids reach the radio through the `radioGroupData` WeakMap, a
+  // snapshot rather than a signal, so the radio probes the DOM itself the way
+  // `useSlotId` does (#258 replaces this path with group-level TextContext
+  // slots). The probe is client-only: on the server the slot id is emitted as
+  // is — `useSlotId` yields the raw id before its layout effect runs, and the
+  // client probe patches the attribute after hydration. `document` does not
+  // exist on the server; reading it there threw inside `renderToString` and the
+  // route's error boundary rendered instead of the RadioGroup.
+  const slotIdInDom = (id: string): boolean => isServer || document.getElementById(id) !== null;
+
+  const inputDescribedBy: Accessor<string | undefined> = () => {
+    const p = getProps();
+    const groupData = getGroupData();
+
+    // Order mirrors upstream useRadio: the user's aria-describedby, then the
+    // radio's own description, then the group's error message (when invalid)
+    // and the group's shared description.
+    const describedByIds: string[] = [];
+    if (p["aria-describedby"]) {
+      describedByIds.push(p["aria-describedby"]);
+    }
+    const ownDescriptionId = descriptionId();
+    if (ownDescriptionId) {
+      describedByIds.push(ownDescriptionId);
+    }
+    if (state.isInvalid && groupData?.errorMessageId && slotIdInDom(groupData.errorMessageId)) {
+      describedByIds.push(groupData.errorMessageId);
+    }
+    if (groupData?.descriptionId && slotIdInDom(groupData.descriptionId)) {
+      describedByIds.push(groupData.descriptionId);
+    }
+    return describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
+  };
+
   return {
     labelProps: mergeProps(labelPressProps, {
       onClick: (e: MouseEvent) => e.preventDefault(),
       onMouseDown: (e: MouseEvent) => e.preventDefault(),
     }),
+    inputDescribedBy,
     get inputProps() {
-      const p = getProps();
       const groupData = getGroupData();
-
-      // Order mirrors upstream useRadio: the user's aria-describedby, then the
-      // radio's own description, then the group's error message (when invalid)
-      // and the group's shared description.
-      const describedByIds: string[] = [];
-      if (p["aria-describedby"]) {
-        describedByIds.push(p["aria-describedby"]);
-      }
-      const ownDescriptionId = descriptionId();
-      if (ownDescriptionId) {
-        describedByIds.push(ownDescriptionId);
-      }
-      if (state.isInvalid && groupData?.errorMessageId) {
-        describedByIds.push(groupData.errorMessageId);
-      }
-      if (groupData?.descriptionId) {
-        describedByIds.push(groupData.descriptionId);
-      }
-      const ariaDescribedBy = describedByIds.length > 0 ? describedByIds.join(" ") : undefined;
       const validationBehavior = groupData?.validationBehavior ?? "native";
 
       return mergeProps(domProps(), interactions, {
@@ -327,7 +349,6 @@ export function createRadio(
         checked: isSelected(),
         value: value(),
         onChange,
-        "aria-describedby": ariaDescribedBy,
       }) as JSX.InputHTMLAttributes<HTMLInputElement>;
     },
     get descriptionProps() {

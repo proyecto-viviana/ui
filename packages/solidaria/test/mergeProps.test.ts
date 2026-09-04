@@ -49,4 +49,57 @@ describe("mergeProps", () => {
 
     expect(merged.style).toEqual({ color: "blue", margin: "1px" });
   });
+
+  it("does not invoke a children getter while merging", () => {
+    // Solid compiles JSX children as a getter that instantiates the tree on
+    // each read. Probing it during merge (useContextProps → mergeProps) mints
+    // a second copy on the server and desyncs hydration keys — Form+TextField
+    // with isRequired + description was the failure.
+    let reads = 0;
+    const source = {};
+    Object.defineProperty(source, "children", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        reads += 1;
+        return "label";
+      },
+    });
+
+    const merged = mergeProps<{ children: string }>({ id: "field" }, source);
+
+    expect(reads).toBe(0);
+    expect(merged.children).toBe("label");
+    expect(reads).toBe(1);
+    expect(merged.children).toBe("label");
+    expect(reads).toBe(2);
+  });
+
+  it("falls back to an earlier value when a later children getter yields undefined", () => {
+    // useContextProps is mergeProps(contextValue, props). Solid's split/spread
+    // objects expose getters for keys whose value is undefined; a later
+    // undefined must not shadow context, and the getter must not be read
+    // during merge (or a children getter would instantiate JSX).
+    let later: string | undefined;
+    let reads = 0;
+    const own = {};
+    Object.defineProperty(own, "children", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        reads += 1;
+        return later;
+      },
+    });
+
+    const merged = mergeProps<{ children: string }>({ children: "ctx" }, own);
+
+    expect(reads).toBe(0);
+    later = undefined;
+    expect(merged.children).toBe("ctx");
+    expect(reads).toBe(1);
+    later = "own";
+    expect(merged.children).toBe("own");
+    expect(reads).toBe(2);
+  });
 });

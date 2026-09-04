@@ -29,7 +29,7 @@ import {
   type LinkRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
-import { fontRelative, style } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";
@@ -146,7 +146,7 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
       slot: "icon",
       render: centerBaseline({ slot: "icon", styles: style({ order: 0 }) }),
       styles: style({
-        size: fontRelative(20),
+        size: "1lh",
         marginStart: "--iconMargin",
         flexShrink: 0,
       }),

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
+import { render, screen, waitFor } from "@solidjs/testing-library";
 import { createComboBox } from "../src/combobox";
 import { createComboBoxState } from "@proyecto-viviana/solid-stately";
 import * as liveAnnouncer from "../src/live-announcer";
@@ -36,7 +37,7 @@ describe("createComboBox", () => {
 
         expect(comboBox.inputProps.role).toBe("combobox");
         expect(comboBox.inputProps.type).toBe("text");
-        expect(comboBox.inputProps["aria-haspopup"]).toBe("listbox");
+        expect(comboBox.inputProps["aria-haspopup"]).toBeUndefined();
         expect(comboBox.inputProps["aria-expanded"]).toBe(false);
         expect(comboBox.inputProps["aria-autocomplete"]).toBe("list");
         expect(comboBox.inputProps.autoComplete).toBe("off");
@@ -87,16 +88,17 @@ describe("createComboBox", () => {
       });
     });
 
-    it("should compose aria-describedby from description and invalid error", () => {
-      createRoot((dispose) => {
+    it("should compose aria-describedby from description and invalid error", async () => {
+      // RAC `useField.ts:51-60`: ids exist only when the slot is in the DOM
+      // (`useSlotId`). A createRoot snapshot without rendering the slots cannot
+      // hold describedby.
+      function Harness() {
         let inputRef: HTMLInputElement | null = null;
-
         const state = createComboBoxState({
           items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
         });
-
         const comboBox = createComboBox(
           {
             description: "Pick a fruit",
@@ -106,14 +108,25 @@ describe("createComboBox", () => {
           state,
           () => inputRef,
         );
+        return (
+          <div>
+            <input {...comboBox.inputProps} ref={(el) => (inputRef = el)} data-testid="input" />
+            <span {...comboBox.descriptionProps}>Pick a fruit</span>
+            <span {...comboBox.errorMessageProps}>Required</span>
+          </div>
+        );
+      }
 
-        const describedBy = comboBox.inputProps["aria-describedby"];
-        expect(typeof describedBy).toBe("string");
-        expect(describedBy).toContain(comboBox.descriptionProps.id as string);
-        expect(describedBy).toContain(comboBox.errorMessageProps.id as string);
-        expect(comboBox.inputProps["aria-invalid"]).toBe(true);
-        dispose();
+      render(() => <Harness />);
+
+      await waitFor(() => {
+        const describedBy = screen.getByTestId("input").getAttribute("aria-describedby") ?? "";
+        const ids = describedBy.split(" ");
+        expect(ids.map((id) => document.getElementById(id)?.textContent).join(" ")).toBe(
+          "Pick a fruit Required",
+        );
       });
+      expect(screen.getByTestId("input")).toHaveAttribute("aria-invalid", "true");
     });
 
     it("should set aria-disabled when disabled", () => {
@@ -220,22 +233,17 @@ describe("createComboBox", () => {
       });
     });
 
-    it("should update aria-expanded when open", () => {
+    it("combobox input does not carry aria-haspopup", () => {
       createRoot((dispose) => {
         let inputRef: HTMLInputElement | null = null;
-
         const state = createComboBoxState({
           items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
         });
-
-        const comboBox = createComboBox({}, state, () => inputRef);
-
-        expect(comboBox.buttonProps["aria-expanded"]).toBe(false);
-
-        state.open();
-        expect(comboBox.buttonProps["aria-expanded"]).toBe(true);
+        const comboBox = createComboBox({ label: "Fruit" }, state, () => inputRef);
+        expect(comboBox.inputProps["aria-haspopup"]).toBeUndefined();
+        expect(comboBox.buttonProps["aria-haspopup"]).toBe("listbox");
         dispose();
       });
     });
@@ -410,21 +418,25 @@ describe("createComboBox", () => {
   });
 
   describe("description and error props", () => {
-    it("should provide description and error message props", () => {
-      createRoot((dispose) => {
+    it("descriptionProps.id is undefined when no description is rendered", async () => {
+      let comboBox!: ReturnType<typeof createComboBox>;
+      function Harness() {
         let inputRef: HTMLInputElement | null = null;
-
         const state = createComboBoxState({
           items,
           getKey: (item) => item.id,
           getTextValue: (item) => item.name,
         });
+        comboBox = createComboBox({}, state, () => inputRef);
+        return <input {...comboBox.inputProps} ref={(el) => (inputRef = el)} data-testid="input" />;
+      }
 
-        const comboBox = createComboBox({}, state, () => inputRef);
+      render(() => <Harness />);
 
-        expect(comboBox.descriptionProps.id).toBeDefined();
-        expect(comboBox.errorMessageProps.id).toBeDefined();
-        dispose();
+      await waitFor(() => {
+        expect(comboBox.descriptionProps.id).toBeUndefined();
+        expect(comboBox.errorMessageProps.id).toBeUndefined();
+        expect(screen.getByTestId("input")).not.toHaveAttribute("aria-describedby");
       });
     });
   });
@@ -508,7 +520,7 @@ describe("createComboBox", () => {
   });
 
   describe("required", () => {
-    it("should set aria-required when required", () => {
+    it("sets native required when validationBehavior is native (the default)", () => {
       createRoot((dispose) => {
         let inputRef: HTMLInputElement | null = null;
 
@@ -520,6 +532,29 @@ describe("createComboBox", () => {
 
         const comboBox = createComboBox({ isRequired: true }, state, () => inputRef);
 
+        expect(comboBox.inputProps.required).toBe(true);
+        expect(comboBox.inputProps["aria-required"]).toBeUndefined();
+        dispose();
+      });
+    });
+
+    it("sets aria-required when validationBehavior is aria", () => {
+      createRoot((dispose) => {
+        let inputRef: HTMLInputElement | null = null;
+
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+
+        const comboBox = createComboBox(
+          { isRequired: true, validationBehavior: "aria" },
+          state,
+          () => inputRef,
+        );
+
+        expect(comboBox.inputProps.required).toBe(false);
         expect(comboBox.inputProps["aria-required"]).toBe(true);
         dispose();
       });
@@ -1161,6 +1196,42 @@ describe("createComboBox", () => {
         expect(state.selectedKey()).toBe("1");
 
         openLinkSpy.mockRestore();
+        dispose();
+      });
+    });
+  });
+
+  describe("blur", () => {
+    it("does not commit when relatedTarget is a descendant of the trigger button", () => {
+      createRoot((dispose) => {
+        const button = document.createElement("button");
+        const icon = document.createElement("span");
+        button.appendChild(icon);
+        document.body.appendChild(button);
+
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+        state.open();
+        state.setFocused(true);
+
+        const comboBox = createComboBox(
+          {},
+          state,
+          () => null,
+          () => button,
+          () => null,
+        );
+
+        const onBlur = comboBox.inputProps.onBlur as (e: FocusEvent) => void;
+        onBlur({ relatedTarget: icon } as FocusEvent);
+
+        expect(state.isOpen()).toBe(true);
+        expect(state.isFocused()).toBe(true);
+
+        button.remove();
         dispose();
       });
     });

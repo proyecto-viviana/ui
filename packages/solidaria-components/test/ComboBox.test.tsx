@@ -26,6 +26,7 @@ import {
 } from "../src/ComboBox";
 import { SelectionIndicator } from "../src/SelectionIndicator";
 import { Text } from "../src/Text";
+import { Dialog } from "../src/Dialog";
 import { I18nProvider } from "@proyecto-viviana/solidaria";
 import {
   setupUser,
@@ -118,17 +119,15 @@ describe("ComboBox", () => {
       expect(combobox).toBeInTheDocument();
     });
 
-    it('links aria-describedby to a <Text slot="description"> via TextContext slots', () => {
-      // ComboBox provides descriptionProps as a TextContext slot, so the
-      // <Text slot="description"> picks up the id the input's aria-describedby
-      // references — the faithful upstream wiring path.
+    it('links aria-describedby to a <Text slot="description"> via TextContext slots', async () => {
+      // RAC ComboBox.test.js "provides slots" (lines 82-89): input aria-describedby
+      // resolves to the rendered `<Text slot="description">` text.
       render(() => (
         <ComboBox
           aria-label="Test ComboBox"
           items={items}
           getKey={(item) => item.id}
           getTextValue={(item) => item.name}
-          description="Help text"
         >
           <ComboBoxInput />
           <ComboBoxButton>▼</ComboBoxButton>
@@ -140,11 +139,12 @@ describe("ComboBox", () => {
       ));
 
       const input = screen.getByRole("combobox");
+      await waitFor(() => expect(input).toHaveAttribute("aria-describedby"));
       const describedById = input.getAttribute("aria-describedby");
-      expect(describedById).toBeTruthy();
       const description = document.getElementById(describedById!);
       expect(description).toHaveTextContent("Help text");
       expect(description).toHaveClass("solidaria-Text");
+      expect(description).toHaveAttribute("slot", "description");
     });
 
     it("should expose isReadOnly in root render props", () => {
@@ -319,6 +319,38 @@ describe("ComboBox", () => {
         const listbox = screen.getByRole("listbox");
         expect(listbox).toBeInTheDocument();
       });
+    });
+
+    it("opens on ArrowDown when menuTrigger is manual and does not open on type", async () => {
+      render(() => <TestComboBox comboBoxProps={{ menuTrigger: "manual" }} />);
+
+      const input = screen.getByRole("combobox");
+      input.focus();
+      await user.keyboard("A");
+      expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+      await user.keyboard("{ArrowDown}");
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+    });
+
+    it("closes on Enter with a custom value when allowsCustomValue", async () => {
+      render(() => <TestComboBox comboBoxProps={{ allowsCustomValue: true, defaultOpen: true }} />);
+
+      const input = screen.getByRole("combobox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      await user.clear(input);
+      await user.type(input, "Zebra");
+      await user.keyboard("{Enter}");
+
+      await waitFor(() => {
+        expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+      });
+      expect(input).toHaveValue("Zebra");
     });
 
     it("should open on ArrowUp", async () => {
@@ -813,10 +845,21 @@ describe("ComboBox", () => {
   // ============================================
 
   describe("required state", () => {
-    it("should support isRequired", () => {
+    it("sets native required when validationBehavior is native (the default)", () => {
       render(() => <TestComboBox comboBoxProps={{ isRequired: true }} />);
 
       const input = screen.getByRole("combobox");
+      expect(input).toBeRequired();
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("sets aria-required when validationBehavior is aria", () => {
+      render(() => (
+        <TestComboBox comboBoxProps={{ isRequired: true, validationBehavior: "aria" }} />
+      ));
+
+      const input = screen.getByRole("combobox");
+      expect(input).not.toHaveAttribute("required");
       expect(input).toHaveAttribute("aria-required", "true");
     });
 
@@ -863,11 +906,12 @@ describe("ComboBox", () => {
       });
     });
 
-    it("should have aria-haspopup listbox", () => {
+    it("combobox input does not carry aria-haspopup", () => {
       render(() => <TestComboBox />);
 
       const input = screen.getByRole("combobox");
-      expect(input).toHaveAttribute("aria-haspopup", "listbox");
+      expect(input).not.toHaveAttribute("aria-haspopup");
+      expect(screen.getByRole("button")).toHaveAttribute("aria-haspopup", "listbox");
     });
 
     it("should have aria-controls when open", async () => {
@@ -1336,6 +1380,127 @@ describe("ComboBox", () => {
 
       const button = screen.getByRole("button");
       expect(button).toBeInTheDocument();
+    });
+  });
+
+  describe("list markup parity", () => {
+    it("listbox exposes data-layout and data-orientation", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        const listbox = screen.getByRole("listbox");
+        expect(listbox).toHaveAttribute("data-layout", "stack");
+        expect(listbox).toHaveAttribute("data-orientation", "vertical");
+        expect(listbox).not.toHaveAttribute("data-focused");
+      });
+    });
+
+    it("option does not reference a description id when no description slot is rendered", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        const options = screen.getAllByRole("option");
+        expect(options.length).toBeGreaterThan(0);
+        for (const option of options) {
+          expect(option).not.toHaveAttribute("aria-describedby");
+          expect(option).toHaveAttribute("aria-labelledby");
+          const labelledBy = option.getAttribute("aria-labelledby");
+          expect(document.getElementById(labelledBy!)).not.toBeNull();
+        }
+      });
+    });
+
+    it("option exposes data-selection-mode", async () => {
+      render(() => <TestComboBox comboBoxProps={{ defaultOpen: true }} />);
+
+      await waitFor(() => {
+        const option = screen.getAllByRole("option")[0];
+        expect(option).toHaveAttribute("data-selection-mode", "single");
+      });
+    });
+  });
+
+  describe("dialog host", () => {
+    it("should not throw when rendered inside a Dialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog aria-label="Dialog">
+          <ComboBox
+            aria-label="Test ComboBox"
+            items={items}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <ComboBoxInput />
+            <ComboBoxButton>▼</ComboBoxButton>
+            <Text slot="errorMessage">Error</Text>
+            <ComboBoxListBox>
+              {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+            </ComboBoxListBox>
+          </ComboBox>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+
+    it("should not throw when rendered inside an alertdialog with a Text errorMessage slot", () => {
+      render(() => (
+        <Dialog role="alertdialog" aria-label="Dialog">
+          <ComboBox
+            aria-label="Test ComboBox"
+            items={items}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.name}
+            isInvalid
+          >
+            <ComboBoxInput />
+            <ComboBoxButton>▼</ComboBoxButton>
+            <Text slot="errorMessage">Error</Text>
+            <ComboBoxListBox>
+              {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+            </ComboBoxListBox>
+          </ComboBox>
+        </Dialog>
+      ));
+
+      expect(screen.getByText("Error")).toBeInTheDocument();
+    });
+
+    it("does not close or commit when blurring the input into a descendant of the trigger button", async () => {
+      const onOpenChange = vi.fn();
+      const onSelectionChange = vi.fn();
+      render(() => (
+        <ComboBox
+          aria-label="Test ComboBox"
+          items={items}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultOpen
+          onOpenChange={onOpenChange}
+          onSelectionChange={onSelectionChange}
+        >
+          <ComboBoxInput />
+          <ComboBoxButton>
+            <span data-testid="trigger-icon">▼</span>
+          </ComboBoxButton>
+          <ComboBoxListBox>
+            {(item) => <ComboBoxOption id={item.id}>{item.name}</ComboBoxOption>}
+          </ComboBoxListBox>
+        </ComboBox>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("listbox")).toBeInTheDocument();
+      });
+
+      const input = screen.getByRole("combobox");
+      const icon = screen.getByTestId("trigger-icon");
+      fireEvent.blur(input, { relatedTarget: icon });
+
+      expect(screen.getByRole("listbox")).toBeInTheDocument();
+      expect(onOpenChange.mock.calls.some((call) => call[0] === false)).toBe(false);
+      expect(onSelectionChange).not.toHaveBeenCalled();
     });
   });
 });

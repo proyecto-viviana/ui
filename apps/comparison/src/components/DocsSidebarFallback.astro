@@ -1,5 +1,6 @@
 ---
 import { comparisonEntries, type ComparisonSlug } from "@comparison/data/comparison-manifest";
+import { comparisonComponentPath } from "@comparison/data/site-meta";
 import {
   docsNavIndicator,
   docsNavIndicatorCurrent,
@@ -49,7 +50,7 @@ const navIndicatorCurrentClass = staticClassName(docsNavIndicatorCurrent);
         {comparisonEntries.map((item) => (
           <li class={navItemClass}>
             <a
-              href={`/components/${item.slug}`}
+              href={comparisonComponentPath(item.slug)}
               class:list={["s2-nav-link", navLinkClass, item.slug === normalizedActiveSlug && navLinkCurrentClass]}
               aria-current={item.slug === normalizedActiveSlug ? "page" : undefined}
             >

@@ -85,14 +85,7 @@ export function createCheckbox(
 
   // Get toggle aria props
   const toggleResult = createToggle(props, state, inputRef);
-  const {
-    labelProps: baseLabelProps,
-    isSelected,
-    isPressed,
-    isDisabled,
-    isReadOnly,
-    isInvalid,
-  } = toggleResult;
+  const { labelProps: baseLabelProps, isSelected, isPressed } = toggleResult;
 
   // Handle indeterminate state
   createEffect(() => {
@@ -107,12 +100,12 @@ export function createCheckbox(
 
   // Reset validation state on label press for checkbox with a hidden input.
   const { pressProps } = createPress({
-    get isDisabled() {
-      return isDisabled || isReadOnly;
-    },
     onPress() {
       // Validation state reset would be handled here if we had form validation
       // For now, this is a no-op placeholder matching React-Aria's pattern
+    },
+    get isDisabled() {
+      return toggleResult.isDisabled || toggleResult.isReadOnly;
     },
   });
 
@@ -144,8 +137,14 @@ export function createCheckbox(
     },
     isSelected,
     isPressed,
-    isDisabled,
-    isReadOnly,
-    isInvalid,
+    get isDisabled() {
+      return toggleResult.isDisabled;
+    },
+    get isReadOnly() {
+      return toggleResult.isReadOnly;
+    },
+    get isInvalid() {
+      return toggleResult.isInvalid;
+    },
   };
 }

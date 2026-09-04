@@ -23,6 +23,7 @@ import {
   createMemo,
   createRoot,
   createSignal,
+  createUniqueId,
   mergeProps,
   onCleanup,
   onMount,
@@ -250,7 +251,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
   const observedMutationTargets = new WeakSet<Element>();
   let retryOverflowUpdateTimeout: number | undefined;
   const initialOverflowUpdateTimeouts: number[] = [];
-  const measurementId = `rsp-breadcrumbs-${Math.random().toString(36).slice(2)}`;
+  const measurementId = `rsp-breadcrumbs-${createUniqueId()}`;
   const [canMeasure, setCanMeasure] = createSignal(canMeasureOverflow());
   const [visibleTailCount, setVisibleTailCount] = createSignal(MAX_VISIBLE_ITEMS - 2);
   let cleanupOverflowObservers = () => {};
@@ -523,7 +524,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
     for (const delay of [16, 50, 100, 250]) {
       initialOverflowUpdateTimeouts.push(window.setTimeout(safeUpdate, delay));
     }
-    document.fonts?.ready.then(() => {
+    void document.fonts?.ready.then(() => {
       if (!hasDisposedRoot) {
         safeUpdate();
       }
@@ -838,8 +839,8 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const renderChildren = (renderProps: BreadcrumbItemRenderProps): JSX.Element => {
     syncRenderProps(renderProps);
 
-    const content =
-      typeof local.children === "function" ? local.children(renderProps) : local.children;
+    const rawChildren = local.children;
+    const content = typeof rawChildren === "function" ? rawChildren(renderProps) : rawChildren;
 
     return content;
   };

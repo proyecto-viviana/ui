@@ -21,8 +21,34 @@ import { Header, Heading, Menu, MenuItem, MenuSection, SubmenuTrigger } from "..
 import { Keyboard, Text } from "../src/text";
 import { Provider } from "../src/provider";
 import MoreIcon from "../src/icon/s2wf-icons/MoreIcon";
+import { Button } from "../src/button";
+import { Popover, PopoverTrigger } from "../src/popover";
+import { style } from "../src/style";
 
 afterEach(() => cleanup());
+
+function mockGetAnimations(impl: () => Animation[]): () => void {
+  const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+  if (typeof CSSTransition === "undefined") {
+    (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+  }
+  const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    writable: true,
+    value: impl,
+  });
+  return () => {
+    if (previous) {
+      Object.defineProperty(Element.prototype, "getAnimations", previous);
+    } else {
+      delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+    }
+    if (previousCssTransition === undefined) {
+      delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    }
+  };
+}
 
 const items = [
   { id: "copy", label: "Copy", shortcut: "Cmd+C" },
@@ -277,6 +303,21 @@ describe("ActionMenu (solid-spectrum)", () => {
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
+  it("wraps ArrowDown from the last item when shouldFocusWrap is omitted", async () => {
+    const user = setupUser();
+    render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
+
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    const menu = await screen.findByRole("menu");
+    await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+
+    await user.keyboard("{End}");
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: /Copy/ })).toHaveAttribute("data-focused");
+  });
+
   it("closes when pressing outside the menu", async () => {
     const user = setupUser();
     const onOpenChange = vi.fn();
@@ -301,28 +342,41 @@ describe("ActionMenu (solid-spectrum)", () => {
   });
 
   it("marks the popover entering and exiting transition lifecycle", async () => {
-    const user = setupUser();
-    const requestAnimationFrameSpy = vi
-      .spyOn(window, "requestAnimationFrame")
-      .mockImplementation(() => 999);
+    let resolveCurrent!: () => void;
+    let currentFinished = new Promise<void>((resolve) => {
+      resolveCurrent = resolve;
+    });
+    const restore = mockGetAnimations(
+      () => [{ finished: currentFinished }] as unknown as Animation[],
+    );
 
     try {
+      const user = setupUser();
       render(() => <ActionMenu items={items} getKey={(item) => item.id} />);
 
       await user.click(screen.getByRole("button", { name: "More actions" }));
 
       const popover = screen.getByRole("dialog");
       expect(popover).toHaveAttribute("data-entering");
+      await waitFor(() => expect(popover.getAttribute("data-placement")).toBeTruthy());
+
+      const finishEnter = resolveCurrent;
+      currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      finishEnter();
+      await waitFor(() => expect(popover).not.toHaveAttribute("data-entering"));
+
+      await user.keyboard("{Escape}");
+      expect(popover).toBeInTheDocument();
+      expect(popover).not.toHaveAttribute("data-entering");
+      expect(popover).toHaveAttribute("data-exiting");
+
+      resolveCurrent();
+      await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
     } finally {
-      requestAnimationFrameSpy.mockRestore();
+      restore();
     }
-
-    await user.keyboard("{Escape}");
-
-    const exitingPopover = screen.getByRole("dialog");
-    expect(exitingPopover).not.toHaveAttribute("data-entering");
-    expect(exitingPopover).toHaveAttribute("data-exiting");
-    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
   });
 
   it("applies the upstream press scale transform while pressed", () => {
@@ -863,7 +917,9 @@ describe("ActionMenu (solid-spectrum)", () => {
     expect(descriptorId).toBeTruthy();
     const descriptor = document.getElementById(descriptorId!);
     expect(descriptor).toBeInTheDocument();
-    expect(within(descriptor!).getByRole("img", { name: "Unavailable" })).toBeInTheDocument();
+    expect(
+      within(descriptor!).getByRole("img", { name: "Unavailable, expand for details" }),
+    ).toBeInTheDocument();
 
     await user.hover(menuItem);
 
@@ -910,5 +966,81 @@ describe("ActionMenu (solid-spectrum)", () => {
       .getAllByRole("dialog")
       .find((dialog) => dialog.getAttribute("data-trigger") === "SubmenuTrigger");
     expect(submenuHelpPopover).toBeUndefined();
+  });
+
+  it("composes the S2 Popover surface, including entering motion, matching a bare Popover", async () => {
+    const restore = mockGetAnimations(
+      () => [{ finished: new Promise<void>(() => {}) }] as unknown as Animation[],
+    );
+    const popoverMotion = style<{
+      isEntering?: boolean;
+      isExiting?: boolean;
+      placement?: "top" | "bottom" | "left" | "right";
+    }>({
+      opacity: { isEntering: 0, isExiting: 0 },
+      translateY: {
+        placement: {
+          top: { isEntering: 4, isExiting: 4 },
+          bottom: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      translateX: {
+        placement: {
+          left: { isEntering: 4, isExiting: 4 },
+          right: { isEntering: -4, isExiting: -4 },
+        },
+      },
+      transition: "[opacity, translate]",
+      transitionDuration: 200,
+      transitionTimingFunction: { isExiting: "in" },
+      pointerEvents: { isExiting: "none" },
+    });
+    const classTokens = (className: string) => className.split(/\s+/).filter(Boolean);
+    const motionContract = (className: string) =>
+      classTokens(className).filter((token) => !token.startsWith("-macro-dynamic-"));
+
+    try {
+      const enteringMotion = popoverMotion({
+        isEntering: true,
+        isExiting: false,
+        placement: "bottom",
+      });
+      const settledMotion = popoverMotion({
+        isEntering: false,
+        isExiting: false,
+        placement: "bottom",
+      });
+      expect(enteringMotion).not.toBe(settledMotion);
+      const enteringContract = motionContract(enteringMotion);
+      expect(enteringContract.length).toBeGreaterThan(0);
+
+      const { unmount: unmountMenu } = render(() => (
+        <ActionMenu defaultOpen items={items} getKey={(item) => item.id} />
+      ));
+      const menuOverlay = screen.getByRole("menu").closest("[data-placement]") as HTMLElement;
+      expect(menuOverlay).toHaveAttribute("data-entering");
+      await waitFor(() => expect(menuOverlay.getAttribute("data-placement")).toBeTruthy());
+      const menuTokens = classTokens(menuOverlay.className);
+      expect(menuTokens).toEqual(expect.arrayContaining(enteringContract));
+      unmountMenu();
+
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover hideArrow>
+            <p>Bare popover</p>
+          </Popover>
+        </PopoverTrigger>
+      ));
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const bareOverlay = screen.getByRole("dialog");
+      expect(bareOverlay).toHaveAttribute("data-entering");
+      const bareTokens = classTokens(bareOverlay.className);
+      expect(bareTokens).toEqual(expect.arrayContaining(enteringContract));
+      expect(menuTokens).toEqual(bareTokens);
+    } finally {
+      restore();
+    }
   });
 });

@@ -37,8 +37,16 @@ Do not copy status counts, passing commands, or task lists into this file.
   interactive grid structure.
 - **TabSwitch and SegmentedControl — #9.** Define whether both public controls
   remain distinct or converge through a documented migration.
+- **Spectrum tokens pin — #143.** `solid-spectrum` and `@proyecto-viviana/ui`
+  both pin `@adobe/spectrum-tokens` to the S2 oracle version. Viviana theming
+  lives in `viviana-tokens.css`. Do not advance UI to a different Adobe token
+  major.
+- **archive/custom — #145 / #62.** Deleted. Current work is the Solid Spectrum
+  API. Do not add new viviana-native components until the owner reopens that
+  surface.
 
-Do not change either public boundary before the owner records the decision.
+Do not change the TableView or TabSwitch public boundaries before the owner
+records those decisions.
 
 ## Non-goals
 

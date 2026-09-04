@@ -2,14 +2,14 @@
  * Auto-generated from the pinned @react-spectrum/s2 icon inventory.
  * Do not edit by hand.
  */
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize100.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize100.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize200.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize200.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize300.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize300.cjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize400.mjs
-// Generator input: @react-spectrum/s2@1.6.0/dist/private/S2_LinkOutSize400.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize100.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize100.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize200.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize200.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize300.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize300.cjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize400.mjs
+// Generator input: @react-spectrum/s2@1.7.0/dist/private/S2_LinkOutSize400.cjs
 
 import { type JSX } from "solid-js";
 import { createUIIcon } from "../spectrum-icon";

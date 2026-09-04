@@ -5,9 +5,8 @@ Viviana UI's design-system package, built on Solid.
 Viviana UI and `@proyecto-viviana/solid-spectrum` are sibling styled libraries
 over the same `solid-stately` → `solidaria` → `solidaria-components` foundation.
 Viviana keeps an owner-ratified reskinned source fork of Spectrum's component
-shape, with its own tokens, style-macro build, and product patterns such as
-cards, chips, conversation, layout, logo, and timeline pieces. It does not
-depend on `@proyecto-viviana/solid-spectrum` at runtime.
+shape, with its own tokens and style-macro build. It does not depend on
+`@proyecto-viviana/solid-spectrum` at runtime.
 
 This package is part of Viviana UI, an unofficial open-source Solid port and
 design-system suite built from Adobe's React Stately, React Aria, React Aria

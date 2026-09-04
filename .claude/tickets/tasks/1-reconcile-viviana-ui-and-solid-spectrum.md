@@ -12,11 +12,18 @@ history:
       at: 2026-08-02,
       note: "premise corrected to match the repository's explicit layered architecture",
     }
+  - {
+      state: open,
+      at: 2026-09-01,
+      note: "owner 2026-09-01: token JSON pin is #143; both styled packages stay on the S2 oracle",
+    }
 ---
 
-`viviana-ui` and `solid-spectrum` share **533 identical files, 28,092 lines**. Not similar —
-identical. The remainder has diverged in both directions, so neither is a clean superset of the
-other any more.
+`viviana-ui` and `solid-spectrum` share **995 identical files, 33,036 lines**
+(2026-09-01 census; the original 533 / 28,092 count is stale). 77 files
+diverged; 0 unique to solid-spectrum; 41 unique to viviana-ui. 75 of 77
+divergences are Glasselated branding. The remainder has diverged in both
+directions, so neither is a clean superset of the other any more.
 
 This repository defines a deliberate layer chain:
 `solid-stately` → `solidaria` → `solidaria-components` → `solid-spectrum` →
@@ -55,3 +62,7 @@ Consolidation row R2.6. Blocked in practice by #2.
 This ticket also replaces legacy task `upper-layer-convergence` from
 `.claude/current/tech-debt.md`; both records describe the same owner-steered
 upper-layer boundary work.
+
+## Round-2 note (2026-09-01)
+
+Line total is 32,588 today (995 identical files unchanged); combobox/picker/statuslight/tabs/style-macro shrank together in `6a0af4d7`. `guard:layer-boundary` cannot see a repair applied to one copy of an already-diverged file — see #185.

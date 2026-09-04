@@ -39,11 +39,13 @@
  * Drag and Drop internationalization strings.
  *
  * Copied verbatim from @react-aria/dnd (react-aria 3.50 / RAC 1.19) intl/dnd.
- * All keys are plain ICU MessageFormat strings (no compiled announcement
- * functions), so the port's LocalizedStringFormatter consumes them directly.
+ * All keys are plain ICU MessageFormat strings; createStringFormatter compiles
+ * the ones with arguments on first use (i18n/compileIcu.ts), so the JSON
+ * stays byte-identical to upstream. LocalizedStringDictionary resolves the
+ * locale fallback chain (locale → language → sibling region → en-US).
  */
 
-import type { LocalizedString, LocalizedStrings } from "@internationalized/string";
+import type { LocalizedStrings } from "@internationalized/string";
 
 import arAE from "./ar-AE.json" with { type: "json" };
 import bgBG from "./bg-BG.json" with { type: "json" };
@@ -110,67 +112,39 @@ export type DndIntlStrings = {
   insertAfter: string;
 };
 
-// `@internationalized/string`'s LocalizedStringFormatter only interpolates
-// variables when a message is a FUNCTION — a plain ICU-template string is
-// returned verbatim (`{itemText}` and friends never substituted). Upstream
-// react-aria compiles its intl JSON into functions at build time
-// (`@internationalized/string-compiler`); this port ships the raw JSON, so we
-// compile the SIMPLE `{var}` placeholders here at module load (mirroring the
-// hand-authored function forms in the color intl catalog). ICU plural/select
-// messages (any `{…,…}` group, e.g. `dragSelectedItems`) are left as strings —
-// they need the full ICU engine and are unused by the single-key drag path.
-const SIMPLE_PLACEHOLDER = /\{(\w+)\}/g;
-function compileSimpleIcu(message: string): LocalizedString {
-  if (!SIMPLE_PLACEHOLDER.test(message)) return message;
-  // Reset lastIndex (test() with /g advances it) before the plural probe.
-  SIMPLE_PLACEHOLDER.lastIndex = 0;
-  // Any comma inside a placeholder means real ICU (plural/select) — leave as-is.
-  if (/\{[^{}]*,[^{}]*\}/.test(message)) return message;
-  return (args?: Record<string, unknown>): string =>
-    message.replace(SIMPLE_PLACEHOLDER, (_match, key: string) => String(args?.[key] ?? ""));
-}
-
-function compileLocale(strings: Record<string, string>): Record<string, LocalizedString> {
-  const out: Record<string, LocalizedString> = {};
-  for (const key of Object.keys(strings)) {
-    out[key] = compileSimpleIcu(strings[key]);
-  }
-  return out;
-}
-
-export const dndIntlStrings: LocalizedStrings<keyof DndIntlStrings, LocalizedString> = {
-  "ar-AE": compileLocale(arAE),
-  "bg-BG": compileLocale(bgBG),
-  "cs-CZ": compileLocale(csCZ),
-  "da-DK": compileLocale(daDK),
-  "de-DE": compileLocale(deDE),
-  "el-GR": compileLocale(elGR),
-  "en-US": compileLocale(enUS),
-  "es-ES": compileLocale(esES),
-  "et-EE": compileLocale(etEE),
-  "fi-FI": compileLocale(fiFI),
-  "fr-FR": compileLocale(frFR),
-  "he-IL": compileLocale(heIL),
-  "hr-HR": compileLocale(hrHR),
-  "hu-HU": compileLocale(huHU),
-  "it-IT": compileLocale(itIT),
-  "ja-JP": compileLocale(jaJP),
-  "ko-KR": compileLocale(koKR),
-  "lt-LT": compileLocale(ltLT),
-  "lv-LV": compileLocale(lvLV),
-  "nb-NO": compileLocale(nbNO),
-  "nl-NL": compileLocale(nlNL),
-  "pl-PL": compileLocale(plPL),
-  "pt-BR": compileLocale(ptBR),
-  "pt-PT": compileLocale(ptPT),
-  "ro-RO": compileLocale(roRO),
-  "ru-RU": compileLocale(ruRU),
-  "sk-SK": compileLocale(skSK),
-  "sl-SI": compileLocale(slSI),
-  "sr-SP": compileLocale(srSP),
-  "sv-SE": compileLocale(svSE),
-  "tr-TR": compileLocale(trTR),
-  "uk-UA": compileLocale(ukUA),
-  "zh-CN": compileLocale(zhCN),
-  "zh-TW": compileLocale(zhTW),
+export const dndIntlStrings: LocalizedStrings<keyof DndIntlStrings, string> = {
+  "ar-AE": arAE,
+  "bg-BG": bgBG,
+  "cs-CZ": csCZ,
+  "da-DK": daDK,
+  "de-DE": deDE,
+  "el-GR": elGR,
+  "en-US": enUS,
+  "es-ES": esES,
+  "et-EE": etEE,
+  "fi-FI": fiFI,
+  "fr-FR": frFR,
+  "he-IL": heIL,
+  "hr-HR": hrHR,
+  "hu-HU": huHU,
+  "it-IT": itIT,
+  "ja-JP": jaJP,
+  "ko-KR": koKR,
+  "lt-LT": ltLT,
+  "lv-LV": lvLV,
+  "nb-NO": nbNO,
+  "nl-NL": nlNL,
+  "pl-PL": plPL,
+  "pt-BR": ptBR,
+  "pt-PT": ptPT,
+  "ro-RO": roRO,
+  "ru-RU": ruRU,
+  "sk-SK": skSK,
+  "sl-SI": slSI,
+  "sr-SP": srSP,
+  "sv-SE": svSE,
+  "tr-TR": trTR,
+  "uk-UA": ukUA,
+  "zh-CN": zhCN,
+  "zh-TW": zhTW,
 };

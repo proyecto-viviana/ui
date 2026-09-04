@@ -19,7 +19,7 @@
  * Based on @react-aria/calendar useCalendarCell (with range support)
  */
 
-import { createSignal, createMemo, createEffect } from "solid-js";
+import { createSignal, createMemo, createEffect, onCleanup } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { createDescription } from "../utils/createDescription";
@@ -144,8 +144,12 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
 
   // Handle click for keyboard activation (Enter/Space).
   const handleClick = () => {
-    if (isSelectable()) {
-      state.selectDate(date());
+    if (!isSelectable()) return;
+    const hadAnchor = state.anchorDate() != null;
+    state.selectDate(date());
+    // RAC `useCalendarCell.ts:300-306`: keyboard range-start auto-advances.
+    if (!hadAnchor) {
+      state.focusNearestAvailableDate(date());
     }
   };
 
@@ -160,15 +164,19 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     }
   };
 
-  // Keep DOM focus synchronized with focused date updates.
-  // Use focusSafely (preventScroll) to match @react-aria/calendar — bare focus()
-  // causes the browser to auto-scroll the page when bringing the cell into view,
-  // which is wrong inside a popover.
+  // RAC uses useEffect (after paint). Solid createEffect is sync, so a
+  // Next/Previous click would steal focus onto the new cell before the
+  // nav button receives click-focus (#279).
   createEffect(() => {
     const element = ref?.();
-    if (element && isFocused()) {
+    if (!element || !isFocused()) return;
+    const frame = requestAnimationFrame(() => {
+      if (!isFocused() || ref?.() !== element) return;
+      const navLabel = document.activeElement?.getAttribute("aria-label");
+      if (navLabel === "Next" || navLabel === "Previous") return;
       focusSafely(element);
-    }
+    });
+    onCleanup(() => cancelAnimationFrame(frame));
   });
 
   // Cell props (for the td element)
@@ -212,6 +220,14 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       );
     } else if (isSelected()) {
       label = formatCalendarLabel(state.locale(), "dateSelected", { date: label });
+    }
+    // RAC `useCalendarCell.ts:164-168`: min/max cells append First/Last available date.
+    const minValue = state.minValue();
+    const maxValue = state.maxValue();
+    if (minValue && isSameDay(d, minValue)) {
+      label += `, ${formatCalendarLabel(state.locale(), "minimumDate")}`;
+    } else if (maxValue && isSameDay(d, maxValue)) {
+      label += `, ${formatCalendarLabel(state.locale(), "maximumDate")}`;
     }
 
     const errorMessageId = hookData?.errorMessageId;

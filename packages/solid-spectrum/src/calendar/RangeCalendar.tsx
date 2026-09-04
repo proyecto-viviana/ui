@@ -43,7 +43,8 @@ import {
   type RangeCalendarCellRenderProps,
   type RangeValue,
 } from "@proyecto-viviana/solidaria-components";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { s2IntlStrings } from "../intl";
 import { DateFormatter, type RangeCalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import {
@@ -197,7 +198,14 @@ const rangeCalendarRoot = style<{ isMultiMonth?: boolean }>({
     value: 4,
   },
   "--cell-responsive-size": "--s2-calendar-cell-max-width",
-  width: "fit",
+  width: {
+    default: "[calc(7 * var(--cell-max-width) + var(--cell-gap) * 12)]",
+    isMultiMonth: "fit",
+  },
+  maxWidth: {
+    default: "full",
+    isMultiMonth: "unset",
+  },
 });
 
 // Mirrors @react-spectrum/s2 Calendar headerStyles (shared with Calendar).
@@ -590,8 +598,7 @@ const rangeCalendarNavIcon = style({
     type: "fill",
     value: "currentColor",
   },
-  width: "[1.4285714285714286em]",
-  height: "[1.4285714285714286em]",
+  size: "1lh",
   forcedColorAdjust: "none",
 });
 
@@ -634,10 +641,9 @@ function RangeCalendarHeading(props: {
   nextButton: JSX.Element;
 }): JSX.Element {
   const state = useRangeCalendarContext();
-  const months = () =>
-    Array.from({ length: props.visibleMonths }, (_, index) =>
-      monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone),
-    );
+  const monthOffsets = () => Array.from({ length: props.visibleMonths }, (_, index) => index);
+  const titleAt = (index: number) =>
+    monthTitle(state.visibleRange().start.add({ months: index }), props.locale, state.timeZone);
 
   return (
     // Mirror @react-spectrum/s2 CalendarHeader (shared with Calendar): one flex
@@ -647,14 +653,17 @@ function RangeCalendarHeading(props: {
     // CalendarHeading, whose HeadingContext marks it aria-hidden (the visible
     // range is already named on the application root + each grid) — so it stays
     // out of the AX tree.
-    <For each={months()}>
-      {(title, index) => (
+    //
+    // Key the row by month offset, not the formatted title, so paging does not
+    // remount Next/Previous and drop their DOM focus (#279).
+    <For each={monthOffsets()}>
+      {(offset) => (
         <div class={rangeCalendarHeading}>
-          <Show when={index() === 0}>{props.prevButton}</Show>
+          <Show when={offset === 0}>{props.prevButton}</Show>
           <h2 aria-hidden="true" class={rangeCalendarTitle}>
-            {title}
+            {titleAt(offset)}
           </h2>
-          <Show when={index() === props.visibleMonths - 1}>{props.nextButton}</Show>
+          <Show when={offset === props.visibleMonths - 1}>{props.nextButton}</Show>
         </div>
       )}
     </For>
@@ -767,6 +776,7 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
   const validationState = () =>
     typeof local.validationState === "function" ? local.validationState() : local.validationState;
   const isInvalid = () => local.isInvalid || validationState() === "invalid";
+  const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const errorMessageId = createUniqueId();
   const mergedStyles = () => mergeContextStyles(contextProps?.styles, props.styles);
   const mergedUnsafeStyle = () =>
@@ -775,18 +785,23 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
     (contextProps as { ref?: RefLike<HTMLDivElement> } | null)?.ref,
     props.ref,
   );
-  const rootStyle = () => ({
-    "--cell-gap": "4px",
-    "--cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--cell-responsive-size": "var(--cell-max-width)",
-    "--s2-calendar-cell-max-width": `${sizeConfig().cellMaxWidth}px`,
-    "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
-    "--s2-calendar-visible-months": visibleMonths(),
-    "--num-calendars": visibleMonths(),
-    width: "fit-content",
-    "max-width": "100%",
-    ...(mergedUnsafeStyle() ?? {}),
-  });
+  const rootStyle = () => {
+    const months = visibleMonths();
+    const cellMaxWidth = sizeConfig().cellMaxWidth;
+    const singleMonthWidth = cellMaxWidth * 7 + 4 * 12;
+    return {
+      "--cell-gap": "4px",
+      "--cell-max-width": `${cellMaxWidth}px`,
+      "--cell-responsive-size": "var(--cell-max-width)",
+      "--s2-calendar-cell-max-width": `${cellMaxWidth}px`,
+      "--s2-calendar-button-size": `${sizeConfig().buttonSize}px`,
+      "--s2-calendar-visible-months": months,
+      "--num-calendars": months,
+      width: months > 1 ? "fit-content" : `${singleMonthWidth}px`,
+      "max-width": months > 1 ? undefined : "100%",
+      ...(mergedUnsafeStyle() ?? {}),
+    };
+  };
   const monthOffsets = () => Array.from({ length: visibleMonths() }, (_, index) => index);
 
   return (
@@ -871,12 +886,13 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
         </For>
       </div>
 
-      <Show when={isInvalid() && local.errorMessage}>
+      <Show when={isInvalid()}>
         <span
           id={errorMessageId}
           class={rangeCalendarHelpText({ isInvalid: true, isDisabled: Boolean(rest.isDisabled) })}
         >
-          {local.errorMessage}
+          {local.errorMessage ||
+            stringFormatter().format("calendar.invalidSelection", { selectedCount: 2 })}
         </span>
       </Show>
     </HeadlessRangeCalendar>

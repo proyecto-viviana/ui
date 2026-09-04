@@ -399,6 +399,7 @@ const comparisonS2Macros = () => {
 };
 
 export default defineConfig({
+  trailingSlash: "always",
   integrations: [
     comparisonReact({
       // The current React comparison island is precompiled JS. Keep the React
@@ -416,7 +417,6 @@ export default defineConfig({
         "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/viviana-ui/src/**/*",
-        "../../packages/viviana-ui/archive/**/*",
       ],
     }),
     solid({
@@ -431,11 +431,6 @@ export default defineConfig({
         "../../packages/kumo/dist/**/*.jsx",
         "../../packages/solid-spectrum/src/**/*",
         "../../packages/viviana-ui/src/**/*",
-        // The custom Viviana surfaces the fixtures render for certification live
-        // under archive/ (moved out of the built surface by 721555c4); they are
-        // still Solid components and need Solid's JSX transform, not the default
-        // React-automatic one (which emits a bad `solid-js/jsx-runtime` import).
-        "../../packages/viviana-ui/archive/**/*",
       ],
       exclude: ["src/components/react/**/*"],
     }),
@@ -444,6 +439,24 @@ export default defineConfig({
     plugins: [comparisonS2Macros()],
     build: {
       assetsInlineLimit: 0,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            const normalized = id.replaceAll("\\", "/");
+            if (
+              normalized.includes("/node_modules/react-dom/") ||
+              normalized.includes("/node_modules/scheduler/") ||
+              /\/node_modules\/react\//.test(normalized)
+            ) {
+              return "react-runtime";
+            }
+            if (normalized.includes("/node_modules/solid-js/")) {
+              return "solid-runtime";
+            }
+            return undefined;
+          },
+        },
+      },
     },
     resolve: {
       alias: [

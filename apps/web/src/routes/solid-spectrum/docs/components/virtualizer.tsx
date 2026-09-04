@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { For } from "solid-js";
 import {
   Virtualizer,
   ListLayout,
   GridLayout,
   WaterfallLayout,
+  ListBox,
+  ListBoxOption,
 } from "@proyecto-viviana/solidaria-components";
 import { typeRoles } from "@proyecto-viviana/ui";
 import { DocPage, Example, PropsTable, AccessibilitySection } from "@/components/docs";
@@ -32,12 +33,20 @@ const gridItems = Array.from({ length: 200 }, (_, i) => ({
 
 /** A virtualized tile: fixed frame, label pinned top, caption pinned bottom. */
 const tile = {
+  height: "100%",
   display: "flex",
   "flex-direction": "column",
   "justify-content": "space-between",
   padding: "12px",
   "border-radius": "var(--radius-lg)",
   color: "var(--text-primary)",
+} as const;
+
+/** Each grid option fills its layout cell; the inset keeps neighbouring tiles apart. */
+const gridOption = {
+  padding: "4px",
+  "box-sizing": "border-box",
+  outline: "none",
 } as const;
 
 export const Route = createFileRoute("/solid-spectrum/docs/components/virtualizer")({
@@ -55,44 +64,54 @@ function VirtualizerPage() {
   return (
     <DocPage
       title="Virtualizer"
-      description="Virtualizer efficiently renders large collections by only mounting visible items. It supports list, grid, waterfall, and table layouts with full keyboard navigation and drag-and-drop."
+      description="Virtualizer efficiently renders large collections by only mounting visible items. It renders no DOM of its own: wrap a collection component such as ListBox, GridList, Table, or Tree, and that collection element becomes the scroll container. It supports list, grid, waterfall, and table layouts with full keyboard navigation and drag-and-drop."
       importCode={`import {
   Virtualizer,
   ListLayout,
   GridLayout,
   WaterfallLayout,
   TableLayout
-} from '@proyecto-viviana/solid-spectrum';`}
+} from '@proyecto-viviana/solidaria-components';`}
     >
       <Example
         title="Basic List"
-        description="A virtual list rendering 1,000 items efficiently. Only visible items are mounted in the DOM."
-        code={`<Virtualizer
-  layout={ListLayout}
-  layoutOptions={{ itemSize: 40, overscan: 5 }}
-  class="viewport"
->
-  <For each={items}>
+        description="A virtual list rendering 1,000 items efficiently. Only visible items are mounted in the DOM. The ListBox is the scroller, so give it the height and overflow."
+        code={`<Virtualizer layout={ListLayout} layoutOptions={{ itemSize: 40, overscan: 5 }}>
+  <ListBox
+    aria-label="Virtualized list"
+    selectionMode="multiple"
+    items={items}
+    getKey={(item) => item.id}
+    getTextValue={(item) => item.label}
+    class="viewport"
+    style={{ height: "256px" }}
+  >
     {(item) => (
-      <div class="row">
+      <ListBoxOption id={item.id} textValue={item.label} class="row">
         {item.label}
-      </div>
+      </ListBoxOption>
     )}
-  </For>
+  </ListBox>
 </Virtualizer>`}
       >
-        <Virtualizer
-          layout={ListLayout}
-          layoutOptions={{ itemSize: 40, overscan: 5 }}
-          class="hd-viewport"
-          style={{ height: "256px" }}
-        >
-          <For each={listItems}>
+        <Virtualizer layout={ListLayout} layoutOptions={{ itemSize: 40, overscan: 5 }}>
+          <ListBox
+            aria-label="Virtualized list"
+            selectionMode="multiple"
+            items={listItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.label}
+            class="hd-viewport"
+            style={{ height: "256px" }}
+          >
             {(item) => (
-              <div
-                class={typeRoles.body}
+              <ListBoxOption
+                id={item.id}
+                textValue={item.label}
+                class={`hd-option ${typeRoles.body}`}
                 style={{
                   height: "40px",
+                  "box-sizing": "border-box",
                   display: "flex",
                   "align-items": "center",
                   padding: "0 16px",
@@ -100,91 +119,127 @@ function VirtualizerPage() {
                 }}
               >
                 {item.label}
-              </div>
+              </ListBoxOption>
             )}
-          </For>
+          </ListBox>
         </Virtualizer>
       </Example>
 
       <Example
         title="Grid Layout"
-        description="Display items in a responsive grid. Items are arranged in columns with automatic sizing."
-        code={`<Virtualizer
-  layout={GridLayout}
-  layoutOptions={{ rowHeight: 120, columnCount: 3 }}
-  class="viewport"
->
-  <For each={items}>
+        description='Display items in a fixed-column grid. GridLayout windows rows of rowHeight with columnCount items each; set layout="grid" on the ListBox so arrow keys move across columns, and lay the collection content out in the same columns.'
+        code={`<Virtualizer layout={GridLayout} layoutOptions={{ rowHeight: 120, columnCount: 3 }}>
+  <ListBox
+    aria-label="Virtualized grid"
+    layout="grid"
+    items={items}
+    getKey={(item) => item.id}
+    getTextValue={(item) => item.label}
+    class="viewport viewport--grid"
+    style={{
+      height: "320px",
+      "--grid-columns": "repeat(3, minmax(0, 1fr))",
+      "--grid-row-height": "120px",
+    }}
+  >
     {(item) => (
-      <div class="tile">
-        {item.label}
-      </div>
+      <ListBoxOption id={item.id} textValue={item.label}>
+        <div class="tile">{item.label}</div>
+      </ListBoxOption>
     )}
-  </For>
+  </ListBox>
 </Virtualizer>`}
       >
-        <Virtualizer
-          layout={GridLayout}
-          layoutOptions={{ rowHeight: 120, columnCount: 3 }}
-          class="hd-viewport"
-          style={{ height: "320px", padding: "8px" }}
-        >
-          <For each={gridItems}>
+        <Virtualizer layout={GridLayout} layoutOptions={{ rowHeight: 120, columnCount: 3 }}>
+          <ListBox
+            aria-label="Virtualized grid"
+            layout="grid"
+            items={gridItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.label}
+            class="hd-viewport hd-viewport--grid"
+            style={{
+              height: "320px",
+              "--hd-grid-columns": "repeat(3, minmax(0, 1fr))",
+              "--hd-grid-row-height": "120px",
+            }}
+          >
             {(item) => (
-              <div style={{ ...tile, height: "112px", background: item.fill }}>
-                <span class={typeRoles.label} style={{ color: "var(--text-primary)" }}>
-                  {item.label}
-                </span>
-                <span class={typeRoles.meta} style={{ color: "var(--text-primary)" }}>
-                  Grid item
-                </span>
-              </div>
+              <ListBoxOption id={item.id} textValue={item.label} style={gridOption}>
+                <div style={{ ...tile, background: item.fill }}>
+                  <span class={typeRoles.label} style={{ color: "var(--text-primary)" }}>
+                    {item.label}
+                  </span>
+                  <span class={typeRoles.meta} style={{ color: "var(--text-primary)" }}>
+                    Grid item
+                  </span>
+                </div>
+              </ListBoxOption>
             )}
-          </For>
+          </ListBox>
         </Virtualizer>
       </Example>
 
       <Example
         title="Waterfall Layout"
-        description="A masonry-style layout where items flow into columns based on available space. Items can have varying heights."
+        description="Columns follow the available width: WaterfallLayout derives the column count from minColumnWidth and gap against the measured collection width, and windows rows of rowHeight. Match it with an auto-fill grid on the collection content."
         code={`<Virtualizer
   layout={WaterfallLayout}
-  layoutOptions={{ minColumnWidth: 200, gap: 8 }}
-  class="viewport"
+  layoutOptions={{ minColumnWidth: 200, gap: 8, rowHeight: 120 }}
 >
-  <For each={items}>
-    {(item, index) => (
-      <div style={{ height: \`\${80 + (index() % 5) * 30}px\` }}>
-        {item.label}
-      </div>
+  <ListBox
+    aria-label="Virtualized waterfall"
+    layout="grid"
+    items={items}
+    getKey={(item) => item.id}
+    getTextValue={(item) => item.label}
+    class="viewport viewport--grid"
+    style={{
+      height: "384px",
+      "--grid-columns": "repeat(auto-fill, minmax(200px, 1fr))",
+      "--grid-row-height": "120px",
+      "--grid-gap": "8px",
+    }}
+  >
+    {(item) => (
+      <ListBoxOption id={item.id} textValue={item.label}>
+        <div class="tile">{item.label}</div>
+      </ListBoxOption>
     )}
-  </For>
+  </ListBox>
 </Virtualizer>`}
       >
         <Virtualizer
           layout={WaterfallLayout}
-          layoutOptions={{ minColumnWidth: 200, gap: 8 }}
-          class="hd-viewport"
-          style={{ height: "384px", padding: "8px" }}
+          layoutOptions={{ minColumnWidth: 200, gap: 8, rowHeight: 120 }}
         >
-          <For each={gridItems}>
-            {(item, index) => (
-              <div
-                style={{
-                  ...tile,
-                  height: `${80 + (index() % 5) * 30}px`,
-                  background: item.fill,
-                }}
-              >
-                <span class={typeRoles.label} style={{ color: "var(--text-primary)" }}>
-                  {item.label}
-                </span>
-                <span class={typeRoles.meta} style={{ color: "var(--text-primary)" }}>
-                  Waterfall item
-                </span>
-              </div>
+          <ListBox
+            aria-label="Virtualized waterfall"
+            layout="grid"
+            items={gridItems}
+            getKey={(item) => item.id}
+            getTextValue={(item) => item.label}
+            class="hd-viewport hd-viewport--grid"
+            style={{
+              height: "384px",
+              "--hd-grid-columns": "repeat(auto-fill, minmax(200px, 1fr))",
+              "--hd-grid-row-height": "120px",
+              "--hd-grid-gap": "8px",
+            }}
+          >
+            {(item) => (
+              <ListBoxOption id={item.id} textValue={item.label} style={gridOption}>
+                <div style={{ ...tile, background: item.fill }}>
+                  <span class={typeRoles.label} style={{ color: "var(--text-primary)" }}>
+                    {item.label}
+                  </span>
+                  <span class={typeRoles.meta} style={{ color: "var(--text-primary)" }}>
+                    Waterfall item
+                  </span>
+                </div>
+              </ListBoxOption>
             )}
-          </For>
+          </ListBox>
         </Virtualizer>
       </Example>
 
@@ -206,17 +261,8 @@ function VirtualizerPage() {
           {
             name: "children",
             type: "JSX.Element",
-            description: "The collection items to virtualize, typically rendered with <For>",
-          },
-          {
-            name: "class",
-            type: "string",
-            description: "CSS class for the scroll container",
-          },
-          {
-            name: "style",
-            type: "string | JSX.CSSProperties",
-            description: "Inline styles for the scroll container",
+            description:
+              "The collection to virtualize (ListBox, GridList, Table, Tree). Virtualizer renders no element; the collection element is the scroll container, so size and overflow belong on it",
           },
           {
             name: "renderDropIndicator",
@@ -273,13 +319,21 @@ function VirtualizerPage() {
           {
             name: "minColumnWidth",
             type: "number",
-            description: "Minimum width of each column. Actual count adjusts to viewport.",
+            default: "200",
+            description:
+              "Minimum width of each column. The column count is derived from it and the measured collection width.",
           },
           {
             name: "gap",
             type: "number",
             default: "0",
-            description: "Gap between items in pixels",
+            description:
+              "Horizontal gap between columns in pixels, counted when deriving the column count",
+          },
+          {
+            name: "rowHeight",
+            type: "number",
+            description: "Height of each row in pixels",
           },
         ]}
       />

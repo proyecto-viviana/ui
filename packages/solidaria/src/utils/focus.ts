@@ -36,13 +36,18 @@
  * runAfterPaint and the focusVisible option are local Solid adapters.
  */
 
-import { getInteractionModality } from "../interactions/createInteractionModality";
+import {
+  getInteractionModality,
+  setIgnoreFocusEvent,
+} from "../interactions/createInteractionModality";
 import {
   getActiveElement,
   getEventTarget,
   getOwnerDocument,
   getOwnerWindow,
   isFocusable,
+  isShadowRoot,
+  nodeContains,
 } from "./dom";
 import { runAfterTransition } from "./runAfterTransition";
 
@@ -173,29 +178,46 @@ export function runAfterPaint(fn: () => void, doc?: Document): () => void {
  * Used when clicking on a button that shouldn't steal focus.
  */
 export function preventFocus(target: Element | null): (() => void) | undefined {
-  while (target && !isFocusable(target)) {
+  // The browser will focus the nearest focusable ancestor of our target.
+  while (target && !isFocusable(target, { skipVisibilityCheck: true })) {
     target = target.parentElement;
   }
 
   const ownerWindow = getOwnerWindow(target);
-  const activeElement = ownerWindow.document.activeElement as HTMLElement | null;
-
+  const activeElement = getActiveElement(ownerWindow.document) as HTMLElement | null;
   if (!activeElement || activeElement === target) {
     return undefined;
   }
 
-  let isRefocusing = false;
+  // Listen on the target's root (document or shadow root) so we catch focus events inside
+  // shadow DOM; they do not reach the main window.
+  const targetRoot = target?.getRootNode();
+  const root = targetRoot != null && isShadowRoot(targetRoot) ? targetRoot : ownerWindow;
 
-  const onBlur = (event: FocusEvent) => {
-    if (getEventTarget(event) === activeElement || isRefocusing) {
-      event.stopImmediatePropagation();
+  // Focus is "moving to target" when it moves to the button or to a descendant of the button
+  // (e.g. SVG icon)
+  const isFocusMovingToTarget = (focusTarget: Element | null) =>
+    focusTarget === target || (focusTarget != null && nodeContains(target, focusTarget));
+  // Blur/focusout events have their target as the element losing focus. Stop propagation when
+  // that is the previously focused element (activeElement) or a descendant (e.g. in shadow DOM).
+  const isBlurFromActiveElement = (eventTarget: Element | null) =>
+    eventTarget === activeElement ||
+    (activeElement != null && eventTarget != null && nodeContains(activeElement, eventTarget));
+
+  setIgnoreFocusEvent(true);
+  let isRefocusing = false;
+  const onBlur: EventListener = (e) => {
+    if (isBlurFromActiveElement(getEventTarget(e) as Element) || isRefocusing) {
+      e.stopImmediatePropagation();
     }
   };
 
-  const onFocusOut = (event: FocusEvent) => {
-    if (getEventTarget(event) === activeElement || isRefocusing) {
-      event.stopImmediatePropagation();
+  const onFocusOut: EventListener = (e) => {
+    if (isBlurFromActiveElement(getEventTarget(e) as Element) || isRefocusing) {
+      e.stopImmediatePropagation();
 
+      // If there was no focusable ancestor, we don't expect a focus event.
+      // Re-focus the original active element here.
       if (!target && !isRefocusing) {
         isRefocusing = true;
         focusWithoutScrolling(activeElement);
@@ -204,15 +226,15 @@ export function preventFocus(target: Element | null): (() => void) | undefined {
     }
   };
 
-  const onFocus = (event: FocusEvent) => {
-    if (getEventTarget(event) === target || isRefocusing) {
-      event.stopImmediatePropagation();
+  const onFocus: EventListener = (e) => {
+    if (isFocusMovingToTarget(getEventTarget(e) as Element) || isRefocusing) {
+      e.stopImmediatePropagation();
     }
   };
 
-  const onFocusIn = (event: FocusEvent) => {
-    if (getEventTarget(event) === target || isRefocusing) {
-      event.stopImmediatePropagation();
+  const onFocusIn: EventListener = (e) => {
+    if (isFocusMovingToTarget(getEventTarget(e) as Element) || isRefocusing) {
+      e.stopImmediatePropagation();
 
       if (!isRefocusing) {
         isRefocusing = true;
@@ -222,19 +244,20 @@ export function preventFocus(target: Element | null): (() => void) | undefined {
     }
   };
 
-  ownerWindow.addEventListener("blur", onBlur, true);
-  ownerWindow.addEventListener("focusout", onFocusOut, true);
-  ownerWindow.addEventListener("focusin", onFocusIn, true);
-  ownerWindow.addEventListener("focus", onFocus, true);
+  root.addEventListener("blur", onBlur, true);
+  root.addEventListener("focusout", onFocusOut, true);
+  root.addEventListener("focusin", onFocusIn, true);
+  root.addEventListener("focus", onFocus, true);
 
   const raf = ownerWindow.requestAnimationFrame(cleanup);
 
   function cleanup() {
     ownerWindow.cancelAnimationFrame(raf);
-    ownerWindow.removeEventListener("blur", onBlur, true);
-    ownerWindow.removeEventListener("focusout", onFocusOut, true);
-    ownerWindow.removeEventListener("focusin", onFocusIn, true);
-    ownerWindow.removeEventListener("focus", onFocus, true);
+    root.removeEventListener("blur", onBlur, true);
+    root.removeEventListener("focusout", onFocusOut, true);
+    root.removeEventListener("focusin", onFocusIn, true);
+    root.removeEventListener("focus", onFocus, true);
+    setIgnoreFocusEvent(false);
     isRefocusing = false;
   }
 

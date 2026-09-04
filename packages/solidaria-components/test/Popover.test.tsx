@@ -3,12 +3,35 @@
  */
 import { describe, it, expect, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, waitFor } from "@solidjs/testing-library";
-import { UNSAFE_PortalProvider } from "@proyecto-viviana/solidaria";
+import { UNSAFE_PortalProvider, I18nProvider } from "@proyecto-viviana/solidaria";
 import { Popover, PopoverTrigger, usePopoverTrigger } from "../src/Popover";
 import { Button } from "../src/Button";
 import { DialogTrigger } from "../src/Dialog";
 import { createSignal, onMount } from "solid-js";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
+
+function mockGetAnimations(impl: () => Animation[]): () => void {
+  const previousCssTransition = (globalThis as { CSSTransition?: unknown }).CSSTransition;
+  if (typeof CSSTransition === "undefined") {
+    (globalThis as { CSSTransition?: unknown }).CSSTransition = class CSSTransition {};
+  }
+  const previous = Object.getOwnPropertyDescriptor(Element.prototype, "getAnimations");
+  Object.defineProperty(Element.prototype, "getAnimations", {
+    configurable: true,
+    writable: true,
+    value: impl,
+  });
+  return () => {
+    if (previous) {
+      Object.defineProperty(Element.prototype, "getAnimations", previous);
+    } else {
+      delete (Element.prototype as { getAnimations?: unknown }).getAnimations;
+    }
+    if (previousCssTransition === undefined) {
+      delete (globalThis as { CSSTransition?: unknown }).CSSTransition;
+    }
+  };
+}
 
 // setupUser is consolidated in solidaria-test-utils.
 
@@ -307,17 +330,7 @@ describe("Popover", () => {
 
     it("should expose trigger width as a CSS variable", async () => {
       const trigger = document.createElement("button");
-      trigger.getBoundingClientRect = () => ({
-        x: 0,
-        y: 0,
-        top: 0,
-        left: 0,
-        right: 144,
-        bottom: 32,
-        width: 144,
-        height: 32,
-        toJSON: () => {},
-      });
+      Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 144 });
       document.body.appendChild(trigger);
 
       render(() => (
@@ -333,19 +346,124 @@ describe("Popover", () => {
       document.body.removeChild(trigger);
     });
 
-    it("should preserve an explicit trigger width CSS variable", async () => {
+    it("positions a standalone popover against a sibling triggerRef accessor", async () => {
+      const restore = mockGetAnimations(() => []);
+      try {
+        let anchor: HTMLDivElement | null = null;
+        const [open, setOpen] = createSignal(false);
+        render(() => (
+          <div>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open Feedback
+            </button>
+            <div
+              ref={(element: HTMLDivElement) => {
+                anchor = element;
+              }}
+            >
+              Popover anchor
+            </div>
+            <Popover
+              isOpen={open()}
+              onOpenChange={setOpen}
+              triggerRef={() => anchor}
+              placement="bottom"
+            >
+              Content
+            </Popover>
+          </div>
+        ));
+
+        const user = setupUser();
+        await user.click(screen.getByRole("button", { name: "Open Feedback" }));
+        await waitFor(() => {
+          const dialog = screen.getByRole("dialog");
+          expect(dialog).toBeInTheDocument();
+          expect(dialog.style.position).toBe("absolute");
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("positions a standalone popover when triggerRef getter yields the node", async () => {
+      const restore = mockGetAnimations(() => []);
+      try {
+        let anchor: HTMLDivElement | null = null;
+        const [open, setOpen] = createSignal(false);
+        render(() => (
+          <div>
+            <button type="button" onClick={() => setOpen(true)}>
+              Open Feedback
+            </button>
+            <div
+              ref={(element: HTMLDivElement) => {
+                anchor = element;
+              }}
+            >
+              Popover anchor
+            </div>
+            <Popover
+              {...({
+                get isOpen() {
+                  return open();
+                },
+                onOpenChange: setOpen,
+                get triggerRef() {
+                  return anchor;
+                },
+                placement: "bottom",
+              } as unknown as Parameters<typeof Popover>[0])}
+            >
+              Content
+            </Popover>
+          </div>
+        ));
+
+        const user = setupUser();
+        await user.click(screen.getByRole("button", { name: "Open Feedback" }));
+        await waitFor(() => {
+          const dialog = screen.getByRole("dialog");
+          expect(dialog).toBeInTheDocument();
+          expect(dialog.style.position).toBe("absolute");
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("should use the trigger layout width when a pressScale transform shrinks getBoundingClientRect", async () => {
       const trigger = document.createElement("button");
+      Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 192 });
       trigger.getBoundingClientRect = () => ({
         x: 0,
         y: 0,
         top: 0,
         left: 0,
-        right: 144,
+        right: 186.172,
         bottom: 32,
-        width: 144,
+        width: 186.172,
         height: 32,
         toJSON: () => {},
       });
+      document.body.appendChild(trigger);
+
+      render(() => (
+        <Popover defaultOpen triggerRef={() => trigger}>
+          Content
+        </Popover>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("dialog").style.getPropertyValue("--trigger-width")).toBe("192px");
+      });
+
+      document.body.removeChild(trigger);
+    });
+
+    it("should preserve an explicit trigger width CSS variable", async () => {
+      const trigger = document.createElement("button");
+      Object.defineProperty(trigger, "offsetWidth", { configurable: true, value: 144 });
       document.body.appendChild(trigger);
 
       render(() => (
@@ -457,6 +575,9 @@ describe("Popover", () => {
 
       // Popover should be closed
       expect(screen.queryByTestId("popover-content")).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(button).toHaveFocus();
+      });
     });
 
     it("should not close when isKeyboardDismissDisabled is true", async () => {
@@ -643,6 +764,297 @@ describe("Popover", () => {
         expect(dialog.hasAttribute("data-exiting")).toBe(true);
       });
     });
+
+    it("sets data-entering on first render and removes it after the enter animation resolves", async () => {
+      let finishEnter!: () => void;
+      const finished = new Promise<void>((resolve) => {
+        finishEnter = resolve;
+      });
+      const restore = mockGetAnimations(() => [{ finished }] as unknown as Animation[]);
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveAttribute("data-entering");
+        await waitFor(() => expect(dialog).toHaveAttribute("data-placement"));
+
+        finishEnter();
+        await waitFor(() => {
+          expect(dialog).not.toHaveAttribute("data-entering");
+          expect(dialog).toBeInTheDocument();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("keeps render-prop children mounted and focused when the enter animation resolves", async () => {
+      // RAC re-runs a render-prop child on every render-state change and React
+      // reconciles the result onto the same DOM. Solid has no reconciliation:
+      // re-invoking the function recreates the subtree, so a Menu inside an S2
+      // Popover lost its tree state and DOM focus ~200ms after opening, when
+      // `isEntering` flipped (CI, web e2e menu-focus: ArrowDown focused the
+      // first item, then the settled popover remounted the menu with no key).
+      let finishEnter!: () => void;
+      const finished = new Promise<void>((resolve) => {
+        finishEnter = resolve;
+      });
+      const restore = mockGetAnimations(() => [{ finished }] as unknown as Animation[]);
+
+      try {
+        const user = setupUser();
+        let renders = 0;
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              {(rp) => {
+                renders += 1;
+                return (
+                  <div data-testid="popover-content" data-placement-view={rp.placement}>
+                    <button data-testid="inner">Inner</button>
+                  </div>
+                );
+              }}
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveAttribute("data-entering");
+        await waitFor(() => expect(dialog).toHaveAttribute("data-placement"));
+        const content = screen.getByTestId("popover-content");
+        const inner = screen.getByTestId("inner");
+        inner.focus();
+        expect(inner).toHaveFocus();
+        expect(renders).toBe(1);
+
+        finishEnter();
+        await waitFor(() => expect(dialog).not.toHaveAttribute("data-entering"));
+
+        expect(screen.getByTestId("popover-content")).toBe(content);
+        expect(screen.getByTestId("inner")).toBe(inner);
+        expect(inner).toHaveFocus();
+        expect(renders).toBe(1);
+        // The getter view still tracks the settled placement.
+        expect(content).toHaveAttribute(
+          "data-placement-view",
+          dialog.getAttribute("data-placement")!,
+        );
+      } finally {
+        restore();
+      }
+    });
+
+    it("keeps the popover mounted with data-exiting until the exit animation finished promise resolves", async () => {
+      let resolveCurrent!: () => void;
+      let currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      const restore = mockGetAnimations(
+        () => [{ finished: currentFinished }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveAttribute("data-entering");
+        await waitFor(() => expect(dialog.getAttribute("data-placement")).toBeTruthy());
+
+        const finishEnter = resolveCurrent;
+        currentFinished = new Promise<void>((resolve) => {
+          resolveCurrent = resolve;
+        });
+        finishEnter();
+        await waitFor(() => expect(dialog).not.toHaveAttribute("data-entering"));
+
+        await user.keyboard("{Escape}");
+        expect(dialog).toBeInTheDocument();
+        expect(dialog).toHaveAttribute("data-exiting");
+
+        resolveCurrent();
+        await waitFor(() => {
+          expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("unmounts on the next animation frame when getAnimations returns no animations", async () => {
+      const restore = mockGetAnimations(() => []);
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+        await user.keyboard("{Escape}");
+        await waitFor(() => {
+          expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        });
+        await waitFor(() => {
+          expect(screen.getByRole("button", { name: "Open" })).toHaveFocus();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("restores DialogTrigger focus after instant dismiss", async () => {
+      const restore = mockGetAnimations(() => []);
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <DialogTrigger>
+            <Button>Feedback</Button>
+            <Popover>
+              <div role="dialog" aria-label="Feedback">
+                Content
+              </div>
+            </Popover>
+          </DialogTrigger>
+        ));
+
+        const trigger = screen.getByRole("button", { name: "Feedback" });
+        await user.click(trigger);
+        await waitFor(() => {
+          expect(screen.getByRole("dialog", { name: "Feedback" })).toBeInTheDocument();
+        });
+
+        await user.keyboard("{Escape}");
+        await waitFor(() => {
+          expect(screen.queryByRole("dialog", { name: "Feedback" })).not.toBeInTheDocument();
+        });
+        await waitFor(() => {
+          expect(trigger).toHaveFocus();
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    it("passes isEntering and isExiting to class and style render props", async () => {
+      let resolveCurrent!: () => void;
+      let currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      const restore = mockGetAnimations(
+        () => [{ finished: currentFinished }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover
+              class={(rp) =>
+                rp.isEntering ? "is-entering" : rp.isExiting ? "is-exiting" : "is-settled"
+              }
+              style={(rp) => ({ opacity: rp.isEntering || rp.isExiting ? "0" : "1" })}
+            >
+              <div>Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        expect(dialog).toHaveClass("is-entering");
+        expect(dialog.style.opacity).toBe("0");
+        await waitFor(() => expect(dialog.getAttribute("data-placement")).toBeTruthy());
+
+        const finishEnter = resolveCurrent;
+        currentFinished = new Promise<void>((resolve) => {
+          resolveCurrent = resolve;
+        });
+        finishEnter();
+        await waitFor(() => {
+          expect(dialog).toHaveClass("is-settled");
+          expect(dialog.style.opacity).toBe("1");
+        });
+
+        await user.keyboard("{Escape}");
+        expect(dialog).toHaveClass("is-exiting");
+        expect(dialog.style.opacity).toBe("0");
+      } finally {
+        restore();
+      }
+    });
+
+    it("reopens during exit without a second enter", async () => {
+      let resolveCurrent!: () => void;
+      let currentFinished = new Promise<void>((resolve) => {
+        resolveCurrent = resolve;
+      });
+      const restore = mockGetAnimations(
+        () => [{ finished: currentFinished }] as unknown as Animation[],
+      );
+
+      try {
+        const user = setupUser();
+        render(() => (
+          <PopoverTrigger>
+            <Button>Open</Button>
+            <Popover>
+              <div data-testid="popover-content">Content</div>
+            </Popover>
+          </PopoverTrigger>
+        ));
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        const dialog = screen.getByRole("dialog");
+        await waitFor(() => expect(dialog.getAttribute("data-placement")).toBeTruthy());
+        const finishEnter = resolveCurrent;
+        currentFinished = new Promise<void>((resolve) => {
+          resolveCurrent = resolve;
+        });
+        finishEnter();
+        await waitFor(() => expect(dialog).not.toHaveAttribute("data-entering"));
+
+        await user.keyboard("{Escape}");
+        expect(dialog).toHaveAttribute("data-exiting");
+
+        await user.click(screen.getByRole("button", { name: "Open" }));
+        expect(dialog).toBeInTheDocument();
+        expect(dialog).not.toHaveAttribute("data-exiting");
+        expect(dialog).not.toHaveAttribute("data-entering");
+      } finally {
+        restore();
+      }
+    });
   });
 
   describe("Callbacks", () => {
@@ -706,6 +1118,41 @@ describe("Popover", () => {
 
       // Popover should be visible immediately
       expect(screen.getByTestId("popover-content")).toBeInTheDocument();
+    });
+  });
+
+  describe("placement render props", () => {
+    it("seeds data-placement with the preferred axis before calculatePosition so entering translate is not the top sign", async () => {
+      const user = setupUser();
+      render(() => (
+        <PopoverTrigger>
+          <Button>Open</Button>
+          <Popover placement="bottom start">Content</Popover>
+        </PopoverTrigger>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+      const popover = await waitFor(() => screen.getByRole("dialog"));
+
+      // Failure mode: first paint has placement=null (Solid createEffect vs RAC
+      // useLayoutEffect). S2 `translateY: { placement: { top: 4, bottom: -4 } }`
+      // then applies the top entering keyframe (certified DatePicker D2).
+      expect(popover.getAttribute("data-placement")).toBe("bottom");
+    });
+  });
+
+  describe("DismissButton", () => {
+    it("labels Dismiss from the overlays catalog", () => {
+      render(() => (
+        <I18nProvider locale="fr-FR">
+          <PopoverTrigger defaultOpen>
+            <Button>Open</Button>
+            <Popover>Content</Popover>
+          </PopoverTrigger>
+        </I18nProvider>
+      ));
+
+      expect(screen.getAllByRole("button", { name: "Rejeter" }).length).toBeGreaterThan(0);
     });
   });
 });

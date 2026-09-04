@@ -99,8 +99,9 @@ export function createCheckboxGroup(
     return errors.length > 0 ? errors : undefined;
   };
 
-  // Use field for label association
-  const { labelProps, fieldProps, descriptionProps, errorMessageProps } = createField({
+  // Keep the `createField` getters intact. Destructuring `fieldProps` would
+  // freeze the first `aria-describedby` snapshot (RAC `useField.ts:51-60`).
+  const field = createField({
     get label() {
       return getProps().label;
     },
@@ -134,8 +135,8 @@ export function createCheckboxGroup(
     checkboxGroupData.set(state, {
       name: getProps().name,
       form: getProps().form,
-      descriptionId: descriptionProps.id,
-      errorMessageId: errorMessageProps.id,
+      descriptionId: field.descriptionProps.id,
+      errorMessageId: field.errorMessageProps.id,
       validationBehavior: getProps().validationBehavior ?? "native",
     });
   };
@@ -166,18 +167,18 @@ export function createCheckboxGroup(
       return mergeProps(domProps(), {
         role: "group",
         "aria-disabled": state.isDisabled || undefined,
-        ...fieldProps,
+        ...field.fieldProps,
         ...focusWithinProps,
       }) as JSX.HTMLAttributes<HTMLElement>;
     },
     get labelProps() {
-      return labelProps as JSX.HTMLAttributes<HTMLElement>;
+      return field.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
     get descriptionProps() {
-      return descriptionProps;
+      return field.descriptionProps;
     },
     get errorMessageProps() {
-      return errorMessageProps;
+      return field.errorMessageProps;
     },
     get isInvalid() {
       return isInvalid();

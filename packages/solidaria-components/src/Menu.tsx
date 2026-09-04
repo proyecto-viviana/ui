@@ -47,6 +47,7 @@ import {
   type AriaMenuProps,
   type AriaMenuItemProps,
   type AriaMenuTriggerProps,
+  useLocale,
 } from "@proyecto-viviana/solidaria";
 import {
   createSelectionState,
@@ -83,15 +84,19 @@ import {
   useCollectionRenderer,
   flattenCollectionEntries,
   isCollectionSection,
+  useCollectionRoot,
+  renderCollectionDropSlots,
 } from "./Collection";
-import { useVirtualizerContext } from "./Virtualizer";
+import { useVirtualizerContext, PersistedVirtualItem } from "./Virtualizer";
 import {
   getNormalizedDropTargetKey,
+  indexesOutsideRange,
   mergePersistedKeysIntoVirtualRange,
   useDndPersistedKeys,
   useRenderDropIndicator,
 } from "./DragAndDrop";
 import { PopoverTriggerContext } from "./contexts";
+import { OverlayContext } from "./Popover";
 
 export interface MenuRenderProps {
   /** Whether the menu is focused. */
@@ -434,6 +439,7 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
   const trigger = () => children()[0];
   const content = () => children()[1];
   const parentMenuItemContext = useContext(MenuItemContext);
+  const locale = useLocale();
   const state = createMenuTriggerState({
     get isOpen() {
       return props.isOpen;
@@ -557,10 +563,12 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
       onMouseEnter: openFromMouseHover,
       onMouseOver: openFromMouseHover,
       onKeyDown: (event: KeyboardEvent) => {
-        if (event.key === "ArrowRight" || event.key === "Enter" || event.key === " ") {
+        const openKey = locale().direction === "rtl" ? "ArrowLeft" : "ArrowRight";
+        const closeKey = locale().direction === "rtl" ? "ArrowRight" : "ArrowLeft";
+        if (event.key === openKey || event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           openSubmenu();
-        } else if (event.key === "ArrowLeft" && state.isOpen()) {
+        } else if (event.key === closeKey && state.isOpen()) {
           event.preventDefault();
           state.close();
         }
@@ -774,6 +782,8 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
 
   const triggerContext = useContext(MenuTriggerContext);
   const popoverTriggerContext = useContext(PopoverTriggerContext);
+  const overlayContext = useContext(OverlayContext);
+  const locale = useLocale();
 
   const [menuRef, setMenuRef] = createSignal<HTMLDivElement | null>(null);
   const [staticItems, setStaticItems] = createSignal<StaticMenuCollectionItem[]>([]);
@@ -1039,9 +1049,6 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     assignRef(local.ref, el);
   };
 
-  // If inside a MenuTrigger, only render when open
-  // If standalone (no trigger context), always render
-  const shouldRender = () => (triggerContext ? triggerContext.state.isOpen() : true);
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
   const virtualizer = useVirtualizerContext();
   const getItemNodes = createMemo(() =>
@@ -1073,11 +1080,18 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     if (!hasDraggableDnd()) return undefined;
     return stateProps.dragAndDropHooks?.useDraggableCollectionState?.({
       items: flatItems(),
+      collection: state.collection(),
+      selectedKeys: state.selectionManager.selectedKeys,
+      isSelected: (key) => state.selectionManager.isSelected(key),
     });
   });
   const dropState = createMemo(() => {
     if (!hasDroppableDnd()) return undefined;
-    return stateProps.dragAndDropHooks?.useDroppableCollectionState?.({});
+    return stateProps.dragAndDropHooks?.useDroppableCollectionState?.({
+      get collection() {
+        return state.collection();
+      },
+    });
   });
   const persistedKeys = useDndPersistedKeys(
     { focusedKey: state.focusedKey },
@@ -1090,32 +1104,27 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     const dynamicItems = stateProps.items ?? [];
     const baseRange = virtualizer.getVisibleRange(dynamicItems.length);
     const itemNodes = getItemNodes();
-    const persistedIndexes = Array.from(persistedKeys())
-      .map((key) => itemNodes.findIndex((node) => node.key === key))
-      .filter((index) => index >= 0);
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection());
-    const focusedKey = state.focusedKey();
-    const focusedIndex =
-      focusedKey != null ? itemNodes.findIndex((node) => node.key === focusedKey) : -1;
     const forceIncludeIndexes = [
       dropTarget?.type === "item" ? itemNodes.findIndex((node) => node.key === dropTarget.key) : -1,
       normalizedDropKey != null
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
-      dropTarget?.type === "item" ? -1 : focusedIndex,
     ].filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(
-      baseRange,
-      persistedIndexes,
-      dynamicItems.length,
-      virtualizer,
-      80,
-      {
-        forceIncludeIndexes,
-        forceIncludeMaxSpan: 320,
-      },
-    );
+    return mergePersistedKeysIntoVirtualRange(baseRange, [], dynamicItems.length, virtualizer, 80, {
+      forceIncludeIndexes,
+      forceIncludeMaxSpan: 320,
+    });
+  });
+  const persistedOutsideIndexes = createMemo(() => {
+    const range = virtualRange();
+    if (!range) return [] as number[];
+    const itemNodes = getItemNodes();
+    const persistedIndexes = Array.from(persistedKeys())
+      .map((key) => itemNodes.findIndex((node) => node.key === key))
+      .filter((index) => index >= 0);
+    return indexesOutsideRange(range, persistedIndexes);
   });
   const visibleItems = createMemo(() => {
     const range = virtualRange();
@@ -1135,18 +1144,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     const hooks = stateProps.dragAndDropHooks;
     const activeDropState = dropState();
     if (!hooks?.useDroppableCollection || !activeDropState) return undefined;
-    const resolveDirection = (): "ltr" | "rtl" => {
-      const menuEl = menuRef();
-      if (
-        menuEl &&
-        typeof window !== "undefined" &&
-        typeof window.getComputedStyle === "function"
-      ) {
-        const dir = window.getComputedStyle(menuEl).direction;
-        if (dir === "rtl") return "rtl";
-      }
-      return typeof document !== "undefined" && document.dir === "rtl" ? "rtl" : "ltr";
-    };
+    const resolveDirection = (): "ltr" | "rtl" => locale().direction;
     const dropTargetDelegate =
       hooks.dropTargetDelegate ??
       parentCollectionRenderer?.dropTargetDelegate ??
@@ -1230,6 +1228,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       dndDropIndicator(index, position) ??
       parentCollectionRenderer?.renderDropIndicator?.(index, position),
   }));
+  const CollectionRoot = useCollectionRoot();
   const menuItemContextValue = createMemo<MenuItemContextValue>(() =>
     stateProps.shouldCloseOnSelect !== undefined
       ? { closeOnSelect: stateProps.shouldCloseOnSelect }
@@ -1237,12 +1236,81 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
   );
   const menuListChildren = () => (
     <SharedElementTransition>
-      {state.collection().size === 0 && !usesStaticChildren() && local.renderEmptyState ? (
-        <div role="presentation" data-empty-state>
-          <div role="menuitem" style={{ display: "contents" }}>
-            {local.renderEmptyState()}
-          </div>
-        </div>
+      {parentCollectionRenderer?.isVirtualized ? (
+        <CollectionRoot
+          collection={virtualRange() ? (stateProps.items ?? []) : []}
+          scrollRef={() => menuRef()}
+          persistedKeys={persistedKeys()}
+        >
+          {usesStaticChildren() ? (
+            renderStaticChildren()
+          ) : hasSections() ? (
+            <For each={sectionedRenderEntries()}>
+              {(entry) =>
+                entry.type === "section" ? (
+                  <div role="presentation" data-section-wrapper>
+                    <Section class="solidaria-Menu-section">
+                      {entry.section.title != null && (
+                        <Header class="solidaria-Menu-sectionHeader">{entry.section.title}</Header>
+                      )}
+                      <Group class="solidaria-Menu-sectionGroup">
+                        <div role="group" aria-label={entry.section["aria-label"]}>
+                          <For each={entry.items}>
+                            {(indexedItem) =>
+                              renderCollectionDropSlots({
+                                index: indexedItem.index,
+                                lastIndex: getItemNodes().length - 1,
+                                renderDropIndicator: (i, position) =>
+                                  collectionRenderer().renderDropIndicator?.(i, position),
+                                children: renderDynamicItem(indexedItem.item),
+                              })
+                            }
+                          </For>
+                        </div>
+                      </Group>
+                    </Section>
+                  </div>
+                ) : (
+                  renderCollectionDropSlots({
+                    index: entry.item.index,
+                    lastIndex: getItemNodes().length - 1,
+                    renderDropIndicator: (i, position) =>
+                      collectionRenderer().renderDropIndicator?.(i, position),
+                    children: renderDynamicItem(entry.item.item),
+                  })
+                )
+              }
+            </For>
+          ) : (
+            <>
+              <For each={visibleItems()}>
+                {(item, index) => {
+                  const itemIndex = () => (virtualRange()?.start ?? 0) + index();
+                  return renderCollectionDropSlots({
+                    index: itemIndex(),
+                    lastIndex: getItemNodes().length - 1,
+                    renderDropIndicator: (i, position) =>
+                      collectionRenderer().renderDropIndicator?.(i, position),
+                    children: renderDynamicItem(item as T),
+                  });
+                }}
+              </For>
+              <For each={persistedOutsideIndexes()}>
+                {(index) => (
+                  <PersistedVirtualItem index={index}>
+                    {renderCollectionDropSlots({
+                      index,
+                      lastIndex: getItemNodes().length - 1,
+                      renderDropIndicator: (i, position) =>
+                        collectionRenderer().renderDropIndicator?.(i, position),
+                      children: renderDynamicItem((stateProps.items ?? [])[index] as T),
+                    })}
+                  </PersistedVirtualItem>
+                )}
+              </For>
+            </>
+          )}
+        </CollectionRoot>
       ) : usesStaticChildren() ? (
         renderStaticChildren()
       ) : hasSections() ? (
@@ -1257,71 +1325,54 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
                   <Group class="solidaria-Menu-sectionGroup">
                     <div role="group" aria-label={entry.section["aria-label"]}>
                       <For each={entry.items}>
-                        {(indexedItem) => (
-                          <>
-                            {collectionRenderer().renderDropIndicator?.(
-                              indexedItem.index,
-                              "before",
-                            )}
-                            {collectionRenderer().renderDropIndicator?.(indexedItem.index, "on")}
-                            {renderDynamicItem(indexedItem.item)}
-                            {collectionRenderer().renderDropIndicator?.(indexedItem.index, "after")}
-                          </>
-                        )}
+                        {(indexedItem) =>
+                          renderCollectionDropSlots({
+                            index: indexedItem.index,
+                            lastIndex: getItemNodes().length - 1,
+                            renderDropIndicator: (i, position) =>
+                              collectionRenderer().renderDropIndicator?.(i, position),
+                            children: renderDynamicItem(indexedItem.item),
+                          })
+                        }
                       </For>
                     </div>
                   </Group>
                 </Section>
               </div>
             ) : (
-              <>
-                {collectionRenderer().renderDropIndicator?.(entry.item.index, "before")}
-                {collectionRenderer().renderDropIndicator?.(entry.item.index, "on")}
-                {renderDynamicItem(entry.item.item)}
-                {collectionRenderer().renderDropIndicator?.(entry.item.index, "after")}
-              </>
+              renderCollectionDropSlots({
+                index: entry.item.index,
+                lastIndex: getItemNodes().length - 1,
+                renderDropIndicator: (i, position) =>
+                  collectionRenderer().renderDropIndicator?.(i, position),
+                children: renderDynamicItem(entry.item.item),
+              })
             )
           }
         </For>
       ) : (
         <>
-          {virtualRange()?.offsetTop ? (
-            <div
-              role="presentation"
-              aria-hidden="true"
-              style={{ height: `${virtualRange()!.offsetTop}px` }}
-              data-virtualizer-spacer="top"
-            />
-          ) : null}
           <For each={visibleItems()}>
             {(item, index) => {
               const itemIndex = () => (virtualRange()?.start ?? 0) + index();
-              const beforeIndicator = () =>
-                collectionRenderer().renderDropIndicator?.(itemIndex(), "before");
-              const onIndicator = () =>
-                collectionRenderer().renderDropIndicator?.(itemIndex(), "on");
-              const afterIndicator = () =>
-                collectionRenderer().renderDropIndicator?.(itemIndex(), "after");
-              return (
-                <>
-                  {beforeIndicator()}
-                  {onIndicator()}
-                  {renderDynamicItem(item as T)}
-                  {afterIndicator()}
-                </>
-              );
+              return renderCollectionDropSlots({
+                index: itemIndex(),
+                lastIndex: getItemNodes().length - 1,
+                renderDropIndicator: (i, position) =>
+                  collectionRenderer().renderDropIndicator?.(i, position),
+                children: renderDynamicItem(item as T),
+              });
             }}
           </For>
-          {virtualRange()?.offsetBottom ? (
-            <div
-              role="presentation"
-              aria-hidden="true"
-              style={{ height: `${virtualRange()!.offsetBottom}px` }}
-              data-virtualizer-spacer="bottom"
-            />
-          ) : null}
         </>
       )}
+      {state.collection().size === 0 && local.renderEmptyState ? (
+        <div role="presentation" data-empty-state>
+          <div role="menuitem" style={{ display: "contents" }}>
+            {local.renderEmptyState()}
+          </div>
+        </div>
+      ) : null}
     </SharedElementTransition>
   );
   const menuListProps = () =>
@@ -1344,8 +1395,6 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
       children: menuListChildren(),
     }) as JSX.HTMLAttributes<HTMLDivElement>;
 
-  // Only use FocusScope when inside a MenuTrigger (for popover behavior)
-  // Standalone menus don't need focus restoration
   const menuContent = () => (
     <MenuContext.Provider
       value={
@@ -1405,11 +1454,22 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     </MenuContext.Provider>
   );
 
+  // RAC MenuInner always renders and uses a plain FocusScope. Popover's
+  // `isOpen || isExiting` gate owns lifetime. Gating on isOpen here dropped
+  // role="menu" during exit so ArrowUp reused the same instance
+  // (menu-focus.spec.ts:20). Headless tests that put Menu directly in
+  // MenuTrigger without a Popover still need the isOpen gate and trigger
+  // restore — OverlayContext is how we tell the two compositions apart.
+  const shouldRender = () =>
+    overlayContext != null || !triggerContext ? true : triggerContext.state.isOpen();
+
   return (
     <Show when={shouldRender()}>
-      <Show when={triggerContext} fallback={menuContent()}>
+      {overlayContext != null || !triggerContext ? (
+        <FocusScope>{menuContent()}</FocusScope>
+      ) : (
         <FocusScope restoreFocus>{menuContent()}</FocusScope>
-      </Show>
+      )}
     </Show>
   );
 }
@@ -1898,4 +1958,107 @@ export function MenuSection(props: MenuSectionProps): JSX.Element {
   );
 }
 
+export interface MenuLoadMoreItemProps extends SlotProps {
+  /** Called when the sentinel intersects the scroll parent. */
+  onLoadMore?: () => void | Promise<void>;
+  /** Whether the loading spinner should be rendered. */
+  isLoading?: boolean;
+  /**
+   * Offset from the bottom of the scroll region that should trigger load more,
+   * as a percentage of the scroll body's client height. `1` = 100%.
+   */
+  scrollOffset?: number;
+  /** The load more spinner to render when loading additional items. */
+  children?: JSX.Element;
+  /** The CSS className for the element. */
+  class?: ClassNameOrFunction<{ isLoading: boolean }>;
+  /** The inline style for the element. */
+  style?: StyleOrFunction<{ isLoading: boolean }>;
+  /** Ref for the loading indicator element. */
+  ref?: RefLike<HTMLDivElement>;
+}
+
+/**
+ * Load more sentinel item for menu collections.
+ * Port of RAC `MenuLoadMoreItem` (`react-aria-components/src/Menu.tsx`).
+ */
+export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
+  const state = useContext(MenuStateContext);
+  const [sentinel, setSentinel] = createSignal<HTMLElement | null>(null);
+  const [local, domProps] = splitProps(props, [
+    "onLoadMore",
+    "isLoading",
+    "scrollOffset",
+    "children",
+    "class",
+    "style",
+    "ref",
+    "slot",
+  ]);
+
+  createEffect(() => {
+    const current = sentinel();
+    const collection = state?.collection();
+    void collection;
+    const onLoadMore = local.onLoadMore;
+    const scrollOffset = local.scrollOffset ?? 1;
+    if (!current || typeof IntersectionObserver !== "function") return;
+
+    const margin = 100 * scrollOffset;
+    const rootMargin = `0px ${margin}% ${margin}% ${margin}%`;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && onLoadMore) {
+            void onLoadMore();
+          }
+        }
+      },
+      { rootMargin },
+    );
+    observer.observe(current);
+    return () => observer.disconnect();
+  });
+
+  const isLoading = () => !!local.isLoading;
+
+  const renderProps = useRenderProps(
+    {
+      get children() {
+        return local.children;
+      },
+      class: local.class,
+      style: local.style,
+      defaultClassName: "solidaria-Menu-loadMore",
+    },
+    () => ({ isLoading: isLoading() }),
+  );
+
+  return (
+    <>
+      <div style={{ position: "relative", width: 0, height: 0 }} inert>
+        <div
+          ref={setSentinel}
+          data-testid="loadMoreSentinel"
+          style={{ position: "absolute", height: "1px", width: "1px" }}
+        />
+      </div>
+      <Show when={isLoading() && local.children}>
+        <div
+          {...filterDOMProps(domProps as Record<string, unknown>, { global: true })}
+          role="menuitem"
+          tabIndex={-1}
+          ref={(el) => assignRef(local.ref, el)}
+          class={renderProps.class()}
+          style={renderProps.style()}
+          data-loading
+        >
+          {renderProps.renderChildren()}
+        </div>
+      </Show>
+    </>
+  );
+}
+
 Menu.Item = MenuItem;
+Menu.LoadMoreItem = MenuLoadMoreItem;

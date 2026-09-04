@@ -41,9 +41,9 @@ export interface FooterProps extends BaseContentProps<HTMLElement> {}
 export const FooterContext = createContext<SpectrumContextValue<FooterProps>>(null);
 
 export function Text(props: TextProps): JSX.Element {
-  const contextProps = getSlottedContextProps(useContext(TextContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props) as TextProps;
-  const [local] = splitProps(merged, [
+  const contextProps = () => getSlottedContextProps(useContext(TextContext), props.slot);
+  const merged = () => mergeProps(contextProps() ?? {}, props) as TextProps;
+  const [local] = splitProps(props, [
     "children",
     "styles",
     "UNSAFE_className",
@@ -54,13 +54,14 @@ export function Text(props: TextProps): JSX.Element {
   ]);
   const isSkeleton = createIsSkeleton();
   const inertRef = useInertAttribute(isSkeleton);
-  const unsafeStyle = () => mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style);
-  const id = () => props.id ?? contextProps?.id;
+  const unsafeStyle = () =>
+    mergeContextUnsafeStyle(contextProps()?.UNSAFE_style, props.UNSAFE_style);
+  const id = () => props.id ?? contextProps()?.id;
   const [children, skeletonStyle] = useSkeletonText(() => local.children, unsafeStyle);
   const className = () =>
     [
-      mergeUnsafeClassName(contextProps?.UNSAFE_className, props.UNSAFE_className),
-      mergeContextStyles(contextProps?.styles, props.styles),
+      mergeUnsafeClassName(contextProps()?.UNSAFE_className, props.UNSAFE_className),
+      mergeContextStyles(contextProps()?.styles, props.styles),
     ]
       .filter(Boolean)
       .join(" ");
@@ -71,9 +72,9 @@ export function Text(props: TextProps): JSX.Element {
 
   return (
     <span
-      {...getContentDomProps(merged)}
+      {...getContentDomProps(merged())}
       id={id()}
-      ref={mergeContextRefs(contextProps?.ref, props.ref, inertRef)}
+      ref={mergeContextRefs(contextProps()?.ref, props.ref, inertRef)}
       class={className()}
       style={skeletonStyle()}
       slot={local.slot || undefined}

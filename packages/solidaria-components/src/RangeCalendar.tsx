@@ -276,8 +276,9 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
   );
 
   const state = () => props.state;
+  const [calendarEl, setCalendarEl] = createSignal<HTMLDivElement | null>(null);
 
-  const calendarAria = createRangeCalendar(rest, state());
+  const calendarAria = createRangeCalendar(rest, state(), calendarEl);
 
   const renderValues = createMemo<RangeCalendarRenderProps>(() => ({
     isDisabled: state().isDisabled(),
@@ -300,7 +301,10 @@ function RangeCalendarWithState<T extends DateValue = CalendarDate>(
       <RangeCalendarContext.Provider value={state()}>
         <div
           {...calendarAria.calendarProps}
-          ref={(el) => assignRef(local.ref, el)}
+          ref={(el) => {
+            setCalendarEl(el ?? null);
+            assignRef(local.ref, el);
+          }}
           class={renderProps.class()}
           style={renderProps.style()}
           data-disabled={dataAttr(state().isDisabled())}
@@ -364,8 +368,13 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
   );
 
   const state = createRangeCalendarState(stateProps);
+  const [calendarEl, setCalendarEl] = createSignal<HTMLDivElement | null>(null);
 
-  const calendarAria = createRangeCalendar(rest, state as unknown as RangeCalendarState<DateValue>);
+  const calendarAria = createRangeCalendar(
+    rest,
+    state as unknown as RangeCalendarState<DateValue>,
+    calendarEl,
+  );
 
   const renderValues = createMemo<RangeCalendarRenderProps>(() => ({
     isDisabled: state.isDisabled(),
@@ -388,7 +397,10 @@ function RangeCalendarInner<T extends DateValue = CalendarDate>(
       <RangeCalendarContext.Provider value={state as unknown as RangeCalendarState<DateValue>}>
         <div
           {...calendarAria.calendarProps}
-          ref={(el) => assignRef(local.ref, el)}
+          ref={(el) => {
+            setCalendarEl(el ?? null);
+            assignRef(local.ref, el);
+          }}
           class={renderProps.class()}
           style={renderProps.style()}
           data-disabled={dataAttr(state.isDisabled())}
