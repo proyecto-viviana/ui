@@ -98,6 +98,7 @@ import {
   Group,
   type CollectionEntry,
   type CollectionRendererContextValue,
+  type CollectionSection,
   type SectionProps,
   useCollectionRenderer,
   useCollectionRoot,
@@ -660,10 +661,14 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
     });
   }
 
-  const isEmpty = () => stateProps.items.length === 0;
+  // RAC ListBox iterates CollectionRoot's filtered collection, not the
+  // unfiltered `items` prop. Keyboard already walks `state.collection()`
+  // (createFilteredListState under Autocomplete; baseState otherwise).
   const getItemNodes = createMemo(() =>
     Array.from(state.collection()).filter((node) => node.type === "item"),
   );
+  const collectionItems = createMemo(() => getItemNodes().map((node) => node.value as T));
+  const isEmpty = () => state.collection().size === 0;
   const isLastDropItem = (itemIndex: number | Accessor<number>) => {
     const i = typeof itemIndex === "function" ? itemIndex() : itemIndex;
     return getItemNodes().length > 0 && i === getItemNodes().length - 1;
@@ -790,7 +795,8 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   );
   const virtualRange = createMemo(() => {
     if (!virtualizer || !parentCollectionRenderer?.isVirtualized || hasSections()) return null;
-    const baseRange = virtualizer.getVisibleRange(stateProps.items.length);
+    const itemCount = getItemNodes().length;
+    const baseRange = virtualizer.getVisibleRange(itemCount);
     const itemNodes = getItemNodes();
     const dropTarget = dropState()?.target;
     const normalizedDropKey = getNormalizedDropTargetKey(dropTarget, state.collection());
@@ -800,17 +806,10 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
         ? itemNodes.findIndex((node) => node.key === normalizedDropKey)
         : -1,
     ].filter((index) => index >= 0);
-    return mergePersistedKeysIntoVirtualRange(
-      baseRange,
-      [],
-      stateProps.items.length,
-      virtualizer,
-      80,
-      {
-        forceIncludeIndexes,
-        forceIncludeMaxSpan: 320,
-      },
-    );
+    return mergePersistedKeysIntoVirtualRange(baseRange, [], itemCount, virtualizer, 80, {
+      forceIncludeIndexes,
+      forceIncludeMaxSpan: 320,
+    });
   });
   const persistedOutsideIndexes = createMemo(() => {
     const range = virtualRange();
@@ -846,32 +845,42 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
   });
   const visibleItems = createMemo(() => {
     const range = virtualRange();
-    if (!range) return stateProps.items;
-    return stateProps.items.slice(range.start, range.end);
+    const items = collectionItems();
+    if (!range) return items;
+    return items.slice(range.start, range.end);
   });
   const sectionedRenderEntries = createMemo(() => {
+    const values = new Set(collectionItems());
     let globalIndex = 0;
-    return stateProps.items.map((entry) => {
+    const entries: Array<
+      | { type: "section"; section: CollectionSection<T>; items: { item: T; index: number }[] }
+      | { type: "item"; item: { item: T; index: number } }
+    > = [];
+    for (const entry of stateProps.items) {
       if (isCollectionSection(entry)) {
-        const sectionItems = entry.items.map((item) => ({
-          item,
-          index: globalIndex++,
-        }));
-        return {
+        const sectionItems = entry.items
+          .filter((item) => values.has(item))
+          .map((item) => ({
+            item,
+            index: globalIndex++,
+          }));
+        if (sectionItems.length === 0) continue;
+        entries.push({
           type: "section" as const,
           section: entry,
           items: sectionItems,
-        };
+        });
+      } else if (values.has(entry as T)) {
+        entries.push({
+          type: "item" as const,
+          item: {
+            item: entry as T,
+            index: globalIndex++,
+          },
+        });
       }
-      const indexedItem = {
-        item: entry as T,
-        index: globalIndex++,
-      };
-      return {
-        type: "item" as const,
-        item: indexedItem,
-      };
-    });
+    }
+    return entries;
   });
   const collectionRenderer = createMemo<CollectionRendererContextValue<unknown>>(() => ({
     ...parentCollectionRenderer,
@@ -930,7 +939,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                   {parentCollectionRenderer?.isVirtualized ? (
                     <>
                       <CollectionRoot
-                        collection={virtualRange() ? stateProps.items : []}
+                        collection={virtualRange() ? collectionItems() : []}
                         scrollRef={() => listRef()}
                         persistedKeys={persistedKeys()}
                       >
@@ -994,7 +1003,7 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
                               {(index) => (
                                 <PersistedVirtualItem index={index}>
                                   <ListBoxItemWithDropIndicators
-                                    item={stateProps.items[index] as T}
+                                    item={collectionItems()[index] as T}
                                     itemIndex={() => index}
                                     isLastInLevel={() => isLastDropItem(index)}
                                     renderItem={local.children}

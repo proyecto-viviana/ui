@@ -12,6 +12,9 @@ import {
   useAutocompleteState,
   useAutocompleteCollection,
 } from "../src/Autocomplete";
+import { ListBox, ListBoxOption } from "../src/ListBox";
+import { SearchField, SearchFieldInput } from "../src/SearchField";
+import { createFilter } from "@proyecto-viviana/solidaria";
 import { For, Show, createSignal } from "solid-js";
 
 // Simple test input component
@@ -276,5 +279,60 @@ describe("Autocomplete", () => {
 
     render(() => <InputOutsideContext />);
     expect(screen.getByTestId("result")).toHaveTextContent("no-context");
+  });
+});
+
+// Comparison Autocomplete fruits — RAC contains() drops Cherry/Lemon on "a"
+// and unmounts every option on "zzz". Stub TestList already filters; this is
+// the real SearchField + ListBox path (#288).
+const fruitItems = [
+  { id: "apple", label: "Apple" },
+  { id: "banana", label: "Banana" },
+  { id: "cherry", label: "Cherry" },
+  { id: "grape", label: "Grape" },
+  { id: "lemon", label: "Lemon" },
+  { id: "mango", label: "Mango" },
+  { id: "orange", label: "Orange" },
+  { id: "peach", label: "Peach" },
+];
+
+function FruitAutocomplete() {
+  const filter = createFilter({ sensitivity: "base" });
+  return (
+    <Autocomplete filter={(textValue, inputValue) => filter().contains(textValue, inputValue)}>
+      <SearchField aria-label="Search fruits">{() => <SearchFieldInput />}</SearchField>
+      <ListBox
+        aria-label="Fruits"
+        items={fruitItems}
+        getKey={(item) => item.id}
+        getTextValue={(item) => item.label}
+      >
+        {(item) => (
+          <ListBoxOption id={item.id} textValue={item.label}>
+            {item.label}
+          </ListBoxOption>
+        )}
+      </ListBox>
+    </Autocomplete>
+  );
+}
+
+describe("Autocomplete SearchField + ListBox", () => {
+  it("unmounts options that fail the contains filter as the user types", () => {
+    render(() => <FruitAutocomplete />);
+
+    expect(screen.getAllByRole("option")).toHaveLength(8);
+
+    fireEvent.input(screen.getByRole("searchbox"), { target: { value: "a" } });
+
+    const afterA = screen.getAllByRole("option").map((option) => option.textContent);
+    expect(afterA).toEqual(["Apple", "Banana", "Grape", "Mango", "Orange", "Peach"]);
+    expect(screen.queryByRole("option", { name: "Cherry" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Lemon" })).not.toBeInTheDocument();
+
+    fireEvent.input(screen.getByRole("searchbox"), { target: { value: "zzz" } });
+
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+    expect(screen.getByRole("listbox")).toHaveAttribute("data-empty");
   });
 });

@@ -4,12 +4,22 @@ type: task
 title: "Filter Autocomplete ListBox options as the user types"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 autocomplete functional pass: React drops non-matching fruits from the listbox; Solid keeps all eight visible while virtual focus still walks the filtered set",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "ListBox option DOM still iterates stateProps.items; createFilteredListState already walks the filtered collection",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "ListBox empty/visible/sectioned/For/virtualizer count from state.collection() node.value. SearchField+ListBox fruits test fails if Cherry stays mounted after typing a.",
     }
 ---
 
@@ -20,9 +30,10 @@ ListBox. Solid's list state is filtered (keyboard Home/End/Arrow and
 renders every `items` row.
 
 `packages/solidaria-components/src/ListBox.tsx` already wraps Autocomplete
-collections in `createFilteredListState`, then iterates `stateProps.items` /
-`visibleItems()` for the option DOM (`isEmpty()` also uses
-`stateProps.items.length`). RAC Collection renders the filtered collection.
+collections in `createFilteredListState`. Option DOM, `data-empty`, and
+virtualizer length now iterate `state.collection()` item `value`s, matching
+RAC Collection. No Autocomplete-only render fork: without that context,
+`state === baseState` and ComboBox stays unfiltered.
 
 ## Evidence
 
@@ -40,6 +51,22 @@ activedescendant delay.
 
 Default rest, Tab, pointer selection, and `?selectionMode=single|multiple`
 already match.
+
+Local (2026-09-04), cwd `/home/emoporemilio/projects/viviana-hub/ui`,
+parent `db6ac74f`. Source: `isEmpty` / `visibleItems` /
+`sectionedRenderEntries` / virtualizer count / persisted row read
+`state.collection()` item nodes (`node.value`). Empty sections dropped.
+Named SearchField+ListBox fruits test failed on `stateProps.items`
+(Cherry/Lemon still mounted after `a`). After collection-driven render:
+
+`vp test run packages/solidaria-components/test/Autocomplete.test.tsx packages/solidaria-components/test/ListBox.test.tsx`
+PASS (98): type `a` leaves Apple/Banana/Grape/Mango/Orange/Peach;
+Cherry/Lemon unmounted; `zzz` 0 options + `data-empty`. Stub `TestList`
+filter stayed green. ListBox empty-state / section tests stayed green.
+
+Owned-file `vp check` PASS. `git diff --check` PASS on named paths.
+Repo-wide `vp run check` not run. Comparison walk not run. #289 SearchField
+native attrs not started.
 
 ## Done when
 
