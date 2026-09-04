@@ -59,7 +59,9 @@ describe("ListView (solid-spectrum)", () => {
 
     const projectBrief = screen.getByRole("row", { name: /Project brief/ });
     expect(projectBrief).toHaveAttribute("data-selected", "true");
-    expect(within(projectBrief).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    expect(
+      within(projectBrief).getByRole("checkbox", { name: "Select Project brief" }),
+    ).toBeChecked();
     expect(screen.getByText("Project brief")).toHaveAttribute("data-rsp-slot", "label");
     expect(screen.getByText("Planning notes")).toHaveAttribute("data-rsp-slot", "description");
     expect(screen.getByRole("row", { name: /Quarterly report/ })).toBeInTheDocument();
@@ -99,7 +101,7 @@ describe("ListView (solid-spectrum)", () => {
     const projectBrief = screen.getByRole("row", { name: /Project brief/ });
     const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
     expect(projectBrief).toHaveAttribute("data-selected", "true");
-    expect(within(projectBrief).queryByRole("checkbox", { name: "Select" })).toBeNull();
+    expect(within(projectBrief).queryByRole("checkbox")).toBeNull();
 
     await user.click(quarterlyReport);
 
@@ -139,7 +141,9 @@ describe("ListView (solid-spectrum)", () => {
     const projectBrief = screen.getByRole("row", { name: /Project brief/ });
     const quarterlyReport = screen.getByRole("row", { name: /Quarterly report/ });
     expect(projectBrief).toHaveAttribute("data-selected", "true");
-    expect(within(projectBrief).getByRole("checkbox", { name: "Select" })).toBeChecked();
+    expect(
+      within(projectBrief).getByRole("checkbox", { name: "Select Project brief" }),
+    ).toBeChecked();
 
     await user.click(quarterlyReport);
 
