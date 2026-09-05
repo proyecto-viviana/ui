@@ -17,6 +17,11 @@ history:
       at: 2026-09-05,
       note: "Postcard still 0f1e1198 (2026-08-21, 2170/0/4). HEAD 030c200b, 211 ahead of origin/main. Did not recertify the suite tonight. Do not print the postcard as HEAD.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "HEAD subset 308/25/4/337, complete false. Product: #111 virtual pointer, #381 pending ActionButton name. Leftovers #480 Toast open (harness), #481 Overlay Escape (harness), #482 Calendar D5 trail. D3 still fail-closed. Postcard stays 0f1e1198.",
+    }
 ---
 
 ## Cause
