@@ -4,12 +4,17 @@ type: task
 title: "Toast certified open is the activeSide gate, not ToastQueue"
 created: 2026-09-05
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-05,
       note: "HEAD subset D6 Toast › neutral failed. openToast dispatches comparison:controls-change then focusLocator+Enter. Solid triggerToast no-ops unless activeSide===solid; the trigger sits in a hidden div until that signal flushes. Playwright getByRole skips hidden. Do not change ToastQueue to match a missed Enter. Comparison owns the beforePanel. #194 stays open.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-05,
+      note: "fa4604b9: beforePanel waits data-comparison-toast-is-active=true then Enter. Fixture mounts triggers only when activeSide===solid. Toast D6 neutral passed. ToastQueue untouched. #194 stays open.",
     }
 ---
 
