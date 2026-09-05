@@ -108,6 +108,9 @@ function SolidSpectrumNumberFieldDemo() {
             get step() {
               return demoProps().step;
             },
+            get commitBehavior() {
+              return demoProps().commitBehavior;
+            },
             get hideStepper() {
               return demoProps().hideStepper;
             },

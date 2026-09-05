@@ -3,8 +3,10 @@ import { comparisonControlsEvent } from "./button-demo";
 export { comparisonControlsEvent };
 
 export const numberFieldSizeOptions = ["S", "M", "L", "XL"] as const;
+export const numberFieldCommitBehaviorOptions = ["snap", "validate"] as const;
 
 export type NumberFieldDemoSize = (typeof numberFieldSizeOptions)[number];
+export type NumberFieldDemoCommitBehavior = (typeof numberFieldCommitBehaviorOptions)[number];
 
 export interface NumberFieldDemoProps {
   label: string;
@@ -16,6 +18,8 @@ export interface NumberFieldDemoProps {
   minValue: number;
   maxValue: number;
   step: number;
+  /** S2/RAC default is snap; native min/max/step validity only runs on validate. */
+  commitBehavior: NumberFieldDemoCommitBehavior;
   hideStepper: boolean;
   isDisabled: boolean;
   isReadOnly: boolean;
@@ -33,6 +37,7 @@ export const numberFieldDemoDefaults: NumberFieldDemoProps = {
   minValue: 0,
   maxValue: 20,
   step: 1,
+  commitBehavior: "snap",
   hideStepper: false,
   isDisabled: false,
   isReadOnly: false,
@@ -97,6 +102,9 @@ export function normalizeNumberFieldDemoProps(
       numberProp(props.step, numberFieldDemoDefaults.step) > 0
         ? numberProp(props.step, numberFieldDemoDefaults.step)
         : numberFieldDemoDefaults.step,
+    commitBehavior: isOneOf(props.commitBehavior, numberFieldCommitBehaviorOptions)
+      ? props.commitBehavior
+      : numberFieldDemoDefaults.commitBehavior,
     hideStepper: props.hideStepper === true,
     isDisabled: props.isDisabled === true,
     isReadOnly: props.isReadOnly === true,
@@ -108,6 +116,7 @@ export function normalizeNumberFieldDemoProps(
 export function numberFieldDemoPropsFromSearch(search: string): NumberFieldDemoProps {
   const params = new URLSearchParams(search);
   const size = params.get("size");
+  const commitBehavior = params.get("commitBehavior");
 
   return normalizeNumberFieldDemoProps({
     label: params.get("label") || numberFieldDemoDefaults.label,
@@ -119,6 +128,9 @@ export function numberFieldDemoPropsFromSearch(search: string): NumberFieldDemoP
     minValue: numberParam(params.get("minValue"), numberFieldDemoDefaults.minValue),
     maxValue: numberParam(params.get("maxValue"), numberFieldDemoDefaults.maxValue),
     step: numberParam(params.get("step"), numberFieldDemoDefaults.step),
+    commitBehavior: isOneOf(commitBehavior, numberFieldCommitBehaviorOptions)
+      ? commitBehavior
+      : numberFieldDemoDefaults.commitBehavior,
     hideStepper: booleanParam(params.get("hideStepper")),
     isDisabled: booleanParam(params.get("isDisabled")),
     isReadOnly: booleanParam(params.get("isReadOnly")),
@@ -146,6 +158,7 @@ export function serializeNumberFieldDemoProps(props: NumberFieldDemoProps) {
     minValue: props.minValue,
     maxValue: props.maxValue,
     step: props.step,
+    commitBehavior: props.commitBehavior,
     hideStepper: props.hideStepper,
     isDisabled: props.isDisabled,
     isReadOnly: props.isReadOnly,

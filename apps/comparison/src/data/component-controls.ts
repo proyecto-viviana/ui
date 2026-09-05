@@ -2604,7 +2604,8 @@ function createRadioGroupControls(demo: typeof import("./radiogroup-demo")): Com
 function createNumberFieldControls(
   demo: typeof import("./numberfield-demo"),
 ): ComponentControlGroup {
-  const { numberFieldDemoDefaults, numberFieldSizeOptions } = demo;
+  const { numberFieldDemoDefaults, numberFieldSizeOptions, numberFieldCommitBehaviorOptions } =
+    demo;
   return {
     slug: "numberfield",
     title: "NumberField",
@@ -2666,6 +2667,13 @@ function createNumberFieldControls(
         defaultValue: String(numberFieldDemoDefaults.step),
       },
       {
+        name: "commitBehavior",
+        label: "commitBehavior",
+        kind: "radio",
+        defaultValue: numberFieldDemoDefaults.commitBehavior,
+        options: options(numberFieldCommitBehaviorOptions),
+      },
+      {
         name: "hideStepper",
         label: "hideStepper",
         kind: "switch",
@@ -2706,6 +2714,7 @@ function createNumberFieldControls(
       "minValue",
       "maxValue",
       "step",
+      "commitBehavior",
       "hideStepper",
       "description",
       "errorMessage",
@@ -2723,7 +2732,7 @@ function createNumberFieldControls(
       "aria-labelledby",
       "aria-describedby",
     ],
-    note: "Modeled from the S2 NumberField source control surface. The viewer drives label, controlled numeric value, placeholder, S2 size, min/max/step, stepper visibility, description/error text, and disabled/read-only/required/invalid states into both stacks.",
+    note: "Modeled from the S2 NumberField source control surface. The viewer drives label, controlled numeric value, placeholder, S2 size, min/max/step, commitBehavior, stepper visibility, description/error text, and disabled/read-only/required/invalid states into both stacks.",
   };
 }
 

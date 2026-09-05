@@ -28,10 +28,12 @@ import { registerValidityDriver } from "../drivers/validity";
  *
  * HONESTY. Product gaps FAIL. This spec does not register `knownDivergences` /
  * `test.fixme` for remaining holes. The 2026-09-05 D14 rerun pair-matched
- * TextField, SearchField, Checkbox, NumberField (#460), ComboBox, Form #383 /
- * #465, and Radio #376 native custom validity + blocked submit. Radio
+ * TextField, SearchField, Checkbox, NumberField (#460) `isInvalid`, ComboBox,
+ * Form #383 / #465, and Radio #376 native custom validity + blocked submit. Radio
  * `invalid · submit attempt` stays red because React focuses `starter` and Solid
- * focuses `enterprise`. Wrapping that as skipped would keep Certification Gates
+ * focuses `enterprise`. NumberField min/max/step native validity is walked
+ * here with `commitBehavior=validate` (the RAC `useNativeValidation` gate).
+ * Wrapping remaining holes as skipped would keep Certification Gates
  * green the same way ListView `it.fails` keeps `test:hydrate` green. Resting
  * `isInvalid` + `customError` is a floor. The user-observable machine is native
  * submit + `displayValidation` / HelpText / `aria-invalid`. Both are asserted. A
@@ -174,8 +176,10 @@ const radioGroupValidity: DriverScenario = {
 
 /**
  * NumberField — #460 (merged) wired `createFormValidation` and native min/max/step.
- * D14 `invalid` / `invalid-disabled` / submit pair-match. min/max/step constraint
- * cases are not in this unit.
+ * `invalid` / `invalid-disabled` lock the isInvalid customError path. over-max /
+ * under-min / step-mismatch pass `commitBehavior=validate` because RAC
+ * `useNativeValidation` (and the Solid port) skip min/max/step when the default
+ * `snap` would clamp. Those rows fail if Solid stays `valid` or submits.
  */
 const numberFieldValidity: DriverScenario = {
   slug: "numberfield",
@@ -185,10 +189,40 @@ const numberFieldValidity: DriverScenario = {
   cases: [
     { id: "invalid", params: { isInvalid: "true" } },
     { id: "invalid-disabled", params: { isInvalid: "true", isDisabled: "true" } },
+    {
+      id: "over-max",
+      params: {
+        value: "25",
+        minValue: "0",
+        maxValue: "20",
+        step: "1",
+        commitBehavior: "validate",
+      },
+    },
+    {
+      id: "under-min",
+      params: {
+        value: "-1",
+        minValue: "0",
+        maxValue: "20",
+        step: "1",
+        commitBehavior: "validate",
+      },
+    },
+    {
+      id: "step-mismatch",
+      params: {
+        value: "5",
+        minValue: "0",
+        maxValue: "20",
+        step: "3",
+        commitBehavior: "validate",
+      },
+    },
   ],
   validity: {
-    cases: ["invalid", "invalid-disabled"],
-    submit: requestSubmit,
+    cases: ["invalid", "invalid-disabled", "over-max", "under-min", "step-mismatch"],
+    submit: { cases: ["invalid", "over-max", "under-min", "step-mismatch"] },
   },
 };
 

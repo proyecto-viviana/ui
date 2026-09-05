@@ -7,7 +7,11 @@ Status: accepted
 
 #460 (merged) wired `createFormValidation` and native min/max/step. D14
 NumberField `invalid` / `invalid-disabled` / submit pair-match (`customError`,
-blocked `requestSubmit`). min/max/step constraint cases are not in D14.
+blocked `requestSubmit`). min/max/step rows walk `commitBehavior=validate`
+(over-max / under-min / step-mismatch) because RAC `useNativeValidation`
+skips those constraints when the default `snap` would clamp. 2026-09-05 D14:
+those six NumberField rows pair; the unit is 37 pass / 1 fail (Radio focus
+leftover).
 
 ## Target
 

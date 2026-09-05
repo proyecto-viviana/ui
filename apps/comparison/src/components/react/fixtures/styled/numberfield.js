@@ -44,6 +44,7 @@ function ReactNumberFieldDemo() {
         minValue: demoProps.minValue,
         maxValue: demoProps.maxValue,
         step: demoProps.step,
+        commitBehavior: demoProps.commitBehavior,
         hideStepper: demoProps.hideStepper,
         isDisabled: demoProps.isDisabled,
         isReadOnly: demoProps.isReadOnly,
