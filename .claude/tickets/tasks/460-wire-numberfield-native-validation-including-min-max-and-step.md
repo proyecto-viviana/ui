@@ -19,7 +19,7 @@ history:
   - {
       state: merged,
       at: 2026-09-04,
-      note: "createNumberFieldState owns FormValidationState and commitBehavior. createNumberField calls createFormValidation, createNativeValidation, and createFormReset. FieldErrorContext reads displayValidation. Package tests: isInvalid customError blocks requestSubmit; required-empty submit paints FieldError; commitBehavior=validate value over max blocks submit. S2 Form HelpText swaps after required NumberField submit.",
+      note: "createNumberFieldState owns FormValidationState and commitBehavior. createNumberField calls createFormValidation, createNativeValidation, and createFormReset. FieldErrorContext reads displayValidation. Package tests: isInvalid customError blocks requestSubmit; required-empty submit paints FieldError; commitBehavior=validate value over max blocks submit. S2 Form HelpText swaps after required NumberField submit. Landed 9156bc6a.",
     }
 ---
 

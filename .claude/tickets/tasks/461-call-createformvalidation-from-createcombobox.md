@@ -16,6 +16,11 @@ history:
       at: 2026-09-04,
       note: "Git v2 implement. Same displayValidation wiring as #383 / RAC useTextField inside useComboBox.",
     }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createComboBox calls createFormValidation + createFormReset; FieldErrorContext reads displayValidation. Package test: isInvalid ComboBox customError=true, requestSubmit blocked. Landed 74d42826.",
+    }
 ---
 
 #273 set native `required` on ComboBox. RAC `useComboBox` still routes the

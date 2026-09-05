@@ -16,6 +16,11 @@ history:
       at: 2026-09-04,
       note: "Git v2 implement. createTextField already calls createFormValidation (#351); it still returns props.isInvalid and forges FieldErrorContext. Use displayValidation like RAC useTextField.ts:210-234. Native required-empty submit, not isInvalid=true theater.",
     }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createTextField returns displayValidation; FieldErrorContext uses it; S2/ui TextField stop coalescing isInvalid to false. Package tests: headless FieldError+aria-invalid after requestSubmit; S2 HelpText swaps off the description. Landed 7ad95617.",
+    }
 ---
 
 S2 native Form validation, after a blocked required-empty submit,
