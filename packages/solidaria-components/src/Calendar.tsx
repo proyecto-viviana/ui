@@ -57,7 +57,6 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
-  useIsHydrated,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
 
@@ -231,19 +230,9 @@ export function Calendar<
 >(props: CalendarProps<T, M>): JSX.Element {
   const inheritedState = useContext(CalendarContext);
 
-  // Use hydration-safe pattern for client-only rendering
-  const isHydrated = useIsHydrated();
-
   return (
-    <Show
-      when={isHydrated()}
-      fallback={
-        <div class="solidaria-Calendar solidaria-Calendar--placeholder" aria-hidden="true" />
-      }
-    >
-      <Show when={inheritedState} fallback={<CalendarInner {...props} />}>
-        <CalendarWithState state={inheritedState as CalendarState<DateValue>} {...props} />
-      </Show>
+    <Show when={inheritedState} fallback={<CalendarInner {...props} />}>
+      <CalendarWithState state={inheritedState as CalendarState<DateValue>} {...props} />
     </Show>
   );
 }

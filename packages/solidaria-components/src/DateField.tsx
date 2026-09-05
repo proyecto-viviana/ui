@@ -77,7 +77,6 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
-  useIsHydrated,
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
@@ -270,20 +269,7 @@ function useDateInputContext(
 export function DateField<T extends DateValue = CalendarDate>(
   props: DateFieldProps<T>,
 ): JSX.Element {
-  // Use hydration-safe pattern for client-only rendering
-  const isHydrated = useIsHydrated();
-  const formContext = useContext(FormContext);
-
-  return (
-    <Show
-      when={isHydrated()}
-      fallback={
-        <div class="solidaria-DateField solidaria-DateField--placeholder" aria-hidden="true" />
-      }
-    >
-      <DateFieldInner {...props} __formContext={formContext} />
-    </Show>
-  );
+  return <DateFieldInner {...props} />;
 }
 
 type DateFieldInnerProps<T extends DateValue = DateValue> = DateFieldProps<T> & {

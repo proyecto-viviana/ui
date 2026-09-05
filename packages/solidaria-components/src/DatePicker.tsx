@@ -67,7 +67,6 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
-  useIsHydrated,
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
@@ -329,20 +328,7 @@ export function useDatePickerContext(): DatePickerContextValue {
 export function DatePicker<T extends DateValue = CalendarDate>(
   props: DatePickerProps<T>,
 ): JSX.Element {
-  // Use hydration-safe pattern for client-only rendering
-  const isHydrated = useIsHydrated();
-  const formContext = useContext(FormContext);
-
-  return (
-    <Show
-      when={isHydrated()}
-      fallback={
-        <div class="solidaria-DatePicker solidaria-DatePicker--placeholder" aria-hidden="true" />
-      }
-    >
-      <DatePickerInner {...props} __formContext={formContext} />
-    </Show>
-  );
+  return <DatePickerInner {...props} />;
 }
 
 type DatePickerInnerProps<T extends DateValue = DateValue> = DatePickerProps<T> & {
@@ -684,20 +670,7 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
 export function DateRangePicker<T extends DateValue = CalendarDate>(
   props: DateRangePickerProps<T>,
 ): JSX.Element {
-  const isHydrated = useIsHydrated();
-  return (
-    <Show
-      when={isHydrated()}
-      fallback={
-        <div
-          class="solidaria-DateRangePicker solidaria-DateRangePicker--placeholder"
-          aria-hidden="true"
-        />
-      }
-    >
-      <DateRangePickerInner {...props} />
-    </Show>
-  );
+  return <DateRangePickerInner {...props} />;
 }
 
 function DateRangePickerInner<T extends DateValue = CalendarDate>(

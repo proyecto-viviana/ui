@@ -56,7 +56,6 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
-  useIsHydrated,
 } from "./utils";
 import { VisuallyHidden } from "./VisuallyHidden";
 
@@ -217,25 +216,12 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
   // instance than the one this grid renders. Mirrors the single `Calendar`.
   const inheritedState = useContext(RangeCalendarContext);
 
-  // Use hydration-safe pattern for client-only rendering
-  const isHydrated = useIsHydrated();
-
   return (
-    <Show
-      when={isHydrated()}
-      fallback={
-        <div
-          class="solidaria-RangeCalendar solidaria-RangeCalendar--placeholder"
-          aria-hidden="true"
-        />
-      }
-    >
-      <Show when={inheritedState} fallback={<RangeCalendarInner {...props} />}>
-        <RangeCalendarWithState
-          state={inheritedState as RangeCalendarState<DateValue>}
-          {...props}
-        />
-      </Show>
+    <Show when={inheritedState} fallback={<RangeCalendarInner {...props} />}>
+      <RangeCalendarWithState
+        state={inheritedState as RangeCalendarState<DateValue>}
+        {...props}
+      />
     </Show>
   );
 }

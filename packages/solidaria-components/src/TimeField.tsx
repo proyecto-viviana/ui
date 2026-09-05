@@ -35,7 +35,6 @@ import {
   createSignal,
   splitProps,
   useContext,
-  Show,
 } from "solid-js";
 import { createTimeField, mergeProps, type AriaTimeFieldProps } from "@proyecto-viviana/solidaria";
 import {
@@ -53,7 +52,6 @@ import {
   type SlotProps,
   useRenderProps,
   dataAttr,
-  useIsHydrated,
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
@@ -171,20 +169,7 @@ export function useTimeFieldContext(): TimeFieldState<TimeValue> {
  * ```
  */
 export function TimeField<T extends TimeValue = TimeValue>(props: TimeFieldProps<T>): JSX.Element {
-  // Use hydration-safe pattern for client-only rendering
-  const isHydrated = useIsHydrated();
-  const formContext = useContext(FormContext);
-
-  return (
-    <Show
-      when={isHydrated()}
-      fallback={
-        <div class="solidaria-TimeField solidaria-TimeField--placeholder" aria-hidden="true" />
-      }
-    >
-      <TimeFieldInner {...props} __formContext={formContext} />
-    </Show>
-  );
+  return <TimeFieldInner {...props} />;
 }
 
 type TimeFieldInnerProps<T extends TimeValue = TimeValue> = TimeFieldProps<T> & {
