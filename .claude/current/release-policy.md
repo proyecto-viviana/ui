@@ -47,7 +47,11 @@ depends on `solidaria-components` and its lower dependencies. It is not in the
 `@proyecto-viviana/ui` dependency closure.
 
 Workspace Kumo stays at `0.0.0`. The guard permits that unpublished workspace
-version. A nonzero release-candidate version fails CI and publish unless
+version. Changesets ignore it until the workspace version is a real release, so
+`changeset version` cannot bump it off `0.0.0` as a side effect of the Adobe
+stack train. `guard:release-prerequisites` fails if pending changesets name a
+`0.0.0` package that is not ignored — that path would publish a fake first
+release. A nonzero release-candidate version fails CI and publish unless
 `scripts/release-prerequisites.json` records both npm package registration and
 trusted-publisher registration. Those registrations exist for the deprecated
 `0.0.0-bootstrap.0` name reservation. They do not make workspace `0.0.0` a

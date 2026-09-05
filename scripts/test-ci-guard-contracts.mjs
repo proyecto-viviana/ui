@@ -1137,6 +1137,40 @@ try {
   );
   console.log("PASS: unpublished 0.0.0 package does not require release registration.");
 
+  mkdirSync(path.join(unpublishedPrerequisiteFixture, ".changeset"), { recursive: true });
+  writeFileSync(
+    path.join(unpublishedPrerequisiteFixture, ".changeset", "kumo-bomb.md"),
+    '---\n"@proyecto-viviana/kumo": minor\n---\n\nFake first Kumo release.\n',
+  );
+  json(path.join(unpublishedPrerequisiteFixture, ".changeset", "config.json"), {
+    ignore: [],
+  });
+  const pendingZeroVersion = runSync(
+    "check-release-prerequisites.mjs",
+    unpublishedPrerequisiteFixture,
+  );
+  assert(
+    pendingZeroVersion.status !== 0 &&
+      combined(pendingZeroVersion).includes("@proyecto-viviana/kumo@0.0.0") &&
+      combined(pendingZeroVersion).includes("pending changesets"),
+    "pending changesets on a 0.0.0 package were treated as a publishable release",
+  );
+  console.log("PASS: pending changesets cannot version a 0.0.0 package.");
+
+  json(path.join(unpublishedPrerequisiteFixture, ".changeset", "config.json"), {
+    ignore: ["@proyecto-viviana/kumo"],
+  });
+  const ignoredZeroVersion = runSync(
+    "check-release-prerequisites.mjs",
+    unpublishedPrerequisiteFixture,
+  );
+  assert(
+    ignoredZeroVersion.status === 0 &&
+      combined(ignoredZeroVersion).includes("SKIP: @proyecto-viviana/kumo@0.0.0"),
+    "ignored 0.0.0 package with leftover changeset names did not skip",
+  );
+  console.log("PASS: ignored 0.0.0 package stays skipped even if leftover changesets name it.");
+
   const kumoManifestPath = path.join(
     unpublishedPrerequisiteFixture,
     "packages",
