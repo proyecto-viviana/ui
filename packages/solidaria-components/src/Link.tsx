@@ -257,7 +257,6 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
 
   return (
     <ElementTag
-      tag={elementType()}
       {...mergeProps(domProps(), cleanLinkProps(), cleanHoverProps(), cleanFocusProps(), {
         onClick: onLinkClick,
         get class() {
@@ -292,6 +291,8 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
           linkRef(element);
         }
       }}
+      // last, so a stray `tag` in the spread can never redirect the element
+      tag={elementType()}
     >
       {renderProps.renderChildren()}
     </ElementTag>

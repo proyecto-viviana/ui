@@ -164,7 +164,7 @@ function actionMenuPlacement(
 
 function getDataAttributes(
   ...sources: Array<Record<string, unknown> | null | undefined>
-): JSX.HTMLAttributes<HTMLButtonElement> {
+): Record<string, unknown> {
   const attributes: Record<string, unknown> = {};
 
   for (const source of sources) {
@@ -179,7 +179,7 @@ function getDataAttributes(
     }
   }
 
-  return attributes as JSX.HTMLAttributes<HTMLButtonElement>;
+  return attributes;
 }
 
 function omitDataAttributes<T extends Record<string, unknown>>(source: T): T {
@@ -413,7 +413,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         aria-labelledby={local["aria-labelledby"]}
         aria-describedby={local["aria-describedby"]}
         aria-details={local["aria-details"]}
-        autofocus={local.autoFocus}
+        autoFocus={local.autoFocus}
         isDisabled={local.isDisabled}
         ref={(element) => {
           setTriggerElement(element);

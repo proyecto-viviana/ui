@@ -76,6 +76,12 @@ describe("ActionMenu (solid-spectrum)", () => {
     );
   });
 
+  it("focuses the trigger when autoFocus is set", () => {
+    render(() => <ActionMenu autoFocus items={items} getKey={(item) => item.id} />);
+    const trigger = screen.getByRole("button", { name: "More actions" });
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it("uses the provider locale for the default trigger label", () => {
     render(() => (
       <Provider locale="es-ES">

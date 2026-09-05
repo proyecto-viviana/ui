@@ -19,6 +19,12 @@ describe("Link", () => {
     expect(link).toHaveClass("solidaria-Link");
   });
 
+  it("keeps the derived tag when a stray tag is in the DOM spread", () => {
+    render(() => <Link {...({ tag: "article" } as object)}>Test</Link>);
+    const link = screen.getByRole("link");
+    expect(link.tagName).toBe("SPAN");
+  });
+
   it("should render a link with custom class", () => {
     render(() => <Link class="test">Test</Link>);
     const link = screen.getByRole("link");

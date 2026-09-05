@@ -284,9 +284,9 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
       open: () => state.open(),
       close: () => state.close(),
       toggle: () => state.toggle(),
-      setOpen: (next) => state.setOpen(next),
+      setOpen: (next: boolean) => state.setOpen(next),
       point: () => state.point(),
-      setPoint: (next) => state.setPoint(next),
+      setPoint: (next: { x: number; y: number }) => state.setPoint(next),
     },
     triggerRef: () => triggerRef,
     setTriggerRef: (el: HTMLElement | null) => {

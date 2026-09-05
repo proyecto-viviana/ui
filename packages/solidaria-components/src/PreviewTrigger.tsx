@@ -16,7 +16,7 @@
  * PreviewTrigger displays a non-modal popover on hover, focus, or long press.
  */
 
-import { type JSX, createSignal, createUniqueId, splitProps } from "solid-js";
+import { type Context, type JSX, createSignal, createUniqueId, splitProps } from "solid-js";
 import {
   FocusableProvider,
   createPreviewTrigger,
@@ -120,39 +120,41 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
 
   return (
     <Provider
-      values={[
-        [OverlayTriggerStateContext, overlayState],
+      values={
         [
-          PopoverTriggerContext,
-          {
-            state: {
-              isOpen: () => state.isOpen(),
-              open: () => state.open(),
-              close: () => state.close(true),
-              toggle: () => (state.isOpen() ? state.close(true) : state.open()),
-              setOpen: overlayState.setOpen,
-              point: () => overlayState.point,
-              setPoint: overlayState.setPoint,
+          [OverlayTriggerStateContext, overlayState],
+          [
+            PopoverTriggerContext,
+            {
+              state: {
+                isOpen: () => state.isOpen(),
+                open: () => state.open(),
+                close: () => state.close(true),
+                toggle: () => (state.isOpen() ? state.close(true) : state.open()),
+                setOpen: overlayState.setOpen,
+                point: () => overlayState.point,
+                setPoint: overlayState.setPoint,
+              },
+              triggerRef: () => triggerEl(),
+              setTriggerRef: (el: HTMLElement | null) => {
+                if (!el) return;
+                // First connected owner wins. A Button inside the preview would
+                // otherwise steal the trigger ref (and the hover safe-area).
+                setTriggerRef((current) => {
+                  if (current && current.isConnected) return current;
+                  return el;
+                });
+              },
+              triggerId,
+              triggerProps: aria.triggerProps as unknown as Record<string, unknown>,
+              overlayProps: aria.popoverProps as unknown as Record<string, unknown>,
+              trigger: "PreviewTrigger",
+              setOverlayRef: (el: HTMLElement | null) => setPopoverRef(el),
+              shouldSkipAnimation: () => state.shouldSkipAnimation(),
             },
-            triggerRef: () => triggerEl(),
-            setTriggerRef: (el: HTMLElement | null) => {
-              if (!el) return;
-              // First connected owner wins. A Button inside the preview would
-              // otherwise steal the trigger ref (and the hover safe-area).
-              setTriggerRef((current) => {
-                if (current && current.isConnected) return current;
-                return el;
-              });
-            },
-            triggerId,
-            triggerProps: aria.triggerProps as unknown as Record<string, unknown>,
-            overlayProps: aria.popoverProps as unknown as Record<string, unknown>,
-            trigger: "PreviewTrigger",
-            setOverlayRef: (el: HTMLElement | null) => setPopoverRef(el),
-            shouldSkipAnimation: () => state.shouldSkipAnimation(),
-          },
-        ],
-      ]}
+          ],
+        ] as Array<[Context<unknown>, unknown]>
+      }
     >
       <FocusableProvider {...aria.triggerProps} ref={setTriggerRef}>
         {local.children}
