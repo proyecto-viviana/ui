@@ -3,12 +3,7 @@
  * deprecated Option aliases.
  */
 import { describe, expect, it } from "vite-plus/test";
-import {
-  ComboBoxItem,
-  ComboBoxOption,
-  ListBoxItem,
-  ListBoxOption,
-} from "../src/index";
+import { ComboBoxItem, ComboBoxOption, ListBoxItem, ListBoxOption } from "../src/index";
 
 describe("canonical item names", () => {
   it("ListBoxOption is a deprecated alias of ListBoxItem", () => {

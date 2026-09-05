@@ -427,10 +427,7 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
   const isOpen = () => popoverTrigger?.state.isOpen() ?? false;
 
   const getClassName = (renderProps: ButtonRenderProps): string =>
-    [
-      menuButtonStyles({ ...renderProps, isOpen: isOpen(), size, variant }),
-      customClass,
-    ]
+    [menuButtonStyles({ ...renderProps, isOpen: isOpen(), size, variant }), customClass]
       .filter(Boolean)
       .join(" ");
 

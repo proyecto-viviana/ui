@@ -20,11 +20,7 @@ import {
 function DatePickerFixture() {
   return (
     <I18nProvider locale="en-US">
-      <DatePicker
-        aria-label="Event date"
-        value={new CalendarDate(2026, 9, 4)}
-        name="event"
-      >
+      <DatePicker aria-label="Event date" value={new CalendarDate(2026, 9, 4)} name="event">
         <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
         <DatePickerButton>Open</DatePickerButton>
         <DatePickerContent>
@@ -48,7 +44,10 @@ describe("DatePicker hydration over SSR markup", () => {
   });
 
   it("hydrates field segments without a mismatch", () => {
-    const html = readFileSync(resolve(import.meta.dirname, "../../../output/datepicker-ssr.html"), "utf8");
+    const html = readFileSync(
+      resolve(import.meta.dirname, "../../../output/datepicker-ssr.html"),
+      "utf8",
+    );
     const container = hydrateOverSsr(html, () => <DatePickerFixture />);
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
     const hidden = container.querySelector('input[name="event"][hidden]');

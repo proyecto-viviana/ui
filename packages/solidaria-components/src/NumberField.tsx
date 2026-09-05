@@ -316,9 +316,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     inputRef = el;
   };
 
-  const [labelRef, hasLabel] = useSlot(
-    !ariaProps["aria-label"] && !ariaProps["aria-labelledby"],
-  );
+  const [labelRef, hasLabel] = useSlot(!ariaProps["aria-label"] && !ariaProps["aria-labelledby"]);
 
   const numberFieldAria = createNumberField(
     {

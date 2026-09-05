@@ -42,9 +42,9 @@ last radio (`enterprise`). The leftover was the same per-radio
 Comparison D14 on HEAD `cbf06ac7` (comparison-lane walk; spec committed
 separately):
 
-| Row | Both stacks |
-| --- | --- |
-| `invalid · submit attempt` | `submits: 0`, `invalids: 3`, `active` = `starter` |
+| Row                               | Both stacks                                       |
+| --------------------------------- | ------------------------------------------------- |
+| `invalid · submit attempt`        | `submits: 0`, `invalids: 3`, `active` = `starter` |
 | `required-empty · submit attempt` | `submits: 0`, `invalids: 3`, `active` = `starter` |
 
 All 6 Radio D14 rows passed.

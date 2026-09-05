@@ -101,8 +101,7 @@ export function createPreviewTrigger(
       const active = trigger ? getActiveElement(getOwnerDocument(trigger)) : null;
       if (
         isFocusVisible &&
-        ((trigger && nodeContains(trigger, active)) ||
-          (popover && nodeContains(popover, active)))
+        ((trigger && nodeContains(trigger, active)) || (popover && nodeContains(popover, active)))
       ) {
         return;
       }

@@ -459,9 +459,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   // (`useLabel.ts:52`). Without this the canonical
   // `<TextField><Label/><Input/></TextField>` renders an input with no
   // accessible name.
-  const [labelRef, hasLabel] = useSlot(
-    !ariaProps["aria-label"] && !ariaProps["aria-labelledby"],
-  );
+  const [labelRef, hasLabel] = useSlot(!ariaProps["aria-label"] && !ariaProps["aria-labelledby"]);
 
   const textFieldAria = createTextField(() => ({
     ...inputAriaProps(),

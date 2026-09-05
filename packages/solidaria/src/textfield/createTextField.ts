@@ -21,10 +21,7 @@
  */
 
 import { type JSX, createSignal } from "solid-js";
-import {
-  createFormValidationState,
-  type ValidityState,
-} from "@proyecto-viviana/solid-stately";
+import { createFormValidationState, type ValidityState } from "@proyecto-viviana/solid-stately";
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
 import { createFocusable, type FocusableDOMProps, type FocusableProps } from "../interactions";
 import { createFormValidation, type ValidatableElement } from "../form/createFormValidation";

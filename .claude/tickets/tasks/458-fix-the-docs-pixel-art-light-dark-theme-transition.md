@@ -61,7 +61,8 @@ Review changes-required on `622bc7af`: overlay was a 12×12 `--surface-app` fill
 after swap. Follow-up: `dualWipe` snapshots the live old chrome (header / nav /
 labels) as the overlay, never a `--surface-app` fill. Failed / empty snapshot
 takes the no-canvas path. SVG-as-image foreignObject of this CSS hangs (filters
-+ url() raster); getContext during the click evaluate never returns.
+
+- url() raster); getContext during the click evaluate never returns.
 
 `CI=1 vp exec --filter @proyecto-viviana/web -- playwright test e2e/theme-wipe.spec.ts --reporter=line --workers=1 --retries=0` PASS (3): Header toggle on `/solid-spectrum/docs` mounts wipe canvas and flips both attrs; `/showcase` wipe records >2 non-surface colors and never a covering 12×12 `--surface-app` `fillRect`; `prefers-reduced-motion` skips canvas and still flips scheme.
 

@@ -19,7 +19,7 @@ history:
   - {
       state: merged,
       at: 2026-09-04,
-      note: "per-slug () => import(\"./<slug>-demo\") loaders; getComponentControlGroup async; catalogue/hero off the controls graph.",
+      note: 'per-slug () => import("./<slug>-demo") loaders; getComponentControlGroup async; catalogue/hero off the controls graph.',
     }
   - {
       state: verified,

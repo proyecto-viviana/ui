@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-05,
-      note: "Remainder after #467. createFormValidation still captures input.form at effect time for the validation reset listener. Late form=\"\" leaves that capture null, so displayValidation stays invalid after native reset. Same class as #466 (focus) and #467 (value reset).",
+      note: 'Remainder after #467. createFormValidation still captures input.form at effect time for the validation reset listener. Late form="" leaves that capture null, so displayValidation stays invalid after native reset. Same class as #466 (focus) and #467 (value reset).',
     }
   - {
       state: in-progress,
@@ -19,7 +19,7 @@ history:
   - {
       state: merged,
       at: 2026-09-05,
-      note: "Reset listener reads live input.form. Package tests: createFormValidation 14 passed (in-form + late form=\"\"); TextField/SearchField/Checkbox 176 passed.",
+      note: 'Reset listener reads live input.form. Package tests: createFormValidation 14 passed (in-form + late form=""); TextField/SearchField/Checkbox 176 passed.',
     }
 ---
 

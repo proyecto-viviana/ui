@@ -218,10 +218,7 @@ export function RangeCalendar<T extends DateValue = CalendarDate>(
 
   return (
     <Show when={inheritedState} fallback={<RangeCalendarInner {...props} />}>
-      <RangeCalendarWithState
-        state={inheritedState as RangeCalendarState<DateValue>}
-        {...props}
-      />
+      <RangeCalendarWithState state={inheritedState as RangeCalendarState<DateValue>} {...props} />
     </Show>
   );
 }

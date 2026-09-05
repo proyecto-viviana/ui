@@ -14,13 +14,7 @@ import { ComboBox, ComboBoxOption } from "../src";
 import { DatePicker } from "../src/calendar/DatePicker";
 import { DateRangePicker } from "../src/calendar/DateRangePicker";
 import { parseDateTime } from "@proyecto-viviana/solid-stately";
-import {
-  Menu,
-  MenuItem,
-  MenuTrigger,
-  Text,
-  UnavailableMenuItemTrigger,
-} from "../src/menu";
+import { Menu, MenuItem, MenuTrigger, Text, UnavailableMenuItemTrigger } from "../src/menu";
 import { Button } from "../src/button";
 import { Picker, PickerItem } from "../src/picker";
 import { TextField } from "../src/textfield";

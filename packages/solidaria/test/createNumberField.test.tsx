@@ -710,9 +710,7 @@ describe("createNumberField", () => {
     });
 
     it("skips custom validity when disabled", async () => {
-      render(() => (
-        <TestNumberField aria-label="Amount" isInvalid isDisabled defaultValue={5} />
-      ));
+      render(() => <TestNumberField aria-label="Amount" isInvalid isDisabled defaultValue={5} />);
       const input = screen.getByRole("textbox") as HTMLInputElement;
       await waitFor(() => {
         expect(input.validity.customError).toBe(false);

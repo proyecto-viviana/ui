@@ -21,16 +21,8 @@ history:
       at: 2026-09-04,
       note: "ClientRouter child #454 exists; fold client-nav Done-when there, not into #255.",
     }
-  - {
-      state: in-progress,
-      at: 2026-09-04,
-      note: "walk with #454 implement; no ticket-session.",
-    }
-  - {
-      state: merged,
-      at: 2026-09-04,
-      note: "duplicate of #454; client-nav Done-when moved to #454",
-    }
+  - { state: in-progress, at: 2026-09-04, note: "walk with #454 implement; no ticket-session." }
+  - { state: merged, at: 2026-09-04, note: "duplicate of #454; client-nav Done-when moved to #454" }
   - {
       state: verified,
       at: 2026-09-04,
@@ -53,12 +45,12 @@ CSS hoist, #262 lazy-loads `*-demo` modules.
 
 Record before/after per-route requests and bytes here after measurement.
 
-| Surface | Route | Requests | Bytes | Client nav | Notes |
-| ------- | ----- | -------- | ----- | ---------- | ----- |
-| Dev (research 2026-09-04) | tableview hard-goto | 1758 | 42.6 MB | no | before #451/#262/#261/#454 |
-| Dev `:4378` after #261+#454 | tableview hard-goto | 507 | — | no | islands mounted; S2 floor 90 still applies to hard-goto |
-| Dev `:4378` after #261+#454 | tableview → button click | 13 | — | yes, nav entries 1 | chrome CSS 0; islands remount |
-| Dev `:4378` after #261+#454 | hover Button | 1 HTML | — | prefetch | `/components/button/` only, not 78 pages |
+| Surface                     | Route                    | Requests | Bytes   | Client nav         | Notes                                                   |
+| --------------------------- | ------------------------ | -------- | ------- | ------------------ | ------------------------------------------------------- |
+| Dev (research 2026-09-04)   | tableview hard-goto      | 1758     | 42.6 MB | no                 | before #451/#262/#261/#454                              |
+| Dev `:4378` after #261+#454 | tableview hard-goto      | 507      | —       | no                 | islands mounted; S2 floor 90 still applies to hard-goto |
+| Dev `:4378` after #261+#454 | tableview → button click | 13       | —       | yes, nav entries 1 | chrome CSS 0; islands remount                           |
+| Dev `:4378` after #261+#454 | hover Button             | 1 HTML   | —       | prefetch           | `/components/button/` only, not 78 pages                |
 
 Preview bytes / request count: not run (`comparison:build` not run). Click-nav
 Done-when lives on #454.

@@ -360,9 +360,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     inputRef = el;
   };
 
-  const [labelRef, hasLabel] = useSlot(
-    !ariaProps["aria-label"] && !ariaProps["aria-labelledby"],
-  );
+  const [labelRef, hasLabel] = useSlot(!ariaProps["aria-label"] && !ariaProps["aria-labelledby"]);
 
   const searchFieldAria = createSearchField(
     {
@@ -643,21 +641,21 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     <FieldErrorContext.Provider value={fieldErrorContext}>
       <LabelContext.Provider value={labelContextValue}>
         <SearchFieldContext.Provider value={contextValue}>
-        <div
-          {...domProps()}
-          ref={local.ref}
-          class={renderProps.class()}
-          style={renderProps.style()}
-          data-empty={state.value() === "" || undefined}
-          data-disabled={ariaProps.isDisabled || undefined}
-          data-invalid={searchFieldAria.isInvalid || undefined}
-          data-required={ariaProps.isRequired || undefined}
-          data-readonly={ariaProps.isReadOnly || undefined}
-        >
-          <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
-            {fieldChildren()}
-          </Provider>
-        </div>
+          <div
+            {...domProps()}
+            ref={local.ref}
+            class={renderProps.class()}
+            style={renderProps.style()}
+            data-empty={state.value() === "" || undefined}
+            data-disabled={ariaProps.isDisabled || undefined}
+            data-invalid={searchFieldAria.isInvalid || undefined}
+            data-required={ariaProps.isRequired || undefined}
+            data-readonly={ariaProps.isReadOnly || undefined}
+          >
+            <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+              {fieldChildren()}
+            </Provider>
+          </div>
         </SearchFieldContext.Provider>
       </LabelContext.Provider>
     </FieldErrorContext.Provider>

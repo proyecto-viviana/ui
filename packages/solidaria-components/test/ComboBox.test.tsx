@@ -1528,7 +1528,9 @@ describe("ComboBox", () => {
 
     it("skips custom validity when disabled", async () => {
       render(() => (
-        <TestComboBox comboBoxProps={{ isInvalid: true, isDisabled: true, defaultInputValue: "Apple" }} />
+        <TestComboBox
+          comboBoxProps={{ isInvalid: true, isDisabled: true, defaultInputValue: "Apple" }}
+        />
       ));
       const input = screen.getByRole("combobox") as HTMLInputElement;
       await waitFor(() => {

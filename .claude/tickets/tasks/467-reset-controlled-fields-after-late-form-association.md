@@ -9,7 +9,7 @@ history:
   - {
       state: open,
       at: 2026-09-04,
-      note: "Same class as #466. createFormReset captures element.form at effect time. D14-style late form=\"\" leaves the captured form null, so native reset never restores the controlled value. Listen for reset and read the live association.",
+      note: 'Same class as #466. createFormReset captures element.form at effect time. D14-style late form="" leaves the captured form null, so native reset never restores the controlled value. Listen for reset and read the live association.',
     }
   - {
       state: in-progress,

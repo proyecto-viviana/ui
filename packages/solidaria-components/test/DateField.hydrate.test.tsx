@@ -25,7 +25,10 @@ describe("DateField hydration over SSR markup", () => {
   });
 
   it("hydrates segments without a mismatch", () => {
-    const html = readFileSync(resolve(import.meta.dirname, "../../../output/datefield-ssr.html"), "utf8");
+    const html = readFileSync(
+      resolve(import.meta.dirname, "../../../output/datefield-ssr.html"),
+      "utf8",
+    );
     const container = hydrateOverSsr(html, () => <DateFieldFixture />);
     expect(container.querySelectorAll('[role="spinbutton"]').length).toBeGreaterThan(0);
     expect(container.querySelector('[data-testid="hidden-dateinput-container"]')).not.toBeNull();

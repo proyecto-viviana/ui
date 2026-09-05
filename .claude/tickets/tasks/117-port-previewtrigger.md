@@ -73,11 +73,11 @@ returns a compiled `<a />`. That looked like the mismatch
 
 It is not. Isolation:
 
-| Fixture | SSR `data-hk` | Hydrate |
-| --- | --- | --- |
-| `<Link href>` alone | `0000` | passes |
-| Meter + Label (`ElementTag` `<span>`) | `002` / `003000` | passes |
-| PreviewTrigger + Link + Popover | `0040000000` | client looks up `00100` |
+| Fixture                               | SSR `data-hk`    | Hydrate                 |
+| ------------------------------------- | ---------------- | ----------------------- |
+| `<Link href>` alone                   | `0000`           | passes                  |
+| Meter + Label (`ElementTag` `<span>`) | `002` / `003000` | passes                  |
+| PreviewTrigger + Link + Popover       | `0040000000`     | client looks up `00100` |
 
 Replacing ElementTag's memo `<a />` with `createComponent(HostA, rest)`
 (host element in a real component body, same walk as Button) added **one**

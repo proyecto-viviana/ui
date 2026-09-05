@@ -20,11 +20,7 @@ import {
 function DatePickerFixture() {
   return (
     <I18nProvider locale="en-US">
-      <DatePicker
-        aria-label="Event date"
-        value={new CalendarDate(2026, 9, 4)}
-        name="event"
-      >
+      <DatePicker aria-label="Event date" value={new CalendarDate(2026, 9, 4)} name="event">
         <DateInput>{(segment) => <DateSegment segment={segment} />}</DateInput>
         <DatePickerButton>Open</DatePickerButton>
         <DatePickerContent>

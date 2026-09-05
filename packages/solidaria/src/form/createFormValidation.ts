@@ -173,11 +173,7 @@ export function createFormValidation(
       // leaves the effect-time `input.form` null; using the live association
       // is what focuses TextField / SearchField / Checkbox after requestSubmit.
       const associatedForm = input.form;
-      if (
-        !e.defaultPrevented &&
-        associatedForm &&
-        getFirstInvalidInput(associatedForm) === input
-      ) {
+      if (!e.defaultPrevented && associatedForm && getFirstInvalidInput(associatedForm) === input) {
         const focusFn = focus();
         if (focusFn) {
           focusFn();

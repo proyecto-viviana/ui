@@ -78,11 +78,11 @@ Live measure: implementer `astro dev` `http://127.0.0.1:4378` (not owner
 `:4321`; did not touch pid 15315 `:4350`). Playwright
 `e2e/client-router.spec.ts` with `COMPARISON_BASE_URL`:
 
-| Mode | Reqs | Nav entries | Chrome CSS re-req | Notes |
-| --- | --- | --- | --- | --- |
-| hard-goto `/components/tableview/` | 507 | 1 | n/a (first load) | islands mounted |
-| hover Button from tableview | 1 HTML path | 1 | — | `/components/button/` only, not 78 slugs |
-| click tableview → button | **13** | **1** | **0** | islands-mounted cleared then true; heading Button |
+| Mode                               | Reqs        | Nav entries | Chrome CSS re-req | Notes                                             |
+| ---------------------------------- | ----------- | ----------- | ----------------- | ------------------------------------------------- |
+| hard-goto `/components/tableview/` | 507         | 1           | n/a (first load)  | islands mounted                                   |
+| hover Button from tableview        | 1 HTML path | 1           | —                 | `/components/button/` only, not 78 slugs          |
+| click tableview → button           | **13**      | **1**       | **0**             | islands-mounted cleared then true; heading Button |
 
 `link[rel=modulepreload]` count **0** under astro dev (Vite dev). Production
 Vite/Astro `modulePreload: { polyfill: false }` left default; did not set
