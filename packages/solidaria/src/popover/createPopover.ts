@@ -129,7 +129,12 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
       },
       onClose: state.close,
       get shouldCloseOnBlur() {
-        return !isSubmenu();
+        // RAC useOverlay has no document focusin listener — only onBlurWithin
+        // after focus has been inside the overlay. Our createOverlay adds a
+        // focusin-outside close; that fires on the trigger's own focus when
+        // PreviewTrigger opens from keyboard, and the preview never stays open.
+        // createPreviewTrigger already closes on trigger blur / popover focusout.
+        return !isSubmenu() && props.trigger !== "PreviewTrigger";
       },
       get isDismissable() {
         return !isNonModal() || isSubmenu();

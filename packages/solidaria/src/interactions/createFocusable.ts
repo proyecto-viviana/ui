@@ -18,7 +18,7 @@
  * This is a 1-1 port of React-Aria's useFocusable hook adapted for SolidJS.
  */
 
-import { JSX, Accessor, createContext, useContext, onMount } from "solid-js";
+import { JSX, Accessor, createContext, useContext, onMount, splitProps } from "solid-js";
 import { createFocus, type FocusEvents } from "./createFocus";
 import { createKeyboard, type KeyboardEvents } from "./createKeyboard";
 import { mergeProps, focusSafely } from "../utils";
@@ -57,27 +57,25 @@ export interface FocusableContextValue {
 export const FocusableContext = createContext<FocusableContextValue | null>(null);
 
 /**
- * Hook to consume the FocusableContext and sync the ref.
+ * Consume FocusableContext without snapshotting getters (aria-expanded and
+ * other live trigger props) and sync the child ref to the provider — RAC
+ * `useFocusableContext` + `useSyncRef`.
  */
-function useFocusableContext(
-  setRef: (el: HTMLElement) => void,
-): Omit<FocusableContextValue, "ref"> {
-  const context = useContext(FocusableContext) || {};
-
-  // If context has a ref, sync our ref to it
-  if (context.ref) {
-    const contextRef = context.ref;
-    // Create a combined ref that calls both
-    const originalSetRef = setRef;
-    setRef = (el: HTMLElement) => {
-      originalSetRef(el);
-      contextRef(el);
-    };
-  }
-
-  // Return context without the ref
-  const { ref: _, ...otherProps } = context;
-  return otherProps;
+function useFocusableContext(): {
+  props: Omit<FocusableContextValue, "ref">;
+  syncRef: (el: HTMLElement) => void;
+} {
+  const context = useContext(FocusableContext) ?? {};
+  const [, otherProps] = splitProps(context, ["ref"]);
+  return {
+    props: otherProps,
+    syncRef: (el: HTMLElement) => {
+      const contextRef = context.ref;
+      if (typeof contextRef === "function") {
+        contextRef(el);
+      }
+    },
+  };
 }
 
 export interface FocusableProviderProps {
@@ -125,10 +123,14 @@ export function createFocusable(
   let elementRef: HTMLElement | null = null;
   let autoFocusDone = false;
 
-  // Set up ref handler
+  const context = useFocusableContext();
+
+  // Set up ref handler — include the provider ref so PreviewTrigger / Tooltip
+  // can see the real trigger node (RAC useSyncRef).
   const setRef = (el: HTMLElement) => {
     elementRef = el;
     ref?.(el);
+    context.syncRef(el);
   };
 
   // Get focus and keyboard props from the respective hooks
@@ -149,8 +151,7 @@ export function createFocusable(
   const interactions = mergeProps(focusProps, keyboardProps);
 
   // Get context props (from FocusableProvider if present)
-  const contextProps = useFocusableContext(setRef);
-  const interactionProps = isDisabledValue(props.isDisabled) ? {} : contextProps;
+  const interactionProps = isDisabledValue(props.isDisabled) ? {} : context.props;
 
   // Handle autoFocus
   onMount(() => {

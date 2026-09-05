@@ -79,6 +79,7 @@ export function createPreviewTrigger(
   let shouldFocusOnOpen = false;
   let pointerInSafeArea = false;
   let isFocusVisible = false;
+  let movingFocusIntoPreview = false;
 
   const stopFocusVisible = createFocusVisibleListener((visible) => {
     isFocusVisible = visible;
@@ -87,20 +88,35 @@ export function createPreviewTrigger(
 
   const keepOpen = () => state.open(true);
 
-  const checkClose = () => {
-    if (pointerInSafeArea) {
+  const checkClose = (e?: FocusEvent) => {
+    if (pointerInSafeArea || movingFocusIntoPreview) {
       return;
     }
-    const trigger = props.triggerRef();
-    const active = trigger ? getActiveElement(getOwnerDocument(trigger)) : null;
-    if (
-      isFocusVisible &&
-      ((trigger && nodeContains(trigger, active)) ||
-        (props.popoverRef() && nodeContains(props.popoverRef(), active)))
-    ) {
+    const dismiss = () => {
+      if (pointerInSafeArea || movingFocusIntoPreview) {
+        return;
+      }
+      const trigger = props.triggerRef();
+      const popover = props.popoverRef();
+      const active = trigger ? getActiveElement(getOwnerDocument(trigger)) : null;
+      if (
+        isFocusVisible &&
+        ((trigger && nodeContains(trigger, active)) ||
+          (popover && nodeContains(popover, active)))
+      ) {
+        return;
+      }
+      state.close();
+    };
+    // Event-driven blur/focusout: wait a microtask so Tab-into-preview can
+    // land on the first tabbable. Solid closes synchronously (React batches;
+    // RAC then re-opens via onFocusWithin). Pointer-driven safe-area checks
+    // stay synchronous.
+    if (e) {
+      queueMicrotask(dismiss);
       return;
     }
-    state.close();
+    dismiss();
   };
 
   createEffect(() => {
@@ -163,10 +179,18 @@ export function createPreviewTrigger(
       const first = walker.nextNode() as HTMLElement | null;
       if (first) {
         e.preventDefault();
+        e.stopPropagation();
+        movingFocusIntoPreview = true;
         first.focus();
+        movingFocusIntoPreview = false;
+        keepOpen();
       }
     } else if (e.key === "Escape") {
       e.preventDefault();
+      // Restore-focus on the trigger must not reopen. RAC sets ignoreFocus
+      // from the focus-scope-restore event; Solid can restore before that
+      // listener runs, so suppress the next focus here too.
+      ignoreFocus = true;
       state.close(true);
     }
   };
@@ -237,9 +261,15 @@ export function createPreviewTrigger(
     triggerProps: {
       ...triggerProps,
       "aria-haspopup": "dialog",
-      "aria-expanded": state.isOpen(),
-      "aria-controls": state.isOpen() ? popoverId : undefined,
-      "aria-describedby": describedBy() || undefined,
+      get "aria-expanded"() {
+        return state.isOpen();
+      },
+      get "aria-controls"() {
+        return state.isOpen() ? popoverId : undefined;
+      },
+      get "aria-describedby"() {
+        return describedBy() || undefined;
+      },
       style: {
         "-webkit-touch-callout": "none",
         "-webkit-user-drag": "none",

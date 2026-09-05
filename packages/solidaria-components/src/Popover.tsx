@@ -618,6 +618,11 @@ export function Popover(props: PopoverProps): JSX.Element {
     if ((local.autoFocus ?? true) === false) return;
     if (!popoverRef()) return;
     if (resolvedTrigger() === "SubmenuTrigger") return;
+    // RAC Overlay does not auto-focus a PreviewTrigger popover — focus stays
+    // on the trigger so Tab can move into the preview (usePreviewTrigger
+    // onKeyDown). Stealing focus here blurs the link and either closes the
+    // preview or leaves Tab landing on the next page control.
+    if (resolvedTrigger() === "PreviewTrigger") return;
 
     let timeout: number | undefined;
     let frame: number | undefined;
@@ -626,6 +631,7 @@ export function Popover(props: PopoverProps): JSX.Element {
       if (!isOpen() || !shouldBeDialog()) return;
       const node = popoverRef();
       if (!node || resolvedTrigger() === "SubmenuTrigger") return;
+      if (resolvedTrigger() === "PreviewTrigger") return;
       // Nested Dialog (DatePicker) owns initial focus via createDialog —
       // RAC PopoverInner skips focusSafely when isDialog is false.
       if (node.querySelector("[role=dialog]")) return;

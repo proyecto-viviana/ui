@@ -18,7 +18,7 @@
  * Ported from packages/react-aria/src/interactions/useFocusable.tsx.
  */
 
-import { JSX, mergeProps, ParentComponent, splitProps } from "solid-js";
+import { JSX, ParentComponent, splitProps } from "solid-js";
 import { FocusableContext, FocusableContextValue, FocusableProviderProps } from "./createFocusable";
 
 /**
@@ -45,15 +45,16 @@ export const FocusableProvider: ParentComponent<
   // `children` getter immediately (2nd statement of the body), instantiating the
   // nested subtree BEFORE this provider mounts — so a child that reads
   // FocusableContext during its own setup would miss us. splitProps keeps
-  // otherProps a reactive proxy; children is read lazily inside the JSX, under
-  // the mounted provider. Same pattern as solidaria-components' useRenderProps.
+  // otherProps a reactive proxy (including the parent ref); children is read
+  // lazily inside the JSX, under the mounted provider. Same pattern as
+  // solidaria-components' useRenderProps. RAC FocusableProvider puts the
+  // forwarded ref on the context (`useFocusable.tsx` + useSyncRef) so
+  // PreviewTrigger can measure the trigger for the hover safe-area.
   const [, otherProps] = splitProps(props, ["children"]);
 
-  const context = mergeProps(otherProps, {
-    ref: (_el: HTMLElement) => {
-      // Store ref if needed by parent
-    },
-  }) as FocusableContextValue;
-
-  return <FocusableContext.Provider value={context}>{props.children}</FocusableContext.Provider>;
+  return (
+    <FocusableContext.Provider value={otherProps as FocusableContextValue}>
+      {props.children}
+    </FocusableContext.Provider>
+  );
 };

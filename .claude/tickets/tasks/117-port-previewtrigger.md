@@ -12,6 +12,11 @@ history:
       at: 2026-09-05,
       note: "F-UP-011 structural slice. PreviewTrigger now provides OverlayTriggerStateContext with setOpen/point/setPoint and a full PopoverTriggerContext (Solid's trigger-wiring counterpart of RAC PopoverContext). Package test fails if those go missing. Done when is not met: no SSR/hydrate/keyboard/pointer/safe-area/browser evidence yet. Do not close on the barrel name.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "Behavior slice. Package tests name hover/safe-area, keyboard delay, Tab-through-before-delay, Tab into preview, Escape restore, and live aria-expanded/controls. SSR writes closed-trigger markup without the popover. Hydrate over that markup still mismatches (ElementTag key). No comparison-browser evidence. Do not close.",
+    }
 ---
 
 Port the pinned RAC `PreviewTrigger` component and public export.
@@ -32,16 +37,23 @@ Delta (F-UP-011): the export exists, so `guard:rac-export-gap` is green, but loc
 
 F-UP-011 context adapter is in. RAC `PopoverContext` (trigger wiring) is
 `PopoverTriggerContext` here — our `PopoverContext` is placement/arrow and
-must not be overloaded. Remaining: RAC PreviewTrigger.test.js behavior
-(hover/safe-area, keyboard focus delay, Tab into preview, Escape restore),
-SSR/hydrate, and comparison-browser evidence.
+must not be overloaded.
+
+Behavior slice: hover/safe-area, keyboard delay, Tab-through-before-delay,
+Tab into preview, Escape restore, live `aria-expanded`/`aria-controls`. SSR
+emits a closed trigger without the popover. Remaining: hydrate over that
+markup (ElementTag key mismatch), long-press, Dismiss restore, and
+comparison-browser evidence.
 
 ## Proof
 
 ```bash
 vp test run packages/solidaria-components/test/PreviewTrigger.test.tsx
-# 2 passed (OverlayTriggerStateContext setOpen/point; aria-haspopup, no underlay)
+# 8 passed (context + hover/safe-area + delay + Tab + Escape + live ARIA)
 
-vp test run packages/solidaria-components/test/Popover.test.tsx packages/solidaria-components/test/Modal.test.tsx packages/solidaria-components/test/Dialog.test.tsx packages/solidaria-components/test/Menu.test.tsx
-# 212 passed
+vp test run --config vitest.ssr.config.ts packages/solidaria-components/test/PreviewTrigger.ssr.test.tsx
+# 2 passed (closed trigger, no popover in SSR HTML)
+
+vp test run packages/solidaria-components/test/Link.test.tsx packages/solidaria-components/test/Popover.test.tsx packages/solidaria-components/test/Tooltip.test.tsx
+# 101 passed with PreviewTrigger
 ```

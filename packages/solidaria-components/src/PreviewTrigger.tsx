@@ -95,11 +95,11 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
       return state.isOpen();
     },
     open: () => state.open(),
-    close: () => state.close(),
-    toggle: () => (state.isOpen() ? state.close() : state.open()),
+    close: () => state.close(true),
+    toggle: () => (state.isOpen() ? state.close(true) : state.open()),
     setOpen: (isOpen) => {
       if (isOpen) state.open();
-      else state.close();
+      else state.close(true);
     },
     get point() {
       return null;
@@ -117,8 +117,8 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
             state: {
               isOpen: () => state.isOpen(),
               open: () => state.open(),
-              close: () => state.close(),
-              toggle: () => (state.isOpen() ? state.close() : state.open()),
+              close: () => state.close(true),
+              toggle: () => (state.isOpen() ? state.close(true) : state.open()),
               setOpen: overlayState.setOpen,
               point: () => overlayState.point,
               setPoint: overlayState.setPoint,
@@ -126,7 +126,12 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
             triggerRef: () => triggerEl(),
             setTriggerRef: (el: HTMLElement | null) => {
               if (!el) return;
-              setTriggerRef(el);
+              // First connected owner wins. A Button inside the preview would
+              // otherwise steal the trigger ref (and the hover safe-area).
+              setTriggerRef((current) => {
+                if (current && current.isConnected) return current;
+                return el;
+              });
             },
             triggerId,
             triggerProps: aria.triggerProps as unknown as Record<string, unknown>,

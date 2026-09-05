@@ -25,6 +25,7 @@ import {
   createLink,
   createFocusRing,
   createHover,
+  mergeProps,
   type AriaLinkProps,
   type HoverEvents,
 } from "@proyecto-viviana/solidaria";
@@ -257,22 +258,40 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
   return (
     <ElementTag
       tag={elementType()}
-      {...domProps()}
-      {...cleanLinkProps()}
-      {...cleanHoverProps()}
-      {...cleanFocusProps()}
+      {...mergeProps(domProps(), cleanLinkProps(), cleanHoverProps(), cleanFocusProps(), {
+        onClick: onLinkClick,
+        get class() {
+          return renderProps.class();
+        },
+        get style() {
+          return renderProps.style();
+        },
+        get "data-hovered"() {
+          return isHovered() || undefined;
+        },
+        get "data-pressed"() {
+          return linkAria.isPressed() || undefined;
+        },
+        get "data-focused"() {
+          return isFocused() || undefined;
+        },
+        get "data-focus-visible"() {
+          return isFocusVisible() || undefined;
+        },
+        get "data-current"() {
+          return !!ariaProps["aria-current"] || undefined;
+        },
+        get "data-disabled"() {
+          return ariaProps.isDisabled || undefined;
+        },
+      })}
       ref={(element: HTMLElement) => {
         assignRef(local.ref, element);
+        const linkRef = (linkAria.linkProps as { ref?: (el: HTMLElement) => void }).ref;
+        if (typeof linkRef === "function") {
+          linkRef(element);
+        }
       }}
-      onClick={onLinkClick}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      data-hovered={isHovered() || undefined}
-      data-pressed={linkAria.isPressed() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-current={!!ariaProps["aria-current"] || undefined}
-      data-disabled={ariaProps.isDisabled || undefined}
     >
       {renderProps.renderChildren()}
     </ElementTag>
