@@ -4,7 +4,7 @@ type: task
 title: "Set native custom validity on TextField when isInvalid"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -40,6 +40,11 @@ history:
       state: merged,
       at: 2026-09-03,
       note: "createTextField calls createFormValidationState + createFormValidation and Input/SearchFieldInput apply the input ref. Package test fails if isInvalid leaves customError false.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-05,
+      note: "Comparison D14 subset on 15ca6d4c: field-validity.certified.spec.ts 39/0/39. TextField and SearchField invalid constraint + blocked submit pair-match. Spec is the comparison-route walk Done-when named. Not the #194 postcard.",
     }
 ---
 
