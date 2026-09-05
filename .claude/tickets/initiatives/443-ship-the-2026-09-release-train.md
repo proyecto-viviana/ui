@@ -15,6 +15,11 @@ history:
       at: 2026-09-05,
       note: "No publish tonight. Counted 112 unpublished changesets on HEAD 030c200b (211 ahead of origin/main). guard:release-prerequisites PASS; Kumo 0.0.0 is not a publish candidate. Certified postcard still 0f1e1198 (#194). Do not ship the pile.",
     }
+  - {
+      state: open,
+      at: 2026-09-05,
+      note: "Honest form-validation/Radio slice prepared on local main (HEAD db66c830+). #472 SSR Form inherit, #475 CheckboxGroup aria, #351/#376 D14 walks. Did not version or publish: postcard still 0f1e1198, D14 subset is not the certified suite, 112 unpublished changesets remain, do not bump Kumo 0.0.0. Do not push this train until Certification Gates can fail closed without firing Release on the pile.",
+    }
 ---
 
 Publish the pending changesets for the six public packages from PR #33
