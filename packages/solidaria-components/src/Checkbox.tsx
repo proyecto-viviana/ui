@@ -402,7 +402,9 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     const itemAria = createCheckboxGroupItem(
       () => ({
         ...inputAriaProps(),
-        validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
+        // Item native default would shadow CheckboxGroup's aria (createCheckboxGroupItem:
+        // props ?? group ?? native). Form fallback only.
+        validationBehavior: ariaProps.validationBehavior ?? formContext?.validationBehavior,
         value: inputAriaProps().value ?? "",
         children: typeof mergedProps.children === "function" ? true : mergedProps.children,
       }),
@@ -812,7 +814,9 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     const itemAria = createCheckboxGroupItem(
       () => ({
         ...inputAriaProps(),
-        validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
+        // Item native default would shadow CheckboxGroup's aria (createCheckboxGroupItem:
+        // props ?? group ?? native). Form fallback only.
+        validationBehavior: ariaProps.validationBehavior ?? formContext?.validationBehavior,
         value: inputAriaProps().value ?? "",
         // The hook reads `children` only to decide if an aria-label is needed;
         // the visible label lives in the CheckboxButton, so report presence.
