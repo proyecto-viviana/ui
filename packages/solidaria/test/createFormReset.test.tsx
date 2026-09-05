@@ -67,11 +67,66 @@ describe("createFormReset", () => {
 
       createFormReset(() => inputRef, "default", onReset);
 
-      // Input not wrapped in a form
-      return <input ref={(el) => (inputRef = el)} type="text" />;
+      return (
+        <>
+          <form data-testid="other" />
+          <input ref={(el) => (inputRef = el)} type="text" />
+        </>
+      );
     });
 
-    // No form to reset
+    fireEvent.reset(document.querySelector('[data-testid="other"]') as HTMLFormElement);
+    expect(onReset).not.toHaveBeenCalled();
+  });
+
+  it("should reset when the form attribute is set after mount", () => {
+    const onReset = vi.fn();
+
+    render(() => {
+      let inputRef: HTMLInputElement | undefined;
+
+      createFormReset(() => inputRef, "default", onReset);
+
+      return (
+        <>
+          <form id="probe" data-testid="form" />
+          <input ref={(el) => (inputRef = el)} type="text" data-testid="input" />
+        </>
+      );
+    });
+
+    const input = document.querySelector('[data-testid="input"]') as HTMLInputElement;
+    const form = document.querySelector('[data-testid="form"]') as HTMLFormElement;
+    expect(input.form).toBeNull();
+    input.setAttribute("form", "probe");
+    expect(input.form).toBe(form);
+
+    fireEvent.reset(form);
+    expect(onReset).toHaveBeenCalledTimes(1);
+    expect(onReset).toHaveBeenCalledWith("default");
+  });
+
+  it("should not reset when the reset event is cancelled", () => {
+    const onReset = vi.fn();
+
+    render(() => {
+      let inputRef: HTMLInputElement | undefined;
+
+      createFormReset(() => inputRef, "default", onReset);
+
+      return (
+        <form
+          data-testid="form"
+          onReset={(event) => {
+            event.preventDefault();
+          }}
+        >
+          <input ref={(el) => (inputRef = el)} type="text" />
+        </form>
+      );
+    });
+
+    fireEvent.reset(document.querySelector('[data-testid="form"]') as HTMLFormElement);
     expect(onReset).not.toHaveBeenCalled();
   });
 

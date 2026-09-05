@@ -854,5 +854,29 @@ describe("TextField", () => {
       fireEvent.reset(form);
       expect(input).toHaveValue("alpha");
     });
+
+    it("restores a controlled value when the form attribute is set after mount", () => {
+      const [value, setValue] = createSignal("alpha");
+
+      render(() => (
+        <>
+          <form id="probe" aria-label="Probe form" />
+          <TextField value={value()} onChange={setValue}>
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+        </>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Probe form" }) as HTMLFormElement;
+      input.setAttribute("form", "probe");
+
+      fireEvent.input(input, { target: { value: "beta" } });
+      expect(input).toHaveValue("beta");
+
+      fireEvent.reset(form);
+      expect(input).toHaveValue("alpha");
+    });
   });
 });
