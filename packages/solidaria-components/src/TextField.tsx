@@ -135,19 +135,27 @@ function withFormValidationBehavior(
     },
     getOwnPropertyDescriptor(target, property) {
       const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (descriptor) {
-        return descriptor;
-      }
-
       if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        // splitProps copies descriptors. An own getter that returns
+        // `undefined` (S2 TextField's validationState coalescing) must
+        // still fall through to Form context — otherwise the Proxy `get`
+        // trap never runs and the field stays on native `required`.
         return {
           enumerable: true,
           configurable: true,
-          get: () => formContext.validationBehavior,
+          get: () => {
+            const localValue =
+              descriptor == null
+                ? undefined
+                : typeof descriptor.get === "function"
+                  ? descriptor.get.call(target)
+                  : descriptor.value;
+            return localValue === undefined ? formContext.validationBehavior : localValue;
+          },
         };
       }
 
-      return undefined;
+      return descriptor;
     },
   });
 }

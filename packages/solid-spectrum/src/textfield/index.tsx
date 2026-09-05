@@ -310,9 +310,18 @@ export function TextField(props: TextFieldProps): JSX.Element {
       }
       return undefined;
     },
-    get validationBehavior() {
-      return headlessProps.validationBehavior ?? (local.validationState ? "aria" : undefined);
-    },
+    // Upstream S2 TextField spreads through to RAC and does not own
+    // validationBehavior. Only force `aria` for the legacy validationState
+    // alias. An always-present getter that returns `undefined` becomes an
+    // own descriptor; splitProps then skips Form context and the input
+    // keeps native `required`.
+    ...(local.validationState
+      ? {
+          get validationBehavior() {
+            return headlessProps.validationBehavior ?? "aria";
+          },
+        }
+      : {}),
   });
 
   const rootClassName = (renderProps: TextFieldRenderProps) =>

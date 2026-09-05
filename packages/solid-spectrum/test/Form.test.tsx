@@ -144,6 +144,32 @@ describe("Form (solid-spectrum)", () => {
     expect(objectRef.current).toBe(objectForm);
   });
 
+  it("drops native required when Form validationBehavior is aria and isRequired is inherited", () => {
+    render(() => (
+      <Form validationBehavior="aria" isRequired aria-label="Aria form">
+        <TextField label="Name" description="Inherited from the parent form." />
+      </Form>
+    ));
+
+    const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+    expect(input).not.toHaveAttribute("required");
+    expect(input).toHaveAttribute("aria-required", "true");
+    expect(input.validity.valueMissing).toBe(false);
+  });
+
+  it("drops native required when Form validationBehavior is aria and TextField sets isRequired", () => {
+    render(() => (
+      <Form validationBehavior="aria" aria-label="Aria field form">
+        <TextField label="Name" isRequired />
+      </Form>
+    ));
+
+    const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+    expect(input).not.toHaveAttribute("required");
+    expect(input).toHaveAttribute("aria-required", "true");
+    expect(input.validity.valueMissing).toBe(false);
+  });
+
   it("provides S2 field props to TextField and Button children", () => {
     render(() => (
       <Form

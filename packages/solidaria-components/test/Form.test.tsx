@@ -176,6 +176,28 @@ describe("Form", () => {
       expect(input).not.toHaveAttribute("aria-required");
     });
 
+    it("inherits form validationBehavior when the field owns an undefined getter", () => {
+      const fieldProps = {
+        isRequired: true as const,
+        get validationBehavior(): "aria" | "native" | undefined {
+          return undefined;
+        },
+      };
+
+      render(() => (
+        <Form validationBehavior="aria" aria-label="Undefined getter form">
+          <TextField {...fieldProps}>
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" });
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+
     it("lets a descendant TextField override the form validationBehavior", () => {
       render(() => (
         <Form validationBehavior="aria" aria-label="Override form">
