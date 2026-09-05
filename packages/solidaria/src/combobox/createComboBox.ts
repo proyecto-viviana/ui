@@ -20,6 +20,13 @@
 
 import { type JSX, type Accessor, createEffect, onCleanup } from "solid-js";
 import { isServer } from "solid-js/web";
+import {
+  createFormValidationState,
+  type ComboBoxState,
+  type CollectionNode,
+  type Key,
+  type ValidityState,
+} from "@proyecto-viviana/solid-stately";
 import { createPress } from "../interactions/createPress";
 import { createFocusRing } from "../interactions/createFocusRing";
 import { createField } from "../label/createField";
@@ -35,7 +42,8 @@ import { announce } from "../live-announcer";
 import { createStringFormatter } from "../i18n";
 import { comboBoxIntlStrings } from "./intl";
 import { isDevEnv } from "../utils/env";
-import type { ComboBoxState, CollectionNode, Key } from "@proyecto-viviana/solid-stately";
+import { createFormValidation } from "../form/createFormValidation";
+import { createFormReset } from "../form/createFormReset";
 
 /**
  * Helper to count items in a collection
@@ -120,6 +128,12 @@ export interface ComboBoxAria<T> {
   isOpen: Accessor<boolean>;
   /** The currently selected item. */
   selectedItem: Accessor<CollectionNode<T> | null>;
+  /** Whether the combobox is currently invalid. */
+  isInvalid: boolean;
+  /** The current error messages for the input if it is invalid. */
+  validationErrors: string[];
+  /** The native validity state for the input. */
+  validationDetails: ValidityState;
 }
 
 // Shared data between combobox and options
@@ -164,6 +178,38 @@ export function createComboBox<T>(
   const inputId = `${id}-input`;
   const buttonId = `${id}-button`;
   const listBoxId = `${id}-listbox`;
+
+  const validationState = createFormValidationState({
+    get value() {
+      return state.inputValue();
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get name() {
+      return getProps().name;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+  });
+  const displayValidation = () => validationState.displayValidation();
+
+  createFormReset(
+    () => inputRef() ?? undefined,
+    state.defaultInputValue,
+    (value) => state.setInputValue(value),
+  );
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return getProps().validationBehavior ?? "native";
+      },
+      focus: () => inputRef()?.focus(),
+    },
+    validationState,
+    () => inputRef() ?? undefined,
+  );
 
   // Set up global pointerdown listener to track clicks inside listbox
   // This is needed because the option's createPress stops propagation
@@ -215,10 +261,10 @@ export function createComboBox<T>(
       return getProps().description;
     },
     get errorMessage() {
-      return getProps().errorMessage;
+      return getProps().errorMessage || displayValidation().validationErrors;
     },
     get isInvalid() {
-      return getProps().isInvalid;
+      return displayValidation().isInvalid;
     },
     get "aria-label"() {
       return getProps()["aria-label"];
@@ -682,7 +728,7 @@ export function createComboBox<T>(
           required: (p.validationBehavior ?? "native") === "native" && !!p.isRequired,
           "aria-required":
             ((p.validationBehavior ?? "native") === "aria" && p.isRequired) || undefined,
-          "aria-invalid": p.isInvalid || undefined,
+          "aria-invalid": displayValidation().isInvalid || undefined,
           name: p.name,
           onInput: onInputChange,
           onKeyDown: onInputKeyDown,
@@ -774,5 +820,14 @@ export function createComboBox<T>(
     isFocusVisible: () => isFocused() && isFocusVisible(),
     isOpen: state.isOpen,
     selectedItem: state.selectedItem,
+    get isInvalid() {
+      return displayValidation().isInvalid;
+    },
+    get validationErrors() {
+      return displayValidation().validationErrors;
+    },
+    get validationDetails() {
+      return displayValidation().validationDetails;
+    },
   };
 }

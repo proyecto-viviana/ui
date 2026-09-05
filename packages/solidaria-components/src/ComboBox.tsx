@@ -57,7 +57,6 @@ import {
   type Key,
   type FilterFn,
   type MenuTriggerAction,
-  DEFAULT_VALIDATION_RESULT,
 } from "@proyecto-viviana/solid-stately";
 import {
   type RenderChildren,
@@ -562,7 +561,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     isFocusVisible: comboBoxAria.isFocusVisible(),
     isDisabled: !!ariaProps.isDisabled,
     isRequired: !!ariaProps.isRequired,
-    isInvalid: !!ariaProps.isInvalid,
+    isInvalid: comboBoxAria.isInvalid,
     isReadOnly: !!ariaProps.isReadOnly,
     isSelected: state.selectedKey() != null,
     inputValue: state.inputValue(),
@@ -607,9 +606,11 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   // `<FieldError>` only paints when this context reports `isInvalid`.
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
-      return ariaProps.isInvalid
-        ? { ...DEFAULT_VALIDATION_RESULT, isInvalid: true }
-        : DEFAULT_VALIDATION_RESULT;
+      return {
+        isInvalid: comboBoxAria.isInvalid,
+        validationErrors: comboBoxAria.validationErrors,
+        validationDetails: comboBoxAria.validationDetails,
+      };
     },
     get errorMessageProps() {
       return comboBoxAria.errorMessageProps;
@@ -683,7 +684,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           data-focus-visible={comboBoxAria.isFocusVisible() || undefined}
           data-disabled={ariaProps.isDisabled || undefined}
           data-required={ariaProps.isRequired || undefined}
-          data-invalid={ariaProps.isInvalid || undefined}
+          data-invalid={comboBoxAria.isInvalid || undefined}
           data-readonly={ariaProps.isReadOnly || undefined}
           data-hovered={isHovered() || undefined}
           slot={local.slot}

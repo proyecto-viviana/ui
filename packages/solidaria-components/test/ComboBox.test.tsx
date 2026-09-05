@@ -1503,4 +1503,38 @@ describe("ComboBox", () => {
       expect(onSelectionChange).not.toHaveBeenCalled();
     });
   });
+
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Fruit form" onSubmit={onSubmit}>
+          <TestComboBox comboBoxProps={{ isInvalid: true, defaultInputValue: "Apple" }} />
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const input = screen.getByRole("combobox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+
+      (screen.getByRole("form", { name: "Fruit form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("skips custom validity when disabled", async () => {
+      render(() => (
+        <TestComboBox comboBoxProps={{ isInvalid: true, isDisabled: true, defaultInputValue: "Apple" }} />
+      ));
+      const input = screen.getByRole("combobox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(false);
+        expect(input.checkValidity()).toBe(true);
+      });
+    });
+  });
 });
