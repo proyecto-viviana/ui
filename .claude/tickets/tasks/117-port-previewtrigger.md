@@ -22,6 +22,11 @@ history:
       at: 2026-09-05,
       note: "Hydrate/long-press slice. Long press (touch) opens and focuses the popover; long-press hint is live with modality; Dismiss restore does not reopen. Overlay portal resets FocusableContext (RAC Overlay.tsx:87) so Action does not pick up trigger ARIA. Hydrate test lands as it.fails: ElementTag looks up 00100, SSR registered 0040000000. No comparison-browser evidence. Do not close.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "Hydrate diagnosis (no code). Link-only SSR+hydrate matches (data-hk 0000). PreviewTrigger+Link does not (SSR 0040000000 vs client 00100). createMemo is not the owner — wrapping each tag in createComponent added one 0 on both sides (00400000000 vs 001000) and was reverted. The 4 vs 1 is getNextContextId count in PreviewTrigger before Provider. Do not retarget ElementTag. Do not close.",
+    }
 ---
 
 Port the pinned RAC `PreviewTrigger` component and public export.
@@ -49,8 +54,43 @@ Tab into preview, Escape restore, live `aria-expanded`/`aria-controls`. SSR
 emits a closed trigger without the popover. Long-press (touch) opens and
 focuses the popover; the hint tracks modality; Dismiss restore does not
 reopen. Overlay portal resets FocusableContext so preview actions do not
-inherit trigger ARIA. Remaining: hydrate over SSR markup (ElementTag key
-`00100` vs `0040000000`, test is `it.fails`) and comparison-browser evidence.
+inherit trigger ARIA. Remaining: hydrate over SSR markup (see diagnosis
+below) and comparison-browser evidence.
+
+## Hydrate diagnosis (2026-09-05)
+
+`PreviewTrigger.hydrate.test.tsx` stays `it.fails`. Do not `it.skip`.
+
+Button / TextField / Meter put the host in the component body (`<button>`,
+`<input>`, `<div>`). Link goes through `ElementTag`, whose `createMemo`
+returns a compiled `<a />`. That looked like the mismatch
+(client `00100` vs SSR `0040000000`).
+
+It is not. Isolation:
+
+| Fixture | SSR `data-hk` | Hydrate |
+| --- | --- | --- |
+| `<Link href>` alone | `0000` | passes |
+| Meter + Label (`ElementTag` `<span>`) | `002` / `003000` | passes |
+| PreviewTrigger + Link + Popover | `0040000000` | client looks up `00100` |
+
+Replacing ElementTag's memo `<a />` with `createComponent(HostA, rest)`
+(host element in a real component body, same walk as Button) added **one**
+`0` on **both** sides (`00400000000` vs `001000`). Meter's Label key
+moved `003000` → `0030000` and still hydrated. The PreviewTrigger `4` vs
+`1` did not move. That scheme was reverted — do not land it.
+
+`004` vs `001` is `getNextContextId` count inside **PreviewTrigger**
+(`id "00"`) before `Provider`. SSR burns four slots; the client burns
+one. Then both sides nest count-0 children (Provider → FocusableProvider
+→ Link → ElementTag → `<a>`). `createUniqueId` (triggerId) + `createId`
+(popoverId) are only two of the four SSR slots. The other two are
+unaccounted; likely an `isServer`-only increment or children/Popover
+running in PreviewTrigger's context on SSR only. Do not invent dummy
+`createUniqueId` calls to pad the client.
+
+Owner of the next slice: PreviewTrigger's hydration slot walk, not
+ElementTag and not a native-`<a>` fixture.
 
 ## Proof
 
