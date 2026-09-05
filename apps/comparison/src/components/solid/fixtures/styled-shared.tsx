@@ -1,9 +1,6 @@
 import h from "solid-js/h";
 import { createSignal, mergeProps, onCleanup, onMount, splitProps, type JSX } from "solid-js";
-import {
-  createIcon,
-  createIllustration,
-} from "@proyecto-viviana/solid-spectrum/Icon";
+import { createIcon, createIllustration } from "@proyecto-viviana/solid-spectrum/Icon";
 import {
   comparisonThemeChangeEvent,
   getComparisonResolvedThemeFromDocument,

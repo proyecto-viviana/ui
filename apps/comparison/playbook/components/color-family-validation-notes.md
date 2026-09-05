@@ -24,10 +24,10 @@ exceptions on #177.
 
 ## Classification
 
-| Export      | Layer                    | Classification                         | Note obligation                          |
-| ----------- | ------------------------ | -------------------------------------- | ---------------------------------------- |
-| ColorEditor | SAC + solid-spectrum + `@proyecto-viviana/ui` barrels | documented local addition (no S2 page or `src/`) | this file                                |
-| ColorPicker | SAC barrel only          | RAC composition                        | this file                                |
+| Export      | Layer                                                 | Classification                                   | Note obligation |
+| ----------- | ----------------------------------------------------- | ------------------------------------------------ | --------------- |
+| ColorEditor | SAC + solid-spectrum + `@proyecto-viviana/ui` barrels | documented local addition (no S2 page or `src/`) | this file       |
+| ColorPicker | SAC barrel only                                       | RAC composition                                  | this file       |
 
 Owner 2026-09-01: ColorEditor is composition, not S2 parity. There is no
 upstream S2 ColorEditor. Vendored S2 `src/` has none. Styled
@@ -90,7 +90,7 @@ ColorSwatch.
 
 v3 oracle `@adobe/react-spectrum/src/color/ColorEditor.tsx` composes
 ColorArea + vertical hue/alpha ColorSliders + a Spectrum `Picker` for
-format + ColorFields, and is meant to sit *inside* a v3 ColorPicker
+format + ColorFields, and is meant to sit _inside_ a v3 ColorPicker
 (dialog + swatch trigger). Solid ColorEditor wraps ColorPicker internally
 as the value provider and uses a native `<select>` for format. The native
 select is a local addition, not a v3 Picker.
@@ -133,39 +133,39 @@ ColorSlider #393 / #394; ColorWheel #395 / #396; ColorSwatchPicker
 
 ## Task Status
 
-| Task                   | Status      | Evidence                                                                 | Blocker or next action                                      |
-| ---------------------- | ----------- | ------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| Task                   | Status      | Evidence                                                                                                                                              | Blocker or next action                                          |
+| ---------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | 0 Research             | done        | RAC ColorPicker source; v3 ColorEditor; SAC Color.tsx / ColorEditor.tsx; solid-spectrum ColorEditor.tsx and color/index.tsx; accepted primitive notes | Composition recorded. Catalogue march is later, not this ticket |
-| 1 Baseline             | not-started | no comparison route                                                      | none for this composition slice                             |
-| 2 Route harness        | not-started | repo has zero ColorEditor / ColorPicker comparison routes                | do not add a slug from this ticket                          |
-| 3 Source map/API       | done        | composition map above                                                    | inherit primitive notes; do not claim S2 API parity         |
-| 4 Cross-layer audit    | not-started |                                                                          | later if a catalogue or RAC ColorPicker pass starts         |
-| 5 Transitions          | not-started |                                                                          |                                                             |
-| 6 State                | n/a         | no `createColorPickerState`; ColorPicker is a context wrapper            |                                                             |
-| 7 ARIA hooks           | n/a         | ColorEditor comment: pure composition, no new ARIA hooks                 | primitive ARIA stays on those notes                         |
-| 8 Headless             | not-started | map recorded; gates not walked                                           |                                                             |
-| 9 Styled S2            | n/a         | no S2 ColorEditor / ColorPicker                                          | styled ColorEditor is local `css()` hatch                   |
-| 10 Runtime lifecycle   | not-started |                                                                          |                                                             |
-| 11 Harness integrity   | not-started | no harness                                                               |                                                             |
-| 12 Comparison evidence | not-started | no route                                                                 |                                                             |
-| 13 Acceptance          | not-started | composition note only                                                    | do not mark accepted                                        |
+| 1 Baseline             | not-started | no comparison route                                                                                                                                   | none for this composition slice                                 |
+| 2 Route harness        | not-started | repo has zero ColorEditor / ColorPicker comparison routes                                                                                             | do not add a slug from this ticket                              |
+| 3 Source map/API       | done        | composition map above                                                                                                                                 | inherit primitive notes; do not claim S2 API parity             |
+| 4 Cross-layer audit    | not-started |                                                                                                                                                       | later if a catalogue or RAC ColorPicker pass starts             |
+| 5 Transitions          | not-started |                                                                                                                                                       |                                                                 |
+| 6 State                | n/a         | no `createColorPickerState`; ColorPicker is a context wrapper                                                                                         |                                                                 |
+| 7 ARIA hooks           | n/a         | ColorEditor comment: pure composition, no new ARIA hooks                                                                                              | primitive ARIA stays on those notes                             |
+| 8 Headless             | not-started | map recorded; gates not walked                                                                                                                        |                                                                 |
+| 9 Styled S2            | n/a         | no S2 ColorEditor / ColorPicker                                                                                                                       | styled ColorEditor is local `css()` hatch                       |
+| 10 Runtime lifecycle   | not-started |                                                                                                                                                       |                                                                 |
+| 11 Harness integrity   | not-started | no harness                                                                                                                                            |                                                                 |
+| 12 Comparison evidence | not-started | no route                                                                                                                                              |                                                                 |
+| 13 Acceptance          | not-started | composition note only                                                                                                                                 | do not mark accepted                                            |
 
 ## Gate Outcome Summary
 
 Composition obligation only. Do not treat these rows as a catalogue pass.
 
-| Gate                                     | Outcome     | Evidence                                                                                         | Blockers/owner |
-| ---------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ | -------------- |
-| Official Docs And Viewer Parity          | not-started | no S2 ColorEditor or ColorPicker page; no comparison route                                       | none           |
-| External Authority And Standards         | not-started | RAC ColorPicker docs exist; APG not applicable; v3 ColorEditor is the composition oracle         | none           |
-| Upstream React Source Parity             | not-started | ColorEditor has no S2 source; ColorPicker RAC map is recorded above, not gate-closed             | none           |
-| Solid Idiomatic Implementation           | not-started |                                                                                                  | none           |
-| Accessibility And I18n                   | not-started | inherit primitive notes; ColorEditor format control is a native select, not a Picker             | none           |
-| Behavior State Machine                   | not-started |                                                                                                  | none           |
-| Style Source-To-Computed Parity          | not-started | no S2 ColorEditor style oracle; styled wrapper uses `css()` hatch                                | none           |
-| React-Vs-Solid Comparison Harness Parity | not-started | no ColorEditor / ColorPicker comparison slug                                                     | none           |
-| Known Defects And Regression Protection  | not-started | open primitive children listed above; #175 still concatenates ColorPicker in `Color.tsx`         | none           |
-| Evidence And Handoff                     | not-started | this file names both exports; ten gates remain `not-started`                                     | none           |
+| Gate                                     | Outcome     | Evidence                                                                                 | Blockers/owner |
+| ---------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- | -------------- |
+| Official Docs And Viewer Parity          | not-started | no S2 ColorEditor or ColorPicker page; no comparison route                               | none           |
+| External Authority And Standards         | not-started | RAC ColorPicker docs exist; APG not applicable; v3 ColorEditor is the composition oracle | none           |
+| Upstream React Source Parity             | not-started | ColorEditor has no S2 source; ColorPicker RAC map is recorded above, not gate-closed     | none           |
+| Solid Idiomatic Implementation           | not-started |                                                                                          | none           |
+| Accessibility And I18n                   | not-started | inherit primitive notes; ColorEditor format control is a native select, not a Picker     | none           |
+| Behavior State Machine                   | not-started |                                                                                          | none           |
+| Style Source-To-Computed Parity          | not-started | no S2 ColorEditor style oracle; styled wrapper uses `css()` hatch                        | none           |
+| React-Vs-Solid Comparison Harness Parity | not-started | no ColorEditor / ColorPicker comparison slug                                             | none           |
+| Known Defects And Regression Protection  | not-started | open primitive children listed above; #175 still concatenates ColorPicker in `Color.tsx` | none           |
+| Evidence And Handoff                     | not-started | this file names both exports; ten gates remain `not-started`                             | none           |
 
 ## Sources
 

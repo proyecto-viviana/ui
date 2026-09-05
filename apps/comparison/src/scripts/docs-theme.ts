@@ -102,9 +102,8 @@ window.addEventListener(comparisonThemeRequestEvent, (event) => {
 });
 
 window.addEventListener("comparison:theme-controls-mounted", () => {
-  const theme = isComparisonThemeChoice(themeBody().dataset.theme)
-    ? themeBody().dataset.theme
-    : readSavedTheme();
+  const storedTheme = themeBody().dataset.theme;
+  const theme = isComparisonThemeChoice(storedTheme) ? storedTheme : readSavedTheme();
   syncThemeControls(theme);
 });
 
