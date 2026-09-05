@@ -34,10 +34,7 @@ describe("PreviewTrigger hydration over server markup", () => {
     document.body.innerHTML = "";
   });
 
-  // Honest red: ElementTag's createMemo `<a>` looks up hydration key `00100`;
-  // SSR registered `0040000000`. Not a skip — this must fail until the walk
-  // matches. Do not "fix" by deleting this test or hydrating a native `<a>`.
-  it.fails("hydrates the closed trigger without a mismatch or a popover", () => {
+  it("hydrates the closed trigger without a mismatch or a popover", () => {
     const container = hydrateOverSsr(ssrHtml, () => <PreviewTriggerFixture />);
     const link = container.querySelector("a");
     expect(link).not.toBeNull();

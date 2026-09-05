@@ -52,16 +52,18 @@ export interface PreviewTriggerProps extends AriaPreviewTriggerProps {
  * the popover may contain interactive content.
  */
 export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
-  const [local] = splitProps(props, ["children", "delay", "closeDelay"]);
+  // Keep children out of the hook object. Spreading `props` instantiates
+  // them in this component's hydration context on SSR only.
+  const [local, rest] = splitProps(props, ["children", "delay", "closeDelay"]);
 
   const state = createTooltipTriggerState({
     get isOpen() {
-      return props.isOpen;
+      return rest.isOpen;
     },
     get defaultOpen() {
-      return props.defaultOpen;
+      return rest.defaultOpen;
     },
-    onOpenChange: props.onOpenChange,
+    onOpenChange: rest.onOpenChange,
     get delay() {
       return local.delay ?? 600;
     },
@@ -69,7 +71,7 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
       return local.closeDelay ?? 200;
     },
     get isDisabled() {
-      return props.isDisabled;
+      return rest.isDisabled;
     },
   });
 
@@ -79,7 +81,16 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
 
   const aria = createPreviewTrigger(
     {
-      ...props,
+      get isOpen() {
+        return rest.isOpen;
+      },
+      get defaultOpen() {
+        return rest.defaultOpen;
+      },
+      get isDisabled() {
+        return rest.isDisabled;
+      },
+      onOpenChange: rest.onOpenChange,
       triggerRef: () => triggerEl(),
       popoverRef: () => popoverEl(),
     },

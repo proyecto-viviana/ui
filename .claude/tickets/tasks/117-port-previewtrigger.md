@@ -27,6 +27,11 @@ history:
       at: 2026-09-05,
       note: "Hydrate diagnosis (no code). Link-only SSR+hydrate matches (data-hk 0000). PreviewTrigger+Link does not (SSR 0040000000 vs client 00100). createMemo is not the owner — wrapping each tag in createComponent added one 0 on both sides (00400000000 vs 001000) and was reverted. The 4 vs 1 is getNextContextId count in PreviewTrigger before Provider. Do not retarget ElementTag. Do not close.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "Hydrate walk matches. Extra SSR slots were createComponent(Link)+createComponent(Popover) from spreading props (including children) into createPreviewTrigger. Split children like DialogTrigger/PopoverTrigger. SSR key 0020000000; hydrate test is a real pass. No comparison-browser evidence. Do not close.",
+    }
 ---
 
 Port the pinned RAC `PreviewTrigger` component and public export.
@@ -54,12 +59,12 @@ Tab into preview, Escape restore, live `aria-expanded`/`aria-controls`. SSR
 emits a closed trigger without the popover. Long-press (touch) opens and
 focuses the popover; the hint tracks modality; Dismiss restore does not
 reopen. Overlay portal resets FocusableContext so preview actions do not
-inherit trigger ARIA. Remaining: hydrate over SSR markup (see diagnosis
-below) and comparison-browser evidence.
+inherit trigger ARIA. Hydrate over SSR markup now matches (see diagnosis
+below). Remaining: comparison-browser evidence.
 
 ## Hydrate diagnosis (2026-09-05)
 
-`PreviewTrigger.hydrate.test.tsx` stays `it.fails`. Do not `it.skip`.
+`PreviewTrigger.hydrate.test.tsx` is a real pass. Do not `it.skip`.
 
 Button / TextField / Meter put the host in the component body (`<button>`,
 `<input>`, `<div>`). Link goes through `ElementTag`, whose `createMemo`
@@ -89,8 +94,15 @@ unaccounted; likely an `isServer`-only increment or children/Popover
 running in PreviewTrigger's context on SSR only. Do not invent dummy
 `createUniqueId` calls to pad the client.
 
-Owner of the next slice: PreviewTrigger's hydration slot walk, not
-ElementTag and not a native-`<a>` fixture.
+The two unaccounted SSR slots were `createComponent(Link)` and
+`createComponent(Popover)`: `{...props}` into `createPreviewTrigger`
+enumerated `children` on SSR and instantiated them in PreviewTrigger's
+hydration context. The client walk never did. Split children off the hook
+object the way DialogTrigger / PopoverTrigger do. Both sides now burn
+`createUniqueId` (triggerId) + `createId` (popoverId) before Provider.
+SSR `data-hk` is `0020000000`. Do not pad the client with dummy IDs.
+
+Owner of the next slice: comparison-browser evidence.
 
 ## Proof
 
@@ -103,5 +115,5 @@ vp test run --config vitest.ssr.config.ts packages/solidaria-components/test/Pre
 # 2 passed (closed trigger, no popover in SSR HTML)
 
 vp test run --config vitest.hydrate.config.ts packages/solidaria-components/test/PreviewTrigger.hydrate.test.tsx
-# 1 expected fail (ElementTag hydration key 00100 vs 0040000000)
+# 1 passed (closed trigger, data-hk 0020000000)
 ```
