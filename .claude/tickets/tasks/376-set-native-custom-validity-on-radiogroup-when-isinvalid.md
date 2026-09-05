@@ -4,7 +4,7 @@ type: task
 title: "Set native custom validity on RadioGroup when isInvalid"
 created: 2026-09-03
 parent: 24
-status: merged
+status: verified
 history:
   - {
       state: open,
@@ -20,6 +20,11 @@ history:
       state: merged,
       at: 2026-09-04,
       note: "createRadio wires createFormValidation on each input. Package test: isInvalid radios customError=true, requestSubmit blocked; disabled skips custom validity.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-05,
+      note: "Comparison D14 subset on 15ca6d4c: field-validity.certified.spec.ts 39/0/39. RadioGroup invalid constraint + blocked submit pair-match. Spec is the comparison-route walk Done-when named. Not the #194 postcard.",
     }
 ---
 
