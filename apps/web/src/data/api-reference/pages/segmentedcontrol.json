@@ -288,13 +288,13 @@
         },
         {
           "name": "elementType",
-          "type": "\"button\" | \"input\" | \"span\" | \"div\" | \"a\"",
+          "type": "\"button\" | \"a\" | \"div\" | \"input\" | \"span\"",
           "values": [
             "'button'",
-            "'input'",
-            "'span'",
+            "'a'",
             "'div'",
-            "'a'"
+            "'input'",
+            "'span'"
           ],
           "required": false,
           "description": "The HTML element type to use for the button.",

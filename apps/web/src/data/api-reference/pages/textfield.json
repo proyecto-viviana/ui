@@ -542,11 +542,11 @@
         },
         {
           "name": "labelElementType",
-          "type": "\"label\" | \"span\" | \"div\"",
+          "type": "\"label\" | \"div\" | \"span\"",
           "values": [
             "'label'",
-            "'span'",
-            "'div'"
+            "'div'",
+            "'span'"
           ],
           "required": false,
           "default": "'label'",
@@ -1053,11 +1053,11 @@
         },
         {
           "name": "labelElementType",
-          "type": "\"label\" | \"span\" | \"div\"",
+          "type": "\"label\" | \"div\" | \"span\"",
           "values": [
             "'label'",
-            "'span'",
-            "'div'"
+            "'div'",
+            "'span'"
           ],
           "required": false,
           "default": "'label'",

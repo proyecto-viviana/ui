@@ -520,10 +520,10 @@
         },
         {
           "name": "menuTrigger",
-          "type": "\"focus\" | \"input\" | \"manual\"",
+          "type": "\"input\" | \"focus\" | \"manual\"",
           "values": [
-            "'focus'",
             "'input'",
+            "'focus'",
             "'manual'"
           ],
           "required": false,
