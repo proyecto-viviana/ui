@@ -424,6 +424,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
           "name": "isRequired",
           "type": "boolean",
           "values": [
@@ -443,6 +454,13 @@
           ],
           "required": false,
           "description": "Whether validation should use ARIA attributes or native browser validation.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "(value: unknown) => boolean | string | string[] | null | undefined",
+          "required": false,
+          "description": "Custom validation function.",
           "origin": "solidaria"
         },
         {

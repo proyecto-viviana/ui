@@ -278,6 +278,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "validationState",
+          "type": "\"valid\" | \"invalid\"",
+          "values": [
+            "'valid'",
+            "'invalid'"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
           "name": "defaultValue",
           "type": "number",
           "required": false,
@@ -329,6 +340,48 @@
           ],
           "required": false,
           "description": "Whether the number field is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "default": "\"native\"",
+          "description": "`\"native\"` sets the `required` attribute and omits `aria-required`. `\"aria\"` does the reverse. RAC `useNumberField` default is native.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validate",
+          "type": "(value: number) => boolean | string | string[] | null | undefined",
+          "required": false,
+          "description": "Custom validation function.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isWheelDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to disable incrementing/decrementing from the mouse wheel. RAC `useNumberField` `isWheelDisabled`.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "commitBehavior",
+          "type": "\"validate\" | \"snap\"",
+          "values": [
+            "'validate'",
+            "'snap'"
+          ],
+          "required": false,
+          "default": "\"snap\"",
+          "description": "Controls blur commit: `'snap'` clamps to min/max/step, `'validate'` leaves the value and reports native range/step validity.",
           "origin": "solidaria"
         },
         {

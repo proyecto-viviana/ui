@@ -343,6 +343,13 @@
           "origin": "solidaria"
         },
         {
+          "name": "columnCount",
+          "type": "number",
+          "required": false,
+          "description": "Column count for `layout=\"grid\"` Down/Up. When omitted, Down/Up walk document order.",
+          "origin": "solidaria"
+        },
+        {
           "name": "hasMore",
           "type": "boolean",
           "values": [

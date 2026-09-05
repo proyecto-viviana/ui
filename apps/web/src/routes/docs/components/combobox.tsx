@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/combobox")({
     seo({
       title: "ComboBox props",
       description:
-        "Every prop ComboBox accepts in @proyecto-viviana/ui — 113 documented from the package's own types.",
+        "Every prop ComboBox accepts in @proyecto-viviana/ui — 114 documented from the package's own types.",
       path: "/docs/components/combobox",
     }),
   component: () => <ApiReference page={page} />,

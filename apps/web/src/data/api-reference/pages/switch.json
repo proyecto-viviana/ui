@@ -326,6 +326,18 @@
           "required": false,
           "description": "Whether the element is invalid.",
           "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "default": "\"native\"",
+          "description": "`\"native\"` sets the `required` attribute and omits `aria-required`. `\"aria\"` does the reverse. S2 Checkbox default is native.",
+          "origin": "solidaria"
         }
       ]
     },
@@ -685,6 +697,18 @@
           ],
           "required": false,
           "description": "Whether the element is invalid.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "default": "\"native\"",
+          "description": "`\"native\"` sets the `required` attribute and omits `aria-required`. `\"aria\"` does the reverse. S2 Checkbox default is native.",
           "origin": "solidaria"
         }
       ]

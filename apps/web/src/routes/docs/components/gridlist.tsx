@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/gridlist")({
     seo({
       title: "ListView props",
       description:
-        "Every prop ListView accepts in @proyecto-viviana/ui — 69 documented from the package's own types.",
+        "Every prop ListView accepts in @proyecto-viviana/ui — 70 documented from the package's own types.",
       path: "/docs/components/gridlist",
     }),
   component: () => <ApiReference page={page} />,

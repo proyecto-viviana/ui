@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/select")({
     seo({
       title: "Select props",
       description:
-        "Every prop Select accepts in @proyecto-viviana/ui — 77 documented from the package's own types.",
+        "Every prop Select accepts in @proyecto-viviana/ui — 79 documented from the package's own types.",
       path: "/docs/components/select",
     }),
   component: () => <ApiReference page={page} />,

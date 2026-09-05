@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/switch")({
     seo({
       title: "Switch props",
       description:
-        "Every prop Switch accepts in @proyecto-viviana/ui — 82 documented from the package's own types.",
+        "Every prop Switch accepts in @proyecto-viviana/ui — 84 documented from the package's own types.",
       path: "/docs/components/switch",
     }),
   component: () => <ApiReference page={page} />,

@@ -189,6 +189,12 @@ export interface ListBoxOptionRenderProps {
   isDisabled: boolean;
 }
 
+export type ListBoxItemProps<T> = ListBoxOptionProps<T>;
+export type ListBoxItemRenderProps = ListBoxOptionRenderProps;
+
+/**
+ * @deprecated Use {@link ListBoxItemProps}. Removed in a future minor.
+ */
 export interface ListBoxOptionProps<T>
   extends Omit<AriaOptionProps, "children" | "key">, SlotProps {
   /** The unique key for the option. */
@@ -1095,9 +1101,9 @@ export function ListBox<T>(props: ListBoxProps<T>): JSX.Element {
 }
 
 /**
- * An option in a listbox.
+ * An item in a listbox.
  */
-export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
+export function ListBoxItem<T>(props: ListBoxItemProps<T>): JSX.Element {
   const [local, ariaProps] = splitProps(props, [
     "class",
     "style",
@@ -1110,7 +1116,7 @@ export function ListBoxOption<T>(props: ListBoxOptionProps<T>): JSX.Element {
 
   const context = useContext(ListBoxStateContext);
   if (!context) {
-    throw new Error("ListBoxOption must be used within a ListBox");
+    throw new Error("ListBoxItem must be used within a ListBox");
   }
   const state = context as ListState<T>;
   const listContext = useContext(ListBoxContext) as ListBoxContextValue<T> | null;
@@ -1354,5 +1360,10 @@ export function ListBoxSection(props: ListBoxSectionProps): JSX.Element {
   return <Section {...props} />;
 }
 
-ListBox.Option = ListBoxOption;
+/**
+ * @deprecated Use {@link ListBoxItem}. Removed in a future minor.
+ */
+export const ListBoxOption = ListBoxItem;
+
+ListBox.Option = ListBoxItem;
 ListBox.LoadMoreItem = ListBoxLoadMoreItem;

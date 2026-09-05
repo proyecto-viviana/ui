@@ -9,7 +9,7 @@ export const Route = createFileRoute("/docs/components/picker")({
     seo({
       title: "Picker props",
       description:
-        "Every prop Picker accepts in @proyecto-viviana/ui — 81 documented from the package's own types.",
+        "Every prop Picker accepts in @proyecto-viviana/ui — 83 documented from the package's own types.",
       path: "/docs/components/picker",
     }),
   component: () => <ApiReference page={page} />,

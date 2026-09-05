@@ -325,6 +325,17 @@
           "origin": "solidaria"
         },
         {
+          "name": "layout",
+          "type": "\"grid\" | \"stack\"",
+          "values": [
+            "'grid'",
+            "'stack'"
+          ],
+          "required": false,
+          "description": "Layout hint for styling parity.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "hasMore",
           "type": "boolean",
           "values": [
@@ -340,17 +351,6 @@
           "type": "() => void | Promise<void>",
           "required": false,
           "description": "Called when the load more sentinel becomes visible.",
-          "origin": "solidaria-components"
-        },
-        {
-          "name": "layout",
-          "type": "\"grid\" | \"stack\"",
-          "values": [
-            "'grid'",
-            "'stack'"
-          ],
-          "required": false,
-          "description": "Layout hint for styling parity.",
           "origin": "solidaria-components"
         },
         {

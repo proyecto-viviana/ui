@@ -284,6 +284,12 @@ export interface ComboBoxListBoxProps<T> extends SlotProps {
   style?: StyleOrFunction<ComboBoxListBoxRenderProps>;
 }
 
+export type ComboBoxItemRenderProps = ComboBoxOptionRenderProps;
+export type ComboBoxItemProps<T> = ComboBoxOptionProps<T>;
+
+/**
+ * @deprecated Use {@link ComboBoxItemProps}. Removed in a future minor.
+ */
 export interface ComboBoxOptionRenderProps {
   /** Whether the option is selected. */
   isSelected: boolean;
@@ -1135,7 +1141,7 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
           when={local.children}
           fallback={
             <For each={items()}>
-              {(node) => <ComboBoxOption id={node.key}>{node.textValue}</ComboBoxOption>}
+              {(node) => <ComboBoxItem id={node.key}>{node.textValue}</ComboBoxItem>}
             </For>
           }
         >
@@ -1152,9 +1158,12 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
 }
 
 /**
- * An option in a combobox listbox.
+ * An item in a combobox listbox.
+ *
+ * Local addition: RAC ComboBox uses {@link ListBoxItem}. Prefer that when
+ * composing the headless ComboBox. This wrapper stays for existing call sites.
  */
-export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
+export function ComboBoxItem<T>(props: ComboBoxItemProps<T>): JSX.Element {
   const [local, ariaProps] = splitProps(props, [
     "class",
     "style",
@@ -1169,7 +1178,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const stateContext = useContext(ComboBoxStateContext);
   const comboBoxContext = useContext(ComboBoxContext);
   if (!stateContext || !comboBoxContext) {
-    throw new Error("ComboBoxOption must be used within a ComboBox");
+    throw new Error("ComboBoxItem must be used within a ComboBox");
   }
   const state = stateContext as ComboBoxState<T>;
   const listState = (comboBoxContext as ComboBoxContextValue<T>).listState;
@@ -1419,7 +1428,12 @@ export function ComboBoxTag(props: ComboBoxTagProps): JSX.Element {
 ComboBox.Input = ComboBoxInput;
 ComboBox.Button = ComboBoxButton;
 ComboBox.ListBox = ComboBoxListBox;
-ComboBox.Option = ComboBoxOption;
+/**
+ * @deprecated Use {@link ComboBoxItem}. Local addition — RAC ComboBox uses ListBoxItem. Removed in a future minor.
+ */
+export const ComboBoxOption = ComboBoxItem;
+
+ComboBox.Option = ComboBoxItem;
 ComboBox.Label = ComboBoxLabel;
 ComboBox.Description = ComboBoxDescription;
 ComboBox.ErrorMessage = ComboBoxErrorMessage;

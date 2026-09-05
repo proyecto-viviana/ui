@@ -57,6 +57,17 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "isDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether this item is disabled.",
+          "origin": "solidaria-components"
+        },
+        {
           "name": "href",
           "type": "string",
           "required": false,

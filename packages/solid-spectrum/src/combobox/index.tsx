@@ -1009,6 +1009,9 @@ export function ComboBoxListBox<T>(props: ComboBoxListBoxProps<T>): JSX.Element 
   return <HeadlessComboBoxListBox {...headlessProps} class={listClass} children={props.children} />;
 }
 
+/**
+ * @deprecated Use {@link ComboBoxItem}. Removed in a future minor.
+ */
 export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
   const [local, headlessProps] = splitProps(props, ["class", "children", "ref", "UNSAFE_style"]);
   const size = useContext(ComboBoxSizeContext);
@@ -1067,6 +1070,10 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     </HeadlessComboBoxOption>
   );
 }
+
+/** S2 canonical item name. */
+export const ComboBoxItem = ComboBoxOption;
+export type ComboBoxItemProps<T> = ComboBoxOptionProps<T>;
 
 export interface ComboBoxTagGroupProps extends Omit<
   HeadlessComboBoxTagGroupProps,

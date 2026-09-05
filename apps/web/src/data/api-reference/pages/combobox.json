@@ -408,6 +408,18 @@
           "origin": "solidaria"
         },
         {
+          "name": "validationBehavior",
+          "type": "\"aria\" | \"native\"",
+          "values": [
+            "'aria'",
+            "'native'"
+          ],
+          "required": false,
+          "default": "'native'",
+          "description": "Whether to use native HTML constraint validation or ARIA.",
+          "origin": "solidaria"
+        },
+        {
           "name": "placeholder",
           "type": "string",
           "required": false,
