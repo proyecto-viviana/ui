@@ -18,6 +18,7 @@ import {
   SearchFieldClearButton,
   SearchFieldContext,
 } from "../src/SearchField";
+import { Label } from "../src/Label";
 import { FieldError } from "../src/FieldError";
 import { Form } from "../src/Form";
 import { Text } from "../src/Text";
@@ -87,6 +88,34 @@ describe("SearchField", () => {
       ));
 
       expect(screen.getByText("Search")).toBeInTheDocument();
+    });
+
+    it("names the input from SearchFieldLabel", () => {
+      render(() => (
+        <SearchField>
+          {() => (
+            <>
+              <SearchFieldLabel>Find</SearchFieldLabel>
+              <SearchFieldInput />
+            </>
+          )}
+        </SearchField>
+      ));
+      expect(screen.getByRole("searchbox", { name: "Find" })).toBeInTheDocument();
+    });
+
+    it("names the input from a slotted Label", () => {
+      render(() => (
+        <SearchField>
+          {() => (
+            <>
+              <Label>Query</Label>
+              <SearchFieldInput />
+            </>
+          )}
+        </SearchField>
+      ));
+      expect(screen.getByRole("searchbox", { name: "Query" })).toBeInTheDocument();
     });
 
     it("should render static JSX children (no render function)", () => {

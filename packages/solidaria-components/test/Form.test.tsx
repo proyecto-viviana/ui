@@ -3,9 +3,10 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { fireEvent, render, screen } from "@solidjs/testing-library";
-import { useContext } from "solid-js";
+import { createSignal, useContext } from "solid-js";
 import { FormValidationContext, type ValidationErrors } from "@proyecto-viviana/solid-stately";
 import { Form } from "../src/Form";
+import { Input, Label, TextField } from "../src/TextField";
 
 function ContextProbe() {
   const errors = useContext(FormValidationContext) as unknown;
@@ -110,5 +111,105 @@ describe("Form", () => {
     render(() => <Form validationErrors={validationErrors}>{() => <ContextProbe />}</Form>);
 
     expect(screen.getByTestId("errors")).toHaveTextContent("Invalid email");
+  });
+
+  describe("validationBehavior is live", () => {
+    it("tracks a validationBehavior change on noValidate", () => {
+      const [behavior, setBehavior] = createSignal<"aria" | "native">("native");
+
+      render(() => <Form validationBehavior={behavior()} aria-label="Live form" />);
+
+      const form = screen.getByRole("form", { name: "Live form" });
+      expect(form).not.toHaveAttribute("novalidate");
+
+      setBehavior("aria");
+      expect(form).toHaveAttribute("novalidate");
+
+      setBehavior("native");
+      expect(form).not.toHaveAttribute("novalidate");
+    });
+
+    it("tracks a validationBehavior change on the render-prop value", () => {
+      const [behavior, setBehavior] = createSignal<"aria" | "native">("native");
+
+      render(() => (
+        <Form validationBehavior={behavior()} aria-label="Render form">
+          {(renderProps) => <div data-testid="behavior">{renderProps.validationBehavior}</div>}
+        </Form>
+      ));
+
+      expect(screen.getByTestId("behavior")).toHaveTextContent("native");
+
+      setBehavior("aria");
+      expect(screen.getByTestId("behavior")).toHaveTextContent("aria");
+    });
+  });
+
+  describe("descendant fields read the form validationBehavior", () => {
+    it("switches a descendant TextField from required to aria-required", () => {
+      render(() => (
+        <Form validationBehavior="aria" aria-label="Aria form">
+          <TextField isRequired>
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" });
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
+
+    it("keeps a descendant TextField on native required by default", () => {
+      render(() => (
+        <Form aria-label="Native form">
+          <TextField isRequired>
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" });
+      expect(input).toHaveAttribute("required");
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("lets a descendant TextField override the form validationBehavior", () => {
+      render(() => (
+        <Form validationBehavior="aria" aria-label="Override form">
+          <TextField isRequired validationBehavior="native">
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" });
+      expect(input).toHaveAttribute("required");
+      expect(input).not.toHaveAttribute("aria-required");
+    });
+
+    it("tracks a live form validationBehavior change on a descendant TextField", () => {
+      const [behavior, setBehavior] = createSignal<"aria" | "native">("native");
+
+      render(() => (
+        <Form validationBehavior={behavior()} aria-label="Live descendant form">
+          <TextField isRequired>
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" });
+      expect(input).toHaveAttribute("required");
+      expect(input).not.toHaveAttribute("aria-required");
+
+      setBehavior("aria");
+      expect(input).not.toHaveAttribute("required");
+      expect(input).toHaveAttribute("aria-required", "true");
+    });
   });
 });

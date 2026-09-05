@@ -20,6 +20,7 @@ import {
   NumberFieldIncrementButton,
   NumberFieldDecrementButton,
 } from "../src/NumberField";
+import { Label } from "../src/Label";
 import { Text } from "../src/Text";
 import {
   setupUser,
@@ -126,6 +127,38 @@ describe("NumberField", () => {
       ));
 
       expect(screen.getByText("Quantity")).toBeInTheDocument();
+    });
+
+    it("names the input from NumberFieldLabel", () => {
+      render(() => (
+        <NumberField>
+          {() => (
+            <>
+              <NumberFieldLabel>Amount</NumberFieldLabel>
+              <NumberFieldGroup>
+                <NumberFieldInput />
+              </NumberFieldGroup>
+            </>
+          )}
+        </NumberField>
+      ));
+      expect(screen.getByRole("textbox", { name: "Amount" })).toBeInTheDocument();
+    });
+
+    it("names the input from a slotted Label", () => {
+      render(() => (
+        <NumberField>
+          {() => (
+            <>
+              <Label>Count</Label>
+              <NumberFieldGroup>
+                <NumberFieldInput />
+              </NumberFieldGroup>
+            </>
+          )}
+        </NumberField>
+      ));
+      expect(screen.getByRole("textbox", { name: "Count" })).toBeInTheDocument();
     });
 
     it("should render with custom class", () => {

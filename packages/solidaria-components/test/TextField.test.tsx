@@ -59,6 +59,20 @@ describe("TextField", () => {
   }
 
   describe("rendering", () => {
+    it("names the input from a slotted Label", () => {
+      render(() => (
+        <TextField>
+          {() => (
+            <>
+              <Label>Name</Label>
+              <Input />
+            </>
+          )}
+        </TextField>
+      ));
+      expect(screen.getByRole("textbox", { name: "Name" })).toBeInTheDocument();
+    });
+
     it("should render a text field with default class", () => {
       render(() => (
         <TextField aria-label="Name">

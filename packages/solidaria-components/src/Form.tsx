@@ -117,7 +117,7 @@ export function Form(props: FormProps): JSX.Element {
     "slot",
   ]);
 
-  const validationBehavior: ValidationBehavior = local.validationBehavior ?? "native";
+  const validationBehavior = () => local.validationBehavior ?? "native";
   const errors = local.validationErrors ?? {};
   const renderProps = useRenderProps(
     {
@@ -129,7 +129,7 @@ export function Form(props: FormProps): JSX.Element {
       defaultClassName: "solidaria-Form",
     },
     () => ({
-      validationBehavior,
+      validationBehavior: validationBehavior(),
     }),
   );
 
@@ -149,14 +149,16 @@ export function Form(props: FormProps): JSX.Element {
   // fragment child paths mask the slot drift — the double-create is still
   // wrong either way.
   const formContextValue: FormProps = {
-    validationBehavior,
+    get validationBehavior() {
+      return validationBehavior();
+    },
   };
 
   return (
     <form
       {...filteredDomProps}
       ref={(el) => assignRef(local.ref, el)}
-      noValidate={validationBehavior !== "native"}
+      noValidate={validationBehavior() !== "native"}
       class={renderProps.class()}
       style={renderProps.style()}
       slot={local.slot}

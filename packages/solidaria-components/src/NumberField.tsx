@@ -50,8 +50,10 @@ import {
   useRenderProps,
   filterDOMProps,
   Provider,
+  useSlot,
 } from "./utils";
 import { TextContext } from "./Text";
+import { LabelContext, type LabelProps } from "./Label";
 
 export interface NumberFieldRenderProps {
   /** Whether the number field is disabled. */
@@ -154,6 +156,8 @@ interface NumberFieldContextValue {
   isRequired: boolean;
   isReadOnly: boolean;
   setInputRef: (el: HTMLInputElement) => void;
+  /** Slot probe for the rendered label, so `useLabel` knows a label exists. */
+  labelRef?: (el: Element | null) => void;
 }
 
 export const NumberFieldContext = createContext<NumberFieldContextValue | null>(null);
@@ -240,10 +244,17 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     inputRef = el;
   };
 
+  const [labelRef, hasLabel] = useSlot(
+    !ariaProps["aria-label"] && !ariaProps["aria-labelledby"],
+  );
+
   const numberFieldAria = createNumberField(
     {
+      // A slotted `<Label>` / `<NumberFieldLabel>` counts as a label, exactly
+      // as RAC's `useSlot` does (`NumberField.tsx:117`). Without it `useLabel`
+      // mints no `labelProps` and the input has no accessible name.
       get label() {
-        return ariaProps.label;
+        return ariaProps.label ?? hasLabel();
       },
       get "aria-label"() {
         return ariaProps["aria-label"];
@@ -396,6 +407,28 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       return ariaProps.isReadOnly ?? false;
     },
     setInputRef,
+    labelRef,
+  };
+
+  // RAC exposes one shared `<Label>` through `LabelContext`; `NumberFieldLabel`
+  // is a local convenience alias over the same wiring.
+  const labelContextValue: LabelProps = {
+    ref: labelRef,
+    get id() {
+      return (numberFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).id;
+    },
+    get htmlFor() {
+      const labelProps = numberFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+      };
+      return labelProps.htmlFor ?? labelProps.for;
+    },
+    get for() {
+      const labelProps = numberFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+      };
+      return labelProps.htmlFor ?? labelProps.for;
+    },
   };
   // Provide the description / errorMessage props as `TextContext` slots (mirrors
   // react-aria-components' NumberField), so a `<Text slot="description">` /
@@ -435,23 +468,25 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
 
   return (
     <FieldErrorContext.Provider value={fieldErrorContext}>
-      <NumberFieldStateContext.Provider value={state}>
-        <NumberFieldContext.Provider value={contextValue}>
-          <div
-            {...domProps()}
-            class={renderProps.class()}
-            style={renderProps.style()}
-            data-disabled={ariaProps.isDisabled || undefined}
-            data-invalid={ariaProps.isInvalid || undefined}
-            data-required={ariaProps.isRequired || undefined}
-            data-readonly={ariaProps.isReadOnly || undefined}
-          >
-            <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
-              {fieldChildren()}
-            </Provider>
-          </div>
-        </NumberFieldContext.Provider>
-      </NumberFieldStateContext.Provider>
+      <LabelContext.Provider value={labelContextValue}>
+        <NumberFieldStateContext.Provider value={state}>
+          <NumberFieldContext.Provider value={contextValue}>
+            <div
+              {...domProps()}
+              class={renderProps.class()}
+              style={renderProps.style()}
+              data-disabled={ariaProps.isDisabled || undefined}
+              data-invalid={ariaProps.isInvalid || undefined}
+              data-required={ariaProps.isRequired || undefined}
+              data-readonly={ariaProps.isReadOnly || undefined}
+            >
+              <Provider values={[[TextContext, textSlots]] as Array<[Context<unknown>, unknown]>}>
+                {fieldChildren()}
+              </Provider>
+            </div>
+          </NumberFieldContext.Provider>
+        </NumberFieldStateContext.Provider>
+      </LabelContext.Provider>
     </FieldErrorContext.Provider>
   );
 }
@@ -483,6 +518,7 @@ export function NumberFieldLabel(props: {
   return (
     <label
       {...cleanLabelProps()}
+      ref={(el) => context.labelRef?.(el)}
       class={props.class ?? "solidaria-NumberField-label"}
       style={props.style}
     >

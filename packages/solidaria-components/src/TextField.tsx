@@ -54,6 +54,7 @@ import {
   useRenderProps,
   filterDOMProps,
   Provider,
+  useSlot,
 } from "./utils";
 import { TextContext } from "./Text";
 import { LabelContext, type LabelProps } from "./Label";
@@ -449,8 +450,18 @@ export function TextField(props: TextFieldProps): JSX.Element {
     return clean as typeof ariaProps;
   });
 
+  // RAC `TextField` reports whether a slotted `<Label>` actually mounted, and
+  // `useLabel` only mints `labelProps`/`aria-labelledby` when it did
+  // (`useLabel.ts:52`). Without this the canonical
+  // `<TextField><Label/><Input/></TextField>` renders an input with no
+  // accessible name.
+  const [labelRef, hasLabel] = useSlot(
+    !ariaProps["aria-label"] && !ariaProps["aria-labelledby"],
+  );
+
   const textFieldAria = createTextField(() => ({
     ...inputAriaProps(),
+    label: hasLabel(),
     value: state.value(),
     onChange: state.setValue,
   }));
@@ -574,6 +585,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
     },
   };
   const labelContextValue: LabelProps = {
+    ref: labelRef,
     get id() {
       return (textFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).id;
     },

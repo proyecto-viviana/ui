@@ -54,8 +54,10 @@ import {
   useRenderProps,
   filterDOMProps,
   Provider,
+  useSlot,
 } from "./utils";
 import { TextContext } from "./Text";
+import { LabelContext, type LabelProps } from "./Label";
 import { useAutocompleteInput } from "./Autocomplete";
 
 export interface SearchFieldRenderProps {
@@ -149,6 +151,8 @@ interface SearchFieldContextValue extends Partial<SearchFieldProps> {
     onClick: () => void;
   };
   labelProps?: JSX.HTMLAttributes<HTMLElement>;
+  /** Slot probe for the rendered label, so `useLabel` knows a label exists. */
+  labelRef?: (el: Element | null) => void;
   descriptionProps?: JSX.HTMLAttributes<HTMLElement>;
   errorMessageProps?: JSX.HTMLAttributes<HTMLElement>;
   isDisabled?: boolean;
@@ -357,6 +361,10 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     inputRef = el;
   };
 
+  const [labelRef, hasLabel] = useSlot(
+    !ariaProps["aria-label"] && !ariaProps["aria-labelledby"],
+  );
+
   const searchFieldAria = createSearchField(
     {
       get isDisabled() {
@@ -371,8 +379,11 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       get isInvalid() {
         return ariaProps.isInvalid;
       },
+      // A slotted `<Label>` / `<SearchFieldLabel>` counts as a label, exactly
+      // as RAC's `useSlot` does (`SearchField.tsx:117`). Without it `useLabel`
+      // mints no `labelProps` and the input has no accessible name.
       get label() {
-        return ariaProps.label;
+        return ariaProps.label ?? hasLabel();
       },
       get "aria-label"() {
         return ariaProps["aria-label"];
@@ -567,6 +578,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     get labelProps() {
       return searchFieldAria.labelProps as JSX.HTMLAttributes<HTMLElement>;
     },
+    labelRef,
     get descriptionProps() {
       return searchFieldAria.descriptionProps;
     },
@@ -607,9 +619,31 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
     },
   };
 
+  // RAC exposes one shared `<Label>` through `LabelContext`; `SearchFieldLabel`
+  // is a local convenience alias over the same wiring.
+  const labelContextValue: LabelProps = {
+    ref: labelRef,
+    get id() {
+      return (searchFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement>).id;
+    },
+    get htmlFor() {
+      const labelProps = searchFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+      };
+      return labelProps.htmlFor ?? labelProps.for;
+    },
+    get for() {
+      const labelProps = searchFieldAria.labelProps as JSX.LabelHTMLAttributes<HTMLLabelElement> & {
+        htmlFor?: string;
+      };
+      return labelProps.htmlFor ?? labelProps.for;
+    },
+  };
+
   return (
     <FieldErrorContext.Provider value={fieldErrorContext}>
-      <SearchFieldContext.Provider value={contextValue}>
+      <LabelContext.Provider value={labelContextValue}>
+        <SearchFieldContext.Provider value={contextValue}>
         <div
           {...domProps()}
           ref={local.ref}
@@ -625,7 +659,8 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
             {fieldChildren()}
           </Provider>
         </div>
-      </SearchFieldContext.Provider>
+        </SearchFieldContext.Provider>
+      </LabelContext.Provider>
     </FieldErrorContext.Provider>
   );
 }
@@ -651,6 +686,7 @@ export function SearchFieldLabel(props: {
   return (
     <label
       {...cleanLabelProps()}
+      ref={(el) => context.labelRef?.(el)}
       class={props.class ?? "solidaria-SearchField-label"}
       style={props.style}
     >
