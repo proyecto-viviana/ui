@@ -199,6 +199,14 @@ export function ModalOverlay(props: ModalOverlayProps): JSX.Element {
     open,
     close,
     toggle,
+    setOpen: (next) => {
+      if (next) open();
+      else close();
+    },
+    get point() {
+      return null;
+    },
+    setPoint: () => {},
   };
 
   // Enter/exit animation state (mirrors upstream's ModalOverlayWithForwardRef +

@@ -23,7 +23,12 @@ import {
   type AriaPreviewTriggerProps,
 } from "@proyecto-viviana/solidaria";
 import { createTooltipTriggerState } from "@proyecto-viviana/solid-stately";
-import { PopoverTriggerContext } from "./contexts";
+import {
+  OverlayTriggerStateContext,
+  PopoverTriggerContext,
+  type OverlayTriggerState,
+} from "./contexts";
+import { Provider } from "./utils";
 
 export interface PreviewTriggerProps extends AriaPreviewTriggerProps {
   /** The trigger and Popover that make up the preview trigger. */
@@ -81,32 +86,61 @@ export function PreviewTrigger(props: PreviewTriggerProps): JSX.Element {
     state,
   );
 
-  const overlayState = {
-    isOpen: () => state.isOpen(),
+  // RAC PreviewTrigger adapts TooltipTriggerState to OverlayTriggerState
+  // (`PreviewTrigger.tsx:56-67`): setOpen, point, setPoint. Solid-local
+  // PopoverTriggerContext is the trigger-wiring counterpart of RAC's
+  // PopoverContext (our PopoverContext is placement/arrow, a different type).
+  const overlayState: OverlayTriggerState = {
+    get isOpen() {
+      return state.isOpen();
+    },
     open: () => state.open(),
     close: () => state.close(),
     toggle: () => (state.isOpen() ? state.close() : state.open()),
+    setOpen: (isOpen) => {
+      if (isOpen) state.open();
+      else state.close();
+    },
+    get point() {
+      return null;
+    },
+    setPoint: () => {},
   };
 
   return (
-    <PopoverTriggerContext.Provider
-      value={{
-        state: overlayState,
-        triggerRef: () => triggerEl(),
-        setTriggerRef: (el) => {
-          if (!el) return;
-          setTriggerRef(el);
-        },
-        triggerId,
-        triggerProps: aria.triggerProps as unknown as Record<string, unknown>,
-        overlayProps: aria.popoverProps as unknown as Record<string, unknown>,
-        trigger: "PreviewTrigger",
-        setOverlayRef: (el) => setPopoverRef(el),
-      }}
+    <Provider
+      values={[
+        [OverlayTriggerStateContext, overlayState],
+        [
+          PopoverTriggerContext,
+          {
+            state: {
+              isOpen: () => state.isOpen(),
+              open: () => state.open(),
+              close: () => state.close(),
+              toggle: () => (state.isOpen() ? state.close() : state.open()),
+              setOpen: overlayState.setOpen,
+              point: () => overlayState.point,
+              setPoint: overlayState.setPoint,
+            },
+            triggerRef: () => triggerEl(),
+            setTriggerRef: (el: HTMLElement | null) => {
+              if (!el) return;
+              setTriggerRef(el);
+            },
+            triggerId,
+            triggerProps: aria.triggerProps as unknown as Record<string, unknown>,
+            overlayProps: aria.popoverProps as unknown as Record<string, unknown>,
+            trigger: "PreviewTrigger",
+            setOverlayRef: (el: HTMLElement | null) => setPopoverRef(el),
+            shouldSkipAnimation: () => state.shouldSkipAnimation(),
+          },
+        ],
+      ]}
     >
       <FocusableProvider {...aria.triggerProps} ref={setTriggerRef}>
         {local.children}
       </FocusableProvider>
-    </PopoverTriggerContext.Provider>
+    </Provider>
   );
 }

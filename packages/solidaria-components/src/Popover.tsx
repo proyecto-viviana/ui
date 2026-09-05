@@ -283,6 +283,9 @@ export function PopoverTrigger(props: PopoverTriggerProps): JSX.Element {
       open: () => state.open(),
       close: () => state.close(),
       toggle: () => state.toggle(),
+      setOpen: (next) => state.setOpen(next),
+      point: () => state.point(),
+      setPoint: (next) => state.setPoint(next),
     },
     triggerRef: () => triggerRef,
     setTriggerRef: (el: HTMLElement | null) => {
@@ -517,9 +520,10 @@ export function Popover(props: PopoverProps): JSX.Element {
   // `'closed' | 'open' | 'exiting'` machine survives Inner unmount. Enter lives
   // on PopoverInner (below) so it re-initializes per open, matching
   // `useEnterAnimation(ref, !!placement)` in RAC's PopoverInner.
+  const skipAnimation = () =>
+    local.shouldSkipAnimation ?? triggerContext?.shouldSkipAnimation?.() ?? false;
   const exitAnimation = createExitAnimation(() => popoverRef(), isOpen);
-  const isExiting = () =>
-    Boolean(local.isExiting) || (!(local.shouldSkipAnimation ?? false) && exitAnimation());
+  const isExiting = () => Boolean(local.isExiting) || (!skipAnimation() && exitAnimation());
   const isHidden = useIsHidden();
 
   const [triggerWidth, setTriggerWidth] = createSignal<string | undefined>();
@@ -685,8 +689,7 @@ export function Popover(props: PopoverProps): JSX.Element {
     );
     const isEntering = () =>
       Boolean(local.isEntering) ||
-      (!(local.shouldSkipAnimation ?? false) &&
-        (enterAnimation() || (isOpen() && popoverAria.placement() == null)));
+      (!skipAnimation() && (enterAnimation() || (isOpen() && popoverAria.placement() == null)));
 
     const renderValues = createMemo<PopoverRenderProps>(() => {
       const preferred = preferredPlacementAxis(local.placement);

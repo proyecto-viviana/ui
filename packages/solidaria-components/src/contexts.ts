@@ -16,6 +16,9 @@ export interface OverlayTriggerState {
   open: () => void;
   close: () => void;
   toggle: () => void;
+  setOpen: (isOpen: boolean) => void;
+  point: { x: number; y: number } | null;
+  setPoint: (point: { x: number; y: number }) => void;
 }
 
 export const OverlayTriggerStateContext = createContext<OverlayTriggerState | null>(null);
@@ -51,7 +54,9 @@ export interface PopoverTriggerContextValue {
     open: () => void;
     close: () => void;
     toggle: () => void;
+    setOpen?: (isOpen: boolean) => void;
     point?: () => { x: number; y: number } | null;
+    setPoint?: (point: { x: number; y: number }) => void;
   };
   triggerRef: () => HTMLElement | null;
   setTriggerRef: (el: HTMLElement | null) => void;
@@ -61,6 +66,8 @@ export interface PopoverTriggerContextValue {
   trigger: string;
   /** Lets a trigger capture the popover element (PreviewTrigger safe-area). */
   setOverlayRef?: (el: HTMLElement | null) => void;
+  /** RAC PreviewTrigger skips enter/exit when swapping previews during warmup. */
+  shouldSkipAnimation?: () => boolean;
 }
 
 export const PopoverTriggerContext = createContext<PopoverTriggerContextValue | null>(null);
