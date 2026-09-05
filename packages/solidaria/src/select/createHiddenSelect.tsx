@@ -30,7 +30,7 @@ import {
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { createFormValidation } from "../form/createFormValidation";
 import { visuallyHiddenStyles } from "../visually-hidden/createVisuallyHidden";
-import type { SelectState, Key, FormValidationState } from "@proyecto-viviana/solid-stately";
+import type { SelectState, Key } from "@proyecto-viviana/solid-stately";
 
 export type ValidationBehavior = "aria" | "native";
 
@@ -51,8 +51,6 @@ export interface AriaHiddenSelectProps<T> {
   validationBehavior?: ValidationBehavior;
   /** A ref to the trigger element for focus on validation error. */
   triggerRef?: Accessor<HTMLElement | null>;
-  /** Form validation state (optional, for native validation). */
-  validationState?: FormValidationState;
 }
 
 export interface HiddenSelectAria {
@@ -83,6 +81,17 @@ export function createHiddenSelect<T>(
     selectRef = el;
     setSelectEl(el);
   };
+
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return getProps().validationBehavior ?? "native";
+      },
+      focus: () => getProps().triggerRef?.()?.focus(),
+    },
+    getProps().state,
+    () => selectEl(),
+  );
 
   const nativeSelectValue = (): string | string[] => {
     const p = getProps();
@@ -141,21 +150,6 @@ export function createHiddenSelect<T>(
     onCleanup(() => {
       form.removeEventListener("reset", handleReset);
     });
-  });
-
-  // Set up form validation handler for native validation
-  createEffect(() => {
-    const p = getProps();
-    if (!selectRef || p.validationBehavior !== "native" || !p.validationState) return;
-
-    createFormValidation(
-      {
-        validationBehavior: p.validationBehavior,
-        focus: () => p.triggerRef?.()?.focus(),
-      },
-      p.validationState,
-      () => selectRef,
-    );
   });
 
   return {

@@ -416,6 +416,21 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     get isRequired() {
       return ariaProps.isRequired;
     },
+    get isInvalid() {
+      return ariaProps.isInvalid;
+    },
+    get validationState() {
+      return ariaProps.validationState;
+    },
+    get validate() {
+      return ariaProps.validate;
+    },
+    get name() {
+      return stateProps.name;
+    },
+    get validationBehavior() {
+      return ariaProps.validationBehavior;
+    },
   });
 
   const selectAriaProps = createMemo(() => {
@@ -428,18 +443,14 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return clean as typeof ariaProps;
   });
 
-  const validation = createMemo<ValidationResult>(() => {
-    const current = selectValidation();
-    if (current.isInvalid || !ariaProps.isInvalid) {
-      return current;
-    }
-
-    return {
-      ...DEFAULT_VALIDATION_RESULT,
-      isInvalid: true,
-    };
+  const isInvalid = createMemo(
+    () => state.displayValidation().isInvalid || selectValidation().isInvalid,
+  );
+  const composedValidation = createMemo<ValidationResult>(() => {
+    const fromState = state.displayValidation();
+    if (fromState.isInvalid) return fromState;
+    return selectValidation();
   });
-  const isInvalid = createMemo(() => validation().isInvalid);
 
   // Keep the hook result intact. Its DOM prop surfaces are getters; destructuring
   // them freezes the initial closed-state attributes and event composition.
@@ -526,7 +537,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     selectHook.triggerProps as JSX.HTMLAttributes<HTMLElement>;
   const fieldErrorContext: FieldErrorContextValue = {
     get validation() {
-      return validation();
+      return composedValidation();
     },
     get errorMessageProps() {
       return selectHook.errorMessageProps;
@@ -563,6 +574,11 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     return getNativeSelectValidation(select);
   };
 
+  let triggerRef: HTMLElement | null = null;
+  const setTriggerRef = (el: HTMLElement | null) => {
+    triggerRef = el;
+  };
+
   const {
     containerProps,
     selectProps: hiddenSelectProps,
@@ -573,6 +589,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     form: ariaProps.form,
     isRequired: ariaProps.isRequired,
     validationBehavior: ariaProps.validationBehavior ?? "native",
+    triggerRef: () => triggerRef,
     get isDisabled() {
       return resolveDisabled();
     },
@@ -624,11 +641,10 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     if (hasSelection() && selectValidation().isInvalid) {
       setSelectValidation(DEFAULT_VALIDATION_RESULT);
     }
+    if (hasSelection() && !ariaProps.isInvalid && state.displayValidation().isInvalid) {
+      state.resetValidation();
+    }
   });
-  let triggerRef: HTMLElement | null = null;
-  const setTriggerRef = (el: HTMLElement | null) => {
-    triggerRef = el;
-  };
 
   const RootChildren = () => {
     const selectChildren = untrack(() =>
@@ -785,7 +801,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
             return selectHook.errorMessageProps;
           },
           get validation() {
-            return validation();
+            return composedValidation();
           },
           isOpen,
           isFocused,

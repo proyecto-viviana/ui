@@ -4,12 +4,22 @@ type: task
 title: "Call createFormValidation at the top of createHiddenSelect"
 created: 2026-09-04
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-04,
       note: "filed from the 2026-09-04 overnight adversarial audit. createHiddenSelect calls createFormValidation inside a createEffect gated on p.validationState. Select.tsx never passes validationState, so the effect is dead. Hook-inside-effect also leaks inner createEffects if the outer effect re-runs. Upstream HiddenSelect.tsx:96-103 calls useFormValidation unconditionally at hook top level.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "Git v2 implement. Mix createFormValidationState into createSelectState like useSelectState. createHiddenSelect calls createFormValidation at hook top level with that state. Remove the effect-gated call.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createSelectState owns FormValidationState. createHiddenSelect calls createFormValidation at hook top level and focuses the trigger. Effect-gated call is gone. Package test: isInvalid filled Select customError=true, requestSubmit blocked. Existing required FieldError test still clears after selecting an option.",
     }
 ---
 

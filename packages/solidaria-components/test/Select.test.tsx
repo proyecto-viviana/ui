@@ -1231,6 +1231,29 @@ describe("Select", () => {
       expect((document.querySelector("[name=select]") as HTMLSelectElement).value).toBe("");
     });
 
+    it("sets customError when isInvalid so a filled Select cannot submit", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Animal form" onSubmit={onSubmit}>
+          <TestSelect
+            selectProps={{ isInvalid: true, defaultSelectedKey: "cat", name: "animal" }}
+          />
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const hidden = document.querySelector("[name=animal]") as HTMLSelectElement;
+      await waitFor(() => {
+        expect(hidden.validity.customError).toBe(true);
+        expect(hidden.checkValidity()).toBe(false);
+        expect(hidden.validationMessage).toBe("Invalid value.");
+      });
+
+      (screen.getByRole("form", { name: "Animal form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
     it("supports validation errors", async () => {
       render(() => (
         <form data-testid="form">

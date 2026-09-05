@@ -39,6 +39,10 @@ export interface AriaSelectProps {
   isRequired?: boolean;
   /** Whether the select is invalid. */
   isInvalid?: boolean;
+  /** @deprecated Use isInvalid instead. */
+  validationState?: "valid" | "invalid";
+  /** Custom validation function. */
+  validate?: (value: unknown) => boolean | string | string[] | null | undefined;
   /** The label for the select. */
   label?: JSX.Element;
   /** A description for the select. Provides a hint such as specific requirements for what to choose. */

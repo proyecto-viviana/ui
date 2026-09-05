@@ -7,6 +7,7 @@ import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { createHiddenSelect, HiddenSelect } from "../src/select/createHiddenSelect";
 import type { SelectState, Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
+import { createFormValidationState } from "@proyecto-viviana/solid-stately";
 
 afterEach(() => {
   cleanup();
@@ -66,8 +67,19 @@ function createMockState<T>({
 }): SelectState<T> {
   const [selectedKey, setSelectedKey] = createSignal<Key | null>(initialSelectedKey);
   const collection = () => createMockCollection(items);
+  const validation = createFormValidationState({
+    get value() {
+      return selectedKey();
+    },
+    validationBehavior: "native",
+  });
 
   return {
+    realtimeValidation: validation.realtimeValidation,
+    displayValidation: validation.displayValidation,
+    updateValidation: validation.updateValidation,
+    resetValidation: validation.resetValidation,
+    commitValidation: validation.commitValidation,
     collection,
     isDisabled,
     selectedKey,

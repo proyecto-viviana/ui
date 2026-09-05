@@ -24,6 +24,11 @@ import { createOverlayTriggerState } from "../overlays";
 import type { Key, CollectionNode, Collection } from "../collections/types";
 import type { SelectionMode, Selection } from "../collections/types";
 import type { SelectionManager } from "../selection/SelectionManager";
+import {
+  createFormValidationState,
+  type FormValidationState,
+  type ValidationFunction,
+} from "../form";
 
 export interface SelectStateProps<T = unknown> {
   /** The items to display in the select. */
@@ -60,9 +65,22 @@ export interface SelectStateProps<T = unknown> {
   isDisabled?: boolean;
   /** Whether the select is required. */
   isRequired?: boolean;
+  /** Whether the select is invalid (controlled). */
+  isInvalid?: boolean;
+  /** @deprecated Use isInvalid instead. */
+  validationState?: "valid" | "invalid";
+  /** Custom validation function. */
+  validate?: ValidationFunction<Key | null | Selection>;
+  /**
+   * Whether to use native HTML form validation or ARIA validation semantics.
+   * @default "native"
+   */
+  validationBehavior?: "aria" | "native";
+  /** Field name(s) for server error lookup. */
+  name?: string | string[];
 }
 
-export interface SelectState<T = unknown> {
+export interface SelectState<T = unknown> extends FormValidationState {
   /** The collection of items. */
   readonly collection: Accessor<Collection<T>>;
   /**
@@ -207,6 +225,27 @@ export function createSelectState<T = unknown>(
     setSelectedKey(key);
   };
 
+  const validation = createFormValidationState({
+    get value() {
+      return selectionMode() === "multiple" ? selectedKeys() : selectedKey();
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get validationState() {
+      return getProps().validationState;
+    },
+    get validate() {
+      return getProps().validate;
+    },
+    get name() {
+      return getProps().name;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+  });
+
   // Create list state with select selection mode
   const listState = createListState<T>({
     get items() {
@@ -247,6 +286,7 @@ export function createSelectState<T = unknown>(
         if (keys !== "all") {
           getProps().onSelectionChange?.(keys.size > 0 ? Array.from(keys)[0] : null);
         }
+        validation.commitValidation();
         return;
       }
 
@@ -254,8 +294,8 @@ export function createSelectState<T = unknown>(
       if (keys === "all") return;
       const key = keys.size > 0 ? Array.from(keys)[0] : null;
       setSelectedKey(key);
-      // Close the dropdown after selection in single mode
       overlayState.close();
+      validation.commitValidation();
     },
   });
 
@@ -287,6 +327,11 @@ export function createSelectState<T = unknown>(
   });
 
   return {
+    realtimeValidation: validation.realtimeValidation,
+    displayValidation: validation.displayValidation,
+    updateValidation: validation.updateValidation,
+    resetValidation: validation.resetValidation,
+    commitValidation: validation.commitValidation,
     // Collection
     collection: listState.collection,
     selectionManager: listState.selectionManager,
