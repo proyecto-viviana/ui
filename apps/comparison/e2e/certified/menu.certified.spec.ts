@@ -1,3 +1,4 @@
+import { clickLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -108,7 +109,7 @@ const itemIcon: TargetResolver = ({ page }) => firstItem(page).locator("svg").fi
  *  `forEachScenarioPanel` neutralizes the pointer and does a fresh `page.goto`
  *  before `beforePanel`, so this is the only trigger fired on the page. */
 const openMenu = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: triggerLabel }).first().click();
+  await clickLocator(canvas.getByRole("button", { name: triggerLabel }).first());
   await expect(page.getByRole("menu", { name: menuName })).toBeVisible();
 };
 

@@ -1,0 +1,192 @@
+{
+  "generatedAt": "2026-09-05T06:55:52.200Z",
+  "revision": "d15a86fff09308728aa67887654aa57f7eb1ec8a",
+  "shard": null,
+  "totals": {
+    "passed": 23,
+    "failed": 11,
+    "skipped": 0,
+    "waived": 0,
+    "flaky": 0
+  },
+  "cells": [
+    {
+      "component": "button",
+      "driver": "D1",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "passed": 0,
+      "failed": 10,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": [
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › accent-fill · dark"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › accent-fill · light"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › primary-outline · dark"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › primary-outline · light"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › negative-fill · dark"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › negative-fill · light"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › size-s · dark"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › size-s · light"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › disabled · dark"
+        },
+        {
+          "component": "button",
+          "driver": "D3",
+          "file": "e2e/drivers/pixel.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › disabled · light"
+        }
+      ]
+    },
+    {
+      "component": "button",
+      "driver": "D4",
+      "passed": 7,
+      "failed": 1,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": [
+        {
+          "component": "button",
+          "driver": "D4",
+          "file": "e2e/drivers/events.ts",
+          "title": "chromium › certified/button.certified.spec.ts › D4 event sequence — Button › accent-fill · mouse-click"
+        }
+      ]
+    },
+    {
+      "component": "button",
+      "driver": "D7",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    }
+  ],
+  "waived": [],
+  "unwaived": [
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › accent-fill · dark"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › accent-fill · light"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › primary-outline · dark"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › primary-outline · light"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › negative-fill · dark"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › negative-fill · light"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › size-s · dark"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › size-s · light"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › disabled · dark"
+    },
+    {
+      "component": "button",
+      "driver": "D3",
+      "file": "e2e/drivers/pixel.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D3 pixel diff — Button › disabled · light"
+    },
+    {
+      "component": "button",
+      "driver": "D4",
+      "file": "e2e/drivers/events.ts",
+      "title": "chromium › certified/button.certified.spec.ts › D4 event sequence — Button › accent-fill · mouse-click"
+    }
+  ],
+  "waiverProblems": []
+}

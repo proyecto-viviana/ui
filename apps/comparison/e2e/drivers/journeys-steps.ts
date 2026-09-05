@@ -1,5 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
-import { scrollLocatorIntoView } from "../comparison-page";
+import { clickLocator, focusLocator, layoutBox, scrollLocatorIntoView } from "../comparison-page";
 import { overlayRootLocator } from "./journeys-observe";
 import type { PanelContext, TargetResolver } from "./scenario";
 
@@ -165,14 +165,7 @@ export async function centerOf(
     );
   }
   await scrollLocatorIntoView(target);
-  const box = await target.boundingBox();
-  if (!box) {
-    throw new Error(
-      description
-        ? `Journey target ${description} has no bounding box`
-        : "Journey target has no bounding box",
-    );
-  }
+  const box = await layoutBox(target);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
@@ -212,14 +205,7 @@ async function pointInTarget(
     );
   }
   await scrollLocatorIntoView(target);
-  const box = await target.boundingBox();
-  if (!box) {
-    throw new Error(
-      description
-        ? `Journey target ${description} has no bounding box`
-        : "Journey target has no bounding box",
-    );
-  }
+  const box = await layoutBox(target);
   return { x: box.x + box.width * xFraction, y: box.y + box.height * yFraction };
 }
 
@@ -330,7 +316,7 @@ export async function performStep(ctx: PanelContext, step: Step): Promise<void> 
             : `Journey focus target${step.targetId ? ` ${step.targetId}` : ""} is absent`,
         );
       }
-      await target.focus();
+      await focusLocator(target);
       return;
     }
     case "keyDown": {
@@ -418,11 +404,11 @@ export async function performStep(ctx: PanelContext, step: Step): Promise<void> 
       return;
     }
     case "submit": {
-      await (await fixtureButton(ctx, "data-comparison-submit")).click();
+      await clickLocator(await fixtureButton(ctx, "data-comparison-submit"));
       return;
     }
     case "reset": {
-      await (await fixtureButton(ctx, "data-comparison-reset")).click();
+      await clickLocator(await fixtureButton(ctx, "data-comparison-reset"));
       return;
     }
     case "selectOption": {

@@ -1,3 +1,4 @@
+import { clickLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -100,7 +101,7 @@ const contentFooter: TargetResolver = ({ page }) => page.getByRole("dialog").loc
 
 /** Click this panel's trigger to open its (and only its) popover. */
 const openHelp = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button").first().click();
+  await clickLocator(canvas.getByRole("button").first());
   await expect(page.getByRole("dialog")).toBeVisible();
 };
 

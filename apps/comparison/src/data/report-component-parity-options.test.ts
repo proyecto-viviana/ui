@@ -31,6 +31,6 @@ describe("component parity report options", () => {
     expect(result.stdout).toContain("STALE certified-suite postcard");
     expect(result.stdout).toContain("0f1e1198963c46eb3294744475e269a7c0041eb6");
     expect(result.stdout).toContain("HEAD certified-suite subset (not a postcard; complete=false)");
-    expect(result.stdout).toContain("15ca6d4cd685289daa9666485b58fbb059f1c300");
+    expect(result.stdout).toContain("d15a86fff09308728aa67887654aa57f7eb1ec8a");
   });
 });

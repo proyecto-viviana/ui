@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { focusLocator } from "../comparison-page";
 import { installOracle, snapshotFocus, type OracleFocusSnapshot } from "./dom-oracle";
 import {
   driverCases,
@@ -106,7 +107,7 @@ export function registerFocusTrailDriver(scenario: DriverScenario) {
             // See FocusWalk.entry — `"keyboard"` avoids seeding the collection's
             // focusedKey via a synthetic `.focus()`, which diverges across stacks.
             if ((walk.entry ?? "focus") === "focus") {
-              await start.focus();
+              await focusLocator(start);
             }
             await ctx.page.waitForTimeout(keySettleMs);
             const roving = walk.roving ?? config.roving ?? "all";

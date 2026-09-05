@@ -6,6 +6,8 @@ import {
   type OracleRecordedEvent,
 } from "./dom-oracle";
 import type { PanelContext } from "./scenario";
+import { layoutBox } from "../comparison-page";
+import { captureLocatorPng } from "../visual-diff";
 
 /**
  * Per-step observation collected from the driven panel. Every field is
@@ -618,15 +620,13 @@ export async function collectStepObservation(
   const overlayLocator = overlayRootLocator(ctx.page);
   if ((await overlayLocator.count()) > 0) {
     const target = overlayLocator.first();
-    const box = await target.boundingBox();
-    if (box && box.width > 0 && box.height > 0) {
-      try {
-        png = await target.screenshot({ animations: "disabled" });
-        pixel = { width: Math.round(box.width), height: Math.round(box.height) };
-      } catch {
-        png = null;
-        pixel = { width: Math.round(box.width), height: Math.round(box.height) };
-      }
+    try {
+      const box = await layoutBox(target);
+      png = await captureLocatorPng(target);
+      pixel = { width: Math.round(box.width), height: Math.round(box.height) };
+    } catch {
+      png = null;
+      pixel = null;
     }
   }
 

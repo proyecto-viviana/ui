@@ -34,10 +34,10 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
     // Bound actions that wait for compositor-stable frames. WSL Chromium 151
-    // never paints through SwiftShader; an unbounded screenshot/hover/click
-    // would take the test timeout (up to 180s on D3). Painting machines finish
-    // in milliseconds. Unset would reintroduce the 120s fonts.ready deadlock
-    // class for every Playwright action, not only route ready.
+    // never paints through SwiftShader. Certified drivers do not use
+    // locator.click/hover/screenshot/focus/boundingBox for that reason; this
+    // timeout is the backstop if a spec still does. Painting machines finish
+    // in milliseconds.
     actionTimeout: 15_000,
     // D2c motion-review video (drivers/motion.ts): off by default so ordinary
     // runs record nothing. `MOTION_REVIEW=1` records every motion spec for a

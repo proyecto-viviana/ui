@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { clickLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -104,7 +105,7 @@ const popoverArrow: TargetResolver = ({ page }) =>
  *  `forEachScenarioPanel` neutralizes the pointer and does a fresh `page.goto`
  *  before `beforePanel`, so this is the only trigger fired on the page. */
 const openPopover = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: triggerLabel }).first().click();
+  await clickLocator(canvas.getByRole("button", { name: triggerLabel }).first());
   await expect(page.getByRole("dialog", { name: popoverName })).toBeVisible();
 };
 

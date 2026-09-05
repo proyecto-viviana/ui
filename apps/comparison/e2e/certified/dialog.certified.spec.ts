@@ -1,5 +1,11 @@
 import { expect } from "@playwright/test";
-import { scrollLocatorIntoView } from "../comparison-page";
+import {
+  clickLocator,
+  focusLocator,
+  layoutBox,
+  scrollLocatorIntoView,
+  dismissOverlay,
+} from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerEventSequenceDriver } from "../drivers/events";
@@ -30,12 +36,12 @@ import { registerTargetSizeDriver } from "../drivers/target-size";
 const dialogTitle = "Review Changes";
 
 const openDialogWithPointer = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: "Open Dialog" }).first().click();
+  await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
   await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
 };
 
 const openDialogWithKeyboard = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: "Open Dialog" }).first().focus();
+  await focusLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: dialogTitle });
   await expect(dialog).toBeVisible();
@@ -51,8 +57,11 @@ const openDialogWithKeyboard = async ({ canvas, page }: PanelContext) => {
 };
 
 const closeDialog = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const dialog = page.getByRole("dialog");
+  if ((await dialog.count()) === 0) {
+    return;
+  }
+  await dismissOverlay(dialog);
 };
 
 const surfaceScenario: DriverScenario = {
@@ -112,10 +121,7 @@ const closeButtonMouseClick: EventGesture = {
   id: "mouse-click",
   run: async ({ page, target }) => {
     await scrollLocatorIntoView(target);
-    const box = await target.boundingBox();
-    if (!box) {
-      throw new Error("Dialog close button has no bounding box");
-    }
+    const box = await layoutBox(target);
 
     // The visual center is occupied by CrossIcon. React and Solid faithfully
     // use different runtimes for the same svg, and a center coordinate can land
@@ -198,7 +204,7 @@ const triggerScenario: DriverScenario = {
       {
         id: "open-escape-close",
         run: async ({ page, target }) => {
-          await target.focus();
+          await focusLocator(target);
           await page.keyboard.press("Enter");
           await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
           await page.waitForTimeout(600);
@@ -231,7 +237,7 @@ const motionScenario: DriverScenario = {
         id: "open-enter",
         scopes: ["overlay"],
         run: async ({ canvas, page }) => {
-          await canvas.getByRole("button", { name: "Open Dialog" }).first().click();
+          await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
           await expect(page.getByRole("dialog", { name: dialogTitle })).toHaveCount(1);
         },
         cleanup: async ({ page }) => {

@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { clickLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -58,7 +59,7 @@ const alertIcon: TargetResolver = ({ page }) =>
 
 /** Click this panel's `Open Dialog` trigger to open its (and only its) alertdialog. */
 const openAlert = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: "Open Dialog" }).first().click();
+  await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
   await expect(page.getByRole("alertdialog")).toBeVisible();
 };
 

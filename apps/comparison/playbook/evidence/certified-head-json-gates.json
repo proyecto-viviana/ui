@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-09-05T06:33:59.611Z",
+  "revision": "d15a86fff09308728aa67887654aa57f7eb1ec8a",
+  "shard": null,
+  "scope": "e2e/certified --grep 'D14 native validity|D8 target size|D6 AX tree|D5 focus trail'",
+  "complete": false,
+  "totals": {
+    "passed": 285,
+    "failed": 14,
+    "skipped": 4,
+    "waived": 0,
+    "flaky": 0
+  },
+  "note": "Playwright line reporter only (config reporters were overridden). Four skipped are registered knownDivergences, not D3. ActionMenu list and Menu list D5 later passed after clickLocator dispatched pointer events; they stay in this receipt as failures from this invocation. Isolation is per-panel goto; overlay Escape-close still does not dismiss on this box.",
+  "failures": [
+    "D6 AX tree — ActionButton › pending",
+    "D5 focus trail — ActionMenu list › size-m · arrow-roving",
+    "D5 focus trail — Calendar › default · grid-nav",
+    "D6 AX tree — DatePicker popover › open",
+    "D5 focus trail — DatePicker popover › open · open-trap",
+    "D6 AX tree — DateRangePicker popover › open",
+    "D5 focus trail — DateRangePicker popover › open · open-trap",
+    "D5 focus trail — Dialog close button › modal-close-button · trap-cycle",
+    "D6 AX tree — Dialog surface › modal-open",
+    "D8 target size — Dialog surface › modal-open",
+    "D5 focus trail — Menu list › size-m · arrow-roving",
+    "D5 focus trail — Picker list › size-m · arrow-roving",
+    "D5 focus trail — RangeCalendar › default · grid-nav",
+    "D6 AX tree — Toast › neutral"
+  ]
+}

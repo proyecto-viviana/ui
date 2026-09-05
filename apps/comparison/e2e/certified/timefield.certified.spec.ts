@@ -1,3 +1,4 @@
+import { focusLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -273,7 +274,7 @@ const timeFieldBehaviorScenario: DriverScenario = {
       {
         id: "spin-up",
         run: async (ctx) => {
-          await hourSegment(ctx).focus();
+          await focusLocator(hourSegment(ctx));
           await ctx.page.waitForTimeout(120);
           await ctx.page.keyboard.press("ArrowUp");
         },
@@ -281,7 +282,7 @@ const timeFieldBehaviorScenario: DriverScenario = {
       {
         id: "page-up",
         run: async (ctx) => {
-          await hourSegment(ctx).focus();
+          await focusLocator(hourSegment(ctx));
           await ctx.page.waitForTimeout(120);
           await ctx.page.keyboard.press("PageUp");
         },
@@ -289,7 +290,7 @@ const timeFieldBehaviorScenario: DriverScenario = {
       {
         id: "end-max",
         run: async (ctx) => {
-          await hourSegment(ctx).focus();
+          await focusLocator(hourSegment(ctx));
           await ctx.page.waitForTimeout(120);
           await ctx.page.keyboard.press("End");
         },

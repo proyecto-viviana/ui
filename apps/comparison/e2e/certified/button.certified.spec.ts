@@ -8,6 +8,7 @@ import type { DriverScenario } from "../drivers/scenario";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
 import { registerTargetSizeDriver } from "../drivers/target-size";
 import { clearPointer } from "../visual-diff";
+import { hoverLocator } from "../comparison-page";
 
 /**
  * Recertification pilot: Button (Tier 1). Prop cases mirror the S2 docs
@@ -49,7 +50,7 @@ const buttonScenario: DriverScenario = {
         id: "hover-transition",
         scopes: ["panel"],
         run: async ({ target }) => {
-          await target.hover();
+          await hoverLocator(target);
         },
         cleanup: async ({ page }) => {
           await clearPointer(page);

@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { clickLocator } from "../comparison-page";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerPixelDriver } from "../drivers/pixel";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -61,7 +62,7 @@ const modalBackdrop: TargetResolver = ({ page }) =>
 
 /** Click this panel's `Open Dialog` trigger to open its (and only its) modal. */
 const openModal = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: "Open Dialog" }).first().click();
+  await clickLocator(canvas.getByRole("button", { name: "Open Dialog" }).first());
   await expect(page.getByRole("dialog", { name: dialogTitle })).toBeVisible();
 };
 

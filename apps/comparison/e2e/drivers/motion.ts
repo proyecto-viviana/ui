@@ -17,7 +17,11 @@ import {
   type PanelFramework,
 } from "./scenario";
 import { forEachScenarioPanel } from "./walk";
-import { compareScreenshots, type ScreenshotDiffThreshold } from "../visual-diff";
+import {
+  captureLocatorPng,
+  compareScreenshots,
+  type ScreenshotDiffThreshold,
+} from "../visual-diff";
 
 /**
  * Driver D2 — motion (see `.claude/current/certification.md`).
@@ -123,7 +127,7 @@ async function captureMotion(
 // transition to its end and disable it, defeating the seek. The animation is
 // paused via the WAAPI, so the live paint is stable without disabling.
 async function filmstripShot(target: Locator): Promise<Buffer> {
-  return target.screenshot({ animations: "allow" });
+  return captureLocatorPng(target, { animations: "allow" });
 }
 
 export function registerMotionDriver(scenario: DriverScenario) {

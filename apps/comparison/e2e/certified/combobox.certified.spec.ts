@@ -1,3 +1,4 @@
+import { clickLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -118,7 +119,7 @@ const checkmarkUnselected: TargetResolver = ({ page }) =>
 /** Click this panel's chevron to open its (and only its) listbox with all items
  *  (a button open is `showAllItems`, so the "Pro" input filter is bypassed). */
 const openComboBox = async ({ canvas, page }: PanelContext) => {
-  await canvas.locator("button[aria-haspopup='listbox']").first().click();
+  await clickLocator(canvas.locator("button[aria-haspopup='listbox']").first());
   await expect(page.getByRole("listbox").first()).toBeVisible();
 };
 

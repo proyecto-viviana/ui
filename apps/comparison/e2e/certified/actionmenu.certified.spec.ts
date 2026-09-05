@@ -1,3 +1,4 @@
+import { clickLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -80,7 +81,7 @@ const itemIcon: TargetResolver = ({ page }) => firstItem(page).locator("svg").fi
 
 /** Click this panel's "More actions" trigger to open its (and only its) menu. */
 const openMenu = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: triggerName }).first().click();
+  await clickLocator(canvas.getByRole("button", { name: triggerName }).first());
   await expect(page.getByRole("menu", { name: menuName })).toBeVisible();
 };
 

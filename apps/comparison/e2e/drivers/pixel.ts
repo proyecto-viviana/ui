@@ -1,6 +1,11 @@
 import { writeFile } from "node:fs/promises";
 import { expect, test, type Locator } from "@playwright/test";
-import { clonedElementScreenshot, compareScreenshots, exactPairDiff } from "../visual-diff";
+import {
+  assertCompositorPaintAvailable,
+  clonedElementScreenshot,
+  compareScreenshots,
+  exactPairDiff,
+} from "../visual-diff";
 import {
   pixelThresholdFor,
   scenarioThemes,
@@ -22,8 +27,11 @@ import { walkScenario, type WalkStepContext } from "./walk";
  * in the top layer at a fixed integer viewport position, so both panels
  * rasterize at the same subpixel phase, no page stacking context can paint
  * over the shot, and the driven interaction state cannot race a framework
- * re-render — with `animations: "disabled"`. D3 certifies steady states; animated
- * transitions are the motion driver's job (D2).
+ * re-render — then CDP `Page.captureScreenshot` (not `locator.screenshot`).
+ * Playwright's element screenshot waits for two compositor-stable frames after
+ * scroll-into-view; WSL Chromium 151 never issues those. A blank or timed-out
+ * capture fails this gate. D3 certifies steady states; animated transitions
+ * are the motion driver's job (D2).
  */
 
 function pixelTargetFor(step: WalkStepContext): Locator {
@@ -36,6 +44,7 @@ export function registerPixelDriver(scenario: DriverScenario) {
       for (const theme of scenarioThemes(scenario, caseDef)) {
         test(`${caseDef.id} · ${theme}`, async ({ page }) => {
           test.setTimeout(180_000);
+          assertCompositorPaintAvailable();
 
           const shots: Record<PanelFramework, Map<GestureStateId, Buffer>> = {
             react: new Map(),

@@ -1,3 +1,4 @@
+import { focusLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -274,7 +275,7 @@ const dateFieldBehaviorScenario: DriverScenario = {
       {
         id: "spin-up",
         run: async (ctx) => {
-          await monthSegment(ctx).focus();
+          await focusLocator(monthSegment(ctx));
           await ctx.page.waitForTimeout(120);
           await ctx.page.keyboard.press("ArrowUp");
         },
@@ -282,7 +283,7 @@ const dateFieldBehaviorScenario: DriverScenario = {
       {
         id: "page-up",
         run: async (ctx) => {
-          await monthSegment(ctx).focus();
+          await focusLocator(monthSegment(ctx));
           await ctx.page.waitForTimeout(120);
           await ctx.page.keyboard.press("PageUp");
         },
@@ -290,7 +291,7 @@ const dateFieldBehaviorScenario: DriverScenario = {
       {
         id: "end-max",
         run: async (ctx) => {
-          await monthSegment(ctx).focus();
+          await focusLocator(monthSegment(ctx));
           await ctx.page.waitForTimeout(120);
           await ctx.page.keyboard.press("End");
         },

@@ -1,4 +1,5 @@
 import { expect, test, type ElementHandle } from "@playwright/test";
+import { focusLocator } from "../comparison-page";
 import { driverCases, scenarioThemes, type DriverScenario, type PanelFramework } from "./scenario";
 import { forEachScenarioPanel } from "./walk";
 
@@ -116,7 +117,7 @@ export function registerReorderDriver(scenario: DriverScenario, config: ReorderC
             // Enter the collection by keyboard: Tab from the Before boundary
             // button seeds the focusedKey through the real roving-focus path.
             const before = ctx.canvas.getByRole("button", { name: "Before" });
-            await before.focus();
+            await focusLocator(before);
             await ctx.page.keyboard.press("Tab");
             await ctx.page.waitForTimeout(settleMs);
 

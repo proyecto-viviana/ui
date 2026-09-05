@@ -1,3 +1,4 @@
+import { hoverLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerEventSequenceDriver, standardPressGestures } from "../drivers/events";
@@ -87,7 +88,7 @@ const toggleButtonGroupScenario: DriverScenario = {
         id: "hover-transition",
         scopes: ["panel"],
         run: async ({ target }) => {
-          await target.hover();
+          await hoverLocator(target);
         },
         cleanup: async ({ page }) => {
           await clearPointer(page);

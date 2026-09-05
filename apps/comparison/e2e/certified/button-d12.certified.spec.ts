@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { clickLocator } from "../comparison-page";
 import { registerSsrHydrationDriver, type SsrHydrationScenario } from "../drivers/ssr-hydration";
 
 /**
@@ -29,7 +30,7 @@ const buttonSsrScenario: SsrHydrationScenario = {
       interact: async ({ page, target }) => {
         const root = page.locator("[data-comparison-control-root='button']");
         await expect(root).toHaveAttribute("data-comparison-action-count", "0");
-        await target.click();
+        await clickLocator(target);
         await expect(root).toHaveAttribute("data-comparison-action-count", "1");
       },
     },

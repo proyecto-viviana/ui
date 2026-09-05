@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { focusLocator } from "../comparison-page";
 import { installOracle, snapshotFocus, type OracleFocusSnapshot } from "./dom-oracle";
 import { capturePartStyles, resolveStyleAllowlist, type PartStyles } from "./state-matrix";
 import {
@@ -157,7 +158,7 @@ export function registerRtlDriver(scenario: DriverScenario, config: RtlConfig = 
             ).toBe("rtl");
 
             if ((walk.entry ?? "focus") === "focus") {
-              await start.focus();
+              await focusLocator(start);
             }
             await ctx.page.waitForTimeout(axSettleMs);
             const trail: FocusTrailEntry[] = [

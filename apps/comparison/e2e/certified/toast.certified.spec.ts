@@ -1,3 +1,4 @@
+import { clickLocator, focusLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -94,7 +95,8 @@ const openToast = async ({ page, canvas, framework }: PanelContext) => {
     },
     { side: framework, v: variant },
   );
-  await canvas.getByRole("button", { name: triggerLabel(variant) }).click();
+  await focusLocator(canvas.getByRole("button", { name: triggerLabel(variant) }));
+  await page.keyboard.press("Enter");
   await expect(page.getByRole("alertdialog")).toBeVisible();
 };
 
@@ -103,10 +105,11 @@ const openToast = async ({ page, canvas, framework }: PanelContext) => {
 const closeToast = async ({ page }: PanelContext) => {
   const dismiss = page.getByRole("alertdialog").getByRole("button", { name: dismissName });
   if (await dismiss.count()) {
-    await dismiss
-      .first()
-      .click()
-      .catch(() => {});
+    try {
+      await clickLocator(dismiss.first());
+    } catch {
+      // Best-effort dismiss; isolation is the per-panel goto.
+    }
   }
 };
 

@@ -1,3 +1,4 @@
+import { clickLocator, focusLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { mouseClickGesture, registerEventSequenceDriver, touchTapGesture } from "../drivers/events";
@@ -42,7 +43,7 @@ const tabsScenario: DriverScenario = {
         id: "arrow-next-from-selected",
         target: ({ canvas }) => canvas.getByRole("tab", { name: "Overview" }),
         run: async ({ page, target }) => {
-          await target.focus();
+          await focusLocator(target);
           await page.keyboard.press("ArrowRight");
         },
       },
@@ -99,7 +100,7 @@ const tabsScenario: DriverScenario = {
         id: "select-indicator",
         scopes: ["panel"],
         run: async ({ canvas }) => {
-          await canvas.getByRole("tab", { name: "Parity" }).click();
+          await clickLocator(canvas.getByRole("tab", { name: "Parity" }));
         },
         settleMs: 160,
       },

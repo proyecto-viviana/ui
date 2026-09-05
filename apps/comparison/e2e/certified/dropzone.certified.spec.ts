@@ -1,3 +1,4 @@
+import { focusLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -72,7 +73,7 @@ const dropButton: TargetResolver = ({ canvas }) => canvas.locator(`${rootSelecto
  * the same mechanism the walk's focus-visible gesture state relies on.
  */
 const focusDropButton = async (ctx: PanelContext) => {
-  await dropButton(ctx).focus();
+  await focusLocator(dropButton(ctx));
   await expect(dropZoneBox(ctx)).toHaveAttribute("data-focus-visible", "true");
 };
 

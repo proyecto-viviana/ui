@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { hoverLocator } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -90,7 +91,7 @@ const tooltipArrow: TargetResolver = ({ page }) => page.getByRole("tooltip").loc
  *  closed). `forEachScenarioPanel` neutralizes the pointer before `beforePanel`,
  *  so this hover is the only pointer signal on the page. */
 const openTooltip = async ({ canvas, page }: PanelContext) => {
-  await canvas.getByRole("button", { name: triggerLabel }).first().hover();
+  await hoverLocator(canvas.getByRole("button", { name: triggerLabel }).first());
   await expect(page.getByRole("tooltip")).toBeVisible();
 };
 
@@ -230,7 +231,7 @@ const tooltipOpenState = async ({ target }: TimingContext): Promise<string> =>
   (await target.getAttribute("aria-describedby")) ? "open" : "closed";
 
 const hoverTrigger = async ({ target }: TimingContext) => {
-  await target.hover();
+  await hoverLocator(target);
 };
 const leaveTrigger = async ({ page }: TimingContext) => {
   await page.mouse.move(0, 0);

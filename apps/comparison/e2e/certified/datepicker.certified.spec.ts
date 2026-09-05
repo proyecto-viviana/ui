@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { clickLocator, focusLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { mouseClickGesture, registerEventSequenceDriver } from "../drivers/events";
@@ -152,14 +153,17 @@ const helpText: TargetResolver = ({ canvas }) =>
 const popover: TargetResolver = ({ page }) => page.getByRole("dialog");
 
 const openPopoverWithKeyboard = async ({ canvas, page }: PanelContext) => {
-  await trigger({ canvas, page, framework: "react" }).focus();
+  await focusLocator(trigger({ canvas, page, framework: "react" }));
   await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog")).toBeVisible();
 };
 
 const closePopover = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const dialog = page.getByRole("dialog");
+  if ((await dialog.count()) === 0) {
+    return;
+  }
+  await dismissOverlay(dialog);
 };
 
 const paintCases = [
@@ -327,7 +331,7 @@ const datePickerTriggerScenario: DriverScenario = {
       {
         id: "open-escape-close",
         run: async ({ page, target }) => {
-          await target.focus();
+          await focusLocator(target);
           await page.keyboard.press("Enter");
           await expect(page.getByRole("dialog")).toBeVisible();
           await page.waitForTimeout(600);
@@ -356,7 +360,7 @@ const datePickerValueScenario: DriverScenario = {
       {
         id: "segment-spin-up",
         run: async ({ page, target }) => {
-          await target.focus();
+          await focusLocator(target);
           await page.keyboard.press("ArrowUp");
         },
         settleMs: 350,
@@ -384,7 +388,7 @@ const datePickerMotionScenario: DriverScenario = {
         id: "open-enter",
         scopes: ["overlay"],
         run: async ({ target, page }) => {
-          await target.click();
+          await clickLocator(target);
           await expect(page.getByRole("dialog")).toHaveCount(1);
         },
         cleanup: async ({ page }) => {

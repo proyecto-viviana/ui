@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { FullConfig, Reporter, TestCase, TestResult } from "@playwright/test/reporter";
 
+import { clearCompositorPaintLatch } from "../visual-diff";
 import {
   applyWaiverCounts,
   certifiedSummaryPath,
@@ -37,6 +38,7 @@ export default class CertifiedSummaryReporter implements Reporter {
   private revision: string | null = null;
 
   onBegin(config: FullConfig): void {
+    clearCompositorPaintLatch();
     this.shard = config.shard ? { current: config.shard.current, total: config.shard.total } : null;
     try {
       this.revision = execFileSync("git", ["rev-parse", "HEAD"], {

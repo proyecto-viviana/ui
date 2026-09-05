@@ -1,17 +1,69 @@
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, type Locator, type Page } from "@playwright/test";
-import { defaultPaintBudgetMs, waitForPaintSettle } from "./comparison-page";
+import { layoutBox, scrollLocatorIntoView } from "./comparison-page";
 import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/data/theme";
 
 /**
- * Playwright's screenshot waits for fonts and two stable compositor frames.
- * WSL Chromium 151 never issues those, so an unbounded capture takes the
- * 180s D3 test timeout. Cap the action: a painting machine finishes in
- * milliseconds; a stuck compositor fails instead of hanging.
+ * Cap for CDP `Page.captureScreenshot`. Painting machines finish in
+ * milliseconds. Playwright's `locator.screenshot` waits for two
+ * compositor-stable frames after scroll-into-view; WSL Chromium 151 never
+ * issues those, so that path is not used. A stuck CDP call fails here
+ * instead of taking the 180s D3 test timeout.
  */
-export const screenshotTimeoutMs = 15_000;
+export const screenshotTimeoutMs = 2_000;
 
-function screenshotOptions() {
-  return { animations: "disabled" as const, timeout: screenshotTimeoutMs };
+const paintLatchEnv = "VIVIANA_COMPARISON_COMPOSITOR_PAINT";
+const compositorPaintFailure =
+  "Compositor never produced a screenshot (CDP Page.captureScreenshot timed out or returned a uniform fill). D3 does not skip; this is a pixel-gate failure, not a postcard.";
+const comparisonRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
+export const compositorPaintLatchPath = path.join(
+  comparisonRoot,
+  "test-results",
+  ".compositor-paint-unavailable",
+);
+
+function paintUnavailable(): string | null {
+  if (process.env[paintLatchEnv]) {
+    return process.env[paintLatchEnv];
+  }
+  try {
+    if (existsSync(compositorPaintLatchPath)) {
+      return readFileSync(compositorPaintLatchPath, "utf8").trim() || compositorPaintFailure;
+    }
+  } catch {
+    // worker can still fail-fast via env
+  }
+  return null;
+}
+
+function rememberPaintUnavailable(reason: string) {
+  process.env[paintLatchEnv] = reason;
+  try {
+    mkdirSync(path.dirname(compositorPaintLatchPath), { recursive: true });
+    writeFileSync(compositorPaintLatchPath, reason);
+  } catch {
+    // env latch still covers this worker
+  }
+}
+
+/** Drop the cross-worker paint latch at the start of a Playwright run. */
+export function clearCompositorPaintLatch() {
+  delete process.env[paintLatchEnv];
+  try {
+    unlinkSync(compositorPaintLatchPath);
+  } catch {
+    // no latch from a previous run
+  }
+}
+
+/** Fail closed immediately once this box has already proven it cannot paint. */
+export function assertCompositorPaintAvailable() {
+  const reason = paintUnavailable();
+  if (reason) {
+    throw new Error(reason);
+  }
 }
 
 export type ComparisonColorScheme = "light" | "dark";
@@ -84,13 +136,135 @@ export async function clearPointer(page: Page) {
   await page.waitForTimeout(50);
 }
 
-async function waitForScreenshotFrame(target: Locator) {
-  await waitForPaintSettle(target.page(), defaultPaintBudgetMs);
+async function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+  }
+}
+
+async function assertPngPainted(page: Page, png: Buffer, label: string) {
+  const stats = await page.evaluate(async (base64) => {
+    const response = await fetch(`data:image/png;base64,${base64}`);
+    const bitmap = await createImageBitmap(await response.blob());
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) {
+      throw new Error("Could not create canvas context to inspect screenshot pixels");
+    }
+    context.drawImage(bitmap, 0, 0);
+    const data = context.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    const seen = new Set<string>();
+    for (let i = 0; i < data.length; i += 4) {
+      seen.add(`${data[i]},${data[i + 1]},${data[i + 2]},${data[i + 3]}`);
+      if (seen.size > 1) {
+        break;
+      }
+    }
+    return { width: bitmap.width, height: bitmap.height, uniqueColors: seen.size };
+  }, png.toString("base64"));
+
+  if (stats.width <= 0 || stats.height <= 0) {
+    throw new Error(`${label}: screenshot is empty (${stats.width}x${stats.height})`);
+  }
+  if (stats.uniqueColors <= 1) {
+    throw new Error(
+      `${label}: screenshot is a uniform fill (${stats.uniqueColors} color); compositor did not paint the element`,
+    );
+  }
+}
+
+/**
+ * Screenshot without Playwright's stable-frame wait. `locator.screenshot`
+ * scrolls-into-view then waits for two compositor frames; that is the D3
+ * 15s "element to be stable" deadlock. CDP `Page.captureScreenshot` reads
+ * the backing store after a DOM scroll. A blank or timed-out capture fails
+ * the pixel gate; it is never turned into a skip.
+ */
+export async function captureLocatorPng(
+  target: Locator,
+  options: { animations?: "disabled" | "allow" } = {},
+): Promise<Buffer> {
+  if (paintUnavailable()) {
+    throw new Error(paintUnavailable()!);
+  }
+
+  await scrollLocatorIntoView(target);
+  const box = await layoutBox(target);
+  const page = target.page();
+  const animations = options.animations ?? "disabled";
+
+  if (animations === "disabled") {
+    await page.evaluate(() => {
+      if (document.querySelector("[data-comparison-screenshot-animations]")) {
+        return;
+      }
+      const style = document.createElement("style");
+      style.setAttribute("data-comparison-screenshot-animations", "disabled");
+      style.textContent = `
+        *, *::before, *::after {
+          animation-delay: 0s !important;
+          animation-duration: 0s !important;
+          animation-play-state: paused !important;
+          transition-duration: 0s !important;
+          transition-delay: 0s !important;
+        }
+      `;
+      document.documentElement.append(style);
+    });
+  }
+
+  const session = await page.context().newCDPSession(page);
+  try {
+    const dpr = await page.evaluate(() => window.devicePixelRatio || 1);
+    const clip = {
+      x: box.x,
+      y: box.y,
+      width: box.width,
+      height: box.height,
+      scale: dpr,
+    };
+    const result = await withTimeout(
+      session.send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        captureBeyondViewport: true,
+        clip,
+      }),
+      screenshotTimeoutMs,
+      compositorPaintFailure,
+    );
+    const png = Buffer.from(result.data, "base64");
+    try {
+      await assertPngPainted(page, png, "D3 pixel capture");
+    } catch (error) {
+      rememberPaintUnavailable(compositorPaintFailure);
+      throw error;
+    }
+    return png;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("Compositor never produced") || message.includes("uniform fill")) {
+      rememberPaintUnavailable(compositorPaintFailure);
+    }
+    throw error;
+  } finally {
+    await withTimeout(session.detach(), 250, "CDP session detach timed out").catch(() => {});
+  }
 }
 
 export async function normalizedElementScreenshot(target: Locator) {
-  await waitForScreenshotFrame(target);
-
   const previousState = await target.evaluate((element) => {
     const htmlElement = element as HTMLElement;
     const state = {
@@ -111,7 +285,6 @@ export async function normalizedElementScreenshot(target: Locator) {
   });
 
   try {
-    await waitForScreenshotFrame(target);
     await target.evaluate((element, state) => {
       const htmlElement = element as HTMLElement;
 
@@ -151,8 +324,7 @@ export async function normalizedElementScreenshot(target: Locator) {
       htmlElement.append(freezeStyle);
     }, previousState);
 
-    await waitForScreenshotFrame(target);
-    return await target.screenshot(screenshotOptions());
+    return await captureLocatorPng(target);
   } finally {
     await target.evaluate((element, state) => {
       const htmlElement = element as HTMLElement;
@@ -190,8 +362,7 @@ export async function normalizedElementScreenshot(target: Locator) {
 }
 
 async function inPlaceElementScreenshot(target: Locator) {
-  await waitForScreenshotFrame(target);
-  return target.screenshot(screenshotOptions());
+  return captureLocatorPng(target);
 }
 
 export type ClonedScreenshotOptions = {
@@ -248,7 +419,6 @@ export async function clonedElementScreenshot(
   options: ClonedScreenshotOptions = {},
 ): Promise<Buffer> {
   const padding = options.padding ?? 32;
-  await waitForScreenshotFrame(target);
 
   await target.evaluate((element, pad) => {
     const original = element as HTMLElement;
@@ -309,8 +479,7 @@ export async function clonedElementScreenshot(
   // locator while the clone exists is a strict-mode violation.
   const frame = target.page().locator("[data-comparison-pixel-frame]");
   try {
-    await waitForScreenshotFrame(frame);
-    return await frame.screenshot(screenshotOptions());
+    return await captureLocatorPng(frame);
   } finally {
     await target.page().evaluate(() => {
       for (const node of Array.from(document.querySelectorAll("[data-comparison-pixel-frame]"))) {
@@ -335,7 +504,6 @@ async function withFixedScreenshotTarget<T>(target: Locator, action: () => Promi
   });
 
   try {
-    await waitForScreenshotFrame(target);
     return await action();
   } finally {
     await target.evaluate((element, style) => {
@@ -726,8 +894,8 @@ export async function diffLocatorScreenshots(
   solidElement: Locator,
   pixelThreshold: number = 0,
 ) {
-  const reactPng = await reactElement.screenshot(screenshotOptions());
-  const solidPng = await solidElement.screenshot(screenshotOptions());
+  const reactPng = await captureLocatorPng(reactElement);
+  const solidPng = await captureLocatorPng(solidElement);
 
   return diffScreenshots(page, reactPng, solidPng, pixelThreshold);
 }

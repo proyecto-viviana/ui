@@ -83,14 +83,14 @@ export interface CertifiedSuiteSubsetEvidence {
 }
 
 export const lastHeadCertifiedSubsetRun: CertifiedSuiteSubsetEvidence = {
-  revision: "15ca6d4cd685289daa9666485b58fbb059f1c300",
-  completedAt: "2026-09-05T04:57:48.170Z",
-  scope: "e2e/certified/field-validity.certified.spec.ts (D14 native validity only)",
-  passed: 39,
-  failed: 0,
-  skipped: 0,
-  total: 39,
+  revision: "d15a86fff09308728aa67887654aa57f7eb1ec8a",
+  completedAt: "2026-09-05T06:55:52.200Z",
+  scope: "D5+D6+D8+D14 certified (303) plus Button D1/D3/D4/D7 (34). Not the full certified suite.",
+  passed: 308,
+  failed: 25,
+  skipped: 4,
+  total: 337,
   complete: false,
   blockingReason:
-    "D14-only recording. WSL Chromium 151 never issues a compositor frame, so D3 screenshots time out waiting for element stability (15s bound, not 180s hang). Not the full certified suite. Postcard remains 0f1e1198. Do not version from these counts.",
+    "Partial HEAD recording. D3 fail-closes when CDP Page.captureScreenshot never returns a compositor frame (not a skip or postcard). Full comparison:test:certified was not run. Postcard remains 0f1e1198. Do not version from these counts.",
 };

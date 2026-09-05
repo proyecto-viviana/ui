@@ -1,6 +1,9 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 import {
+  focusLocator,
   frameworkCanvas,
+  hoverLocator,
+  pressLocator,
   styledSection,
   waitForComparisonRouteReady,
   type RouteReadyOptions,
@@ -58,14 +61,13 @@ async function applyGestureState(
     case "default":
       break;
     case "focus-visible":
-      await target.focus();
+      await focusLocator(target);
       break;
     case "hover":
-      await target.hover({ timeout: 10_000 });
+      await hoverLocator(target);
       break;
     case "pressed":
-      await target.hover({ timeout: 10_000 });
-      await ctx.page.mouse.down();
+      await pressLocator(target);
       break;
   }
   const attribute = readinessAttribute(scenario, state);
@@ -109,7 +111,7 @@ export async function forEachScenarioPanel(
   for (const framework of frameworks) {
     await pinComparisonTheme(page, theme);
     await page.goto(scenarioRoute(scenario, caseDef));
-    await waitForComparisonRouteReady(page, frameworks, ready);
+    await waitForComparisonRouteReady(page, frameworks, ready ?? { paintBudgetMs: 0 });
     await clearPointer(page);
 
     const section = await styledSection(page);
@@ -133,15 +135,22 @@ export async function walkScenario(
   const states = allGestureStates.filter((state) => requested.has(state));
   const settle = scenario.settleMs ?? defaultSettleMs;
 
-  await forEachScenarioPanel(page, scenario, caseDef, theme, async (ctx) => {
-    const target = scenario.target(ctx);
-    await expect(target).toBeVisible();
+  await forEachScenarioPanel(
+    page,
+    scenario,
+    caseDef,
+    theme,
+    async (ctx) => {
+      const target = scenario.target(ctx);
+      await expect(target).toBeVisible();
 
-    for (const state of states) {
-      await applyGestureState(ctx, target, state, scenario);
-      await page.waitForTimeout(settle);
-      await collect({ ...ctx, scenario, caseDef, theme, state, target });
-      await resetGestureState(ctx, target, state);
-    }
-  });
+      for (const state of states) {
+        await applyGestureState(ctx, target, state, scenario);
+        await page.waitForTimeout(settle);
+        await collect({ ...ctx, scenario, caseDef, theme, state, target });
+        await resetGestureState(ctx, target, state);
+      }
+    },
+    { paintBudgetMs: 0 },
+  );
 }

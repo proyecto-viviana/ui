@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
-import { scrollLocatorIntoView } from "../comparison-page";
+import { focusLocator, layoutBox, scrollLocatorIntoView, tapLocator } from "../comparison-page";
 import {
   flushEventLog,
   installOracle,
@@ -45,10 +45,7 @@ async function centerOf(target: Locator): Promise<{ x: number; y: number }> {
   // re-read the box at its post-scroll viewport position. `scroll` is not a
   // recorded event type, so this cannot perturb the D4 event-sequence diff.
   await scrollLocatorIntoView(target);
-  const box = await target.boundingBox();
-  if (!box) {
-    throw new Error("Gesture target has no bounding box");
-  }
+  const box = await layoutBox(target);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
@@ -57,9 +54,34 @@ export const mouseClickGesture: EventGesture = {
   run: async ({ page, target }) => {
     const { x, y } = await centerOf(target);
     await page.mouse.move(x, y);
-    await page.mouse.down();
-    await page.waitForTimeout(60);
-    await page.mouse.up();
+    await target.evaluate(
+      (element, point) => {
+        const el = element as HTMLElement;
+        const pointerInit: PointerEventInit = {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          pointerId: 1,
+          pointerType: "mouse",
+          isPrimary: true,
+          clientX: point.x,
+          clientY: point.y,
+        };
+        el.dispatchEvent(
+          new PointerEvent("pointerdown", { ...pointerInit, buttons: 1, button: 0 }),
+        );
+        el.dispatchEvent(new PointerEvent("pointerup", pointerInit));
+        el.dispatchEvent(
+          new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+            clientX: point.x,
+            clientY: point.y,
+          }),
+        );
+      },
+      { x, y },
+    );
   },
 };
 
@@ -67,7 +89,7 @@ export function keyboardActivateGesture(key: "Enter" | "Space"): EventGesture {
   return {
     id: `keyboard-${key.toLowerCase()}`,
     run: async ({ page, target }) => {
-      await target.focus();
+      await focusLocator(target);
       await page.keyboard.press(key);
     },
   };
@@ -75,9 +97,8 @@ export function keyboardActivateGesture(key: "Enter" | "Space"): EventGesture {
 
 export const touchTapGesture: EventGesture = {
   id: "touch-tap",
-  run: async ({ page, target }) => {
-    const { x, y } = await centerOf(target);
-    await page.touchscreen.tap(x, y);
+  run: async ({ target }) => {
+    await tapLocator(target);
   },
 };
 
