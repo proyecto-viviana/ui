@@ -22,6 +22,7 @@ function TestNumberField(props: {
   isRequired?: boolean;
   isInvalid?: boolean;
   validationBehavior?: "aria" | "native";
+  commitBehavior?: "snap" | "validate";
   "aria-label"?: string;
   label?: string;
   description?: string;
@@ -49,6 +50,10 @@ function TestNumberField(props: {
     onChange: props.onChange,
     isDisabled: props.isDisabled,
     isReadOnly: props.isReadOnly,
+    isInvalid: props.isInvalid,
+    validationBehavior: props.validationBehavior,
+    commitBehavior: props.commitBehavior,
+    name: props.name,
   });
 
   const {
@@ -68,6 +73,7 @@ function TestNumberField(props: {
       isRequired: props.isRequired,
       isInvalid: props.isInvalid,
       validationBehavior: props.validationBehavior,
+      commitBehavior: props.commitBehavior,
       description: props.description,
       errorMessage: props.errorMessage,
       name: props.name,
@@ -678,6 +684,67 @@ describe("createNumberField", () => {
         const live = document.querySelector('[aria-live="assertive"]');
         expect(live?.textContent).toContain("6");
       });
+    });
+  });
+
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Amount form" onSubmit={onSubmit}>
+          <TestNumberField aria-label="Amount" isInvalid defaultValue={5} />
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+
+      (screen.getByRole("form", { name: "Amount form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("skips custom validity when disabled", async () => {
+      render(() => (
+        <TestNumberField aria-label="Amount" isInvalid isDisabled defaultValue={5} />
+      ));
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(false);
+        expect(input.checkValidity()).toBe(true);
+      });
+    });
+
+    it("sets customError for a value over max when commitBehavior is validate", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Amount form" onSubmit={onSubmit}>
+          <TestNumberField
+            aria-label="Amount"
+            minValue={0}
+            maxValue={10}
+            defaultValue={15}
+            commitBehavior="validate"
+            step={1}
+          />
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validity.customError).toBe(true);
+      });
+
+      (screen.getByRole("form", { name: "Amount form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
     });
   });
 });

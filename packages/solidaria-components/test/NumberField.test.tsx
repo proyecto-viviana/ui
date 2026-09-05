@@ -22,6 +22,8 @@ import {
 } from "../src/NumberField";
 import { Label } from "../src/Label";
 import { Text } from "../src/Text";
+import { FieldError } from "../src/FieldError";
+import { Form } from "../src/Form";
 import {
   setupUser,
   assertNoA11yViolations,
@@ -533,6 +535,101 @@ describe("NumberField", () => {
       render(() => <TestNumberField fieldProps={{ "data-testid": "qty" } as any} />);
       const field = document.querySelector(".solidaria-NumberField");
       expect(field).toHaveAttribute("data-testid", "qty");
+    });
+  });
+
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Quantity form" onSubmit={onSubmit}>
+          <TestNumberField fieldProps={{ isInvalid: true, defaultValue: 5 }} />
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+
+      (screen.getByRole("form", { name: "Quantity form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("paints FieldError and aria-invalid after a blocked native required submit", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <Form aria-label="Quantity form" onSubmit={onSubmit}>
+          <NumberField isRequired name="quantity">
+            {() => (
+              <>
+                <Label>Quantity</Label>
+                <NumberFieldGroup>
+                  <NumberFieldInput />
+                </NumberFieldGroup>
+                <Text slot="description">Inherited from the parent form.</Text>
+                <FieldError />
+              </>
+            )}
+          </NumberField>
+          <button type="submit">Submit</button>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Quantity" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Quantity form" }) as HTMLFormElement;
+      expect(input).not.toHaveAttribute("aria-invalid");
+      expect(input.closest(".solidaria-NumberField")).not.toHaveAttribute("data-invalid");
+      expect(screen.getByText("Inherited from the parent form.")).toBeInTheDocument();
+      expect(document.querySelector(".solidaria-FieldError")).not.toBeInTheDocument();
+
+      form.requestSubmit();
+
+      expect(onSubmit).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(input).toHaveAttribute("aria-invalid", "true");
+        expect(input.closest(".solidaria-NumberField")).toHaveAttribute("data-invalid");
+        expect(input.validity.valueMissing).toBe(true);
+      });
+      expect(screen.getByText(input.validationMessage)).toBeInTheDocument();
+    });
+
+    it("blocks submit when a value is over max and commitBehavior is validate", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Quantity form" onSubmit={onSubmit}>
+          <NumberField
+            aria-label="Quantity"
+            minValue={0}
+            maxValue={10}
+            defaultValue={15}
+            commitBehavior="validate"
+            step={1}
+          >
+            {() => (
+              <NumberFieldGroup>
+                <NumberFieldInput />
+              </NumberFieldGroup>
+            )}
+          </NumberField>
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const input = screen.getByRole("textbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validity.customError).toBe(true);
+      });
+
+      (screen.getByRole("form", { name: "Quantity form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
     });
   });
 });

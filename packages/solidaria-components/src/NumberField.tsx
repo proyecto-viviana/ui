@@ -37,10 +37,10 @@ import {
 } from "@proyecto-viviana/solidaria";
 import {
   createNumberFieldState,
-  VALID_VALIDITY_STATE,
   type NumberFieldState,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
+import { FormContext, type FormProps } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
@@ -163,12 +163,62 @@ interface NumberFieldContextValue {
 export const NumberFieldContext = createContext<NumberFieldContextValue | null>(null);
 export const NumberFieldStateContext = createContext<NumberFieldState | null>(null);
 
+function withFormValidationBehavior(
+  props: NumberFieldProps,
+  formContext: FormProps | null,
+): NumberFieldProps {
+  if (!formContext?.validationBehavior) {
+    return props;
+  }
+
+  return new Proxy(props, {
+    get(target, property, receiver) {
+      const localValue = Reflect.get(target, property, receiver);
+      if (property === "validationBehavior" && localValue === undefined) {
+        return formContext.validationBehavior;
+      }
+
+      return localValue;
+    },
+    has(target, property) {
+      return (
+        Reflect.has(target, property) ||
+        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
+      );
+    },
+    ownKeys(target) {
+      const keys = new Set(Reflect.ownKeys(target));
+      if (formContext.validationBehavior !== undefined) {
+        keys.add("validationBehavior");
+      }
+
+      return Array.from(keys);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
+      if (descriptor) {
+        return descriptor;
+      }
+      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
+        return {
+          enumerable: true,
+          configurable: true,
+          get: () => formContext.validationBehavior,
+        };
+      }
+      return undefined;
+    },
+  });
+}
+
 /**
  * A number field allows a user to enter a number and increment/decrement the value.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
+  const formContext = useContext(FormContext);
+  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, ariaProps, rest] = splitProps(
-    props,
+    mergedProps,
     ["children", "class", "style", "slot"],
     [
       "value",
@@ -203,6 +253,10 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       "onPaste",
       "onCopy",
       "onCut",
+      "validationBehavior",
+      "commitBehavior",
+      "validate",
+      "validationState",
     ],
   );
 
@@ -236,6 +290,24 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     },
     get isReadOnly() {
       return ariaProps.isReadOnly;
+    },
+    get isInvalid() {
+      return ariaProps.isInvalid;
+    },
+    get validationState() {
+      return ariaProps.validationState;
+    },
+    get validate() {
+      return ariaProps.validate;
+    },
+    get name() {
+      return ariaProps.name;
+    },
+    get validationBehavior() {
+      return ariaProps.validationBehavior;
+    },
+    get commitBehavior() {
+      return ariaProps.commitBehavior;
     },
   });
 
@@ -319,6 +391,18 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       get onCut() {
         return ariaProps.onCut;
       },
+      get validationBehavior() {
+        return ariaProps.validationBehavior;
+      },
+      get commitBehavior() {
+        return ariaProps.commitBehavior;
+      },
+      get validate() {
+        return ariaProps.validate;
+      },
+      get validationState() {
+        return ariaProps.validationState;
+      },
     },
     state,
     () => inputRef ?? null,
@@ -326,7 +410,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
 
   const renderValues = createMemo<NumberFieldRenderProps>(() => ({
     isDisabled: ariaProps.isDisabled ?? false,
-    isInvalid: ariaProps.isInvalid ?? false,
+    isInvalid: numberFieldAria.isInvalid,
     isRequired: ariaProps.isRequired ?? false,
     isReadOnly: ariaProps.isReadOnly ?? false,
     value: state.numberValue(),
@@ -349,7 +433,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       return ariaProps.isDisabled ?? false;
     },
     get isInvalid() {
-      return ariaProps.isInvalid ?? false;
+      return numberFieldAria.isInvalid;
     },
     get isRequired() {
       return ariaProps.isRequired ?? false;
@@ -398,7 +482,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       return ariaProps.isDisabled ?? false;
     },
     get isInvalid() {
-      return ariaProps.isInvalid ?? false;
+      return numberFieldAria.isInvalid;
     },
     get isRequired() {
       return ariaProps.isRequired ?? false;
@@ -446,15 +530,16 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
     },
   };
   const fieldValidation = createMemo<ValidationResult>(() => {
-    const isInvalid = ariaProps.isInvalid ?? false;
+    const isInvalid = numberFieldAria.isInvalid;
+    const validationErrors = numberFieldAria.validationErrors;
     const errorMessage = ariaProps.errorMessage;
-    const validationErrors = isInvalid && typeof errorMessage === "string" ? [errorMessage] : [];
     return {
       isInvalid,
-      validationErrors,
-      validationDetails: isInvalid
-        ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
-        : VALID_VALIDITY_STATE,
+      validationErrors:
+        isInvalid && validationErrors.length === 0 && typeof errorMessage === "string"
+          ? [errorMessage]
+          : validationErrors,
+      validationDetails: numberFieldAria.validationDetails,
     };
   });
   const fieldErrorContext: FieldErrorContextValue = {
@@ -476,7 +561,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
               class={renderProps.class()}
               style={renderProps.style()}
               data-disabled={ariaProps.isDisabled || undefined}
-              data-invalid={ariaProps.isInvalid || undefined}
+              data-invalid={numberFieldAria.isInvalid || undefined}
               data-required={ariaProps.isRequired || undefined}
               data-readonly={ariaProps.isReadOnly || undefined}
             >

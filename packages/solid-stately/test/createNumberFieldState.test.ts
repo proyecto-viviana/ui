@@ -736,4 +736,35 @@ describe("createNumberFieldState", () => {
       });
     });
   });
+
+  describe("commitBehavior", () => {
+    it("snaps defaultValue to max by default", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          defaultValue: 15,
+          minValue: 0,
+          maxValue: 10,
+        });
+
+        expect(state.numberValue()).toBe(10);
+
+        dispose();
+      });
+    });
+
+    it("keeps a value over max when commitBehavior is validate", () => {
+      createRoot((dispose) => {
+        const state = createNumberFieldState({
+          defaultValue: 15,
+          minValue: 0,
+          maxValue: 10,
+          commitBehavior: "validate",
+        });
+
+        expect(state.numberValue()).toBe(15);
+
+        dispose();
+      });
+    });
+  });
 });

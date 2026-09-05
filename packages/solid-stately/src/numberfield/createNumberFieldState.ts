@@ -19,6 +19,11 @@
 
 import { createSignal, createMemo, type Accessor } from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
+import {
+  createFormValidationState,
+  type FormValidationState,
+  type ValidationFunction,
+} from "../form";
 
 export interface NumberFieldStateProps {
   /** The current value (controlled). */
@@ -41,9 +46,30 @@ export interface NumberFieldStateProps {
   locale?: string;
   /** Number format options. */
   formatOptions?: Intl.NumberFormatOptions;
+  /** Whether the number field is invalid (controlled). */
+  isInvalid?: boolean;
+  /** @deprecated Use isInvalid instead. */
+  validationState?: "valid" | "invalid";
+  /** Custom validation function. */
+  validate?: ValidationFunction<number>;
+  /**
+   * Whether to use native HTML form validation or ARIA validation semantics.
+   * @default "native"
+   */
+  validationBehavior?: "aria" | "native";
+  /** Field name(s) for server error lookup. */
+  name?: string | string[];
+  /**
+   * Controls the behavior of the number field when the user blurs the field after
+   * editing. `'snap'` clamps to min/max and snaps to step. `'validate'` leaves the
+   * value and reports native range/step validity.
+   *
+   * @default "snap"
+   */
+  commitBehavior?: "snap" | "validate";
 }
 
-export interface NumberFieldState {
+export interface NumberFieldState extends FormValidationState {
   /** The current input value as a string. */
   inputValue: Accessor<string>;
   /** The current numeric value. */
@@ -60,6 +86,12 @@ export interface NumberFieldState {
   minValue: Accessor<number | undefined>;
   /** The maximum value. */
   maxValue: Accessor<number | undefined>;
+  /** The configured step, or undefined when the field uses the default step. */
+  step: Accessor<number | undefined>;
+  /** The default numeric value, used on native form reset. */
+  defaultNumberValue: number;
+  /** Sets the number value and reformats the input. */
+  setNumberValue: (value: number) => void;
   /** Set the input value. */
   setInputValue: (value: string) => void;
   /** Validate a partial input value. */
@@ -174,6 +206,7 @@ export function createNumberFieldState(
 
   // Determine step value
   const hasCustomStep = createMemo(() => isValidStep(getProps().step));
+  const shouldSnap = () => (getProps().commitBehavior ?? "snap") === "snap";
 
   const step = createMemo(() => {
     const p = getProps();
@@ -198,15 +231,30 @@ export function createNumberFieldState(
     return clamp(value, p.minValue, p.maxValue);
   };
 
+  let initialNumberValue = NaN;
+  let capturedDefaultNumberValue = NaN;
+
+  const constrainForCommit = (value: number): number => {
+    if (!shouldSnap()) return value;
+    return applyConstraints(value);
+  };
+
   // Initialize from props
   const initValue = () => {
     const p = getProps();
     const initial = p.value ?? p.defaultValue;
-    if (initial != null) {
-      const constrained = applyConstraints(initial);
-      setNumberValue(constrained);
-      setInputValueInternal(formatNumber(constrained));
+    if (initial != null && !isNaN(initial)) {
+      const next = constrainForCommit(initial);
+      setNumberValue(next);
+      setInputValueInternal(formatNumber(next));
+      initialNumberValue = next;
+    } else {
+      initialNumberValue = NaN;
     }
+    const defaultValue = p.defaultValue ?? NaN;
+    capturedDefaultNumberValue = isNaN(defaultValue)
+      ? initialNumberValue
+      : constrainForCommit(defaultValue);
   };
 
   // Call init on first access
@@ -223,7 +271,7 @@ export function createNumberFieldState(
     ensureInitialized();
     const p = getProps();
     if (p.value !== undefined) {
-      return applyConstraints(p.value);
+      return constrainForCommit(p.value);
     }
     return numberValue();
   });
@@ -236,11 +284,11 @@ export function createNumberFieldState(
       return;
     }
 
-    const constrained = applyConstraints(p.value);
-    if (lastControlledValue === undefined || !Object.is(lastControlledValue, constrained)) {
-      lastControlledValue = constrained;
-      setNumberValue(constrained);
-      setInputValueInternal(formatNumber(constrained));
+    const next = constrainForCommit(p.value);
+    if (lastControlledValue === undefined || !Object.is(lastControlledValue, next)) {
+      lastControlledValue = next;
+      setNumberValue(next);
+      setInputValueInternal(formatNumber(next));
     }
   };
 
@@ -249,6 +297,28 @@ export function createNumberFieldState(
     syncControlledValue();
     return parseNumber(inputValue());
   };
+
+  const validation = createFormValidationState({
+    get value() {
+      ensureInitialized();
+      return actualNumberValue();
+    },
+    get isInvalid() {
+      return getProps().isInvalid;
+    },
+    get validationState() {
+      return getProps().validationState;
+    },
+    get validate() {
+      return getProps().validate;
+    },
+    get name() {
+      return getProps().name;
+    },
+    get validationBehavior() {
+      return getProps().validationBehavior ?? "native";
+    },
+  });
 
   // Validate partial input
   const validate = (value: string): boolean => {
@@ -284,6 +354,7 @@ export function createNumberFieldState(
       setNumberValue(NaN);
       setInputValueInternal(p.value === undefined ? "" : formatNumber(actualNumberValue()));
       p.onChange?.(NaN);
+      validation.commitValidation();
       return;
     }
 
@@ -295,14 +366,16 @@ export function createNumberFieldState(
       return;
     }
 
-    // Clamp and optionally snap to custom step.
-    parsed = applyConstraints(parsed);
+    const previous = actualNumberValue();
+    parsed = constrainForCommit(parsed);
 
-    // Update state
     setNumberValue(parsed);
     setInputValueInternal(formatNumber(parsed));
 
     p.onChange?.(parsed);
+    if (parsed !== previous) {
+      validation.commitValidation();
+    }
   };
 
   // Check if can increment
@@ -366,6 +439,7 @@ export function createNumberFieldState(
     setNumberValue(current);
     setInputValueInternal(formatNumber(current));
     p.onChange?.(current);
+    validation.commitValidation();
   };
 
   // Decrement by step
@@ -379,6 +453,7 @@ export function createNumberFieldState(
     setNumberValue(current);
     setInputValueInternal(formatNumber(current));
     p.onChange?.(current);
+    validation.commitValidation();
   };
 
   // Set to max
@@ -394,6 +469,7 @@ export function createNumberFieldState(
     setNumberValue(snapped);
     setInputValueInternal(formatNumber(snapped));
     p.onChange?.(snapped);
+    validation.commitValidation();
   };
 
   // Set to min
@@ -408,9 +484,22 @@ export function createNumberFieldState(
     setNumberValue(p.minValue);
     setInputValueInternal(formatNumber(p.minValue));
     p.onChange?.(p.minValue);
+    validation.commitValidation();
+  };
+
+  const setNumberValuePublic = (value: number) => {
+    ensureInitialized();
+    setNumberValue(value);
+    setInputValueInternal(formatNumber(value));
+    getProps().onChange?.(value);
   };
 
   return {
+    realtimeValidation: validation.realtimeValidation,
+    displayValidation: validation.displayValidation,
+    updateValidation: validation.updateValidation,
+    resetValidation: validation.resetValidation,
+    commitValidation: validation.commitValidation,
     get inputValue() {
       ensureInitialized();
       syncControlledValue();
@@ -425,6 +514,12 @@ export function createNumberFieldState(
     isReadOnly: () => getProps().isReadOnly ?? false,
     minValue: () => getProps().minValue,
     maxValue: () => getProps().maxValue,
+    step: () => getProps().step,
+    get defaultNumberValue() {
+      ensureInitialized();
+      return capturedDefaultNumberValue;
+    },
+    setNumberValue: setNumberValuePublic,
     setInputValue,
     validate,
     commit,

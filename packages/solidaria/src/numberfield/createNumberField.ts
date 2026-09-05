@@ -18,16 +18,18 @@
  */
 
 import { type JSX, createEffect, createMemo, createSignal, onCleanup } from "solid-js";
+import type { NumberFieldState, ValidityState } from "@proyecto-viviana/solid-stately";
 import { createLabel } from "../label/createLabel";
 import { filterDOMProps } from "../utils/filterDOMProps";
 import { mergeProps } from "../utils/mergeProps";
 import { createId } from "../ssr";
 import { access, type MaybeAccessor } from "../utils/reactivity";
-import type { NumberFieldState } from "@proyecto-viviana/solid-stately";
 import type { AriaButtonProps } from "../button/types";
 import type { PressEvent } from "../interactions";
 import { createFocusWithin } from "../interactions/createFocusWithin";
 import { announce, clearAnnouncer } from "../live-announcer";
+import { createFormValidation } from "../form/createFormValidation";
+import { createFormReset } from "../form/createFormReset";
 
 export interface AriaNumberFieldProps {
   /** A label for the number field. */
@@ -85,6 +87,16 @@ export interface AriaNumberFieldProps {
    * @default "native"
    */
   validationBehavior?: "aria" | "native";
+  /**
+   * Controls blur commit: `'snap'` clamps to min/max/step, `'validate'` leaves
+   * the value and reports native range/step validity.
+   * @default "snap"
+   */
+  commitBehavior?: "snap" | "validate";
+  /** Custom validation function. */
+  validate?: (value: number) => boolean | string | string[] | null | undefined;
+  /** @deprecated Use isInvalid instead. */
+  validationState?: "valid" | "invalid";
 }
 
 export interface NumberFieldAria {
@@ -102,6 +114,12 @@ export interface NumberFieldAria {
   descriptionProps: JSX.HTMLAttributes<HTMLElement>;
   /** Props for the error message element. */
   errorMessageProps: JSX.HTMLAttributes<HTMLElement>;
+  /** Whether the number field is invalid. */
+  isInvalid: boolean;
+  /** The current error messages for the input if it is invalid. */
+  validationErrors: string[];
+  /** The native validity state for the input. */
+  validationDetails: ValidityState;
 }
 
 /**
@@ -114,6 +132,24 @@ export function createNumberField(
 ): NumberFieldAria {
   const getProps = () => access(props);
   const id = createId(getProps().id);
+  const displayValidation = () => state.displayValidation();
+
+  createFormReset(
+    () => inputRef?.() ?? undefined,
+    state.defaultNumberValue,
+    (value) => state.setNumberValue(value),
+  );
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return getProps().validationBehavior ?? "native";
+      },
+      focus: () => inputRef?.()?.focus(),
+    },
+    state,
+    () => inputRef?.() ?? undefined,
+  );
+  createNativeValidation(state, getProps, inputRef);
 
   // Generate IDs for associated elements
   const inputId = `${id}-input`;
@@ -407,7 +443,7 @@ export function createNumberField(
     const parts: string[] = [];
     if (p["aria-describedby"]) parts.push(p["aria-describedby"]);
     if (p.description) parts.push(descriptionId);
-    if (p.isInvalid && p.errorMessage) parts.push(errorMessageId);
+    if (displayValidation().isInvalid && p.errorMessage) parts.push(errorMessageId);
     return parts.length > 0 ? parts.join(" ") : undefined;
   };
 
@@ -419,7 +455,7 @@ export function createNumberField(
       return mergeProps(focusWithinProps, {
         role: "group",
         "aria-disabled": getProps().isDisabled || undefined,
-        "aria-invalid": getProps().isInvalid || undefined,
+        "aria-invalid": displayValidation().isInvalid || undefined,
       }) as JSX.HTMLAttributes<HTMLElement>;
     },
     get inputProps() {
@@ -460,7 +496,7 @@ export function createNumberField(
           // (also covers the ColorArea/ColorSwatch English hardcodes); this keeps the
           // en-US roledescription byte-identical to React Spectrum in the meantime.
           "aria-roledescription": "Number field",
-          "aria-invalid": p.isInvalid || undefined,
+          "aria-invalid": displayValidation().isInvalid || undefined,
           "aria-required":
             ((p.validationBehavior ?? "native") === "aria" && p.isRequired) || undefined,
           "aria-describedby": getAriaDescribedBy(),
@@ -542,5 +578,78 @@ export function createNumberField(
         id: errorMessageId,
       } as JSX.HTMLAttributes<HTMLElement>;
     },
+    get isInvalid() {
+      return displayValidation().isInvalid;
+    },
+    get validationErrors() {
+      return displayValidation().validationErrors;
+    },
+    get validationDetails() {
+      return displayValidation().validationDetails;
+    },
   };
+}
+
+let numberInput: HTMLInputElement | null = null;
+
+function createNativeValidation(
+  state: NumberFieldState,
+  getProps: () => AriaNumberFieldProps,
+  inputRef?: () => HTMLInputElement | null,
+): void {
+  createEffect(() => {
+    const commitBehavior = getProps().commitBehavior ?? "snap";
+    const input = inputRef?.() ?? null;
+    if (
+      commitBehavior !== "validate" ||
+      state.realtimeValidation().isInvalid ||
+      !input ||
+      input.disabled
+    ) {
+      return;
+    }
+
+    if (!numberInput && typeof document !== "undefined") {
+      numberInput = document.createElement("input");
+      numberInput.type = "number";
+    }
+
+    if (!numberInput) {
+      return;
+    }
+
+    const min = state.minValue();
+    const max = state.maxValue();
+    const step = state.step();
+    const value = state.numberValue();
+
+    numberInput.min = min != null && !isNaN(min) ? String(min) : "";
+    numberInput.max = max != null && !isNaN(max) ? String(max) : "";
+    numberInput.step = step != null && !isNaN(step) ? String(step) : "";
+    numberInput.value = value != null && !isNaN(value) ? String(value) : "";
+
+    const valid = input.validity.valid && numberInput.validity.valid;
+    const validationMessage = input.validationMessage || numberInput.validationMessage;
+    state.updateValidation({
+      isInvalid: !valid,
+      validationErrors: validationMessage ? [validationMessage] : [],
+      validationDetails: {
+        badInput: input.validity.badInput,
+        customError: input.validity.customError,
+        patternMismatch: input.validity.patternMismatch,
+        rangeOverflow: numberInput.validity.rangeOverflow,
+        rangeUnderflow: numberInput.validity.rangeUnderflow,
+        stepMismatch: numberInput.validity.stepMismatch,
+        tooLong: input.validity.tooLong,
+        tooShort: input.validity.tooShort,
+        typeMismatch: input.validity.typeMismatch,
+        valueMissing: input.validity.valueMissing,
+        valid,
+      },
+    });
+
+    if ((getProps().validationBehavior ?? "native") === "native" && !numberInput.validity.valid) {
+      input.setCustomValidity(numberInput.validationMessage);
+    }
+  });
 }

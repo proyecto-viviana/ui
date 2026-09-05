@@ -3,7 +3,7 @@
  */
 import { describe, expect, it, vi } from "vite-plus/test";
 import { fireEvent, render, screen, waitFor } from "@solidjs/testing-library";
-import { Button, Form, Skeleton, TextField } from "../src";
+import { Button, Form, NumberField, Skeleton, TextField } from "../src";
 
 describe("Form (solid-spectrum)", () => {
   it("renders an S2 styled form root", () => {
@@ -210,6 +210,31 @@ describe("Form (solid-spectrum)", () => {
 
     const input = screen.getByRole("textbox", { name: "Project name" }) as HTMLInputElement;
     const form = screen.getByRole("form", { name: "Project form" }) as HTMLFormElement;
+    expect(input).not.toHaveAttribute("aria-invalid");
+    expect(screen.getByText("Inherited from the parent form.")).toBeInTheDocument();
+
+    form.requestSubmit();
+
+    expect(onSubmit).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(input).toHaveAttribute("aria-invalid", "true");
+    });
+    expect(screen.queryByText("Inherited from the parent form.")).not.toBeInTheDocument();
+    expect(screen.getByText(input.validationMessage)).toBeInTheDocument();
+  });
+
+  it("paints HelpText after a blocked native required NumberField submit", async () => {
+    const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+    render(() => (
+      <Form aria-label="Quantity form" onSubmit={onSubmit}>
+        <NumberField label="Quantity" isRequired description="Inherited from the parent form." />
+        <button type="submit">Submit</button>
+      </Form>
+    ));
+
+    const input = screen.getByRole("textbox", { name: "Quantity" }) as HTMLInputElement;
+    const form = screen.getByRole("form", { name: "Quantity form" }) as HTMLFormElement;
     expect(input).not.toHaveAttribute("aria-invalid");
     expect(screen.getByText("Inherited from the parent form.")).toBeInTheDocument();
 
