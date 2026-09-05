@@ -149,6 +149,45 @@ describe("createFormValidation", () => {
       // (we can't easily test preventDefault here, but we can verify it runs)
     });
 
+    it("focuses the input when requestSubmit uses a form attribute set after mount", () => {
+      const TestComponent = () => {
+        let inputRef: HTMLInputElement | undefined;
+
+        const validationState = createFormValidationState({
+          value: "filled",
+          isInvalid: true,
+          validationBehavior: "native",
+        });
+
+        createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
+
+        return <input ref={inputRef} value="filled" data-testid="input" />;
+      };
+
+      const { getByTestId } = render(() => (
+        <>
+          <form
+            id="probe"
+            data-testid="form"
+            onSubmit={(event) => {
+              event.preventDefault();
+            }}
+          />
+          <TestComponent />
+        </>
+      ));
+
+      const input = getByTestId("input") as HTMLInputElement;
+      const form = getByTestId("form") as HTMLFormElement;
+      expect(input.validity.customError).toBe(true);
+      input.setAttribute("form", "probe");
+      expect(input.form).toBe(form);
+
+      form.requestSubmit();
+
+      expect(document.activeElement).toBe(input);
+    });
+
     it("should focus input on invalid event when first invalid", () => {
       const focusMock = vi.fn();
 

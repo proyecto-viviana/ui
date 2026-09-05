@@ -164,8 +164,16 @@ export function createFormValidation(
         state.commitValidation();
       }
 
-      // Auto focus the first invalid input in a form
-      if (!e.defaultPrevented && form && getFirstInvalidInput(form) === input) {
+      // RAC reads `ref.current?.form` at event time (`useFormValidation.ts:75`).
+      // A `form` attribute associated after mount (D14's injected probe form)
+      // leaves the effect-time `input.form` null; using the live association
+      // is what focuses TextField / SearchField / Checkbox after requestSubmit.
+      const associatedForm = input.form;
+      if (
+        !e.defaultPrevented &&
+        associatedForm &&
+        getFirstInvalidInput(associatedForm) === input
+      ) {
         const focusFn = focus();
         if (focusFn) {
           focusFn();

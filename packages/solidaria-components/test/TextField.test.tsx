@@ -799,7 +799,32 @@ describe("TextField", () => {
         expect(input.closest(".solidaria-TextField")).toHaveAttribute("data-invalid");
         expect(input.validity.valueMissing).toBe(true);
       });
+      expect(document.activeElement).toBe(input);
       expect(screen.getByText(input.validationMessage)).toBeInTheDocument();
+    });
+
+    it("focuses the invalid input when requestSubmit uses a form attribute set after mount", () => {
+      render(() => (
+        <>
+          <form
+            id="probe"
+            aria-label="Probe form"
+            onSubmit={(event) => {
+              event.preventDefault();
+            }}
+          />
+          <TextField isInvalid name="project" value="Quarterly report">
+            <Label>Project name</Label>
+            <Input />
+          </TextField>
+        </>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Project name" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Probe form" }) as HTMLFormElement;
+      input.setAttribute("form", "probe");
+      form.requestSubmit();
+      expect(document.activeElement).toBe(input);
     });
   });
 });
