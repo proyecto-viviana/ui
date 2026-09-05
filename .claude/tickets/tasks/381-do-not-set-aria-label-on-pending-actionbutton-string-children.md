@@ -4,12 +4,22 @@ type: task
 title: "Do not set aria-label on pending ActionButton string children"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: 'filed from the #260 actionbutton functional pass: live isPending string children, after the 1s spinner hides the label, Chromium AX is unnamed button [disabled] on S2 and button "Inspect" [disabled] on Solid. Solid pendingAccessibleLabel copies the string into aria-label; S2 ActionButton does not. Icon-start pending (non-string children) unnamed on both; icon-only keeps the consumer aria-label on both',
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "HEAD subset D6 ActionButton pending failed. Solid aria-label=Inspect makes RAC labelledby include the progress id, so the name is Inspect pending at the 120ms capture; S2 has no host aria-label.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-05,
+      note: "Dropped pendingAccessibleLabel. Pending string children no longer set host aria-label; consumer aria-label still spreads. Package tests fail if Inspect pending copies onto aria-label. Did not re-run certified D6.",
     }
 ---
 

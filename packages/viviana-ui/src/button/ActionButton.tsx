@@ -312,17 +312,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     element.addEventListener("keydown", onKeyDown);
     onCleanup(() => element.removeEventListener("keydown", onKeyDown));
   });
-  const pendingAccessibleLabel = () => {
-    const existingLabel = (headlessProps as Record<string, unknown>)["aria-label"];
-    if (existingLabel != null) {
-      return existingLabel as string;
-    }
-
-    const resolvedChildren = resolveChildren(() => local.children);
-    const content = resolvedChildren();
-    return local.isPending && typeof content === "string" ? content : undefined;
-  };
-
   function ActionButtonContent() {
     const iconContextValue = {
       slot: "icon",
@@ -473,7 +462,6 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     <HeadlessButton
       {...headlessProps}
       {...menuTriggerButtonProps()}
-      aria-label={pendingAccessibleLabel()}
       isPending={local.isPending}
       isPendingFocusable
       ref={(element: HTMLButtonElement) => {
