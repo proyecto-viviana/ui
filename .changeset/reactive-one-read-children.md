@@ -1,7 +1,6 @@
 ---
 "@proyecto-viviana/solid-spectrum": patch
 "@proyecto-viviana/ui": patch
-"@proyecto-viviana/kumo": patch
 ---
 
 Keep direct reactive children live in ComboBox option, Picker item, StatusLight,

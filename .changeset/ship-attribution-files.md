@@ -4,7 +4,6 @@
 "@proyecto-viviana/solidaria-components": patch
 "@proyecto-viviana/solid-spectrum": patch
 "@proyecto-viviana/ui": patch
-"@proyecto-viviana/kumo": patch
 ---
 
 Ship each package's local MIT license and its applicable upstream license or
