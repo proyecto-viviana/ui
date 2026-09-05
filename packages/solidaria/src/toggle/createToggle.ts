@@ -31,6 +31,7 @@ import { createSlotId } from "../ssr";
 import { createFormValidationState, type ToggleState } from "@proyecto-viviana/solid-stately";
 import { type PressEvent } from "../interactions/PressEvent";
 import { createFormValidation } from "../form/createFormValidation";
+import { createFormReset } from "../form/createFormReset";
 
 export interface AriaToggleProps {
   /** Whether the element should be selected (controlled). */
@@ -159,6 +160,13 @@ export function createToggle(
     },
     validationState,
     () => ref() ?? undefined,
+  );
+
+  // RAC useToggle: useFormReset(ref, state.defaultSelected, state.setSelected).
+  createFormReset(
+    () => ref() ?? undefined,
+    state.defaultSelected,
+    (value) => state.setSelected(value),
   );
 
   const skipLabelKeyboardPress = (e: PressEvent): boolean => {

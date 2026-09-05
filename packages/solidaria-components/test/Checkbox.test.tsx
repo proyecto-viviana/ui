@@ -6,6 +6,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import {
   Checkbox,
   CheckboxContext,
@@ -932,6 +933,32 @@ describe("CheckboxGroup", () => {
       render(() => <Checkbox data-testid="terms-cb">Accept terms</Checkbox>);
       const elements = screen.getAllByTestId("terms-cb");
       expect(elements.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe("native form reset", () => {
+    it("restores a controlled selection on native form reset", () => {
+      const [isSelected, setSelected] = createSignal(true);
+
+      render(() => (
+        <Form aria-label="Reset form">
+          <Checkbox isSelected={isSelected()} onChange={setSelected}>
+            Agree
+          </Checkbox>
+          <button type="reset">Reset</button>
+        </Form>
+      ));
+
+      const checkbox = screen.getByRole("checkbox", { name: "Agree" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Reset form" }) as HTMLFormElement;
+      expect(checkbox).toBeChecked();
+
+      fireEvent.click(checkbox);
+      expect(checkbox).not.toBeChecked();
+
+      // JSDOM's `HTMLFormElement.reset()` does not dispatch `reset`.
+      fireEvent.reset(form);
+      expect(checkbox).toBeChecked();
     });
   });
 });

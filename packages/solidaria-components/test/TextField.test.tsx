@@ -827,4 +827,32 @@ describe("TextField", () => {
       expect(document.activeElement).toBe(input);
     });
   });
+
+  describe("native form reset", () => {
+    it("restores a controlled value on native form reset", () => {
+      const [value, setValue] = createSignal("alpha");
+
+      render(() => (
+        <Form aria-label="Reset form">
+          <TextField value={value()} onChange={setValue}>
+            <Label>Name</Label>
+            <Input />
+          </TextField>
+          <button type="reset">Reset</button>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Name" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Reset form" }) as HTMLFormElement;
+      expect(input).toHaveValue("alpha");
+
+      fireEvent.input(input, { target: { value: "beta" } });
+      expect(input).toHaveValue("beta");
+
+      // JSDOM's `HTMLFormElement.reset()` does not dispatch `reset`.
+      // This is the same event RAC `useFormReset` and `createFormReset` listen for.
+      fireEvent.reset(form);
+      expect(input).toHaveValue("alpha");
+    });
+  });
 });

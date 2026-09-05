@@ -28,6 +28,7 @@ import {
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
 import { createFocusable, type FocusableDOMProps, type FocusableProps } from "../interactions";
 import { createFormValidation, type ValidatableElement } from "../form/createFormValidation";
+import { createFormReset } from "../form/createFormReset";
 import { mergeProps, filterDOMProps } from "../utils";
 import { type MaybeAccessor, access } from "../utils/reactivity";
 
@@ -147,6 +148,17 @@ export function createTextField<
       return getProps().validationBehavior ?? "native";
     },
   });
+
+  // RAC useTextField snapshots `props.defaultValue ?? initialValue` and
+  // calls setValue on native reset (`useTextField.ts:223-224`).
+  const resetValue = getProps().defaultValue ?? getProps().value ?? "";
+  createFormReset(
+    () => inputEl() as ValidatableElement | undefined,
+    resetValue,
+    (value) => {
+      getProps().onChange?.(value);
+    },
+  );
 
   createFormValidation(
     {

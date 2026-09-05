@@ -4,12 +4,22 @@ type: task
 title: "Restore controlled fields on native form reset"
 created: 2026-09-04
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-04,
       note: "filed from the 2026-09-04 overnight adversarial audit. createFormReset exists. DateField, Radio (#376), ComboBox (#461), and NumberField (#460) call it. Still missing on createTextField and Toggle. Upstream useTextField.ts:224 and useToggle call useFormReset. Controlled Solid TextField and Toggle will not restore on native form reset.",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "Git v2 implement. createTextField snapshots defaultValue ?? value and calls onChange. createToggle uses state.defaultSelected and state.setSelected, matching useToggle.ts:193.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createTextField and createToggle call createFormReset. Package tests: TextField/Checkbox/SearchField 287 passed.",
     }
 ---
 
