@@ -575,6 +575,63 @@ describe("SearchField", () => {
     });
   });
 
+  describe("native custom validity", () => {
+    it("sets customError when isInvalid", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Search form" onSubmit={onSubmit}>
+          <TestSearchField fieldProps={{ isInvalid: true, defaultValue: "query" }} />
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const input = screen.getByRole("searchbox") as HTMLInputElement;
+      await waitFor(() => {
+        expect(input.validity.customError).toBe(true);
+        expect(input.checkValidity()).toBe(false);
+        expect(input.validationMessage).toBe("Invalid value.");
+      });
+
+      (screen.getByRole("form", { name: "Search form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("paints FieldError after a blocked native required submit", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <Form aria-label="Search form" onSubmit={onSubmit}>
+          <SearchField isRequired name="query">
+            {() => (
+              <>
+                <Label>Query</Label>
+                <SearchFieldInput />
+                <Text slot="description">Inherited from the parent form.</Text>
+                <FieldError />
+              </>
+            )}
+          </SearchField>
+          <button type="submit">Submit</button>
+        </Form>
+      ));
+
+      const input = screen.getByRole("searchbox", { name: "Query" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Search form" }) as HTMLFormElement;
+      expect(input).not.toHaveAttribute("aria-invalid");
+      expect(document.querySelector(".solidaria-FieldError")).not.toBeInTheDocument();
+
+      form.requestSubmit();
+
+      expect(onSubmit).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(input).toHaveAttribute("aria-invalid", "true");
+        expect(input.validity.valueMissing).toBe(true);
+      });
+      expect(screen.getByText(input.validationMessage)).toBeInTheDocument();
+    });
+  });
+
   describe("i18n catalogs", () => {
     it("labels the clear button from I18nProvider, not the English literal", () => {
       render(() => (

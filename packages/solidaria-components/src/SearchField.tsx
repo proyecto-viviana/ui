@@ -40,7 +40,6 @@ import {
 } from "@proyecto-viviana/solidaria";
 import {
   createSearchFieldState,
-  VALID_VALIDITY_STATE,
   type SearchFieldState,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
@@ -548,15 +547,15 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
 
   const fieldValidation = createMemo<ValidationResult>(() => {
     const isInvalid = searchFieldAria.isInvalid;
+    const validationErrors = searchFieldAria.validationErrors;
     const errorMessage = ariaProps.errorMessage;
-    const validationErrors = isInvalid && typeof errorMessage === "string" ? [errorMessage] : [];
-
     return {
       isInvalid,
-      validationErrors,
-      validationDetails: isInvalid
-        ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
-        : VALID_VALIDITY_STATE,
+      validationErrors:
+        isInvalid && validationErrors.length === 0 && typeof errorMessage === "string"
+          ? [errorMessage]
+          : validationErrors,
+      validationDetails: searchFieldAria.validationDetails,
     };
   });
   const fieldErrorContext: FieldErrorContextValue = {

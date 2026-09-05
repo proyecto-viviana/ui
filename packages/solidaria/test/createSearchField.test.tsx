@@ -391,4 +391,29 @@ describe("createSearchField edge cases", () => {
     ));
     expect(screen.getByTestId("clear-button")).toHaveAttribute("aria-label", "Suche zurücksetzen");
   });
+
+  it("returns validationErrors and validationDetails from createTextField", () => {
+    function Probe() {
+      const state = createSearchFieldState({ defaultValue: "query" });
+      const aria = createSearchField(
+        () => ({ "aria-label": "Search", isInvalid: true }),
+        state,
+        () => null,
+      );
+      return (
+        <div
+          data-testid="probe"
+          data-invalid={aria.isInvalid || undefined}
+          data-errors={aria.validationErrors.join("|")}
+          data-custom-error={aria.validationDetails.customError || undefined}
+        />
+      );
+    }
+
+    render(() => <Probe />);
+    const probe = screen.getByTestId("probe");
+    expect(probe).toHaveAttribute("data-invalid");
+    expect(probe).toHaveAttribute("data-custom-error");
+    expect(probe.getAttribute("data-errors")).toBeDefined();
+  });
 });

@@ -83,6 +83,12 @@ export function createSearchField(
     get isInvalid() {
       return getProps().isInvalid;
     },
+    get validationState() {
+      return getProps().validationState;
+    },
+    get validate() {
+      return getProps().validate;
+    },
     get label() {
       return getProps().label;
     },
@@ -281,6 +287,12 @@ export function createSearchField(
     },
     get isInvalid() {
       return textFieldAria.isInvalid;
+    },
+    get validationErrors() {
+      return textFieldAria.validationErrors;
+    },
+    get validationDetails() {
+      return textFieldAria.validationDetails;
     },
   };
 }

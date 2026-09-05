@@ -271,8 +271,6 @@ export interface HiddenSelectProps<T> {
   form?: string;
   /** Validation behavior: 'aria' for realtime, 'native' for on submit. */
   validationBehavior?: ValidationBehavior;
-  /** Form validation state (optional, for native validation). */
-  validationState?: FormValidationState;
 }
 
 /**
@@ -304,9 +302,6 @@ export function HiddenSelect<T>(props: HiddenSelectProps<T>): JSX.Element {
     },
     get triggerRef() {
       return props.triggerRef;
-    },
-    get validationState() {
-      return props.validationState;
     },
   });
 
