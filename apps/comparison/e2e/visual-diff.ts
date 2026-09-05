@@ -1,5 +1,18 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { defaultPaintBudgetMs, waitForPaintSettle } from "./comparison-page";
 import { comparisonThemeRequestEvent, type ComparisonThemeChoice } from "../src/data/theme";
+
+/**
+ * Playwright's screenshot waits for fonts and two stable compositor frames.
+ * WSL Chromium 151 never issues those, so an unbounded capture takes the
+ * 180s D3 test timeout. Cap the action: a painting machine finishes in
+ * milliseconds; a stuck compositor fails instead of hanging.
+ */
+export const screenshotTimeoutMs = 15_000;
+
+function screenshotOptions() {
+  return { animations: "disabled" as const, timeout: screenshotTimeoutMs };
+}
 
 export type ComparisonColorScheme = "light" | "dark";
 
@@ -72,14 +85,7 @@ export async function clearPointer(page: Page) {
 }
 
 async function waitForScreenshotFrame(target: Locator) {
-  await target.evaluate(async () => {
-    if ("fonts" in document) {
-      await document.fonts.ready;
-    }
-
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-  });
+  await waitForPaintSettle(target.page(), defaultPaintBudgetMs);
 }
 
 export async function normalizedElementScreenshot(target: Locator) {
@@ -146,7 +152,7 @@ export async function normalizedElementScreenshot(target: Locator) {
     }, previousState);
 
     await waitForScreenshotFrame(target);
-    return await target.screenshot({ animations: "disabled" });
+    return await target.screenshot(screenshotOptions());
   } finally {
     await target.evaluate((element, state) => {
       const htmlElement = element as HTMLElement;
@@ -185,7 +191,7 @@ export async function normalizedElementScreenshot(target: Locator) {
 
 async function inPlaceElementScreenshot(target: Locator) {
   await waitForScreenshotFrame(target);
-  return target.screenshot({ animations: "disabled" });
+  return target.screenshot(screenshotOptions());
 }
 
 export type ClonedScreenshotOptions = {
@@ -304,7 +310,7 @@ export async function clonedElementScreenshot(
   const frame = target.page().locator("[data-comparison-pixel-frame]");
   try {
     await waitForScreenshotFrame(frame);
-    return await frame.screenshot({ animations: "disabled" });
+    return await frame.screenshot(screenshotOptions());
   } finally {
     await target.page().evaluate(() => {
       for (const node of Array.from(document.querySelectorAll("[data-comparison-pixel-frame]"))) {
@@ -720,8 +726,8 @@ export async function diffLocatorScreenshots(
   solidElement: Locator,
   pixelThreshold: number = 0,
 ) {
-  const reactPng = await reactElement.screenshot({ animations: "disabled" });
-  const solidPng = await solidElement.screenshot({ animations: "disabled" });
+  const reactPng = await reactElement.screenshot(screenshotOptions());
+  const solidPng = await solidElement.screenshot(screenshotOptions());
 
   return diffScreenshots(page, reactPng, solidPng, pixelThreshold);
 }

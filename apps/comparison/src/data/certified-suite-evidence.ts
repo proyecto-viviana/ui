@@ -62,3 +62,35 @@ export function validateCertifiedSuiteEvidence(
 
   return problems;
 }
+
+/**
+ * A HEAD recording that is not the full certified suite. Ticket #194.
+ * Counts here must not be copied into `lastFullCertifiedSuiteRun`. A subset
+ * cannot version a release; the postcard stays stale until a complete suite
+ * against this SHA finishes with zero failures.
+ */
+export interface CertifiedSuiteSubsetEvidence {
+  revision: string;
+  completedAt: string;
+  scope: string;
+  passed: number;
+  failed: number;
+  skipped: number;
+  total: number;
+  /** Literal false — a subset is never the postcard. */
+  complete: false;
+  blockingReason: string;
+}
+
+export const lastHeadCertifiedSubsetRun: CertifiedSuiteSubsetEvidence = {
+  revision: "15ca6d4cd685289daa9666485b58fbb059f1c300",
+  completedAt: "2026-09-05T04:57:48.170Z",
+  scope: "e2e/certified/field-validity.certified.spec.ts (D14 native validity only)",
+  passed: 39,
+  failed: 0,
+  skipped: 0,
+  total: 39,
+  complete: false,
+  blockingReason:
+    "D14-only recording. WSL Chromium 151 never issues a compositor frame, so D3 screenshots time out waiting for element stability (15s bound, not 180s hang). Not the full certified suite. Postcard remains 0f1e1198. Do not version from these counts.",
+};

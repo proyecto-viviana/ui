@@ -1,0 +1,87 @@
+{
+  "generatedAt": "2026-09-05T04:57:48.170Z",
+  "revision": "15ca6d4cd685289daa9666485b58fbb059f1c300",
+  "shard": null,
+  "totals": {
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0,
+    "waived": 0,
+    "flaky": 0
+  },
+  "cells": [
+    {
+      "component": "checkbox-native-validity",
+      "driver": "D14",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "combobox-native-validity",
+      "driver": "D14",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "form-native-validity",
+      "driver": "D14",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "numberfield-native-validity",
+      "driver": "D14",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "radiogroup-native-validity",
+      "driver": "D14",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "searchfield-native-validity",
+      "driver": "D14",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    },
+    {
+      "component": "textfield-native-validity",
+      "driver": "D14",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "waived": 0,
+      "flaky": 0,
+      "failures": []
+    }
+  ],
+  "waived": [],
+  "unwaived": [],
+  "waiverProblems": []
+}

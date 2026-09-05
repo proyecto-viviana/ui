@@ -1,4 +1,5 @@
 import { expect } from "@playwright/test";
+import { scrollLocatorIntoView } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerEventSequenceDriver } from "../drivers/events";
@@ -110,7 +111,7 @@ const surfaceScenario: DriverScenario = {
 const closeButtonMouseClick: EventGesture = {
   id: "mouse-click",
   run: async ({ page, target }) => {
-    await target.scrollIntoViewIfNeeded();
+    await scrollLocatorIntoView(target);
     const box = await target.boundingBox();
     if (!box) {
       throw new Error("Dialog close button has no bounding box");

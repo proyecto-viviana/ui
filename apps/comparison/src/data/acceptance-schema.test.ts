@@ -21,6 +21,7 @@ import {
 import {
   certifiedSuitePostcardIsCurrent,
   lastFullCertifiedSuiteRun,
+  lastHeadCertifiedSubsetRun,
   validateCertifiedSuiteEvidence,
 } from "./certified-suite-evidence";
 
@@ -178,5 +179,8 @@ describe("acceptance inventory", () => {
     ).toBe(true);
     expect(certifiedSuitePostcardIsCurrent(lastFullCertifiedSuiteRun, "a".repeat(40))).toBe(false);
     expect(certifiedSuitePostcardIsCurrent(lastFullCertifiedSuiteRun, null)).toBe(false);
+    expect(lastHeadCertifiedSubsetRun == null || lastHeadCertifiedSubsetRun.complete === false).toBe(
+      true,
+    );
   });
 });

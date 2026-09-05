@@ -19,6 +19,7 @@ import {
 import {
   certifiedSuitePostcardIsCurrent,
   lastFullCertifiedSuiteRun,
+  lastHeadCertifiedSubsetRun,
   validateCertifiedSuiteEvidence,
 } from "../src/data/certified-suite-evidence";
 import { getVisualStateTargets } from "../src/data/visual-state-matrix";
@@ -655,6 +656,16 @@ const postcardLine = certifiedSuitePostcardCurrent
   ? `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`
   : `STALE certified-suite postcard (not this HEAD; ticket #194). Do not treat these counts as live. Postcard revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}. Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`;
 console.log(postcardLine);
+if (lastHeadCertifiedSubsetRun == null) {
+  console.log(
+    "No HEAD certified-suite subset recorded. Ticket #194. A partial WSL run is not a postcard.",
+  );
+} else {
+  const subset = lastHeadCertifiedSubsetRun;
+  console.log(
+    `HEAD certified-suite subset (not a postcard; complete=false): revision=${subset.revision} completed=${subset.completedAt} scope=${subset.scope} passed=${subset.passed} failed=${subset.failed} skipped=${subset.skipped} total=${subset.total}. ${subset.blockingReason}`,
+  );
+}
 const liveCertifiedSummary = readCertifiedSummaryFile(
   fileURLToPath(new URL("../test-results/certified-summary.json", import.meta.url)),
 );
@@ -663,6 +674,13 @@ if (liveCertifiedSummary == null) {
     "[info] no test-results/certified-summary.json; run comparison:test:certified for the live component × driver table",
   );
 } else {
+  const subsetDrivers = new Set(liveCertifiedSummary.cells.map((cell) => cell.driver));
+  const looksFull = subsetDrivers.has("D1") && subsetDrivers.has("D3") && subsetDrivers.has("D14");
+  if (!looksFull) {
+    console.log(
+      "LOCAL PLAYWRIGHT OUTPUT is a subset, not the recertification bar. Ticket #194. Do not treat this table as a HEAD postcard.",
+    );
+  }
   console.log("");
   console.log(formatCertifiedSummaryMarkdown(liveCertifiedSummary).trimEnd());
 }

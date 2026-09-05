@@ -61,10 +61,10 @@ async function applyGestureState(
       await target.focus();
       break;
     case "hover":
-      await target.hover();
+      await target.hover({ timeout: 10_000 });
       break;
     case "pressed":
-      await target.hover();
+      await target.hover({ timeout: 10_000 });
       await ctx.page.mouse.down();
       break;
   }

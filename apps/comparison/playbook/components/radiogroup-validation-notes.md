@@ -11,6 +11,27 @@ walks pair-match: `invalid · submit attempt` and `required-empty · submit
 attempt` report `submits: 0`, `invalids: 3`, and `active` `starter` on both
 stacks (`cbf06ac7` HEAD bundle, 2026-09-05).
 
+## HEAD D14 walk — 2026-09-05 (#376)
+
+Recorded against `15ca6d4c` (D14 subset). RadioGroup 6/6 still pair-match on
+current comparison dist. `/components/radiogroup/?isInvalid=true`, selected
+`starter`. Both stacks after `requestSubmit`:
+
+```json
+{
+  "submits": 0,
+  "invalids": 3,
+  "active": "input type=radio value=starter",
+  "flags": ["customError"],
+  "message": "Invalid value.",
+  "invalidPseudo": true
+}
+```
+
+Required-empty submit (`?isRequired=true&selectedValue=none`) is the same
+block with `flags: ["valueMissing"]`, `submits: 0`, `invalids: 3`, focus
+`starter`. See `playbook/certified-head-subset.md`.
+
 ## Scope
 
 - Component: `RadioGroup`

@@ -43,15 +43,20 @@ export async function waitForComparisonRouteReady(
     page.locator('.js-component-example-section-mount[data-controls-mounted="true"]'),
   ).toHaveCount(1);
 
-  const paintBudgetMs = options?.paintBudgetMs ?? defaultPaintBudgetMs;
+  await waitForPaintSettle(page, options?.paintBudgetMs ?? defaultPaintBudgetMs);
+}
+
+/**
+ * Race `document.fonts.ready` + two rAFs against a budget. WSL Chromium 151
+ * (Playwright 1.62 / SwiftShader) can fail to issue a compositor frame, so
+ * those promises never resolve. CI still waits for paint when frames fire;
+ * a stuck compositor does not take the test timeout. `0` skips settle.
+ */
+export async function waitForPaintSettle(page: Page, paintBudgetMs = defaultPaintBudgetMs) {
   if (paintBudgetMs <= 0) {
     return;
   }
 
-  // WSL Chromium 151 (Playwright 1.62 / SwiftShader) can fail to issue a
-  // compositor frame, so `document.fonts.ready` and `requestAnimationFrame`
-  // never resolve. Race them against a budget: CI still waits for paint when
-  // frames fire; a stuck compositor does not take the test timeout.
   await page.evaluate(async (budgetMs) => {
     await Promise.race([
       (async () => {
@@ -68,17 +73,23 @@ export async function waitForComparisonRouteReady(
   }, paintBudgetMs);
 }
 
+/**
+ * Playwright's `scrollIntoViewIfNeeded` waits for two compositor-stable frames.
+ * WSL Chromium 151 never issues those frames through SwiftShader, so the
+ * action deadlocks. DOM `scrollIntoView` does not need a frame.
+ */
+export async function scrollLocatorIntoView(target: Locator) {
+  await target.evaluate((element) => {
+    element.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
+}
+
 export async function styledSection(page: Page) {
   const section = page.locator("#example").filter({
     has: page.locator("h2", { hasText: "Example" }),
   });
   await expect(section).toHaveCount(1);
-  // Playwright's scrollIntoViewIfNeeded waits for two compositor-stable frames.
-  // WSL Chromium 151 never issues those frames through SwiftShader, so the
-  // action deadlocks. DOM scrollIntoView does not need a frame.
-  await section.evaluate((element) => {
-    element.scrollIntoView({ block: "nearest", inline: "nearest" });
-  });
+  await scrollLocatorIntoView(section);
   return section;
 }
 

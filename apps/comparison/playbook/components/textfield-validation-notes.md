@@ -10,6 +10,30 @@ Status: accepted
 form walk that ticket asked for. Native required-empty HelpText commit after
 submit is Form `#383`, not this unit's resting `isInvalid` paint.
 
+## HEAD D14 walk — 2026-09-05 (#351)
+
+Recorded against `15ca6d4c` (D14 subset, `paintBudgetMs: 0`). TextField
+`invalid · constraint validity` and `invalid · submit attempt` pair-match.
+Solid does not submit. Not a certified postcard.
+
+`/components/textfield/?isInvalid=true`, value `Quarterly report`. Both stacks:
+
+```json
+{
+  "valid": false,
+  "flags": ["customError"],
+  "message": "Invalid value.",
+  "invalidPseudo": true,
+  "ariaInvalid": "true",
+  "submits": 0,
+  "invalids": 1,
+  "active": "input type=text value=Quarterly report"
+}
+```
+
+Family unit: 39 passed / 0 failed / 0 skipped. See
+`playbook/certified-head-subset.md`.
+
 ## Scope
 
 - Component: `TextField`

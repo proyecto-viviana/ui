@@ -1,4 +1,5 @@
 import type { Locator, Page } from "@playwright/test";
+import { scrollLocatorIntoView } from "../comparison-page";
 import { overlayRootLocator } from "./journeys-observe";
 import type { PanelContext, TargetResolver } from "./scenario";
 
@@ -163,7 +164,7 @@ export async function centerOf(
       description ? `Journey target ${description} is absent` : "Journey target is absent",
     );
   }
-  await target.scrollIntoViewIfNeeded();
+  await scrollLocatorIntoView(target);
   const box = await target.boundingBox();
   if (!box) {
     throw new Error(
@@ -210,7 +211,7 @@ async function pointInTarget(
       description ? `Journey target ${description} is absent` : "Journey target is absent",
     );
   }
-  await target.scrollIntoViewIfNeeded();
+  await scrollLocatorIntoView(target);
   const box = await target.boundingBox();
   if (!box) {
     throw new Error(

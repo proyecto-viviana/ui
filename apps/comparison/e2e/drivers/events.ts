@@ -1,4 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
+import { scrollLocatorIntoView } from "../comparison-page";
 import {
   flushEventLog,
   installOracle,
@@ -43,7 +44,7 @@ async function centerOf(target: Locator): Promise<{ x: number; y: number }> {
   // in-view React panel and every already-passing gesture are unaffected) and
   // re-read the box at its post-scroll viewport position. `scroll` is not a
   // recorded event type, so this cannot perturb the D4 event-sequence diff.
-  await target.scrollIntoViewIfNeeded();
+  await scrollLocatorIntoView(target);
   const box = await target.boundingBox();
   if (!box) {
     throw new Error("Gesture target has no bounding box");

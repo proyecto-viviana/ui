@@ -192,5 +192,16 @@ describe("certified waivers", () => {
     ).toBe("combobox");
     expect(parseComponentSlug("e2e/drivers/pixel.ts")).toBeNull();
     expect(parseComponentSlug("e2e/certified/button-d12.certified.spec.ts")).toBe("button-d12");
+    expect(
+      parseDriverId(["chromium", "D14 native validity — TextField native validity", "invalid"]),
+    ).toBe("D14");
+    expect(
+      parseComponentFromTitlePath([
+        "chromium",
+        "D14 native validity — TextField native validity",
+        "invalid · submit attempt",
+      ]),
+    ).toBe("textfield-native-validity");
+    expect(parseDriverId(["chromium", "D13 journeys — ComboBox", "open list"])).toBe("D13");
   });
 });

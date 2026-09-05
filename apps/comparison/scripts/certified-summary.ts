@@ -16,6 +16,8 @@ export const DRIVER_IDS = [
   "D10",
   "D11",
   "D12",
+  "D13",
+  "D14",
   "D-scroll",
   "D-reorder",
   "other",
@@ -23,7 +25,8 @@ export const DRIVER_IDS = [
 
 export type DriverId = (typeof DRIVER_IDS)[number];
 
-const DRIVER_RE = /^(D(?:1[0-2]|[1-9]|-scroll|-reorder))\b/;
+// D10–D14 before D1–D9 so `D14` is not captured as `D1`.
+const DRIVER_RE = /^(D(?:-scroll|-reorder|1[0-4]|[1-9]))\b/;
 
 export interface CertifiedCell {
   component: string;
@@ -73,7 +76,7 @@ export function parseComponentSlug(file: string): string | null {
 
 export function parseComponentFromTitlePath(titlePath: readonly string[]): string | null {
   for (const part of titlePath) {
-    const match = /^(D(?:1[0-2]|[1-9]|-scroll|-reorder))\b.* — (.+)$/.exec(part.trim());
+    const match = /^(D(?:-scroll|-reorder|1[0-4]|[1-9]))\b.* — (.+)$/.exec(part.trim());
     if (match?.[2]) {
       return match[2]
         .toLowerCase()
