@@ -155,6 +155,10 @@ export function createFormValidation(
       return;
     }
 
+    // Effect-time `input.form` is null when the control is associated later
+    // via `form="…"`. Keep it only for the RAC `form.reset` monkey-patch
+    // (programmatic React-style resets). The reset *listener* reads the live
+    // association, matching #466 / #467.
     const form = input.form;
 
     // Handle invalid event
@@ -193,9 +197,10 @@ export function createFormValidation(
       state.commitValidation();
     };
 
-    // Handle form reset
-    const onReset = () => {
-      if (!isIgnoredReset) {
+    // Handle form reset. Read `input.form` at event time so a late `form=""`
+    // still clears displayValidation (D14-style association after mount).
+    const onReset = (e: Event) => {
+      if (input.form && e.target === input.form && !isIgnoredReset) {
         state.resetValidation();
       }
     };
@@ -216,12 +221,12 @@ export function createFormValidation(
 
     input.addEventListener("invalid", onInvalid);
     input.addEventListener("change", onChange);
-    form?.addEventListener("reset", onReset);
+    document.addEventListener("reset", onReset);
 
     onCleanup(() => {
       input.removeEventListener("invalid", onInvalid);
       input.removeEventListener("change", onChange);
-      form?.removeEventListener("reset", onReset);
+      document.removeEventListener("reset", onReset);
       if (form && originalReset) {
         form.reset = originalReset;
       }

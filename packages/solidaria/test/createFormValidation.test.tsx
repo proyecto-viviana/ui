@@ -263,39 +263,80 @@ describe("createFormValidation", () => {
 
   describe("form reset handling", () => {
     it("should reset validation on form reset", () => {
+      let validationState!: FormValidationState;
+
       const TestComponent = () => {
         let inputRef: HTMLInputElement | undefined;
 
-        const validationState = createFormValidationState({
-          value: "",
-          validate: () => "Required",
-          validationBehavior: "aria",
+        validationState = createFormValidationState({
+          value: "filled",
+          validationBehavior: "native",
         });
 
-        // Pre-commit some validation
         validationState.updateValidation({
           isInvalid: true,
           validationErrors: ["Error"],
           validationDetails: VALID_VALIDITY_STATE,
         });
+        validationState.commitValidation();
 
-        createFormValidation({ validationBehavior: "aria" }, validationState, () => inputRef);
+        createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
 
         return (
           <form data-testid="form">
-            <input ref={inputRef} value="" data-testid="input" />
+            <input ref={inputRef} value="filled" data-testid="input" />
             <button type="reset">Reset</button>
           </form>
         );
       };
 
       const { getByTestId } = render(() => <TestComponent />);
+      expect(validationState.displayValidation().isInvalid).toBe(true);
+
+      fireEvent.reset(getByTestId("form") as HTMLFormElement);
+      expect(validationState.displayValidation().isInvalid).toBe(false);
+    });
+
+    it("resets validation when the form attribute is set after mount", () => {
+      let validationState!: FormValidationState;
+
+      const TestComponent = () => {
+        let inputRef: HTMLInputElement | undefined;
+
+        validationState = createFormValidationState({
+          value: "filled",
+          validationBehavior: "native",
+        });
+
+        validationState.updateValidation({
+          isInvalid: true,
+          validationErrors: ["Error"],
+          validationDetails: VALID_VALIDITY_STATE,
+        });
+        validationState.commitValidation();
+
+        createFormValidation({ validationBehavior: "native" }, validationState, () => inputRef);
+
+        return <input ref={inputRef} value="filled" data-testid="input" />;
+      };
+
+      const { getByTestId } = render(() => (
+        <>
+          <form id="probe" data-testid="form" />
+          <TestComponent />
+        </>
+      ));
+
+      const input = getByTestId("input") as HTMLInputElement;
       const form = getByTestId("form") as HTMLFormElement;
+      expect(validationState.displayValidation().isInvalid).toBe(true);
+      expect(input.form).toBeNull();
 
-      // Trigger form reset
+      input.setAttribute("form", "probe");
+      expect(input.form).toBe(form);
+
       fireEvent.reset(form);
-
-      // Validation should be reset (hard to verify without exposing state)
+      expect(validationState.displayValidation().isInvalid).toBe(false);
     });
   });
 
