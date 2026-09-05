@@ -19,6 +19,7 @@ import {
   type TextFieldRenderProps,
 } from "../src/TextField";
 import { FieldError } from "../src/FieldError";
+import { Form } from "../src/Form";
 import { Text } from "../src/Text";
 import {
   setupUser,
@@ -762,6 +763,43 @@ describe("TextField", () => {
         expect(input.validity.customError).toBe(false);
         expect(input.checkValidity()).toBe(true);
       });
+    });
+
+    it("paints FieldError and aria-invalid after a blocked native required submit", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <Form aria-label="Project form" onSubmit={onSubmit}>
+          <TextField isRequired name="project">
+            {() => (
+              <>
+                <Label>Project name</Label>
+                <Input />
+                <Text slot="description">Inherited from the parent form.</Text>
+                <FieldError />
+              </>
+            )}
+          </TextField>
+          <button type="submit">Submit</button>
+        </Form>
+      ));
+
+      const input = screen.getByRole("textbox", { name: "Project name" }) as HTMLInputElement;
+      const form = screen.getByRole("form", { name: "Project form" }) as HTMLFormElement;
+      expect(input).not.toHaveAttribute("aria-invalid");
+      expect(input.closest(".solidaria-TextField")).not.toHaveAttribute("data-invalid");
+      expect(screen.getByText("Inherited from the parent form.")).toBeInTheDocument();
+      expect(document.querySelector(".solidaria-FieldError")).not.toBeInTheDocument();
+
+      form.requestSubmit();
+
+      expect(onSubmit).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(input).toHaveAttribute("aria-invalid", "true");
+        expect(input.closest(".solidaria-TextField")).toHaveAttribute("data-invalid");
+        expect(input.validity.valueMissing).toBe(true);
+      });
+      expect(screen.getByText(input.validationMessage)).toBeInTheDocument();
     });
   });
 });

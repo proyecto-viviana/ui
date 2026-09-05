@@ -39,11 +39,7 @@ import {
   mergeProps,
   type AriaTextFieldProps,
 } from "@proyecto-viviana/solidaria";
-import {
-  createTextFieldState,
-  VALID_VALIDITY_STATE,
-  type ValidationResult,
-} from "@proyecto-viviana/solid-stately";
+import { createTextFieldState, type ValidationResult } from "@proyecto-viviana/solid-stately";
 import { FormContext, type FormProps } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
@@ -531,19 +527,21 @@ export function TextField(props: TextFieldProps): JSX.Element {
     return rest;
   };
 
-  // Context value for sub-components.
-  // Use property getters so sub-components always read the latest aria/focus state.
+  // RAC TextField passes useTextField's `{isInvalid, validationErrors,
+  // validationDetails}` into FieldErrorContext (`TextField.tsx:181`). The
+  // `errorMessage` prop is omitted at that layer; keep it as a fallback so a
+  // string errorMessage still fills FieldError's default children.
   const fieldValidation = createMemo<ValidationResult>(() => {
     const isInvalid = textFieldAria.isInvalid;
+    const validationErrors = textFieldAria.validationErrors;
     const errorMessage = ariaProps.errorMessage;
-    const validationErrors = isInvalid && typeof errorMessage === "string" ? [errorMessage] : [];
-
     return {
       isInvalid,
-      validationErrors,
-      validationDetails: isInvalid
-        ? { ...VALID_VALIDITY_STATE, customError: true, valid: false }
-        : VALID_VALIDITY_STATE,
+      validationErrors:
+        isInvalid && validationErrors.length === 0 && typeof errorMessage === "string"
+          ? [errorMessage]
+          : validationErrors,
+      validationDetails: textFieldAria.validationDetails,
     };
   });
   const fieldErrorContext: FieldErrorContextValue = {

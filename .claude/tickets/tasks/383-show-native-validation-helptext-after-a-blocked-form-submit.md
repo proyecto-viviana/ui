@@ -4,12 +4,17 @@ type: task
 title: "Show native validation HelpText after a blocked Form submit"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 form functional pass: isolated remount ?isRequired=true&value= click Submit (no checkValidity beforehand) blocks both with valueMissing and focuses the input; React then paints error HelpText Please fill out this field., aria-invalid, data-invalid, red group border rgb(183,40,24), AX [invalid]; Solid keeps the description slot, aria-invalid omitted, gray-900 focused border. createTextField never calls createFormValidation, so the native invalid event never commits displayValidation",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "Git v2 implement. createTextField already calls createFormValidation (#351); it still returns props.isInvalid and forges FieldErrorContext. Use displayValidation like RAC useTextField.ts:210-234. Native required-empty submit, not isInvalid=true theater.",
     }
 ---
 

@@ -298,7 +298,17 @@ export function TextField(props: TextFieldProps): JSX.Element {
   const stringFormatter = createStringFormatter(s2IntlStrings, "@react-spectrum/s2");
   const normalizedHeadlessProps = mergeProps(headlessProps, {
     get isInvalid() {
-      return headlessProps.isInvalid ?? local.validationState === "invalid";
+      // A boolean `false` is controlled and hides native displayValidation.
+      if (headlessProps.isInvalid !== undefined) {
+        return headlessProps.isInvalid;
+      }
+      if (local.validationState === "invalid") {
+        return true;
+      }
+      if (local.validationState === "valid") {
+        return false;
+      }
+      return undefined;
     },
     get validationBehavior() {
       return headlessProps.validationBehavior ?? (local.validationState ? "aria" : undefined);

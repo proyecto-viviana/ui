@@ -21,7 +21,10 @@
  */
 
 import { type JSX, createSignal } from "solid-js";
-import { createFormValidationState } from "@proyecto-viviana/solid-stately";
+import {
+  createFormValidationState,
+  type ValidityState,
+} from "@proyecto-viviana/solid-stately";
 import { createField, type AriaFieldProps, type FieldAria } from "../label";
 import { createFocusable, type FocusableDOMProps, type FocusableProps } from "../interactions";
 import { createFormValidation, type ValidatableElement } from "../form/createFormValidation";
@@ -97,6 +100,10 @@ export interface TextFieldAria<
   inputProps: JSX.InputHTMLAttributes<T>;
   /** Whether the text field is invalid. */
   isInvalid: boolean;
+  /** The current error messages for the input if it is invalid. */
+  validationErrors: string[];
+  /** The native validity state for the input. */
+  validationDetails: ValidityState;
 }
 
 /**
@@ -127,6 +134,15 @@ export function createTextField<
     get isInvalid() {
       return getProps().isInvalid;
     },
+    get validationState() {
+      return getProps().validationState;
+    },
+    get validate() {
+      return getProps().validate;
+    },
+    get name() {
+      return getProps().name;
+    },
     get validationBehavior() {
       return getProps().validationBehavior ?? "native";
     },
@@ -142,6 +158,8 @@ export function createTextField<
     validationState,
     () => inputEl() as ValidatableElement | undefined,
   );
+
+  const displayValidation = () => validationState.displayValidation();
 
   const eventWithCurrentTarget = (
     event: InputEvent,
@@ -161,8 +179,17 @@ export function createTextField<
   // Keep the `createField` getters intact. Destructuring `fieldProps` would
   // freeze the first `aria-describedby` snapshot (slot ids from `createSlotId`
   // before the DOM probe) — RAC `useField` re-reads `useSlotId` every render
-  // (`useField.ts:51-60`).
-  const field = createField(props);
+  // (`useField.ts:51-60`). RAC `useTextField` feeds `displayValidation.isInvalid`
+  // and native `validationErrors` into `useField` (`useTextField.ts:210-214`).
+  const field = createField(() => {
+    const p = getProps();
+    const dv = displayValidation();
+    return {
+      ...p,
+      isInvalid: dv.isInvalid,
+      errorMessage: p.errorMessage || dv.validationErrors,
+    };
+  });
 
   // Get focusable props
   const { focusableProps } = createFocusable(
@@ -192,7 +219,7 @@ export function createTextField<
   // Build input props
   const getInputProps = (): JSX.InputHTMLAttributes<T> => {
     const p = getProps();
-    const isInvalid = p.isInvalid ?? false;
+    const isInvalid = displayValidation().isInvalid;
     const isTextarea = p.inputElementType === "textarea";
     const validationBehavior = p.validationBehavior ?? "native";
 
@@ -257,10 +284,6 @@ export function createTextField<
     ) as JSX.InputHTMLAttributes<T>;
   };
 
-  const getIsInvalid = () => {
-    return getProps().isInvalid ?? false;
-  };
-
   return {
     get labelProps() {
       return field.labelProps;
@@ -275,7 +298,13 @@ export function createTextField<
       return field.errorMessageProps;
     },
     get isInvalid() {
-      return getIsInvalid();
+      return displayValidation().isInvalid;
+    },
+    get validationErrors() {
+      return displayValidation().validationErrors;
+    },
+    get validationDetails() {
+      return displayValidation().validationDetails;
     },
   };
 }
