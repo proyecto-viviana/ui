@@ -5,10 +5,11 @@ Status: accepted
 
 ## Overnight D14 — 2026-09-04 / 2026-09-05
 
-#376 (merged) sets custom validity on every radio. D14 constraint rows and
-blocked `requestSubmit` (`submits: 0`, `invalids: 3`, HelpText) pair-match.
-`invalid · submit attempt` stays red: React focuses `starter`, Solid focuses
-`enterprise`. That is a focus-target gap, not a submit-succeeds hole.
+#376 (merged) sets custom validity on every radio. #469 (merged) focuses the
+first invalid radio after blocked submit. D14 constraint rows and both submit
+walks pair-match: `invalid · submit attempt` and `required-empty · submit
+attempt` report `submits: 0`, `invalids: 3`, and `active` `starter` on both
+stacks (`cbf06ac7` HEAD bundle, 2026-09-05).
 
 ## Scope
 

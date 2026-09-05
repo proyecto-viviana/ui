@@ -32,8 +32,8 @@ committed `errorMessage` with `aria-invalid` / `[data-invalid]` after the
 native `invalid` event. A filled `isInvalid` field that paints and still
 submits is a port bug. Do not wrap that failure in `test.fixme`.
 
-Current named gaps D14 keeps red (product, not `test.fixme`):
-
-- RadioGroup `invalid · submit attempt` — both stacks block (`submits: 0`,
-  `invalids: 3`, HelpText / `aria-invalid`). React focuses `starter`; Solid
-  focuses `enterprise`. #376 native custom validity is otherwise matched.
+RadioGroup D14 submit walks pair-match on HEAD `cbf06ac7` (#469):
+`invalid · submit attempt` and `required-empty · submit attempt` both block
+(`submits: 0`, `invalids: 3`) and focus `starter` on both stacks. #376 native
+custom validity and #378 required-empty focus are covered by those rows. No
+named D14 product gap remains on this family unit.

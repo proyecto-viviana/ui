@@ -29,9 +29,10 @@ import { registerValidityDriver } from "../drivers/validity";
  * HONESTY. Product gaps FAIL. This spec does not register `knownDivergences` /
  * `test.fixme` for remaining holes. The 2026-09-05 D14 rerun pair-matched
  * TextField, SearchField, Checkbox, NumberField (#460) `isInvalid`, ComboBox,
- * Form #383 / #465, and Radio #376 native custom validity + blocked submit. Radio
- * `invalid · submit attempt` stays red because React focuses `starter` and Solid
- * focuses `enterprise`. NumberField min/max/step native validity is walked
+ * Form #383 / #465, and Radio #376 native custom validity + blocked submit.
+ * Radio `invalid · submit attempt` and `required-empty · submit attempt` pair
+ * on `cbf06ac7` (#469): both stacks block (`submits: 0`, `invalids: 3`) and
+ * focus `starter`. NumberField min/max/step native validity is walked
  * here with `commitBehavior=validate` (the RAC `useNativeValidation` gate).
  * Wrapping remaining holes as skipped would keep Certification Gates
  * green the same way ListView `it.fails` keeps `test:hydrate` green. Resting
@@ -151,11 +152,11 @@ const checkboxValidity: DriverScenario = {
 };
 
 /**
- * RadioGroup — #376 (merged) sets custom validity on every radio. Constraint
- * validity and blocked `requestSubmit` match. `invalid · submit attempt` stays
- * red because React focuses `starter` (the selected radio) and Solid focuses
- * `enterprise` (last radio). That is a focus-target gap, not a submit-succeeds
- * hole. Do not wrap it in `knownDivergences`.
+ * RadioGroup — #376 (merged) sets custom validity on every radio. #469
+ * (merged) dropped the per-radio `invalid` focus costume so blocked submit
+ * focuses `starter` (first invalid), matching RAC `getFirstInvalidInput`.
+ * `invalid · submit attempt` is #469; `required-empty · submit attempt` is
+ * #378 (native `valueMissing`). Do not wrap either in `knownDivergences`.
  */
 const radioGroupValidity: DriverScenario = {
   slug: "radiogroup",
@@ -170,7 +171,7 @@ const radioGroupValidity: DriverScenario = {
   ],
   validity: {
     cases: ["invalid", "invalid-required", "invalid-disabled", "required-empty"],
-    submit: requestSubmit,
+    submit: { cases: ["invalid", "required-empty"] },
   },
 };
 
