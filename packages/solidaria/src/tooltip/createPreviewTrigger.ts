@@ -217,6 +217,7 @@ export function createPreviewTrigger(
     get isDisabled() {
       return !!isDisabled();
     },
+    pointerType: "touch",
     get accessibilityDescription() {
       return shouldLongPress() ? stringFormatter().format("longPressMessage") : undefined;
     },

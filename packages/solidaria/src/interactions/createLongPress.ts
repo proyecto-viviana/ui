@@ -48,6 +48,8 @@ export interface LongPressEvent {
 export interface LongPressProps {
   /** Whether long press events should be disabled. */
   isDisabled?: MaybeAccessor<boolean>;
+  /** Which pointer type to listen for. By default, both mouse and touch are listened for. */
+  pointerType?: "mouse" | "touch";
   /** Handler that is called when a long press interaction starts. */
   onLongPressStart?: (e: LongPressEvent) => void;
   /**
@@ -103,21 +105,25 @@ function createLongPressEvent(type: LongPressEvent["type"], e: PressEvent): Long
 export function createLongPress(props: LongPressProps = {}): LongPressResult {
   const {
     isDisabled,
+    pointerType,
     onLongPressStart,
     onLongPressEnd,
     onLongPress,
     threshold = DEFAULT_THRESHOLD,
-    accessibilityDescription,
   } = props;
 
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const { addGlobalListener } = createGlobalListeners();
+  const isAcceptedPointerType = (e: PressEvent) =>
+    pointerType
+      ? e.pointerType === pointerType
+      : e.pointerType === "mouse" || e.pointerType === "touch";
 
   const { pressProps } = createPress({
     isDisabled,
     onPressStart(e) {
       e.continuePropagation();
-      if (e.pointerType === "mouse" || e.pointerType === "touch") {
+      if (isAcceptedPointerType(e)) {
         onLongPressStart?.(createLongPressEvent("longpressstart", e));
 
         timeoutId = setTimeout(() => {
@@ -158,14 +164,16 @@ export function createLongPress(props: LongPressProps = {}): LongPressResult {
         timeoutId = undefined;
       }
 
-      if (onLongPressEnd && (e.pointerType === "mouse" || e.pointerType === "touch")) {
+      if (onLongPressEnd && isAcceptedPointerType(e)) {
         onLongPressEnd(createLongPressEvent("longpressend", e));
       }
     },
   });
 
   const descriptionProps = createDescription(() =>
-    onLongPress && !isDisabledValue(isDisabled) ? access(accessibilityDescription) : undefined,
+    onLongPress && !isDisabledValue(props.isDisabled)
+      ? access(props.accessibilityDescription)
+      : undefined,
   );
 
   onCleanup(() => {

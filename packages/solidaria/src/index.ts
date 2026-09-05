@@ -74,6 +74,7 @@ export {
   createLongPress,
   createMove,
   createFocusable,
+  FocusableContext,
   FocusableProvider,
   createFocusRing,
   createFocusVisible,

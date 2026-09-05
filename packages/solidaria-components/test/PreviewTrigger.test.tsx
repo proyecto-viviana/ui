@@ -199,7 +199,13 @@ describe("PreviewTrigger hover, delay, Tab, and Escape", () => {
     // preventDefault on the trigger. user.keyboard sends Tab to the focused
     // link so createPreviewTrigger can move into the preview.
     await user.keyboard("{Tab}");
-    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Action" }));
+    const action = screen.getByRole("button", { name: "Action" });
+    expect(document.activeElement).toBe(action);
+    // RAC Overlay resets FocusableContext in the portal so the Action does not
+    // pick up the trigger's aria-haspopup / aria-expanded / aria-controls.
+    expect(action).not.toHaveAttribute("aria-haspopup");
+    expect(action).not.toHaveAttribute("aria-expanded");
+    expect(action).not.toHaveAttribute("aria-controls");
   });
 
   it("closes on Escape and restores focus to the link", async () => {
@@ -218,6 +224,27 @@ describe("PreviewTrigger hover, delay, Tab, and Escape", () => {
     expect(document.activeElement).toBe(link);
   });
 
+  it("does not reopen when closed via the popover Dismiss button", async () => {
+    render(() => <TestPreviewTrigger />);
+    const link = screen.getByRole("link");
+
+    await user.tab();
+    await user.keyboard("{Tab}");
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Action" }));
+
+    // fireEvent.click (not user.click) so modality stays keyboard. Otherwise
+    // restored focus is not focus-visible and onFocus would not try to reopen,
+    // making the test pass without testing ignoreFocus.
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+    vi.advanceTimersByTime(1000);
+
+    expect(screen.queryByTestId("preview")).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(link);
+
+    vi.advanceTimersByTime(1000);
+    expect(screen.queryByTestId("preview")).not.toBeInTheDocument();
+  });
+
   it("exposes aria-expanded and aria-controls on the trigger once open", async () => {
     render(() => <TestPreviewTrigger />);
     const link = screen.getByRole("link");
@@ -230,5 +257,61 @@ describe("PreviewTrigger hover, delay, Tab, and Escape", () => {
     const preview = screen.getByTestId("preview");
     expect(link).toHaveAttribute("aria-expanded", "true");
     expect(link).toHaveAttribute("aria-controls", preview.id);
+  });
+});
+
+describe("PreviewTrigger long press (touch)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    resetTooltipState();
+  });
+
+  afterEach(() => {
+    const active = document.activeElement ?? document.body;
+    fireEvent.keyDown(active, { key: "Escape" });
+    fireEvent.keyUp(active, { key: "Escape" });
+    vi.advanceTimersByTime(1000);
+    cleanup();
+    vi.useRealTimers();
+    resetTooltipState();
+  });
+
+  it("opens on long press and moves focus into the popover", () => {
+    render(() => <TestPreviewTrigger />);
+    const link = screen.getByRole("link");
+
+    fireEvent.pointerDown(link, { pointerType: "touch" });
+    vi.advanceTimersByTime(600);
+
+    const preview = screen.getByTestId("preview");
+    expect(preview).toBeInTheDocument();
+    expect(preview).toHaveAttribute("tabindex", "-1");
+    expect(document.activeElement).toBe(preview);
+
+    fireEvent.pointerUp(link, { pointerType: "touch" });
+  });
+
+  it("only describes the long press interaction when using touch", async () => {
+    const touchDescriptor = Object.getOwnPropertyDescriptor(window, "ontouchstart");
+    window.ontouchstart = null;
+    try {
+      render(() => <TestPreviewTrigger />);
+      const link = screen.getByRole("link");
+
+      await user.tab();
+      expect(screen.queryByText("Long press to open preview")).not.toBeInTheDocument();
+
+      fireEvent.pointerDown(document.body, { pointerType: "touch" });
+      fireEvent.mouseDown(document.body);
+      const desc = screen.queryByText("Long press to open preview");
+      expect(desc).toBeInTheDocument();
+      expect(link.getAttribute("aria-describedby")).toContain(desc!.id);
+    } finally {
+      if (touchDescriptor) {
+        Object.defineProperty(window, "ontouchstart", touchDescriptor);
+      } else {
+        delete window.ontouchstart;
+      }
+    }
   });
 });

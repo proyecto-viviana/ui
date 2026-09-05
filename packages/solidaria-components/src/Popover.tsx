@@ -44,6 +44,7 @@ import {
   visuallyHiddenStyles,
   createStringFormatter,
   overlaysIntlStrings,
+  FocusableContext,
   type AriaLabelingProps,
   type Placement,
   type PlacementAxis,
@@ -812,19 +813,21 @@ export function Popover(props: PopoverProps): JSX.Element {
     <Show when={!isHidden()} fallback={hiddenChildren()}>
       <Show when={isHydrated() && (isOpen() || isExiting())}>
         <Portal mount={portalContainer()}>
-          <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
-          <Show
-            when={isSubPopover()}
-            fallback={
-              <div ref={setGroupRef} style={{ display: "contents" }}>
-                <PopoverGroupContext.Provider value={() => groupRef()}>
-                  <PopoverInner />
-                </PopoverGroupContext.Provider>
-              </div>
-            }
-          >
-            <PopoverInner />
-          </Show>
+          <FocusableContext.Provider value={null}>
+            <Show when={!isNonModal() && !isSubPopover() && isOpen()}>{underlay()}</Show>
+            <Show
+              when={isSubPopover()}
+              fallback={
+                <div ref={setGroupRef} style={{ display: "contents" }}>
+                  <PopoverGroupContext.Provider value={() => groupRef()}>
+                    <PopoverInner />
+                  </PopoverGroupContext.Provider>
+                </div>
+              }
+            >
+              <PopoverInner />
+            </Show>
+          </FocusableContext.Provider>
         </Portal>
       </Show>
     </Show>

@@ -17,6 +17,11 @@ history:
       at: 2026-09-05,
       note: "Behavior slice. Package tests name hover/safe-area, keyboard delay, Tab-through-before-delay, Tab into preview, Escape restore, and live aria-expanded/controls. SSR writes closed-trigger markup without the popover. Hydrate over that markup still mismatches (ElementTag key). No comparison-browser evidence. Do not close.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "Hydrate/long-press slice. Long press (touch) opens and focuses the popover; long-press hint is live with modality; Dismiss restore does not reopen. Overlay portal resets FocusableContext (RAC Overlay.tsx:87) so Action does not pick up trigger ARIA. Hydrate test lands as it.fails: ElementTag looks up 00100, SSR registered 0040000000. No comparison-browser evidence. Do not close.",
+    }
 ---
 
 Port the pinned RAC `PreviewTrigger` component and public export.
@@ -41,19 +46,22 @@ must not be overloaded.
 
 Behavior slice: hover/safe-area, keyboard delay, Tab-through-before-delay,
 Tab into preview, Escape restore, live `aria-expanded`/`aria-controls`. SSR
-emits a closed trigger without the popover. Remaining: hydrate over that
-markup (ElementTag key mismatch), long-press, Dismiss restore, and
-comparison-browser evidence.
+emits a closed trigger without the popover. Long-press (touch) opens and
+focuses the popover; the hint tracks modality; Dismiss restore does not
+reopen. Overlay portal resets FocusableContext so preview actions do not
+inherit trigger ARIA. Remaining: hydrate over SSR markup (ElementTag key
+`00100` vs `0040000000`, test is `it.fails`) and comparison-browser evidence.
 
 ## Proof
 
 ```bash
 vp test run packages/solidaria-components/test/PreviewTrigger.test.tsx
-# 8 passed (context + hover/safe-area + delay + Tab + Escape + live ARIA)
+# 11 passed (context + hover/safe-area + delay + Tab + Escape + Dismiss +
+# long-press open/focus + long-press hint + live ARIA + no trigger ARIA on Action)
 
 vp test run --config vitest.ssr.config.ts packages/solidaria-components/test/PreviewTrigger.ssr.test.tsx
 # 2 passed (closed trigger, no popover in SSR HTML)
 
-vp test run packages/solidaria-components/test/Link.test.tsx packages/solidaria-components/test/Popover.test.tsx packages/solidaria-components/test/Tooltip.test.tsx
-# 101 passed with PreviewTrigger
+vp test run --config vitest.hydrate.config.ts packages/solidaria-components/test/PreviewTrigger.hydrate.test.tsx
+# 1 expected fail (ElementTag hydration key 00100 vs 0040000000)
 ```
