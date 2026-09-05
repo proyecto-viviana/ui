@@ -311,15 +311,24 @@ export function registerValidityDriver(scenario: DriverScenario) {
         if (divergence && !process.env.VALIDITY_RAW) {
           test.fixme(true, divergence);
         }
-        test.setTimeout(120_000);
+        test.setTimeout(45_000);
         const theme = scenarioThemes(scenario, caseDef)[0];
         const snapshots: Partial<Record<PanelFramework, ValiditySnapshot>> = {};
 
-        await forEachScenarioPanel(page, scenario, caseDef, theme, async (ctx) => {
-          const root = rootResolver(ctx);
-          await expect(root).toBeVisible();
-          snapshots[ctx.framework] = await probe(root, config.settleMs ?? defaultSettleMs);
-        });
+        // Native validity is not a paint signal. Skipping fonts/rAF avoids a
+        // 120s evaluate hang on WSL Chromium that never issues a compositor frame.
+        await forEachScenarioPanel(
+          page,
+          scenario,
+          caseDef,
+          theme,
+          async (ctx) => {
+            const root = rootResolver(ctx);
+            await expect(root).toBeVisible();
+            snapshots[ctx.framework] = await probe(root, config.settleMs ?? defaultSettleMs);
+          },
+          { paintBudgetMs: 0 },
+        );
 
         expect(JSON.stringify(snapshots.solid, null, 2)).toBe(
           JSON.stringify(snapshots.react, null, 2),
@@ -339,29 +348,40 @@ export function registerValidityDriver(scenario: DriverScenario) {
         if (divergence && !process.env.VALIDITY_RAW) {
           test.fixme(true, divergence);
         }
-        test.setTimeout(120_000);
+        test.setTimeout(45_000);
         const theme = scenarioThemes(scenario, caseDef)[0];
         const snapshots: Partial<Record<PanelFramework, SubmitSnapshot>> = {};
 
-        await forEachScenarioPanel(page, scenario, caseDef, theme, async (ctx) => {
-          const root = rootResolver(ctx);
-          await expect(root).toBeVisible();
-          // Nothing has read validity on this page yet: the counters go in before
-          // the first user gesture, and the passive probe runs only afterwards.
-          await ctx.page.evaluate(installSubmitCounters);
-          if (submit.button) {
-            const button = submit.button(ctx);
-            await expect(button).toBeVisible();
-            await button.click();
-          } else {
-            await root.evaluate(requestSubmitAssociated, probeFormId);
-          }
-          snapshots[ctx.framework] = await readSubmitSnapshot(
-            root,
-            ctx.page,
-            submit.settleMs ?? defaultSubmitSettleMs,
-          );
-        });
+        await forEachScenarioPanel(
+          page,
+          scenario,
+          caseDef,
+          theme,
+          async (ctx) => {
+            const root = rootResolver(ctx);
+            await expect(root).toBeVisible();
+            // Nothing has read validity on this page yet: the counters go in before
+            // the first user gesture, and the passive probe runs only afterwards.
+            await ctx.page.evaluate(installSubmitCounters);
+            if (submit.button) {
+              const button = submit.button(ctx);
+              await expect(button).toBeVisible();
+              // Playwright's click waits for two compositor-stable frames.
+              // WSL Chromium 151 never issues those, so a real fixture submit
+              // would take the test timeout. Native `HTMLButtonElement.click()`
+              // still fires the submit/invalid path D14 compares.
+              await button.evaluate((element) => (element as HTMLButtonElement).click());
+            } else {
+              await root.evaluate(requestSubmitAssociated, probeFormId);
+            }
+            snapshots[ctx.framework] = await readSubmitSnapshot(
+              root,
+              ctx.page,
+              submit.settleMs ?? defaultSubmitSettleMs,
+            );
+          },
+          { paintBudgetMs: 0 },
+        );
 
         expect(JSON.stringify(snapshots.solid, null, 2)).toBe(
           JSON.stringify(snapshots.react, null, 2),

@@ -3,14 +3,12 @@
 Date: 2026-05-20
 Status: accepted
 
-## Overnight D14 — 2026-09-04
+## Overnight D14 — 2026-09-04 / 2026-09-05
 
-Native submit is not accepted. D14 `field-validity.certified.spec.ts` Form
-`required-empty · submit attempt` is the user-observable machine: both stacks
-block via `valueMissing`, then React commits HelpText / `aria-invalid` /
-`[data-invalid]` and Solid keeps the description row (#383). Resting
-`isInvalid` + `customError` is a floor. Do not treat D1/D3/D6 green on
-`?isInvalid=true` as forms/validation evidence.
+#383 (merged) and #465 (merged) pair-match on D14: `required-empty` submit
+blocks then commits error HelpText / `aria-invalid` / `[data-invalid]` on both
+stacks; `aria-required-empty` drops native `required` so neither reports
+`valueMissing`. `default` submit is the control group.
 
 Form has now been normalized against the current acceptance gates. Historical
 evidence from the original 2026-05-15 pass remains below; this closeout records

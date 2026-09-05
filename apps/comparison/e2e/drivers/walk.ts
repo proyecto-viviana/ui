@@ -1,5 +1,10 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { frameworkCanvas, styledSection, waitForComparisonRouteReady } from "../comparison-page";
+import {
+  frameworkCanvas,
+  styledSection,
+  waitForComparisonRouteReady,
+  type RouteReadyOptions,
+} from "../comparison-page";
 import { clearPointer, pinComparisonTheme, type ComparisonColorScheme } from "../visual-diff";
 import {
   allGestureStates,
@@ -98,12 +103,13 @@ export async function forEachScenarioPanel(
   caseDef: DriverCase,
   theme: ComparisonColorScheme,
   visit: (ctx: PanelContext) => Promise<void>,
+  ready?: RouteReadyOptions,
 ) {
   const frameworks = scenarioFrameworks(scenario);
   for (const framework of frameworks) {
     await pinComparisonTheme(page, theme);
     await page.goto(scenarioRoute(scenario, caseDef));
-    await waitForComparisonRouteReady(page, frameworks);
+    await waitForComparisonRouteReady(page, frameworks, ready);
     await clearPointer(page);
 
     const section = await styledSection(page);

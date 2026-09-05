@@ -3,14 +3,12 @@
 Date: 2026-05-28
 Status: accepted
 
-## Overnight D14 — 2026-09-04
+## Overnight D14 — 2026-09-04 / 2026-09-05
 
-Native constraint validation is not accepted. D6/D1/D3 still match on
-`?isInvalid=true` (AX, error slot, red border). D14
-`field-validity.certified.spec.ts` RadioGroup `invalid · constraint validity`
-and `invalid · submit attempt` exist to stay red until `#376`: Solid radios
-keep `validity.valid=true` and `requestSubmit` succeeds. `createRadio` never
-calls `createFormValidation`; RAC `useRadio` does.
+#376 (merged) sets custom validity on every radio. D14 constraint rows and
+blocked `requestSubmit` (`submits: 0`, `invalids: 3`, HelpText) pair-match.
+`invalid · submit attempt` stays red: React focuses `starter`, Solid focuses
+`enterprise`. That is a focus-target gap, not a submit-succeeds hole.
 
 ## Scope
 

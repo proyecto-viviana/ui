@@ -3,13 +3,11 @@
 Date: 2026-05-28
 Status: accepted
 
-## Overnight D14 — 2026-09-04
+## Overnight D14 — 2026-09-04 / 2026-09-05
 
-Native constraint validation is not accepted. D14
-`field-validity.certified.spec.ts` NumberField `invalid · constraint validity`
-and `invalid · submit attempt` exist to stay red: Solid paints `isInvalid` and
-`requestSubmit` still succeeds. `createNumberField` never calls
-`createFormValidation`. No ticket.
+#460 (merged) wired `createFormValidation` and native min/max/step. D14
+NumberField `invalid` / `invalid-disabled` / submit pair-match (`customError`,
+blocked `requestSubmit`). min/max/step constraint cases are not in D14.
 
 ## Target
 

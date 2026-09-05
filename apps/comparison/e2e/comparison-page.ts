@@ -3,9 +3,22 @@ import type { PanelFramework } from "./drivers/scenario";
 
 export type FrameworkName = "React Spectrum stack" | "Solidaria stack";
 
+/** Milliseconds to wait for fonts + two rAFs after islands mount. */
+export const defaultPaintBudgetMs = 2_000;
+
+export interface RouteReadyOptions {
+  /**
+   * Cap for `document.fonts.ready` + two `requestAnimationFrame`s.
+   * `0` skips paint settle (native-validity probes do not need a compositor
+   * frame). Default `defaultPaintBudgetMs`.
+   */
+  paintBudgetMs?: number;
+}
+
 export async function waitForComparisonRouteReady(
   page: Page,
   frameworks: readonly PanelFramework[] = ["react", "solid"],
+  options?: RouteReadyOptions,
 ) {
   await expect(page.locator("astro-island")).toHaveCount(0);
 
@@ -30,14 +43,29 @@ export async function waitForComparisonRouteReady(
     page.locator('.js-component-example-section-mount[data-controls-mounted="true"]'),
   ).toHaveCount(1);
 
-  await page.evaluate(async () => {
-    if ("fonts" in document) {
-      await document.fonts.ready;
-    }
+  const paintBudgetMs = options?.paintBudgetMs ?? defaultPaintBudgetMs;
+  if (paintBudgetMs <= 0) {
+    return;
+  }
 
-    await new Promise(requestAnimationFrame);
-    await new Promise(requestAnimationFrame);
-  });
+  // WSL Chromium 151 (Playwright 1.62 / SwiftShader) can fail to issue a
+  // compositor frame, so `document.fonts.ready` and `requestAnimationFrame`
+  // never resolve. Race them against a budget: CI still waits for paint when
+  // frames fire; a stuck compositor does not take the test timeout.
+  await page.evaluate(async (budgetMs) => {
+    await Promise.race([
+      (async () => {
+        if ("fonts" in document) {
+          await document.fonts.ready;
+        }
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+      })(),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, budgetMs);
+      }),
+    ]);
+  }, paintBudgetMs);
 }
 
 export async function styledSection(page: Page) {
@@ -45,7 +73,12 @@ export async function styledSection(page: Page) {
     has: page.locator("h2", { hasText: "Example" }),
   });
   await expect(section).toHaveCount(1);
-  await section.scrollIntoViewIfNeeded();
+  // Playwright's scrollIntoViewIfNeeded waits for two compositor-stable frames.
+  // WSL Chromium 151 never issues those frames through SwiftShader, so the
+  // action deadlocks. DOM scrollIntoView does not need a frame.
+  await section.evaluate((element) => {
+    element.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
   return section;
 }
 

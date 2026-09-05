@@ -32,9 +32,8 @@ committed `errorMessage` with `aria-invalid` / `[data-invalid]` after the
 native `invalid` event. A filled `isInvalid` field that paints and still
 submits is a port bug. Do not wrap that failure in `test.fixme`.
 
-Current named gaps D14 is there to keep red until the owning tickets land:
+Current named gaps D14 keeps red (product, not `test.fixme`):
 
-- RadioGroup `#376` — AX + red border match; `requestSubmit` still succeeds.
-- NumberField / ComboBox — same hole, no ticket.
-- Form `#383` — both stacks block `required-empty` via `valueMissing`; React
-  then swaps HelpText / `aria-invalid`; Solid keeps the description row.
+- RadioGroup `invalid · submit attempt` — both stacks block (`submits: 0`,
+  `invalids: 3`, HelpText / `aria-invalid`). React focuses `starter`; Solid
+  focuses `enterprise`. #376 native custom validity is otherwise matched.

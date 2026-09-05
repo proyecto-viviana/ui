@@ -27,13 +27,15 @@ import { registerValidityDriver } from "../drivers/validity";
  * field"), and the pair oracle that would have caught all of them.
  *
  * HONESTY. Product gaps FAIL. This spec does not register `knownDivergences` /
- * `test.fixme` for Radio / NumberField / ComboBox / Form #383. Wrapping those as
- * skipped would keep Certification Gates green the same way ListView `it.fails`
- * keeps `test:hydrate` green — the failure mode this overnight pass is here to
- * stop. Resting `isInvalid` + `customError` is a floor (#351/#355). The user-
- * observable machine is native submit + `displayValidation` / HelpText /
- * `aria-invalid`. Both are asserted. A green row with a successful Solid
- * `requestSubmit` is a test bug.
+ * `test.fixme` for remaining holes. The 2026-09-05 D14 rerun pair-matched
+ * TextField, SearchField, Checkbox, NumberField (#460), ComboBox, Form #383 /
+ * #465, and Radio #376 native custom validity + blocked submit. Radio
+ * `invalid · submit attempt` stays red because React focuses `starter` and Solid
+ * focuses `enterprise`. Wrapping that as skipped would keep Certification Gates
+ * green the same way ListView `it.fails` keeps `test:hydrate` green. Resting
+ * `isInvalid` + `customError` is a floor. The user-observable machine is native
+ * submit + `displayValidation` / HelpText / `aria-invalid`. Both are asserted. A
+ * green row with a successful Solid `requestSubmit` is a test bug.
  *
  * It lives as ONE unit rather than a config on each component's spec because the
  * dimension is shared: the hole is a missing `createFormValidation` call in whichever
@@ -147,11 +149,11 @@ const checkboxValidity: DriverScenario = {
 };
 
 /**
- * RadioGroup — `createRadio` still never calls `createFormValidation` (#376,
- * OPEN). RAC `useRadio` sets custom validity on EVERY radio in an invalid group, so
- * the React panel reports three invalid inputs and Solid reports three valid ones.
- * AX, error slot, and red border already match (D6/D1/D3 green). `requestSubmit`
- * still succeeds on Solid. This row is supposed to be red until #376 lands.
+ * RadioGroup — #376 (merged) sets custom validity on every radio. Constraint
+ * validity and blocked `requestSubmit` match. `invalid · submit attempt` stays
+ * red because React focuses `starter` (the selected radio) and Solid focuses
+ * `enterprise` (last radio). That is a focus-target gap, not a submit-succeeds
+ * hole. Do not wrap it in `knownDivergences`.
  */
 const radioGroupValidity: DriverScenario = {
   slug: "radiogroup",
@@ -171,9 +173,9 @@ const radioGroupValidity: DriverScenario = {
 };
 
 /**
- * NumberField — `createNumberField` skipped the entire native-validation stack
- * (no ticket). Upstream `useNumberField` goes through `useFormattedTextField` →
- * `useTextField` → `useFormValidation`. Solid paints `isInvalid` and submits.
+ * NumberField — #460 (merged) wired `createFormValidation` and native min/max/step.
+ * D14 `invalid` / `invalid-disabled` / submit pair-match. min/max/step constraint
+ * cases are not in this unit.
  */
 const numberFieldValidity: DriverScenario = {
   slug: "numberfield",
@@ -191,9 +193,8 @@ const numberFieldValidity: DriverScenario = {
 };
 
 /**
- * ComboBox — #273 landed native `required`. Upstream `useComboBox` still routes
- * the input through `useTextField` (`useFormValidation`). Solid never does.
- * `isInvalid` ComboBox paints and submits.
+ * ComboBox — `createComboBox` now calls `createFormValidation`. D14 `invalid`
+ * constraint + submit pair-match. Distinct from #273 (native `required`).
  */
 const comboBoxValidity: DriverScenario = {
   slug: "combobox",
@@ -216,13 +217,11 @@ const comboBoxValidity: DriverScenario = {
  * driven with a click: does the browser block the submit, and does the port commit
  * the native error UI afterwards.
  *
- * `required-empty` is #383 (OPEN): both stacks already block via `valueMissing` and
- * move focus to the input, but React then commits the native `validationMessage`
- * into the error HelpText with `aria-invalid` / `[data-invalid]` while Solid keeps
- * the description row, because `createTextField` computes `displayValidation` and
- * then ignores it. This submit row is supposed to be red until #383 lands. The
- * resting constraint-validity row before any click already matches and must keep
- * matching — that is the control group, not a skip.
+ * `required-empty` is #383 (merged): both stacks block via `valueMissing`, then
+ * both commit the native `validationMessage` into error HelpText with
+ * `aria-invalid` / `[data-invalid]`. `aria-required-empty` is #465 (merged): Form
+ * `validationBehavior="aria"` drops native `required`, so neither stack reports
+ * `valueMissing`. `default` submit is the control group — both stacks submit.
  */
 const formValidity: DriverScenario = {
   slug: "form",
