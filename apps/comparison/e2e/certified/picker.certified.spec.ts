@@ -1,4 +1,4 @@
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -123,7 +123,7 @@ const openPicker = async ({ canvas, page }: PanelContext) => {
 /** Best-effort close before the next panel (isolation is the per-panel `goto`);
  *  NEVER asserts — close-on-Escape is a D4 trigger contract, not the list's. */
 const closePicker = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("listbox").first());
 };
 
 /** Scenario 1 — the closed field trigger across the S2 size matrix + `isQuiet`,

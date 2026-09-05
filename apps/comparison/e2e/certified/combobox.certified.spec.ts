@@ -1,4 +1,4 @@
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -126,7 +126,7 @@ const openComboBox = async ({ canvas, page }: PanelContext) => {
 /** Best-effort close before the next panel (isolation is the per-panel `goto`);
  *  NEVER asserts — close-on-Escape is a D4 interaction contract, not the list's. */
 const closeComboBox = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("listbox").first());
 };
 
 /** Scenario 1 — the closed field across the S2 size matrix + `isInvalid`, in the

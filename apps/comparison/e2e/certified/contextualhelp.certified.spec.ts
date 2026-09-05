@@ -1,4 +1,4 @@
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -108,7 +108,7 @@ const openHelp = async ({ canvas, page }: PanelContext) => {
 /** Best-effort close before the next panel (isolation is the per-panel `goto`);
  *  NEVER asserts — close-on-Escape is a DialogTrigger contract, not this unit's. */
 const closeHelp = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("dialog"));
 };
 
 /** Scenario 1 — the closed icon-only quiet trigger across variant × size. The

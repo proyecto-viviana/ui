@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerPixelDriver } from "../drivers/pixel";
 import { registerStateMatrixDriver } from "../drivers/state-matrix";
@@ -69,7 +69,7 @@ const openModal = async ({ canvas, page }: PanelContext) => {
 /** Best-effort close before the next panel; isolation is guaranteed by the fresh
  *  per-panel `page.goto`. Never asserts (close is a DialogTrigger D4 contract). */
 const closeModal = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("dialog", { name: dialogTitle }));
 };
 
 /**

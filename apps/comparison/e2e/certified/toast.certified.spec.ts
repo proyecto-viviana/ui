@@ -95,7 +95,11 @@ const openToast = async ({ page, canvas, framework }: PanelContext) => {
     },
     { side: framework, v: variant },
   );
-  await focusLocator(canvas.getByRole("button", { name: triggerLabel(variant) }));
+  const stage = canvas.locator('[data-comparison-control-root="toast"]');
+  await expect(stage).toHaveAttribute("data-comparison-toast-is-active", "true");
+  const trigger = canvas.getByRole("button", { name: triggerLabel(variant) });
+  await expect(trigger).toBeVisible();
+  await focusLocator(trigger);
   await page.keyboard.press("Enter");
   await expect(page.getByRole("alertdialog")).toBeVisible();
 };

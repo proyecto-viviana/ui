@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import type { DriverScenario, PanelContext, TargetResolver } from "../drivers/scenario";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -67,7 +67,7 @@ const openAlert = async ({ canvas, page }: PanelContext) => {
  *  fresh per-panel `page.goto`. Never asserts (dismissal is a DialogTrigger
  *  D4 contract owned by the Dialog pilot). */
 const closeAlert = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("alertdialog"));
 };
 
 /**

@@ -1,4 +1,4 @@
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -88,7 +88,7 @@ const openMenu = async ({ canvas, page }: PanelContext) => {
 /** Best-effort close before the next panel (isolation is the per-panel `goto`);
  *  NEVER asserts — close-on-Escape is a D4/D5 trigger contract, not the list's. */
 const closeMenu = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("menu", { name: menuName }));
 };
 
 /** Scenario 1 — the closed icon-only trigger across the ActionButton size matrix

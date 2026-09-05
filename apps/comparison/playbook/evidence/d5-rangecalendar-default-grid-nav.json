@@ -1,0 +1,2795 @@
+{
+  "generatedAt": "2026-09-05T07:24:34.664Z",
+  "scenario": "rangecalendar",
+  "title": "RangeCalendar",
+  "caseId": "default",
+  "walkId": "grid-nav",
+  "react": [
+    {
+      "after": "(start)",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Saturday, February 15, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowRight",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Sunday, February 16, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowRight",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Monday, February 17, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowDown",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Monday, February 24, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowLeft",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Sunday, February 23, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowUp",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Sunday, February 16, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    }
+  ],
+  "solid": [
+    {
+      "after": "(start)",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Saturday, February 15, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowRight",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Sunday, February 16, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowRight",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Monday, February 17, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowDown",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Monday, February 24, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowLeft",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Sunday, February 23, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    },
+    {
+      "after": "ArrowUp",
+      "snapshot": {
+        "active": {
+          "tag": "div",
+          "role": "button",
+          "name": "Sunday, February 16, 2025",
+          "scope": "panel",
+          "tabindex": "0"
+        },
+        "activeDescendant": null,
+        "roving": [
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Previous",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 1, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 2, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Monday, February 3, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 4, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 5, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 6, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Selected Range: Monday, February 3 to Friday, February 7, 2025, Friday, February 7, 2025 selected",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 8, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 9, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 10, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 11, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 12, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 13, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 14, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 15, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 16, 2025",
+            "scope": "panel",
+            "tabindex": "0"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 17, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 18, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 19, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 20, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 21, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Saturday, February 22, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Sunday, February 23, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Monday, February 24, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Tuesday, February 25, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Wednesday, February 26, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Thursday, February 27, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "div",
+            "role": "button",
+            "name": "Friday, February 28, 2025",
+            "scope": "panel",
+            "tabindex": "-1"
+          },
+          {
+            "tag": "button",
+            "role": null,
+            "name": "Next",
+            "scope": "panel",
+            "tabindex": "-1"
+          }
+        ]
+      }
+    }
+  ]
+}

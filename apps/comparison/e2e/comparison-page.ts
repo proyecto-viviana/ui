@@ -227,15 +227,28 @@ export async function tapLocator(target: Locator) {
 
 /**
  * Dismiss a portaled overlay without Playwright actionability.
- * Bare `keyboard.press("Escape")` is a no-op when focus is on an
- * aria-hidden trigger behind the modal (clickLocator focused it).
+ *
+ * RAC `useOverlay` / Solid `createOverlay` put Escape on the overlay
+ * element (`overlayProps.onKeyDown`), not document. A CDP key to the
+ * still-focused trigger never reaches that listener — RAC also ignores
+ * portal-bubbled keydowns whose target is outside the overlay.
  */
 export async function dismissOverlay(overlay: Locator) {
   if ((await overlay.count()) === 0) {
     return;
   }
-  await focusLocator(overlay.first());
-  await overlay.page().keyboard.press("Escape");
+  const node = overlay.first();
+  await node.evaluate((element) => {
+    const init = {
+      key: "Escape",
+      code: "Escape",
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    } satisfies KeyboardEventInit;
+    element.dispatchEvent(new KeyboardEvent("keydown", init));
+    element.dispatchEvent(new KeyboardEvent("keyup", init));
+  });
 }
 
 /**
@@ -243,6 +256,9 @@ export async function dismissOverlay(overlay: Locator) {
  * Playwright's `locator.click()` deadlocks on this box. Native
  * `HTMLElement.click()` is enough for form controls; RAC `usePress`
  * listens to pointerdown/up, so overlay triggers also need those.
+ * Do not focus between pointerdown and pointerup — that leaves the
+ * trigger focused after the overlay opens, so Escape never hits
+ * RAC `useOverlay`'s overlay listener.
  */
 export async function clickLocator(target: Locator) {
   await scrollLocatorIntoView(target);
@@ -261,7 +277,6 @@ export async function clickLocator(target: Locator) {
         clientY: point.y,
       };
       el.dispatchEvent(new PointerEvent("pointerdown", { ...pointerInit, buttons: 1, button: 0 }));
-      el.focus();
       el.dispatchEvent(new PointerEvent("pointerup", pointerInit));
       el.click();
     },

@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import { hc } from "../../solid-h";
 import { Button as SolidSpectrumButton } from "@proyecto-viviana/solid-spectrum/Button";
 import { ButtonGroup as SolidSpectrumButtonGroup } from "@proyecto-viviana/solid-spectrum/ButtonGroup";
@@ -198,11 +198,15 @@ function SolidSpectrumToastDemo() {
             },
             PRIVATE_forceReducedMotion: true,
           }),
+          // React renders `null` when inactive. A `hidden` trigger stays in the
+          // DOM; Playwright `getByRole` skips it, and a same-tick Enter after
+          // `comparison:controls-change` can hit `triggerToast` before `activeSide`
+          // flushes. Mount the buttons only once this stack is active.
           hc(
-            "div",
+            Show,
             {
-              get hidden() {
-                return demoProps().activeSide !== "solid" ? true : undefined;
+              get when() {
+                return demoProps().activeSide === "solid";
               },
             },
             [solidToastTriggers()],

@@ -1,4 +1,4 @@
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerFocusTrailDriver } from "../drivers/focus";
@@ -120,7 +120,7 @@ const openMenu = async ({ canvas, page }: PanelContext) => {
  * contract in D4/D5 scope, not the list's).
  */
 const closeMenu = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("menu", { name: menuName }));
 };
 
 const listScenario: DriverScenario = {

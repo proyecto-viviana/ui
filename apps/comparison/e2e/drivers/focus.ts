@@ -1,3 +1,6 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import { focusLocator } from "../comparison-page";
 import { installOracle, snapshotFocus, type OracleFocusSnapshot } from "./dom-oracle";
@@ -128,7 +131,38 @@ export function registerFocusTrailDriver(scenario: DriverScenario) {
             trails[ctx.framework] = trail;
           });
 
-          expect(JSON.stringify(trails.solid, null, 2)).toBe(JSON.stringify(trails.react, null, 2));
+          const payload = {
+            generatedAt: new Date().toISOString(),
+            scenario: scenario.slug,
+            title: scenario.title,
+            caseId: caseDef.id,
+            walkId: walk.id,
+            react: trails.react ?? null,
+            solid: trails.solid ?? null,
+          };
+          const dump = `${JSON.stringify(payload, null, 2)}\n`;
+          await test.info().attach(`d5-trail-${scenario.slug}-${caseDef.id}-${walk.id}`, {
+            body: Buffer.from(dump),
+            contentType: "application/json",
+          });
+          const reactDump = JSON.stringify(trails.react ?? null, null, 2);
+          const solidDump = JSON.stringify(trails.solid ?? null, null, 2);
+          if (
+            reactDump !== solidDump &&
+            (scenario.slug === "calendar" || scenario.slug === "rangecalendar")
+          ) {
+            const evidenceDir = path.join(
+              path.dirname(fileURLToPath(import.meta.url)),
+              "../../playbook/evidence",
+            );
+            mkdirSync(evidenceDir, { recursive: true });
+            writeFileSync(
+              path.join(evidenceDir, `d5-${scenario.slug}-${caseDef.id}-${walk.id}.json`),
+              dump,
+            );
+          }
+
+          expect(solidDump).toBe(reactDump);
         });
       }
     }

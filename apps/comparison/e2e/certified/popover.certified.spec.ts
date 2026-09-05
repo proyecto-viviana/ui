@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { clickLocator } from "../comparison-page";
+import { clickLocator, dismissOverlay } from "../comparison-page";
 import { registerAxTreeDriver } from "../drivers/ax";
 import { registerContrastDriver } from "../drivers/contrast";
 import { registerPixelDriver } from "../drivers/pixel";
@@ -116,7 +116,7 @@ const openPopover = async ({ canvas, page }: PanelContext) => {
  * contract in D4/D5 scope, not the surface's).
  */
 const closePopover = async ({ page }: PanelContext) => {
-  await page.keyboard.press("Escape");
+  await dismissOverlay(page.getByRole("dialog", { name: popoverName }));
 };
 
 const surfaceScenario: DriverScenario = {
