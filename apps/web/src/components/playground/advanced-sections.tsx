@@ -25,7 +25,6 @@ import {
   Menu as StyledMenu,
   MenuItem as StyledMenuItem,
   MenuTrigger as StyledMenuTrigger,
-  MenuButton as StyledMenuButton,
   ListBox as StyledListBox,
   ListBoxOption as StyledListBoxOption,
   Tabs as StyledTabs,
@@ -71,7 +70,7 @@ import {
   Menu,
   MenuItem,
   MenuTrigger,
-  MenuButton,
+  Button as HeadlessButton,
   Select,
   SelectTrigger,
   SelectValue,
@@ -1290,7 +1289,7 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
           Basic Menu
         </Heading>
         <MenuTrigger>
-          <MenuButton
+          <HeadlessButton
             style={{
               display: "inline-flex",
               "align-items": "center",
@@ -1304,7 +1303,7 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
           >
             Actions
             <Text styles={typeRoles.micro}>▼</Text>
-          </MenuButton>
+          </HeadlessButton>
           <Menu
             items={menuItems}
             getKey={(item) => item.id}
@@ -1339,7 +1338,7 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
           Menu with Disabled Items
         </Heading>
         <MenuTrigger>
-          <MenuButton
+          <HeadlessButton
             style={{
               display: "inline-flex",
               "align-items": "center",
@@ -1353,7 +1352,7 @@ function MenuDemo(props: { onAction?: (action: string) => void }) {
           >
             Menu with Disabled
             <Text styles={typeRoles.micro}>▼</Text>
-          </MenuButton>
+          </HeadlessButton>
           <Menu
             items={menuItemsWithDisabled}
             getKey={(item) => item.id}
@@ -1622,7 +1621,7 @@ function StyledMenuDemo(props: { onAction?: (action: string) => void }) {
       <Flex wrap gap={4}>
         {/* Primary variant */}
         <StyledMenuTrigger size="md">
-          <StyledMenuButton variant="primary">File Menu</StyledMenuButton>
+          <Button variant="primary">File Menu</Button>
           <StyledMenu<MenuItemData>
             items={styledMenuItems.filter((i: MenuItemData) => !i.isSeparator)}
             getKey={(item: MenuItemData) => item.id}
@@ -1643,7 +1642,7 @@ function StyledMenuDemo(props: { onAction?: (action: string) => void }) {
 
         {/* Secondary variant */}
         <StyledMenuTrigger size="md">
-          <StyledMenuButton variant="secondary">Edit Menu</StyledMenuButton>
+          <Button variant="secondary">Edit Menu</Button>
           <StyledMenu<SimpleMenuItem>
             items={[
               { id: "cut", label: "Cut" },
@@ -1660,7 +1659,9 @@ function StyledMenuDemo(props: { onAction?: (action: string) => void }) {
 
         {/* Quiet variant */}
         <StyledMenuTrigger size="sm">
-          <StyledMenuButton variant="quiet">More</StyledMenuButton>
+          <Button variant="primary" fillStyle="outline">
+            More
+          </Button>
           <StyledMenu<SimpleMenuItem>
             items={[
               { id: "settings", label: "Settings" },

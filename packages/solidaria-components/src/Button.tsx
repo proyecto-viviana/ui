@@ -254,12 +254,18 @@ export function Button(props: ButtonProps): JSX.Element {
   const popoverTriggerContext = useContext(PopoverTriggerContext);
 
   // Helper to resolve isDisabled (handles both boolean and Accessor<boolean>)
+  const menuTriggerProps = () =>
+    isPopoverTrigger() && popoverTriggerContext?.trigger === "MenuTrigger"
+      ? popoverTriggerContext.triggerProps
+      : undefined;
+
   const resolveDisabled = (): boolean => {
     const disabled = ariaProps.isDisabled;
-    if (typeof disabled === "function") {
-      return disabled();
+    if (typeof disabled === "function" ? disabled() : !!disabled) {
+      return true;
     }
-    return !!disabled;
+    const triggerProps = menuTriggerProps();
+    return Boolean(triggerProps?.["aria-disabled"] || triggerProps?.isDisabled);
   };
 
   const resolvePending = (): boolean => !!local.isPending;
@@ -291,8 +297,15 @@ export function Button(props: ButtonProps): JSX.Element {
     if (isDialogTrigger()) {
       dialogTriggerContext!.state.toggle();
     }
-    if (isPopoverTrigger() && popoverTriggerContext!.trigger !== "MenuTrigger") {
-      popoverTriggerContext!.state.toggle();
+    if (isPopoverTrigger()) {
+      const triggerOnPress = popoverTriggerContext!.triggerProps?.onPress as
+        | ((event: PressEvent) => void)
+        | undefined;
+      if (typeof triggerOnPress === "function") {
+        triggerOnPress(e);
+      } else if (popoverTriggerContext!.trigger !== "MenuTrigger") {
+        popoverTriggerContext!.state.toggle();
+      }
     }
   };
 
@@ -300,7 +313,14 @@ export function Button(props: ButtonProps): JSX.Element {
     createForwardedAriaButtonProps(ariaProps, {
       onPress: handlePress,
       get onPressStart() {
-        return resolvePending() ? undefined : ariaProps.onPressStart;
+        if (resolvePending()) return undefined;
+        return (event: PressEvent) => {
+          const triggerStart = popoverTriggerContext?.triggerProps?.onPressStart as
+            | ((event: PressEvent) => void)
+            | undefined;
+          triggerStart?.(event);
+          ariaProps.onPressStart?.(event);
+        };
       },
       get onPressEnd() {
         return resolvePending() ? undefined : ariaProps.onPressEnd;
@@ -313,6 +333,11 @@ export function Button(props: ButtonProps): JSX.Element {
       },
       get onClick() {
         return resolvePending() ? undefined : ariaProps.onClick;
+      },
+      get preventFocusOnPress() {
+        return (menuTriggerProps()?.preventFocusOnPress ?? ariaProps.preventFocusOnPress) as
+          | boolean
+          | undefined;
       },
       // Mirror React Aria's RAC `Button`: `useButton` is called with the base
       // `isDisabled` WITHOUT `isPending`, so a pending-focusable button stays a
@@ -364,12 +389,18 @@ export function Button(props: ButtonProps): JSX.Element {
 
   // Remove onClick from DOM props - it's already handled by createPress
   // This matches React Aria Components behavior (Button.tsx line 144: delete DOMProps.onClick)
-  const domProps = createMemo(() => {
-    const filtered = filterDOMProps(ariaProps, { global: true });
+  const domProps = () => {
+    const filtered = filterDOMProps(ariaProps, { global: true }) as Record<string, unknown>;
     // onClick is handled by createPress, not passed directly to DOM
-    delete (filtered as Record<string, unknown>).onClick;
+    delete filtered.onClick;
+    // Read data-* now so `{...rootProps()}` re-applies when a trigger attr changes.
+    for (const key in ariaProps) {
+      if (key.startsWith("data-")) {
+        filtered[key] = (ariaProps as Record<string, unknown>)[key];
+      }
+    }
     return filtered;
-  });
+  };
 
   const buttonPropsRef = (buttonAria.buttonProps as Record<string, unknown>).ref as
     | ((el: HTMLElement) => void)
@@ -462,6 +493,27 @@ export function Button(props: ButtonProps): JSX.Element {
     }
     return next;
   };
+  const triggerDomProps = () => {
+    const triggerProps = menuTriggerProps();
+    if (!triggerProps) {
+      return {};
+    }
+
+    const {
+      onPress: _onPress,
+      onPressStart: _onPressStart,
+      preventFocusOnPress: _preventFocusOnPress,
+      "aria-haspopup": _ariaHasPopup,
+      "aria-expanded": _ariaExpanded,
+      "aria-controls": _ariaControls,
+      "aria-disabled": _ariaDisabled,
+      id: _id,
+      ref: _ref,
+      onKeyDown: _onKeyDown,
+      ...rest
+    } = triggerProps;
+    return rest;
+  };
   const directAriaProps = () => {
     const next: Record<string, unknown> = {};
     for (const name of buttonAriaOverrideProps) {
@@ -512,13 +564,24 @@ export function Button(props: ButtonProps): JSX.Element {
   const rootProps = () =>
     ({
       ...domProps(),
+      ...triggerDomProps(),
       ...disablePendingInteractions(cleanButtonProps()),
       ...directAriaProps(),
       ...triggerAriaProps(),
       ...cleanFocusProps(),
       ...cleanHoverProps(),
+      onKeyDown: (event: KeyboardEvent) => {
+        const triggerKeyDown = menuTriggerProps()?.onKeyDown as
+          | ((event: KeyboardEvent) => void)
+          | undefined;
+        triggerKeyDown?.(event);
+        (cleanButtonProps().onKeyDown as ((event: KeyboardEvent) => void) | undefined)?.(event);
+      },
       type: buttonType(),
-      id: buttonId,
+      id:
+        ((ariaProps as { id?: string }).id as string | undefined) ||
+        (menuTriggerProps()?.id as string | undefined) ||
+        buttonId,
       class: renderProps.class(),
       style: renderProps.style(),
       slot: local.slot,

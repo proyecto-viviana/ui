@@ -16,7 +16,6 @@ import {
   Header,
   Heading,
   MenuTrigger,
-  MenuButton,
   Menu,
   MenuContext,
   MenuItem,
@@ -52,7 +51,7 @@ describe("Menu (solid-spectrum)", () => {
       // carries a class rather than matching literal Tailwind utilities.
       const { container } = render(() => (
         <MenuTrigger>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -68,7 +67,7 @@ describe("Menu (solid-spectrum)", () => {
       const user = setupUser();
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu aria-label="Actions">
             <UnavailableMenuItemTrigger isUnavailable>
               <MenuItem id="locked" textValue="Locked action">
@@ -276,7 +275,7 @@ describe("Menu (solid-spectrum)", () => {
           <Button>Open settings</Button>
           <Popover isNonModal>
             <MenuTrigger>
-              <MenuButton>Actions</MenuButton>
+              <Button>Actions</Button>
               <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
                 {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
               </Menu>
@@ -318,7 +317,7 @@ describe("Menu (solid-spectrum)", () => {
           <Button>Open settings</Button>
           <Popover>
             <MenuTrigger>
-              <MenuButton>Actions</MenuButton>
+              <Button>Actions</Button>
               <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
                 {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
               </Menu>
@@ -342,95 +341,11 @@ describe("Menu (solid-spectrum)", () => {
     });
   });
 
-  describe("MenuButton", () => {
-    it("renders as a button element", () => {
-      render(() => (
-        <MenuTrigger>
-          <MenuButton>Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      expect(button).toBeInTheDocument();
-      expect(button.textContent).toContain("Actions");
-    });
-
-    // Styling flows through the build-time S2 style() macro (opaque atomic class
-    // hashes; jsdom loads no CSS), so these assert a non-empty class and that a
-    // distinct variant/size yields a distinct class string rather than matching
-    // literal Tailwind utilities.
-    const renderMenuButton = (
-      props: { variant?: "primary" | "secondary" | "quiet" } = {},
-      size?: "sm" | "lg",
-    ) => {
-      const { unmount } = render(() => (
-        <MenuTrigger size={size}>
-          <MenuButton variant={props.variant}>Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-      const className = screen.getByRole("button").className;
-      unmount();
-      return className;
-    };
-
-    it("applies a non-empty secondary variant class by default", () => {
-      expect(renderMenuButton()).not.toBe("");
-    });
-
-    it("applies a distinct primary variant class", () => {
-      expect(renderMenuButton({ variant: "primary" })).not.toBe(
-        renderMenuButton({ variant: "secondary" }),
-      );
-    });
-
-    it("applies a distinct quiet variant class", () => {
-      expect(renderMenuButton({ variant: "quiet" })).not.toBe(
-        renderMenuButton({ variant: "secondary" }),
-      );
-    });
-
-    it("applies a non-empty md size class by default", () => {
-      expect(renderMenuButton()).not.toBe("");
-    });
-
-    it("applies a distinct sm size class", () => {
-      expect(renderMenuButton({}, "sm")).not.toBe(renderMenuButton());
-    });
-
-    it("applies a distinct lg size class", () => {
-      expect(renderMenuButton({}, "lg")).not.toBe(renderMenuButton());
-    });
-
-    it("renders chevron SVG", () => {
-      render(() => (
-        <MenuTrigger>
-          <MenuButton>Actions</MenuButton>
-          <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
-            {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
-          </Menu>
-        </MenuTrigger>
-      ));
-
-      const button = screen.getByRole("button");
-      const svg = button.querySelector("svg");
-      expect(svg).toBeInTheDocument();
-      // Chevron path: "M19 9l-7 7-7-7"
-      const path = svg?.querySelector("path");
-      expect(path?.getAttribute("d")).toContain("M19 9l-7 7-7-7");
-    });
-  });
-
   describe("Menu container", () => {
     it('renders as ul with role="menu" when open', () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -445,7 +360,7 @@ describe("Menu (solid-spectrum)", () => {
     it("applies generated S2 menu styles for size variants", () => {
       const { unmount } = render(() => (
         <MenuTrigger defaultOpen size="sm">
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -460,7 +375,7 @@ describe("Menu (solid-spectrum)", () => {
 
       render(() => (
         <MenuTrigger defaultOpen size="lg">
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -474,7 +389,7 @@ describe("Menu (solid-spectrum)", () => {
     it("supports visible label wiring via aria-labelledby", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu label="Actions menu" items={items} getKey={(i) => i.id}>
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -488,7 +403,7 @@ describe("Menu (solid-spectrum)", () => {
     it("disables all menu items when the menu is disabled", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu isDisabled items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -508,7 +423,7 @@ describe("Menu (solid-spectrum)", () => {
 
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu
             isDisabled
             onAction={onAction}
@@ -528,7 +443,7 @@ describe("Menu (solid-spectrum)", () => {
     it("provides S2 section header and heading slot contexts", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu aria-label="Actions">
             <MenuSection data-testid="document-actions-section">
               <Header data-testid="document-actions-header">
@@ -590,7 +505,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders href items as anchors", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => (
               <MenuItem
@@ -616,7 +531,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders label text", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -631,7 +546,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders icon when provided", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu
             items={[{ id: "settings", label: "Settings" }]}
             getKey={(i) => i.id}
@@ -652,7 +567,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders shortcut when provided", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={[{ id: "save", label: "Save" }]} getKey={(i) => i.id} aria-label="Actions">
             {(item) => (
               <MenuItem id={item.id} shortcut="Ctrl+S">
@@ -672,7 +587,7 @@ describe("Menu (solid-spectrum)", () => {
       // differs from a plain item's rather than matching a literal utility.
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu
             items={[
               { id: "delete", label: "Delete" },
@@ -700,7 +615,7 @@ describe("Menu (solid-spectrum)", () => {
     it("applies disabled state attributes and generated styling", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu
             items={[{ id: "locked", label: "Locked" }]}
             getKey={(i) => i.id}
@@ -725,7 +640,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders S2 checkmark indicators for single selection menus", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>View</MenuButton>
+          <Button>View</Button>
           <Menu
             selectionMode="single"
             defaultSelectedKeys={["edit"]}
@@ -758,7 +673,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders S2 checkbox indicators for multiple selection menus", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>View</MenuButton>
+          <Button>View</Button>
           <Menu
             selectionMode="multiple"
             defaultSelectedKeys={["edit"]}
@@ -792,7 +707,7 @@ describe("Menu (solid-spectrum)", () => {
     it("renders S2 selection indicators for section-level selection", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu aria-label="Format">
             <MenuSection
               selectionMode="multiple"
@@ -856,7 +771,7 @@ describe("Menu (solid-spectrum)", () => {
     it("propagates size from MenuTrigger to generated MenuItem styles", () => {
       const { unmount } = render(() => (
         <MenuTrigger defaultOpen size="sm">
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -873,7 +788,7 @@ describe("Menu (solid-spectrum)", () => {
 
       render(() => (
         <MenuTrigger defaultOpen size="lg">
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>

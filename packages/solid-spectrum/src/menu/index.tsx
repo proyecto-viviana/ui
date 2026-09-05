@@ -29,17 +29,14 @@ import {
   MenuSection as HeadlessMenuSection,
   SubmenuTrigger as HeadlessSubmenuTrigger,
   MenuTrigger as HeadlessMenuTrigger,
-  MenuButton as HeadlessMenuButton,
   MenuTriggerContext,
   PopoverTriggerContext,
   type MenuProps as HeadlessMenuProps,
   type MenuItemProps as HeadlessMenuItemProps,
   type MenuSectionProps as HeadlessMenuSectionProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
-  type MenuButtonProps as HeadlessMenuButtonProps,
   type MenuRenderProps,
   type MenuItemRenderProps,
-  type MenuTriggerRenderProps,
   usePopoverTrigger,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
@@ -47,7 +44,7 @@ import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stat
 import { useProviderProps } from "../provider";
 import { Popover } from "../popover";
 import type { StyleString } from "../style";
-import { style, focusRing } from "../style" with { type: "macro" };
+import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { pressScale } from "../pressScale";
 import { centerBaseline } from "../icon/center-baseline";
@@ -134,13 +131,6 @@ export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class"
   class?: string;
 }
 
-export interface MenuButtonProps extends Omit<HeadlessMenuButtonProps, "class" | "style"> {
-  /** Additional CSS class name. */
-  class?: string;
-  /** Visual variant of the button. */
-  variant?: "primary" | "secondary" | "quiet";
-}
-
 export interface MenuProps<T> extends Omit<HeadlessMenuProps<T>, "class" | "style" | "ref"> {
   /** Additional CSS class name. */
   class?: string;
@@ -194,60 +184,6 @@ export interface UnavailableMenuItemTriggerProps {
   /** Whether the menu item should expose unavailable contextual help. */
   isUnavailable?: boolean;
 }
-
-// The MenuButton (a Viviana convenience trigger; upstream S2 composes a plain
-// Button) is styled through the build-time S2 style() macro so the atomic CSS
-// ships in the package bundle for installed consumers. Interactive state
-// (hover/press/open/focus/disabled) is driven by the trigger render props.
-type MenuButtonVariant = "primary" | "secondary" | "quiet";
-
-const menuButtonStyles = style<
-  MenuTriggerRenderProps & { size: S2MenuSize; variant: MenuButtonVariant }
->({
-  ...focusRing(),
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  borderRadius: "lg",
-  borderStyle: "solid",
-  borderWidth: 2,
-  fontWeight: "medium",
-  cursor: "default",
-  transition: "default",
-  height: { size: { S: 32, M: 40, L: 48, XL: 56 } },
-  font: { size: { S: "ui-sm", M: "ui", L: "ui-lg", XL: "ui-xl" } },
-  paddingX: { size: { S: 12, M: 16, L: 20, XL: 24 } },
-  gap: { size: { S: 8, M: 8, L: 12, XL: 12 } },
-  backgroundColor: {
-    variant: {
-      primary: { default: "accent", isHovered: "accent-800", isPressed: "accent-800" },
-      secondary: { default: "layer-2", isHovered: "gray-100", isPressed: "gray-100" },
-      quiet: { default: "transparent", isHovered: "gray-100", isPressed: "gray-100" },
-    },
-    isDisabled: "disabled",
-  },
-  borderColor: {
-    variant: {
-      primary: "transparent",
-      secondary: { default: "gray-300", isHovered: "gray-400" },
-      quiet: "transparent",
-    },
-    isDisabled: "transparent",
-  },
-  color: {
-    default: "neutral",
-    variant: { primary: "white" },
-    isDisabled: "disabled",
-  },
-});
-
-const menuButtonChevronStyles = style<{ size: S2MenuSize; isOpen?: boolean }>({
-  flexShrink: 0,
-  transition: "default",
-  width: { size: { S: 16, M: 20, L: 24, XL: 28 } },
-  height: { size: { S: 16, M: 20, L: 24, XL: 28 } },
-  rotate: { default: 0, isOpen: 180 },
-});
 
 const triggerWrapperStyles = style({
   position: "relative",
@@ -386,6 +322,9 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
     },
     triggerId,
     trigger: "MenuTrigger",
+    get triggerProps() {
+      return triggerContext?.triggerProps as Record<string, unknown> | undefined;
+    },
   };
 
   return (
@@ -401,40 +340,6 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
         {props.children}
       </PopoverTriggerContext.Provider>
     </MenuTriggerOptionsContext.Provider>
-  );
-}
-
-/**
- * A button that opens a menu.
- * SSR-compatible - renders children and chevron icon directly without render props.
- */
-export function MenuButton(props: MenuButtonProps): JSX.Element {
-  const mergedProps = useProviderProps(props);
-  const [local, headlessProps] = splitProps(mergedProps, ["class", "variant", "ref"]);
-  const size = useContext(MenuSizeContext);
-  const popoverTrigger = usePopoverTrigger();
-  const variant = local.variant ?? "secondary";
-  const customClass = local.class ?? "";
-
-  const getClassName = (renderProps: MenuTriggerRenderProps): string =>
-    [menuButtonStyles({ ...renderProps, size, variant }), customClass].filter(Boolean).join(" ");
-
-  return (
-    <HeadlessMenuButton
-      {...headlessProps}
-      ref={(element) => {
-        popoverTrigger?.setTriggerRef(element);
-        mergeContextRefs(local.ref)(element);
-      }}
-      class={getClassName}
-    >
-      {(renderProps) => (
-        <>
-          {props.children as JSX.Element}
-          <ChevronIcon class={menuButtonChevronStyles({ size, isOpen: renderProps.isOpen })} />
-        </>
-      )}
-    </HeadlessMenuButton>
   );
 }
 
@@ -832,18 +737,9 @@ export function MenuSeparator(props: MenuSeparatorProps): JSX.Element {
   return <div role="separator" class={[separatorStyles, props.class].filter(Boolean).join(" ")} />;
 }
 
-function ChevronIcon(props: { class?: string }): JSX.Element {
-  return (
-    <svg class={props.class} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
-  );
-}
-
 Menu.Item = MenuItem;
 Menu.Section = MenuSection;
 Menu.Separator = MenuSeparator;
-MenuTrigger.Button = MenuButton;
 
 export const Item = MenuItem;
 export const Section = MenuSection;

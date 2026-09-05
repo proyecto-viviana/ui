@@ -81,6 +81,7 @@ export {
   Collection,
   ContextualHelpTrigger,
   Menu,
+  // Local addition: S2 composes MenuTrigger + Button. apps/web still uses this convenience.
   MenuButton,
   MenuContext,
   MenuItem,

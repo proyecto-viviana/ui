@@ -30,14 +30,15 @@ import {
   MenuSection as HeadlessMenuSection,
   SubmenuTrigger as HeadlessSubmenuTrigger,
   MenuTrigger as HeadlessMenuTrigger,
-  MenuButton as HeadlessMenuButton,
+  Button as HeadlessButton,
   MenuTriggerContext,
   PopoverTriggerContext,
   type MenuProps as HeadlessMenuProps,
   type MenuItemProps as HeadlessMenuItemProps,
   type MenuSectionProps as HeadlessMenuSectionProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
-  type MenuButtonProps as HeadlessMenuButtonProps,
+  type ButtonProps as HeadlessButtonProps,
+  type ButtonRenderProps,
   type MenuRenderProps,
   type MenuItemRenderProps,
   type MenuTriggerRenderProps,
@@ -135,7 +136,11 @@ export interface MenuTriggerProps extends Omit<HeadlessMenuTriggerProps, "class"
   class?: string;
 }
 
-export interface MenuButtonProps extends Omit<HeadlessMenuButtonProps, "class" | "style"> {
+/**
+ * Local addition: RAC and S2 compose `MenuTrigger` + `Button`. This convenience
+ * trigger stays in `@proyecto-viviana/ui` for product surfaces that still use it.
+ */
+export interface MenuButtonProps extends Omit<HeadlessButtonProps, "class" | "style"> {
   /** Additional CSS class name. */
   class?: string;
   /** Visual variant of the button. */
@@ -387,6 +392,9 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
     },
     triggerId,
     trigger: "MenuTrigger",
+    get triggerProps() {
+      return triggerContext?.triggerProps as Record<string, unknown> | undefined;
+    },
   };
 
   return (
@@ -406,8 +414,8 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
 }
 
 /**
- * A button that opens a menu.
- * SSR-compatible - renders children and chevron icon directly without render props.
+ * Local addition: a convenience menu trigger. RAC and S2 compose `MenuTrigger` +
+ * `Button`; this wrapper only adds ui-package styling and a chevron.
  */
 export function MenuButton(props: MenuButtonProps): JSX.Element {
   const mergedProps = useProviderProps(props);
@@ -416,12 +424,18 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
   const popoverTrigger = usePopoverTrigger();
   const variant = local.variant ?? "secondary";
   const customClass = local.class ?? "";
+  const isOpen = () => popoverTrigger?.state.isOpen() ?? false;
 
-  const getClassName = (renderProps: MenuTriggerRenderProps): string =>
-    [menuButtonStyles({ ...renderProps, size, variant }), customClass].filter(Boolean).join(" ");
+  const getClassName = (renderProps: ButtonRenderProps): string =>
+    [
+      menuButtonStyles({ ...renderProps, isOpen: isOpen(), size, variant }),
+      customClass,
+    ]
+      .filter(Boolean)
+      .join(" ");
 
   return (
-    <HeadlessMenuButton
+    <HeadlessButton
       {...headlessProps}
       ref={(element) => {
         popoverTrigger?.setTriggerRef(element);
@@ -431,11 +445,13 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
     >
       {(renderProps) => (
         <>
-          {props.children as JSX.Element}
-          <ChevronIcon class={menuButtonChevronStyles({ size, isOpen: renderProps.isOpen })} />
+          {typeof props.children === "function"
+            ? (props.children as (values: ButtonRenderProps) => JSX.Element)(renderProps)
+            : (props.children as JSX.Element)}
+          <ChevronIcon class={menuButtonChevronStyles({ size, isOpen: isOpen() })} />
         </>
       )}
-    </HeadlessMenuButton>
+    </HeadlessButton>
   );
 }
 

@@ -382,9 +382,9 @@
         },
         {
           "name": "children",
-          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: MenuTriggerRenderProps) => JSX.Element)",
+          "type": "number | boolean | Node | JSX.ArrayElement | (string & {}) | ((renderProps: ButtonRenderProps) => JSX.Element)",
           "required": false,
-          "description": "The children of the button. A function may be provided to receive render props.",
+          "description": "The children of the component. A function may be provided to receive render props.",
           "origin": "solidaria-components"
         },
         {
@@ -395,14 +395,378 @@
           "origin": "solidaria-components"
         },
         {
+          "name": "ref",
+          "type": "((el: HTMLButtonElement) => void) | { current?: HTMLButtonElement | null | undefined; }",
+          "required": false,
+          "description": "Ref for the underlying button element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "id",
+          "type": "string | number",
+          "required": false,
+          "description": "The element's unique identifier.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onClick",
+          "type": "(e: MouseEvent) => void",
+          "required": false,
+          "description": "A native click handler, useful for form submission. Note: `onPress` is preferred for cross-device compatibility.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-controls",
+          "type": "string",
+          "required": false,
+          "description": "Identifies the element (or elements) whose contents or presence are controlled by the button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-current",
+          "type": "boolean | \"page\" | \"step\" | \"location\" | \"date\" | \"time\" | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'page'",
+            "'step'",
+            "'location'",
+            "'date'",
+            "'time'",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Indicates the current \"pressed\" state of toggle buttons.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-describedby",
+          "type": "string",
+          "required": false,
+          "description": "The id of the element that describes the button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-details",
+          "type": "string",
+          "required": false,
+          "description": "The id of the element that provides detailed, extended description for the button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-disabled",
+          "type": "boolean | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Indicates that the button is perceivable but disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-expanded",
+          "type": "boolean | \"true\" | \"false\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'"
+          ],
+          "required": false,
+          "description": "Whether the popup is expanded.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-haspopup",
+          "type": "boolean | \"true\" | \"false\" | \"menu\" | \"listbox\" | \"tree\" | \"grid\" | \"dialog\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'",
+            "'menu'",
+            "'listbox'",
+            "'tree'",
+            "'grid'",
+            "'dialog'"
+          ],
+          "required": false,
+          "description": "Whether the button has a popup.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": false,
+          "description": "The accessible label for the button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-labelledby",
+          "type": "string",
+          "required": false,
+          "description": "The id of the element that labels the button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "aria-pressed",
+          "type": "boolean | \"true\" | \"false\" | \"mixed\"",
+          "values": [
+            "false",
+            "true",
+            "'true'",
+            "'false'",
+            "'mixed'"
+          ],
+          "required": false,
+          "description": "Whether the button is in a pressed state (controlled).",
+          "origin": "solidaria"
+        },
+        {
           "name": "isDisabled",
+          "type": "boolean | Accessor<boolean>",
+          "required": false,
+          "description": "Whether the button is disabled.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "render",
+          "type": "(props: JSX.ButtonHTMLAttributes<HTMLButtonElement>, renderProps: ButtonRenderProps) => JSX.Element",
+          "required": false,
+          "description": "Custom renderer for the outer button element.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "isPendingFocusable",
           "type": "boolean",
           "values": [
             "false",
             "true"
           ],
           "required": false,
-          "description": "Whether the button is disabled.",
+          "description": "Keeps pending buttons focusable by using aria-disabled without a native disabled attribute.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverStart",
+          "type": "(e: HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover starts.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverEnd",
+          "type": "(e: HoverEvent) => void",
+          "required": false,
+          "description": "Handler called when hover ends.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "onHoverChange",
+          "type": "(isHovered: boolean) => void",
+          "required": false,
+          "description": "Handler called when hover state changes.",
+          "origin": "solidaria-components"
+        },
+        {
+          "name": "elementType",
+          "type": "\"button\" | \"a\" | \"div\" | \"input\" | \"span\"",
+          "values": [
+            "'button'",
+            "'a'",
+            "'div'",
+            "'input'",
+            "'span'"
+          ],
+          "required": false,
+          "description": "The HTML element type to use for the button.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "href",
+          "type": "string",
+          "required": false,
+          "description": "The URL to link to (for anchor elements).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "target",
+          "type": "string",
+          "required": false,
+          "description": "The target for the link (for anchor elements).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "rel",
+          "type": "string",
+          "required": false,
+          "description": "The rel attribute for the link (for anchor elements).",
+          "origin": "solidaria"
+        },
+        {
+          "name": "allowFocusWhenDisabled",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to allow focus on the button when it is disabled. This enables showing tooltips on disabled buttons. When true, the button gets `tabIndex=-1` instead of being removed from tab order.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPress",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler called when the press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressStart",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler called when a press interaction starts.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressEnd",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler called when a press interaction ends.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressUp",
+          "type": "(e: PressEvent) => void",
+          "required": false,
+          "description": "Handler called when a press is released over the target.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "onPressChange",
+          "type": "(isPressed: boolean) => void",
+          "required": false,
+          "description": "Handler called when the press state changes.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "preventFocusOnPress",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the button should not receive focus on press.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "autoFocus",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the element should receive focus on render.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "type",
+          "type": "\"button\" | \"submit\" | \"reset\"",
+          "values": [
+            "'button'",
+            "'submit'",
+            "'reset'"
+          ],
+          "required": false,
+          "description": "The type attribute for button elements.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "form",
+          "type": "string",
+          "required": false,
+          "description": "Additional attributes for form buttons.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formAction",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formEncType",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formMethod",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formNoValidate",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "formTarget",
+          "type": "string",
+          "required": false,
+          "description": "",
+          "origin": "solidaria"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The name attribute for form buttons.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "The value attribute for form buttons.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "excludeFromTabOrder",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether to exclude the button from the tab order.",
+          "origin": "solidaria"
+        },
+        {
+          "name": "isPending",
+          "type": "boolean",
+          "values": [
+            "false",
+            "true"
+          ],
+          "required": false,
+          "description": "Whether the button is in a pending state.",
           "origin": "solidaria-components"
         }
       ]

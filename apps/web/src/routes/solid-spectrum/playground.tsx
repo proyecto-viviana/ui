@@ -29,7 +29,6 @@ import {
   Menu as StyledMenu,
   MenuItem as StyledMenuItem,
   MenuTrigger as StyledMenuTrigger,
-  MenuButton as StyledMenuButton,
   ListBox as StyledListBox,
   ListBoxOption as StyledListBoxOption,
   // Tabs
@@ -105,7 +104,6 @@ import {
   Menu,
   MenuItem,
   MenuTrigger,
-  MenuButton,
   Select,
   SelectTrigger,
   SelectValue,

@@ -24,12 +24,12 @@ import {
 } from "solid-js";
 import {
   MenuTrigger as HeadlessMenuTrigger,
-  MenuButton as HeadlessMenuButton,
+  Button as HeadlessButton,
   Menu as HeadlessMenu,
   type MenuProps as HeadlessMenuProps,
-  type MenuTriggerRenderProps,
   type MenuTriggerProps as HeadlessMenuTriggerProps,
   type MenuRenderProps,
+  type ButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
@@ -245,12 +245,45 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
       "children" | "items"
     >;
   const [triggerElement, setTriggerElement] = createSignal<HTMLButtonElement | null>(null);
+  const [isMenuOpen, setMenuOpen] = createSignal(Boolean(local.defaultOpen ?? local.isOpen));
+  createEffect(() => {
+    if (local.isOpen !== undefined) {
+      setMenuOpen(Boolean(local.isOpen));
+    }
+  });
   let didAutoFocus = false;
   createEffect(() => {
     const trigger = triggerElement();
     if (!didAutoFocus && local.autoFocus && trigger) {
       didAutoFocus = true;
       trigger.focus();
+    }
+  });
+  createEffect(() => {
+    const trigger = triggerElement();
+    if (!trigger) {
+      return;
+    }
+
+    trigger.setAttribute("data-size", size());
+    if (local.isQuiet) {
+      trigger.setAttribute("data-quiet", "true");
+    } else {
+      trigger.removeAttribute("data-quiet");
+    }
+    trigger.setAttribute("data-action-menu-align", local.align ?? "start");
+    trigger.setAttribute("data-action-menu-direction", local.direction ?? "bottom");
+    if (local.shouldFlip === false) {
+      trigger.setAttribute("data-action-menu-should-flip", "false");
+    } else {
+      trigger.removeAttribute("data-action-menu-should-flip");
+    }
+    for (const [key, value] of Object.entries(triggerDataAttributes())) {
+      if (value == null || value === false) {
+        trigger.removeAttribute(key);
+      } else {
+        trigger.setAttribute(key, String(value));
+      }
     }
   });
   const iconContextValue = {
@@ -268,14 +301,14 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
       flexShrink: 0,
     }),
   };
-  const getButtonState = (renderProps: MenuTriggerRenderProps): S2ActionButtonRenderState => ({
-    isHovered: renderProps.isHovered || renderProps.isOpen,
+  const getButtonState = (renderProps: ButtonRenderProps): S2ActionButtonRenderState => ({
+    isHovered: renderProps.isHovered || isMenuOpen(),
     isPressed: renderProps.isPressed,
     isFocused: renderProps.isFocused,
     isFocusVisible: renderProps.isFocusVisible,
     isDisabled: renderProps.isDisabled,
   });
-  const getButtonClassName = (renderProps: MenuTriggerRenderProps) =>
+  const getButtonClassName = (renderProps: ButtonRenderProps) =>
     [
       local.UNSAFE_className,
       mergeStyles(
@@ -293,7 +326,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
     ]
       .filter(Boolean)
       .join(" ");
-  const getButtonStyle = (renderProps: MenuTriggerRenderProps) =>
+  const getButtonStyle = (renderProps: ButtonRenderProps) =>
     pressScale(triggerElement, () => {
       return mergeContextUnsafeStyle(contextProps?.UNSAFE_style, props.UNSAFE_style) ?? {};
     })(renderProps);
@@ -362,8 +395,9 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
     get defaultOpen() {
       return local.defaultOpen;
     },
-    get onOpenChange() {
-      return local.onOpenChange;
+    onOpenChange(isOpen: boolean) {
+      setMenuOpen(isOpen);
+      local.onOpenChange?.(isOpen);
     },
     get isDisabled() {
       return local.isDisabled;
@@ -372,7 +406,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
 
   return (
     <HeadlessMenuTrigger {...triggerProps}>
-      <HeadlessMenuButton
+      <HeadlessButton
         {...triggerDataAttributes()}
         id={local.id}
         aria-label={triggerLabel()}
@@ -396,7 +430,7 @@ export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>)
         <IconContext.Provider value={iconContextValue}>
           <MoreIcon />
         </IconContext.Provider>
-      </HeadlessMenuButton>
+      </HeadlessButton>
       <ActionMenuPopover
         menuProps={menuOnlyProps}
         items={items}

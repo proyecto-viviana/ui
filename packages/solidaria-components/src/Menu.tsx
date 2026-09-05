@@ -39,7 +39,6 @@ import {
   type MenuTriggerMenuProps,
   createFocusRing,
   createHover,
-  createButton,
   createInteractOutside,
   createScrollIntoViewOnFocus,
   mergeProps,
@@ -424,6 +423,18 @@ export function MenuTrigger(props: MenuTriggerProps): JSX.Element {
             setTriggerRef,
             triggerId: String(menuTrigger.menuTriggerProps.id),
             trigger: "MenuTrigger",
+            get triggerProps() {
+              return mergeProps(menuTrigger.menuTriggerProps, {
+                onPressStart: (event: { pointerType?: string }) => {
+                  onPressStart(event);
+                  (
+                    menuTrigger.menuTriggerProps.onPressStart as
+                      | ((event: { pointerType?: string }) => void)
+                      | undefined
+                  )?.(event);
+                },
+              }) as unknown as Record<string, unknown>;
+            },
           }}
         >
           {props.children}
@@ -588,21 +599,6 @@ export function SubmenuTrigger(props: SubmenuTriggerProps): JSX.Element {
   );
 }
 
-/**
- * A button that opens a menu.
- */
-export interface MenuButtonProps
-  extends SlotProps, Omit<JSX.HTMLAttributes<HTMLButtonElement>, "class" | "style" | "children"> {
-  /** The children of the button. A function may be provided to receive render props. */
-  children?: RenderChildren<MenuTriggerRenderProps>;
-  /** The CSS className for the element. */
-  class?: ClassNameOrFunction<MenuTriggerRenderProps>;
-  /** The inline style for the element. */
-  style?: StyleOrFunction<MenuTriggerRenderProps>;
-  /** Whether the button is disabled. */
-  isDisabled?: boolean;
-}
-
 export interface MenuSectionProps
   extends
     SectionProps,
@@ -620,136 +616,6 @@ export interface MenuSectionProps
     > {
   /** Whether menu items in this section should close the menu when selected. */
   shouldCloseOnSelect?: boolean;
-}
-
-export function MenuButton(props: MenuButtonProps): JSX.Element {
-  const [local, domProps] = splitProps(props, [
-    "class",
-    "style",
-    "slot",
-    "isDisabled",
-    "children",
-    "ref",
-  ]);
-
-  const context = useContext(MenuTriggerContext);
-  if (!context) {
-    throw new Error("MenuButton must be used within a MenuTrigger");
-  }
-  const { state } = context;
-  const resolvedTriggerProps = () => context.triggerProps as Record<string, unknown>;
-  const isDisabled = () => Boolean(local.isDisabled || context.isDisabled?.());
-
-  const buttonAria = createButton({
-    get isDisabled() {
-      return isDisabled();
-    },
-    get preventFocusOnPress() {
-      return resolvedTriggerProps().preventFocusOnPress as boolean | undefined;
-    },
-    onPressStart(e) {
-      context.onPressStart?.(e);
-      const handler = resolvedTriggerProps().onPressStart as
-        | ((event: typeof e) => void)
-        | undefined;
-      handler?.(e);
-    },
-    onPress(e) {
-      const handler = resolvedTriggerProps().onPress as ((event: typeof e) => void) | undefined;
-      handler?.(e);
-    },
-  });
-
-  const { isFocused, isFocusVisible, focusProps } = createFocusRing();
-
-  const { isHovered, hoverProps } = createHover({
-    get isDisabled() {
-      return isDisabled();
-    },
-  });
-
-  const renderValues = createMemo<MenuTriggerRenderProps>(() => ({
-    isOpen: state.isOpen(),
-    isFocused: isFocused(),
-    isFocusVisible: isFocusVisible(),
-    isPressed: context.isPressed?.() || buttonAria.isPressed(),
-    isHovered: isHovered(),
-    isDisabled: isDisabled(),
-  }));
-
-  const renderProps = useRenderProps(
-    {
-      get children() {
-        return props.children;
-      },
-      class: local.class,
-      style: local.style,
-      defaultClassName: "solidaria-MenuButton",
-    },
-    renderValues,
-  );
-
-  const cleanTriggerProps = () => {
-    const {
-      ref: _ref1,
-      onPress: _onPress,
-      onPressStart: _onPressStart,
-      preventFocusOnPress: _preventFocusOnPress,
-      "aria-haspopup": _ariaHasPopup,
-      "aria-expanded": _ariaExpanded,
-      "aria-controls": _ariaControls,
-      "aria-disabled": _ariaDisabled,
-      id: _triggerId,
-      ...rest
-    } = resolvedTriggerProps();
-    return rest;
-  };
-  const cleanButtonProps = () => {
-    const { ref: _ref2, ...rest } = buttonAria.buttonProps as Record<string, unknown>;
-    return rest;
-  };
-  const cleanFocusProps = () => {
-    const { ref: _ref3, ...rest } = focusProps as Record<string, unknown>;
-    return rest;
-  };
-  const cleanHoverProps = () => {
-    const { ref: _ref4, ...rest } = hoverProps as Record<string, unknown>;
-    return rest;
-  };
-  const mergedDOMProps = () =>
-    mergeProps(
-      domProps as Record<string, unknown>,
-      cleanTriggerProps(),
-      cleanButtonProps(),
-      cleanFocusProps(),
-      cleanHoverProps(),
-    );
-
-  return (
-    <button
-      {...mergedDOMProps()}
-      ref={(element) => {
-        context.setTriggerRef?.(element);
-        assignRef(local.ref, element);
-      }}
-      type="button"
-      class={renderProps.class()}
-      style={renderProps.style()}
-      id={((domProps as { id?: string }).id ?? resolvedTriggerProps().id) as string | undefined}
-      aria-haspopup={resolvedTriggerProps()["aria-haspopup"] as "menu" | "listbox" | undefined}
-      aria-expanded={resolvedTriggerProps()["aria-expanded"] as boolean | undefined}
-      aria-controls={resolvedTriggerProps()["aria-controls"] as string | undefined}
-      aria-disabled={resolvedTriggerProps()["aria-disabled"] as boolean | undefined}
-      data-open={state.isOpen() || undefined}
-      data-focused={isFocused() || undefined}
-      data-focus-visible={isFocusVisible() || undefined}
-      data-pressed={context.isPressed?.() || buttonAria.isPressed() || undefined}
-      data-hovered={isHovered() || undefined}
-      data-disabled={isDisabled() || undefined}
-    >
-      {renderProps.renderChildren()}
-    </button>
-  );
 }
 
 /**

@@ -19,9 +19,9 @@ import {
   MenuLoadMoreItem,
   MenuSection,
   MenuTrigger,
-  MenuButton,
   SubmenuTrigger,
 } from "../src/Menu";
+import { Button } from "../src/Button";
 import { Separator } from "../src/Separator";
 import { Popover } from "../src/Popover";
 import { useDragAndDrop } from "../src/useDragAndDrop";
@@ -61,13 +61,13 @@ function TestMenu(props: {
 function TestMenuTrigger(props: {
   menuProps?: Partial<Parameters<typeof Menu<TestItem>>[0]>;
   triggerProps?: Partial<Parameters<typeof MenuTrigger>[0]>;
-  buttonProps?: Partial<Parameters<typeof MenuButton>[0]>;
+  buttonProps?: Partial<Parameters<typeof Button>[0]>;
   items?: TestItem[];
 }) {
   const items = props.items || testItems;
   return (
     <MenuTrigger {...props.triggerProps}>
-      <MenuButton {...props.buttonProps}>Open Menu</MenuButton>
+      <Button {...props.buttonProps}>Open Menu</Button>
       <Menu<TestItem>
         aria-label="Test"
         items={items}
@@ -593,7 +593,7 @@ describe("Menu", () => {
       render(() => (
         <>
           <MenuTrigger defaultOpen>
-            <MenuButton>Open Menu</MenuButton>
+            <Button>Open Menu</Button>
             <Popover>
               <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
                 {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
@@ -690,7 +690,7 @@ describe("Menu", () => {
     it("should not close individual menu item when shouldCloseOnSelect=false", async () => {
       render(() => (
         <MenuTrigger>
-          <MenuButton aria-label="Menu">Menu</MenuButton>
+          <Button aria-label="Menu">Menu</Button>
           <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
             {(item) => (
               <MenuItem id={item.id} closeOnSelect={item.id === "cat" ? false : undefined}>
@@ -713,7 +713,7 @@ describe("Menu", () => {
     it("should not close individual menu item on root keyboard activation when closeOnSelect=false", async () => {
       render(() => (
         <MenuTrigger>
-          <MenuButton aria-label="Menu">Menu</MenuButton>
+          <Button aria-label="Menu">Menu</Button>
           <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
             {(item) => (
               <MenuItem id={item.id} closeOnSelect={item.id === "cat" ? false : undefined}>
@@ -848,7 +848,7 @@ describe("Menu", () => {
       const onSelectionChange = vi.fn();
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu<TestItem>
             aria-label="Test"
             items={testItems}
@@ -890,7 +890,7 @@ describe("Menu", () => {
     it("keeps a multiple-selection menu open after pointer selection by default", async () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu<TestItem>
             aria-label="Test"
             items={testItems}
@@ -914,7 +914,7 @@ describe("Menu", () => {
     it("closes a multiple-selection menu on Enter by default", async () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu<TestItem>
             aria-label="Test"
             items={testItems}
@@ -1063,7 +1063,7 @@ describe("Menu", () => {
       const onAction = vi.fn();
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu aria-label="Format" onAction={onAction}>
             <MenuSection shouldCloseOnSelect={false}>
               <MenuItem id="bold" textValue="Bold">
@@ -1112,7 +1112,7 @@ describe("Menu", () => {
     it("keeps section radio items open on root keyboard activation when shouldCloseOnSelect=false", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu aria-label="Format">
             <MenuSection selectionMode="single" shouldCloseOnSelect={false}>
               <MenuItem id="bold" textValue="Bold">
@@ -1152,7 +1152,7 @@ describe("Menu", () => {
     it("keeps section checkbox items open on root keyboard activation when shouldCloseOnSelect=false", () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Format</MenuButton>
+          <Button>Format</Button>
           <Menu aria-label="Format">
             <MenuSection selectionMode="multiple" shouldCloseOnSelect={false}>
               <MenuItem id="bold" textValue="Bold">
@@ -1557,7 +1557,7 @@ describe("MenuTrigger", () => {
       render(() => <TestMenuTrigger />);
 
       const button = screen.getByRole("button");
-      expect(button).toHaveClass("solidaria-MenuButton");
+      expect(button).toHaveClass("solidaria-Button");
     });
 
     it("keeps mouse press state until document pointerup", () => {
@@ -1593,7 +1593,7 @@ describe("MenuTrigger", () => {
       const onAction = vi.fn();
       render(() => (
         <MenuTrigger>
-          <MenuButton aria-label="Menu">Menu</MenuButton>
+          <Button aria-label="Menu">Menu</Button>
           <Menu<TestItem>
             aria-label="Test"
             items={testItems}
@@ -1682,13 +1682,13 @@ describe("MenuTrigger", () => {
   });
 
   describe("button states", () => {
-    it("should set data-open when menu is open", async () => {
+    it("should set aria-expanded when menu is open", async () => {
       render(() => <TestMenuTrigger />);
 
       const button = screen.getByRole("button");
       await user.click(button);
 
-      expect(button).toHaveAttribute("data-open");
+      expect(button).toHaveAttribute("aria-expanded", "true");
     });
 
     it("should support disabled button", () => {
@@ -1806,7 +1806,7 @@ describe("MenuTrigger", () => {
       render(() => (
         <I18nProvider locale="he-IL">
           <MenuTrigger defaultOpen>
-            <MenuButton>Open Menu</MenuButton>
+            <Button>Open Menu</Button>
             <Menu aria-label="Test">
               <SubmenuTrigger>
                 <MenuItem id="share">Share</MenuItem>
@@ -1941,7 +1941,7 @@ describe("MenuTrigger", () => {
 
       render(() => (
         <MenuTrigger defaultOpen onOpenChange={onOpenChange}>
-          <MenuButton>Open</MenuButton>
+          <Button>Open</Button>
           <Menu<TestItem> aria-label="Test" items={[testItems[0]]} getKey={(item) => item.id}>
             {(item) => (
               <MenuItem id={item.id} href="#menu-link-click">
@@ -1962,7 +1962,7 @@ describe("MenuTrigger", () => {
     it("MenuItem with href supports keyboard activation", async () => {
       render(() => (
         <MenuTrigger defaultOpen>
-          <MenuButton>Open</MenuButton>
+          <Button>Open</Button>
           <Menu<TestItem> aria-label="Test" items={[testItems[0]]} getKey={(item) => item.id}>
             {(item) => (
               <MenuItem id={item.id} href="#menu-link-keyboard">

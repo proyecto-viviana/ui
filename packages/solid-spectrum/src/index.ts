@@ -81,7 +81,6 @@ export {
   Collection,
   ContextualHelpTrigger,
   Menu,
-  MenuButton,
   MenuContext,
   MenuItem,
   MenuSection,
@@ -93,7 +92,6 @@ export {
 export type {
   MenuItemProps,
   MenuAlign,
-  MenuButtonProps,
   MenuDirection,
   MenuProps,
   MenuSectionProps,

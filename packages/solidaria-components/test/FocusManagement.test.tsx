@@ -7,7 +7,8 @@
 
 import { describe, it, expect, vi, afterEach, beforeEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-library";
-import { Menu, MenuItem, MenuTrigger, MenuButton } from "../src/Menu";
+import { Menu, MenuItem, MenuTrigger } from "../src/Menu";
+import { Button } from "../src/Button";
 import { Select, SelectTrigger, SelectValue, SelectListBox, SelectOption } from "../src/Select";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
@@ -40,7 +41,7 @@ describe("Menu Focus Management", () => {
     it("should restore focus to trigger button when menu closes via Escape", async () => {
       render(() => (
         <MenuTrigger>
-          <MenuButton>Open Menu</MenuButton>
+          <Button>Open Menu</Button>
           <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
             {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
           </Menu>
@@ -66,7 +67,7 @@ describe("Menu Focus Management", () => {
       const onAction = vi.fn();
       render(() => (
         <MenuTrigger>
-          <MenuButton>Open Menu</MenuButton>
+          <Button>Open Menu</Button>
           <Menu<TestItem>
             aria-label="Test"
             items={testItems}
@@ -100,7 +101,7 @@ describe("Menu Focus Management", () => {
     it("should auto-focus the menu when opened", async () => {
       render(() => (
         <MenuTrigger>
-          <MenuButton>Open Menu</MenuButton>
+          <Button>Open Menu</Button>
           <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
             {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
           </Menu>
@@ -296,7 +297,7 @@ describe("FocusScope Behavior", () => {
       <>
         <button>Before</button>
         <MenuTrigger>
-          <MenuButton>Open Menu</MenuButton>
+          <Button>Open Menu</Button>
           <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
             {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
           </Menu>
@@ -350,7 +351,7 @@ describe("FocusScope Behavior", () => {
       <>
         <button data-testid="other">Other</button>
         <MenuTrigger>
-          <MenuButton>Open Menu</MenuButton>
+          <Button>Open Menu</Button>
           <Menu<TestItem> aria-label="Test" items={testItems} getKey={(item) => item.id}>
             {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
           </Menu>
@@ -369,13 +370,13 @@ describe("FocusScope Behavior", () => {
     render(() => (
       <>
         <MenuTrigger>
-          <MenuButton>Menu 1</MenuButton>
+          <Button>Menu 1</Button>
           <Menu<TestItem> aria-label="First menu" items={testItems} getKey={(item) => item.id}>
             {(item) => <MenuItem id={item.id}>{item.name}</MenuItem>}
           </Menu>
         </MenuTrigger>
         <MenuTrigger>
-          <MenuButton>Menu 2</MenuButton>
+          <Button>Menu 2</Button>
           <Menu<TestItem>
             aria-label="Second menu"
             items={[{ id: "x", name: "X" }]}

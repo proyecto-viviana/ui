@@ -4,7 +4,6 @@ import {
   Menu,
   MenuItem,
   MenuTrigger,
-  MenuButton,
   MenuSeparator,
   Button,
 } from "@proyecto-viviana/solid-spectrum";
@@ -78,7 +77,7 @@ function MenuPage() {
   Menu,
   MenuItem,
   MenuTrigger,
-  MenuButton,
+  Button,
   MenuSeparator
 } from '@proyecto-viviana/solid-spectrum';`}
     >
@@ -86,14 +85,14 @@ function MenuPage() {
         title="Basic Usage"
         description="A simple menu with action items."
         code={`<MenuTrigger>
-  <MenuButton>Actions</MenuButton>
+  <Button>Actions</Button>
   <Menu items={items}>
     {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
   </Menu>
 </MenuTrigger>`}
       >
         <MenuTrigger>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu items={basicItems} onAction={(key) => setLastAction(String(key))}>
             {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
           </Menu>
@@ -108,7 +107,7 @@ function MenuPage() {
 </Menu>`}
       >
         <MenuTrigger>
-          <MenuButton>Edit</MenuButton>
+          <Button>Edit</Button>
           <Menu items={editItems} onAction={(key) => setLastAction(String(key))}>
             {(item) =>
               item.isSeparator ? <MenuSeparator /> : <MenuItem id={item.id}>{item.label}</MenuItem>
@@ -125,7 +124,7 @@ function MenuPage() {
 </MenuItem>`}
       >
         <MenuTrigger>
-          <MenuButton>Edit</MenuButton>
+          <Button>Edit</Button>
           <Menu items={disabledItems} onAction={(key) => setLastAction(String(key))}>
             {(item) => (
               <MenuItem id={item.id} isDisabled={item.isDisabled}>
@@ -160,7 +159,7 @@ function MenuPage() {
 </MenuItem>`}
       >
         <MenuTrigger>
-          <MenuButton>File Options</MenuButton>
+          <Button>File Options</Button>
           <Menu items={fileItems} onAction={(key) => setLastAction(String(key))}>
             {(item) =>
               item.isSeparator ? (

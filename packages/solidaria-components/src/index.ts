@@ -278,7 +278,6 @@ export {
   MenuSection,
   MenuTrigger,
   SubmenuTrigger,
-  MenuButton,
   MenuContext,
   MenuStateContext,
   MenuTriggerContext,
@@ -292,7 +291,6 @@ export {
   type MenuTriggerProps,
   type SubmenuTriggerProps,
   type MenuTriggerRenderProps,
-  type MenuButtonProps,
 } from "./Menu";
 
 export {

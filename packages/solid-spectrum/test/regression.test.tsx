@@ -26,7 +26,7 @@ import { ComboBox, ComboBoxOption } from "../src/combobox";
 import { Select, SelectTrigger, SelectValue, SelectListBox, SelectOption } from "../src/select";
 import { ListBox, ListBoxOption } from "../src/listbox";
 import { ActionMenu } from "../src/ActionMenu";
-import { MenuTrigger, MenuButton, Menu, MenuItem } from "../src/menu";
+import { MenuTrigger, Menu, MenuItem } from "../src/menu";
 import { GridList, GridListItem } from "../src/gridlist";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "../src/table";
 import { Tree, TreeItem } from "../src/tree";
@@ -385,7 +385,7 @@ describe("Regression: Menu", () => {
     const user = setupUser();
     render(() => (
       <MenuTrigger>
-        <MenuButton>Actions</MenuButton>
+        <Button>Actions</Button>
         <Menu items={items} getKey={(i) => i.id} aria-label="Actions">
           {(item) => <MenuItem id={item.id}>{item.label}</MenuItem>}
         </Menu>

@@ -16,12 +16,12 @@ import { DateRangePicker } from "../src/calendar/DateRangePicker";
 import { parseDateTime } from "@proyecto-viviana/solid-stately";
 import {
   Menu,
-  MenuButton,
   MenuItem,
   MenuTrigger,
   Text,
   UnavailableMenuItemTrigger,
 } from "../src/menu";
+import { Button } from "../src/button";
 import { Picker, PickerItem } from "../src/picker";
 import { TextField } from "../src/textfield";
 
@@ -133,7 +133,7 @@ describe("S2 catalog strings under I18nProvider", () => {
     render(() => (
       <I18nProvider locale="ar-AE">
         <MenuTrigger defaultOpen>
-          <MenuButton>Actions</MenuButton>
+          <Button>Actions</Button>
           <Menu aria-label="Actions">
             <UnavailableMenuItemTrigger isUnavailable>
               <MenuItem id="locked" textValue="Locked">
