@@ -3,6 +3,14 @@
 Date: 2026-05-20
 Status: accepted
 
+## Overnight pair-diff floor — 2026-09-04
+
+ButtonGroup default-state pair is a **floor**, not acceptance.
+`e2e/default-state-cases.ts` allows `maxMismatchRatio: 0.4` on the default
+canvas, so a 40% miss still passes. There is no `buttongroup.certified.spec.ts`.
+The exact-pair control gate is `e2e/grouped-button-controls-visual.spec.ts`.
+Do not treat a green default-state pair as ButtonGroup visual parity.
+
 Button family has now been normalized against the current acceptance gates. The
 original 2026-05-14 family pass remains below as historical evidence; this
 closeout records the current root API/DOM-contract parity fixes, refreshed

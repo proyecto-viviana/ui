@@ -6,6 +6,13 @@ export type DefaultVisualCase = {
     maxDimensionDelta: number;
     pixelThreshold: number;
   };
+  /**
+   * `"floor"` means the threshold is a coarse pair-diff ceiling, not
+   * React-vs-Solid acceptance. A 40% ButtonGroup canvas miss can still pass
+   * here. The exact-pair control gate (when one exists) lives on a tighter spec.
+   */
+  kind?: "asserted" | "floor";
+  floorReason?: string;
 };
 
 export const defaultVisualCases: DefaultVisualCase[] = [
@@ -32,6 +39,14 @@ export const defaultVisualCases: DefaultVisualCase[] = [
   {
     slug: "buttongroup",
     title: "ButtonGroup",
+    // FLOOR, not acceptance. 40% of the default canvas may diverge and this
+    // test still passes. There is no `buttongroup.certified.spec.ts`. The exact
+    // pair for the grouped control itself is
+    // `grouped-button-controls-visual.spec.ts` (`expectExactScreenshotPair`).
+    // Do not treat a green default-state pair as ButtonGroup visual parity.
+    kind: "floor",
+    floorReason:
+      "ButtonGroup default canvas pair is a 40% mismatch floor, not React-vs-Solid acceptance. grouped-button-controls-visual.spec.ts is the exact-pair control gate; there is no D3 certified unit.",
     threshold: { maxMismatchRatio: 0.4, maxDimensionDelta: 4, pixelThreshold: 0 },
   },
   {

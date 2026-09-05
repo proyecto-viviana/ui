@@ -9,7 +9,15 @@ export interface CertifiedSuiteEvidence {
   skipped: number;
 }
 
-/** Last complete certified suite run observed from the exact checked revision. */
+/**
+ * Postcard from the last complete certified suite run that was recorded against
+ * an exact checked revision. This is NOT live truth. Ticket #194. The recorded
+ * SHA is `0f1e1198` (2026-08-21, 2170 passed / 0 failed / 4 skipped). HEAD has
+ * moved hundreds of commits since. `validateCertifiedSuiteEvidence` checks
+ * arithmetic and skipped-count against the registered `knownDivergences`
+ * inventory; it does not check `revision === HEAD`. Report printers must label
+ * this as a stale postcard whenever HEAD differs.
+ */
 export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
   revision: "0f1e1198963c46eb3294744475e269a7c0041eb6",
   runId: 32485238975,
@@ -20,6 +28,13 @@ export const lastFullCertifiedSuiteRun: CertifiedSuiteEvidence = {
   failed: 0,
   skipped: 4,
 };
+
+export function certifiedSuitePostcardIsCurrent(
+  evidence: CertifiedSuiteEvidence,
+  headSha: string | null,
+): boolean {
+  return headSha != null && headSha === evidence.revision;
+}
 
 export function validateCertifiedSuiteEvidence(
   evidence: CertifiedSuiteEvidence,

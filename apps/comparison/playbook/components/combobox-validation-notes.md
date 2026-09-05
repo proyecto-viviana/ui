@@ -1,5 +1,14 @@
 # ComboBox Validation Notes
 
+## Overnight D14 — 2026-09-04
+
+Native constraint validation is not accepted. #273 landed native `required`.
+D14 `field-validity.certified.spec.ts` ComboBox `invalid · constraint validity`
+and `invalid · submit attempt` exist to stay red: Solid paints `isInvalid` and
+`requestSubmit` still succeeds. `createComboBox` never calls
+`createFormValidation`; RAC `useComboBox` routes the input through
+`useTextField`.
+
 ## Scope
 
 - Component: `ComboBox`

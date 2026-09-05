@@ -9,6 +9,7 @@ type PairDiffPolicy = {
   maxDimensionDelta: number;
   pixelThreshold: number;
   note: string;
+  kind: "asserted" | "floor";
 };
 
 async function attachPairDiffResult(
@@ -20,7 +21,7 @@ async function attachPairDiffResult(
   const path = testInfo.outputPath(`${slug}-default-pair-diff.json`);
   await writeFile(
     path,
-    JSON.stringify({ status: "asserted", note: policy.note, ...result }, null, 2),
+    JSON.stringify({ status: policy.kind, note: policy.note, ...result }, null, 2),
   );
   await testInfo.attach(`${slug}-default-pair-diff.json`, {
     contentType: "application/json",
@@ -52,12 +53,17 @@ test.describe("comparison default pair diffs", () => {
       page,
     }, testInfo) => {
       await pinComparisonTheme(page, "dark");
-      const policy = {
+      const policy: PairDiffPolicy = {
         ...item.threshold,
-        note: "Default styled surfaces use an asserted pair-diff threshold until component-specific strict parity is reached.",
+        kind: item.kind ?? "asserted",
+        note:
+          item.kind === "floor"
+            ? (item.floorReason ??
+              "Default styled pair-diff is a named floor, not React-vs-Solid acceptance.")
+            : "Default styled surfaces use an asserted pair-diff threshold until component-specific strict parity is reached.",
       };
       testInfo.annotations.push({
-        type: "asserted-pair-diff",
+        type: item.kind === "floor" ? "pair-diff-floor" : "asserted-pair-diff",
         description: policy.note,
       });
 
@@ -83,7 +89,7 @@ test.describe("comparison default pair diffs", () => {
       console.log(
         [
           `[default-pair-diff] ${item.slug}`,
-          "status=asserted",
+          item.kind === "floor" ? "status=floor" : "status=asserted",
           `mismatchRatio=${result.mismatchRatio.toFixed(4)}`,
           `widthDelta=${result.widthDelta}`,
           `heightDelta=${result.heightDelta}`,

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -16,6 +17,7 @@ import {
   unresolvedVisualStatePointers,
 } from "../src/data/acceptance-inventory";
 import {
+  certifiedSuitePostcardIsCurrent,
   lastFullCertifiedSuiteRun,
   validateCertifiedSuiteEvidence,
 } from "../src/data/certified-suite-evidence";
@@ -393,9 +395,25 @@ const visualEvidenceSummary = summarizeVisualStateEvidence(visualEvidenceInvento
 const certifiedObligations = inventoryCertifiedObligations(
   fileURLToPath(new URL("../e2e/certified/", import.meta.url)),
 );
+function currentHeadSha(): string | null {
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
 const certifiedSuiteProblems = validateCertifiedSuiteEvidence(
   lastFullCertifiedSuiteRun,
   certifiedObligations.expectedFixmes.length,
+);
+const certifiedSuiteHead = currentHeadSha();
+const certifiedSuitePostcardCurrent = certifiedSuitePostcardIsCurrent(
+  lastFullCertifiedSuiteRun,
+  certifiedSuiteHead,
 );
 const unresolvedPointerGaps: Gap[] = unresolvedPointers.map((pointer) => ({
   slug: pointer.slug,
@@ -423,11 +441,25 @@ const missingStructuredEvidenceGaps: Gap[] = visualEvidenceInventory
     title: titleForSlug(record.slug),
     detail: `${record.stateId} has no evidence pointer`,
   }));
-const certifiedSuiteEvidenceGaps: Gap[] = certifiedSuiteProblems.map((problem) => ({
-  slug: "certified-suite",
-  title: "Last full certified suite evidence",
-  detail: problem,
-}));
+const certifiedSuiteEvidenceGaps: Gap[] = [
+  ...certifiedSuiteProblems.map((problem) => ({
+    slug: "certified-suite",
+    title: "Last full certified suite evidence",
+    detail: problem,
+  })),
+  ...(certifiedSuitePostcardCurrent
+    ? []
+    : [
+        {
+          slug: "certified-suite",
+          title: "Last full certified suite evidence",
+          detail:
+            `postcard revision ${lastFullCertifiedSuiteRun.revision} (${lastFullCertifiedSuiteRun.completedAt}, ` +
+            `${lastFullCertifiedSuiteRun.passed} passed / ${lastFullCertifiedSuiteRun.failed} failed / ${lastFullCertifiedSuiteRun.skipped} skipped) ` +
+            `is not HEAD ${certifiedSuiteHead ?? "(unknown)"}. Ticket #194. Do not treat those counts as live certified truth.`,
+        },
+      ]),
+];
 
 const noteInventoryByFile = new Map(noteInventory.map((note) => [note.file, note]));
 const visualEvidenceBySlug = new Map<string, Map<string, string>>();
@@ -619,9 +651,10 @@ console.log(
 console.log(
   `Certified expected fixmes: ${certifiedObligations.expectedFixmes.length}; deferred comments: ${certifiedObligations.deferredComments.length}`,
 );
-console.log(
-  `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`,
-);
+const postcardLine = certifiedSuitePostcardCurrent
+  ? `Last full certified suite: revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}`
+  : `STALE certified-suite postcard (not this HEAD; ticket #194). Do not treat these counts as live. Postcard revision=${lastFullCertifiedSuiteRun.revision} run=${lastFullCertifiedSuiteRun.runId} job=${lastFullCertifiedSuiteRun.jobId} completed=${lastFullCertifiedSuiteRun.completedAt} passed=${lastFullCertifiedSuiteRun.passed} failed=${lastFullCertifiedSuiteRun.failed} skipped=${lastFullCertifiedSuiteRun.skipped} total=${lastFullCertifiedSuiteRun.total}. Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`;
+console.log(postcardLine);
 const liveCertifiedSummary = readCertifiedSummaryFile(
   fileURLToPath(new URL("../test-results/certified-summary.json", import.meta.url)),
 );
@@ -710,7 +743,9 @@ for (const fixme of certifiedObligations.expectedFixmes) {
 }
 console.log(`Unregistered/deferred comment lines: ${certifiedObligations.deferredComments.length}`);
 console.log(
-  `Recorded full run: ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision}).`,
+  certifiedSuitePostcardCurrent
+    ? `Recorded full run: ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision}).`
+    : `STALE postcard run (not this HEAD; ticket #194): ${lastFullCertifiedSuiteRun.passed} passed, ${lastFullCertifiedSuiteRun.failed} failed, ${lastFullCertifiedSuiteRun.skipped} skipped (${lastFullCertifiedSuiteRun.revision} @ ${lastFullCertifiedSuiteRun.completedAt}). Current HEAD=${certifiedSuiteHead ?? "(unknown)"}.`,
 );
 
 if (strict) {

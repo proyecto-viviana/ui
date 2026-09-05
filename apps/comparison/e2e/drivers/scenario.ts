@@ -254,6 +254,47 @@ export interface TimingConfig {
 }
 
 /**
+ * D14 native constraint-validation driver config (see `drivers/validity.ts`).
+ *
+ * Every constraint-validation candidate inside `root` is reduced to its native
+ * validity verdict plus the field's committed invalid UI, and pair-diffed. S2's
+ * default `validationBehavior` is `native`, so a field that only PAINTS invalid
+ * without failing `checkValidity()` is a port defect the style, pixel, AX, and
+ * contrast drivers all report as green — the hole this driver closes.
+ *
+ * `submit` adds a second test on a fresh page load and diffs what the attempt did
+ * (blocked or not, focus, committed error UI). A `button` resolver clicks a real
+ * fixture submit control. Without one, the driver associates candidates with an
+ * injected form via the HTML `form` attribute and calls `requestSubmit()`.
+ */
+export interface ValidityConfig {
+  cases?: readonly string[];
+  /** Subtree whose candidates are probed; defaults to the scenario target. */
+  root?: TargetResolver;
+  /** Milliseconds for RAC's `setCustomValidity` effect to commit before reading. */
+  settleMs?: number;
+  submit?: {
+    /** Cases the submit walk runs; defaults to `ValidityConfig.cases`. */
+    cases?: readonly string[];
+    /**
+     * The submit control pressed once per panel. When omitted, the driver
+     * associates every candidate in `root` with an injected `<form>` via the
+     * HTML `form` attribute and calls `requestSubmit()` — the same native
+     * walk for routes that do not wrap the field in a fixture `<form>`.
+     */
+    button?: TargetResolver;
+    settleMs?: number;
+  };
+  /**
+   * Maps a `${caseId} · constraint validity` or `${caseId} · submit attempt` test
+   * title to a documented, tracked port gap that keeps it red; registers the test
+   * as `test.fixme` (visible in reports, excluded from pass/fail) instead of
+   * silently passing — the same mechanism as `events.knownDivergences`.
+   */
+  knownDivergences?: Record<string, string>;
+}
+
+/**
  * Which `[tabindex]` nodes a D5 walk records in `snapshot.roving`.
  *
  * - `"all"` (default) — every visible `[tabindex]` in `focus.root`. The
@@ -423,6 +464,8 @@ export interface DriverScenario {
   targetSize?: TargetSizeConfig;
   /** D11 timing driver config; runs the first theme/case under a mocked clock. */
   timing?: TimingConfig;
+  /** D14 native constraint-validation driver config; runs the first theme only. */
+  validity?: ValidityConfig;
 }
 
 export const defaultStateReadiness: Record<GestureStateId, string | null> = {

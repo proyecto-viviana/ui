@@ -3,6 +3,14 @@
 Date: 2026-05-28
 Status: accepted
 
+## Overnight D14 — 2026-09-04
+
+Native constraint validation is not accepted. D14
+`field-validity.certified.spec.ts` NumberField `invalid · constraint validity`
+and `invalid · submit attempt` exist to stay red: Solid paints `isInvalid` and
+`requestSubmit` still succeeds. `createNumberField` never calls
+`createFormValidation`. No ticket.
+
 ## Target
 
 - Component: NumberField

@@ -19,6 +19,7 @@ import {
   splitSpecString,
 } from "./acceptance-schema";
 import {
+  certifiedSuitePostcardIsCurrent,
   lastFullCertifiedSuiteRun,
   validateCertifiedSuiteEvidence,
 } from "./certified-suite-evidence";
@@ -136,7 +137,7 @@ describe("acceptance inventory", () => {
     expect(summary.invalid).toBe(0);
   });
 
-  it("names the six certified knownDivergence fixmes", () => {
+  it("names the four certified knownDivergence fixmes", () => {
     const { expectedFixmes } = inventoryCertifiedObligations(
       resolve(comparisonRoot, "e2e/certified"),
     );
@@ -145,8 +146,6 @@ describe("acceptance inventory", () => {
     expect(keys).toEqual(
       [
         "breadcrumbs.certified.spec.ts::overflow",
-        "datepicker.certified.spec.ts::placeholder · open-escape-close",
-        "daterangepicker.certified.spec.ts::placeholder · open-escape-close",
         "rangeslider.certified.spec.ts::default",
         "slider.certified.spec.ts::default",
         "tableview.certified.spec.ts::sorted",
@@ -168,5 +167,16 @@ describe("acceptance inventory", () => {
         expectedFixmes.length,
       ),
     ).toContain("passed, failed, and skipped counts must add up to total");
+  });
+
+  it("does not treat the 2026-08-21 certified-suite postcard as this HEAD", () => {
+    expect(
+      certifiedSuitePostcardIsCurrent(
+        lastFullCertifiedSuiteRun,
+        "0f1e1198963c46eb3294744475e269a7c0041eb6",
+      ),
+    ).toBe(true);
+    expect(certifiedSuitePostcardIsCurrent(lastFullCertifiedSuiteRun, "a".repeat(40))).toBe(false);
+    expect(certifiedSuitePostcardIsCurrent(lastFullCertifiedSuiteRun, null)).toBe(false);
   });
 });

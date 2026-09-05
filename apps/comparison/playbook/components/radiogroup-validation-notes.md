@@ -3,6 +3,15 @@
 Date: 2026-05-28
 Status: accepted
 
+## Overnight D14 — 2026-09-04
+
+Native constraint validation is not accepted. D6/D1/D3 still match on
+`?isInvalid=true` (AX, error slot, red border). D14
+`field-validity.certified.spec.ts` RadioGroup `invalid · constraint validity`
+and `invalid · submit attempt` exist to stay red until `#376`: Solid radios
+keep `validity.valid=true` and `requestSubmit` succeeds. `createRadio` never
+calls `createFormValidation`; RAC `useRadio` does.
+
 ## Scope
 
 - Component: `RadioGroup`

@@ -3,6 +3,13 @@
 Date: 2026-06-01
 Status: accepted
 
+## Overnight D14 — 2026-09-04
+
+`?isInvalid=true` customError (#351, merged) is a floor. D14
+`field-validity.certified.spec.ts` TextField `invalid · submit attempt` is the
+form walk that ticket asked for. Native required-empty HelpText commit after
+submit is Form `#383`, not this unit's resting `isInvalid` paint.
+
 ## Scope
 
 - Component: `TextField`
