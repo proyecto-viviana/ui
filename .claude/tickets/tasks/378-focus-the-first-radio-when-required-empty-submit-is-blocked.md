@@ -4,7 +4,7 @@ type: task
 title: "Focus the first radio when required empty RadioGroup submit is blocked"
 created: 2026-09-03
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
@@ -16,37 +16,42 @@ history:
       at: 2026-09-05,
       note: "Same invalid-handler costume as #469 (D14 isInvalid leftover). Package test now focuses starter after required-empty requestSubmit. Comparison-route walk in Done when is still open; do not close here.",
     }
+  - {
+      state: merged,
+      at: 2026-09-05,
+      note: "Implementation is cbf06ac7 (#469): drop per-radio invalid focus so createFormValidation focuses getFirstInvalidInput. Package tests already named required-empty requestSubmit → starter.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-05,
+      note: "Comparison D14 on the cbf06ac7 bundle: invalid · submit attempt and required-empty · submit attempt both stacks submits: 0, invalids: 3, active = starter. All 6 Radio D14 rows passed. Done-when met.",
+    }
 ---
 
 S2 RadioGroup with `isRequired` and no selected value fails native
 constraint validation and moves focus to the first radio in the
 group (`starter` on this route).
 
-Solid blocks the same submit (`valueMissing`, message `Please
-select one of these options.` on every radio) and then focuses the
-last radio (`enterprise`). Assistive tech and keyboard users land
-on a different option than S2.
+Solid used to block the same submit (`valueMissing`, message `Please
+select one of these options.` on every radio) and then focus the
+last radio (`enterprise`). The leftover was the same per-radio
+`invalid` handler as #469.
 
 ## Evidence
 
-`http://127.0.0.1:4341/components/radiogroup/?isRequired=true&selectedValue=none`,
-islands mounted. Injected `form[data-fp-form]` + `requestSubmit`.
-Other `.s2-framework-panel` `visibility:hidden` + `inert`.
+Comparison D14 on HEAD `cbf06ac7` (comparison-lane walk; spec committed
+separately):
 
-|                            | React                                                 | Solid                   |
-| -------------------------- | ----------------------------------------------------- | ----------------------- |
-| `requestSubmit`            | blocked, payload `null`                               | blocked, payload `null` |
-| `validity.valueMissing`    | true (all three)                                      | true (all three)        |
-| `validationMessage`        | `Please select one of these options.`                 | same                    |
-| focus after blocked submit | `radio:starter`, `data-focus-visible` on starter only | `radio:enterprise`      |
+| Row | Both stacks |
+| --- | --- |
+| `invalid · submit attempt` | `submits: 0`, `invalids: 3`, `active` = `starter` |
+| `required-empty · submit attempt` | `submits: 0`, `invalids: 3`, `active` = `starter` |
 
-`?isRequired=true` with starter selected submits on both. Aria
-validation (`validationBehavior=aria`) required-empty submits on
-both (`required=false`, `aria-required=true` on the group).
+All 6 Radio D14 rows passed.
 
-A clean remount of this URL at rest is 16×16 circles, no
-focus-visible, on both stacks. Do not treat a 0×0 circle SNAP taken
-while the Solid panel was `visibility:hidden` as this ticket.
+Filing snapshot (2026-09-03, before `cbf06ac7`): Solid focused
+`radio:enterprise` after blocked required-empty submit on
+`/components/radiogroup/?isRequired=true&selectedValue=none`.
 
 ## Done when
 
@@ -55,8 +60,15 @@ radio (`starter` on this route) on both stacks, matching S2. A
 comparison-route form walk fails if Solid lands on `enterprise`
 while React lands on `starter`.
 
+## Proof
+
+Comparison Radio D14 on `cbf06ac7`: both stacks focus `starter`
+after blocked `invalid` and `required-empty` submit. Package
+`RadioGroup.test.tsx` at that commit already focused `starter` on
+required-empty `requestSubmit`.
+
 ## Relationship
 
 Child of #24. Found by #260. Distinct from #376 (custom validity on
-`isInvalid`; this path is native `valueMissing`). Do not start
-#254.
+`isInvalid`; this path is native `valueMissing`). Same costume as
+#469. Do not start #254.
