@@ -43,7 +43,7 @@ import {
   type SearchFieldState,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
-import { FormContext, type FormProps } from "./Form";
+import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
@@ -164,56 +164,6 @@ interface SearchFieldContextValue extends Partial<SearchFieldProps> {
 
 export const SearchFieldContext = createContext<SearchFieldContextValue | null>(null);
 
-function withFormValidationBehavior(
-  props: SearchFieldProps,
-  formContext: FormProps | null,
-): SearchFieldProps {
-  if (!formContext?.validationBehavior) {
-    return props;
-  }
-
-  return new Proxy(props, {
-    get(target, property, receiver) {
-      const localValue = Reflect.get(target, property, receiver);
-      if (property === "validationBehavior" && localValue === undefined) {
-        return formContext.validationBehavior;
-      }
-
-      return localValue;
-    },
-    has(target, property) {
-      return (
-        Reflect.has(target, property) ||
-        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
-      );
-    },
-    ownKeys(target) {
-      const keys = new Set(Reflect.ownKeys(target));
-      if (formContext.validationBehavior !== undefined) {
-        keys.add("validationBehavior");
-      }
-
-      return Array.from(keys);
-    },
-    getOwnPropertyDescriptor(target, property) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (descriptor) {
-        return descriptor;
-      }
-
-      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
-        return {
-          enumerable: true,
-          configurable: true,
-          get: () => formContext.validationBehavior,
-        };
-      }
-
-      return undefined;
-    },
-  });
-}
-
 function eventWithCurrentTarget<T extends HTMLElement>(event: Event, element: T): Event {
   return new Proxy(event, {
     get(target, property, receiver) {
@@ -289,10 +239,9 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
       } as Partial<SearchFieldProps>)
     : undefined;
 
-  const mergedProps = withFormValidationBehavior(
-    autocompleteProps ? (mergeProps(baseProps, autocompleteProps) as SearchFieldProps) : baseProps,
-    formContext,
-  );
+  const mergedProps = autocompleteProps
+    ? (mergeProps(baseProps, autocompleteProps) as SearchFieldProps)
+    : baseProps;
 
   const [local, stateProps, ariaProps, rest] = splitProps(
     mergedProps,
@@ -407,7 +356,7 @@ export function SearchField(props: SearchFieldProps): JSX.Element {
         return ariaProps.form;
       },
       get validationBehavior() {
-        return ariaProps.validationBehavior;
+        return resolveValidationBehavior(ariaProps.validationBehavior, formContext);
       },
       get type() {
         return ariaProps.type;

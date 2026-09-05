@@ -77,6 +77,19 @@ export interface FormProps
 
 export const FormContext = createContext<FormProps | null>(null);
 
+/**
+ * RAC `props.validationBehavior ?? formValidationBehavior ?? "native"`.
+ * Resolve after splitProps. Do not Proxy field props — Solid's server
+ * splitProps rejects a getOwnPropertyDescriptor trap that disagrees with the
+ * target (viviana-ui TextField always owns a `validationBehavior` getter).
+ */
+export function resolveValidationBehavior(
+  local: ValidationBehavior | undefined,
+  formContext: FormProps | null | undefined,
+): ValidationBehavior {
+  return local ?? formContext?.validationBehavior ?? "native";
+}
+
 const formDOMPropNames = new Set([
   "accept-charset",
   "acceptCharset",

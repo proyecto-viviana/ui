@@ -40,7 +40,7 @@ import {
   type NumberFieldState,
   type ValidationResult,
 } from "@proyecto-viviana/solid-stately";
-import { FormContext, type FormProps } from "./Form";
+import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
@@ -163,62 +163,13 @@ interface NumberFieldContextValue {
 export const NumberFieldContext = createContext<NumberFieldContextValue | null>(null);
 export const NumberFieldStateContext = createContext<NumberFieldState | null>(null);
 
-function withFormValidationBehavior(
-  props: NumberFieldProps,
-  formContext: FormProps | null,
-): NumberFieldProps {
-  if (!formContext?.validationBehavior) {
-    return props;
-  }
-
-  return new Proxy(props, {
-    get(target, property, receiver) {
-      const localValue = Reflect.get(target, property, receiver);
-      if (property === "validationBehavior" && localValue === undefined) {
-        return formContext.validationBehavior;
-      }
-
-      return localValue;
-    },
-    has(target, property) {
-      return (
-        Reflect.has(target, property) ||
-        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
-      );
-    },
-    ownKeys(target) {
-      const keys = new Set(Reflect.ownKeys(target));
-      if (formContext.validationBehavior !== undefined) {
-        keys.add("validationBehavior");
-      }
-
-      return Array.from(keys);
-    },
-    getOwnPropertyDescriptor(target, property) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (descriptor) {
-        return descriptor;
-      }
-      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
-        return {
-          enumerable: true,
-          configurable: true,
-          get: () => formContext.validationBehavior,
-        };
-      }
-      return undefined;
-    },
-  });
-}
-
 /**
  * A number field allows a user to enter a number and increment/decrement the value.
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
   const formContext = useContext(FormContext);
-  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, ariaProps, rest] = splitProps(
-    mergedProps,
+    props,
     ["children", "class", "style", "slot"],
     [
       "value",
@@ -304,7 +255,7 @@ export function NumberField(props: NumberFieldProps): JSX.Element {
       return ariaProps.name;
     },
     get validationBehavior() {
-      return ariaProps.validationBehavior;
+      return resolveValidationBehavior(ariaProps.validationBehavior, formContext);
     },
     get commitBehavior() {
       return ariaProps.commitBehavior;

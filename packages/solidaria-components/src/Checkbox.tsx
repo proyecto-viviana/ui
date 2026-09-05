@@ -58,7 +58,7 @@ import {
   useRenderProps,
   filterDOMProps,
 } from "./utils";
-import { FormContext, type FormProps } from "./Form";
+import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import { TextContext } from "./Text";
 
@@ -169,60 +169,6 @@ export interface CheckboxContextValue extends CheckboxProps {
 }
 export const CheckboxContext = createContext<CheckboxContextValue | null>(null);
 
-type PropsWithValidationBehavior = {
-  validationBehavior?: "aria" | "native";
-};
-
-function withFormValidationBehavior<T extends PropsWithValidationBehavior>(
-  props: T,
-  formContext: FormProps | null,
-): T {
-  if (!formContext?.validationBehavior) {
-    return props;
-  }
-
-  return new Proxy(props, {
-    get(target, property, receiver) {
-      const localValue = Reflect.get(target, property, receiver);
-      if (property === "validationBehavior" && localValue === undefined) {
-        return formContext.validationBehavior;
-      }
-
-      return localValue;
-    },
-    has(target, property) {
-      return (
-        Reflect.has(target, property) ||
-        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
-      );
-    },
-    ownKeys(target) {
-      const keys = new Set(Reflect.ownKeys(target));
-      if (formContext.validationBehavior !== undefined) {
-        keys.add("validationBehavior");
-      }
-
-      return Array.from(keys);
-    },
-    getOwnPropertyDescriptor(target, property) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (descriptor) {
-        return descriptor;
-      }
-
-      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
-        return {
-          enumerable: true,
-          configurable: true,
-          get: () => formContext.validationBehavior,
-        };
-      }
-
-      return undefined;
-    },
-  });
-}
-
 /**
  * A checkbox group allows a user to select multiple items from a list of options.
  *
@@ -236,8 +182,7 @@ function withFormValidationBehavior<T extends PropsWithValidationBehavior>(
  */
 export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const formContext = useContext(FormContext);
-  const mergedProps = withFormValidationBehavior(props, formContext);
-  const [local, ariaProps] = splitProps(mergedProps, [
+  const [local, ariaProps] = splitProps(props, [
     "class",
     "style",
     "slot",
@@ -259,13 +204,14 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     isInvalid: ariaProps.isInvalid,
     validationState: ariaProps.validationState,
     validate: ariaProps.validate,
-    validationBehavior: ariaProps.validationBehavior,
+    validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
     name: ariaProps.name,
   }));
 
   const groupAria = createCheckboxGroup(
     () => ({
       ...ariaProps,
+      validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
       description: local.description,
       errorMessage: local.errorMessage,
     }),
@@ -409,15 +355,13 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   const mergedProps = contextProps
     ? (mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) as CheckboxProps)
     : props;
-  const propsWithFormBehavior = withFormValidationBehavior(mergedProps, formContext);
   const inputRefs = createMemo(
     () =>
       [contextBaseProps().inputRef, contextSlotProps?.inputRef, props.inputRef].filter(
         Boolean,
       ) as RefLike<HTMLInputElement>[],
   );
-
-  const [local, ariaProps] = splitProps(propsWithFormBehavior, [
+  const [local, ariaProps] = splitProps(mergedProps, [
     "class",
     "style",
     "render",
@@ -458,6 +402,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     const itemAria = createCheckboxGroupItem(
       () => ({
         ...inputAriaProps(),
+        validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
         value: inputAriaProps().value ?? "",
         children: typeof mergedProps.children === "function" ? true : mergedProps.children,
       }),
@@ -480,6 +425,7 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
     const checkboxAria = createCheckbox(
       () => ({
         ...inputAriaProps(),
+        validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
         isIndeterminate: local.isIndeterminate,
         children: typeof mergedProps.children === "function" ? true : mergedProps.children,
       }),
@@ -827,19 +773,13 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
   const mergedProps = contextProps
     ? (mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) as CheckboxFieldProps)
     : props;
-  const propsWithFormBehavior = withFormValidationBehavior(mergedProps, formContext);
   const inputRefs = createMemo(
     () =>
       [contextBaseProps().inputRef, contextSlotProps?.inputRef, props.inputRef].filter(
         Boolean,
       ) as RefLike<HTMLInputElement>[],
   );
-
-  // `children` is split out of ariaProps so neither the inputAriaProps key-copy
-  // loop nor the hook accessor spread eagerly reads it — reading a Solid
-  // `children` getter instantiates the nested CheckboxButton, and doing so
-  // OUTSIDE InternalCheckboxContext both breaks its binding and recurses.
-  const [local, ariaProps] = splitProps(propsWithFormBehavior, [
+  const [local, ariaProps] = splitProps(mergedProps, [
     "class",
     "style",
     "ref",
@@ -872,6 +812,7 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     const itemAria = createCheckboxGroupItem(
       () => ({
         ...inputAriaProps(),
+        validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
         value: inputAriaProps().value ?? "",
         // The hook reads `children` only to decide if an aria-label is needed;
         // the visible label lives in the CheckboxButton, so report presence.
@@ -897,6 +838,7 @@ export function CheckboxField(props: CheckboxFieldProps): JSX.Element {
     const checkboxAria = createCheckbox(
       () => ({
         ...inputAriaProps(),
+        validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
         isIndeterminate: local.isIndeterminate,
         children: true,
       }),

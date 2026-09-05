@@ -74,7 +74,7 @@ import { DateFieldContext } from "./DateField";
 import { CalendarContext } from "./Calendar";
 import { RangeCalendarContext } from "./RangeCalendar";
 import { HiddenDateInput } from "./HiddenDateInput";
-import { FormContext, type FormProps } from "./Form";
+import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
 import { Popover, type PopoverRenderProps } from "./Popover";
 import { Dialog } from "./Dialog";
 import {
@@ -245,53 +245,6 @@ export type {
   DateRangePickerFieldContextValue,
 } from "./DateRangePickerContext";
 
-function withFormValidationBehavior<P extends object>(props: P, formContext: FormProps | null): P {
-  if (!formContext?.validationBehavior) {
-    return props;
-  }
-
-  return new Proxy(props, {
-    get(target, property, receiver) {
-      const localValue = Reflect.get(target, property, receiver);
-      if (property === "validationBehavior" && localValue === undefined) {
-        return formContext.validationBehavior;
-      }
-
-      return localValue;
-    },
-    has(target, property) {
-      return (
-        Reflect.has(target, property) ||
-        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
-      );
-    },
-    ownKeys(target) {
-      const keys = new Set(Reflect.ownKeys(target));
-      if (formContext.validationBehavior !== undefined) {
-        keys.add("validationBehavior");
-      }
-
-      return Array.from(keys);
-    },
-    getOwnPropertyDescriptor(target, property) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (descriptor) {
-        return descriptor;
-      }
-
-      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
-        return {
-          enumerable: true,
-          configurable: true,
-          get: () => formContext.validationBehavior,
-        };
-      }
-
-      return undefined;
-    },
-  });
-}
-
 export function useDatePickerContext(): DatePickerContextValue {
   const context = useContext(DatePickerContext);
   if (!context) {
@@ -342,9 +295,8 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   props: DatePickerInnerProps<T>,
 ): JSX.Element {
   const formContext = props.__formContext ?? useContext(FormContext);
-  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, rest] = splitProps(
-    mergedProps,
+    props,
     ["children", "class", "style", "slot", "shouldCloseOnSelect", "__formContext"],
     [
       "value",
@@ -572,9 +524,10 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
   );
 
   const validationBehavior = () =>
-    (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior ??
-    formContext?.validationBehavior ??
-    "native";
+    resolveValidationBehavior(
+      (stateProps as { validationBehavior?: "aria" | "native" }).validationBehavior,
+      formContext,
+    );
 
   return (
     <DatePickerStateContext.Provider value={fieldState as unknown as DateFieldState<DateValue>}>

@@ -80,7 +80,7 @@ import {
   Provider,
 } from "./utils";
 import { TextContext } from "./Text";
-import { FormContext, type FormProps } from "./Form";
+import { FormContext, resolveValidationBehavior, type FormProps } from "./Form";
 import {
   DateRangePickerContext,
   type DateRangePickerFieldContextValue,
@@ -179,53 +179,6 @@ export interface DateFieldContextValue {
 export const DateFieldContext = createContext<DateFieldContextValue | null>(null);
 export const DateFieldStateContext = createContext<DateFieldState<DateValue> | null>(null);
 
-function withFormValidationBehavior<P extends object>(props: P, formContext: FormProps | null): P {
-  if (!formContext?.validationBehavior) {
-    return props;
-  }
-
-  return new Proxy(props, {
-    get(target, property, receiver) {
-      const localValue = Reflect.get(target, property, receiver);
-      if (property === "validationBehavior" && localValue === undefined) {
-        return formContext.validationBehavior;
-      }
-
-      return localValue;
-    },
-    has(target, property) {
-      return (
-        Reflect.has(target, property) ||
-        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
-      );
-    },
-    ownKeys(target) {
-      const keys = new Set(Reflect.ownKeys(target));
-      if (formContext.validationBehavior !== undefined) {
-        keys.add("validationBehavior");
-      }
-
-      return Array.from(keys);
-    },
-    getOwnPropertyDescriptor(target, property) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (descriptor) {
-        return descriptor;
-      }
-
-      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
-        return {
-          enumerable: true,
-          configurable: true,
-          get: () => formContext.validationBehavior,
-        };
-      }
-
-      return undefined;
-    },
-  });
-}
-
 export function useDateFieldContext(): DateFieldContextValue {
   const context = useContext(DateFieldContext);
   if (!context) {
@@ -283,9 +236,8 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
   props: DateFieldInnerProps<T>,
 ): JSX.Element {
   const formContext = props.__formContext ?? useContext(FormContext);
-  const mergedProps = withFormValidationBehavior(props, formContext);
   const [local, stateProps, rest] = splitProps(
-    mergedProps,
+    props,
     ["children", "class", "style", "slot", "__formContext"],
     [
       "value",
@@ -333,10 +285,8 @@ function DateFieldInner<T extends DateValue = CalendarDate>(
       isReadOnly: access(stateProps.isReadOnly),
       isRequired: access(stateProps.isRequired),
       // Mirror RAC DateField: validationBehavior ?? formValidationBehavior ??
-      // 'native'. withFormValidationBehavior already folds the form default into
-      // stateProps.validationBehavior; the last `?? 'native'` is the standalone
-      // default that flips the hidden input to type="text".
-      validationBehavior: stateProps.validationBehavior ?? "native",
+      // 'native'.
+      validationBehavior: resolveValidationBehavior(stateProps.validationBehavior, formContext),
       description: stateProps.description,
       errorMessage: stateProps.errorMessage,
       // Form-reset + native constraint validation are wired onto this input by

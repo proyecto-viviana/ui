@@ -40,7 +40,7 @@ import {
   type AriaTextFieldProps,
 } from "@proyecto-viviana/solidaria";
 import { createTextFieldState, type ValidationResult } from "@proyecto-viviana/solid-stately";
-import { FormContext, type FormProps } from "./Form";
+import { FormContext, resolveValidationBehavior } from "./Form";
 import { FieldErrorContext, type FieldErrorContextValue } from "./FieldError";
 import {
   type RenderChildren,
@@ -101,64 +101,6 @@ export const TextFieldContext = createContext<TextFieldContextValue | null>(null
 export const InputContext = TextFieldContext;
 export const TextAreaContext = TextFieldContext;
 export const FieldInputContext = TextFieldContext;
-
-function withFormValidationBehavior(
-  props: TextFieldProps,
-  formContext: FormProps | null,
-): TextFieldProps {
-  if (!formContext?.validationBehavior) {
-    return props;
-  }
-
-  return new Proxy(props, {
-    get(target, property, receiver) {
-      const localValue = Reflect.get(target, property, receiver);
-      if (property === "validationBehavior" && localValue === undefined) {
-        return formContext.validationBehavior;
-      }
-
-      return localValue;
-    },
-    has(target, property) {
-      return (
-        Reflect.has(target, property) ||
-        (property === "validationBehavior" && formContext.validationBehavior !== undefined)
-      );
-    },
-    ownKeys(target) {
-      const keys = new Set(Reflect.ownKeys(target));
-      if (formContext.validationBehavior !== undefined) {
-        keys.add("validationBehavior");
-      }
-
-      return Array.from(keys);
-    },
-    getOwnPropertyDescriptor(target, property) {
-      const descriptor = Reflect.getOwnPropertyDescriptor(target, property);
-      if (property === "validationBehavior" && formContext.validationBehavior !== undefined) {
-        // splitProps copies descriptors. An own getter that returns
-        // `undefined` (S2 TextField's validationState coalescing) must
-        // still fall through to Form context — otherwise the Proxy `get`
-        // trap never runs and the field stays on native `required`.
-        return {
-          enumerable: true,
-          configurable: true,
-          get: () => {
-            const localValue =
-              descriptor == null
-                ? undefined
-                : typeof descriptor.get === "function"
-                  ? descriptor.get.call(target)
-                  : descriptor.value;
-            return localValue === undefined ? formContext.validationBehavior : localValue;
-          },
-        };
-      }
-
-      return descriptor;
-    },
-  });
-}
 
 export interface InputProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "children"> {}
 
@@ -421,9 +363,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   const baseProps = (
     contextProps ? mergeProps(contextBaseProps(), contextSlotProps ?? {}, props) : props
   ) as TextFieldProps;
-  const mergedProps = withFormValidationBehavior(baseProps, formContext);
-
-  const [local, ariaProps] = splitProps(mergedProps, [
+  const [local, ariaProps] = splitProps(baseProps, [
     "children",
     "class",
     "style",
@@ -463,6 +403,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
 
   const textFieldAria = createTextField(() => ({
     ...inputAriaProps(),
+    validationBehavior: resolveValidationBehavior(ariaProps.validationBehavior, formContext),
     label: hasLabel(),
     value: state.value(),
     onChange: state.setValue,
