@@ -611,7 +611,63 @@ describe("createPress", () => {
       uaMock.mockRestore();
     });
 
+    it("should treat 1-by-1 mouse pointer events as mouse off Android", () => {
+      const events: any[] = [];
+      const addEvent = (e: any) => events.push(e);
+
+      render(() => (
+        <Example
+          onPressStart={addEvent}
+          onPressEnd={addEvent}
+          onPress={addEvent}
+          onPressUp={addEvent}
+        />
+      ));
+
+      const el = screen.getByTestId("test-element");
+      // Chromium `new PointerEvent("pointerdown")` defaults: width/height 1,
+      // pressure 0, detail 0, pointerType mouse. RAC does not treat that as
+      // virtual off Android (the 1-by-1 clause is TalkBack-only).
+      fireEvent(
+        el,
+        pointerEvent("pointerdown", {
+          pointerId: 1,
+          width: 1,
+          height: 1,
+          pressure: 0,
+          detail: 0,
+          pointerType: "mouse",
+        }),
+      );
+      fireEvent(
+        el,
+        pointerEvent("pointerup", {
+          pointerId: 1,
+          width: 1,
+          height: 1,
+          pressure: 0,
+          detail: 0,
+          pointerType: "mouse",
+        }),
+      );
+      fireEvent.click(el);
+      vi.runAllTimers();
+
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: "pressstart",
+          pointerType: "mouse",
+        }),
+      );
+      expect(events).not.toContainEqual(
+        expect.objectContaining({
+          pointerType: "virtual",
+        }),
+      );
+    });
+
     it("should detect Android TalkBack double tap", () => {
+      const uaMock = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Android");
       const events: any[] = [];
       const addEvent = (e: any) => events.push(e);
 
@@ -663,6 +719,8 @@ describe("createPress", () => {
           pointerType: "virtual",
         }),
       );
+
+      uaMock.mockRestore();
     });
 
     it("should fire press event when pointerup close to the target", () => {
