@@ -1488,6 +1488,50 @@ describe("RadioGroup", () => {
       expect(group).not.toHaveAttribute("aria-describedby");
       expect(group).not.toHaveAttribute("data-invalid");
     });
+
+    it("sets customError when isInvalid", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Plan form" onSubmit={onSubmit}>
+          <RadioGroup aria-label="Plan" isInvalid defaultValue="starter">
+            <Radio value="starter">Starter</Radio>
+            <Radio value="pro">Pro</Radio>
+            <Radio value="enterprise">Enterprise</Radio>
+          </RadioGroup>
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+      await waitFor(() => {
+        for (const radio of radios) {
+          expect(radio.validity.customError).toBe(true);
+          expect(radio.checkValidity()).toBe(false);
+          expect(radio.validationMessage).toBe("Invalid value.");
+        }
+      });
+
+      (screen.getByRole("form", { name: "Plan form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("skips custom validity when the invalid group is disabled", async () => {
+      render(() => (
+        <RadioGroup aria-label="Plan" isInvalid isDisabled defaultValue="starter">
+          <Radio value="starter">Starter</Radio>
+          <Radio value="pro">Pro</Radio>
+        </RadioGroup>
+      ));
+
+      const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+      await waitFor(() => {
+        for (const radio of radios) {
+          expect(radio.validity.customError).toBe(false);
+          expect(radio.checkValidity()).toBe(true);
+        }
+      });
+    });
   });
 
   describe("Radio outside RadioGroup", () => {

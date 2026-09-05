@@ -33,6 +33,8 @@ import { createSlotId } from "../ssr";
 import { type RadioGroupState, radioGroupSyncVersion } from "@proyecto-viviana/solid-stately";
 import { radioGroupData } from "./createRadioGroup";
 import { type PressEvent } from "../interactions/PressEvent";
+import { createFormValidation } from "../form/createFormValidation";
+import { createFormReset } from "../form/createFormReset";
 
 export interface AriaRadioProps {
   /** The value of the radio button, used when submitting an HTML form. */
@@ -288,6 +290,23 @@ export function createRadio(
   };
 
   const getGroupData = () => radioGroupData.get(state);
+
+  // RAC `useRadio.ts:156-157`: native reset + custom validity on every radio.
+  createFormReset(
+    () => ref() ?? undefined,
+    state.defaultSelectedValue,
+    (value) => state.setSelectedValue(value),
+  );
+  createFormValidation(
+    {
+      get validationBehavior() {
+        return getGroupData()?.validationBehavior ?? "native";
+      },
+      focus: () => ref()?.focus(),
+    },
+    state,
+    () => ref() ?? undefined,
+  );
 
   const combinedIsPressed: Accessor<boolean> = () => isPressed() || isLabelPressed();
 

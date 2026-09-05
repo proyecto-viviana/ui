@@ -4,12 +4,22 @@ type: task
 title: "Set native custom validity on RadioGroup when isInvalid"
 created: 2026-09-03
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-03,
       note: "filed from the #260 radiogroup functional pass: URL ?isInvalid=true leaves React every radio customError=true, checkValidity=false, :invalid, validationMessage Invalid value., requestSubmit blocked and focus radio:starter; Solid stays valid and submits {solidaria-cl-228:starter}. createRadio never calls createFormValidation; RAC useRadio does",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "Git v2 implement. createRadio calls createFormValidation + createFormReset like useRadio.ts:156-157.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "createRadio wires createFormValidation on each input. Package test: isInvalid radios customError=true, requestSubmit blocked; disabled skips custom validity.",
     }
 ---
 
