@@ -422,6 +422,29 @@ describe("GridList", () => {
       expect(items.length).toBe(2);
     });
 
+    it("selects from item.id when getKey is omitted", () => {
+      render(() => (
+        <GridList
+          items={testItems}
+          getTextValue={(item) => item.name}
+          aria-label="Fruits"
+          selectionMode="multiple"
+        >
+          {(item) => (
+            <GridListItem id={item.id} textValue={item.name}>
+              {item.name}
+            </GridListItem>
+          )}
+        </GridList>
+      ));
+
+      const rows = screen.getAllByRole("row");
+      pressWithMouse(rows[0]);
+      expect(rows[0]).toHaveAttribute("aria-selected", "true");
+      pressWithMouse(rows[0]);
+      expect(rows[0]).toHaveAttribute("aria-selected", "false");
+    });
+
     it("adds to multiple selection without a modifier by default", () => {
       render(() => (
         <GridList

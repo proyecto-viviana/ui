@@ -972,7 +972,7 @@ export function GridList<T extends object>(props: GridListProps<T>): JSX.Element
   const getKey = createMemo(() =>
     usesStaticChildren()
       ? (item: T) => (item as unknown as StaticGridListItem).id
-      : headlessProps.getKey,
+      : (item: T) => keyFromItem(item, headlessProps.getKey, 0),
   );
   const getTextValue = createMemo(() =>
     usesStaticChildren()

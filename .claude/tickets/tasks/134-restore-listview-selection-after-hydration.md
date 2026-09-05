@@ -4,12 +4,22 @@ type: task
 title: "Restore ListView selection after hydration"
 created: 2026-08-22
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-08-22,
       note: "found while consolidating package test helpers during ticket #19",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-04,
+      note: "Git v2 implement. buildGridCollection used getKey ?? index and skipped item.id. SelectionManager.canSelectItem requires the key in the collection, so ListViewItem id=row-a cannot toggle. createListState already uses getKey ?? key ?? id ?? index. Match that. Remove it.fails.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-04,
+      note: "buildGridCollection keys default to item.key ?? item.id ?? index. it.fails removed. GridList 56 passed. Collections hydrate 9 passed after regenerating SSR markup.",
     }
 ---
 

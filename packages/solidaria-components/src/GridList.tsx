@@ -251,7 +251,12 @@ function buildGridCollection<T extends object>(
   getDisabled?: (item: T) => boolean,
 ): GridCollection<T> {
   const nodes: GridNode<T>[] = items.map((item, index) => {
-    const key = getKey?.(item) ?? index;
+    // RAC CollectionBuilder uses `value.key ?? value.id` when getKey is
+    // omitted (`CollectionBuilder.ts:103`). createListState already mirrors
+    // that. Index-only keys made GridListItem `id={item.id}` unselectable:
+    // SelectionManager.canSelectItem requires collection.getItem(key).
+    const record = item as { id?: Key; key?: Key };
+    const key = getKey?.(item) ?? record.key ?? record.id ?? index;
     return {
       type: "item" as const,
       key,

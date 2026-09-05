@@ -61,11 +61,7 @@ describe("collection components hydrate over SSR markup", () => {
     expect(container.querySelectorAll('[role="row"]').length).toBe(2);
   });
 
-  // Known red: ticket #134 — a click on a hydrated ListView row moves DOM
-  // focus but leaves aria-selected="false". Keep the test; wrap it so the
-  // hydrate gate stays green until the product bug is fixed. If this starts
-  // passing, remove the it.fails envelope.
-  it.fails("#134 ListView rows respond to interaction after hydration (focus + selection)", async () => {
+  it("ListView rows respond to interaction after hydration (focus + selection)", async () => {
     const container = hydrateOverSsr(readSsr("listview-interactive-ssr.html"), () => (
       <ListViewInteractiveFixture />
     ));
