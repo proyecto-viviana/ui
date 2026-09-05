@@ -324,8 +324,6 @@ export function RadioGroup(props: ParentProps<RadioGroupProps>): JSX.Element {
 
     state.updateValidation(getNativeValidation(target));
     state.commitValidation();
-    target.focus();
-    event.preventDefault();
   };
   const handleGroupChangeCapture: JSX.EventHandler<HTMLDivElement, Event> = (event) => {
     const target = event.target;
@@ -708,12 +706,6 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       }
     ).onClick?.(event);
   };
-  const handleInputInvalid: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
-    state.updateValidation(getNativeValidation(event.currentTarget));
-    state.commitValidation();
-    event.currentTarget.focus();
-    event.preventDefault();
-  };
   const handleInputChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
     (
       radioAria.inputProps as unknown as { onChange?: JSX.EventHandler<HTMLInputElement, Event> }
@@ -734,12 +726,6 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
       return;
     }
     setInputElement(el);
-    el.addEventListener("invalid", (event) => {
-      state.updateValidation(getNativeValidation(el));
-      state.commitValidation();
-      el.focus();
-      event.preventDefault();
-    });
     el.addEventListener("change", () => {
       state.updateValidation(el.validity.valid ? validValidation : getNativeValidation(el));
       state.commitValidation();
@@ -757,7 +743,6 @@ function RadioImpl(props: { radioProps: RadioProps; state: RadioGroupState }): J
         aria-describedby={inputDescribedBy()}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
-        onInvalid={handleInputInvalid}
         onChange={handleInputChange}
         onClick={handleInputClick}
       />
@@ -1048,12 +1033,6 @@ function RadioFieldImpl(props: {
 
   const setInputRef = (el: HTMLInputElement) => {
     setInputElement(el);
-    el.addEventListener("invalid", (event) => {
-      state.updateValidation(getNativeValidation(el));
-      state.commitValidation();
-      el.focus();
-      event.preventDefault();
-    });
     el.addEventListener("change", () => {
       state.updateValidation(el.validity.valid ? validValidation : getNativeValidation(el));
       state.commitValidation();
@@ -1261,12 +1240,6 @@ function RadioButtonImpl(props: {
       ctx.inputProps() as unknown as { onClick?: JSX.EventHandler<HTMLInputElement, MouseEvent> }
     ).onClick?.(event);
   };
-  const handleInputInvalid: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
-    state.updateValidation(getNativeValidation(event.currentTarget));
-    state.commitValidation();
-    event.currentTarget.focus();
-    event.preventDefault();
-  };
   const handleInputChange: JSX.EventHandler<HTMLInputElement, Event> = (event) => {
     (
       ctx.inputProps() as unknown as { onChange?: JSX.EventHandler<HTMLInputElement, Event> }
@@ -1308,7 +1281,6 @@ function RadioButtonImpl(props: {
           aria-describedby={ctx.inputDescribedBy()}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
-          onInvalid={handleInputInvalid}
           onChange={handleInputChange}
           onClick={handleInputClick}
         />

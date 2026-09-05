@@ -1516,6 +1516,56 @@ describe("RadioGroup", () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
+    it("focuses the first radio after a blocked isInvalid submit, not the last", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Plan form" onSubmit={onSubmit}>
+          <RadioGroup aria-label="Plan" isInvalid defaultValue="starter">
+            <Radio value="starter">Starter</Radio>
+            <Radio value="pro">Pro</Radio>
+            <Radio value="enterprise">Enterprise</Radio>
+          </RadioGroup>
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+      await waitFor(() => {
+        expect(radios.every((radio) => radio.validity.customError)).toBe(true);
+      });
+
+      (screen.getByRole("form", { name: "Plan form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(radios[0]);
+      expect(document.activeElement).not.toBe(radios[2]);
+    });
+
+    it("focuses the first radio after a blocked required-empty submit, not the last", async () => {
+      const onSubmit = vi.fn((event: SubmitEvent) => event.preventDefault());
+
+      render(() => (
+        <form aria-label="Plan form" onSubmit={onSubmit}>
+          <RadioGroup aria-label="Plan" isRequired>
+            <Radio value="starter">Starter</Radio>
+            <Radio value="pro">Pro</Radio>
+            <Radio value="enterprise">Enterprise</Radio>
+          </RadioGroup>
+          <button type="submit">Submit</button>
+        </form>
+      ));
+
+      const radios = screen.getAllByRole("radio") as HTMLInputElement[];
+      await waitFor(() => {
+        expect(radios.every((radio) => radio.validity.valueMissing)).toBe(true);
+      });
+
+      (screen.getByRole("form", { name: "Plan form" }) as HTMLFormElement).requestSubmit();
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(document.activeElement).toBe(radios[0]);
+      expect(document.activeElement).not.toBe(radios[2]);
+    });
+
     it("skips custom validity when the invalid group is disabled", async () => {
       render(() => (
         <RadioGroup aria-label="Plan" isInvalid isDisabled defaultValue="starter">

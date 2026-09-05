@@ -11,6 +11,11 @@ history:
       at: 2026-09-03,
       note: "filed from the #260 radiogroup functional pass: ?isRequired=true&selectedValue=none blocks requestSubmit on both with valueMissing Please select one of these options.; React then focuses radio:starter with data-focus-visible on starter only; Solid focuses radio:enterprise. Isolated remount of the same URL is the same focus targets. Native required on every input matches. Clean remount rest geometry is 16×16 on both (do not treat the 0×0 SNAP from a hidden panel as this ticket)",
     }
+  - {
+      state: open,
+      at: 2026-09-05,
+      note: "Same invalid-handler costume as #469 (D14 isInvalid leftover). Package test now focuses starter after required-empty requestSubmit. Comparison-route walk in Done when is still open; do not close here.",
+    }
 ---
 
 S2 RadioGroup with `isRequired` and no selected value fails native
