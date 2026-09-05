@@ -9,7 +9,9 @@ Status: live process.
 Update when: the pin format, source paths, guards, or absorption process changes.
 
 Use this process to pin and absorb Adobe React Spectrum releases. Work state
-lives in `.claude/tickets`. The current train owner is ticket #82.
+lives in `.claude/tickets`. The current train owner is ticket #220 (2026-09,
+S2 1.7.0 / RAC 1.21.0). Initiative #34 owns absorption across trains. Closed
+trains stay in Git history.
 
 ## Pinned oracle
 
@@ -169,4 +171,4 @@ For each absorbed delta, record:
 - the exact commands and revision that passed.
 
 Use `certification.md` and the component playbook for the acceptance bar. Use the
-generated `status.md` and ticket #82 for current progress.
+generated `status.md` and ticket #220 for current progress.

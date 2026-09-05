@@ -46,12 +46,12 @@ script, and out-of-workspace consume smoke enforce this contract.
 depends on `solidaria-components` and its lower dependencies. It is not in the
 `@proyecto-viviana/ui` dependency closure.
 
-The first npm publish is not ready. `guard:release-prerequisites` permits the
-unpublished `0.0.0` package to remain in the workspace, but fails CI and publish
-once Kumo has a nonzero release-candidate version unless both package
-registration and trusted-publisher registration have explicit evidence in
-`scripts/release-prerequisites.json`. Register both, verify them independently,
-and update that evidence before merging Kumo's version PR.
+Workspace Kumo stays at `0.0.0`. The guard permits that unpublished workspace
+version. A nonzero release-candidate version fails CI and publish unless
+`scripts/release-prerequisites.json` records both npm package registration and
+trusted-publisher registration. Those registrations exist for the deprecated
+`0.0.0-bootstrap.0` name reservation. They do not make workspace `0.0.0` a
+product release.
 
 ## Flow
 

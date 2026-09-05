@@ -19,7 +19,7 @@ when debugging pnpm-specific behavior.
 vp install
 vp run dev
 vp run comparison:dev
-vp test run packages
+vp run test:run
 vp run check
 ```
 

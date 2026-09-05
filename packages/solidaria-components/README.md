@@ -46,13 +46,10 @@ export function ToolbarButton() {
 
 ## Current Parity Evidence
 
-As of the 2026-05-12 local report:
-
-- `vp run guard:rac-export-gap` reports `0` missing React Aria Components named
-  exports.
-- `vp run guard:rac-parity` reports no missing required tracked symbols.
-- The package has extra Solid exports and aliases compared with upstream RAC.
-  Treat those as local API and document intentional additions in changesets.
+Do not copy guard counts into this file. `guard:rac-export-gap` allows only
+ticketed pending RAC names (`scripts/rac-export-gap-pending.json`). Unlisted
+missing names fail. Extra Solid exports are local API; document intentional
+additions in changesets.
 
 The barrel in [`src/index.ts`](src/index.ts) is the source of truth for the
 current public surface. This README intentionally does not duplicate the full

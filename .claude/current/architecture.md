@@ -42,9 +42,9 @@ Upstream mapping:
 | Viviana design system   | `viviana-ui`           | `@proyecto-viviana/ui`                   |
 | Cloudflare Kumo         | `kumo`                 | `@proyecto-viviana/kumo`                 |
 
-All six public packages are releasable. The Kumo package is still experimental
-and has an initial-publish blocker (`release-policy.md`). `solidaria-test-utils`
-and `solid-spectrum-test-utils` are private.
+All six public packages are releasable. The Kumo package is still experimental.
+Workspace Kumo stays `0.0.0` until the first real publish (`release-policy.md`).
+`solidaria-test-utils` and `solid-spectrum-test-utils` are private.
 
 ## Where behavior goes
 
@@ -124,11 +124,12 @@ Source manifests use `workspace:*`. The release process writes registry versions
 
 ## Why ship the `solid` export condition
 
-Each package exposes a `solid` export condition pointing at compiled `dist`
-JSX so Solid bundlers keep JSX for the consumer's target (client vs SSR), with
-an `import` fallback of pre-compiled output for non-Solid bundlers.
-Pre-compiling only would lock consumers to one target. This is the approach
-official Solid libraries use.
+Each public package exposes a `solid` export condition. Styled packages and
+`solidaria-components` point it at compiled `dist` JSX so Solid bundlers keep
+JSX for the consumer's target (client vs SSR), with an `import` fallback of
+pre-compiled output for non-Solid bundlers. `solid-stately` points `solid` at
+compiled `dist` JS (no JSX). Pre-compiling only would lock JSX consumers to one
+target. This is the approach official Solid libraries use.
 
 ## The comparison harness
 

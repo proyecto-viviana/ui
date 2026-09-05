@@ -39,18 +39,8 @@ values. The controlling decision is
 
 ## Current Parity Evidence
 
-As of the 2026-07-24 local reports:
-
-- `78` official S2 catalogue entries are tracked in the comparison app.
-- `78` entries are live on both React and Solid sides — the catalogue gap is
-  closed.
-- `7` non-root S2 value exports are still missing: `LabeledValueContext` and the
-  six drag-and-drop names (`useDragAndDrop`, `DragPreview`,
-  `DIRECTORY_DRAG_TYPE`, `isTextDropItem`, `isFileDropItem`,
-  `isDirectoryDropItem`). Drag-and-drop is the one un-ported subsystem.
-
-Those numbers are a snapshot; the reports are the authority. Re-run them rather
-than trusting this section:
+Do not copy report counts into this file. An export can exist before the
+component has accepted visual parity. Run the reports:
 
 ```bash
 vp run comparison:report:gaps
@@ -58,6 +48,4 @@ vp run comparison:report:exports
 vp run comparison:dev
 ```
 
-The public barrel is [`src/index.ts`](src/index.ts). A root export can exist
-before the component has accepted visual parity, so always check the comparison
-reports before claiming completion.
+The public barrel is [`src/index.ts`](src/index.ts).

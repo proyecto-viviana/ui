@@ -47,11 +47,6 @@ completed operational records.
 - Do not keep completed plans or audit logs in `main`. Git history is the
   archive.
 
-Ticket [#15](../tickets/tasks/15-rewrite-retained-docs-in-simplified-english.md)
-rewrote the retained current docs in simplified English. Ticket
-[#16](../tickets/tasks/16-enforce-the-live-documentation-contract.md) added
-`docs:check`. Both are verified.
-
 ## Other authorities
 
 - [AGENTS.md](../../AGENTS.md) defines repository operating rules.

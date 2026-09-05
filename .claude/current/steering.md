@@ -25,8 +25,8 @@ it without a separate owner decision.
 ## Work order
 
 Ticket #87 owns the ordered remaining-work program. Generated `status.md` and
-`roadmap.md` show current board state. Ticket #82 owns the current Adobe release
-train and links each unresolved upstream branch to an atomic task.
+`roadmap.md` show current board state. Initiative #34 owns Adobe release
+absorption. The current train ticket is named in `upstream-sync.md`.
 
 Do not copy status counts, passing commands, or task lists into this file.
 

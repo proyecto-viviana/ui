@@ -1,41 +1,22 @@
 # Scripts
 
 Root scripts are maintenance guards that are still useful outside the visual
-comparison app.
+comparison app. The command inventory and how to run the gates live in
+`.claude/current/tooling.md` and `.claude/current/certification.md`. Do not copy
+guard counts into this file.
 
-## Active Guards
+## Guards that are easy to misuse
 
-- `check-doc-routes.ts` verifies generated web docs routes.
-- `check-rac-parity.ts` checks a narrow required export set for
-  `solidaria-components` against `react-aria-components`.
-- `check-rac-export-gap.ts` reports the broader headless export gap. As of the
-  2026-05-12 local report, this has `0` missing RAC named exports and only
-  reports Solid extras.
-- `check-dnd-keyboard-parity.ts` guards keyboard DnD invariants that are hard to
-  see in static screenshots.
-- `check-virtualizer-keyboard-parity.ts` guards virtualizer keyboard navigation
-  invariants.
-- `check-package-macro-sourcemaps.mjs` transforms a fixed S2 style-macro fixture
-  and traces a generated binding to its authored line and column. Published
-  styled-package builds also fail if Rolldown reports `SOURCEMAP_BROKEN`.
-- `check-jsx-ref-dead-code.ts` rejects new direct JSX refs backed by local
-  `let` bindings. Its exact allowlist contains 12 styling refs whose reads
-  remain in emitted JSX callbacks. It also transforms the repaired dialog and
-  load-more sources plus a negative fixture, and fails if observable ref,
-  callback, focus, or close behavior disappears.
-- `check-package-attribution.mjs` checks the six public package manifests and
-  their shipped license files. It also reports the current Adobe header and
-  source-marker inventory without treating incomplete counts as an accepted
-  baseline.
-- `check-changeset-required.mjs` enforces changesets for releasable packages.
+- `check-rac-parity.ts` checks a **narrow required export set**, not RAC
+  parity. `check-rac-export-gap.ts` is the broader headless export-name gap.
+  Ticketed missing names live in `scripts/rac-export-gap-pending.json`.
 - `check-layer-boundary.ts` freezes the solid-spectrum ↔ viviana-ui dual-tree
-  inventory (ticket #2). New forks of baselined-identical Spectrum files into
-  viviana-ui, or new unbaselined dual paths, exit 1. Rewrite the inventory with
+  inventory. New forks of baselined-identical Spectrum files into viviana-ui,
+  or new unbaselined dual paths, exit 1. Rewrite the inventory with
   `--write-baseline` only after intentional dual-path review.
 - `report-layer-imports.ts` inventories type imports, runtime imports, and
   re-exports from each styled library into the three headless layers. It is a
-  review aid, not a pass/fail guard: a runtime import can be legitimate
-  composition or misplaced behavior, and that distinction needs source review.
+  review aid, not a pass/fail guard.
 
 ## Comparison App
 
@@ -52,6 +33,7 @@ chain:
 - `@proyecto-viviana/solid-stately`
 - `@proyecto-viviana/solidaria`
 - `@proyecto-viviana/solidaria-components`
+- `@proyecto-viviana/kumo`
 - `@proyecto-viviana/solid-spectrum`
 - `@proyecto-viviana/ui`
 
@@ -59,14 +41,14 @@ Use `vp run pack:local-chain` from the repo root to rebuild and pack them into
 `/tmp/viviana-ui-packs-chain`. The script stages package copies under `/tmp`,
 rewrites staged `workspace:*` dependencies to package versions, packs the
 staged packages, and prints dependency/override snippets for the current
-consumers:
+consumers.
 
 Private workspace-only test helpers are removed from staged `devDependencies`
 so consumer installs do not depend on unpublished test packages. Runtime
 workspace dependencies still have to be part of the packed chain.
 
-- `apps/comparison` consumes `solid-spectrum` directly, so it exercises the
-  lower `solidaria-components` chain.
+- `apps/comparison` consumes `solid-spectrum` (and builds `kumo` for the Button
+  experiment), so it exercises the lower `solidaria-components` chain.
 - Pokeforos consumes `viviana-ui`, so it exercises the wrapper plus SolidStart
   SSR and routing integration.
 

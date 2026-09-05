@@ -19,8 +19,9 @@ Show one honest Kumo Button experiment on the Viviana UI site. The page explains
 the shared Solid foundation and presents its three standalone styled libraries.
 
 The page must show the maturity difference. The Button does not prove Kumo
-parity. `@proyecto-viviana/kumo` is unpublished, incomplete, and expected to
-have rough edges.
+parity. Workspace `@proyecto-viviana/kumo` is `0.0.0`, incomplete, and expected
+to have rough edges. npm has a deprecated `0.0.0-bootstrap.0` name reservation
+only. That is not a product publish. See `release-policy.md`.
 
 ## Architecture
 
@@ -46,9 +47,8 @@ The comparison must mount the real React and Solid Buttons. It must cover
 accessible names, activation, disabled and loading behavior, forms, refs,
 focus, SSR, hydration, interaction states, and both themes.
 
-Ticket #38 owns the current results. Package publication and trusted-publisher
-registration remain fail-closed prerequisites. This experiment does not
-certify a full Kumo port.
+Ticket #38 owns the paired fixture evidence. This experiment does not certify a
+full Kumo port. Workspace publish rules are in `release-policy.md`.
 
 ## Work
 
