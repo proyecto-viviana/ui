@@ -4,12 +4,17 @@ type: task
 title: "Overlay Escape after a synthetic press is a focus delivery miss"
 created: 2026-09-05
 parent: 24
-status: open
+status: verified
 history:
   - {
       state: open,
       at: 2026-09-05,
       note: "HEAD subset: Overlay Escape after clickLocator leaves the dialog open. RAC useOverlay listens on the overlay element; a keydown on the still-focused trigger does not dismiss. clickLocator focuses the trigger between pointerdown and pointerup. #111 makes that synthetic press mouse, not virtual; it does not move focus into the overlay. Do not add a document Escape listener to match a missed overlay keydown. Comparison owns dismissOverlay. #194 stays open.",
+    }
+  - {
+      state: verified,
+      at: 2026-09-05,
+      note: "fa4604b9: clickLocator no longer focuses mid-press. dismissOverlay dispatches Escape on the overlay. e2e/click-locator.spec.ts locks both. Dialog D5/D6 and overlay Escape both stacks passed. No document listener. #194 stays open.",
     }
 ---
 
