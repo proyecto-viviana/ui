@@ -12,6 +12,11 @@ history:
       at: 2026-09-02,
       note: "sharded certified CI job on HEAD, waiver file, certified-summary reporter; pending orchestrator verification",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-05,
+      note: "Postcard still 0f1e1198 (2026-08-21, 2170/0/4). HEAD 030c200b, 211 ahead of origin/main. Did not recertify the suite tonight. Do not print the postcard as HEAD.",
+    }
 ---
 
 ## Cause

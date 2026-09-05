@@ -10,11 +10,21 @@ history:
       at: 2026-09-03,
       note: "opened to publish the pending 83 changesets after PR #33; scheme forbids initiative→initiative parent, so #32 is Relationship not parent",
     }
+  - {
+      state: open,
+      at: 2026-09-05,
+      note: "No publish tonight. Counted 112 unpublished changesets on HEAD 030c200b (211 ahead of origin/main). guard:release-prerequisites PASS; Kumo 0.0.0 is not a publish candidate. Certified postcard still 0f1e1198 (#194). Do not ship the pile.",
+    }
 ---
 
-Publish the pending 83 changesets for the six public packages from PR #33
+Publish the pending changesets for the six public packages from PR #33
 `audit-2026-09-round-2` head `87da0f75`, via merge → same-SHA gates →
 regenerated version PR #32 → publish.
+
+2026-09-05 count on `030c200b`: **112** unpublished changesets, not 83.
+Workspace Kumo stays `0.0.0` (name-reservation only). That pile is not one
+honest product slice. Certified-suite postcard is still `0f1e1198` (#194).
+No npm publish and no push on 2026-09-05.
 
 ## Ordered work
 

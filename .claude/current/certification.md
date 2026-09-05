@@ -129,9 +129,11 @@ evidence.
 
 The report also prints the recorded revision and the passed, failed, and skipped
 counts from the last full certified suite. The typed record is in
-`../../apps/comparison/src/data/certified-suite-evidence.ts`. Its totals must be
-consistent, its failed count must be zero, and its skipped count must match the
-registered certified-suite divergences.
+`../../apps/comparison/src/data/certified-suite-evidence.ts`. That record is a
+postcard (`0f1e1198`, 2026-08-21, 2170 passed / 4 skipped). It is not HEAD
+(ticket #194). Do not print it as the current certified suite. Its totals must
+be consistent, its failed count must be zero, and its skipped count must match
+the registered certified-suite divergences.
 
 `guard:upstream-test-parity` mechanizes a first-pass triage for **Gate 3 (Upstream
 React Source Parity)**: it diffs the ARIA-contract vocabulary our tests assert
