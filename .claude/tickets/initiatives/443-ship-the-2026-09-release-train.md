@@ -20,6 +20,11 @@ history:
       at: 2026-09-05,
       note: "Honest form-validation/Radio slice prepared on local main (HEAD db66c830+). #472 SSR Form inherit, #475 CheckboxGroup aria, #351/#376 D14 walks. Did not version or publish: postcard still 0f1e1198, D14 subset is not the certified suite, 112 unpublished changesets remain, do not bump Kumo 0.0.0. Do not push this train until Certification Gates can fail closed without firing Release on the pile.",
     }
+  - {
+      state: open,
+      at: 2026-09-06,
+      note: "La Frontera re-audited its seven-entry consumer defect ledger against main: VUI-001/-002/-006 are already fixed here (842cfdc5, abafbd4d), four are not. #483 #484 #485 #486 filed. Their changesets join this pile; the ledger entries close only on a published version, so this train is what closes them. #484 is blocked on an owner ruling that reduced motion overrides React Spectrum parity for Button. Hold on #194 is unchanged; nothing here asks to ship early.",
+    }
 ---
 
 Publish the pending changesets for the six public packages from PR #33
