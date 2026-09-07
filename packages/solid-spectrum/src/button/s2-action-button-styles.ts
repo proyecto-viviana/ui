@@ -108,7 +108,10 @@ export const s2ActionButton = style<S2ActionButtonStyleProps>(
       },
     },
     userSelect: "none",
-    transition: "default",
+    transition: {
+      default: "default",
+      "@media (prefers-reduced-motion: reduce)": "none",
+    },
     forcedColorAdjust: "none",
     position: "relative",
     gridTemplateAreas: {

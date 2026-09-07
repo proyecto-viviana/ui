@@ -13,6 +13,7 @@ import {
   driverCases,
   scenarioThemes,
   type DriverScenario,
+  type MotionSnapshotExpectation,
   type MotionTrigger,
   type PanelFramework,
 } from "./scenario";
@@ -130,6 +131,27 @@ async function filmstripShot(target: Locator): Promise<Buffer> {
   return captureLocatorPng(target, { animations: "allow" });
 }
 
+function expectMotionSnapshot(
+  snapshots: readonly OracleAnimationSnapshot[],
+  expected: MotionSnapshotExpectation,
+) {
+  const transitions = snapshots.filter((snapshot) => snapshot.kind === "transition");
+  expect(transitions.map((snapshot) => snapshot.property).sort()).toEqual(
+    [...expected.transitionProperties].sort(),
+  );
+  expect(transitions.map((snapshot) => snapshot.duration)).toEqual(
+    Array.from({ length: expected.transitionProperties.length }, () => expected.durationMs),
+  );
+
+  if (expected.maxAnimationDurationMs != null) {
+    const overBudget = snapshots.filter(
+      (snapshot) =>
+        snapshot.duration === "Infinity" || snapshot.duration > expected.maxAnimationDurationMs!,
+    );
+    expect(overBudget).toEqual([]);
+  }
+}
+
 export function registerMotionDriver(scenario: DriverScenario) {
   const config = scenario.motion;
   if (!config) {
@@ -149,6 +171,10 @@ export function registerMotionDriver(scenario: DriverScenario) {
             }
             test.setTimeout(150_000);
             const snaps = await captureMotion(scenario, trigger, caseDef, page, frames, filmstrip);
+            if (trigger.expectedMotion) {
+              expectMotionSnapshot(snaps.react, trigger.expectedMotion.normal);
+              expectMotionSnapshot(snaps.solid, trigger.expectedMotion.normal);
+            }
             expect(JSON.stringify(snaps.solid, null, 2)).toBe(JSON.stringify(snaps.react, null, 2));
           });
         }
@@ -156,13 +182,16 @@ export function registerMotionDriver(scenario: DriverScenario) {
     });
   };
 
-  // D2b: motion metadata is the exact pair-oracle contract.
+  // D2b: normal-motion metadata retains the exact pair-oracle contract, with
+  // optional absolute expectations checked before pair equality.
   runMetadata("D2 motion");
 
-  // D2d: the same contract must hold under reduced motion. Reduced motion is
-  // emulated on the page (the suite convention — see accordion/actionmenu
-  // visual specs) rather than a describe-level `test.use`, so it persists
-  // across the per-panel navigations the walk performs.
+  // D2d: reduced motion may use explicit, separate React and Solid contracts
+  // when owner policy intentionally diverges from pinned upstream. Scenarios
+  // without expectations retain pair equality. Reduced motion is emulated on
+  // the page (the suite convention — see accordion/actionmenu visual specs)
+  // rather than a describe-level `test.use`, so it persists across the per-
+  // panel navigations the walk performs.
   test.describe(`D2 motion (reduced) — ${scenario.title}`, () => {
     for (const caseDef of cases) {
       for (const trigger of config.triggers) {
@@ -173,7 +202,12 @@ export function registerMotionDriver(scenario: DriverScenario) {
           test.setTimeout(150_000);
           await page.emulateMedia({ reducedMotion: "reduce" });
           const snaps = await captureMotion(scenario, trigger, caseDef, page, frames, false);
-          expect(JSON.stringify(snaps.solid, null, 2)).toBe(JSON.stringify(snaps.react, null, 2));
+          if (trigger.expectedMotion) {
+            expectMotionSnapshot(snaps.react, trigger.expectedMotion.reduced.react);
+            expectMotionSnapshot(snaps.solid, trigger.expectedMotion.reduced.solid);
+          } else {
+            expect(JSON.stringify(snaps.solid, null, 2)).toBe(JSON.stringify(snaps.react, null, 2));
+          }
         });
       }
     }

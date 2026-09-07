@@ -67,15 +67,39 @@ const actionButtonScenario: DriverScenario = {
     walks: [{ id: "tab-cycle", keys: ["Tab", "Shift+Tab", "Shift+Tab"] }],
   },
   // D2: `transition: 'default'` on the action-button style animates the
-  // background/color on hover. Port and upstream carry the same token, so the
-  // captured transition must match — the positive control that proves matching
-  // motion reports green.
+  // background and text color on hover. Normal motion stays an exact parity
+  // contract against pinned upstream; reduced motion records upstream's
+  // unchanged behavior separately from Viviana's stricter owner accessibility
+  // budget (ticket #484).
   motion: {
     cases: ["default"],
     triggers: [
       {
         id: "hover-transition",
         scopes: ["panel"],
+        expectedMotion: {
+          normal: {
+            transitionProperties: ["background-color", "color"],
+            durationMs: 150,
+          },
+          reduced: {
+            // Pinned React Spectrum retains its normal transition set under
+            // reduced motion. Record that upstream behavior without making it
+            // Viviana's accessibility budget.
+            react: {
+              transitionProperties: ["background-color", "color"],
+              durationMs: 150,
+            },
+            // Viviana's owner contract removes nonessential ActionButton
+            // transition motion. A zero-duration CSS transition creates no
+            // WAAPI entry.
+            solid: {
+              transitionProperties: [],
+              durationMs: 0,
+              maxAnimationDurationMs: 0,
+            },
+          },
+        },
         run: async ({ target }) => {
           await hoverLocator(target);
         },

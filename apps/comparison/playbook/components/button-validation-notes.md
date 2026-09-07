@@ -8,6 +8,37 @@ evidence from the original 2026-05-13 pass remains below; this closeout records
 the current S2 docs/source parity fixes, root DOM contract checks, and refreshed
 Button-specific gates.
 
+## Reduced-Motion Transition Closeout
+
+- Date: 2026-09-01, extended to ActionButton 2026-09-07.
+- Finding: the `primary-outline` Button emitted six 150 ms color transitions in
+  real Chromium both normally and under `prefers-reduced-motion: reduce`.
+  ActionButton carries the same `transition: "default"` token and the same
+  defect.
+- Policy: pinned React Spectrum retains those transitions under reduced motion.
+  Viviana records that upstream behavior separately and owns a stricter
+  absolute budget: no nonessential Button or ActionButton transition, and no
+  other nonzero-duration animation, under the reduced-motion media query.
+  Upstream remains the parity oracle for normal motion; it is not the ceiling
+  for reduced motion.
+- Fix: the generated S2 Button and ActionButton recipes in both public styled
+  packages preserve `transition: "default"` normally and resolve it to `none`
+  under reduced motion. The shared declaration owns hover and press state
+  changes; the upstream-compatible pressed transform geometry is unchanged, so
+  the `pressScale` parity note below still holds — this closeout owns
+  transition timing, not pressed geometry.
+- Gate shape: D2d stops being a single React-equals-Solid comparison for these
+  two recipes and becomes two explicit per-stack contracts, so upstream drift is
+  still caught and the deliberate divergence cannot be reverted as drift.
+- Browser evidence: before the fix, the reduced-motion Web Animations API gate
+  failed because Solid returned background, four border, and text-color
+  transitions at 150 ms. After the fix, normal React/Solid output remains the
+  same six properties at 150 ms, pinned React reduced-motion output is recorded
+  as the same six properties at 150 ms, and Solid reduced-motion output contains
+  no transition plus no captured animation over 0 ms.
+- Ownership: ticket #484 records the ruling, the acceptance threshold, the
+  rejected alternative, and the exact commands, ports, and package/build gates.
+
 ## Reactive-Child And Pending-Icon Closeout
 
 - Date: 2026-08-31.

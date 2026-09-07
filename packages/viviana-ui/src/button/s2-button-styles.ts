@@ -59,7 +59,10 @@ export const s2Button = style<S2ButtonStyleProps>(
     userSelect: "none",
     width: "fit",
     textDecoration: "none",
-    transition: "default",
+    transition: {
+      default: "default",
+      "@media (prefers-reduced-motion: reduce)": "none",
+    },
     borderStyle: "solid",
     borderWidth: {
       fillStyle: {

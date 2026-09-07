@@ -39,16 +39,52 @@ const buttonScenario: DriverScenario = {
   focus: {
     walks: [{ id: "tab-cycle", keys: ["Tab", "Shift+Tab", "Shift+Tab"] }],
   },
-  // D2: `transition: 'default'` on the button means hover animates the
-  // background/color. The port and upstream carry the same token, so the
-  // captured transition (property, duration, easing) must match — a positive
-  // control that proves the driver reports matching motion as green.
+  // D2: `transition: 'default'` on the button means hover animates the six
+  // painted color properties. Normal motion remains an exact parity contract;
+  // reduced motion records pinned upstream behavior separately from Viviana's
+  // stricter owner accessibility budget.
   motion: {
-    cases: ["accent-fill"],
+    cases: ["primary-outline"],
     triggers: [
       {
         id: "hover-transition",
         scopes: ["panel"],
+        expectedMotion: {
+          normal: {
+            transitionProperties: [
+              "background-color",
+              "border-bottom-color",
+              "border-left-color",
+              "border-right-color",
+              "border-top-color",
+              "color",
+            ],
+            durationMs: 150,
+          },
+          reduced: {
+            // Pinned React Spectrum retains its normal transition set under
+            // reduced motion. Record that upstream behavior without making it
+            // Viviana's accessibility budget.
+            react: {
+              transitionProperties: [
+                "background-color",
+                "border-bottom-color",
+                "border-left-color",
+                "border-right-color",
+                "border-top-color",
+                "color",
+              ],
+              durationMs: 150,
+            },
+            // Viviana's owner contract removes nonessential Button transition
+            // motion. A zero-duration CSS transition creates no WAAPI entry.
+            solid: {
+              transitionProperties: [],
+              durationMs: 0,
+              maxAnimationDurationMs: 0,
+            },
+          },
+        },
         run: async ({ target }) => {
           await hoverLocator(target);
         },
