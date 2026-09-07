@@ -23,12 +23,12 @@ import {
   createMemo,
   createRenderEffect,
   createSignal,
-  mergeProps,
   onCleanup,
   splitProps,
   useContext,
   type JSX,
 } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   GridList as HeadlessGridList,
   GridListItem as HeadlessGridListItem,
@@ -870,11 +870,19 @@ function applyItemSlotClasses(
 
 export function GridList<T extends object>(props: GridListProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(
     useContext(GridListContext) as SpectrumContextValue<GridListProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "items",

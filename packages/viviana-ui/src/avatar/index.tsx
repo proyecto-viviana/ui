@@ -16,8 +16,8 @@
 // Port of packages/@react-spectrum/s2/src/Avatar.tsx.
 // Port of packages/@react-spectrum/s2/src/AvatarGroup.tsx.
 
-import { createContext, mergeProps, splitProps, type JSX, useContext } from "solid-js";
-import { createLabel, filterDOMProps } from "@proyecto-viviana/solidaria";
+import { createContext, splitProps, type JSX, useContext } from "solid-js";
+import { mergeProps, createLabel, filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };

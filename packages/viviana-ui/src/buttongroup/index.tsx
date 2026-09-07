@@ -13,15 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ButtonGroup.tsx.
-import {
-  createEffect,
-  createSignal,
-  mergeProps,
-  onCleanup,
-  onMount,
-  type JSX,
-  splitProps,
-} from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, type JSX, splitProps } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { ButtonContext, LinkButtonContext } from "../button/context";
@@ -63,8 +56,16 @@ export interface ButtonGroupProps extends Omit<
 
 export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useButtonGroupContext(), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "UNSAFE_className",
     "UNSAFE_style",

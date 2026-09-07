@@ -4,12 +4,22 @@ type: task
 title: "Guard styled mergeProps against the solid-js last-wins merge"
 created: 2026-09-07
 parent: 31
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from the 2026-09-07 Solid pattern audit: ~40 styled files merge provider, context, and local props with solid-js mergeProps",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement guard-styled-mergeprops: solidaria chaining at styled event-layering sites, flags split so local onPress is not double-fired, guard:idiomatic-solid third check, styled Button dual-onPress tests",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "chaining merges use solidaria; guard in idiomatic-solid family; local onPress no longer drops context onPress. Prove: vp run guard:idiomatic-solid PASS (mergeProps rule); vp test run scripts/check-idiomatic-solid.test.ts — 8 passed; vp test run packages/solid-spectrum/test/Button.test.tsx — 39 passed; vp test run packages/viviana-ui/test/Button.test.tsx — 4 passed. cwd /home/emoporemilio/projects/viviana-hub/ui. RangeSlider import+call-shape only (#76 spine untouched). Kumo out.",
     }
 ---
 

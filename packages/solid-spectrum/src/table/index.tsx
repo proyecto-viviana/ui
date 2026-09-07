@@ -19,7 +19,6 @@ import {
   createEffect,
   createSignal,
   getOwner,
-  mergeProps,
   runWithOwner,
   splitProps,
   useContext,
@@ -86,7 +85,7 @@ import {
   getAllowedOverrides,
 } from "../s2-internal/style-utils" with { type: "macro" };
 import { createMediaQuery } from "../utils/createMediaQuery";
-import { createStringFormatter, getOwnerDocument } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter, getOwnerDocument } from "@proyecto-viviana/solidaria";
 import {
   ActionButton,
   ActionButtonContext,
@@ -1179,11 +1178,19 @@ function inlineStyle(
 
 export function Table<T extends object>(props: TableProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(
     useContext(TableContext),
     (props as { slot?: string }).slot,
   );
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "density",

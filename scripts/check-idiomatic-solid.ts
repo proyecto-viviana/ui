@@ -28,13 +28,26 @@
  *    the file), never by line, so unrelated edits above a site do not trip it;
  *    `line` in the baseline is informational.
  *
+ * 3. Styled-layer event-handler merges that still use `solid-js` `mergeProps`
+ *    (#496). `solid-js` is last-defined-wins, so a local `onPress` drops a
+ *    context `onPress`. Provider / context / local layering belongs on
+ *    solidaria `mergeProps`, which chains `on*` handlers. The heuristic is
+ *    import-source plus call args: a `mergeProps` bound from `"solid-js"`
+ *    fails when any call’s arguments match `\bcontextProps\b`, or
+ *    `\bproviderProps\b` together with `\b(props|runtimeProps)\b`. That is
+ *    “handlers can meet,” not “any `on*`.” Non-event last-wins merges
+ *    (`useProviderProps` flags, picker overlay getters, groupProps overlays)
+ *    stay on `solid-js`. This check scans only `packages/solid-spectrum/src`
+ *    and `packages/viviana-ui/src` — not kumo, headless, tests, or generated
+ *    files.
+ *
  * This guard scans the hand-written Solid source. It excludes:
  *   - test/spec/story files, and
  *   - generated files (the `Auto-generated from vendored React Spectrum` icon
  *     set, ~420 files).
  * A small ALLOWLIST records reviewed-benign *destructure* exceptions (each with
  * a rationale); a genuinely new reactive-props destructure is what check 1
- * catches.
+ * catches. Check 3 has no allowlist — convert the call to solidaria.
  *
  * Exit 1 listing offenders; exit 0 when clean; exit 0 with a note when none of
  * the source roots exist (an environmental gap — never cry wolf). Run standalone
@@ -321,6 +334,95 @@ function siteKey(file: string, ident: string, ordinal: number): string {
   return `${file}:${ident}#${ordinal}`;
 }
 
+const SOLID_JS_MERGEPROPS_IMPORT = /import\s*\{([^}]+)\}\s*from\s*["']solid-js["']/g;
+
+export interface SolidJsEventLayeringMerge {
+  line: number;
+  args: string;
+}
+
+/** True for the two Adobe styled `src/` trees the mergeProps rule scans. */
+export function isStyledMergePropsGuardPath(rel: string): boolean {
+  const n = rel.replace(/\\/g, "/");
+  return n.startsWith("packages/solid-spectrum/src/") || n.startsWith("packages/viviana-ui/src/");
+}
+
+function solidJsMergePropsBinding(source: string): string | null {
+  SOLID_JS_MERGEPROPS_IMPORT.lastIndex = 0;
+  let name: string | null = null;
+  let m: RegExpExecArray | null;
+  while ((m = SOLID_JS_MERGEPROPS_IMPORT.exec(source)) !== null) {
+    for (const spec of m[1].split(",")) {
+      const trimmed = spec.trim();
+      const alias = /^mergeProps(?:\s+as\s+(\w+))?$/.exec(trimmed);
+      if (alias) name = alias[1] ?? "mergeProps";
+    }
+  }
+  return name;
+}
+
+function isEventLayeringMergeArgs(args: string): boolean {
+  return (
+    /\bcontextProps\b/.test(args) ||
+    (/\bproviderProps\b/.test(args) && /\b(props|runtimeProps)\b/.test(args))
+  );
+}
+
+function compactArgs(args: string): string {
+  return args.replace(/\s+/g, " ").trim();
+}
+
+function importBraceSpans(source: string): Array<[number, number]> {
+  const spans: Array<[number, number]> = [];
+  const open = /import\s*\{/g;
+  let m: RegExpExecArray | null;
+  while ((m = open.exec(source)) !== null) {
+    const brace = source.indexOf("{", m.index);
+    let depth = 0;
+    for (let i = brace; i < source.length; i++) {
+      if (source[i] === "{") depth++;
+      else if (source[i] === "}") {
+        depth--;
+        if (depth === 0) {
+          spans.push([m.index, i + 1]);
+          break;
+        }
+      }
+    }
+  }
+  return spans;
+}
+
+function inSpans(spans: Array<[number, number]>, idx: number): boolean {
+  return spans.some(([start, end]) => idx >= start && idx < end);
+}
+
+/**
+ * Find `solid-js` `mergeProps` calls whose arguments can carry both a context
+ * / provider blob and local props — last-wins would drop a context handler.
+ */
+export function findSolidJsEventLayeringMerges(source: string): SolidJsEventLayeringMerge[] {
+  const binding = solidJsMergePropsBinding(source);
+  if (!binding) return [];
+
+  const spans = importBraceSpans(source);
+  const sites: SolidJsEventLayeringMerge[] = [];
+  const call = new RegExp(String.raw`\b${binding}\s*\(`, "g");
+  let m: RegExpExecArray | null;
+  while ((m = call.exec(source)) !== null) {
+    if (inSpans(spans, m.index) || isInsideComment(source, m.index)) continue;
+    const openParen = source.indexOf("(", m.index);
+    const afterCall = skipMatchingParen(source, openParen);
+    const args = source.slice(openParen + 1, afterCall - 1);
+    if (!isEventLayeringMergeArgs(args)) continue;
+    sites.push({
+      line: source.slice(0, m.index).split("\n").length,
+      args: compactArgs(args),
+    });
+  }
+  return sites;
+}
+
 function isExecutedDirectly(): boolean {
   const entry = process.argv[1];
   if (!entry) return false;
@@ -336,6 +438,7 @@ function main(): void {
 
   console.log("Idiomatic-Solid check — reactive `props` must not be destructured");
   console.log("                  — `children()` must not snapshot rendered content");
+  console.log("                  — styled `solid-js` mergeProps must not layer events");
 
   const roots = SRC_ROOTS.map((r) => path.join(ROOT, r)).filter(existsSync);
   if (roots.length === 0) {
@@ -352,6 +455,9 @@ function main(): void {
 
   type LocatedChildrenSite = ChildrenSnapshotSite & { file: string };
   const childrenSites: LocatedChildrenSite[] = [];
+
+  type MergePropsOffender = { file: string; line: number; args: string };
+  const mergePropsOffenders: MergePropsOffender[] = [];
 
   for (const file of files) {
     const text = readFileSync(file, "utf8");
@@ -375,6 +481,12 @@ function main(): void {
     for (const site of findRenderedChildrenSnapshots(text)) {
       childrenSites.push({ file: rel, ...site });
     }
+
+    if (isStyledMergePropsGuardPath(rel)) {
+      for (const site of findSolidJsEventLayeringMerges(text)) {
+        mergePropsOffenders.push({ file: rel, ...site });
+      }
+    }
   }
 
   console.log(
@@ -396,6 +508,19 @@ function main(): void {
       "\nIf a site is genuinely benign (destructuring a stable reference whose\n" +
         "fields are read reactively afterward), add it to ALLOWLIST with a reason.",
     );
+  }
+
+  if (mergePropsOffenders.length > 0) {
+    failed = true;
+    console.error(
+      `\nguard:idiomatic-solid — FAIL: ${mergePropsOffenders.length} styled solid-js mergeProps call(s) still layer event props.\n` +
+        "solid-js mergeProps is last-wins; a local onPress drops a context onPress.\n" +
+        "Import mergeProps from @proyecto-viviana/solidaria and pass each handler-bearing\n" +
+        "object once (flags from useProviderProps, then context, then local).\n",
+    );
+    for (const o of mergePropsOffenders) {
+      console.error(`  ${o.file}:${o.line}: mergeProps(${o.args})`);
+    }
   }
 
   if (writeBaseline) {
@@ -465,7 +590,7 @@ function main(): void {
   if (failed) process.exit(1);
 
   console.log(
-    "guard:idiomatic-solid — PASS: no reactive-props destructures; children-snapshot baseline holds.",
+    "guard:idiomatic-solid — PASS: no reactive-props destructures; children-snapshot baseline holds; styled solid-js event-layering merges absent.",
   );
   process.exit(0);
 }

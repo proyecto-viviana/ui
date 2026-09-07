@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ProgressCircle.tsx
 
 // Port of packages/@react-spectrum/s2/src/ProgressCircle.tsx.
-import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
+import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import { createProgressBar } from "@proyecto-viviana/solidaria/progress";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };

@@ -13,8 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/IllustratedMessage.tsx
 
 // Port of packages/@react-spectrum/s2/src/IllustratedMessage.tsx.
-import { type JSX, Show, createContext, mergeProps, splitProps, useContext } from "solid-js";
-import { filterDOMProps } from "@proyecto-viviana/solidaria";
+import { type JSX, Show, createContext, splitProps, useContext } from "solid-js";
+import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { ButtonGroupContext } from "../button";
 import {
   getSlottedContextProps,

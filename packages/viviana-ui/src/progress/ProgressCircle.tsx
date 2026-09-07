@@ -14,16 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/ProgressCircle.tsx.
 
-import {
-  type JSX,
-  For,
-  createContext,
-  createMemo,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
-import { createProgressBar } from "@proyecto-viviana/solidaria";
+import { type JSX, For, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { mergeProps, createProgressBar } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { keyframes } from "../style/style-macro" with { type: "macro" };

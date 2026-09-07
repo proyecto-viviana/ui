@@ -14,21 +14,13 @@
 
 // Port of packages/@react-spectrum/s2/src/DropZone.tsx.
 
-import {
-  type JSX,
-  Show,
-  createContext,
-  createSignal,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { type JSX, Show, createContext, createSignal, splitProps, useContext } from "solid-js";
 import {
   DropZone as HeadlessDropZone,
   type DropZoneProps as HeadlessDropZoneProps,
   type DropZoneRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import type { StylesPropWithHeight, UnsafeClassName } from "../s2-internal/style-utils";

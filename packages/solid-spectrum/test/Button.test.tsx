@@ -433,6 +433,32 @@ describe("Button", () => {
       expect(button).toBeDisabled();
       expect(button).not.toHaveAttribute("data-size");
     });
+
+    it("chains ButtonContext onPress with the local onPress", async () => {
+      const calls: string[] = [];
+
+      render(() => (
+        <ButtonContext.Provider value={{ onPress: () => calls.push("ctx") }}>
+          <Button onPress={() => calls.push("prop")}>Click Me</Button>
+        </ButtonContext.Provider>
+      ));
+
+      await user.click(screen.getByRole("button"));
+      expect(calls).toEqual(["ctx", "prop"]);
+    });
+
+    it("fires local onPress once when ButtonContext has no onPress", async () => {
+      const onPress = vi.fn();
+
+      render(() => (
+        <ButtonContext.Provider value={{ size: "XL" }}>
+          <Button onPress={onPress}>Click Me</Button>
+        </ButtonContext.Provider>
+      ));
+
+      await user.click(screen.getByRole("button"));
+      expect(onPress).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe("static colors", () => {

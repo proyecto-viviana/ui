@@ -14,7 +14,7 @@
 
 // Port of packages/@react-spectrum/s2/src/Disclosure.tsx.
 
-import { type JSX, createContext, mergeProps, splitProps, useContext, Show } from "solid-js";
+import { type JSX, createContext, splitProps, useContext, Show } from "solid-js";
 import { ElementTag } from "@proyecto-viviana/solidaria-components";
 import {
   Disclosure as HeadlessDisclosure,
@@ -29,7 +29,7 @@ import {
   type DisclosureGroupRenderProps,
   useDisclosureContext as useHeadlessDisclosureContext,
 } from "@proyecto-viviana/solidaria-components";
-import { createFocusRing, createHover, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, createFocusRing, createHover, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
@@ -435,8 +435,16 @@ function actionButtonSize(size: DisclosureSize, density: DisclosureDensity): Act
  */
 export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(DisclosureContext), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",
@@ -509,9 +517,17 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
  */
 export function Disclosure(props: DisclosureProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const parentDisclosureContext = useContext(DisclosureContext);
   const contextProps = getSlottedContextProps(parentDisclosureContext, props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",

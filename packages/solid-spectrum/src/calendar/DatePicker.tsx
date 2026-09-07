@@ -17,15 +17,7 @@
 // Port of packages/@react-spectrum/s2/src/DatePicker.tsx.
 // Style-system types need a dedicated pass; removing this would require
 // fixing ~20 style-definition type mismatches unrelated to component behavior.
-import {
-  createContext,
-  createSignal,
-  type JSX,
-  mergeProps,
-  splitProps,
-  Show,
-  useContext,
-} from "solid-js";
+import { createContext, createSignal, type JSX, splitProps, Show, useContext } from "solid-js";
 import { pressScale } from "../pressScale";
 import {
   DatePicker as HeadlessDatePicker,
@@ -41,7 +33,7 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { createHover, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, createHover, useLocale } from "@proyecto-viviana/solidaria";
 import { Calendar } from "./index";
 import { TimeField } from "../datepicker";
 import {
@@ -575,8 +567,16 @@ export function DatePicker<T extends DateValue = CalendarDate>(
   props: DatePickerProps<T>,
 ): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(DatePickerContext), (props as any).slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, calendarProps, createCalendarProps, rest] = splitProps(
     merged,
     [

@@ -22,7 +22,6 @@ import {
   createEffect,
   createSignal,
   type JSX,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
@@ -42,6 +41,7 @@ import {
   type TimeValue,
 } from "@proyecto-viviana/solidaria-components";
 import {
+  mergeProps,
   useLocale,
   createFocusVisibleListener,
   isFocusVisible as isGlobalFocusVisible,

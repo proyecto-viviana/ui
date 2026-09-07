@@ -14,8 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/StatusLight.tsx.
 
-import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
-import { filterDOMProps } from "@proyecto-viviana/solidaria";
+import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { CenterBaseline } from "../icon/center-baseline";
 import type { StyleString } from "../style";
 import { lightDark, style } from "../style" with { type: "macro" };

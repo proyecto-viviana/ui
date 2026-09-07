@@ -22,13 +22,13 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
   useContext,
   type JSX,
 } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   GridList as HeadlessGridList,
   GridListItem as HeadlessGridListItem,

@@ -21,12 +21,11 @@ import {
   createContext,
   createMemo,
   createUniqueId,
-  mergeProps,
   Show,
   splitProps,
   useContext,
 } from "solid-js";
-import { useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, useLocale } from "@proyecto-viviana/solidaria";
 import {
   Slider as HeadlessSlider,
   SliderFill as HeadlessSliderFill,
@@ -499,8 +498,16 @@ function pressScaleStyle(
 export function Slider(props: SliderProps): JSX.Element {
   const isInForm = useIsInForm();
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(SliderContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

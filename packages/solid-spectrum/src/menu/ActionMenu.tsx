@@ -18,7 +18,6 @@ import {
   createContext,
   createEffect,
   createSignal,
-  mergeProps,
   splitProps,
   useContext,
 } from "solid-js";
@@ -31,7 +30,7 @@ import {
   type MenuRenderProps,
   type ButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import { centerBaseline } from "../icon/center-baseline";
 import MoreIcon from "../icon/s2wf-icons/MoreIcon";

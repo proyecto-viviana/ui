@@ -21,7 +21,6 @@ import {
   children as resolveChildren,
   createContext,
   createUniqueId,
-  mergeProps,
   splitProps,
   useContext,
   Show,
@@ -51,7 +50,7 @@ import { pressScale } from "../pressScale";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import { CrossIcon } from "../icon/ui-icons/Cross";
 import { ActionButton } from "../button/ActionButton";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 
 export type TagGroupSize = "S" | "M" | "L" | "sm" | "md" | "lg";
@@ -591,8 +590,16 @@ export function Tag(props: TagProps): JSX.Element {
  */
 export function TagGroup<T extends { id?: Key; key?: Key }>(props: TagGroupProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(TagGroupContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, listProps] = splitProps(mergedProps, [
     "label",
     "items",

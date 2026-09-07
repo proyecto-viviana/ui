@@ -23,12 +23,11 @@ import {
   createMemo,
   createSignal,
   createUniqueId,
-  mergeProps,
   Show,
   splitProps,
   useContext,
 } from "solid-js";
-import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import type { StyleString } from "../style";
 import { focusRing, style } from "../style" with { type: "macro" };
@@ -475,8 +474,16 @@ function rangesEqual(a: RangeValue, b: RangeValue): boolean {
 export function RangeSlider(props: RangeSliderProps): JSX.Element {
   const isInForm = useIsInForm();
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(RangeSliderContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, domProps] = splitProps(mergedProps, [
     "id",
     "value",

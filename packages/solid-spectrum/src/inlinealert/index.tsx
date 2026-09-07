@@ -18,13 +18,13 @@ import {
   type JSX,
   Show,
   createContext,
-  mergeProps,
   onMount,
   splitProps,
   useContext,
 } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import {
+  mergeProps,
   createFocusRing,
   createStringFormatter,
   filterDOMProps,

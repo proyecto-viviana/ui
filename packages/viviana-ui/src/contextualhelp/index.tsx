@@ -1,14 +1,7 @@
 // Port of packages/@react-spectrum/s2/src/ContextualHelp.tsx.
-import {
-  type JSX,
-  createContext,
-  createUniqueId,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { type JSX, createContext, createUniqueId, splitProps, useContext } from "solid-js";
 import { MenuTriggerContext, PopoverTriggerContext } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter, filterDOMProps } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter, filterDOMProps } from "@proyecto-viviana/solidaria";
 import { Popover, type PopoverProps, type PopoverTriggerProps } from "../popover";
 import { PopoverTrigger } from "../popover";
 import { ActionButton, type ActionButtonSize } from "../button/ActionButton";

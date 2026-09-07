@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ColorSwatchPicker.tsx
 
 // Port of packages/@react-spectrum/s2/src/ColorSwatchPicker.tsx.
-import { type JSX, createContext, mergeProps, Show, splitProps, useContext } from "solid-js";
+import { type JSX, createContext, Show, splitProps, useContext } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   ColorSwatch as HeadlessColorSwatch,
   ColorSwatchPicker as HeadlessColorSwatchPicker,
@@ -204,8 +205,16 @@ function getColorSwatchStyle(renderProps: ColorSwatchRenderProps): JSX.CSSProper
  */
 export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(ColorSwatchPickerContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "density",
     "size",

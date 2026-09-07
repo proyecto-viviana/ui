@@ -21,7 +21,6 @@ import {
   createContext,
   createSignal,
   createUniqueId,
-  mergeProps,
   splitProps,
   Show,
   useContext,
@@ -54,7 +53,7 @@ import { FieldSuffix } from "../field/suffix";
 import SearchIcon from "../icon/s2wf-icons/SearchIcon";
 import CrossIcon from "../icon/ui-icons/Cross";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
@@ -362,13 +361,21 @@ function clearIconStyle(size: S2SearchFieldSize): JSX.CSSProperties {
 export function SearchField(props: SearchFieldProps): JSX.Element {
   const isInForm = useIsInForm();
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(SearchFieldContext), props.slot);
   const defaultProps: Partial<SearchFieldProps> = {
     labelPosition: "top",
     labelAlign: "start",
     necessityIndicator: "icon",
   };
-  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

@@ -22,13 +22,12 @@ import {
   createMemo,
   createSignal,
   createUniqueId,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
   useContext,
 } from "solid-js";
-import { createHover } from "@proyecto-viviana/solidaria";
+import { mergeProps, createHover } from "@proyecto-viviana/solidaria";
 import {
   ComboBox as HeadlessComboBox,
   ComboBoxButton as HeadlessComboBoxButton,
@@ -719,6 +718,14 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
   const isInForm = useIsInForm();
   const formContext = useContext(FormContext);
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(ComboBoxContext), props.slot);
   const defaultProps: Partial<ComboBoxProps<T>> = {
     labelPosition: "top",
@@ -728,7 +735,7 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
     align: "start",
     shouldFlip: true,
   };
-  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "styles",

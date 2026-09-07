@@ -20,15 +20,7 @@
 // Port of packages/@react-spectrum/s2/src/CheckboxGroup.tsx.
 // Port of packages/@react-spectrum/s2/src/Field.tsx.
 
-import {
-  createContext,
-  createUniqueId,
-  type JSX,
-  splitProps,
-  mergeProps,
-  Show,
-  useContext,
-} from "solid-js";
+import { createContext, createUniqueId, type JSX, splitProps, Show, useContext } from "solid-js";
 import {
   CheckboxField as HeadlessCheckboxField,
   CheckboxButton as HeadlessCheckboxButton,
@@ -45,7 +37,7 @@ import {
 // aria-describedby via this WeakMap). We render the visible HelpText ourselves
 // (renderHelpText={false}) but read the id back from here so all three — group
 // node, item inputs, and our <Text> — resolve to the same element.
-import { checkboxGroupData } from "@proyecto-viviana/solidaria";
+import { mergeProps, checkboxGroupData } from "@proyecto-viviana/solidaria";
 import { Text } from "../text";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, space, style } from "../style" with { type: "macro" };
@@ -546,8 +538,16 @@ export function Checkbox(props: CheckboxProps): JSX.Element {
   const isInForm = useIsInForm();
   const isInCheckboxGroup = !!useContext(HeadlessCheckboxGroupStateContext);
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(CheckboxContext), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
 
   const [local, headlessProps] = splitProps(merged, [
     "size",
@@ -711,6 +711,14 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
   const isInForm = useIsInForm();
   const formContext = useContext(FormContext);
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(CheckboxGroupContext), props.slot);
   const defaultProps: Partial<CheckboxGroupProps> = {
     orientation: "vertical",
@@ -718,7 +726,7 @@ export function CheckboxGroup(props: CheckboxGroupProps): JSX.Element {
     labelAlign: "start",
     necessityIndicator: "icon",
   };
-  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "orientation",

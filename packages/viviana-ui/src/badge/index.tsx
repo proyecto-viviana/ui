@@ -18,11 +18,10 @@ import {
   children as resolveChildren,
   type JSX,
   createContext,
-  mergeProps,
   splitProps,
   useContext,
 } from "solid-js";
-import { filterDOMProps } from "@proyecto-viviana/solidaria";
+import { mergeProps, filterDOMProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { lightDark, style } from "../style" with { type: "macro" };
 import { keyframes } from "../style/style-macro" with { type: "macro" };

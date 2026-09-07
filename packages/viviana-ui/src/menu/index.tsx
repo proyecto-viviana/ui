@@ -44,7 +44,11 @@ import {
   type MenuTriggerRenderProps,
   usePopoverTrigger,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import {
+  mergeProps as mergeAriaProps,
+  createStringFormatter,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
 import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
 import { useProviderProps } from "../provider";
 import { Popover } from "../popover";
@@ -457,8 +461,16 @@ export function MenuButton(props: MenuButtonProps): JSX.Element {
  */
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(MenuContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeAriaProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "class",
     "hideLinkOutIcon",

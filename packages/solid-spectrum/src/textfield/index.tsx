@@ -47,7 +47,7 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps as mergeAriaProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { useFormProps, useIsInForm } from "../form";
@@ -272,7 +272,7 @@ export function TextField(props: TextFieldProps): JSX.Element {
   // wrap the result so the form/Skeleton disabled-force stays outermost (mirrors
   // upstream's `useSpectrumContextProps` → `useFormProps` order in TextField.tsx).
   const contextProps = getSlottedContextProps(useContext(TextFieldContext), props.slot);
-  const mergedProps = useProviderProps(useFormProps(mergeProps(contextProps ?? {}, props)));
+  const mergedProps = useProviderProps(useFormProps(mergeAriaProps(contextProps ?? {}, props)));
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

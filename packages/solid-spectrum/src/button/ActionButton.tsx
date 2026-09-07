@@ -18,7 +18,6 @@ import {
   createEffect,
   createSignal,
   type JSX,
-  mergeProps,
   onCleanup,
   splitProps,
   useContext,
@@ -31,11 +30,7 @@ import {
   MenuTriggerContext,
   PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
-import {
-  createStringFormatter,
-  mergeProps as mergeAriaProps,
-  useLocale,
-} from "@proyecto-viviana/solidaria";
+import { createStringFormatter, mergeProps, useLocale } from "@proyecto-viviana/solidaria";
 import { space, style } from "../style" with { type: "macro" };
 import { useProviderProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
@@ -126,6 +121,14 @@ export interface ActionButtonProps extends StyledActionButtonBaseProps {
 export function ActionButton(props: ActionButtonProps): JSX.Element {
   const runtimeProps = props as RuntimeActionButtonProps;
   const providerProps = useProviderProps(runtimeProps);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useActionButtonContext(), runtimeProps.slot);
   const groupContext = getSlottedContextProps(useActionButtonGroupContext(), undefined);
   const defaultProps: Partial<ActionButtonProps> = {
@@ -159,13 +162,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     },
   };
 
-  const merged = mergeProps(
-    defaultProps,
-    providerProps,
-    contextProps ?? {},
-    runtimeProps,
-    groupProps,
-  );
+  const merged = mergeProps(defaultProps, flags, contextProps ?? {}, runtimeProps, groupProps);
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "staticColor",
@@ -268,7 +265,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     }
 
     const { onKeyDown: _onKeyDown, ...triggerProps } = menuTriggerContext.triggerProps;
-    return mergeAriaProps(
+    return mergeProps(
       triggerProps as Partial<HeadlessButtonProps>,
       {
         onPressStart: menuTriggerContext.onPressStart,

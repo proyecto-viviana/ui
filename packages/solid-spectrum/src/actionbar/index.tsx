@@ -20,7 +20,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  mergeProps,
   onCleanup,
   onMount,
   splitProps,
@@ -34,7 +33,7 @@ import {
   type ButtonRenderProps,
   useActionBarContext,
 } from "@proyecto-viviana/solidaria-components";
-import { FocusScope, createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, FocusScope, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, lightDark, style } from "../style" with { type: "macro" };

@@ -18,13 +18,13 @@ import {
   createEffect,
   createMemo,
   type JSX,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
   createSignal,
   useContext,
 } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   ListBox as HeadlessListBox,
   ListBoxOption as HeadlessListBoxOption,
@@ -356,11 +356,19 @@ const selectBoxLabel = style<ListBoxOptionRenderProps & { orientation?: SelectBo
  */
 export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(
     useContext(SelectBoxGroupContext) as SpectrumContextValue<SelectBoxGroupProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "orientation",

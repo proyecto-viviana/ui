@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ActionButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ActionButtonGroup.tsx.
-import { type JSX, mergeProps, splitProps } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import { Toolbar as HeadlessToolbar } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
 import {
@@ -67,8 +68,16 @@ export interface ActionButtonGroupProps extends Omit<
  */
 export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useActionButtonGroupContext(), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "children",
     "size",

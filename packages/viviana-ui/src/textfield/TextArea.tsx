@@ -21,7 +21,6 @@ import {
   createContext,
   createEffect,
   createSignal,
-  mergeProps,
   onCleanup,
   onMount,
   Show,
@@ -49,7 +48,7 @@ import { mergeStyles } from "../style/runtime";
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import { textAreaFieldGroupStyles, textAreaInputStyles } from "./s2-textarea-styles";
@@ -269,8 +268,16 @@ function resizeTextArea(element: HTMLTextAreaElement | undefined) {
  */
 export function TextArea(props: TextAreaProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(TextAreaContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "variant",

@@ -16,15 +16,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Card.tsx.
 
-import {
-  type Accessor,
-  type JSX,
-  Show,
-  createContext,
-  mergeProps,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { type Accessor, type JSX, Show, createContext, splitProps, useContext } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   GridListItem as HeadlessGridListItem,
   GridListSelectionCheckbox,
@@ -740,10 +733,18 @@ function toInternalCardContext(input: {
  */
 export function Card(props: CardProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(CardContext), props.slot);
   const merged = mergeProps(
     { size: "M" as CardSize, density: "regular" as CardDensity, variant: "primary" as CardVariant },
-    providerProps,
+    flags,
     contextProps ?? {},
     props,
   ) as CardProps;

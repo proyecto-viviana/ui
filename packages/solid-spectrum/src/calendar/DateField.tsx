@@ -21,7 +21,6 @@ import {
   createEffect,
   createSignal,
   type JSX,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
@@ -42,6 +41,7 @@ import {
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
 import {
+  mergeProps,
   useLocale,
   createFocusVisibleListener,
   isFocusVisible as isGlobalFocusVisible,

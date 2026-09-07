@@ -14,7 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Meter.tsx.
 
-import { type JSX, For, createContext, mergeProps, splitProps, useContext } from "solid-js";
+import { type JSX, For, createContext, splitProps, useContext } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   Label as HeadlessLabel,
   Meter as HeadlessMeter,

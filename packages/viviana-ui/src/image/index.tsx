@@ -8,7 +8,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
@@ -17,6 +16,7 @@ import {
   untrack,
   useContext,
 } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";

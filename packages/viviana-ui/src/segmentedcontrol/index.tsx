@@ -18,11 +18,11 @@ import {
   children as resolveChildren,
   createContext,
   type JSX,
-  mergeProps,
   onMount,
   splitProps,
   useContext,
 } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   SelectionIndicator,
   SharedElementTransition,
@@ -231,8 +231,16 @@ const itemText = style({
  */
 export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(SegmentedControlContext), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "isJustified",

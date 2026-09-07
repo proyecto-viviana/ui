@@ -70,7 +70,7 @@ import {
 import { CenterBaseline } from "../icon/center-baseline";
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps as mergeAriaProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import CheckmarkIcon from "../icon/ui-icons/Checkmark";
 import ChevronIcon from "../icon/ui-icons/Chevron";
@@ -780,7 +780,15 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
     shouldFlip: true,
   };
   const contextProps = getSlottedContextProps(useContext(PickerContext), props.slot);
-  const mergedProps = mergeProps(defaultProps, useProviderProps(props), contextProps ?? {}, props);
+  const [flags] = splitProps(useProviderProps(props), [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
+  const mergedProps = mergeAriaProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "isQuiet",

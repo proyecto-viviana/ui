@@ -21,7 +21,6 @@ import {
   createContext,
   createSignal,
   createUniqueId,
-  mergeProps,
   splitProps,
   Show,
   useContext,
@@ -51,7 +50,7 @@ import {
 } from "../s2-internal/style-utils" with { type: "macro" };
 import AlertTriangleIcon from "../icon/s2wf-icons/AlertTriangleIcon";
 import AsteriskIcon from "../icon/ui-icons/Asterisk";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import AddIcon from "../icon/ui-icons/Add";
 import DashIcon from "../icon/ui-icons/Dash";
@@ -359,8 +358,16 @@ function buttonPressScaleStyle(
  */
 export function NumberField(props: NumberFieldProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(NumberFieldContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "styles",

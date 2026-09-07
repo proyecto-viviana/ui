@@ -23,7 +23,6 @@ import {
   createContext,
   createSignal,
   createUniqueId,
-  mergeProps,
   splitProps,
   useContext,
 } from "solid-js";
@@ -37,7 +36,7 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { DateFormatter, type CalendarStateProps } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
@@ -540,8 +539,16 @@ function CalendarCellContent(props: { cell: CalendarCellRenderProps }): JSX.Elem
  */
 export function Calendar<T extends DateValue = CalendarDate>(props: CalendarProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(CalendarContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const providerLocale = useLocale();
   const [local, rest] = splitProps(mergedProps, [
     "size",

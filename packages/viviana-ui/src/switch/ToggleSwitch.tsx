@@ -16,14 +16,19 @@
 
 // Port of packages/@react-spectrum/s2/src/Switch.tsx.
 
-import { type JSX, splitProps, mergeProps, Show, useContext } from "solid-js";
+import { type JSX, splitProps, Show, useContext } from "solid-js";
 import {
   getSlottedContextProps,
   mergeContextStyles,
   mergeContextUnsafeStyle,
 } from "../button/spectrum-context";
 import { SwitchContext } from ".";
-import { type AriaSwitchProps, type Direction, useLocale } from "@proyecto-viviana/solidaria";
+import {
+  mergeProps,
+  type AriaSwitchProps,
+  type Direction,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
 import {
   SwitchField as HeadlessSwitchField,
   SwitchButton as HeadlessSwitchButton,
@@ -313,8 +318,16 @@ function switchHandlePressStyle(
 export function ToggleSwitch(props: ToggleSwitchProps): JSX.Element {
   const isInForm = useIsInForm();
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(SwitchContext), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
 
   const [local, headlessProps] = splitProps(merged, [
     "size",

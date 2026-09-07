@@ -19,11 +19,10 @@ import {
   createContext,
   createMemo,
   createUniqueId,
-  mergeProps,
   splitProps,
   useContext,
 } from "solid-js";
-import { createProgressBar, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, createProgressBar, useLocale } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { keyframes } from "../style/style-macro" with { type: "macro" };

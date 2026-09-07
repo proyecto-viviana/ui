@@ -24,7 +24,6 @@ import {
   createRoot,
   createSignal,
   createUniqueId,
-  mergeProps,
   onCleanup,
   onMount,
   splitProps,
@@ -40,7 +39,7 @@ import {
   type BreadcrumbsProps as HeadlessBreadcrumbsProps,
   type BreadcrumbsRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { mergeStyles } from "../style/runtime";
 import { useProviderProps } from "../provider";
@@ -208,10 +207,18 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
 
 function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => void): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(BreadcrumbsContext), props.slot);
   const mergedProps = mergeProps(
     { size: "M" as const, showSeparator: true },
-    providerProps,
+    flags,
     contextProps ?? {},
     props,
   );
@@ -783,7 +790,15 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const context = useContext(InternalBreadcrumbsContext) ?? defaultInternalBreadcrumbsContext;
   const locale = useLocale();
   const providerProps = useProviderProps(props);
-  const mergedProps = mergeProps(providerProps, props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
+  const mergedProps = mergeProps(flags, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "styles",
     "UNSAFE_className",

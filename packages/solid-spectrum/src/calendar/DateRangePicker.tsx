@@ -17,15 +17,7 @@
 // Port of packages/@react-spectrum/s2/src/DateRangePicker.tsx.
 // Style-system types need a dedicated pass; removing this would require
 // fixing style-definition type mismatches unrelated to component behavior.
-import {
-  createContext,
-  createSignal,
-  type JSX,
-  mergeProps,
-  Show,
-  splitProps,
-  useContext,
-} from "solid-js";
+import { createContext, createSignal, type JSX, Show, splitProps, useContext } from "solid-js";
 import { pressScale } from "../pressScale";
 import {
   DateRangePicker as HeadlessDateRangePicker,
@@ -41,7 +33,12 @@ import {
   type CalendarDate,
   type DateValue,
 } from "@proyecto-viviana/solidaria-components";
-import { createHover, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
+import {
+  mergeProps,
+  createHover,
+  createStringFormatter,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import {
   type CalendarDateTime,
@@ -780,11 +777,19 @@ export function DateRangePicker<T extends DateValue = CalendarDate>(
   props: DateRangePickerProps<T>,
 ): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(
     useContext(DateRangePickerContext),
     (props as any).slot,
   );
-  const merged = mergeProps(providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(flags, contextProps ?? {}, props);
   const [local, calendarProps, rest] = splitProps(
     merged,
     ["size", "class", "label", "description", "errorMessage", "isInvalid", "maxVisibleMonths"],

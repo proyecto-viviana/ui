@@ -18,7 +18,6 @@
 
 import {
   children as resolveChildren,
-  mergeProps,
   Show,
   splitProps,
   type JSX,
@@ -38,7 +37,7 @@ import {
 // createRadioGroup mints them (via createField) and threads them onto both the
 // group node and every child radio's aria-describedby; the styled help-text
 // nodes below read the same ids back so the associations resolve identically.
-import { radioGroupData } from "@proyecto-viviana/solidaria";
+import { mergeProps, radioGroupData } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import {
@@ -371,6 +370,14 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
   const isInForm = useIsInForm();
   const formContext = useContext(FormContext);
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(RadioGroupContext), props.slot);
   const defaultProps: Partial<RadioGroupProps> = {
     orientation: "vertical",
@@ -378,7 +385,7 @@ export function RadioGroup(props: RadioGroupProps): JSX.Element {
     labelAlign: "start",
     necessityIndicator: "icon",
   };
-  const mergedProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "orientation",
@@ -581,8 +588,16 @@ export function Radio(props: RadioProps): JSX.Element {
   const groupStyleContext = useContext(RadioStyleContext);
   const isInForm = useIsInForm();
   const providerProps = useProviderProps(useFormProps(props));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(RadioContext), props.slot);
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props);
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "size",
     "isEmphasized",

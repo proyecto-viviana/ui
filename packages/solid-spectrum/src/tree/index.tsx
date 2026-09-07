@@ -19,7 +19,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
@@ -59,7 +58,7 @@ import Checkmark from "../icon/ui-icons/Checkmark";
 import Chevron from "../icon/ui-icons/Chevron";
 import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
 import { useProviderProps } from "../provider";
 import type { StyleString } from "../style";
@@ -697,11 +696,19 @@ function mergeRegisteredTreeItems<T extends object>(
 
 export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(
     useContext(TreeViewContext) as SpectrumContextValue<TreeProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(providerProps, contextProps ?? {}, props) as TreeProps<T>;
+  const mergedProps = mergeProps(flags, contextProps ?? {}, props) as TreeProps<T>;
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "items",

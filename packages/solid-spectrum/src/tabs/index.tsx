@@ -20,7 +20,6 @@ import {
   createSignal,
   createUniqueId,
   For,
-  mergeProps,
   onCleanup,
   Show,
   splitProps,
@@ -28,6 +27,7 @@ import {
   type JSX,
 } from "solid-js";
 import {
+  mergeProps,
   createFocusRing,
   createTabPanel,
   type AriaTabPanelProps,
@@ -479,8 +479,16 @@ function resolveChildAccessor(value: unknown): JSX.Element {
  */
 export function Tabs<T>(props: TabsProps<T>): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useContext(TabsContext), props.slot);
-  const merged = mergeProps(providerProps, contextProps ?? {}, props) as TabsProps<T>;
+  const merged = mergeProps(flags, contextProps ?? {}, props) as TabsProps<T>;
   const [local, labelProps, headlessProps] = splitProps(
     merged,
     [

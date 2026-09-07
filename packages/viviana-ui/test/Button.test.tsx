@@ -2,7 +2,7 @@ import { render, screen } from "@solidjs/testing-library";
 import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import { createSignal } from "solid-js";
 import { describe, expect, it, vi } from "vite-plus/test";
-import { Button } from "../src/button";
+import { Button, ButtonContext } from "../src/button";
 
 describe("Button", () => {
   it("updates direct reactive text children", () => {
@@ -72,5 +72,33 @@ describe("Button", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+
+  it("chains ButtonContext onPress with the local onPress", async () => {
+    const user = setupUser();
+    const calls: string[] = [];
+
+    render(() => (
+      <ButtonContext.Provider value={{ onPress: () => calls.push("ctx") }}>
+        <Button onPress={() => calls.push("prop")}>Save</Button>
+      </ButtonContext.Provider>
+    ));
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(calls).toEqual(["ctx", "prop"]);
+  });
+
+  it("fires local onPress once when ButtonContext has no onPress", async () => {
+    const user = setupUser();
+    const onPress = vi.fn();
+
+    render(() => (
+      <ButtonContext.Provider value={{ size: "XL" }}>
+        <Button onPress={onPress}>Save</Button>
+      </ButtonContext.Provider>
+    ));
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    expect(onPress).toHaveBeenCalledTimes(1);
   });
 });

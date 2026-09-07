@@ -161,9 +161,11 @@ jobs:
         id: guard_layer_boundary
         run: pnpm run guard:layer-boundary
 
-      # Flags the Solid reactivity anti-pattern that has bitten this port
-      # repeatedly: destructuring a component/hook's reactive `props` (freezes
-      # the value, since the body runs once). Excludes the generated icon set.
+      # Flags Solid anti-patterns that have bitten this port: destructuring a
+      # component/hook's reactive `props` (freezes the value, since the body
+      # runs once), snapshot-rendered `children()`, and styled `solid-js`
+      # mergeProps calls that would drop a context event handler (#496).
+      # Excludes the generated icon set. Does not scan kumo for mergeProps.
       - name: guard idiomatic-solid
         id: guard_idiomatic_solid
         run: pnpm run guard:idiomatic-solid

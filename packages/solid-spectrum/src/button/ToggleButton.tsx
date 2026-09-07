@@ -115,12 +115,20 @@ type RuntimeToggleButtonProps = ToggleButtonProps & { holdAffordance?: boolean }
 export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const runtimeProps = props as RuntimeToggleButtonProps;
   const providerProps = useProviderProps(runtimeProps);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useToggleButtonContext(), runtimeProps.slot);
   const groupContext = getSlottedContextProps(useToggleButtonGroupContext(), undefined);
   const defaultProps: Partial<ToggleButtonProps> = {
     size: "M",
   };
-  const standaloneProps = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const standaloneProps = mergeAriaProps(defaultProps, flags, contextProps ?? {}, props);
   const groupProps: Partial<ToggleButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;

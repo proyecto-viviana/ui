@@ -14,13 +14,8 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import {
-  children as resolveChildren,
-  mergeProps,
-  splitProps,
-  useContext,
-  type JSX,
-} from "solid-js";
+import { children as resolveChildren, splitProps, useContext, type JSX } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   DialogTriggerContext,
   Link as HeadlessLink,
@@ -77,13 +72,21 @@ export interface LinkButtonProps extends StyledLinkButtonBaseProps {
  */
 export function LinkButton(props: LinkButtonProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useLinkButtonContext(), props.slot);
   const defaultProps: Partial<LinkButtonProps> = {
     variant: "primary",
     size: "M",
     fillStyle: "fill",
   };
-  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const merged = mergeProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "variant",
     "fillStyle",

@@ -13,8 +13,13 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/NotificationBadge.tsx
 
 // Port of packages/@react-spectrum/s2/src/NotificationBadge.tsx.
-import { type JSX, createContext, createMemo, mergeProps, splitProps, useContext } from "solid-js";
-import { createStringFormatter, filterDOMProps, useLocale } from "@proyecto-viviana/solidaria";
+import { type JSX, createContext, createMemo, splitProps, useContext } from "solid-js";
+import {
+  mergeProps,
+  createStringFormatter,
+  filterDOMProps,
+  useLocale,
+} from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { fontRelative, style } from "../style" with { type: "macro" };
 import type { UnsafeClassName } from "../s2-internal/style-utils";

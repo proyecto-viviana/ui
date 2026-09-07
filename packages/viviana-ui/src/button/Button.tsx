@@ -14,14 +14,14 @@
 
 // Port of packages/@react-spectrum/s2/src/Button.tsx.
 
-import { type JSX, createMemo, mergeProps, splitProps, useContext } from "solid-js";
+import { type JSX, createMemo, splitProps, useContext } from "solid-js";
 import {
   Button as HeadlessButton,
   type ButtonRenderProps,
   DialogTriggerContext,
   PopoverTriggerContext,
 } from "@proyecto-viviana/solidaria-components";
-import { createStringFormatter } from "@proyecto-viviana/solidaria";
+import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { ButtonFillStyle, ButtonProps, ButtonSize, ButtonVariant } from "./types";
 import { fontRelative, style } from "../style" with { type: "macro" };
 import { s2IntlStrings } from "../intl";
@@ -57,6 +57,14 @@ type RuntimeButtonProps = ButtonProps & {
 export function Button(props: ButtonProps): JSX.Element {
   const runtimeProps = props as RuntimeButtonProps;
   const providerProps = useProviderProps(useFormProps(runtimeProps));
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useButtonContext(), runtimeProps.slot);
   const defaultProps: Partial<ButtonProps> = {
     variant: "primary",
@@ -64,9 +72,7 @@ export function Button(props: ButtonProps): JSX.Element {
     fillStyle: "fill",
   };
 
-  const merged = useFormProps(
-    mergeProps(defaultProps, providerProps, contextProps ?? {}, runtimeProps),
-  );
+  const merged = useFormProps(mergeProps(defaultProps, flags, contextProps ?? {}, runtimeProps));
 
   const [local, headlessProps] = splitProps(merged, [
     "variant",

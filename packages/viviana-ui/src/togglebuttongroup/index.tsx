@@ -13,7 +13,8 @@
 // Ported to SolidJS for Proyecto Viviana; based on packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx
 
 // Port of packages/@react-spectrum/s2/src/ToggleButtonGroup.tsx.
-import { type JSX, mergeProps, splitProps } from "solid-js";
+import { type JSX, splitProps } from "solid-js";
+import { mergeProps } from "@proyecto-viviana/solidaria";
 import {
   ToggleButtonGroup as HeadlessToggleButtonGroup,
   type ToggleButtonGroupProps as HeadlessToggleButtonGroupProps,
@@ -70,14 +71,22 @@ export interface ToggleButtonGroupProps extends Omit<
  */
 export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
   const providerProps = useProviderProps(props);
+  const [flags] = splitProps(providerProps, [
+    "isQuiet",
+    "isEmphasized",
+    "isDisabled",
+    "isRequired",
+    "isReadOnly",
+    "validationState",
+  ]);
   const contextProps = getSlottedContextProps(useToggleButtonGroupContext(), props.slot);
   const defaultProps: Partial<ToggleButtonGroupProps> = {
     density: "regular",
     size: "M",
     orientation: "horizontal",
   };
-  const providedContextProps = mergeProps(providerProps, contextProps ?? {}, props);
-  const merged = mergeProps(defaultProps, providerProps, contextProps ?? {}, props);
+  const providedContextProps = mergeProps(flags, contextProps ?? {}, props);
+  const merged = mergeProps(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",
