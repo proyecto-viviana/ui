@@ -59,3 +59,23 @@ entries that dropped carry ceilings, and a changeset is present.
 
 Child of #32. Follow-up to #485, which measured the split and fixed the
 directly-reaching half.
+
+## VisualMode consumer request — 2026-09-06
+
+Cross-repository consumer: [VisualMode #9168](../../../../visualmode/visualmode/.claude/worktrees/voxel-editor-delivery/.claude/tickets/tasks/9168-unify-editor-visuals.md)
+in `visualmode/visualmode/.claude/worktrees/voxel-editor-delivery`, at
+`bc3e99dd31332a2cfcf9d6038cf72c833f0381b0` plus its protected uncommitted
+editor candidate. This is VisualMode's ticket, not UI #9168. Its
+[research](../../../../visualmode/visualmode/.claude/worktrees/voxel-editor-delivery/.claude/vivianastack/editor-visuals/research.md)
+records 502,078 Brotli bytes across all `dist/client/assets/*.js` against
+480,000 (22,078 over); the earlier displayed receipt was 457.62 kB.
+Provider, Toolbar, ActionButton, ToggleButton, Menu, MenuItem, and Text
+must remain in the consumer.
+
+Please acknowledge this consumer on the UI lane and, if direct assistance
+is needed, hand off the implementation explicitly before another writer
+starts. This existing task owns source reachability; #225 owns packed
+per-export minified/Brotli costs; #448 owns release. Module counts do not
+prove compressed-byte savings, and no 22,078-byte saving is established for
+this change. Keep this task's Done when unchanged. UI source/check evidence
+and the consumer's later native build/size measurement are separate proof.
