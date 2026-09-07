@@ -652,6 +652,59 @@ describe("Button", () => {
       expect(onPressChange).not.toHaveBeenCalled();
     });
 
+    it("owns compound pending props across pointer and keyboard presses", async () => {
+      const warnings: string[] = [];
+      const warn = vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => {
+        warnings.push(args.map(String).join(" "));
+      });
+      const onPress = vi.fn();
+      let setBusy!: (value: boolean) => void;
+
+      try {
+        render(() => {
+          const [busy, updateBusy] = createSignal(false);
+          const [confirming] = createSignal(false);
+          setBusy = updateBusy;
+
+          return (
+            <Button
+              isPending={busy() && !confirming()}
+              onPress={() => {
+                onPress();
+                setBusy(true);
+              }}
+            >
+              Save
+            </Button>
+          );
+        });
+
+        const button = screen.getByRole("button", { name: "Save" });
+        await user.hover(button);
+        await user.click(button);
+
+        expect(onPress).toHaveBeenCalledTimes(1);
+        expect(button).toHaveAttribute("data-pending");
+        expect(button).toHaveAttribute("aria-disabled", "true");
+        expect(button).not.toBeDisabled();
+
+        await user.click(button);
+        button.focus();
+        await user.keyboard("{Enter}");
+        expect(onPress).toHaveBeenCalledTimes(1);
+
+        setBusy(false);
+        expect(button).not.toHaveAttribute("data-pending");
+        expect(button).not.toHaveAttribute("aria-disabled");
+
+        await user.keyboard("{Enter}");
+        expect(onPress).toHaveBeenCalledTimes(2);
+        expect(warnings).toEqual([]);
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
     it("displays a spinner when isPending prop is true", async () => {
       const onPressSpy = vi.fn();
 

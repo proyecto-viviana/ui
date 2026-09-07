@@ -248,11 +248,7 @@ export function Button(props: ButtonProps): JSX.Element {
         setIsPressed(pressed);
         local.onPressChange?.(pressed);
       }}
-      onPress={(event) => {
-        if (!local.isPending) {
-          local.onPress?.(event);
-        }
-      }}
+      onPress={local.onPress}
       class={getClassName}
       style={getPressScaleStyle}
     >

@@ -476,9 +476,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
             .onPress;
           menuOnPress?.(event);
         }
-        if (!local.isPending) {
-          local.onPress?.(event);
-        }
+        local.onPress?.(event);
       }}
       class={getClassName}
       style={getPressScaleStyle}

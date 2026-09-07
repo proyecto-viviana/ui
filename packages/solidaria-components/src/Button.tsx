@@ -268,7 +268,11 @@ export function Button(props: ButtonProps): JSX.Element {
     return Boolean(triggerProps?.["aria-disabled"] || triggerProps?.isDisabled);
   };
 
-  const resolvePending = (): boolean => !!local.isPending;
+  // Owned at setup. Solid compiles a compound `isPending={a() && b()}` prop into
+  // a getter that calls `memo()` on every read, so reading it lazily from a native
+  // press or hover handler creates that computation with no owner: it warns and is
+  // never disposed. A memo pins the read to this component's owner.
+  const resolvePending = createMemo((): boolean => !!local.isPending);
   const isPendingFocusable = () => local.isPendingFocusable !== false;
 
   const [resolvedButtonEl, setResolvedButtonEl] = createSignal<HTMLButtonElement | null>(null);
