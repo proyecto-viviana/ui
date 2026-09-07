@@ -22,7 +22,8 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import { createProgressBar, useLocale } from "@proyecto-viviana/solidaria";
+import { createProgressBar } from "@proyecto-viviana/solidaria/progress";
+import { useLocale } from "@proyecto-viviana/solidaria/i18n";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
 import { keyframes } from "../style/style-macro" with { type: "macro" };

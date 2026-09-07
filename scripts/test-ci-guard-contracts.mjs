@@ -124,6 +124,15 @@ try {
   );
   console.log("PASS: Certification builds package evidence before JSX size checks.");
 
+  const entryImportBudget = certificationWorkflow.indexOf(
+    "run: pnpm run guard:entry-import-budget\n",
+  );
+  assert(
+    packageBuild >= 0 && entryImportBudget >= 0 && packageBuild < entryImportBudget,
+    "Certification Gates must build package artifacts before measuring the entry import budget",
+  );
+  console.log("PASS: Certification builds package evidence before the entry import budget.");
+
   // release-readiness runs test:run on a plain checkout: the gitignored
   // ./react-spectrum oracle is absent there, so an oracle-backed check placed
   // in `packages/*/test` or `scripts/**/*.test.*` fails with ENOENT instead of

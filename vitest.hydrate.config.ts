@@ -54,7 +54,10 @@ export default defineConfig({
         "packages/solid-stately/src/flags/flags.ts",
       ),
       "@proyecto-viviana/solid-stately": resolve(__dirname, "packages/solid-stately/src/index.ts"),
-      "@proyecto-viviana/solidaria": resolve(__dirname, "packages/solidaria/src/index.ts"),
+      // The package directory, not its barrel: see vitest.config.ts. An alias key
+      // also matches `<key>/<subpath>`, so a narrow subpath import only resolves
+      // if the replacement is the directory.
+      "@proyecto-viviana/solidaria": resolve(__dirname, "packages/solidaria/src"),
       "@proyecto-viviana/solidaria-components": resolve(
         __dirname,
         "packages/solidaria-components/src/index.ts",

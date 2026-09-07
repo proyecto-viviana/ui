@@ -113,6 +113,7 @@
     "sync:attribution-headers": "node scripts/report-attribution-mappings.mjs --write-headers",
     "report:layer-imports": "vp exec tsx scripts/report-layer-imports.ts",
     "guard:jsx-deopt-size": "vp exec tsx scripts/check-jsx-deopt-size.ts",
+    "guard:entry-import-budget": "vp exec tsx scripts/check-entry-import-budget.ts",
     "guard:ts-nocheck-budget": "node scripts/check-ts-nocheck-budget.mjs",
     "guard:idiomatic-solid": "vp exec tsx scripts/check-idiomatic-solid.ts",
     "guard:invented-utilities": "vp exec tsx scripts/check-invented-utilities.ts",

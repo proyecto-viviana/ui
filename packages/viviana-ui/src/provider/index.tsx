@@ -22,14 +22,11 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import {
-  I18nProvider,
-  ModalProvider,
-  isRTL,
-  useLocale,
-  useModalProvider,
-  type Direction,
-} from "@proyecto-viviana/solidaria";
+// Narrow subpaths, not the root barrel: a consumer that renders only a Provider
+// must not pull the whole primitive surface in with it. `guard:entry-import-budget`
+// holds the ceiling this keeps.
+import { I18nProvider, isRTL, useLocale, type Direction } from "@proyecto-viviana/solidaria/i18n";
+import { ModalProvider, useModalProvider } from "@proyecto-viviana/solidaria/overlays";
 import { mergeStyles } from "../style/runtime";
 import { setColorScheme, style as s2Style } from "../style" with { type: "macro" };
 import type { StyleString } from "../style";
