@@ -30,23 +30,35 @@ absorption. The current train ticket is named in `upstream-sync.md`.
 
 Do not copy status counts, passing commands, or task lists into this file.
 
-## Owner decisions
+## Decisions
 
-- **TableView structure — #89.** Decide whether the native `<table>` is an
-  explicit local architecture or whether TableView must converge on upstream's
-  interactive grid structure.
-- **TabSwitch and SegmentedControl — #9.** Define whether both public controls
-  remain distinct or converge through a documented migration.
-- **Spectrum tokens pin — #143.** `solid-spectrum` and `@proyecto-viviana/ui`
-  both pin `@adobe/spectrum-tokens` to the S2 oracle version. Viviana theming
-  lives in `viviana-tokens.css`. Do not advance UI to a different Adobe token
-  major.
-- **archive/custom — #145 / #62.** Deleted. Current work is the Solid Spectrum
-  API. Do not add new viviana-native components until the owner reopens that
-  surface.
+Dated. Entries marked (owner) were stated by the owner. Entries marked
+(Rule #2, delegated) were derived from upstream evidence under the owner's
+2026-09-07 delegation ("why my call? fix them if broken") and stand until the
+owner vetoes them.
 
-Do not change the TableView or TabSwitch public boundaries before the owner
-records those decisions.
+- **2026-09-07 — TableView converges on upstream's virtualized grid (#89 →
+  #490).** (Rule #2, delegated) S2 TableView has no non-virtualized branch: it
+  always renders `div[role="grid"]` through the Virtualizer. The native
+  `<table>` is a structure with no upstream counterpart, not a local
+  architecture. Until #490 lands, the TableView certification is D6-only and
+  is not full certification.
+- **2026-09-07 — TabSwitch folds into SegmentedControl (#9 → #491).** (Rule
+  #2, delegated) TabSwitch duplicates SegmentedControl on the same headless
+  primitives with an invented API and a hard-coded label. It becomes a
+  deprecated wrapper in the next release and is removed in the following
+  breaking release. `@proyecto-viviana/ui` keeps its register pill styling on
+  the same behavior source.
+- **Spectrum tokens pin — #143.** (owner) `solid-spectrum` and
+  `@proyecto-viviana/ui` both pin `@adobe/spectrum-tokens` to the S2 oracle
+  version. Viviana theming lives in `viviana-tokens.css`. Do not advance UI to
+  a different Adobe token major.
+- **archive/custom — #145 / #62.** (owner) Deleted. Current work is the Solid
+  Spectrum API. Do not add new viviana-native components until the owner
+  reopens that surface.
+
+The TableView and TabSwitch public boundaries change only through #490 and
+#491, each with a Changeset and the regression evidence its ticket names.
 
 ## Non-goals
 

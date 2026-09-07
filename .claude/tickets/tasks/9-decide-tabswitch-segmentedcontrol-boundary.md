@@ -3,12 +3,17 @@ id: 9
 type: task
 title: "Decide the TabSwitch and SegmentedControl public boundary"
 created: 2026-08-08
-status: open
+status: done
 history:
   - {
       state: open,
       at: 2026-08-08,
       note: "opened from the contrast audit after the local control was compared with current upstream SegmentedControl",
+    }
+  - {
+      state: done,
+      at: 2026-09-07,
+      note: "decided by Rule #2 under the owner's 2026-09-07 delegation: TabSwitch duplicates SegmentedControl on the same primitives with an invented API, so it becomes a deprecated wrapper and is removed next breaking release; decision in steering.md, work in #491",
     }
 ---
 

@@ -4,12 +4,17 @@ type: task
 title: "Decide the TableView native-table boundary"
 created: 2026-08-20
 parent: 24
-status: open
+status: done
 history:
   - {
       state: open,
       at: 2026-08-20,
       note: "migrated from adversarial finding A-006 and the remaining-work census",
+    }
+  - {
+      state: done,
+      at: 2026-09-07,
+      note: "decided by Rule #2 under the owner's 2026-09-07 delegation: S2 TableView has no non-virtualized branch, so the native <table> converges on div[role=grid] through the Virtualizer; decision in steering.md, work in #490",
     }
 ---
 
