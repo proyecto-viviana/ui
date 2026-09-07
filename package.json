@@ -108,6 +108,7 @@
     "guard:jsx-ref-dead-code": "vp exec tsx scripts/check-jsx-ref-dead-code.ts",
     "guard:source-artifacts": "node scripts/check-source-artifacts.mjs",
     "guard:package-artifacts": "node scripts/check-package-artifacts.mjs",
+    "guard:comparison-atom-css": "node scripts/check-comparison-atom-css.mjs",
     "guard:layer-boundary": "vp exec tsx scripts/check-layer-boundary.ts",
     "report:attribution-mappings": "node scripts/report-attribution-mappings.mjs",
     "sync:attribution-headers": "node scripts/report-attribution-mappings.mjs --write-headers",

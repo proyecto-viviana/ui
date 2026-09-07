@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -442,6 +443,46 @@ const comparisonS2Macros = () => {
   };
 };
 
+// One style-macro compile per build. Left to package.json's `solid` condition,
+// every `@proyecto-viviana/solid-spectrum/<Name>` subpath resolves to the
+// prebuilt `dist/<Name>.jsx`, whose atom classes were minted by the package
+// build and whose CSS lives only in the package's own `dist/styles.css` — a
+// file this app never loads. Only the modules this app compiles itself get
+// their macro CSS emitted into the app's stylesheets, so a graph that resolves
+// the public subpaths to `dist/` ships class lists with no matching CSS:
+// every dist-resolved S2 field root rendered `grid-template-areas: none` in
+// the 2026-09-07 certified run (#489). Point each JSX subpath at its source entry
+// so the whole S2 graph goes through this app's macro plugin once. The JSX-free
+// style modules keep their explicit aliases below, the package root stays
+// unaliased (#451), and `guard:comparison-atom-css` proves the invariant on
+// the built dist.
+const solidSpectrumPackage = JSON.parse(
+  readFileSync(path.resolve(repoRoot, "packages/solid-spectrum/package.json"), "utf8"),
+);
+const solidSpectrumSubpathAliases = Object.entries(solidSpectrumPackage.exports).flatMap(
+  ([subpath, target]) => {
+    if (subpath === "." || typeof target !== "object" || typeof target.solid !== "string") {
+      return [];
+    }
+    if (!target.solid.endsWith(".jsx")) {
+      return [];
+    }
+    const entry = target.solid.replace(/^\.\/dist\//, "").replace(/\.jsx$/, "");
+    const source = path.resolve(repoRoot, "packages/solid-spectrum/src", `${entry}.ts`);
+    if (!existsSync(source)) {
+      throw new Error(
+        `solid-spectrum export "${subpath}" points at ${target.solid} but has no source entry at ${source}`,
+      );
+    }
+    return [
+      {
+        find: new RegExp(`^@proyecto-viviana/solid-spectrum/${subpath.slice(2)}$`),
+        replacement: source,
+      },
+    ];
+  },
+);
+
 export default defineConfig({
   trailingSlash: "always",
   prefetch: {
@@ -522,6 +563,7 @@ export default defineConfig({
           find: /^@proyecto-viviana\/solid-spectrum\/style\/runtime$/,
           replacement: path.resolve(repoRoot, "packages/solid-spectrum/src/style/runtime.ts"),
         },
+        ...solidSpectrumSubpathAliases,
         {
           find: /^@proyecto-viviana\/solid-stately$/,
           replacement: path.resolve(repoRoot, "packages/solid-stately/dist/index.js"),
