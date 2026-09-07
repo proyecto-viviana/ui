@@ -29,7 +29,7 @@ import type { Color } from "@proyecto-viviana/solid-stately";
 import { focusRing, space, style } from "../style" with { type: "macro" };
 import type { StylesProp, UnsafeClassName } from "../s2-internal/style-utils";
 import { getAllowedOverrides } from "../s2-internal/style-utils" with { type: "macro" };
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextStyles,
@@ -204,7 +204,7 @@ function getColorSwatchStyle(renderProps: ColorSwatchRenderProps): JSX.CSSProper
  * A ColorSwatchPicker displays a list of color swatches and allows a user to select one of them.
  */
 export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as ColorSwatchPickerProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -214,7 +214,7 @@ export function ColorSwatchPicker(props: ColorSwatchPickerProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useContext(ColorSwatchPickerContext), props.slot);
-  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
+  const mergedProps = mergeProps<ColorSwatchPickerProps>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "density",
     "size",

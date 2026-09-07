@@ -39,7 +39,7 @@ import { mergeStyles } from "../style/runtime";
 import { control } from "../s2-internal/style-utils" with { type: "macro" };
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -206,7 +206,7 @@ const itemText = style({
  * A SegmentedControl is a mutually exclusive group of buttons used for view switching.
  */
 export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as SegmentedControlProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -216,7 +216,7 @@ export function SegmentedControl(props: SegmentedControlProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useContext(SegmentedControlContext), props.slot);
-  const merged = mergeProps(flags, contextProps ?? {}, props);
+  const merged = mergeProps<SegmentedControlProps>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "isJustified",

@@ -148,7 +148,7 @@ const avatarGroupContainer = style(
 
 export function Avatar(props: AvatarProps) {
   const contextProps = getSlottedContextProps(useContext(AvatarContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<AvatarProps>(contextProps ?? {}, props);
   const [local] = splitProps(merged, [
     "src",
     "alt",
@@ -244,7 +244,7 @@ export interface AvatarGroupProps extends Omit<
 
 export function AvatarGroup(props: AvatarGroupProps) {
   const contextProps = getSlottedContextProps(useContext(AvatarGroupContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<AvatarGroupProps>(contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "children",
     "label",

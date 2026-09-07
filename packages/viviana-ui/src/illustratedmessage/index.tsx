@@ -193,7 +193,10 @@ const buttonGroup = style({
  */
 export function IllustratedMessage(props: IllustratedMessageProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(IllustratedMessageContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<IllustratedMessageProps & IllustratedMessageContextProps>(
+    contextProps ?? {},
+    props,
+  );
   const [local, domProps] = splitProps(merged, [
     "children",
     "orientation",

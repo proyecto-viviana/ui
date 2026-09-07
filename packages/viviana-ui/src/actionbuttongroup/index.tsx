@@ -25,7 +25,7 @@ import {
   useActionButtonGroupContext,
 } from "../button/group-context";
 import { s2ActionButtonGroup } from "../button/s2-action-button-styles";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -67,7 +67,7 @@ export interface ActionButtonGroupProps extends Omit<
  * An ActionButtonGroup is a grouping of related ActionButtons.
  */
 export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as ActionButtonGroupProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -77,7 +77,7 @@ export function ActionButtonGroup(props: ActionButtonGroupProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useActionButtonGroupContext(), props.slot);
-  const merged = mergeProps(flags, contextProps ?? {}, props);
+  const merged = mergeProps<ActionButtonGroupProps>(flags, contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "children",
     "size",

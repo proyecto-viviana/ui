@@ -34,7 +34,7 @@ import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
 import { SkeletonContext } from "../skeleton";
 import { TextContext } from "../text";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import { pressScale } from "../pressScale";
 import { useLinkButtonContext } from "./context";
 import { s2Button, s2ButtonGradient, s2ButtonText } from "./s2-button-styles";
@@ -76,7 +76,7 @@ export interface LinkButtonProps extends StyledLinkButtonBaseProps {
  * A LinkButton navigates like a link while using the S2 Button visual treatment.
  */
 export function LinkButton(props: LinkButtonProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as LinkButtonProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -91,7 +91,7 @@ export function LinkButton(props: LinkButtonProps): JSX.Element {
     size: "M",
     fillStyle: "fill",
   };
-  const merged = mergeProps(defaultProps, flags, contextProps ?? {}, props);
+  const merged = mergeProps<LinkButtonProps>(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "variant",
     "fillStyle",

@@ -24,7 +24,7 @@ import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import type { ButtonFillStyle, ButtonProps, ButtonSize, ButtonVariant } from "./types";
 import { style } from "../style" with { type: "macro" };
 import { s2IntlStrings } from "../intl";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import { pressScale } from "../pressScale";
 import {
   s2Button,
@@ -56,7 +56,8 @@ type RuntimeButtonProps = ButtonProps & {
 
 export function Button(props: ButtonProps): JSX.Element {
   const runtimeProps = props as RuntimeButtonProps;
-  const providerProps = useProviderProps(useFormProps(runtimeProps));
+  const providerProps = useProviderProps(useFormProps(runtimeProps)) as RuntimeButtonProps &
+    ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -72,7 +73,9 @@ export function Button(props: ButtonProps): JSX.Element {
     fillStyle: "fill",
   };
 
-  const merged = useFormProps(mergeProps(defaultProps, flags, contextProps ?? {}, runtimeProps));
+  const merged = useFormProps(
+    mergeProps<RuntimeButtonProps>(defaultProps, flags, contextProps ?? {}, runtimeProps),
+  );
 
   const [local, headlessProps] = splitProps(merged, [
     "variant",

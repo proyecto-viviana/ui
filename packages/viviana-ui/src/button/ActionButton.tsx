@@ -33,7 +33,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { createStringFormatter, mergeProps, useLocale } from "@proyecto-viviana/solidaria";
 import { fontRelative, space, style } from "../style" with { type: "macro" };
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import { centerBaseline } from "../icon/center-baseline";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
@@ -97,6 +97,12 @@ type RuntimeActionButtonProps = ActionButtonProps & {
   holdAffordance?: boolean;
 };
 
+type ActionButtonLayeredProps = RuntimeActionButtonProps & {
+  density?: ActionButtonDensity;
+  orientation?: ActionButtonOrientation;
+  isJustified?: boolean;
+};
+
 export interface ActionButtonProps extends StyledActionButtonBaseProps {
   /** The content to display in the ActionButton. */
   children?: JSX.Element;
@@ -121,7 +127,8 @@ export interface ActionButtonProps extends StyledActionButtonBaseProps {
  */
 export function ActionButton(props: ActionButtonProps): JSX.Element {
   const runtimeProps = props as RuntimeActionButtonProps;
-  const providerProps = useProviderProps(runtimeProps);
+  const providerProps = useProviderProps(runtimeProps) as RuntimeActionButtonProps &
+    ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -163,7 +170,13 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     },
   };
 
-  const merged = mergeProps(defaultProps, flags, contextProps ?? {}, runtimeProps, groupProps);
+  const merged = mergeProps<ActionButtonLayeredProps>(
+    defaultProps,
+    flags,
+    contextProps ?? {},
+    runtimeProps,
+    groupProps,
+  );
   const [local, headlessProps] = splitProps(merged, [
     "size",
     "staticColor",
@@ -266,7 +279,7 @@ export function ActionButton(props: ActionButtonProps): JSX.Element {
     }
 
     const { onKeyDown: _onKeyDown, ...triggerProps } = menuTriggerContext.triggerProps;
-    return mergeProps(
+    return mergeProps<Partial<HeadlessButtonProps>>(
       triggerProps as Partial<HeadlessButtonProps>,
       {
         onPressStart: menuTriggerContext.onPressStart,

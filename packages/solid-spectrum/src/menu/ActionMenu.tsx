@@ -198,7 +198,7 @@ function omitDataAttributes<T extends Record<string, unknown>>(source: T): T {
  */
 export function ActionMenu<T extends object = object>(props: ActionMenuProps<T>): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(ActionMenuContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<ActionMenuProps<T>>(contextProps ?? {}, props);
   const [local, menuProps] = splitProps(merged, [
     "label",
     "isQuiet",

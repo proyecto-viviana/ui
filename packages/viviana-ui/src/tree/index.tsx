@@ -60,7 +60,7 @@ import { ActionMenuContext } from "../menu/ActionMenu";
 import { ProgressCircle } from "../progress/ProgressCircle";
 import { mergeProps, createStringFormatter } from "@proyecto-viviana/solidaria";
 import { s2IntlStrings } from "../intl";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
 import { baseColor, colorMix, focusRing, space, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
@@ -695,7 +695,7 @@ function mergeRegisteredTreeItems<T extends object>(
 }
 
 export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as TreeProps<T> & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -708,7 +708,7 @@ export function Tree<T extends object>(props: TreeProps<T>): JSX.Element {
     useContext(TreeViewContext) as SpectrumContextValue<TreeProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(flags, contextProps ?? {}, props) as TreeProps<T>;
+  const mergedProps = mergeProps<TreeProps<T>>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "items",

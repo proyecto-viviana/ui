@@ -125,7 +125,7 @@ const dividerStyles = style<{
  */
 export function Divider(props: DividerProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(DividerContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<DividerProps>(contextProps ?? {}, props);
   const [local, separatorProps] = splitProps(merged, [
     "size",
     "orientation",

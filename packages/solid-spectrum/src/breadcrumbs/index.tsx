@@ -42,7 +42,7 @@ import {
 import { mergeProps, createStringFormatter, useLocale } from "@proyecto-viviana/solidaria";
 import type { StyleString } from "../style";
 import { mergeStyles } from "../style/runtime";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -206,7 +206,7 @@ export function Breadcrumbs<T>(props: BreadcrumbsProps<T>): JSX.Element {
 }
 
 function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => void): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as BreadcrumbsProps<T> & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -216,7 +216,7 @@ function renderBreadcrumbs<T>(props: BreadcrumbsProps<T>, disposeRoot: () => voi
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useContext(BreadcrumbsContext), props.slot);
-  const mergedProps = mergeProps(
+  const mergedProps = mergeProps<BreadcrumbsProps<T>>(
     { size: "M" as const, showSeparator: true },
     flags,
     contextProps ?? {},
@@ -789,7 +789,7 @@ function BreadcrumbMenu<T>(props: {
 export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
   const context = useContext(InternalBreadcrumbsContext) ?? defaultInternalBreadcrumbsContext;
   const locale = useLocale();
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as BreadcrumbProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -798,7 +798,7 @@ export function Breadcrumb(props: BreadcrumbProps): JSX.Element {
     "isReadOnly",
     "validationState",
   ]);
-  const mergedProps = mergeProps(flags, props);
+  const mergedProps = mergeProps<BreadcrumbProps>(flags, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "styles",
     "UNSAFE_className",

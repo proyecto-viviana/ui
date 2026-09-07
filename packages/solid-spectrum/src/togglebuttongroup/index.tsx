@@ -20,7 +20,7 @@ import {
   type ToggleButtonGroupProps as HeadlessToggleButtonGroupProps,
 } from "@proyecto-viviana/solidaria-components";
 import type { StyleString } from "../style";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   type ActionButtonDensity,
   type ActionButtonOrientation,
@@ -70,7 +70,7 @@ export interface ToggleButtonGroupProps extends Omit<
  * A ToggleButtonGroup is a grouping of related ToggleButtons with single or multiple selection.
  */
 export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as ToggleButtonGroupProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -85,8 +85,8 @@ export function ToggleButtonGroup(props: ToggleButtonGroupProps): JSX.Element {
     size: "M",
     orientation: "horizontal",
   };
-  const providedContextProps = mergeProps(flags, contextProps ?? {}, props);
-  const merged = mergeProps(defaultProps, flags, contextProps ?? {}, props);
+  const providedContextProps = mergeProps<ToggleButtonGroupProps>(flags, contextProps ?? {}, props);
+  const merged = mergeProps<ToggleButtonGroupProps>(defaultProps, flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",

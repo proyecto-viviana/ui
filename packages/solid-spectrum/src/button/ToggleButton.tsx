@@ -30,7 +30,7 @@ import {
   type ToggleButtonProps as HeadlessToggleButtonProps,
   type ToggleButtonRenderProps,
 } from "@proyecto-viviana/solidaria-components";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StaticColor } from "./types";
 import type { StyleString } from "../style";
 import { space, style } from "../style" with { type: "macro" };
@@ -114,7 +114,8 @@ type RuntimeToggleButtonProps = ToggleButtonProps & { holdAffordance?: boolean }
  */
 export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const runtimeProps = props as RuntimeToggleButtonProps;
-  const providerProps = useProviderProps(runtimeProps);
+  const providerProps = useProviderProps(runtimeProps) as RuntimeToggleButtonProps &
+    ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -128,7 +129,12 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
   const defaultProps: Partial<ToggleButtonProps> = {
     size: "M",
   };
-  const standaloneProps = mergeAriaProps(defaultProps, flags, contextProps ?? {}, props);
+  const standaloneProps = mergeAriaProps<RuntimeToggleButtonProps>(
+    defaultProps,
+    flags,
+    contextProps ?? {},
+    props,
+  );
   const groupProps: Partial<ToggleButtonProps> & {
     density?: ActionButtonDensity;
     orientation?: ActionButtonOrientation;
@@ -251,7 +257,7 @@ export function ToggleButton(props: ToggleButtonProps): JSX.Element {
     }
 
     const { onKeyDown: _onKeyDown, ...triggerProps } = menuTriggerContext.triggerProps;
-    return mergeAriaProps(
+    return mergeAriaProps<Partial<HeadlessToggleButtonProps>>(
       triggerProps as Partial<HeadlessToggleButtonProps>,
       {
         get isDisabled() {

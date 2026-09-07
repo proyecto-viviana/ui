@@ -295,7 +295,7 @@ function isTextOnly(value: unknown): boolean {
 
 export function Badge(props: BadgeProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(BadgeContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<BadgeProps>(contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "children",
     "count",

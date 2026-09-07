@@ -37,7 +37,7 @@ import type { Key } from "@proyecto-viviana/solid-stately";
 import type { StyleString } from "../style";
 import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import { pressScale } from "../pressScale";
 import {
@@ -355,7 +355,7 @@ const selectBoxLabel = style<ListBoxOptionRenderProps & { orientation?: SelectBo
  * SelectBoxGroup allows users to select one or more options from a list.
  */
 export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as SelectBoxGroupProps<T> & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -368,7 +368,7 @@ export function SelectBoxGroup<T>(props: SelectBoxGroupProps<T>): JSX.Element {
     useContext(SelectBoxGroupContext) as SpectrumContextValue<SelectBoxGroupProps<T>>,
     props.slot,
   );
-  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
+  const mergedProps = mergeProps<SelectBoxGroupProps<T>>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "orientation",

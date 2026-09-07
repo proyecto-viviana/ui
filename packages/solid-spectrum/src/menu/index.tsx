@@ -45,7 +45,7 @@ import {
   useLocale,
 } from "@proyecto-viviana/solidaria";
 import type { Key, Selection, SelectionMode } from "@proyecto-viviana/solid-stately";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import { Popover } from "../popover";
 import type { StyleString } from "../style";
 import { style } from "../style" with { type: "macro" };
@@ -351,7 +351,7 @@ function MenuTriggerOverlayContext(props: MenuTriggerOverlayContextProps): JSX.E
  * A menu displays a list of actions or options for the user to choose from.
  */
 export function Menu<T>(props: MenuProps<T>): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as MenuProps<T> & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -361,7 +361,7 @@ export function Menu<T>(props: MenuProps<T>): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useContext(MenuContext), props.slot);
-  const mergedProps = mergeAriaProps(flags, contextProps ?? {}, props);
+  const mergedProps = mergeAriaProps<MenuProps<T>>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "class",
     "hideLinkOutIcon",

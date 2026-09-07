@@ -20,7 +20,7 @@ import { style } from "../style" with { type: "macro" };
 import { ButtonContext, LinkButtonContext } from "../button/context";
 import { useButtonGroupContext } from "../button/group-context";
 import { s2ButtonGroup } from "../button/s2-action-button-styles";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -55,7 +55,7 @@ export interface ButtonGroupProps extends Omit<
 }
 
 export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as ButtonGroupProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -65,7 +65,7 @@ export function ButtonGroup(props: ButtonGroupProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useButtonGroupContext(), props.slot);
-  const merged = mergeProps(flags, contextProps ?? {}, props);
+  const merged = mergeProps<ButtonGroupProps>(flags, contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "UNSAFE_className",
     "UNSAFE_style",

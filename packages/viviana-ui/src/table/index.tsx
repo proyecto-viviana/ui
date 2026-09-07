@@ -71,7 +71,7 @@ import Arrow from "../icon/ui-icons/Arrow";
 import Checkmark from "../icon/ui-icons/Checkmark";
 import Chevron from "../icon/ui-icons/Chevron";
 import Dash from "../icon/ui-icons/Dash";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
 import {
   baseColor,
@@ -1179,7 +1179,7 @@ function inlineStyle(
 }
 
 export function Table<T extends object>(props: TableProps<T>): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as TableProps<T> & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -1192,7 +1192,7 @@ export function Table<T extends object>(props: TableProps<T>): JSX.Element {
     useContext(TableContext),
     (props as { slot?: string }).slot,
   );
-  const mergedProps = mergeProps(flags, contextProps ?? {}, props);
+  const mergedProps = mergeProps<TableProps<T>>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(mergedProps, [
     "children",
     "density",

@@ -408,7 +408,7 @@ function ActionBarCloseButton(props: {
 
 export function ActionBar(props: ActionBarProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(ActionBarContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<ActionBarProps>(contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "class",
     "children",

@@ -241,7 +241,7 @@ function sourceMedia(source: ImageSource, colorScheme: "light" | "dark") {
 
 export function Image(props: ImageProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(ImageContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<ImageContextValue>(contextProps ?? {}, props);
   const [local] = splitProps(merged, [
     "src",
     "alt",

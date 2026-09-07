@@ -311,7 +311,7 @@ const alertIcons: Record<InlineAlertVariant, Component<SpectrumIconProps> | unde
  */
 export function InlineAlert(props: InlineAlertProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(InlineAlertContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<InlineAlertProps>(contextProps ?? {}, props);
   const [local, domProps] = splitProps(merged, [
     "children",
     "autoFocus",

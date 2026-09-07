@@ -133,7 +133,7 @@ const banner = style<{ size: DropZoneSize }>({
  */
 export function DropZone(props: DropZoneProps): JSX.Element {
   const contextProps = getSlottedContextProps(useContext(DropZoneContext), props.slot);
-  const merged = mergeProps(contextProps ?? {}, props);
+  const merged = mergeProps<DropZoneProps>(contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "isFilled",

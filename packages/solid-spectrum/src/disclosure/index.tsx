@@ -30,7 +30,7 @@ import {
 } from "@proyecto-viviana/solidaria-components";
 import { mergeProps, createFocusRing, createHover, useLocale } from "@proyecto-viviana/solidaria";
 import type { Key } from "@proyecto-viviana/solid-stately";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import type { StyleString } from "../style";
 import type { StylesPropWithFont } from "../s2-internal/style-utils";
 import {
@@ -423,7 +423,7 @@ function actionButtonSize(size: DisclosureSize, density: DisclosureDensity): Act
  * shared S2 Accordion root primitive.
  */
 export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as DisclosureGroupProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -433,7 +433,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useContext(DisclosureContext), props.slot);
-  const merged = mergeProps(flags, contextProps ?? {}, props);
+  const merged = mergeProps<DisclosureGroupProps>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",
@@ -505,7 +505,7 @@ export function DisclosureGroup(props: DisclosureGroupProps): JSX.Element {
  * A disclosure is a collapsible section of content.
  */
 export function Disclosure(props: DisclosureProps): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as DisclosureProps & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -516,7 +516,7 @@ export function Disclosure(props: DisclosureProps): JSX.Element {
   ]);
   const parentDisclosureContext = useContext(DisclosureContext);
   const contextProps = getSlottedContextProps(parentDisclosureContext, props.slot);
-  const merged = mergeProps(flags, contextProps ?? {}, props);
+  const merged = mergeProps<DisclosureProps>(flags, contextProps ?? {}, props);
   const [local, headlessProps] = splitProps(merged, [
     "children",
     "size",

@@ -62,7 +62,7 @@ import { baseColor, focusRing, style } from "../style" with { type: "macro" };
 import { mergeStyles } from "../style/runtime";
 import { IconContext } from "../icon/spectrum-icon";
 import { centerBaseline } from "../icon/center-baseline";
-import { useProviderProps } from "../provider";
+import { useProviderProps, type ProviderInheritedProps } from "../provider";
 import {
   getSlottedContextProps,
   mergeContextRefs,
@@ -661,7 +661,7 @@ function resolveChildAccessor(value: unknown): JSX.Element {
  * Tabs organize related content into sections where one panel is visible at a time.
  */
 export function Tabs<T>(props: TabsProps<T>): JSX.Element {
-  const providerProps = useProviderProps(props);
+  const providerProps = useProviderProps(props) as TabsProps<T> & ProviderInheritedProps;
   const [flags] = splitProps(providerProps, [
     "isQuiet",
     "isEmphasized",
@@ -671,7 +671,7 @@ export function Tabs<T>(props: TabsProps<T>): JSX.Element {
     "validationState",
   ]);
   const contextProps = getSlottedContextProps(useContext(TabsContext), props.slot);
-  const merged = mergeProps(flags, contextProps ?? {}, props) as TabsProps<T>;
+  const merged = mergeProps<TabsProps<T>>(flags, contextProps ?? {}, props);
   const [local, labelProps, headlessProps] = splitProps(
     merged,
     [
