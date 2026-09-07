@@ -6,7 +6,11 @@ created: 2026-09-06
 parent: 24
 status: open
 history:
-  - { state: open, at: 2026-09-06, note: "VUI-004; blocked on an owner ruling, because main currently documents the opposite policy and the ledger never wrote a threshold" }
+  - {
+      state: open,
+      at: 2026-09-06,
+      note: "VUI-004; blocked on an owner ruling, because main currently documents the opposite policy and the ledger never wrote a threshold",
+    }
 ---
 
 Button animates for a user who asked the operating system not to animate.

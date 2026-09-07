@@ -6,7 +6,11 @@ created: 2026-09-06
 parent: 32
 status: open
 history:
-  - { state: open, at: 2026-09-06, note: "VUI-005; measured 86 solidaria dist modules pulled in by one provider import, 17 if narrowed" }
+  - {
+      state: open,
+      at: 2026-09-06,
+      note: "VUI-005; measured 86 solidaria dist modules pulled in by one provider import, 17 if narrowed",
+    }
 ---
 
 Importing `Provider` drags in most of `@proyecto-viviana/solidaria` because the

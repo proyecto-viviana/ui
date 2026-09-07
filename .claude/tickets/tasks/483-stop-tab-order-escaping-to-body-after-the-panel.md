@@ -6,7 +6,11 @@ created: 2026-09-06
 parent: 24
 status: open
 history:
-  - { state: open, at: 2026-09-06, note: "VUI-003, reproduced by an installed consumer against 0.6.2 and 0.6.3 and still present in main source; the other six ledger entries were re-audited at the same time and three are already fixed here" }
+  - {
+      state: open,
+      at: 2026-09-06,
+      note: "VUI-003, reproduced by an installed consumer against 0.6.2 and 0.6.3 and still present in main source; the other six ledger entries were re-audited at the same time and three are already fixed here",
+    }
 ---
 
 `createTabPanel` makes the panel a tab stop unconditionally, so Tab from the
@@ -40,7 +44,7 @@ named passing tests. This entry did not move.
   `packages/solid-spectrum/src/tabs/index.tsx:1041` and `:1124`.
 - Cover both directions in a package test: a panel with a focusable child must
   not be a tab stop, and an empty panel must stay one. The child must be able
-  to appear *after* mount — a panel that gains its first control later has to
+  to appear _after_ mount — a panel that gains its first control later has to
   drop out of the tab order.
 - `packages/viviana-ui/test/Tabs.test.tsx` does not exist and must be created.
 - Add a changeset. It joins the pending pile; it does not ship by itself.
