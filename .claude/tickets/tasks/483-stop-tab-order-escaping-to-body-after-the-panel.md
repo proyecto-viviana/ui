@@ -4,12 +4,22 @@ type: task
 title: "Stop tab order escaping to body after the tab panel"
 created: 2026-09-06
 parent: 24
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-06,
       note: "VUI-003, reproduced by an installed consumer against 0.6.2 and 0.6.3 and still present in main source; the other six ledger entries were re-audited at the same time and three are already fixed here",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-06,
+      note: "revived the non-Button hunks of ffdd3e51 onto main; getFocusableTreeWalker already existed in solidaria/src/utils/dom.ts, so the port adds no dependency and no second tabbable query",
+    }
+  - {
+      state: merged,
+      at: 2026-09-06,
+      note: "createHasTabbableChild plus a panel ref at all three TabPanel call sites. Eight tests across the four packages fail with the literal tabIndex 0 restored. The revived hydration case was rewritten onto main's hydrateOverSsr signature and its inert tab-walk dropped: jsdom does not skip inert subtrees, so that half is asserted through tabindex here and walked for real in Tabs.test.tsx. vp run check, test:run 6082, test:ssr 43, test:hydrate 39.",
     }
 ---
 

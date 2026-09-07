@@ -7,12 +7,14 @@
  * with dead event handlers. See Collections.ssr.test.tsx for the mechanism.
  */
 import { afterEach, describe, expect, it } from "vite-plus/test";
+import { waitFor } from "@solidjs/testing-library";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   TabsFixture,
   TabsPlainFixture,
   TabsCompFixture,
+  TabsFocusablePanelFixture,
   TabsBadgeFixture,
   TabsIconFixture,
   ListViewFixture,
@@ -43,6 +45,47 @@ describe("collection components hydrate over SSR markup", () => {
 
   it("Tabs with a trivial local component child hydrates with no mismatch", () => {
     hydrateOverSsr(readSsr("tabs-comp-ssr.html"), () => <TabsCompFixture />);
+  });
+
+  it("Tabs settles focus order after hydrating a panel with a tabbable child", async () => {
+    const container = hydrateOverSsr(readSsr("tabs-focusable-panel-ssr.html"), () => (
+      <TabsFocusablePanelFixture />
+    ));
+
+    const panel = container.querySelector<HTMLElement>('[role="tabpanel"]');
+    const before = container.querySelector<HTMLButtonElement>("button");
+    const tabs = container.querySelectorAll<HTMLElement>('[role="tab"]');
+    const textarea = container.querySelector<HTMLTextAreaElement>("textarea");
+    const reviewControl = container.querySelector<HTMLButtonElement>(
+      '[data-testid="review-control"]',
+    );
+    const reviewPanel = reviewControl?.parentElement;
+    expect(panel).not.toBeNull();
+    expect(before).not.toBeNull();
+    expect(tabs).toHaveLength(2);
+    expect(textarea).not.toBeNull();
+    expect(reviewControl).not.toBeNull();
+    expect(reviewPanel).toHaveAttribute("data-inert", "true");
+
+    await waitFor(() => expect(panel).not.toHaveAttribute("tabindex"));
+
+    const user = setupUser();
+    before!.focus();
+    await user.tab();
+    expect(document.activeElement).toBe(tabs[0]);
+    await user.tab();
+    expect(document.activeElement).toBe(textarea);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(tabs[0]);
+
+    // Changing selection after hydration re-runs the check on the panel that just
+    // became active: it holds a tabbable control, so it must leave sequential focus
+    // order rather than keep the tabindex="0" it was force-mounted with.
+    await user.click(tabs[1]);
+    await waitFor(() => {
+      expect(reviewPanel).not.toHaveAttribute("data-inert");
+      expect(reviewPanel).not.toHaveAttribute("tabindex");
+    });
   });
 
   it("Tabs with a mixed string + element (badge) child hydrates with no mismatch", () => {

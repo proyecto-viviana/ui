@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vite-plus/test";
-import { render, fireEvent, screen } from "@solidjs/testing-library";
+import { render, fireEvent, screen, waitFor } from "@solidjs/testing-library";
 import { createRoot, createSignal, For, Show, type Accessor } from "solid-js";
 import {
   createTabList,
@@ -845,6 +845,74 @@ describe("createTabPanel", () => {
 
     const panel = screen.getByRole("tabpanel");
     expect(panel).toHaveAttribute("tabindex", "0");
+  });
+
+  it("tracks whether the panel has a tabbable descendant", async () => {
+    let setHasButton!: (value: boolean) => void;
+    let setIsDisabled!: (value: boolean) => void;
+
+    render(() => {
+      const [panelRef, setPanelRef] = createSignal<HTMLDivElement>();
+      const [hasButton, updateHasButton] = createSignal(false);
+      const [isDisabled, updateIsDisabled] = createSignal(false);
+      setHasButton = updateHasButton;
+      setIsDisabled = updateIsDisabled;
+      const { tabPanelProps } = createTabPanel({}, null, panelRef);
+
+      return (
+        <div {...tabPanelProps} ref={setPanelRef}>
+          <Show when={hasButton()}>
+            <button type="button" disabled={isDisabled()}>
+              Continue
+            </button>
+          </Show>
+        </div>
+      );
+    });
+
+    const panel = screen.getByRole("tabpanel");
+    expect(panel).toHaveAttribute("tabindex", "0");
+
+    setHasButton(true);
+    await waitFor(() => expect(panel).not.toHaveAttribute("tabindex"));
+
+    setIsDisabled(true);
+    await waitFor(() => expect(panel).toHaveAttribute("tabindex", "0"));
+
+    setIsDisabled(false);
+    await waitFor(() => expect(panel).not.toHaveAttribute("tabindex"));
+
+    setHasButton(false);
+    await waitFor(() => expect(panel).toHaveAttribute("tabindex", "0"));
+  });
+
+  it("rechecks tabbable descendants when an inert panel becomes active", async () => {
+    const { container } = render(() => {
+      const [panelRef, setPanelRef] = createSignal<HTMLDivElement>();
+      const { tabPanelProps } = createTabPanel({}, null, panelRef);
+
+      return (
+        <div
+          {...tabPanelProps}
+          ref={(element) => {
+            element.setAttribute("inert", "");
+            element.inert = true;
+            setPanelRef(element);
+          }}
+        >
+          <button type="button">Continue</button>
+        </div>
+      );
+    });
+
+    const panel = container.querySelector<HTMLElement>('[role="tabpanel"]');
+    expect(panel).not.toBeNull();
+    expect(panel).toHaveAttribute("inert");
+    expect(panel).toHaveAttribute("tabindex", "0");
+
+    panel!.inert = false;
+    panel!.removeAttribute("inert");
+    await waitFor(() => expect(panel).not.toHaveAttribute("tabindex"));
   });
 
   it("is labeled by its associated tab", () => {

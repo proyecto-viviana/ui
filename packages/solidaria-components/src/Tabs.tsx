@@ -708,12 +708,13 @@ export function TabPanels(props: TabPanelsProps): JSX.Element {
  */
 export function TabPanel(props: TabPanelProps): JSX.Element {
   const [local, ariaProps] = splitProps(props, ["class", "style", "slot", "shouldForceMount"]);
+  const [panelRef, setPanelRef] = createSignal<HTMLDivElement>();
 
   // Get state from context (may be null for SSR scenarios)
   const state = useContext(TabsStateContext);
 
   // Create tab panel aria props
-  const { tabPanelProps, isSelected } = createTabPanel<unknown>(ariaProps, state);
+  const { tabPanelProps, isSelected } = createTabPanel<unknown>(ariaProps, state, panelRef);
 
   // Create focus ring for the panel
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
@@ -758,6 +759,7 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
   return (
     <Show when={shouldRender()}>
       <div
+        ref={setPanelRef}
         id={tabPanelProps.id}
         role={tabPanelProps.role}
         aria-labelledby={tabPanelProps["aria-labelledby"]}

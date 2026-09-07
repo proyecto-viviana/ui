@@ -23,6 +23,7 @@ import {
   TabsFixture,
   TabsPlainFixture,
   TabsCompFixture,
+  TabsFocusablePanelFixture,
   TabsBadgeFixture,
   TabsIconFixture,
   ListViewFixture,
@@ -39,6 +40,7 @@ describe("collection components SSR", () => {
     const tabs = renderToString(() => <TabsFixture />);
     const tabsBadge = renderToString(() => <TabsBadgeFixture />);
     const tabsIcon = renderToString(() => <TabsIconFixture />);
+    const tabsFocusablePanel = renderToString(() => <TabsFocusablePanelFixture />);
     const listview = renderToString(() => <ListViewFixture />);
     const listviewInteractive = renderToString(() => <ListViewInteractiveFixture />);
     const listviewStaticInteractive = renderToString(() => <ListViewStaticInteractiveFixture />);
@@ -53,6 +55,10 @@ describe("collection components SSR", () => {
     expect(tabsBadge).toContain('aria-selected="true"');
     // Element-first child order (icon then label) must keep the label text.
     expect(tabsIcon).toContain("Home");
+    expect(tabsFocusablePanel).toContain('role="tabpanel"');
+    expect(tabsFocusablePanel).toContain("textarea");
+    expect(tabsFocusablePanel).toContain('data-inert="true"');
+    expect(tabsFocusablePanel).toContain('data-testid="review-control"');
     expect(listview).toContain('role="row"');
     expect(listviewInteractive).toContain('role="row"');
     // Static `<ListViewItem>` children must appear in the SSR markup as real rows,
@@ -77,6 +83,7 @@ describe("collection components SSR", () => {
     writeFileSync(resolve(outDir, "tabs-ssr.html"), tabs, "utf8");
     writeFileSync(resolve(outDir, "tabs-badge-ssr.html"), tabsBadge, "utf8");
     writeFileSync(resolve(outDir, "tabs-icon-ssr.html"), tabsIcon, "utf8");
+    writeFileSync(resolve(outDir, "tabs-focusable-panel-ssr.html"), tabsFocusablePanel, "utf8");
     writeFileSync(resolve(outDir, "listview-ssr.html"), listview, "utf8");
     writeFileSync(resolve(outDir, "listview-interactive-ssr.html"), listviewInteractive, "utf8");
     writeFileSync(

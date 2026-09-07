@@ -193,6 +193,23 @@ describe("Tabs (solid-spectrum S2)", () => {
     expect(second).toHaveAttribute("tabindex", "0");
   });
 
+  it("only makes a panel without tabbable descendants a focus stop", async () => {
+    render(() => (
+      <Tabs aria-label="Writing sections" defaultSelectedKey="draft">
+        <TabList>
+          <Tab id="draft">Draft</Tab>
+        </TabList>
+        <TabPanel id="draft">
+          <textarea aria-label="Synopsis" />
+        </TabPanel>
+      </Tabs>
+    ));
+
+    await waitFor(() => {
+      expect(screen.getByRole("tabpanel")).not.toHaveAttribute("tabindex");
+    });
+  });
+
   it("maps density and labelBehavior onto stable DOM state", () => {
     const { container } = render(() => <TestTabs density="compact" labelBehavior="hide" />);
     const root = container.querySelector(".solidaria-Tabs") as HTMLElement;
@@ -281,7 +298,9 @@ describe("Tabs (solid-spectrum S2)", () => {
     expect(tab).toHaveAttribute("aria-labelledby", label.id);
   });
 
-  it("supports TabPanels wrapper and force-mounted panels", () => {
+  it("supports TabPanels wrapper and rechecks a force-mounted panel on selection", async () => {
+    const user = setupUser();
+
     render(() => (
       <Tabs aria-label="Wrapped sections" defaultSelectedKey="tab1">
         <TabList>
@@ -293,7 +312,9 @@ describe("Tabs (solid-spectrum S2)", () => {
             Content 1
           </TabPanel>
           <TabPanel id="tab2" shouldForceMount>
-            Content 2
+            <button type="button" data-testid="second-panel-control">
+              Continue
+            </button>
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -307,6 +328,12 @@ describe("Tabs (solid-spectrum S2)", () => {
     expect(panels[1]).not.toHaveAttribute("role");
     expect(panels[1]).toHaveAttribute("data-inert", "true");
     expect(document.querySelector(".solidaria-TabPanels")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("tab", { name: "Second" }));
+    await waitFor(() => {
+      expect(panels[1]).not.toHaveAttribute("data-inert");
+      expect(panels[1]).not.toHaveAttribute("tabindex");
+    });
   });
 
   it("merges slot context props from TabsContext", () => {

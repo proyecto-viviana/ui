@@ -150,6 +150,51 @@ describe("Tabs", () => {
       expect(panel).toHaveClass("solidaria-TabPanel");
     });
 
+    it("only makes a panel without tabbable descendants a focus stop", async () => {
+      render(() => (
+        <Tabs aria-label="Writing sections" defaultSelectedKey="draft">
+          <TabList>
+            <Tab id="draft">Draft</Tab>
+          </TabList>
+          <TabPanel id="draft">
+            <textarea aria-label="Synopsis" />
+          </TabPanel>
+        </Tabs>
+      ));
+
+      await waitFor(() => {
+        expect(screen.getByRole("tabpanel")).not.toHaveAttribute("tabindex");
+      });
+    });
+
+    it("rechecks a force-mounted panel when it becomes selected", async () => {
+      render(() => (
+        <Tabs aria-label="Writing sections" defaultSelectedKey="draft">
+          <TabList>
+            <Tab id="draft">Draft</Tab>
+            <Tab id="review">Review</Tab>
+          </TabList>
+          <TabPanel id="draft" shouldForceMount>
+            <textarea aria-label="Synopsis" />
+          </TabPanel>
+          <TabPanel id="review" shouldForceMount>
+            <button type="button" data-testid="review-control">
+              Continue
+            </button>
+          </TabPanel>
+        </Tabs>
+      ));
+
+      const reviewPanel = screen.getByTestId("review-control").parentElement;
+      expect(reviewPanel).toHaveAttribute("data-inert", "true");
+
+      await user.click(screen.getByRole("tab", { name: "Review" }));
+      await waitFor(() => {
+        expect(reviewPanel).not.toHaveAttribute("data-inert");
+        expect(reviewPanel).not.toHaveAttribute("tabindex");
+      });
+    });
+
     it("should render TabPanels wrapper with default class", () => {
       render(() => (
         <Tabs<TestTab> items={testTabs} getKey={(item) => item.id} defaultSelectedKey="tab1">

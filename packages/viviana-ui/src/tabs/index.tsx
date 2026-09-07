@@ -1249,6 +1249,7 @@ export function TabPanels(props: TabPanelsProps): JSX.Element {
 export function TabPanel(props: TabPanelProps): JSX.Element {
   const context = useContext(InternalTabsContext);
   const state = useContext(HeadlessTabsStateContext);
+  const [panelRef, setPanelRef] = createSignal<HTMLDivElement>();
   const [local, headlessProps] = splitProps(props, [
     "children",
     "styles",
@@ -1259,7 +1260,7 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
     "shouldForceMount",
   ]);
   const ariaProps = headlessProps as AriaTabPanelProps;
-  const { tabPanelProps, isSelected } = createTabPanel<unknown>(ariaProps, state);
+  const { tabPanelProps, isSelected } = createTabPanel<unknown>(ariaProps, state, panelRef);
   const { isFocused, isFocusVisible, focusProps } = createFocusRing();
   const isInert = () =>
     Boolean(local.shouldForceMount && ariaProps.id !== undefined && !isSelected());
@@ -1336,6 +1337,7 @@ export function TabPanel(props: TabPanelProps): JSX.Element {
   return (
     <Show when={shouldRender()}>
       <div
+        ref={setPanelRef}
         id={hasTabPanelSemantics() ? tabPanelProps.id : undefined}
         role={context.showTabs() ? (isInert() ? undefined : tabPanelProps.role) : "group"}
         aria-labelledby={
