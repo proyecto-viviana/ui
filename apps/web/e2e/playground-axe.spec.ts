@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { routes } from "./helpers/routes";
 import { CONTRAST_EXEMPTIONS } from "./helpers/contrast-exemptions";
+import { PLAYGROUND_TARGET_SIZE_EXEMPTIONS } from "./helpers/target-size-exemptions";
 
 const runAxe = process.env.RUN_AXE === "1";
 const includeContrast = process.env.AXE_INCLUDE_CONTRAST === "1";
@@ -89,15 +90,16 @@ test.describe("Playground accessibility (axe scan)", () => {
   const aaExcludedSelectors = includeContrast
     ? CONTRAST_EXEMPTIONS.map(({ selector }) => selector)
     : [];
-  // WCAG 2.2 `target-size` (2.5.8) flags the date/time segments
-  // (role="spinbutton", ~20px wide). These mirror React Spectrum S2 exactly
-  // (dateSegment paddingX:2 / paddingY:2, container minWidth:0) — upstream's
-  // own segments are the same size and adjacency, so they fail this check too.
-  // They are inline parts of a single composite date widget (the WCAG 2.5.8
-  // "inline" exception); widening or spacing them to 24px would diverge from
-  // S2. comparison-axe disables the same rule (S2 compact ActionGroup is 21px
-  // tall). D8 pair-diff is the target-size authority; axe is smoke.
-  const aa22DisabledRules = [...aaDisabledRules, "target-size"];
+  // WCAG 2.2 `target-size` (2.5.8) stays on. Compact RAC / S2 tokens under
+  // 24px are selector-scoped exemptions in PLAYGROUND_TARGET_SIZE_EXEMPTIONS —
+  // classified in `.claude/current/wcag-258-target-size.md` (ticket #492).
+  // Raising those controls to 24px would invent a size (Rule #2 / ADR 0001).
+  // D8 pair-diff is the certified target-size gate; axe is smoke.
+  const aa22DisabledRules = [...aaDisabledRules];
+  const aa22ExcludedSelectors = [
+    ...aaExcludedSelectors,
+    ...PLAYGROUND_TARGET_SIZE_EXEMPTIONS.map(({ selector }) => selector),
+  ];
 
   for (const theme of ["dark", "light"] as const) {
     // Level 1: WCAG 2.1 A + AA (the standard bar — must pass)
@@ -126,9 +128,10 @@ test.describe("Playground accessibility (axe scan)", () => {
         ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"],
         {
           disabledRules: aa22DisabledRules,
-          excludedSelectors: aaExcludedSelectors,
+          excludedSelectors: aa22ExcludedSelectors,
         },
       );
+      logViolations(`[${theme}] WCAG 2.2 AA`, results.violations);
       expect(results.violations).toEqual([]);
     });
 

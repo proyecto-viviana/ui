@@ -38,6 +38,7 @@ completed operational records.
 | [admin-dashboard.md](admin-dashboard.md)   | Development-only ticket-board interface.  |
 | [glasselated-port.md](glasselated-port.md) | Glasselated register and source boundary. |
 | [kumo-experiment.md](kumo-experiment.md)   | Kumo experiment boundary.                 |
+| [wcag-258-target-size.md](wcag-258-target-size.md) | WCAG 2.5.8 axe `target-size` classification. |
 
 ## Documentation contract
 

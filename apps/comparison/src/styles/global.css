@@ -2170,6 +2170,31 @@ a {
   font-family: inherit;
 }
 
+/*
+ * Harness UA chrome meets WCAG 2.5.8's 24×24 CSS-pixel floor.
+ *
+ * Mark fixture trampolines (Before/After keyboard-entry buttons) with
+ * `.comparison-harness-ua-target`. The sibling selectors catch the same
+ * classless buttons where they sit immediately beside
+ * `[data-comparison-control-root]`, so the floor holds without waiting for
+ * the axe helper. Keyboard-shortcut island buttons are the same out-of-canvas
+ * UA chrome.
+ *
+ * Do not match classless ActionGroup item hosts (Solid items and the React
+ * hooks oracle): those live inside the control root and keep upstream/oracle
+ * size. Styled S2 / RAC controls keep their own tokens (ADR 0001). D8
+ * pair-diff remains the certified target-size gate; axe is smoke with scoped
+ * exemptions in `.claude/current/wcag-258-target-size.md` (ticket #492).
+ */
+.comparison-harness-ua-target,
+.comparison-reference-canvas button:not([class]):has(+ [data-comparison-control-root]),
+.comparison-reference-canvas [data-comparison-control-root] + button:not([class]),
+button[data-shortcut-case],
+main[data-shortcut-bubble-count] button {
+  min-inline-size: 24px;
+  min-block-size: 24px;
+}
+
 .comparison-reference-frame[data-comparison-layer="styled"] .comparison-reference-canvas {
   gap: 14px;
 }

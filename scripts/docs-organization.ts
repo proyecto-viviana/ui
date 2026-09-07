@@ -17,6 +17,7 @@ export const LIVE_CURRENT_DOCS = [
   ".claude/current/steering.md",
   ".claude/current/tooling.md",
   ".claude/current/upstream-sync.md",
+  ".claude/current/wcag-258-target-size.md",
 ] as const;
 
 const FINISHED_STATUSES = new Set(["archived", "done", "superseded"]);

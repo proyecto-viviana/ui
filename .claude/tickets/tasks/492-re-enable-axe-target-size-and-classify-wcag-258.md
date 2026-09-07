@@ -4,30 +4,33 @@ type: task
 title: "Re-enable axe target-size and classify WCAG 2.5.8"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from the 2026-09-07 WCAG audit and overnight step 4; owner: document the waiver and ideally remove it; classify React Aria against the five 2.5.8 exceptions",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implementer: adopt global.css dirt, narrow the harness UA floor off ActionGroup hosts, re-enable axe target-size, census and classify",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "target-size on in both WCAG 2.2 AA smokes; remaining comparison fails are User Agent Control (React ActionGroup oracle items, Toolbar fixture items, Autocomplete unstyled search input). Playground zero target-size nodes. Prove: COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer vp run a11y:axe:comparison (81 passed); vp run a11y:axe:aa (2 passed). cwd /home/emoporemilio/projects/viviana-hub/ui. D8 assert24 unused.",
+    }
 ---
 
-Both axe configs disable `target-size` globally. Comparison:
-`apps/comparison/e2e/comparison-axe.spec.ts` (`comparisonAxeDisabledRules`).
-Playground: `apps/web/e2e/playground-axe.spec.ts` (`aa22DisabledRules`). The
-stated reason is S2 compact tokens under 24px. That is parity, not one of
-the WCAG 2.2 Success Criterion 2.5.8 exceptions (spacing, equivalent,
-inline, user-agent control, essential). D8 pair-diff is not a 2.5.8
-exception either.
-
-Owner 2026-09-07: document the waiver; ideally remove it; understand whether
-React Aria / S2 themselves fail 2.5.8.
-
-Uncommitted same-lane dirt already starts the fixture-chrome floor:
-`apps/comparison/src/styles/global.css` (bare `.comparison-reference-canvas
-button:not([class])` at 24×24). Adopt that path. Do not invent sizes on
-styled S2 controls (Rule #2 / ADR 0001).
+Classification record: `.claude/current/wcag-258-target-size.md`. Executable
+selectors: `apps/comparison/e2e/target-size-exemptions.ts`,
+`apps/web/e2e/helpers/target-size-exemptions.ts`. Neither smoke config disables
+`target-size` globally. Remaining comparison fails are User Agent Control
+(React ActionGroup oracle items; Toolbar fixture items on both stacks;
+Autocomplete unstyled search input on both stacks). Playground WCAG 2.2 AA
+produced zero `target-size` nodes. No Solid-only miss. D8 `assert24` stays
+unused.
 
 ## Work
 
