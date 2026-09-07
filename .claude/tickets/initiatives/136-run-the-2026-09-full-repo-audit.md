@@ -31,6 +31,11 @@ history:
       at: 2026-09-03,
       note: "Wave A unblocked PR #33 on local main: #437/#438/#440 merged. menu-focus.spec.ts:20, certified dnd-listbox D-reorder, /showcase/inputs contrast all green. #439 and #441 stay later.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "Overnight remainder children: #489 merged (atom CSS), #492 target-size, #493 certified remainders after the field fix. Pattern-audit #494–#496 parent #31.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

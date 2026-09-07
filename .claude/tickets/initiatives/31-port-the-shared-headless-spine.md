@@ -6,6 +6,11 @@ created: 2026-08-20
 status: in-progress
 history:
   - { state: in-progress, at: 2026-08-20, note: "migrated from roadmap item headless-spine-port" }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "pattern-audit children #494 IntersectionObserver onCleanup, #495 frozen popover/Icon/hidden-select reads, #496 mergeProps-source guard; RangeSlider stays #76",
+    }
 ---
 
 Port shared state, selection, keyboard, focus, and slot behavior at the lowest owning layer.
