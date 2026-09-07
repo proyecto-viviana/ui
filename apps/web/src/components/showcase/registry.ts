@@ -56,7 +56,6 @@ export const PANELS: readonly PanelDef[] = [
       "SelectBox",
       "SegmentedControl",
       "SegmentedControlItem",
-      "TabSwitch",
     ],
   },
   {

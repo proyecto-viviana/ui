@@ -3,12 +3,22 @@ id: 491
 type: task
 title: "Fold TabSwitch into SegmentedControl through a deprecated wrapper"
 created: 2026-09-07
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "opened when #9 was decided by Rule #2 under the owner's 2026-09-07 delegation; owns the convergence #9 only had to decide",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement fold-tabswitch-wrapper: mapping wrappers in both styled packages, consumers to SegmentedControl, minor Changeset, #509 removal ticket",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "TabSwitch maps onto package SegmentedControl (not an identity alias). Prove: Switch.test solid-spectrum 28 passed; viviana-ui 6 passed; SegmentedControl.test 8 and 1 passed; api:extract 82 pages; guard:api-reference pass. typecheck is HEAD splitProps/unknown (703 errors, none on named paths) — not repaired. Removal #509 open. cwd /home/emoporemilio/projects/viviana-hub/ui.",
     }
 ---
 
@@ -26,7 +36,7 @@ following breaking release.
   accent pill with white text, and none of S2 SegmentedControl's branches:
   `isDisabled`, `isJustified`, forced-colors, the reduced-motion slider
   (`react-spectrum/packages/@react-spectrum/s2/src/SegmentedControl.tsx:30-56,
-  116-131`). Its own comment says the track matches S2 SegmentedControl.
+116-131`). Its own comment says the track matches S2 SegmentedControl.
 - That is duplicated upstream behavior with silent drift, not a documented
   local addition with a non-overlapping purpose (Rule #2).
 - Consumers: `apps/web/src/routes/showcase/selection.tsx`,
@@ -65,4 +75,18 @@ following breaking release.
 
 Follow-up to #9 and #8. Public export change: needs a Changeset and lands in
 the 2026-09 release (#443) only if finished before its evidence freeze,
-otherwise the next one.
+otherwise the next one. Removal is #509.
+
+## Proof
+
+cwd `/home/emoporemilio/projects/viviana-hub/ui`. Local, against the working
+tree that becomes the implementation commit.
+
+- `vp test run packages/solid-spectrum/test/Switch.test.tsx` — 28 passed
+- `vp test run packages/viviana-ui/test/Switch.test.tsx` — 6 passed
+- `vp test run packages/solid-spectrum/test/SegmentedControl.test.tsx` — 8 passed
+- `vp test run packages/viviana-ui/test/SegmentedControl.test.tsx` — 1 passed
+- `vp run api:extract` — wrote 82 reference pages; `TabSwitchProps.aria-label` required
+- `vp run guard:api-reference` — checked 82 reference pages
+- `vp run typecheck` — failed on HEAD `splitProps`/`unknown` (703 errors). Named paths: 0 errors. Not repaired (other slice).
+- Named-path `vp check` — pass (9 files fmt, 8 lint)

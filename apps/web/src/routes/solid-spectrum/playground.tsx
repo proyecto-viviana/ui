@@ -8,7 +8,8 @@ import {
   Content,
   Avatar,
   AvatarGroup,
-  TabSwitch,
+  SegmentedControl,
+  SegmentedControlItem,
   ToggleSwitch,
   Checkbox,
   RadioGroup,
@@ -799,7 +800,7 @@ function Playground() {
               id="switch"
               visibleSections={visibleSections}
               title="Switch"
-              description="Toggle and tab switch controls"
+              description="Toggle and segmented controls"
             >
               <Flex direction="column" gap={4}>
                 <Flex alignItems="center" gap={4}>
@@ -816,16 +817,16 @@ function Playground() {
                     class={typeRoles.label}
                     style={{ display: "block", "margin-bottom": "8px" }}
                   >
-                    Tab Switch:
+                    Segmented:
                   </span>
-                  <TabSwitch
-                    options={[
-                      { label: "TRENDING", value: "trending" },
-                      { label: "LATEST", value: "latest" },
-                    ]}
-                    value={switchValue()}
-                    onChange={setSwitchValue}
-                  />
+                  <SegmentedControl
+                    aria-label="Feed"
+                    selectedKey={switchValue()}
+                    onSelectionChange={(id) => setSwitchValue(String(id))}
+                  >
+                    <SegmentedControlItem id="trending">TRENDING</SegmentedControlItem>
+                    <SegmentedControlItem id="latest">LATEST</SegmentedControlItem>
+                  </SegmentedControl>
                   <Text
                     styles={typeRoles.meta}
                     UNSAFE_style={{ display: "block", "margin-top": "8px" }}

@@ -15,7 +15,11 @@ const BARREL = resolve(here, "../../../../packages/viviana-ui/src/index.ts");
 
 /** Value exports that are real components but intentionally have no showcase
  * panel home. Keep this list empty unless there is a written reason. */
-const EXEMPT: readonly string[] = [];
+const EXEMPT: readonly string[] = [
+  // #491: deprecated mapping wrapper onto SegmentedControl; removed from the
+  // selection panel. Follow-up removal ticket drops the export.
+  "TabSwitch",
+];
 
 function barrelValueExports(): Set<string> {
   const src = readFileSync(BARREL, "utf8");

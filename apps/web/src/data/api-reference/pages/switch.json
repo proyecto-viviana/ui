@@ -350,28 +350,35 @@
           "name": "options",
           "type": "SwitchOption[]",
           "required": true,
-          "description": "",
+          "description": "Options rendered as {@link SegmentedControlItem} children (`value` → `id`, `label` → children).",
           "origin": "viviana-ui"
         },
         {
           "name": "value",
           "type": "string",
           "required": false,
-          "description": "",
+          "description": "Selected option `value`, mapped to SegmentedControl `selectedKey`. Omit when unset so first-item register runs.",
           "origin": "viviana-ui"
         },
         {
           "name": "onChange",
           "type": "(value: string) => void",
           "required": false,
-          "description": "",
+          "description": "Called with the selected option `value` string. Maps to SegmentedControl `onSelectionChange`.",
           "origin": "viviana-ui"
         },
         {
           "name": "class",
           "type": "string",
           "required": false,
-          "description": "",
+          "description": "Class name applied to the SegmentedControl radiogroup (`class`).",
+          "origin": "viviana-ui"
+        },
+        {
+          "name": "aria-label",
+          "type": "string",
+          "required": true,
+          "description": "Accessible name for the radiogroup. Passed through to SegmentedControl `aria-label`. Required; not defaulted.",
           "origin": "viviana-ui"
         }
       ]

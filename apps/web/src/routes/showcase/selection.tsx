@@ -1,5 +1,5 @@
 /* Panel — Selection. Checkbox/Radio/Switch families plus the register's own
-   SelectBoxGroup, SegmentedControl, and TabSwitch. Composed from the shared
+   SelectBoxGroup and SegmentedControl. Composed from the shared
    Panel/Demo/Row chrome, following the buttons.tsx exemplar. */
 import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, For } from "solid-js";
@@ -13,7 +13,6 @@ import {
   SelectBox,
   SelectBoxGroup,
   Switch,
-  TabSwitch,
 } from "@proyecto-viviana/ui";
 import { Demo, Panel, Row } from "@/components/showcase/chrome";
 import { panelBySlug, panelSeo } from "@/components/showcase/registry";
@@ -24,11 +23,6 @@ export const Route = createFileRoute("/showcase/selection")({
 });
 
 const SIZES = ["S", "M", "L", "XL"] as const;
-
-const TAB_SWITCH_OPTIONS = [
-  { label: "List", value: "list" },
-  { label: "Grid", value: "grid" },
-];
 
 interface SelectBoxItem {
   id: string;
@@ -43,7 +37,7 @@ const SELECT_BOX_ITEMS: SelectBoxItem[] = [
 
 function Page() {
   const def = panelBySlug("selection")!;
-  const [tabSwitchValue, setTabSwitchValue] = createSignal("list");
+  const [layout, setLayout] = createSignal("list");
 
   return (
     <Panel def={def}>
@@ -146,7 +140,7 @@ function Page() {
         </SelectBoxGroup>
       </Demo>
 
-      <Demo label="TabSwitch — custom Viviana control, no S2 upstream, fully controlled">
+      <Demo label="SegmentedControl — fully controlled">
         <span
           style={{
             font: "var(--type-terminal)",
@@ -154,13 +148,16 @@ function Page() {
             color: "var(--text-secondary)",
           }}
         >
-          {tabSwitchValue()}
+          {layout()}
         </span>
-        <TabSwitch
-          options={TAB_SWITCH_OPTIONS}
-          value={tabSwitchValue()}
-          onChange={setTabSwitchValue}
-        />
+        <SegmentedControl
+          aria-label="Layout"
+          selectedKey={layout()}
+          onSelectionChange={(id) => setLayout(String(id))}
+        >
+          <SegmentedControlItem id="list">List</SegmentedControlItem>
+          <SegmentedControlItem id="grid">Grid</SegmentedControlItem>
+        </SegmentedControl>
       </Demo>
     </Panel>
   );
