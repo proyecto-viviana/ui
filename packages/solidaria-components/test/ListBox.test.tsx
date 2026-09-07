@@ -690,6 +690,70 @@ describe("ListBox", () => {
         vi.unstubAllGlobals();
       }
     });
+
+    it("disconnects the load-more IntersectionObserver on unmount", () => {
+      const observe = vi.fn();
+      const disconnect = vi.fn();
+      class TestIntersectionObserver {
+        constructor(_callback: IntersectionObserverCallback) {}
+        observe = observe;
+        disconnect = disconnect;
+        unobserve = vi.fn();
+        takeRecords = () => [];
+        root = null;
+        rootMargin = "";
+        thresholds = [];
+      }
+      vi.stubGlobal("IntersectionObserver", TestIntersectionObserver);
+
+      try {
+        render(() => (
+          <ul role="listbox" aria-label="Load test">
+            <ListBoxLoadMoreItem onLoadMore={() => {}} />
+          </ul>
+        ));
+
+        expect(observe).toHaveBeenCalled();
+        expect(disconnect).not.toHaveBeenCalled();
+        cleanup();
+        expect(disconnect).toHaveBeenCalled();
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it("disconnects the previous load-more IntersectionObserver when scrollOffset changes", () => {
+      const observe = vi.fn();
+      const disconnect = vi.fn();
+      class TestIntersectionObserver {
+        constructor(_callback: IntersectionObserverCallback) {}
+        observe = observe;
+        disconnect = disconnect;
+        unobserve = vi.fn();
+        takeRecords = () => [];
+        root = null;
+        rootMargin = "";
+        thresholds = [];
+      }
+      vi.stubGlobal("IntersectionObserver", TestIntersectionObserver);
+      const [scrollOffset, setScrollOffset] = createSignal(1);
+
+      try {
+        render(() => (
+          <ul role="listbox" aria-label="Load test">
+            <ListBoxLoadMoreItem onLoadMore={() => {}} scrollOffset={scrollOffset()} />
+          </ul>
+        ));
+
+        expect(observe).toHaveBeenCalledTimes(1);
+        expect(disconnect).not.toHaveBeenCalled();
+        setScrollOffset(2);
+        expect(disconnect).toHaveBeenCalledTimes(1);
+        expect(observe).toHaveBeenCalledTimes(2);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
   });
 
   // ============================================

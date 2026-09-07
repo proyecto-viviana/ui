@@ -14,6 +14,7 @@ import { render, screen, cleanup, fireEvent, waitFor } from "@solidjs/testing-li
 import {
   Tree,
   TreeItem,
+  TreeLoadMoreItem,
   TreeExpandButton,
   TreeHeader,
   TreeSection,
@@ -95,6 +96,34 @@ function pressWithMouse(target: HTMLElement): void {
   fireEvent(target, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
   fireEvent(target, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
   fireEvent.click(target);
+}
+
+function setupIntersectionObserverMock() {
+  const originalIntersectionObserver = globalThis.IntersectionObserver;
+  const observe = vi.fn();
+  const disconnect = vi.fn();
+
+  class MockIntersectionObserver implements IntersectionObserver {
+    readonly root = null;
+    readonly rootMargin = "";
+    readonly thresholds = [];
+    constructor(_callback: IntersectionObserverCallback) {}
+    observe = observe;
+    unobserve = vi.fn();
+    disconnect = disconnect;
+    takeRecords = vi.fn(() => []);
+  }
+
+  globalThis.IntersectionObserver =
+    MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
+  return {
+    observe,
+    disconnect,
+    restore: () => {
+      globalThis.IntersectionObserver = originalIntersectionObserver;
+    },
+  };
 }
 
 describe("Tree", () => {
@@ -235,6 +264,42 @@ describe("Tree", () => {
 
       fireEvent.focus(screen.getByText("Load more"));
       expect(onLoadMore).toHaveBeenCalled();
+    });
+
+    it("disconnects the load-more IntersectionObserver on unmount", () => {
+      const observer = setupIntersectionObserverMock();
+
+      try {
+        render(() => (
+          <Tree items={createTestItems()} aria-label="Test Tree" hasMore onLoadMore={() => {}}>
+            {(item) => <TreeItem id={item.key}>{item.textValue}</TreeItem>}
+          </Tree>
+        ));
+
+        expect(observer.observe).toHaveBeenCalled();
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        cleanup();
+        expect(observer.disconnect).toHaveBeenCalled();
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("disconnects the previous load-more IntersectionObserver when scrollOffset changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [scrollOffset, setScrollOffset] = createSignal(1);
+
+      try {
+        render(() => <TreeLoadMoreItem onLoadMore={() => {}} scrollOffset={scrollOffset()} />);
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setScrollOffset(2);
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
     });
 
     it("should apply draggable item semantics when drag hooks are provided", () => {

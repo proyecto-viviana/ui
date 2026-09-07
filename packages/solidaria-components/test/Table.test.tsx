@@ -20,6 +20,7 @@ import {
   TableFooter,
   TableRow,
   TableCell,
+  TableLoadMoreItem,
   TableSelectionCheckbox,
   TableSelectAllCheckbox,
   ColumnResizer,
@@ -72,6 +73,7 @@ function setupIntersectionObserverMock() {
 
   return {
     observe,
+    disconnect,
     triggerIntersection: (entries: IntersectionObserverEntry[]) => triggerIntersection?.(entries),
     restore: () => {
       globalThis.IntersectionObserver = originalIntersectionObserver;
@@ -1525,6 +1527,66 @@ describe("Table", () => {
         await Promise.resolve();
         observer.triggerIntersection([{ isIntersecting: true } as IntersectionObserverEntry]);
         expect(onLoadMore).toHaveBeenCalledTimes(1);
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("disconnects the load-more IntersectionObserver on unmount", () => {
+      const observer = setupIntersectionObserverMock();
+
+      try {
+        render(() => (
+          <Table
+            items={testData}
+            columns={testColumns}
+            getKey={(item: any) => item.id}
+            aria-label="Pokemon"
+          >
+            {() => (
+              <>
+                <TableHeader>
+                  <TableColumn id="name">{() => <>Name</>}</TableColumn>
+                </TableHeader>
+                <TableBody hasMore onLoadMore={() => {}}>
+                  {(item: any) => (
+                    <TableRow id={item.id} item={item}>
+                      {() => <TableCell>{() => <>{item.name}</>}</TableCell>}
+                    </TableRow>
+                  )}
+                </TableBody>
+              </>
+            )}
+          </Table>
+        ));
+
+        expect(observer.observe).toHaveBeenCalled();
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        cleanup();
+        expect(observer.disconnect).toHaveBeenCalled();
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("disconnects the previous load-more IntersectionObserver when scrollOffset changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [scrollOffset, setScrollOffset] = createSignal(1);
+
+      try {
+        render(() => (
+          <table>
+            <tbody>
+              <TableLoadMoreItem onLoadMore={() => {}} scrollOffset={scrollOffset()} />
+            </tbody>
+          </table>
+        ));
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setScrollOffset(2);
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
       } finally {
         observer.restore();
       }

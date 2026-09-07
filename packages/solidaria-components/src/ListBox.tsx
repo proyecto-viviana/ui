@@ -1311,7 +1311,7 @@ export function ListBoxLoadMoreItem(props: ListBoxLoadMoreItemProps): JSX.Elemen
     );
 
     observer.observe(sentinelRef);
-    return () => observer.disconnect();
+    onCleanup(() => observer.disconnect());
   });
 
   const renderProps = useRenderProps(

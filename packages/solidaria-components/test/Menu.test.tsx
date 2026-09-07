@@ -2065,13 +2065,18 @@ describe("Menu async loading", () => {
     items?: typeof asyncItems;
     isLoading?: boolean;
     onLoadMore?: () => void;
+    scrollOffset?: number;
   }) {
     return (
       <Menu aria-label="async menu" renderEmptyState={() => <div>empty state</div>}>
         <For each={props.items ?? asyncItems}>
           {(item) => <MenuItem id={item.name}>{item.name}</MenuItem>}
         </For>
-        <MenuLoadMoreItem isLoading={props.isLoading} onLoadMore={props.onLoadMore}>
+        <MenuLoadMoreItem
+          isLoading={props.isLoading}
+          onLoadMore={props.onLoadMore}
+          scrollOffset={props.scrollOffset}
+        >
           Loading...
         </MenuLoadMoreItem>
       </Menu>
@@ -2167,6 +2172,53 @@ describe("Menu async loading", () => {
 
     MockObserver.instance.triggerCallback([{ isIntersecting: true }]);
     expect(onLoadMore).toHaveBeenCalledTimes(2);
+  });
+
+  it("disconnects the load-more IntersectionObserver on unmount", () => {
+    const observe = vi.fn();
+    const MockObserver = setupIntersectionObserverMock(observe);
+
+    render(() => <AsyncMenu items={asyncItems} onLoadMore={() => {}} />);
+
+    expect(observe).toHaveBeenCalled();
+    const previous = MockObserver.instance;
+    expect(previous.disconnect).not.toHaveBeenCalled();
+    cleanup();
+    expect(previous.disconnect).toHaveBeenCalled();
+  });
+
+  it("disconnects the previous load-more IntersectionObserver when scrollOffset changes", () => {
+    const observe = vi.fn();
+    const MockObserver = setupIntersectionObserverMock(observe);
+    const [scrollOffset, setScrollOffset] = createSignal(1);
+
+    render(() => (
+      <AsyncMenu items={asyncItems} onLoadMore={() => {}} scrollOffset={scrollOffset()} />
+    ));
+
+    const previous = MockObserver.instance;
+    expect(observe).toHaveBeenCalledTimes(1);
+    expect(previous.disconnect).not.toHaveBeenCalled();
+    setScrollOffset(2);
+    expect(previous.disconnect).toHaveBeenCalled();
+    expect(MockObserver.instance).not.toBe(previous);
+    expect(observe).toHaveBeenCalledTimes(2);
+  });
+
+  it("disconnects the previous load-more IntersectionObserver when the collection changes", () => {
+    const observe = vi.fn();
+    const MockObserver = setupIntersectionObserverMock(observe);
+    const [items, setItems] = createSignal(asyncItems);
+
+    render(() => <AsyncMenu items={items()} onLoadMore={() => {}} />);
+
+    const previous = MockObserver.instance;
+    expect(observe).toHaveBeenCalledTimes(1);
+    expect(previous.disconnect).not.toHaveBeenCalled();
+    setItems([...asyncItems, { name: "Qux" }]);
+    expect(previous.disconnect).toHaveBeenCalled();
+    expect(MockObserver.instance).not.toBe(previous);
+    expect(observe).toHaveBeenCalledTimes(2);
   });
 
   it("keyboard navigation skips the loader row", () => {

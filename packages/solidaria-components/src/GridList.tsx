@@ -970,7 +970,7 @@ export function GridListLoadMoreItem(props: GridListLoadMoreItemProps): JSX.Elem
       { rootMargin: margin },
     );
     observer.observe(sentinelRef);
-    return () => observer.disconnect();
+    onCleanup(() => observer.disconnect());
   });
 
   const renderProps = useRenderProps(

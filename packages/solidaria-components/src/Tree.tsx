@@ -1860,7 +1860,7 @@ export function TreeLoadMoreItem(props: TreeLoadMoreItemProps): JSX.Element {
       { rootMargin: margin },
     );
     observer.observe(sentinelRef);
-    return () => observer.disconnect();
+    onCleanup(() => observer.disconnect());
   });
 
   const renderProps = useRenderProps(

@@ -4,10 +4,12 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
+import { createSignal } from "solid-js";
 import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 import {
   GridList,
   GridListItem,
+  GridListLoadMoreItem,
   GridListSection,
   GridListHeader,
   GridListSelectionCheckbox,
@@ -28,6 +30,34 @@ function pressWithMouse(target: HTMLElement): void {
   fireEvent(target, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
   fireEvent(target, pointerEvent("pointerup", { pointerId: 1, pointerType: "mouse" }));
   fireEvent.click(target);
+}
+
+function setupIntersectionObserverMock() {
+  const originalIntersectionObserver = globalThis.IntersectionObserver;
+  const observe = vi.fn();
+  const disconnect = vi.fn();
+
+  class MockIntersectionObserver implements IntersectionObserver {
+    readonly root = null;
+    readonly rootMargin = "";
+    readonly thresholds = [];
+    constructor(_callback: IntersectionObserverCallback) {}
+    observe = observe;
+    unobserve = vi.fn();
+    disconnect = disconnect;
+    takeRecords = vi.fn(() => []);
+  }
+
+  globalThis.IntersectionObserver =
+    MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
+  return {
+    observe,
+    disconnect,
+    restore: () => {
+      globalThis.IntersectionObserver = originalIntersectionObserver;
+    },
+  };
 }
 
 describe("GridList", () => {
@@ -171,6 +201,52 @@ describe("GridList", () => {
 
       fireEvent.focus(screen.getByText("Load more"));
       expect(onLoadMore).toHaveBeenCalled();
+    });
+
+    it("disconnects the load-more IntersectionObserver on unmount", () => {
+      const observer = setupIntersectionObserverMock();
+
+      try {
+        render(() => (
+          <GridList
+            items={testItems}
+            getKey={(item) => item.id}
+            aria-label="Fruits"
+            hasMore
+            onLoadMore={() => {}}
+          >
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        ));
+
+        expect(observer.observe).toHaveBeenCalled();
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        cleanup();
+        expect(observer.disconnect).toHaveBeenCalled();
+      } finally {
+        observer.restore();
+      }
+    });
+
+    it("disconnects the previous load-more IntersectionObserver when scrollOffset changes", () => {
+      const observer = setupIntersectionObserverMock();
+      const [scrollOffset, setScrollOffset] = createSignal(1);
+
+      try {
+        render(() => <GridListLoadMoreItem onLoadMore={() => {}} scrollOffset={scrollOffset()} />);
+
+        expect(observer.observe).toHaveBeenCalledTimes(1);
+        expect(observer.disconnect).not.toHaveBeenCalled();
+        setScrollOffset(2);
+        expect(observer.disconnect).toHaveBeenCalledTimes(1);
+        expect(observer.observe).toHaveBeenCalledTimes(2);
+      } finally {
+        observer.restore();
+      }
     });
 
     it("should apply draggable item semantics when drag hooks are provided", () => {

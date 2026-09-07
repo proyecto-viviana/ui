@@ -1883,7 +1883,7 @@ export function MenuLoadMoreItem(props: MenuLoadMoreItemProps): JSX.Element {
       { rootMargin },
     );
     observer.observe(current);
-    return () => observer.disconnect();
+    onCleanup(() => observer.disconnect());
   });
 
   const isLoading = () => !!local.isLoading;

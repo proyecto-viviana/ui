@@ -1528,7 +1528,7 @@ export function TableLoadMoreItem(props: TableLoadMoreItemProps): JSX.Element {
       { rootMargin: margin },
     );
     observer.observe(sentinelRef);
-    return () => observer.disconnect();
+    onCleanup(() => observer.disconnect());
   });
 
   const renderProps = useRenderProps(
