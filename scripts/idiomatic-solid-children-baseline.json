@@ -32,13 +32,6 @@
       "ticket": 168
     },
     {
-      "file": "packages/solid-spectrum/src/button/ActionButton.tsx",
-      "ident": "resolvedChildren",
-      "ordinal": 1,
-      "line": 400,
-      "ticket": 168
-    },
-    {
       "file": "packages/solid-spectrum/src/button/LinkButton.tsx",
       "ident": "resolvedChildren",
       "ordinal": 0,
@@ -134,13 +127,6 @@
       "ident": "resolvedChildren",
       "ordinal": 0,
       "line": 329,
-      "ticket": 168
-    },
-    {
-      "file": "packages/viviana-ui/src/button/ActionButton.tsx",
-      "ident": "resolvedChildren",
-      "ordinal": 1,
-      "line": 405,
       "ticket": 168
     },
     {
