@@ -36,6 +36,11 @@ history:
       at: 2026-09-07,
       note: "Overnight remainder children: #489 merged (atom CSS), #492 target-size, #493 certified remainders after the field fix. Pattern-audit #494–#496 parent #31.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "#500 host inline pressScale already matches S2; #511 owns the remaining 3D pressed D3 raster burn-down",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

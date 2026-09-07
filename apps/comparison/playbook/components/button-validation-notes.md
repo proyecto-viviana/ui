@@ -8,6 +8,25 @@ evidence from the original 2026-05-13 pass remains below; this closeout records
 the current S2 docs/source parity fixes, root DOM contract checks, and refreshed
 Button-specific gates.
 
+## Pressed D3 pressScale Geometry Closeout
+
+- Date: 2026-09-07. Ticket #500, remainder #511.
+- Finding: the 39 unwaived D3 titles are inner state `pressed`. Host inline
+  `pressScale` already matches upstream S2
+  (`perspective(…) translate3d(0, 0, -2px)` plus `will-change: transform`).
+  Chromium dumps on Button `accent-fill · light` show identical specified
+  transform, computed `matrix3d`, `transform-origin`, popover-clone box, and
+  text markup versus React. `cloneNode` copies the inline string. D1
+  `transform` / `will-change` already passed. The remaining mismatch is
+  label-box raster of that matching 3D press, not a missing host transform
+  and not LSB.
+- Fix on this ticket: mounted `Button` assertion that a pressed host with a
+  measurable box flushes `perspective(` and `translate3d(0, 0, -2px)` onto
+  `element.style` and the clone. No style-macro `isPressed` retouch, no
+  comparison CSS, no `pressScale` on ToggleButtonGroup, no
+  `currentButtonPairDiff`.
+- Remainder: #511 (parent #136), re-measure by 2026-10-07.
+
 ## Reduced-Motion Transition Closeout
 
 - Date: 2026-09-01, extended to ActionButton 2026-09-07.

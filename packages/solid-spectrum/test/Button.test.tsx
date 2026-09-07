@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test"
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
 import { Button, ButtonContext } from "../src/button";
-import { setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
+import { firePointerDown, setupUser } from "@proyecto-viviana/solid-spectrum-test-utils";
 import CrossIcon from "../src/icon/ui-icons/Cross";
 import { pressScale } from "../src/pressScale";
 
@@ -249,6 +249,34 @@ describe("Button", () => {
       } finally {
         restore();
       }
+    });
+
+    it("flushes the upstream press transform onto a mounted host with a measurable box", () => {
+      render(() => <Button>Save</Button>);
+      const button = screen.getByRole("button") as HTMLButtonElement;
+      vi.spyOn(button, "getBoundingClientRect").mockReturnValue({
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 120,
+        bottom: 48,
+        width: 120,
+        height: 48,
+        toJSON: () => ({}),
+      } as DOMRect);
+
+      firePointerDown(button);
+
+      expect(button).toHaveAttribute("data-pressed", "true");
+      expect(button.style.transform).toContain("perspective(");
+      expect(button.style.transform).toContain("translate3d(0, 0, -2px)");
+      expect(button.getAttribute("style") ?? "").toContain("perspective(");
+      expect(button.getAttribute("style") ?? "").toContain("translate3d(0, 0, -2px)");
+
+      const clone = button.cloneNode(true) as HTMLButtonElement;
+      expect(clone.style.transform).toContain("perspective(");
+      expect(clone.style.transform).toContain("translate3d(0, 0, -2px)");
     });
   });
 

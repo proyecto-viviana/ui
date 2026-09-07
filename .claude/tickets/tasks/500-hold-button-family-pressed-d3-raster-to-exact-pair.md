@@ -4,12 +4,22 @@ type: task
 title: "Hold button-family pressed D3 raster to exact pair"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement button-family-pressed-d3: host inline pressScale, keep exactPairDiff",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "host inline pressScale already matches S2 perspective+translate3d and is clone-visible; mounted Button.test pressScale assertion; 39 D3 pressed titles stay red at exactPairDiff; child #511 names 2026-10-07 burn-down. No currentButtonPairDiff. certified-waivers.json stays [].",
     }
 ---
 
@@ -36,4 +46,4 @@ Those 39 titles are green at `exactPairDiff`, or a child waiver names a dated bu
 
 ## Relationship
 
-Triage class of #493. Sibling under #136. Distinct from #488 (Toggle reduced-motion D2). #484 is merged and does not own these D3 reds.
+Triage class of #493. Sibling under #136. Distinct from #488 (Toggle reduced-motion D2). #484 is merged and does not own these D3 reds. Child **#511** owns the remaining 3D pressed raster burn-down (2026-10-07) after host inline `pressScale` was shown to match S2.
