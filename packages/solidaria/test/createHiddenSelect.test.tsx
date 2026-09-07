@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, cleanup, fireEvent, screen } from "@solidjs/testing-library";
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { createHiddenSelect, HiddenSelect } from "../src/select/createHiddenSelect";
 import type { SelectState, Key, Collection, CollectionNode } from "@proyecto-viviana/solid-stately";
 import { createFormValidationState } from "@proyecto-viviana/solid-stately";
@@ -230,6 +230,38 @@ describe("createHiddenSelect", () => {
       fireEvent.reset(form);
 
       // Should reset to first key
+      expect(state.selectedKey()).toBe("cat");
+    });
+
+    it("should reset selection when the select mounts after the first effect", () => {
+      const state = createMockState({ items: testItems, selectedKey: "dog" });
+      const [mounted, setMounted] = createSignal(false);
+
+      render(() => {
+        const { selectProps } = createHiddenSelect({ state, name: "pet" });
+
+        return (
+          <form data-testid="form">
+            <Show when={mounted()}>
+              <select {...selectProps}>
+                <option value="">Select...</option>
+                <option value="cat">Cat</option>
+                <option value="dog">Dog</option>
+                <option value="bird">Bird</option>
+              </select>
+            </Show>
+          </form>
+        );
+      });
+
+      state.setSelectedKey("bird");
+      expect(state.selectedKey()).toBe("bird");
+
+      setMounted(true);
+
+      const form = screen.getByTestId("form") as HTMLFormElement;
+      fireEvent.reset(form);
+
       expect(state.selectedKey()).toBe("cat");
     });
   });

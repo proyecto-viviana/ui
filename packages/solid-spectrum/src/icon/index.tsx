@@ -1,4 +1,5 @@
 import type { Component, JSX } from "solid-js";
+import { Dynamic } from "solid-js/web";
 import { Icon as HeadlessIcon, type IconRenderProps } from "@proyecto-viviana/solidaria-components";
 import type { PressEvent } from "@proyecto-viviana/solidaria";
 export { IconContext, IllustrationContext, createIcon, createIllustration } from "./spectrum-icon";
@@ -41,7 +42,6 @@ export interface IconProps {
 export function Icon(props: IconProps): JSX.Element {
   const size = () => props.size ?? 24;
   const color = () => props.color ?? "var(--color-primary-500)";
-  const IconComponent = props.icon;
 
   const getClassName = (_renderProps: IconRenderProps): string => {
     const classList = ["vui-icon"];
@@ -66,11 +66,11 @@ export function Icon(props: IconProps): JSX.Element {
     >
       {props.withShadow && (
         <div class="vui-icon__shadow" aria-hidden="true">
-          <IconComponent size={size()} color="var(--color-accent)" />
+          <Dynamic component={props.icon} size={size()} color="var(--color-accent)" />
         </div>
       )}
       <div class="vui-icon__main">
-        <IconComponent size={size()} color={color()} />
+        <Dynamic component={props.icon} size={size()} color={color()} />
       </div>
     </HeadlessIcon>
   );

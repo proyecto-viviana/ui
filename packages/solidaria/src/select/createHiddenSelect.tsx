@@ -74,11 +74,9 @@ export function createHiddenSelect<T>(
   // Track the select element for form reset/validation and for writing the
   // RAC-controlled `value` after options exist (HTML ignores <select value>
   // assigned before its <option>s).
-  let selectRef: HTMLSelectElement | undefined;
   const [selectEl, setSelectEl] = createSignal<HTMLSelectElement | undefined>();
 
   const assignSelectRef = (el: HTMLSelectElement | undefined) => {
-    selectRef = el;
     setSelectEl(el);
   };
 
@@ -134,9 +132,10 @@ export function createHiddenSelect<T>(
   // Set up form reset handler
   createEffect(() => {
     const p = getProps();
-    if (!selectRef) return;
+    const el = selectEl();
+    if (!el) return;
 
-    const form = selectRef.form;
+    const form = el.form;
     if (!form) return;
 
     const handleReset = () => {

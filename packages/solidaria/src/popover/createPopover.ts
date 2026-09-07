@@ -118,7 +118,7 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
   const groupRef = () => props.groupRef?.() ?? null;
   const isNonModal = () => props.isNonModal ?? false;
   const isKeyboardDismissDisabled = () => props.isKeyboardDismissDisabled ?? false;
-  const shouldCloseOnInteractOutside = props.shouldCloseOnInteractOutside;
+  const shouldCloseOnInteractOutside = () => props.shouldCloseOnInteractOutside;
   const isSubmenu = () => props.trigger === "SubmenuTrigger";
 
   // Overlay behavior (dismiss handling)
@@ -143,7 +143,7 @@ export function createPopover(props: AriaPopoverProps, state: OverlayTriggerStat
         return isKeyboardDismissDisabled();
       },
       get shouldCloseOnInteractOutside() {
-        return shouldCloseOnInteractOutside;
+        return shouldCloseOnInteractOutside();
       },
     },
     () => groupRef() ?? popoverRef(),

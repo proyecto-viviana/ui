@@ -4,12 +4,22 @@ type: task
 title: "Keep popover, Icon, and hidden-select reads reactive"
 created: 2026-09-07
 parent: 31
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from the 2026-09-07 Solid pattern audit: frozen shouldCloseOnInteractOutside, Icon prop snapshot, hidden-select reset reading a plain ref",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement keep-reads-reactive: getter, Icon JSX read, hidden-select selectEl(), update-after-mount tests",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "createPopover shouldCloseOnInteractOutside getter, both Icon wrappers read props.icon via Dynamic, hidden-select reset uses selectEl(). Prove: vp test run packages/solidaria/test/createPopover.test.tsx packages/solidaria/test/createHiddenSelect.test.tsx packages/solid-spectrum/test/Icon.test.tsx packages/viviana-ui/test/Icon.test.tsx — 4 files, 37 passed. cwd /home/emoporemilio/projects/viviana-hub/ui.",
     }
 ---
 
