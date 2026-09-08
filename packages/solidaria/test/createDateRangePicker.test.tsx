@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createDateRangePicker } from "../src/datepicker/createDateRangePicker";
 import { I18nProvider } from "../src/i18n";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 
 // The hook reads a small slice of RangeCalendarState: the disabled/read-only
 // flags, the selected value, and `formatValue` (for the selected-range SR
@@ -153,5 +154,72 @@ describe("createDateRangePicker", () => {
     fireEvent.keyDown(screen.getByTestId("group"), { key: "ArrowDown", altKey: true });
 
     expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+});
+
+function InvalidRangeTrigger(props: { isInvalid?: boolean }) {
+  let groupEl: HTMLDivElement | undefined;
+  const aria = createDateRangePicker(
+    () => ({ "aria-label": "Range", isInvalid: props.isInvalid ?? true }),
+    createMockRangeState() as any,
+    {
+      isOpen: false,
+      open: () => {},
+      close: () => {},
+      toggle: () => {},
+    },
+    () => groupEl ?? null,
+  );
+
+  return (
+    <div
+      ref={(el) => {
+        groupEl = el;
+      }}
+      data-testid="group"
+      {...aria.groupProps}
+    >
+      <span role="spinbutton" tabIndex={0}>
+        2
+      </span>
+      <span role="spinbutton" tabIndex={0}>
+        14
+      </span>
+      <span role="spinbutton" tabIndex={0}>
+        2025
+      </span>
+      <button
+        data-testid="button"
+        {...aria.buttonProps}
+        data-pressed={aria.isButtonPressed() ? "true" : undefined}
+      />
+    </div>
+  );
+}
+
+describe("createDateRangePicker invalid trigger press", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("isInvalid does not disable the trigger", () => {
+    render(() => <InvalidRangeTrigger isInvalid />);
+    expect(screen.getByTestId("button")).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("pointerdown on an invalid trigger sets data-pressed (walk timeout failure)", () => {
+    render(() => <InvalidRangeTrigger isInvalid />);
+
+    const button = screen.getByTestId("button");
+    const event = createPointerEvent("pointerdown", {
+      pointerId: 1,
+      pointerType: "mouse",
+    });
+    Object.defineProperty(window, "event", { configurable: true, value: event });
+    fireEvent(button, event);
+    fireEvent(button, createPointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+
+    expect(button).toHaveAttribute("data-pressed", "true");
+    expect(document.activeElement).not.toHaveAttribute("role", "spinbutton");
   });
 });

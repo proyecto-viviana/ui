@@ -330,6 +330,12 @@ export function createPress(props: CreatePressProps = {}): PressResult {
 
     pressState.pointerType = e.pointerType as PointerType;
 
+    // RAC usePress always stopPropagates a handled pointerdown, even when this
+    // target is already pressed. Nested pressables (DatePicker calendar
+    // button inside the field group) rely on that so a second pointerdown —
+    // Playwright pressLocator's dispatched event after mouse.down — does not
+    // start the parent's press and run focusLast.
+    let shouldStopPropagation = true;
     if (!pressState.isPressed) {
       pressState.isPressed = true;
       pressState.isOverTarget = true;
@@ -340,14 +346,15 @@ export function createPress(props: CreatePressProps = {}): PressResult {
         disableTextSelection(pressState.target as HTMLElement);
       }
 
-      const shouldStopPropagation = triggerPressStart(e, pressState.pointerType);
-      if (shouldStopPropagation) {
-        e.stopPropagation();
-      }
+      shouldStopPropagation = triggerPressStart(e, pressState.pointerType);
 
       // Set up global listeners for pointer events
       addGlobalListener("pointerup", onPointerUp);
       addGlobalListener("pointercancel", onPointerCancel);
+    }
+
+    if (shouldStopPropagation) {
+      e.stopPropagation();
     }
   };
 

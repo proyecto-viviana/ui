@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createRoot } from "solid-js";
+import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createDatePickerGroup } from "../src/datepicker/createDatePickerGroup";
+import { createPress } from "../src/interactions/createPress";
+import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
 
 describe("createDatePickerGroup", () => {
   let mockRef: HTMLDivElement;
@@ -97,5 +100,67 @@ describe("createDatePickerGroup", () => {
   it("pressProps includes onPointerDown for mouse focus", () => {
     const groupProps = makeGroup();
     expect(groupProps().onPointerDown).toBeTypeOf("function");
+  });
+});
+
+function fireMousePointerDown(el: Element) {
+  const event = createPointerEvent("pointerdown", {
+    pointerId: 1,
+    pointerType: "mouse",
+  });
+  Object.defineProperty(window, "event", { configurable: true, value: event });
+  fireEvent(el, event);
+}
+
+function PickerGroupWithTrigger() {
+  let groupEl: HTMLDivElement | undefined;
+  const groupProps = createDatePickerGroup({ setOpen: () => {} }, () => groupEl ?? null);
+  const trigger = createPress();
+  return (
+    <div
+      ref={(el) => {
+        groupEl = el;
+      }}
+      {...groupProps()}
+      data-testid="group"
+    >
+      <span role="spinbutton" tabIndex={0} data-placeholder="">
+        mm
+      </span>
+      <span role="spinbutton" tabIndex={0} data-placeholder="">
+        dd
+      </span>
+      <span role="spinbutton" tabIndex={0} data-placeholder="">
+        yyyy
+      </span>
+      <span data-testid="chrome">field</span>
+      <button type="button" {...trigger.pressProps} data-testid="trigger">
+        calendar
+      </button>
+    </div>
+  );
+}
+
+describe("createDatePickerGroup nested trigger press", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("does not focusLast a spinbutton when the nested calendar button is pressed", () => {
+    render(() => <PickerGroupWithTrigger />);
+
+    const trigger = screen.getByTestId("trigger");
+    fireMousePointerDown(trigger);
+    fireMousePointerDown(trigger);
+
+    expect(document.activeElement).not.toHaveAttribute("role", "spinbutton");
+  });
+
+  it("focusLast on a field press that is not the calendar button", () => {
+    render(() => <PickerGroupWithTrigger />);
+
+    fireMousePointerDown(screen.getByTestId("chrome"));
+
+    expect(document.activeElement).toHaveAttribute("role", "spinbutton");
   });
 });

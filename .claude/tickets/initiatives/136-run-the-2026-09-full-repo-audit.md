@@ -56,6 +56,11 @@ history:
       at: 2026-09-07,
       note: "#497 remainder: ComboBox list D3 exact-pair. Clone probe mounts on document.body so the lower ComboBox portal cannot contain it. Overlay list D10 stays #498. Picker D5 stays #499. Did not start #511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "#501 merged: DatePicker/DateRangePicker pressed segment and invalid data-pressed (32 titles). Nested createPress stopPropagation matches RAC so trigger press does not focusLast. D2 stays #502. Did not start #511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

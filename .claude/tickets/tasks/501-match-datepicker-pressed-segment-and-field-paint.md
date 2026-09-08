@@ -4,12 +4,22 @@ type: task
 title: "Match DatePicker pressed segment and field paint"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement datepicker-pressed-segment: RAC nested createPress stopPropagation so trigger press does not focusLast; restore DateRangePicker invalid data-pressed from createPress",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "createPress stopPropagates an already-pressed pointerdown like RAC usePress, so FieldGroup focusLast does not run on calendar-button press. DateRangePicker invalid data-pressed stays createPress.isPressed. S2 calendarButton takes ...renderProps. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: datepicker+daterangepicker D1/D3/D7/D9 72 passed (the 32 + already-green value/invalid/disabled/readonly); datefield D1 10/10. Waivers []. git diff --check clean. Did not start #502/#511. Did not edit visual-diff.ts or pressLocator.",
     }
 ---
 

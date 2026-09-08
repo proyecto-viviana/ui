@@ -339,6 +339,32 @@ describe("createPress", () => {
       );
     });
 
+    it("stopPropagation on a second pointerdown so a nested parent press does not start", () => {
+      const onParentPressStart = vi.fn();
+
+      const NestedPress: Component = () => {
+        const parent = createPress({ onPressStart: onParentPressStart });
+        const child = createPress();
+        return (
+          <div {...parent.pressProps} data-testid="parent">
+            <button type="button" {...child.pressProps} data-testid="child">
+              child
+            </button>
+          </div>
+        );
+      };
+
+      render(() => <NestedPress />);
+
+      const child = screen.getByTestId("child");
+      // pressLocator: compositor mouse.down, then a dispatched pointerdown on
+      // the same target. RAC stopPropagates both; the parent must not start.
+      fireEvent(child, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+      fireEvent(child, pointerEvent("pointerdown", { pointerId: 1, pointerType: "mouse" }));
+
+      expect(onParentPressStart).not.toHaveBeenCalled();
+    });
+
     it("keeps parent press active when a child pointer handler replaces the event target", () => {
       const onPressStart = vi.fn();
 
