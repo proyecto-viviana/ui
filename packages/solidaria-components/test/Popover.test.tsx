@@ -525,6 +525,83 @@ describe("Popover", () => {
 
       document.body.removeChild(portalRoot);
     });
+
+    it("stamps overlay locale dir and lang on a portaled surface outside the provider dir wrapper", async () => {
+      const user = setupUser();
+      const overlayRoot = document.createElement("div");
+      overlayRoot.setAttribute("data-testid", "overlay-root");
+      document.body.appendChild(overlayRoot);
+
+      render(() => (
+        <div data-testid="island">
+          <UNSAFE_PortalProvider getContainer={() => overlayRoot}>
+            <I18nProvider locale="ar-AE">
+              <div data-testid="provider-root" dir="rtl" lang="ar-AE">
+                <PopoverTrigger>
+                  <Button>Open</Button>
+                  <Popover>
+                    <div role="listbox" data-testid="listbox">
+                      Option
+                    </div>
+                  </Popover>
+                </PopoverTrigger>
+              </div>
+            </I18nProvider>
+          </UNSAFE_PortalProvider>
+        </div>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+
+      await waitFor(() => {
+        expect(overlayRoot.querySelector('[role="listbox"]')).toBeTruthy();
+      });
+
+      const listbox = overlayRoot.querySelector('[role="listbox"]') as HTMLElement;
+      const surface = overlayRoot.querySelector(".solidaria-Popover") as HTMLDivElement;
+      const providerRoot = screen.getByTestId("provider-root");
+
+      expect(surface).toBeTruthy();
+      expect(surface.getAttribute("dir")).toBe("rtl");
+      expect(surface.dir).toBe("rtl");
+      expect(surface.getAttribute("lang") ?? surface.lang).toMatch(/^ar/);
+      expect(surface.contains(listbox)).toBe(true);
+      expect(overlayRoot.contains(listbox)).toBe(true);
+      expect(providerRoot.contains(listbox)).toBe(false);
+
+      document.body.removeChild(overlayRoot);
+    });
+
+    it("keeps a caller dir on the portaled surface when locale is rtl", async () => {
+      const user = setupUser();
+      const overlayRoot = document.createElement("div");
+      document.body.appendChild(overlayRoot);
+
+      render(() => (
+        <UNSAFE_PortalProvider getContainer={() => overlayRoot}>
+          <I18nProvider locale="ar-AE">
+            <PopoverTrigger>
+              <Button>Open</Button>
+              <Popover {...({ dir: "ltr" } as Record<string, unknown>)}>
+                <div role="listbox">Option</div>
+              </Popover>
+            </PopoverTrigger>
+          </I18nProvider>
+        </UNSAFE_PortalProvider>
+      ));
+
+      await user.click(screen.getByRole("button", { name: "Open" }));
+
+      await waitFor(() => {
+        expect(overlayRoot.querySelector(".solidaria-Popover")).toBeTruthy();
+      });
+
+      const surface = overlayRoot.querySelector(".solidaria-Popover") as HTMLDivElement;
+      expect(surface.getAttribute("dir")).toBe("ltr");
+      expect(surface.dir).toBe("ltr");
+
+      document.body.removeChild(overlayRoot);
+    });
   });
 
   describe("Popover with render function children", () => {

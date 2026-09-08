@@ -612,6 +612,47 @@ export function Popover(props: PopoverProps): JSX.Element {
     return portalContext.getContainer?.() ?? undefined;
   };
 
+  // Caller `dir`/`lang` ride `filterDOMProps(..., { global: true })`. Overlay
+  // locale wins when the caller omitted them (S2 callback-ref / Tooltip).
+  const callerDir = (): "ltr" | "rtl" | "auto" | undefined => {
+    const value = (rest as { dir?: string }).dir;
+    if (value === "ltr" || value === "rtl" || value === "auto") {
+      return value;
+    }
+    return undefined;
+  };
+  const callerLang = () => (rest as { lang?: string }).lang;
+  const stampOverlayLocale = (el: HTMLDivElement | null) => {
+    if (!el) {
+      return;
+    }
+    const loc = locale();
+    const dir = callerDir();
+    const lang = callerLang();
+    if (!dir) {
+      el.dir = loc.direction;
+    } else {
+      el.dir = dir;
+    }
+    if (!lang) {
+      el.lang = loc.locale;
+    } else {
+      el.lang = lang;
+    }
+  };
+  // Spreads + portal attach can drop JSX `dir`/`lang`. Re-stamp after those
+  // writes, matching S2's callback ref `[locale, direction]` deps.
+  createEffect(() => {
+    const el = popoverRef();
+    if (!el) {
+      return;
+    }
+    void domProps();
+    void cleanPopoverProps();
+    void (triggerContext?.overlayProps ?? {});
+    stampOverlayLocale(el);
+  });
+
   // Match React Aria Components: focus the popover container only when no
   // descendant has already moved focus during mount.
   createEffect(() => {
@@ -756,6 +797,7 @@ export function Popover(props: PopoverProps): JSX.Element {
               ref={(el) => {
                 setPopoverRef(el);
                 triggerContext?.setOverlayRef?.(el);
+                stampOverlayLocale(el);
               }}
               id={overlayId()}
               role={shouldBeDialog() ? "dialog" : undefined}
@@ -763,8 +805,8 @@ export function Popover(props: PopoverProps): JSX.Element {
               aria-labelledby={overlayLabelledBy()}
               class={renderProps.class()}
               style={mergedStyle()}
-              lang={locale().locale}
-              dir={locale().direction}
+              lang={callerLang() ?? locale().locale}
+              dir={callerDir() ?? locale().direction}
               data-trigger={resolvedTrigger()}
               data-placement={renderValues().placement}
               data-entering={dataAttr(isEntering())}

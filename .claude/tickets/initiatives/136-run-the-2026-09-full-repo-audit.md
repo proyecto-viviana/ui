@@ -61,6 +61,11 @@ history:
       at: 2026-09-07,
       note: "#501 merged: DatePicker/DateRangePicker pressed segment and invalid data-pressed (32 titles). Nested createPress stopPropagation matches RAC so trigger press does not focusLast. D2 stays #502. Did not start #511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "#498 merged: portaled Popover stamps locale dir/lang so ComboBox/Picker lists inherit rtl. ComboBox list D10 3/3. Picker list D10 matrix 2/2; trail arrow-roving is #499 start-node. Did not start #499/#511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,
