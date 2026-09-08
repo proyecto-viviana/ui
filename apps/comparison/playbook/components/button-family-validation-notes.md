@@ -3,6 +3,17 @@
 Date: 2026-05-20
 Status: accepted
 
+## ActionButton pending keyboard D4 — 2026-09-07
+
+Headless `Button` host `onKeyDown` still peels MenuTrigger first. While
+`isPending`, it does not call `createPress` `onKeyDown`, matching RAC
+`useDisableInteractions`. Certified ActionButton `pending · keyboard-enter`
+and `pending · keyboard-space` then match React's trusted native click
+(`defaultPrevented: false`; Enter click between keydown/keyup, Space after
+keyup). Idle createPress keydown is unchanged. `createPress` has no
+`isPending`. #381 name contract unchanged. `certified-waivers.json` stays
+`[]`.
+
 ## Overnight pair-diff floor — 2026-09-04
 
 ButtonGroup default-state pair is a **floor**, not acceptance.

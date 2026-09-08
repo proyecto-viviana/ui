@@ -612,6 +612,27 @@ describe("Button", () => {
       expect(button).toHaveFocus();
     });
 
+    it("does not preventDefault Enter or Space on a pending host", () => {
+      const onPress = vi.fn();
+      render(() => (
+        <Button isPending onPress={onPress}>
+          Inspect
+        </Button>
+      ));
+
+      const button = screen.getByRole("button");
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute("aria-disabled", "true");
+
+      // RAC pending strips usePress keydown so the browser's native
+      // `<button type="button">` click can fire. Do not assert a jsdom
+      // click here — D4 is the trusted-click proof.
+      expect(fireEvent.keyDown(button, { key: "Enter", code: "Enter" })).toBe(true);
+      expect(fireEvent.keyDown(button, { key: " ", code: "Space" })).toBe(true);
+      expect(fireEvent.keyUp(button, { key: " ", code: "Space" })).toBe(true);
+      expect(onPress).not.toHaveBeenCalled();
+    });
+
     it("suppresses press lifecycle events when pending changes after mount", async () => {
       const onPress = vi.fn();
       const onPressStart = vi.fn();

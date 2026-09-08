@@ -574,12 +574,14 @@ export function Button(props: ButtonProps): JSX.Element {
       ...triggerAriaProps(),
       ...cleanFocusProps(),
       ...cleanHoverProps(),
+      // RAC pending strips usePress keydown. Keep this wrapper so MenuTrigger
+      // still peels onto the host; skip createPress while pending so Enter/Space
+      // are not preventDefault'd and the native trusted click can fire.
       onKeyDown: (event: KeyboardEvent) => {
-        const triggerKeyDown = menuTriggerProps()?.onKeyDown as
-          | ((event: KeyboardEvent) => void)
-          | undefined;
-        triggerKeyDown?.(event);
-        (cleanButtonProps().onKeyDown as ((event: KeyboardEvent) => void) | undefined)?.(event);
+        (menuTriggerProps()?.onKeyDown as ((event: KeyboardEvent) => void) | undefined)?.(event);
+        if (!resolvePending()) {
+          (cleanButtonProps().onKeyDown as ((event: KeyboardEvent) => void) | undefined)?.(event);
+        }
       },
       type: buttonType(),
       id:

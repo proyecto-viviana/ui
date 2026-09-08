@@ -1769,6 +1769,18 @@ describe("MenuTrigger", () => {
       });
     });
 
+    it("should open ArrowDown at the first item while pending", async () => {
+      render(() => <TestMenuTrigger buttonProps={{ isPending: true }} />);
+
+      const trigger = screen.getByRole("button");
+      trigger.focus();
+      await user.keyboard("{ArrowDown}");
+
+      await waitFor(() => {
+        expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: "Cat" }));
+      });
+    });
+
     it("should open ArrowUp at the last item", async () => {
       render(() => <TestMenuTrigger />);
 
