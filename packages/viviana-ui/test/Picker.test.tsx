@@ -41,4 +41,28 @@ describe("Picker", () => {
     expect(option.querySelector('[data-rsp-slot="text"]')).toHaveTextContent("Accordion group");
     expect(button).toHaveTextContent("Accordion group");
   });
+
+  it("does not stamp data-open or aria-hidden on the open trigger chevron", () => {
+    // S2 Picker ChevronIcon is size + class only (`Picker.tsx:755-758`). An
+    // invented `data-open` keeps the svg in the D13 contract tree (M10).
+    const { container } = render(() => (
+      <Picker<SectionItem>
+        aria-label="Table of contents"
+        defaultOpen
+        items={[accordion]}
+        getKey={(item) => item.href}
+        getTextValue={(item) => item.label}
+        selectedKey="#page-title"
+      >
+        {(item) => <PickerItem id={item.href}>{item.label}</PickerItem>}
+      </Picker>
+    ));
+
+    const button = container.querySelector('button[aria-haspopup="listbox"]');
+    expect(button).not.toBeNull();
+    const chevron = button!.querySelector("svg:last-of-type");
+    expect(chevron).not.toBeNull();
+    expect(chevron).not.toHaveAttribute("data-open");
+    expect(chevron).not.toHaveAttribute("aria-hidden");
+  });
 });

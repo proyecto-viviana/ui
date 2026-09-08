@@ -4,12 +4,22 @@ type: task
 title: "Drop invented data-open from the Picker chevron"
 created: 2026-09-08
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-08,
       note: "filed from #508 / Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "delete invented data-open from Picker ChevronIcon at both styled call sites; keep size and pickerChevron styles; no aria-hidden",
+    }
+  - {
+      state: merged,
+      at: 2026-09-08,
+      note: "styled Picker ChevronIcon drops invented data-open; size + pickerChevron styles stay; no aria-hidden (S2 Picker.tsx:755-758). Twin solid-spectrum + viviana-ui. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: Picker.test.tsx 21 passed (2 files); comparison:build pass; ComboBox D13 0/2; Picker D13 0/2 (titles still red). M10 left Picker click open-arrow-enter-reopen-scroll-escape step-0 dom (button children stay []; no svg data-open hunk). Remaining Picker click: #254 button data-focused/data-open. Keyboard step 1: option aria-labelledby, option data-focus-visible, #254 button extras. ComboBox unchanged (M6/M5/M7/M1/M2/M4 click; M3/M4 keyboard). Waivers []. git diff --check pass. Did not start #502/#511/#209/#248/#254. TabsPicker not minted.",
     }
 ---
 

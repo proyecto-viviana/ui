@@ -1014,7 +1014,6 @@ export function Picker<T>(props: PickerProps<T>): JSX.Element {
                   <ChevronIcon
                     size={size()}
                     styles={pickerChevron({ size: size(), isLoading: isTriggerLoading() })}
-                    data-open={triggerProps.isOpen ? "true" : undefined}
                   />
                   <Show when={triggerProps.isFocusVisible && isQuiet()}>
                     <span class={quietFocusLine} />

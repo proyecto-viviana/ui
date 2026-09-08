@@ -139,5 +139,13 @@ Ticket `#513`. Headless Select `baseRootProps` now stamps `data-focused` from
 `createFocusRing({ within: true })`, matching RAC `Select.tsx:187,278–287`.
 Picker D13 click step-0 wrapping `div` has `data-focused` and `data-open`.
 Keyboard step-0 wrapper remains (no hoist). Four D13 titles may still be red
-(#254 button extras, #514 chevron `data-open`, ComboBox owners). This closeout
-does not claim those titles green.
+(#254 button extras, ComboBox owners). This closeout does not claim those
+titles green.
+
+## M10 Picker chevron data-open (2026-09-08)
+
+Ticket `#514`. Styled Picker `ChevronIcon` no longer passes invented
+`data-open`. The open trigger chevron `<svg>` has no `data-open` and no
+`aria-hidden`, matching S2 `Picker.tsx:755–758` (size + class only). Open
+paint stays on the button. Four D13 titles may still be red (#254 button
+extras, ComboBox M1–M7). This closeout does not claim those titles green.
