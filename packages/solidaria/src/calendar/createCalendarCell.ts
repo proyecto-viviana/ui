@@ -89,6 +89,12 @@ export function createCalendarCell<T extends CalendarState>(
   const stateWithLocale = state as T & { locale?: Accessor<string> };
   const locale = () => stateWithLocale.locale?.() ?? inheritedLocale().locale;
   let ignoreNextClick = false;
+  let cellReceivedPointer = false;
+  // RAC DatePicker remounts Calendar with autoFocus so the first cell paint is
+  // selected-default; `useFocusRing` starts unfocused. Pointer-open leaves
+  // `isFocusVisible()` false. Capture whether this instance mounted before the
+  // calendar was focused so overlay-open can apply the selected fill later.
+  const startedUnfocused = !state.isFocused();
 
   // Get the date from props
   const date = createMemo(() => getProps().date as CalendarDate);
@@ -109,8 +115,40 @@ export function createCalendarCell<T extends CalendarState>(
   // tabIndex, which tracks focusedDate directly below.
   const isFocused = createMemo(() => state.isCellFocused(date()) && !isOutsideMonth());
   const isToday = createMemo(() => isTodayUtil(date(), timeZone));
-  const isCellFocusVisible = createMemo(
-    () => isFocused() && isRingFocusVisible() && getInteractionModality() !== null,
+  // RAC CalendarCell: `useFocusRing()` then `isFocusVisible &&= states.isFocused`.
+  const isCellFocusVisible = createMemo(() => isRingFocusVisible() && isFocused());
+  const [isOverlayAutoFocusVisible, setIsOverlayAutoFocusVisible] = createSignal(false);
+
+  // Overlay-open: first selected paint must be accent-700. Dialog FocusScope can
+  // focus the cell before paint, so the ring may already be visible on that first
+  // frame (no interpolation). Hold the fill until a later frame. Skip when this
+  // cell took the pointer (in-canvas click) or when it mounted already focused
+  // (Next/Previous). Solid `createEffect` is a microtask (before paint), so one
+  // rAF still runs in that same frame — double rAF waits until after first paint.
+  createEffect(() => {
+    if (!startedUnfocused) {
+      return;
+    }
+    if (!isFocused() || cellReceivedPointer) {
+      setIsOverlayAutoFocusVisible(false);
+      return;
+    }
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        if (isFocused() && !cellReceivedPointer) {
+          setIsOverlayAutoFocusVisible(true);
+        }
+      });
+    });
+    onCleanup(() => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    });
+  });
+
+  const isFocusVisible = createMemo(() =>
+    startedUnfocused ? isOverlayAutoFocusVisible() : isCellFocusVisible(),
   );
 
   // Format the date for display
@@ -132,6 +170,7 @@ export function createCalendarCell<T extends CalendarState>(
   // Using pointerdown instead of click ensures selection happens immediately
   // before focus changes can interfere with the event
   const handlePointerDown = (e: PointerEvent) => {
+    cellReceivedPointer = true;
     if (!isDisabled() && !isUnavailable()) {
       setIsPressed(true);
       // Select the date on pointer down for immediate response
@@ -240,7 +279,7 @@ export function createCalendarCell<T extends CalendarState>(
         "aria-invalid": isInvalid() || undefined,
         "aria-describedby": isInvalid() ? errorMessageId : undefined,
         "aria-pressed": isPressed() || undefined,
-        "data-focus-visible": isCellFocusVisible() || undefined,
+        "data-focus-visible": isFocusVisible() || undefined,
         disabled: isDisabled() || isUnavailable(),
         onClick: handleClick,
         onPointerDown: handlePointerDown,
@@ -272,7 +311,7 @@ export function createCalendarCell<T extends CalendarState>(
       return isFocused();
     },
     get isFocusVisible() {
-      return isCellFocusVisible();
+      return isFocusVisible();
     },
     get isDisabled() {
       return isDisabled();

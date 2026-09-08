@@ -131,6 +131,8 @@ export interface RangeCalendarCellRenderProps {
   isSelectionEnd: boolean;
   /** Whether the cell is focused. */
   isFocused: boolean;
+  /** Whether the cell should display a keyboard focus ring. */
+  isFocusVisible: boolean;
   /** Whether the cell is disabled. */
   isDisabled: boolean;
   /** Whether the cell is unavailable. */
@@ -620,6 +622,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
     isSelectionStart: cellAria.isSelectionStart,
     isSelectionEnd: cellAria.isSelectionEnd,
     isFocused: cellAria.isFocused,
+    isFocusVisible: cellAria.isFocusVisible,
     isDisabled: cellAria.isDisabled,
     isUnavailable: cellAria.isUnavailable,
     isInvalid: cellAria.isInvalid,
@@ -654,10 +657,12 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
     renderValues,
   );
 
-  // Determine children content - avoid Show for SSR hydration compatibility
+  // Determine children content - avoid Show for SSR hydration compatibility.
+  // `renderChildrenStable` keeps the inner fill node across isFocusVisible flips
+  // so Chromium interpolates selected-default → isFocusVisible (D2 open-enter).
   const getChildren = () => {
     if (typeof props.children === "function") {
-      return renderProps.renderChildren();
+      return renderProps.renderChildrenStable();
     }
     return cellAria.formattedDate;
   };
@@ -674,6 +679,7 @@ export function RangeCalendarCell(props: RangeCalendarCellProps): JSX.Element {
         data-selection-start={dataAttr(cellAria.isSelectionStart)}
         data-selection-end={dataAttr(cellAria.isSelectionEnd)}
         data-focused={dataAttr(cellAria.isFocused)}
+        data-focus-visible={dataAttr(cellAria.isFocusVisible)}
         data-disabled={dataAttr(cellAria.isDisabled)}
         data-unavailable={dataAttr(cellAria.isUnavailable)}
         data-invalid={dataAttr(cellAria.isInvalid)}

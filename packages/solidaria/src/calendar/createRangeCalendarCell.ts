@@ -23,6 +23,8 @@ import { createSignal, createMemo, createEffect, onCleanup } from "solid-js";
 import { access, type MaybeAccessor } from "../utils/reactivity";
 import { focusSafely } from "../utils/focus";
 import { createDescription } from "../utils/createDescription";
+import { createFocusRing } from "../interactions/createFocusRing";
+import { mergeProps } from "../utils/mergeProps";
 import type { RangeCalendarState, CalendarDate, DateValue } from "@proyecto-viviana/solid-stately";
 import {
   isToday as isTodayUtil,
@@ -55,6 +57,8 @@ export interface RangeCalendarCellAria {
   isSelectionEnd: boolean;
   /** Whether the cell is focused. */
   isFocused: boolean;
+  /** Whether the cell should display a keyboard focus ring. */
+  isFocusVisible: boolean;
   /** Whether the cell is disabled. */
   isDisabled: boolean;
   /** Whether the cell is unavailable (e.g., booked date). */
@@ -81,7 +85,10 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
 ): RangeCalendarCellAria {
   const getProps = () => access(props);
   const [isPressed, setIsPressed] = createSignal(false);
+  const { focusProps, isFocusVisible: isRingFocusVisible } = createFocusRing();
   const timeZone = getLocalTimeZone();
+  let cellReceivedPointer = false;
+  const startedUnfocused = !state.isFocused();
 
   // Get the date from props
   const date = createMemo(() => getProps().date as CalendarDate);
@@ -115,6 +122,41 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // on mount) — NOT the roving tabIndex, which tracks focusedDate directly.
   const isFocused = createMemo(() => state.isCellFocused(date()) && !isOutsideMonth());
   const isToday = createMemo(() => isTodayUtil(date(), timeZone));
+  // RAC CalendarCell: `useFocusRing()` then `isFocusVisible &&= states.isFocused`.
+  const isCellFocusVisible = createMemo(() => isRingFocusVisible() && isFocused());
+  const [isOverlayAutoFocusVisible, setIsOverlayAutoFocusVisible] = createSignal(false);
+
+  // Overlay-open: first selected paint must be accent-700. Dialog FocusScope can
+  // focus the cell before paint, so the ring may already be visible on that first
+  // frame (no interpolation). Hold the fill until a later frame. Skip when this
+  // cell took the pointer (in-canvas click) or when it mounted already focused
+  // (Next/Previous). Solid `createEffect` is a microtask (before paint), so one
+  // rAF still runs in that same frame — double rAF waits until after first paint.
+  createEffect(() => {
+    if (!startedUnfocused) {
+      return;
+    }
+    if (!isFocused() || cellReceivedPointer) {
+      setIsOverlayAutoFocusVisible(false);
+      return;
+    }
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        if (isFocused() && !cellReceivedPointer) {
+          setIsOverlayAutoFocusVisible(true);
+        }
+      });
+    });
+    onCleanup(() => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    });
+  });
+
+  const isFocusVisible = createMemo(() =>
+    startedUnfocused ? isOverlayAutoFocusVisible() : isCellFocusVisible(),
+  );
   const rangeSelectionPrompt = createMemo(() => {
     if (!isFocused() || state.isReadOnly() || !isSelectable()) {
       return undefined;
@@ -135,6 +177,7 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
   // Handle pointer down - selection on pointerdown avoids losing selection when
   // hover/focus updates re-render cells before click fires.
   const handlePointerDown = (e: PointerEvent) => {
+    cellReceivedPointer = true;
     if (isSelectable()) {
       setIsPressed(true);
       state.selectDate(date());
@@ -236,32 +279,36 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
       descriptionProps["aria-describedby"],
     ].filter(Boolean);
 
-    return {
-      role: "button",
-      // Roving tabbable cell = the focusedDate cell, ungated by calendar focus,
-      // mirroring @react-aria/calendar useCalendarCell
-      // (`tabIndex = isSameDay(date, state.focusedDate) ? 0 : -1`, undefined when
-      // disabled). Keeps one cell tabbable on mount without stealing focus, and
-      // prunes tabindex from disabled cells like upstream.
-      tabIndex: isDisabled() ? undefined : isSameDay(d, state.focusedDate()) ? 0 : -1,
-      "aria-label": label,
-      "aria-disabled": isDisabled() || isUnavailable() || undefined,
-      "aria-invalid": isInvalid() || undefined,
-      "aria-describedby": describedByIds.length ? describedByIds.join(" ") : undefined,
-      "aria-pressed": isPressed() || undefined,
-      disabled: isDisabled() || isUnavailable(),
-      onClick: handleClick,
-      onPointerDown: handlePointerDown,
-      onPointerUp: handlePointerUp,
-      onPointerLeave: handlePointerUp,
-      onPointerEnter: handlePointerEnter,
-      onFocus: () => {
-        if (!state.isCellFocused(d)) {
-          state.setFocusedDate(d);
-        }
-        state.setFocused(true);
-      },
-    };
+    return mergeProps(
+      focusProps as Record<string, unknown>,
+      {
+        role: "button",
+        // Roving tabbable cell = the focusedDate cell, ungated by calendar focus,
+        // mirroring @react-aria/calendar useCalendarCell
+        // (`tabIndex = isSameDay(date, state.focusedDate) ? 0 : -1`, undefined when
+        // disabled). Keeps one cell tabbable on mount without stealing focus, and
+        // prunes tabindex from disabled cells like upstream.
+        tabIndex: isDisabled() ? undefined : isSameDay(d, state.focusedDate()) ? 0 : -1,
+        "aria-label": label,
+        "aria-disabled": isDisabled() || isUnavailable() || undefined,
+        "aria-invalid": isInvalid() || undefined,
+        "aria-describedby": describedByIds.length ? describedByIds.join(" ") : undefined,
+        "aria-pressed": isPressed() || undefined,
+        "data-focus-visible": isFocusVisible() || undefined,
+        disabled: isDisabled() || isUnavailable(),
+        onClick: handleClick,
+        onPointerDown: handlePointerDown,
+        onPointerUp: handlePointerUp,
+        onPointerLeave: handlePointerUp,
+        onPointerEnter: handlePointerEnter,
+        onFocus: () => {
+          if (!state.isCellFocused(d)) {
+            state.setFocusedDate(d);
+          }
+          state.setFocused(true);
+        },
+      } as Record<string, unknown>,
+    );
   });
 
   return {
@@ -282,6 +329,9 @@ export function createRangeCalendarCell<T extends RangeCalendarState>(
     },
     get isFocused() {
       return isFocused();
+    },
+    get isFocusVisible() {
+      return isFocusVisible();
     },
     get isDisabled() {
       return isDisabled();

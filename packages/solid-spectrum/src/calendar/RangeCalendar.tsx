@@ -362,6 +362,7 @@ const rangeCalendarCellInner = style<{
   isDisabled?: boolean;
   isPressed?: boolean;
   isHovered?: boolean;
+  isFocusVisible?: boolean;
   isUnavailable?: boolean;
   isInvalid?: boolean;
 }>({
@@ -407,6 +408,7 @@ const rangeCalendarCellInner = style<{
       default: lightDark("accent-900", "accent-700"),
       isHovered: lightDark("accent-1000", "accent-600"),
       isPressed: lightDark("accent-1000", "accent-600"),
+      isFocusVisible: lightDark("accent-1000", "accent-600"),
       isDisabled: "transparent",
       isInvalid: {
         default: lightDark("negative-900", "negative-700"),
@@ -415,12 +417,17 @@ const rangeCalendarCellInner = style<{
           isUnavailable: lightDark("negative-900", "negative-700"),
         },
         isPressed: lightDark("negative-1000", "negative-600"),
+        isFocusVisible: {
+          default: lightDark("negative-1000", "negative-600"),
+          isUnavailable: lightDark("negative-900", "negative-700"),
+        },
       },
     },
     isSelectionEnd: {
       default: lightDark("accent-900", "accent-700"),
       isHovered: lightDark("accent-1000", "accent-600"),
       isPressed: lightDark("accent-1000", "accent-600"),
+      isFocusVisible: lightDark("accent-1000", "accent-600"),
       isDisabled: "transparent",
       isInvalid: {
         default: lightDark("negative-900", "negative-700"),
@@ -429,6 +436,10 @@ const rangeCalendarCellInner = style<{
           isUnavailable: lightDark("negative-900", "negative-700"),
         },
         isPressed: lightDark("negative-1000", "negative-600"),
+        isFocusVisible: {
+          default: lightDark("negative-1000", "negative-600"),
+          isUnavailable: lightDark("negative-900", "negative-700"),
+        },
       },
     },
     forcedColors: {

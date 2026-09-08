@@ -706,10 +706,12 @@ export function CalendarCell(props: CalendarCellProps): JSX.Element {
     renderValues,
   );
 
-  // Determine children content - avoid Show for SSR hydration compatibility
+  // Determine children content - avoid Show for SSR hydration compatibility.
+  // `renderChildrenStable` keeps the inner fill node across isFocusVisible flips
+  // so Chromium interpolates selected-default → isFocusVisible (D2 open-enter).
   const getChildren = () => {
     if (typeof props.children === "function") {
-      return renderProps.renderChildren();
+      return renderProps.renderChildrenStable();
     }
     return cellAria.formattedDate;
   };

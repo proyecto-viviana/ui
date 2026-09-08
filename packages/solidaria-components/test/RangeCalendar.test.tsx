@@ -585,6 +585,20 @@ describe("RangeCalendar", () => {
       });
     });
 
+    it("should stamp data-focus-visible on the focused range cell", async () => {
+      render(() => (
+        <TestRangeCalendar calendarProps={{ defaultFocusedValue: new CalendarDate(2024, 6, 15) }} />
+      ));
+      await waitForRangeCalendarHydration();
+
+      const day15 = screen.getByRole("button", { name: /June 15, 2024/i });
+      day15.focus();
+
+      await waitFor(() => {
+        expect(day15).toHaveAttribute("data-focus-visible");
+      });
+    });
+
     it("should localize range prompt descriptions from the calendar locale", async () => {
       render(() => (
         <TestRangeCalendar

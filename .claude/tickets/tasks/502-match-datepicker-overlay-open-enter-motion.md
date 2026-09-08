@@ -4,12 +4,22 @@ type: task
 title: "Match DatePicker overlay open-enter motion"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "match S2 RangeCalendar start/end isFocusVisible fills; publish RangeCalendarCell isFocusVisible like CalendarCell; overlay-open later-frame selected fill after first selected paint (RAC remount + autoFocus / CalendarCell useFocusRing then isFocusVisible &&= states.isFocused). No expectedMotion. Did not start #511.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-08,
+      note: "RangeCalendar start/end (and invalid) isFocusVisible fills match S2 cellInnerStyles; RangeCalendarCell publishes isFocusVisible/data-focus-visible like CalendarCell. Overlay-open holds selected fill until after first paint (startedUnfocused later-frame), and CalendarCell/RangeCalendarCell use renderChildrenStable so the inner node interpolates 700→600. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer --workers=1: datepicker+daterangepicker D2 motion 4/4 (normal+reduced open · open-enter). Waivers []. No expectedMotion. git diff --check clean. Did not start #511.",
     }
 ---
 

@@ -96,6 +96,11 @@ history:
       at: 2026-09-08,
       note: "#514 merged: Picker chevron drops invented data-open. M10 left Picker D13 click step-0 dom; four D13 titles still red. Did not start #502/#511. TabsPicker not minted.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "#502 merged: DatePicker/DateRangePicker overlay-open selected fill 700→600 (four D2 titles green). No expectedMotion. Did not start #511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,
