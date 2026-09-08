@@ -15,6 +15,11 @@
 type Props = { [key: string]: unknown };
 
 function isEventHandlerKey(key: string): boolean {
+  // Solid host-native listeners (`on:click`, `oncapture:click`) are not
+  // `onClick`-shaped; chain them the same way as delegated `on*` handlers.
+  if (key.startsWith("on:") || key.startsWith("oncapture:")) {
+    return true;
+  }
   return key.startsWith("on") && key[2] === key[2]?.toUpperCase();
 }
 

@@ -13,6 +13,17 @@ describe("mergeProps", () => {
     expect(calls).toEqual(["first", "second"]);
   });
 
+  it("chains on:click handlers in order", () => {
+    const calls: string[] = [];
+    const merged = mergeProps<{ "on:click": (value: string) => void }>(
+      { "on:click": () => calls.push("first") },
+      { "on:click": () => calls.push("second") },
+    );
+
+    merged["on:click"]("event");
+    expect(calls).toEqual(["first", "second"]);
+  });
+
   it("joins class values when both sides are strings", () => {
     const merged = mergeProps<{ class: string }>({ class: "base" }, { class: "extra" });
     expect(merged.class).toBe("base extra");

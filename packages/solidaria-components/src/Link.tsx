@@ -237,10 +237,11 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
 
   const domProps = createMemo(() => filterDOMProps(ariaProps, { global: true }));
 
-  const cleanLinkProps = () => {
-    const { ref: _ref1, ...rest } = linkAria.linkProps as Record<string, unknown>;
+  const omitClickChannel = (props: Record<string, unknown>): Record<string, unknown> => {
+    const { onClick: _onClick, "on:click": _nativeClick, ref: _ref, ...rest } = props;
     return rest;
   };
+  const cleanLinkProps = () => omitClickChannel(linkAria.linkProps as Record<string, unknown>);
   const cleanHoverProps = () => {
     const { ref: _ref2, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
@@ -250,40 +251,48 @@ export function Link(props: ParentProps<LinkProps>): JSX.Element {
     return rest;
   };
   const onLinkClick = (event: MouseEvent) => {
-    const onClick = cleanLinkProps().onClick as ((event: MouseEvent) => void) | undefined;
-    onClick?.(event);
+    const click = (linkAria.linkProps as Record<string, unknown>)["on:click"] as
+      | ((event: MouseEvent) => void)
+      | undefined;
+    click?.(event);
     handleLinkClick(event, router, ariaProps.href, ariaProps.routerOptions);
   };
 
   return (
     <ElementTag
-      {...mergeProps(domProps(), cleanLinkProps(), cleanHoverProps(), cleanFocusProps(), {
-        onClick: onLinkClick,
-        get class() {
-          return renderProps.class();
+      {...mergeProps(
+        omitClickChannel(domProps()),
+        cleanLinkProps(),
+        cleanHoverProps(),
+        cleanFocusProps(),
+        {
+          "on:click": onLinkClick,
+          get class() {
+            return renderProps.class();
+          },
+          get style() {
+            return renderProps.style();
+          },
+          get "data-hovered"() {
+            return isHovered() || undefined;
+          },
+          get "data-pressed"() {
+            return linkAria.isPressed() || undefined;
+          },
+          get "data-focused"() {
+            return isFocused() || undefined;
+          },
+          get "data-focus-visible"() {
+            return isFocusVisible() || undefined;
+          },
+          get "data-current"() {
+            return !!ariaProps["aria-current"] || undefined;
+          },
+          get "data-disabled"() {
+            return ariaProps.isDisabled || undefined;
+          },
         },
-        get style() {
-          return renderProps.style();
-        },
-        get "data-hovered"() {
-          return isHovered() || undefined;
-        },
-        get "data-pressed"() {
-          return linkAria.isPressed() || undefined;
-        },
-        get "data-focused"() {
-          return isFocused() || undefined;
-        },
-        get "data-focus-visible"() {
-          return isFocusVisible() || undefined;
-        },
-        get "data-current"() {
-          return !!ariaProps["aria-current"] || undefined;
-        },
-        get "data-disabled"() {
-          return ariaProps.isDisabled || undefined;
-        },
-      })}
+      )}
       ref={(element: HTMLElement) => {
         assignRef(local.ref, element);
         const linkRef = (linkAria.linkProps as { ref?: (el: HTMLElement) => void }).ref;

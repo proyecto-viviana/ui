@@ -178,4 +178,50 @@ describe("createLink", () => {
     // onClick should still be called but default should be prevented
     expect(onClick).not.toHaveBeenCalled();
   });
+
+  it("prevents default on a disabled href click", () => {
+    render(() => <TestLink isDisabled href="#" />);
+    const link = screen.getByRole("link");
+    const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    link.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("keeps an enabled href click defaultPrevented false when a document interceptor is registered first", () => {
+    const intercept = (event: Event) => {
+      event.preventDefault();
+    };
+    document.addEventListener("click", intercept);
+    try {
+      render(() => <TestLink href="#">View project</TestLink>);
+      const link = screen.getByRole("link");
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+      link.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    } finally {
+      document.removeEventListener("click", intercept);
+    }
+  });
+
+  it("keeps an enabled href click defaultPrevented false with onPress when a document interceptor is registered first", () => {
+    const onPress = vi.fn();
+    const intercept = (event: Event) => {
+      event.preventDefault();
+    };
+    document.addEventListener("click", intercept);
+    try {
+      render(() => (
+        <TestLink href="#" onPress={onPress}>
+          View project
+        </TestLink>
+      ));
+      const link = screen.getByRole("link");
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+      link.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(onPress).toHaveBeenCalledTimes(1);
+    } finally {
+      document.removeEventListener("click", intercept);
+    }
+  });
 });

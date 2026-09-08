@@ -2021,7 +2021,7 @@ describe("createPress", () => {
           onPress={addEvent}
           onPressUp={addEvent}
         >
-          <div data-testid="inner" onClick={(e: MouseEvent) => e.stopPropagation()} />
+          <div data-testid="inner" on:click={(e: MouseEvent) => e.stopPropagation()} />
         </Example>
       ));
 
@@ -2179,6 +2179,42 @@ describe("createPress", () => {
         expect.objectContaining({ type: "press", pointerType: "keyboard" }),
       );
       expect(events).toContainEqual({ type: "click" });
+    });
+
+    it("host-native click stopPropagation beats a document bubble interceptor", () => {
+      const intercept = vi.fn((event: Event) => {
+        event.preventDefault();
+      });
+      document.addEventListener("click", intercept);
+      try {
+        render(() => <Example elementType="a" href="#" />);
+        const el = screen.getByTestId("test-element");
+        const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+        el.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+        expect(intercept).not.toHaveBeenCalled();
+      } finally {
+        document.removeEventListener("click", intercept);
+      }
+    });
+
+    it("keyboard click stopPropagates without preventDefault on an href", () => {
+      const intercept = vi.fn((event: Event) => {
+        event.preventDefault();
+      });
+      document.addEventListener("click", intercept);
+      try {
+        render(() => <Example elementType="a" href="#" />);
+        const el = screen.getByTestId("test-element");
+        el.focus();
+        fireEvent.keyDown(el, { key: "Enter" });
+        const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+        el.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+        expect(intercept).not.toHaveBeenCalled();
+      } finally {
+        document.removeEventListener("click", intercept);
+      }
     });
 
     it("should fire press events on Enter when the element role is link", () => {

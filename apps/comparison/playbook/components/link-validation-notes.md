@@ -248,3 +248,15 @@ Results:
   Solidaria Components and is intentionally not re-exposed by styled S2 Link.
 - Next legacy normalization candidates in `components/README.md`: Meter,
   Skeleton, and StatusLight.
+
+## D4 Link activation (2026-09-08)
+
+Ticket `#506`. Enabled `<a href="#">` `"View project"` clicks stay
+`defaultPrevented: false` without a client router, matching RAC `useLink` /
+`usePress`. Slice-1 spy on Solid `default · mouse-click` named Astro
+`ClientRouter.astro` (document bubble), not `createLink` `p.onPress` and not
+`handleLinkClick`. `createLink` no longer preventDefaults when `onPress` is
+set. `createPress` attaches host-native `on:click` and keyboard-click
+stopPropagates like RAC (no `ignoreClickAfterPress` early return). Headless
+`Link` uses the same click channel; `handleLinkClick` still only when
+`!isNative`. Waivers `[]`. Did not retune the 2026-05-20 S2 API closeout above.

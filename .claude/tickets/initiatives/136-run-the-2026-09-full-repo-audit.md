@@ -76,6 +76,11 @@ history:
       at: 2026-09-08,
       note: "#508 merged as the D13 step-0 split; minted #512/#513/#514; bound #209 M1–M4 and #248 M5–M7; did not bind #243/#254; did not start #511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "#506 merged: enabled Link href clicks stay defaultPrevented false without a client router; host-native click beats ClientRouter. Did not start #507/#511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

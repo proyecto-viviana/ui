@@ -162,7 +162,6 @@ export function createPress(props: CreatePressProps = {}): PressResult {
   let pressState = {
     isPressed: false,
     ignoreEmulatedMouseEvents: false,
-    ignoreClickAfterPress: false,
     didFirePressStart: false,
     isTriggeringEvent: false,
     activePointerId: null as number | null,
@@ -735,12 +734,6 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       pressState.metaKeyEvents.set(e.key, e);
     }
 
-    // For Enter key on native buttons, the click fires on keydown
-    // Set flag to ignore it
-    if (e.key === "Enter") {
-      pressState.ignoreClickAfterPress = true;
-    }
-
     // Set up global keyup listener
     addGlobalListener("keyup", onKeyUp, { capture: true });
   };
@@ -808,14 +801,6 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       }, 0);
     }
 
-    // For Space key on non-native targets, the click fires after keyup.
-    // Set flag to ignore it when we already synthesized the click.
-    if (e.key === " " && wasPressed && shouldPreventDefaultKeyboard(target, e.key)) {
-      pressState.ignoreClickAfterPress = true;
-    } else if (e.key === "Enter") {
-      pressState.ignoreClickAfterPress = false;
-    }
-
     if (shouldStopPropagation && shouldStopPropagationEnd) {
       e.stopPropagation();
     }
@@ -829,13 +814,11 @@ export function createPress(props: CreatePressProps = {}): PressResult {
       return;
     }
 
-    // Only process left clicks that aren't from our own event triggers
+    // Only process left clicks that aren't from our own event triggers.
+    // Keyboard activation (isPressed + pointerType keyboard) skips press re-entry
+    // like RAC usePress, then still stopPropagates so document click interceptors
+    // do not run. Do not preventDefault an enabled <a href>.
     if (e.button === 0 && !pressState.isTriggeringEvent) {
-      if (pressState.ignoreClickAfterPress) {
-        pressState.ignoreClickAfterPress = false;
-        return;
-      }
-
       if (isDisabledValue(props.isDisabled)) {
         e.preventDefault();
         return;
@@ -891,13 +874,16 @@ export function createPress(props: CreatePressProps = {}): PressResult {
   // Conditionally use pointer events or mouse events based on browser support
   // This matches React-Aria's approach exactly
 
-  const pressProps: JSX.HTMLAttributes<HTMLElement> & { "data-solidaria-pressable": string } =
+  const pressProps: JSX.HTMLAttributes<HTMLElement> & {
+    "data-solidaria-pressable": string;
+    "on:click": JSX.EventHandler<HTMLElement, MouseEvent>;
+  } =
     typeof PointerEvent !== "undefined"
       ? {
           // Keyboard events
           onKeyDown,
           onKeyUp,
-          onClick,
+          "on:click": onClick,
           onDragStart,
           // Pointer events (preferred when available)
           onPointerDown,
@@ -918,7 +904,7 @@ export function createPress(props: CreatePressProps = {}): PressResult {
           // Keyboard events
           onKeyDown,
           onKeyUp,
-          onClick,
+          "on:click": onClick,
           onDragStart,
           // Mouse events (fallback when PointerEvent not available)
           onMouseDown: onMouseDownFallback,
@@ -933,6 +919,16 @@ export function createPress(props: CreatePressProps = {}): PressResult {
           // Attribute for CSS touch-action
           "data-solidaria-pressable": "",
         };
+
+  // createTabs (and similar) call pressProps.onClick directly. Keep the
+  // handler readable without spreading a delegated `onClick` onto the host
+  // beside native `on:click`.
+  Object.defineProperty(pressProps, "onClick", {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: onClick,
+  });
 
   // Clean up on unmount
   onCleanup(() => {

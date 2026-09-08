@@ -198,21 +198,15 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
       ariaProps["aria-details"] = p["aria-details"];
     }
 
-    // Handle onClick - prevent default navigation when appropriate
+    // Host-native click so stopPropagation runs at the element before document
+    // bubble interceptors. Disabled still preventDefaults and skips user onClick.
+    // Router preventDefault stays in handleLinkClick when !isNative — not here.
     const onClick = (e: MouseEvent) => {
-      // If disabled, prevent navigation and don't call user's onClick
       if (disabled) {
         e.preventDefault();
         return;
       }
 
-      // If onPress is provided, prevent default navigation
-      // This allows onPress to handle the action (e.g., client-side routing)
-      if (p.onPress) {
-        e.preventDefault();
-      }
-
-      // Call user's onClick if provided
       p.onClick?.(e);
     };
 
@@ -225,7 +219,7 @@ export function createLink(props: MaybeAccessor<AriaLinkProps> = {}): LinkAria {
       ariaProps,
       focusableProps as Record<string, unknown>,
       pressProps as Record<string, unknown>,
-      { onClick },
+      { "on:click": onClick },
     );
   };
 

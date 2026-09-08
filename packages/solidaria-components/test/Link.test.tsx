@@ -64,8 +64,48 @@ describe("Link", () => {
       </RouterProvider>
     ));
     const link = screen.getByRole("link");
-    fireEvent.click(link);
+    const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+    link.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
     expect(navigate).toHaveBeenCalledWith("/docs", { replace: true });
+  });
+
+  it("leaves a native href hash click defaultPrevented false without a router", () => {
+    const intercept = (event: Event) => {
+      event.preventDefault();
+    };
+    document.addEventListener("click", intercept);
+    try {
+      render(() => <Link href="#">View project</Link>);
+      const link = screen.getByRole("link");
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+      link.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    } finally {
+      document.removeEventListener("click", intercept);
+    }
+  });
+
+  it("leaves a native href hash click defaultPrevented false with onPress and no router", () => {
+    const onPress = vi.fn();
+    const intercept = (event: Event) => {
+      event.preventDefault();
+    };
+    document.addEventListener("click", intercept);
+    try {
+      render(() => (
+        <Link href="#" onPress={onPress}>
+          View project
+        </Link>
+      ));
+      const link = screen.getByRole("link");
+      const event = new MouseEvent("click", { bubbles: true, cancelable: true, button: 0 });
+      link.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+      expect(onPress).toHaveBeenCalledTimes(1);
+    } finally {
+      document.removeEventListener("click", intercept);
+    }
   });
 
   it("should not navigate via RouterProvider for target _blank links", () => {
