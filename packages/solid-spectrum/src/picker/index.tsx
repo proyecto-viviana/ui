@@ -451,13 +451,23 @@ const pickerOptionLabel = style<{ size?: S2PickerSize }>({
   truncate: true,
 });
 
-const pickerCheckmark = style<PickerOptionStyleProps>({
+const pickerCheckmark = style<{
+  isSelected: boolean;
+  isFocused: boolean;
+  size: S2PickerSize;
+}>({
   gridArea: "checkmark",
   visibility: {
     default: "hidden",
     isSelected: "visible",
   },
-  color: baseColor("accent"),
+  color: {
+    ...baseColor("accent"),
+    // Upstream types this helper `{ isSelected, isFocused, size }` and still
+    // spreads ListBoxItem render props, so `isFocusVisible` hits this atom.
+    // Pointer-open leaves Solid `isFocusVisible` false while `isFocused` is true.
+    isFocused: baseColor("accent").isFocusVisible,
+  },
   marginEnd: "text-to-control",
   aspectRatio: "square",
   flexShrink: 0,
@@ -1082,6 +1092,7 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
       pickerOption(
         {
           ...renderProps,
+          isFocusVisible: renderProps.isFocused || renderProps.isFocusVisible,
           size,
         },
         local.styles,
@@ -1111,7 +1122,11 @@ export function PickerItem<T>(props: PickerItemProps<T>): JSX.Element {
             // isSelected: visible }` atom, leaving the checkmark visible on
             // every option. Upstream's hand-written ui-icon Checkmark applies
             // the caller's `className` raw; our `class` prop is the raw path.
-            class={pickerCheckmark({ ...renderProps, size })}
+            class={pickerCheckmark({
+              isSelected: renderProps.isSelected,
+              isFocused: renderProps.isFocused,
+              size,
+            })}
             style={pickerCheckmarkIconStyle(size)}
             // No `aria-hidden`: upstream S2 `Picker` renders the selected-option
             // checkmark as a bare `<CheckmarkIcon>` with NO `aria-hidden`, so the

@@ -4,12 +4,22 @@ type: task
 title: "Match ComboBox and Picker list selected-checkmark accent"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement overlay-list-checkmark-accent: checkmark call { isSelected, isFocused, size }; isFocused drives accent focused stop; option isFocusVisible aligned to isFocused after pointer-open",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "ComboBox/Picker list selected checkmark and label match S2 baseColor stops. Pointer-open React keeps data-focus-visible on the focused row; Solid did not. Checkmark still takes { isSelected, isFocused, size } only (class, not icon styles, flexShrink 0). Option keeps hover/press; isFocusVisible := isFocused || isFocusVisible. No isFocused: accent on the option macro. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: combobox D1 6 / D7 2 / D9 6 passed; combobox D3 6 failed compositor class (size-s dark 0.25493421052631576 9920/38912, same as CI retry-1, not the 0.022 color band); picker D1+D3+D7+D9 20 passed. Slice 3 icon size not taken (picker D3 exact-pair). Waivers []. git diff --check clean. Did not start #498/#499/#511.",
     }
 ---
 

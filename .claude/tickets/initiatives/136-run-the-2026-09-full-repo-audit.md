@@ -46,6 +46,11 @@ history:
       at: 2026-09-07,
       note: "#503 merged: ar-AE names and date-segment bidi under D10 (27 titles). Overlay list D10 stays #498. Did not start #511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "#497 merged: ComboBox/Picker list selected checkmark accent. Pointer-open focused row uses S2 baseColor focused stop. Overlay list D10 stays #498. Picker D5 stays #499. Did not start #511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

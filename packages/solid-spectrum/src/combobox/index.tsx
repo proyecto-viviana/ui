@@ -450,13 +450,23 @@ const comboBoxOptionLabel = style<{ size?: S2ComboBoxSize }>({
   truncate: true,
 });
 
-const comboBoxCheckmark = style<ComboBoxOptionStyleProps>({
+const comboBoxCheckmark = style<{
+  isSelected: boolean;
+  isFocused: boolean;
+  size: S2ComboBoxSize;
+}>({
   gridArea: "checkmark",
   visibility: {
     default: "hidden",
     isSelected: "visible",
   },
-  color: baseColor("accent"),
+  color: {
+    ...baseColor("accent"),
+    // Upstream types this helper `{ isSelected, isFocused, size }` and still
+    // spreads ListBoxItem render props, so `isFocusVisible` hits this atom.
+    // Pointer-open leaves Solid `isFocusVisible` false while `isFocused` is true.
+    isFocused: baseColor("accent").isFocusVisible,
+  },
   marginEnd: "text-to-control",
   aspectRatio: "square",
   flexShrink: 0,
@@ -1032,6 +1042,7 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     [
       comboBoxOption({
         ...renderProps,
+        isFocusVisible: renderProps.isFocused || renderProps.isFocusVisible,
         size,
         isLink: isLink(),
       }),
@@ -1040,7 +1051,11 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
       .filter(Boolean)
       .join(" ");
   const checkClass = (renderProps: ComboBoxOptionRenderProps) =>
-    comboBoxCheckmark({ ...renderProps, size });
+    comboBoxCheckmark({
+      isSelected: renderProps.isSelected,
+      isFocused: renderProps.isFocused,
+      size,
+    });
 
   return (
     <HeadlessComboBoxOption
