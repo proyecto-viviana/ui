@@ -11,6 +11,11 @@ history:
       at: 2026-09-02,
       note: "owner decision needed; surfaced while tracing why the headless ComboBox listbox has no renderEmptyState (#198 out-of-lane item)",
     }
+  - {
+      state: open,
+      at: 2026-09-08,
+      note: "#508 points M9 to child #513 (root data-* can land without this decision) and leaves M2/M3 compound leftover here. Not started.",
+    }
 ---
 
 ## Finding (evidence, no decision taken)
@@ -80,7 +85,19 @@ API cannot match line-for-line with RAC's context composition:
 Seeds cannot decide #248 H1/H2 until step 0 is either green or the remaining
 diffs are explicitly owned here / on #209 / on HiddenSelect.
 
+## Point from #508 (2026-09-08)
+
+#508 **points** this ticket; it does **not** bind it. Not started.
+
+- **#513** owns M9: stamp `data-focused` / `data-focus-visible` on the Select
+  root. That can land without rewriting `SelectTrigger` → `Button`.
+- **M2/M3 compound leftover** stays here: RAC `Button` from `ButtonContext`
+  (and S2 `isPressed={false}`) vs `ComboBoxButton`. Attr emission of those
+  fields on the current compound button is #209.
+
+Do not expand this Work into a landable attr ticket.
+
 ## Relationship
 
-Child of #136. Informs #221, #224, #245, #246, #248, #252. Not started until
-the owner decides.
+Child of #136. Informs #221, #224, #245, #246, #248, #252, #513. Not started
+until the owner decides.

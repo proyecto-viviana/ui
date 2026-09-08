@@ -16,6 +16,11 @@ history:
       at: 2026-09-02,
       note: "headless ComboBox/Picker ARIA parity landed (1d988fd9); step-0 round 2 lands field wiring through createField, the S2 HelpText shape, data-focus-within and no synthesized aria-label",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "#508 D13 step-0 split binds M5–M7 here; M8 (ComboBox formValue hidden-input order) moves to #512. Pointing is not a bind of #243.",
+    }
 ---
 
 ## Cause
@@ -78,6 +83,7 @@ option ARIA (`aria-label` + `aria-describedby="(missing)"` vs `aria-labelledby`
 
 Child of #243. Feeds #245 / #246. Related: #135 / #184 (post-hydration
 state classes), #234 (iOS 26 visualViewport positioning in RAC 1.21).
+#508 binds M5–M7 here; that is not a bind of initiative #243. M8 is #512.
 
 ## Landed
 
@@ -282,12 +288,32 @@ Certified `output/audit-2026-09/wave-3/failures/d13-journeys.txt`. Field-DOM
 items from round 2 (`p` vs `span`, `data-focus-within`, describedby) are
 landed. What still fails at step 0, by owner:
 
-| Diff                                                                                                                      | Owner                                                               |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `data-open` / `data-pressed` / `data-focused` on ComboBox input and trigger button                                        | #209                                                                |
-| Extra wrapper div with `data-focus-visible`/`data-focused` on Picker keyboard-only; plain RAC `Button` vs `SelectTrigger` | #254 (owner decision, do not start)                                 |
-| Dismiss button Solid has `aria-hidden="true"`, React does not                                                             | this ticket (overlay/Dismiss)                                       |
-| React `<template>` vs Solid `<form>`; extra hidden `<input>`                                                              | this ticket (HiddenSelect / React 19 Activity vs Solid form markup) |
+| Diff                                                                                                                      | Owner                                                             |
+| ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `data-open` / `data-pressed` / `data-focused` on ComboBox input and trigger button                                        | #209 (M1–M4)                                                      |
+| Extra wrapper div with `data-focus-visible`/`data-focused` on Picker keyboard-only; plain RAC `Button` vs `SelectTrigger` | #254 (owner decision, do not start); root attrs land on #513 (M9) |
+| Overlay `data-placement` `top` vs React `bottom`                                                                          | this ticket (M5)                                                  |
+| Dismiss button Solid has `aria-hidden="true"`, React does not                                                             | this ticket (M6; overlay hide-outside)                            |
+| React `<template>` vs Solid `<form>` (fixture always-on `<form>`)                                                         | this ticket (M7)                                                  |
+| Extra ComboBox `formValue="key"` hidden `<input>` **order** (before vs after children)                                    | **#512** (M8; split off; not HiddenSelect)                        |
 
 H1/H2 journeys stay blocked until step 0 is green. Do not patch the journey
 driver to ignore these.
+
+## Bind from #508 (2026-09-08)
+
+#508 D13 step-0 split binds **M5, M6, M7** here. **M8 moves off** to #512.
+
+- **M5** overlay `data-placement` measured flip `top` vs preferred `bottom`
+  — `solidaria` `createOverlayPosition`. Not comparison CSS (ADR 0001).
+- **M6** `createComboBox.ts:394` `ariaHideOutside([inputEl, listBoxEl])` →
+  input **+ popover** (RAC `useComboBox.ts:469-474`). Dismiss is a popover
+  sibling of the listbox. Not `PopoverDismissButton` markup.
+- **M7** comparison **fixture**: Solid always-on `<form>` vs React form only
+  when `demoProps.form` is set. Certified default `form: ""`. Harness, not S2
+  paint (ADR 0001). Align both fixtures. RAC `Hidden` `<template>` has no Solid
+  CollectionBuilder DOM — do not invent one; do not patch `journeys.ts`.
+
+The wave-3 row that claimed both `<template>` vs `<form>` **and** extra hidden
+`<input>` is split: M7 stays; extra ComboBox formValue input **order** is #512.
+Pointing at this ticket is not a bind of #243. Does not own M1–M4, M9, M10.
