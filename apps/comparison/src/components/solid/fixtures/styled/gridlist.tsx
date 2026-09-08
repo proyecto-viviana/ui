@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc, renderProp } from "../../solid-h";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
 import {
@@ -23,12 +23,8 @@ import {
 } from "@comparison/data/theme";
 import { providerShellStyle } from "../styled-shared.tsx";
 
-function SolidSpectrumGridListDemo() {
+function SolidSpectrumGridListFixture() {
   const [demoProps, setDemoProps] = createSignal<GridListDemoProps>(gridListDemoPropsFromWindow());
-  const locale = gridListDemoLocaleFromWindow();
-  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
-    getComparisonResolvedThemeFromDocument(),
-  );
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
@@ -36,47 +32,67 @@ function SolidSpectrumGridListDemo() {
         setDemoProps(normalizeGridListDemoProps(event.detail.props ?? {}));
       }
     };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+    });
+  });
+
+  return hc(
+    "div",
+    {
+      class: "comparison-gridlist-row",
+    },
+    [
+      h("button", {}, "Before"),
+      hc(
+        SolidHeadlessGridList,
+        {
+          "aria-label": "Permissions",
+          get selectionMode() {
+            return demoProps().selectionMode;
+          },
+          get orientation() {
+            return demoProps().orientation;
+          },
+          get keyboardNavigationBehavior() {
+            return demoProps().keyboardNavigationBehavior;
+          },
+          "data-comparison-control-root": "gridlist",
+          get "data-comparison-control-props"() {
+            return serializeGridListDemoProps(demoProps());
+          },
+          items: gridListDemoItems,
+          getKey: (item: GridListDemoItem) => item.id,
+          getTextValue: (item: GridListDemoItem) => item.label,
+        },
+        renderProp((item: GridListDemoItem) =>
+          hc(SolidHeadlessGridListItem, { id: item.id, textValue: item.label }, [item.label]),
+        ),
+      ),
+      h("button", {}, "After"),
+    ],
+  );
+}
+
+function SolidSpectrumGridListDemo() {
+  const locale = gridListDemoLocaleFromWindow();
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
       }
     };
-    window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
     onCleanup(() => {
-      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
     });
   });
-
-  const renderedGridList = createMemo(() =>
-    hc(
-      SolidHeadlessGridList,
-      {
-        "aria-label": "Permissions",
-        get selectionMode() {
-          return demoProps().selectionMode;
-        },
-        get orientation() {
-          return demoProps().orientation;
-        },
-        get keyboardNavigationBehavior() {
-          return demoProps().keyboardNavigationBehavior;
-        },
-        "data-comparison-control-root": "gridlist",
-        get "data-comparison-control-props"() {
-          return serializeGridListDemoProps(demoProps());
-        },
-        items: gridListDemoItems,
-        getKey: (item: GridListDemoItem) => item.id,
-        getTextValue: (item: GridListDemoItem) => item.label,
-      },
-      renderProp((item: GridListDemoItem) =>
-        hc(SolidHeadlessGridListItem, { id: item.id, textValue: item.label }, [item.label]),
-      ),
-    ),
-  );
 
   return hc(
     SolidSpectrumProvider,
@@ -88,15 +104,7 @@ function SolidSpectrumGridListDemo() {
       background: "base",
       style: providerShellStyle,
     },
-    [
-      hc(
-        "div",
-        {
-          class: "comparison-gridlist-row",
-        },
-        [h("button", {}, "Before"), renderedGridList, h("button", {}, "After")],
-      ),
-    ],
+    [hc(SolidSpectrumGridListFixture)],
   );
 }
 

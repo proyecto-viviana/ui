@@ -275,6 +275,33 @@ describe("Toolbar", () => {
     expect(document.activeElement).toBe(alignLeft);
   });
 
+  it("keeps Bold focused after Tab-in ArrowRight on a flat RTL toolbar", async () => {
+    // D10 flat-h-rtl · horizontal: no wrap; flipped ArrowRight from Bold stays Bold.
+    const user = setupUser();
+    render(() => (
+      <I18nProvider locale="ar-AE">
+        <button type="button">Before</button>
+        <Toolbar aria-label="Text formatting">
+          {() => (
+            <>
+              <Button>Bold</Button>
+              <Button>Italic</Button>
+              <input type="text" aria-label="Size" />
+              <Button>Underline</Button>
+            </>
+          )}
+        </Toolbar>
+      </I18nProvider>
+    ));
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Bold" })).toHaveFocus();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("button", { name: "Bold" })).toHaveFocus();
+  });
+
   it("supports RTL", async () => {
     const user = setupUser();
 

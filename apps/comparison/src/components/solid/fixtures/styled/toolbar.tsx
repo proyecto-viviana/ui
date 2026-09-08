@@ -25,12 +25,8 @@ import { providerShellStyle } from "../styled-shared.tsx";
 // this fixture drives the base `createToolbar` port directly. "flat" places a
 // native Size text input among the buttons (the D5 text-input-guard probe);
 // "nested" wraps controls in child toolbars that downgrade to role=group.
-function SolidSpectrumToolbarDemo() {
+function SolidSpectrumToolbarFixture() {
   const [demoProps, setDemoProps] = createSignal<ToolbarDemoProps>(toolbarDemoPropsFromWindow());
-  const locale = toolbarDemoLocaleFromWindow();
-  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
-    getComparisonResolvedThemeFromDocument(),
-  );
 
   onMount(() => {
     const handleControlsChange = (event: Event) => {
@@ -38,17 +34,9 @@ function SolidSpectrumToolbarDemo() {
         setDemoProps(normalizeToolbarDemoProps(event.detail.props ?? {}));
       }
     };
-    const handleThemeChange = (event: Event) => {
-      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
-        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
-      }
-    };
     window.addEventListener(comparisonControlsEvent, handleControlsChange);
-    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
-    setColorScheme(getComparisonResolvedThemeFromDocument());
     onCleanup(() => {
       window.removeEventListener(comparisonControlsEvent, handleControlsChange);
-      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
     });
   });
 
@@ -69,6 +57,8 @@ function SolidSpectrumToolbarDemo() {
     );
   };
 
+  // Owned by this fixture (inside Provider), not the Demo. createToolbar reads
+  // useLocale() at setup; a Demo-owned memo would fall back to LTR.
   const renderedToolbar = createMemo(() => {
     const props = demoProps();
     return hc(
@@ -83,6 +73,32 @@ function SolidSpectrumToolbarDemo() {
     );
   });
 
+  return hc("div", { class: "comparison-gridlist-row" }, [
+    h("button", {}, "Before"),
+    renderedToolbar,
+    h("button", {}, "After"),
+  ]);
+}
+
+function SolidSpectrumToolbarDemo() {
+  const locale = toolbarDemoLocaleFromWindow();
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
+    const handleThemeChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
+        setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
+      }
+    };
+    window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    setColorScheme(getComparisonResolvedThemeFromDocument());
+    onCleanup(() => {
+      window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
+    });
+  });
+
   return hc(
     SolidSpectrumProvider,
     {
@@ -93,13 +109,7 @@ function SolidSpectrumToolbarDemo() {
       background: "base",
       style: providerShellStyle,
     },
-    [
-      hc("div", { class: "comparison-gridlist-row" }, [
-        h("button", {}, "Before"),
-        renderedToolbar,
-        h("button", {}, "After"),
-      ]),
-    ],
+    [hc(SolidSpectrumToolbarFixture)],
   );
 }
 

@@ -4,12 +4,22 @@ type: task
 title: "Invert horizontal collection RTL focus trails"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "implementer: D10-shaped I18nProvider units first; keep existing invert; do not bind #201",
+    }
+  - {
+      state: merged,
+      at: 2026-09-08,
+      note: "D10-shaped units were green; mount the four collections under Provider so create* read ar-AE. Trails: Underline / Read / Night / Bold. Waivers []. No mapper polarity swap",
     }
 ---
 

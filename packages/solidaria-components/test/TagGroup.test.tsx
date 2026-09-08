@@ -509,6 +509,33 @@ describe("TagGroup", () => {
       expect(firstTag).toHaveAttribute("tabindex");
     });
 
+    it("wraps ArrowRight from Landscape to Night after Tab-in under RTL", async () => {
+      // D10 single-rtl · tab-forward: no remove buttons; flipped wrap from first → last.
+      const items = [
+        { id: "landscape", name: "Landscape" },
+        { id: "portrait", name: "Portrait" },
+        { id: "travel", name: "Travel" },
+        { id: "night", name: "Night" },
+      ];
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <button type="button">Before</button>
+          <TagGroup>
+            <TagList items={items} aria-label="Categories">
+              {(item) => <Tag id={item.id}>{item.name}</Tag>}
+            </TagList>
+          </TagGroup>
+        </I18nProvider>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("row", { name: "Landscape" })).toHaveFocus();
+      await user.keyboard("{ArrowRight}");
+      expect(screen.getByRole("row", { name: "Night" })).toHaveFocus();
+    });
+
     it("makes every enabled tag a tab stop when no tag is focused", () => {
       // Faithful to useTag (useTag.ts:100-104): with nothing focused, every
       // non-disabled row is a tab stop (tabindex 0); only the disabled row is -1.

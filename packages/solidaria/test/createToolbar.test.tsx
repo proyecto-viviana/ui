@@ -5,6 +5,7 @@ import { describe, it, expect } from "vite-plus/test";
 import { render, screen, fireEvent } from "@solidjs/testing-library";
 import { createToolbar } from "../src/toolbar";
 import { I18nProvider } from "../src/i18n";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 // Test component that uses createToolbar
 function TestToolbar(props: {
@@ -317,6 +318,28 @@ describe("createToolbar", () => {
       // ArrowRight should go backward
       fireEvent.keyDown(buttons[1], { key: "ArrowRight" });
       expect(document.activeElement).toBe(buttons[0]);
+    });
+
+    it("keeps Bold focused after Tab-in ArrowRight on a flat RTL toolbar", async () => {
+      const user = setupUser();
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <button type="button">Before</button>
+          <TestToolbar aria-label="Text formatting">
+            <button>Bold</button>
+            <button>Italic</button>
+            <input type="text" aria-label="Size" />
+            <button>Underline</button>
+          </TestToolbar>
+        </I18nProvider>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Bold" })).toHaveFocus();
+      await user.keyboard("{ArrowRight}");
+      expect(screen.getByRole("button", { name: "Bold" })).toHaveFocus();
     });
   });
 

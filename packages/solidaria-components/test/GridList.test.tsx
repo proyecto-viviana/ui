@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, afterEach } from "vite-plus/test";
 import { render, screen, cleanup, fireEvent } from "@solidjs/testing-library";
 import { createSignal } from "solid-js";
-import { createPointerEvent } from "@proyecto-viviana/solidaria-test-utils";
+import { createPointerEvent, setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import {
   GridList,
   GridListItem,
@@ -888,6 +888,42 @@ describe("GridList", () => {
 
       fireEvent.keyDown(grid, { key: "ArrowRight" });
       expect(focusedIndex()).toBe(0);
+    });
+
+    it("keeps the first row focused after Tab-in ArrowRight under RTL tab navigation", async () => {
+      // D10 horizontal-rtl · tab-forward: page.keyboard after Tab onto the row,
+      // not fireEvent.keyDown on the grid node. No wrap; flipped ArrowRight stays Read.
+      const user = setupUser();
+      const items = [
+        { id: "read", name: "Read" },
+        { id: "write", name: "Write" },
+        { id: "admin", name: "Admin" },
+      ];
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <button type="button">Before</button>
+          <GridList
+            items={items}
+            getKey={(item) => item.id}
+            aria-label="Permissions"
+            orientation="horizontal"
+            keyboardNavigationBehavior="tab"
+          >
+            {(item) => (
+              <GridListItem id={item.id} textValue={item.name}>
+                {item.name}
+              </GridListItem>
+            )}
+          </GridList>
+        </I18nProvider>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("row", { name: "Read" })).toHaveFocus();
+      await user.keyboard("{ArrowRight}");
+      expect(screen.getByRole("row", { name: "Read" })).toHaveFocus();
     });
   });
 

@@ -1,5 +1,5 @@
 import h from "solid-js/h";
-import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
 import { hc } from "../../solid-h";
 import { ActionGroup as SolidSpectrumActionGroup } from "@proyecto-viviana/solid-spectrum/ActionGroup";
 import { Provider as SolidSpectrumProvider } from "@proyecto-viviana/solid-spectrum/Provider";
@@ -20,13 +20,9 @@ import {
 } from "@comparison/data/theme";
 import { providerShellStyle } from "../styled-shared.tsx";
 
-function SolidSpectrumActionGroupDemo() {
+function SolidSpectrumActionGroupFixture() {
   const [demoProps, setDemoProps] = createSignal<ActionGroupDemoProps>(
     actionGroupDemoPropsFromWindow(),
-  );
-  const locale = actionGroupDemoLocaleFromWindow();
-  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
-    getComparisonResolvedThemeFromDocument(),
   );
 
   onMount(() => {
@@ -35,42 +31,62 @@ function SolidSpectrumActionGroupDemo() {
         setDemoProps(normalizeActionGroupDemoProps(event.detail.props ?? {}));
       }
     };
+    window.addEventListener(comparisonControlsEvent, handleControlsChange);
+    onCleanup(() => {
+      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
+    });
+  });
+
+  return hc(
+    "div",
+    {
+      class: "comparison-gridlist-row",
+    },
+    [
+      h("button", {}, "Before"),
+      hc(SolidSpectrumActionGroup, {
+        "aria-label": "Text style",
+        get selectionMode() {
+          return demoProps().selectionMode;
+        },
+        get orientation() {
+          return demoProps().orientation;
+        },
+        get defaultSelectedKeys() {
+          return actionGroupKeysFromValue(demoProps().defaultSelectedKeys);
+        },
+        get disabledKeys() {
+          return actionGroupKeysFromValue(demoProps().disabledKeys);
+        },
+        "data-comparison-control-root": "actiongroup",
+        get "data-comparison-control-props"() {
+          return serializeActionGroupDemoProps(demoProps());
+        },
+        items: actionGroupDemoItems,
+      }),
+      h("button", {}, "After"),
+    ],
+  );
+}
+
+function SolidSpectrumActionGroupDemo() {
+  const locale = actionGroupDemoLocaleFromWindow();
+  const [colorScheme, setColorScheme] = createSignal<ComparisonResolvedTheme>(
+    getComparisonResolvedThemeFromDocument(),
+  );
+
+  onMount(() => {
     const handleThemeChange = (event: Event) => {
       if (event instanceof CustomEvent && event.detail?.resolvedTheme) {
         setColorScheme(event.detail.resolvedTheme as ComparisonResolvedTheme);
       }
     };
-    window.addEventListener(comparisonControlsEvent, handleControlsChange);
     window.addEventListener(comparisonThemeChangeEvent, handleThemeChange);
     setColorScheme(getComparisonResolvedThemeFromDocument());
     onCleanup(() => {
-      window.removeEventListener(comparisonControlsEvent, handleControlsChange);
       window.removeEventListener(comparisonThemeChangeEvent, handleThemeChange);
     });
   });
-
-  const renderedActionGroup = createMemo(() =>
-    hc(SolidSpectrumActionGroup, {
-      "aria-label": "Text style",
-      get selectionMode() {
-        return demoProps().selectionMode;
-      },
-      get orientation() {
-        return demoProps().orientation;
-      },
-      get defaultSelectedKeys() {
-        return actionGroupKeysFromValue(demoProps().defaultSelectedKeys);
-      },
-      get disabledKeys() {
-        return actionGroupKeysFromValue(demoProps().disabledKeys);
-      },
-      "data-comparison-control-root": "actiongroup",
-      get "data-comparison-control-props"() {
-        return serializeActionGroupDemoProps(demoProps());
-      },
-      items: actionGroupDemoItems,
-    }),
-  );
 
   return hc(
     SolidSpectrumProvider,
@@ -82,15 +98,7 @@ function SolidSpectrumActionGroupDemo() {
       background: "base",
       style: providerShellStyle,
     },
-    [
-      hc(
-        "div",
-        {
-          class: "comparison-gridlist-row",
-        },
-        [h("button", {}, "Before"), renderedActionGroup, h("button", {}, "After")],
-      ),
-    ],
+    [hc(SolidSpectrumActionGroupFixture)],
   );
 }
 

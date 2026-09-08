@@ -6,6 +6,8 @@ import { createSignal, type Accessor } from "solid-js";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
 import { createListState } from "../../solid-stately/src";
 import { createActionGroup, createActionGroupItem } from "../src/actiongroup";
+import { I18nProvider } from "../src/i18n";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 
 function ActionGroupExample(props: {
   selectionMode?: "none" | "single" | "multiple";
@@ -229,6 +231,25 @@ describe("createActionGroup", () => {
 
     expect(a).toHaveAttribute("tabindex", "0");
     expect(b).toHaveAttribute("tabindex", "0");
+  });
+
+  it("wraps ArrowRight from Bold to Underline after Tab-in under RTL", async () => {
+    const user = setupUser();
+    const [selectionMode] = createSignal<"none" | "single" | "multiple">("none");
+    const [orientation] = createSignal<"horizontal" | "vertical">("horizontal");
+    render(() => (
+      <I18nProvider locale="ar-AE">
+        <button type="button">Before</button>
+        <LiveRoleExample selectionMode={selectionMode} orientation={orientation} />
+      </I18nProvider>
+    ));
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Bold" })).toHaveFocus();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByRole("button", { name: "Underline" })).toHaveFocus();
   });
 
   it("wraps focus at boundaries with arrow navigation", () => {

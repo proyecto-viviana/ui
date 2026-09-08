@@ -3,6 +3,8 @@
  */
 import { describe, it, expect, vi } from "vite-plus/test";
 import { render, screen, fireEvent, waitFor } from "@solidjs/testing-library";
+import { I18nProvider } from "@proyecto-viviana/solidaria";
+import { setupUser } from "@proyecto-viviana/solidaria-test-utils";
 import { ActionGroup } from "../src/ActionGroup";
 
 const items = [
@@ -211,6 +213,27 @@ describe("ActionGroup (headless)", () => {
       underline.focus();
       fireEvent.keyDown(underline, { key: "Home" });
       expect(document.activeElement).toBe(underline);
+    });
+
+    it("wraps ArrowRight from Bold to Underline after Tab-in under RTL", async () => {
+      // D10 none-rtl · horizontal: Provider locale is rtl, no dir= ancestor.
+      // RAC useActionGroup wraps; flipped ArrowRight from Bold is previous → Underline.
+      const user = setupUser();
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <button type="button">Before</button>
+          <ActionGroup items={items} aria-label="Text style">
+            {(item) => item.label}
+          </ActionGroup>
+        </I18nProvider>
+      ));
+
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Before" })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("button", { name: "Bold" })).toHaveFocus();
+      await user.keyboard("{ArrowRight}");
+      expect(screen.getByRole("button", { name: "Underline" })).toHaveFocus();
     });
 
     it("moves focus without changing selection while arrow navigating (single mode)", () => {
