@@ -695,15 +695,6 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           data-hovered={isHovered() || undefined}
           slot={local.slot}
         >
-          {/* Hidden input for key-based form submission parity */}
-          <Show when={stateProps.name && effectiveFormValue() === "key"}>
-            <input
-              type="hidden"
-              name={stateProps.name}
-              form={ariaProps.form}
-              value={state.selectedKey()?.toString() ?? ""}
-            />
-          </Show>
           <Provider
             values={
               [
@@ -714,6 +705,15 @@ export function ComboBox<T>(props: ComboBoxProps<T>): JSX.Element {
           >
             <ComboBoxChildren />
           </Provider>
+          {/* Hidden input last among root children — RAC ComboBox.tsx:373-374 */}
+          <Show when={stateProps.name && effectiveFormValue() === "key"}>
+            <input
+              type="hidden"
+              name={stateProps.name}
+              form={ariaProps.form}
+              value={state.selectedKey()?.toString() ?? ""}
+            />
+          </Show>
         </div>
       </ComboBoxStateContext.Provider>
     </ComboBoxContext.Provider>

@@ -1062,6 +1062,21 @@ describe("ComboBox", () => {
       expect(hiddenInput).toHaveValue("2");
     });
 
+    it("should append the formValue key hidden input after children", () => {
+      render(() => (
+        <TestComboBox
+          comboBoxProps={{ name: "fruit", formValue: "key", defaultSelectedKey: "2" }}
+        />
+      ));
+
+      const combobox = document.querySelector(".solidaria-ComboBox");
+      const hiddenInput = document.querySelector('input[type="hidden"][name="fruit"]');
+      expect(combobox).toBeTruthy();
+      expect(hiddenInput).toBeTruthy();
+      expect(combobox?.lastElementChild).toBe(hiddenInput);
+      expect(hiddenInput).not.toHaveAttribute("aria-hidden");
+    });
+
     it("should render hidden input with selected key by default", () => {
       render(() => <TestComboBox comboBoxProps={{ name: "fruit", defaultSelectedKey: "1" }} />);
 

@@ -56,3 +56,12 @@ constraint + submit pair-match. Distinct from #273 (native `required`).
 - Loading rows and delayed field/list progress indicators are not yet modeled
   in Solid ComboBox.
 - Assistive-technology transcript rows are not yet captured for ComboBox.
+
+## M8 formValue hidden-input order (2026-09-08)
+
+Ticket `#512`. Headless ComboBox now appends the `formValue="key"` hidden
+`<input>` after `Provider` / children so it is last among the root `div`,
+matching RAC `ComboBox.tsx:373-374`. One input (`selectedKey()?.toString() ??
+""`); no `aria-hidden` in source. This is not HiddenSelect. D13 titles may
+still be red (M1–M7 / M9 / M10). This closeout does not claim those titles
+green.
