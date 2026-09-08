@@ -1115,6 +1115,27 @@ describe("Select", () => {
       expect(trigger).toHaveAttribute("data-focus-visible");
     });
 
+    it("should set data-focused and data-focus-visible on the root after keyboard focus", async () => {
+      render(() => <TestSelect />);
+
+      await user.tab();
+
+      const root = document.querySelector(".solidaria-Select");
+      expect(root).toHaveAttribute("data-focused");
+      expect(root).toHaveAttribute("data-focus-visible");
+    });
+
+    it("should set data-focused on the root when open", async () => {
+      render(() => <TestSelect />);
+
+      const trigger = screen.getByRole("button");
+      await user.click(trigger);
+
+      const root = document.querySelector(".solidaria-Select");
+      expect(root).toHaveAttribute("data-focused");
+      expect(root).toHaveAttribute("data-open");
+    });
+
     it("should set data-hovered on hover", async () => {
       render(() => <TestSelect selectProps={{ defaultOpen: true }} />);
 

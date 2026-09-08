@@ -86,6 +86,11 @@ history:
       at: 2026-09-08,
       note: "#512 merged: ComboBox formValue=key hidden input is last among the root after children. M8 left ComboBox D13 click step-0 dom; four D13 titles still red. Did not start #513/#514/#502/#511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "#513 merged: Select root stamps data-focused/data-focus-visible. M9 left both Picker D13 step-0 dom bodies; four D13 titles still red. Did not start #514/#502/#511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

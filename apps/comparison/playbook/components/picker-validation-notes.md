@@ -131,3 +131,13 @@ Status: partial
   explicit. It also fixes the Select popover option focus-visible mismatch
   exposed by the Picker open-list parity test. Picker must not be moved to
   accepted until the gaps above are closed with package and browser evidence.
+
+## M9 Select root focus data (2026-09-08)
+
+Ticket `#513`. Headless Select `baseRootProps` now stamps `data-focused` from
+`state.isFocused` and `data-focus-visible` from a host
+`createFocusRing({ within: true })`, matching RAC `Select.tsx:187,278–287`.
+Picker D13 click step-0 wrapping `div` has `data-focused` and `data-open`.
+Keyboard step-0 wrapper remains (no hoist). Four D13 titles may still be red
+(#254 button extras, #514 chevron `data-open`, ComboBox owners). This closeout
+does not claim those titles green.

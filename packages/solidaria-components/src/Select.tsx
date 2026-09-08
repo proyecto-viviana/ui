@@ -477,10 +477,17 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     },
   });
 
+  // RAC SelectInner: useFocusRing({within: true}) on the host (Select.tsx:187).
+  // data-focused stamps state.isFocused; data-focus-visible comes from this ring.
+  // SelectContext / SelectTrigger keep createSelect's trigger-ring accessors.
+  const { isFocusVisible: isFocusVisibleWithin, focusProps } = createFocusRing({
+    within: true,
+  });
+
   const renderValues = createMemo<SelectRenderProps>(() => ({
     isOpen: isOpen(),
     isFocused: isFocused(),
-    isFocusVisible: isFocusVisible(),
+    isFocusVisible: isFocusVisibleWithin(),
     isDisabled: resolveDisabled(),
     isRequired: !!ariaProps.isRequired,
     isSelected:
@@ -496,7 +503,7 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
       return isFocused();
     },
     get isFocusVisible() {
-      return isFocusVisible();
+      return isFocusVisibleWithin();
     },
     get isDisabled() {
       return resolveDisabled();
@@ -529,6 +536,16 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
   const cleanHoverProps = () => {
     const { ref: _ref, ...rest } = hoverProps as Record<string, unknown>;
     return rest;
+  };
+  const cleanFocusProps = () => {
+    const { ref: _ref, onFocus, onBlur, ...rest } = focusProps as Record<string, unknown>;
+    // Solid's onFocus/onBlur do not bubble. RAC's container ring listens for
+    // descendant focus via React's bubbling onFocus (Select.tsx:278-287).
+    return {
+      ...rest,
+      onFocusIn: onFocus,
+      onFocusOut: onBlur,
+    };
   };
   const cleanLabelProps = () => {
     const { ref: _ref, ...rest } = selectHook.labelProps as Record<string, unknown>;
@@ -743,10 +760,13 @@ export function Select<T>(props: SelectProps<T>): JSX.Element {
     ({
       ...domProps(),
       ...cleanHoverProps(),
+      ...cleanFocusProps(),
       ref: setRootRef,
       class: renderProps.class(),
       style: renderProps.style(),
       slot: local.slot,
+      "data-focused": isFocused() || undefined,
+      "data-focus-visible": isFocusVisibleWithin() || undefined,
       "data-open": isOpen() || undefined,
       "data-disabled": resolveDisabled() || undefined,
       "data-required": ariaProps.isRequired || undefined,

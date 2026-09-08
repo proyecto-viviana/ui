@@ -4,12 +4,22 @@ type: task
 title: "Stamp focused and focus-visible on the Select root"
 created: 2026-09-08
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-08,
       note: "filed from #508 / Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "stamp data-focused from select state and data-focus-visible from a root createFocusRing({ within: true }) onto baseRootProps; SelectTrigger stamps stay",
+    }
+  - {
+      state: merged,
+      at: 2026-09-08,
+      note: "solidaria-components Select stamps data-focused from state.isFocused and data-focus-visible from a host createFocusRing({within:true}) on baseRootProps (RAC Select.tsx:187,278-287). SelectTrigger stamps stay. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: Select.test.tsx 86 passed; comparison:build pass; ComboBox D13 0/2 (regression); Picker D13 0/2 (titles still red). M9 left both Picker step-0 dom bodies (click wrapper data-focused+data-open; keyboard step 0 passed, fail is step 1). Remaining Picker click: #254 button data-focused/data-open, M10 svg data-open. Keyboard step 1: option aria-labelledby, option data-focus-visible, #254 button extras, M10 svg. ComboBox unchanged (M6/M5/M7/M1/M2/M4 click; M3/M4 keyboard). Waivers []. git diff --check pass. Did not start #514/#502/#511/#209/#248/#254.",
     }
 ---
 
