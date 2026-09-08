@@ -9,7 +9,8 @@ a general standards review.
 When sources disagree, use this order:
 
 1. Pinned upstream source (the vendored `./react-spectrum` tree at
-   `scripts/upstream-pin.json`; the installed deps match it as of 2026-07-03).
+   `scripts/upstream-pin.json`; the installed comparison deps match it as of
+   2026-09-02).
 2. React Aria and S2 docs, testing docs, blog posts, release notes, and examples.
 3. W3C and WHATWG technical specifications.
 4. APG patterns and examples.
@@ -50,21 +51,21 @@ These are the first source of truth for parity:
 | Solid styled S2 port          | `packages/solid-spectrum/src`                       |
 
 > **Read upstream source from the vendored `./react-spectrum` monorepo — it
-> is the pin** (materialized at the pinned commit in
+> is the pin** (materialized at commit `f56660b` in
 > `scripts/upstream-pin.json`; `vp run guard:upstream-test-parity` prints a
 > DRIFT banner when the tree does not match). The
-> installed `apps/comparison/node_modules` deps were aligned to the pin on
-> 2026-07-03 (recertification 0.2: s2 `1.5.1` / RAC `1.19.0` / react-aria
-> `3.50.0` / react-stately `3.48.0`, exact versions), but they are still
-> resolved by the app's own manifest, so re-verify after any pin bump. Two
-> shape caveats on the installed tree: react-aria `3.50.0` is upstream's
-> consolidated single package — the separate `@react-aria/*` /
-> `@react-stately/*` packages are no longer installed (their hooks live inside
-> `react-aria` / `react-stately`); and RAC `1.19.0` ships only compiled `dist`
-> plus subpath entries, no `src` (only the s2 tarball still ships `src`). Two
-> real near-misses came from porting a then-stale installed dist instead of
-> the pin: `isFocusable`'s `skipVisibilityCheck` (T-57) and `useAutocomplete`'s
-> `autoFocusOnMount` (T-58) were both absent from the installed copies.
+> installed `apps/comparison/node_modules` deps match the pin as of
+> 2026-09-02 (s2 `1.7.0` / RAC `1.21.0` / react-aria `3.52.0` / react-stately
+> `3.50.0`, exact versions in the app manifest). They are still resolved by
+> that manifest, so re-verify after any pin bump. Two shape caveats on the
+> installed tree: react-aria `3.52.0` is upstream's consolidated single
+> package — the separate `@react-aria/*` / `@react-stately/*` packages are no
+> longer installed (their hooks live inside `react-aria` / `react-stately`);
+> and RAC `1.21.0` ships only compiled `dist` plus subpath entries, no `src`
+> (only the s2 tarball still ships `src`). Two real near-misses came from
+> porting a then-stale installed dist instead of the pin: `isFocusable`'s
+> `skipVisibilityCheck` (T-57) and `useAutocomplete`'s `autoFocusOnMount`
+> (T-58) were both absent from the installed copies.
 
 ## Adobe Docs
 

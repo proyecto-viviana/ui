@@ -166,6 +166,7 @@ observable output. A component must run every applicable driver.
 | D11 | Timing             | Warmup, cooldown, auto-dismiss, pause, long-press, and cleanup under a mocked clock.                                                                                          |
 | D12 | SSR and hydration  | Server HTML, stable ids, hydrated DOM, and post-hydration behavior.                                                                                                           |
 | D13 | Journeys           | Multi-step mouse, keyboard, touch, and time sequences; every step diffs DOM, ARIA, focus, form value, overlay geometry and opacity, list scroll, events, AX tree, and pixels. |
+| D14 | Native validity    | Native constraint validation: `ValidityState` flags, `:invalid`, `validationMessage`, and submit blocked vs allowed.                                                             |
 
 Specialized drivers cover behavior that the base catalog does not model.
 D-scroll compares virtualized visible windows, position metadata, scroll
@@ -189,6 +190,10 @@ DatePicker, Popover, Tooltip, and Dialog. A static open-state pixel pass cannot
 see a step-N placement or opacity divergence after reopen, page scroll, or
 resize. The first divergent step fails by journey id, step index, and step
 label.
+
+D14 is the forms/validation driver (`e2e/drivers/validity.ts`, walks #351 /
+#376). It compares the browser-owned constraint-validation surface, not
+paint. A filled `isInvalid` field that still submits is a port bug.
 
 ## Refresh
 

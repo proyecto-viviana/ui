@@ -97,10 +97,13 @@ catalogue page. Ticket #177 records the current exceptions.
 
 ## Public names (owner decisions, 2026-09-01, #218)
 
-- The `@proyecto-viviana/solid-spectrum` barrel equals S2's `exports/index.ts`
-  and is guarded. Extras with no consumer are deleted; extras the product uses
-  move to `@proyecto-viviana/ui` (#221). `MenuButton` leaves `solid-spectrum`
-  and `solidaria-components` (#222).
+- Destination, still #221: the `@proyecto-viviana/solid-spectrum` barrel
+  equals S2's `exports/index.ts` and is guarded. The 2026-09-01 audit
+  recorded 168 extras that `guard:rac-export-gap` accepts by design; extras
+  with no consumer are deleted, extras the product uses move to
+  `@proyecto-viviana/ui`. That 168 figure is audit memory, not a current
+  inventory. `MenuButton` leaves `solid-spectrum` and `solidaria-components`
+  (#222).
 - Upstream item names are canonical: `ListBoxItem`, `ComboBoxItem`,
   `PickerItem`. `ListBoxOption` / `ComboBoxOption` are deprecated aliases with
   a named removal release (#224).

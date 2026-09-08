@@ -127,8 +127,8 @@ ColorSlider #393 / #394; ColorWheel #395 / #396; ColorSwatchPicker
   slug.
 - S2 ColorEditor parity (no upstream).
 - `#175` Color.tsx split.
-- `#176` nine catalogue notes. README 69/69 is catalogue inventory, not
-  this Files index.
+- `#176` nine catalogue notes. README inventory is 69/78 notes on a 78-entry
+  official catalogue, not this Files index.
 - `#454` ClientRouter / prefetch.
 
 ## Task Status

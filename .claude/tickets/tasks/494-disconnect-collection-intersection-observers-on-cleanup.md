@@ -4,12 +4,17 @@ type: task
 title: "Disconnect collection IntersectionObservers on cleanup"
 created: 2026-09-07
 parent: 31
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from the 2026-09-07 Solid pattern audit: Tree, Table, GridList, ListBox, and Menu return a disconnect function from an effect, which Solid ignores",
+    }
+  - {
+      state: merged,
+      at: 2026-09-08,
+      note: "Record: implementation 0ea2ca79. Independent test pass at 5224b7f1: vp test run Table 147 passed/4 skipped, ListBox 86, Menu 118, Tree 68, GridList 47. YAML was left open. Not verified.",
     }
 ---
 

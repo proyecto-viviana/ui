@@ -58,15 +58,17 @@ gaps. That report is file/label presence plus resolved evidence pointers. It
 is **not** current-gate acceptance (A-002). Current-gate status comes from
 each note's Gate Outcome Summary (`complete` / `partial` / `not-started` only).
 
-Current snapshot:
+Current snapshot (`vp run comparison:report:parity` on this HEAD):
 
-- Route/sidebar/fixture coverage: 69/69 official S2 catalogue entries.
-- Modeled viewer controls: 69/69 entries.
-- Validation notes present: 69/69 entries (presence is not `complete`).
-- Visual-state-matrix labels: 69/69 entries. Spec pointers must resolve;
+- Official S2 catalogue entries: 78.
+- Route/sidebar/fixture coverage: 78/78 official entries.
+- Modeled viewer controls: 69/78. The nine without modeled controls are #85.
+- Validation notes present: 69/78 (presence is not `complete`). #176 owns the
+  nine without notes.
+- Visual-state-matrix labels: 69/78. Same nine. Spec pointers must resolve;
   superseded `*-visual.spec.ts` files map to `e2e/certified/*.certified.spec.ts`.
 - `comparison:report:parity:strict`: inventory anti-regression, not 100%
-  current-gate parity.
+  current-gate parity. Do not treat 69/78 notes as 78/78.
 
 React Spectrum S2 documents the icon route as `Icons`; the comparison slug is
 `icons`. Icons and Illustrations now have modeled controls and strict primitive

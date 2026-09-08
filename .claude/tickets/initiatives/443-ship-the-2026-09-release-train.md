@@ -25,16 +25,23 @@ history:
       at: 2026-09-06,
       note: "La Frontera re-audited its seven-entry consumer defect ledger against main: VUI-001/-002/-006 are already fixed here (842cfdc5, abafbd4d), four are not. #483 #484 #485 #486 filed. Their changesets join this pile; the ledger entries close only on a published version, so this train is what closes them. #484 is blocked on an owner ruling that reduced motion overrides React Spectrum parity for Button. Hold on #194 is unchanged; nothing here asks to ship early.",
     }
+  - {
+      state: open,
+      at: 2026-09-08,
+      note: "HEAD 9129471d: 139 files in .changeset minus README.md and config.json (138 unpublished .md plus changelog.cjs). The 2026-09-05 count of 112 was on 030c200b. Still unpublished; do not ship.",
+    }
 ---
 
 Publish the pending changesets for the six public packages from PR #33
 `audit-2026-09-round-2` head `87da0f75`, via merge → same-SHA gates →
 regenerated version PR #32 → publish.
 
-2026-09-05 count on `030c200b`: **112** unpublished changesets, not 83.
+2026-09-08 count on `9129471d`: **139** files minus README.md and
+`config.json` (138 unpublished `.md` changesets plus `changelog.cjs`). The
+dated 2026-09-05 count on `030c200b` was 112, not 83.
 Workspace Kumo stays `0.0.0` (name-reservation only). That pile is not one
 honest product slice. Certified-suite postcard is still `0f1e1198` (#194).
-No npm publish and no push on 2026-09-05.
+No npm publish from this count.
 
 ## Ordered work
 
