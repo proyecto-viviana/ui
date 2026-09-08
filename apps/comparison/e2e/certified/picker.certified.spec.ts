@@ -213,11 +213,12 @@ const listScenario: DriverScenario = {
     root: listbox,
   },
   // D5: arrow-key roving through the open list. `root: listbox` scopes the
-  // roving-tabindex snapshot to the `role="listbox"` (the deferred popover
-  // surface stays out of the trail). `entry: "keyboard"` drives the real
-  // keyboard path both stacks share — the Picker autofocuses the SELECTED option
-  // ("Pro") on open, so the walk starts from there in both stacks instead of a
-  // synthetic `.focus()` that would seed `focusedKey` divergently.
+  // roving-tabindex snapshot to the `role="listbox"` (the overlay dialog still
+  // appears in `active` because it is an ancestor of that root).
+  // `entry: "keyboard"` starts wherever mouse `clickLocator` left
+  // `document.activeElement` — the dialog named "Plan" (`tabindex: -1`) — not
+  // a synthetic `.focus()`. Roving already has selected "Pro" at
+  // `tabindex: 0`. Arrow/Home/End must not walk options under that focused dialog.
   focus: {
     cases: ["size-m"],
     root: listbox,

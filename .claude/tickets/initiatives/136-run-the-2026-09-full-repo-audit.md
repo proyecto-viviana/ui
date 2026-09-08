@@ -66,6 +66,11 @@ history:
       at: 2026-09-08,
       note: "#498 merged: portaled Popover stamps locale dir/lang so ComboBox/Picker lists inherit rtl. ComboBox list D10 3/3. Picker list D10 matrix 2/2; trail arrow-roving is #499 start-node. Did not start #499/#511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "#499 merged: Picker list D5 arrow-roving matches RAC dialog start-node. Overlay Select options keep roving tabindex without DOM focus; Spectrum drops autoFocus={false}. Did not start #508/#511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

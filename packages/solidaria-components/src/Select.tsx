@@ -312,6 +312,11 @@ export const SelectContext = createContext<SelectContextValue<unknown> | null>(n
 export const SelectStateContext = createContext<SelectState<unknown> | null>(null);
 export const SelectValueContext = SelectContext;
 
+/** True when this SelectListBox is the overlay list (Picker / Popover). */
+const SelectListBoxInPopoverContext = createContext(false);
+
+function noopOptionFocus() {}
+
 const selectRootLabelProps = new Set([
   "aria-label",
   "aria-labelledby",
@@ -1155,6 +1160,11 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     if (!isOpen()) return;
     const focusedKey = state.focusedKey();
     if (focusedKey == null) return;
+    // Overlay mouse-open: keep manager `isFocused` + selected `focusedKey`
+    // (roving tabindex / `data-focused`) but do not `focusSafely` the option.
+    // RAC leaves the popover dialog as `document.activeElement`; an already-
+    // focused option also blocks headless Popover autofocus (`contains`).
+    if (local.isInPopover === true) return;
 
     queueMicrotask(() => {
       const option = Array.from(
@@ -1172,48 +1182,50 @@ export function SelectListBox<T>(props: SelectListBoxProps<T>): JSX.Element {
     // div-based for virtualization parity. `<ul>`/`<li>` here was a self-inflicted
     // structural divergence surfaced by the Picker recertification (D5/D6/D8 saw
     // `li[option]`/`ul[listbox]` where the React oracle sees `div`).
-    <div
-      ref={(el) => (listBoxRef = el)}
-      {...domProps}
-      {...cleanMenuProps()}
-      {...cleanListBoxProps()}
-      {...cleanListBoxFocusProps()}
-      class={renderProps.class()}
-      style={renderProps.style()}
-      data-focused={isListBoxFocused() || undefined}
-      data-focus-visible={isListBoxFocusVisible() || undefined}
-      data-empty={state.collection().size === 0 || undefined}
-      data-layout="stack"
-      data-orientation="vertical"
-    >
-      {state.collection().size === 0 && local.renderEmptyState ? (
-        <div role="option" style={{ display: "contents" }} data-empty-state>
-          {local.renderEmptyState()}
-        </div>
-      ) : (
-        <Show
-          when={local.children}
-          fallback={
+    <SelectListBoxInPopoverContext.Provider value={local.isInPopover === true}>
+      <div
+        ref={(el) => (listBoxRef = el)}
+        {...domProps}
+        {...cleanMenuProps()}
+        {...cleanListBoxProps()}
+        {...cleanListBoxFocusProps()}
+        class={renderProps.class()}
+        style={renderProps.style()}
+        data-focused={isListBoxFocused() || undefined}
+        data-focus-visible={isListBoxFocusVisible() || undefined}
+        data-empty={state.collection().size === 0 || undefined}
+        data-layout="stack"
+        data-orientation="vertical"
+      >
+        {state.collection().size === 0 && local.renderEmptyState ? (
+          <div role="option" style={{ display: "contents" }} data-empty-state>
+            {local.renderEmptyState()}
+          </div>
+        ) : (
+          <Show
+            when={local.children}
+            fallback={
+              <For each={items()}>
+                {(node) => <SelectOption id={node.key}>{node.textValue}</SelectOption>}
+              </For>
+            }
+          >
             <For each={items()}>
-              {(node) => <SelectOption id={node.key}>{node.textValue}</SelectOption>}
+              {(node) => (node.value != null ? local.children!(node.value) : null)}
             </For>
-          }
-        >
-          <For each={items()}>
-            {(node) => (node.value != null ? local.children!(node.value) : null)}
-          </For>
+          </Show>
+        )}
+        <Show when={local.onLoadMore}>
+          <ListBoxLoadMoreItem
+            onLoadMore={local.onLoadMore!}
+            isLoading={local.isLoading}
+            class={local.loadMoreClass}
+          >
+            {local.renderLoadMore?.()}
+          </ListBoxLoadMoreItem>
         </Show>
-      )}
-      <Show when={local.onLoadMore}>
-        <ListBoxLoadMoreItem
-          onLoadMore={local.onLoadMore!}
-          isLoading={local.isLoading}
-          class={local.loadMoreClass}
-        >
-          {local.renderLoadMore?.()}
-        </ListBoxLoadMoreItem>
-      </Show>
-    </div>
+      </div>
+    </SelectListBoxInPopoverContext.Provider>
   );
 
   return (
@@ -1263,9 +1275,13 @@ export function SelectOption<T>(props: SelectOptionProps<T>): JSX.Element {
   // (RAC reads it from `listData`, useOption.ts:130-131). Pass it explicitly
   // from the same CollectionRenderer a parent Virtualizer publishes.
   const parentCollectionRenderer = useCollectionRenderer<unknown>();
+  const isInPopover = useContext(SelectListBoxInPopoverContext);
   const optionAria = createOption<T>(
     {
       key: local.id,
+      get focus() {
+        return ariaProps.focus ?? (isInPopover ? noopOptionFocus : undefined);
+      },
       get isVirtualized() {
         return parentCollectionRenderer?.isVirtualized;
       },

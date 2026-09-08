@@ -44,6 +44,11 @@ export interface AriaOptionProps {
   shouldUseVirtualFocus?: boolean;
   /** Whether the option is contained in a virtual scrolling listbox. */
   isVirtualized?: boolean;
+  /**
+   * Function to focus the option, overriding the default DOM focus.
+   * Forwarded into `createSelectableItem` (`useSelectableItem` `focus`).
+   */
+  focus?: () => void;
   /** Whether press-up may occur without the press starting on this option. */
   allowsDifferentPressOrigin?: boolean;
   /** Handler called when hover starts. */
@@ -135,6 +140,7 @@ export function createOption<T>(
         allowsDifferentPressOrigin: allowsDifferentPressOrigin(),
         isVirtualized: isVirtualized(),
         shouldUseVirtualFocus: shouldUseVirtualFocus(),
+        focus: getProps().focus,
         onAction: hasAction
           ? () => {
               getProps().onAction?.();

@@ -1415,6 +1415,65 @@ describe("Select", () => {
       expect(document.querySelector("input")).toBeNull();
     });
 
+    it("click-open inside a popover keeps the dialog active and freezes option tabindexes", async () => {
+      const SelectPopover = () => {
+        const ctx = useContext(SelectContext);
+        return (
+          <Popover
+            trigger="Select"
+            isOpen={ctx?.isOpen() ?? false}
+            triggerRef={() => ctx?.triggerRef() ?? null}
+            onOpenChange={(open) => {
+              if (!open) {
+                ctx?.state.close();
+              }
+            }}
+          >
+            <SelectListBox isInPopover>
+              {(item) => <SelectOption id={item.id}>{item.name}</SelectOption>}
+            </SelectListBox>
+          </Popover>
+        );
+      };
+
+      render(() => (
+        <Select
+          aria-label="Plan"
+          items={testItems}
+          getKey={(item) => item.id}
+          getTextValue={(item) => item.name}
+          defaultSelectedKey="dog"
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select an option" />
+          </SelectTrigger>
+          <SelectPopover />
+        </Select>
+      ));
+
+      await user.click(screen.getByRole("button"));
+      await waitFor(() => {
+        expect(document.querySelector("[role='dialog']")).not.toBeNull();
+      });
+
+      const dialog = document.querySelector("[role='dialog']") as HTMLElement;
+      const selectedOption = dialog.querySelector("[role='option'][data-focused]") as HTMLElement;
+      expect(selectedOption).not.toBeNull();
+      expect(selectedOption).toHaveTextContent("Dog");
+      expect(selectedOption).toHaveAttribute("tabindex", "0");
+      expect(selectedOption).not.toBe(document.activeElement);
+
+      const tabindexesBefore = Array.from(dialog.querySelectorAll("[role='option']")).map(
+        (option) => option.getAttribute("tabindex"),
+      );
+      fireEvent.keyDown(dialog, { key: "ArrowDown" });
+      const tabindexesAfter = Array.from(dialog.querySelectorAll("[role='option']")).map((option) =>
+        option.getAttribute("tabindex"),
+      );
+      expect(tabindexesAfter).toEqual(tabindexesBefore);
+      expect(selectedOption).toHaveAttribute("tabindex", "0");
+    });
+
     it("overlay root carries aria-labelledby from the select menu", async () => {
       const SelectPopover = () => {
         const ctx = useContext(SelectContext);

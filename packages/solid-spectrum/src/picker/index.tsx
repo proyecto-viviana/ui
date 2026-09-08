@@ -592,7 +592,6 @@ function PickerListBoxPopover(props: {
       offset={pickerMenuOffset(props.size())}
       crossOffset={props.isQuiet() ? -12 : undefined}
       shouldFlip={props.shouldFlip()}
-      autoFocus={false}
       UNSAFE_style={{
         width: props.menuWidth() != null && !props.isQuiet() ? `${props.menuWidth()}px` : undefined,
       }}

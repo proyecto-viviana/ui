@@ -4,12 +4,22 @@ type: task
 title: "Land Picker list arrow-roving focus on the selected option"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-08,
+      note: "implement picker-list-arrow-roving: stop option focusSafely when isInPopover; no-op createOption focus on the overlay path; drop Spectrum PickerListBoxPopover autoFocus={false}",
+    }
+  - {
+      state: merged,
+      at: 2026-09-08,
+      note: "Picker list D5 size-m · arrow-roving matches: dialog Plan frozen, roving Pro at 0 through Arrow/Home/End. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: vp test run packages/solidaria-components/test/Select.test.tsx — 84 passed. vp run comparison:build — pass. focused D5 grep — 1 passed, 0 waived. git diff --check clean. Waivers []. Did not start #508/#511.",
     }
 ---
 
