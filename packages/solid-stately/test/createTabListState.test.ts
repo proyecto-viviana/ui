@@ -11,6 +11,13 @@ const baseItems = [
   { key: "tab3", label: "Tab 3" },
 ];
 
+/** Drain createTabListState's selected→focused copy (`requestAnimationFrame`). */
+function flushSelectedToFocusedCopy(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => resolve());
+  });
+}
+
 describe("createTabListState", () => {
   it("selects the first enabled tab by default", () => {
     createRoot((dispose) => {
@@ -88,48 +95,70 @@ describe("createTabListState", () => {
     });
   });
 
-  it("initializes focusedKey to the selected key", () => {
-    createRoot((dispose) => {
-      const state = createTabListState({
+  it("initializes focusedKey to the selected key", async () => {
+    const [state, dispose] = createRoot((dispose) => {
+      const created = createTabListState({
         items: baseItems,
         getKey: (item) => item.key,
         defaultSelectedKey: "tab2",
       });
-
-      expect(state.focusedKey()).toBe("tab2");
-      dispose();
+      return [created, dispose] as const;
     });
+
+    try {
+      expect(state.focusedKey()).toBe(null);
+      await flushSelectedToFocusedCopy();
+      expect(state.focusedKey()).toBe("tab2");
+    } finally {
+      dispose();
+    }
   });
 
-  it("moves focusedKey to a new selected key while the tab list is not focused", () => {
-    createRoot((dispose) => {
-      const state = createTabListState({
+  it("moves focusedKey to a new selected key while the tab list is not focused", async () => {
+    const [state, dispose] = createRoot((dispose) => {
+      const created = createTabListState({
         items: baseItems,
         getKey: (item) => item.key,
       });
+      return [created, dispose] as const;
+    });
+
+    try {
+      await flushSelectedToFocusedCopy();
+      expect(state.focusedKey()).toBe("tab1");
 
       state.setSelectedKey("tab3");
 
+      expect(state.focusedKey()).toBe("tab1");
+      await flushSelectedToFocusedCopy();
       expect(state.focusedKey()).toBe("tab3");
+    } finally {
       dispose();
-    });
+    }
   });
 
-  it("keeps focusedKey while the tab list is focused and selection changes", () => {
-    createRoot((dispose) => {
-      const state = createTabListState({
+  it("keeps focusedKey while the tab list is focused and selection changes", async () => {
+    const [state, dispose] = createRoot((dispose) => {
+      const created = createTabListState({
         items: baseItems,
         getKey: (item) => item.key,
         keyboardActivation: "manual",
       });
+      return [created, dispose] as const;
+    });
 
+    try {
+      await flushSelectedToFocusedCopy();
       state.setFocused(true);
       state.setFocusedKey("tab2");
       state.setSelectedKey("tab3");
 
       expect(state.focusedKey()).toBe("tab2");
+      await flushSelectedToFocusedCopy();
+      expect(state.focusedKey()).toBe("tab2");
+    } finally {
       dispose();
-    });
+    }
   });
 
   it("does not emit selection change when focusing the already-selected key", () => {

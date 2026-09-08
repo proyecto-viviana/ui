@@ -17,7 +17,14 @@
  * Ported from packages/react-stately/src/tabs/useTabListState.ts.
  */
 
-import { createComputed, createMemo, createSignal, type Accessor } from "solid-js";
+import {
+  createComputed,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  type Accessor,
+} from "solid-js";
 import { access, type MaybeAccessor } from "../utils";
 import { ListCollection } from "../collections/ListCollection";
 import type {
@@ -225,14 +232,31 @@ export function createTabListState<T = unknown>(
 
   // If the tab list doesn't have focus and the selected key changes, or if there
   // isn't a focused key yet, move the focused key to the selected key so the
-  // roving tabIndex stays on the selected tab (mirrors useTabListState's effect).
+  // roving tabIndex stays on the selected tab. Predicate matches useTabListState.
+  // RAC writes in useEffect (after paint). createComputed / a bare createEffect
+  // would copy inside setSelectedKey, so D4 capture of pointerup/click would
+  // already see tabindex 0. Subscribe here; write on the next animation frame.
   let lastSelectedKey: Key | null = selectedKey();
-  createComputed(() => {
+  let selectedToFocusedFrame: number | null = null;
+  const copySelectedToFocusedKey = () => {
+    selectedToFocusedFrame = null;
     const sel = selectedKey();
     if ((sel !== null && focusedKey() === null) || (!isFocused() && sel !== lastSelectedKey)) {
       setFocusedKey(sel);
     }
     lastSelectedKey = sel;
+  };
+  createEffect(() => {
+    selectedKey();
+    focusedKey();
+    isFocused();
+    if (selectedToFocusedFrame != null) return;
+    selectedToFocusedFrame = requestAnimationFrame(copySelectedToFocusedKey);
+  });
+  onCleanup(() => {
+    if (selectedToFocusedFrame == null) return;
+    cancelAnimationFrame(selectedToFocusedFrame);
+    selectedToFocusedFrame = null;
   });
 
   // Keep uncontrolled selection valid as items/disabled keys change.

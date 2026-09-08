@@ -400,14 +400,10 @@ export function createTab<T>(
   const selectTab = () => {
     // Press handlers select only — they do NOT set the focused key. Upstream's
     // useSelectableItem does the same: its press/onSelect path calls
-    // replaceSelection, while `focusedKey` is driven exclusively by the DOM
-    // `onFocus` handler (see handleFocus below). Setting the focused key here too
-    // flipped the roving tabIndex synchronously at pointer-up — *before* the
-    // browser's native focus reached the tab — so a touch tap logged the tapped
-    // tab with tabIndex 0 at its own `focusin`, where React (which updates
-    // tabIndex only on the post-event commit) still shows -1. Letting native
-    // focus alone advance `focusedKey` defers the tabIndex flip past the focus
-    // event, matching React's D4 event sequence.
+    // replaceSelection. `focusedKey` is written by handleFocusIn (DOM `focusin`)
+    // and by createTabListState's selected→focused copy after paint (RAC
+    // useTabListState useEffect). Setting it here would flip the roving tabIndex
+    // during press, before React's post-paint copy and before native focus.
     state.setSelectedKey(key());
   };
   const { isPressed, pressProps } = createPress({
@@ -463,11 +459,11 @@ export function createTab<T>(
   // records event targets from a document-level capture-phase listener, which
   // runs before this at-target handler, so a touch tap — whose selection lands
   // on press-up, after focus — is still observed with tabIndex=-1 at `focusin`,
-  // exactly as React. A mouse press selects on press-start and syncs focusedKey
-  // before focus (createTabListState's selection→focus effect), so its tab
-  // already reads tabIndex=0 at `focusin`, again matching React. Setting it on
-  // the earlier `focus` event flipped the tab a whole event too soon, so touch
-  // taps diverged at `focusin`. The D4 event driver holds this ordering.
+  // exactly as React. Mouse press-start selection does not write focusedKey here;
+  // createTabListState copies selected→focused after paint, so capture of
+  // pointerup/click still reads tabindex="-1". Setting it on the earlier `focus`
+  // event flipped the tab a whole event too soon, so touch taps diverged at
+  // `focusin`. The D4 event driver holds this ordering.
   const handleFocusIn = () => {
     // Batch collection-focused + roving key. Native `focus` is too early:
     // setting isFocused there flushes the previous tab's focus-move effect

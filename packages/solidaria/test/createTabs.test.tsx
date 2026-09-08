@@ -688,8 +688,12 @@ describe("createTabs", () => {
   });
 
   describe("tabIndex management", () => {
-    it("selected tab has tabIndex 0, others have tabIndex -1", () => {
+    it("selected tab has tabIndex 0, others have tabIndex -1", async () => {
       render(() => <TestTabs aria-label="Test Tabs" />);
+
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
 
       const tabs = screen.getAllByRole("tab");
       expect(tabs[0]).toHaveAttribute("tabindex", "0");
@@ -697,9 +701,13 @@ describe("createTabs", () => {
       expect(tabs[2]).toHaveAttribute("tabindex", "-1");
     });
 
-    it("tabIndex is 0 for selected tab, -1 for others", () => {
-      // Test that initial tabIndex values are correct
+    it("tabIndex is 0 for selected tab, -1 for others", async () => {
+      // After the selected→focused copy (RAC useEffect / requestAnimationFrame).
       render(() => <TestTabs aria-label="Test Tabs" defaultSelectedKey="tab2" />);
+
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
 
       const tabs = screen.getAllByRole("tab");
       expect(tabs[0]).toHaveAttribute("tabindex", "-1");

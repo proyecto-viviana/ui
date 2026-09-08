@@ -169,6 +169,7 @@ describe("Tabs (solid-spectrum S2)", () => {
     render(() => <TestTabs />);
 
     const first = screen.getByRole("tab", { name: "First" });
+    await waitFor(() => expect(first).toHaveAttribute("tabindex", "0"));
     await user.tab();
     expect(document.activeElement).toBe(first);
     expect(first).toHaveAttribute("data-focused", "true");
@@ -184,7 +185,7 @@ describe("Tabs (solid-spectrum S2)", () => {
     render(() => <TestTabs />);
 
     const [first, second] = screen.getAllByRole("tab");
-    expect(first).toHaveAttribute("tabindex", "0");
+    await waitFor(() => expect(first).toHaveAttribute("tabindex", "0"));
     expect(second).toHaveAttribute("tabindex", "-1");
 
     second.focus();

@@ -57,9 +57,9 @@ const tabsScenario: DriverScenario = {
     // still reads tabIndex="-1". Fixed by binding the port's roving-tabindex
     // commit to `focusin` (createTabs.ts `handleFocusIn`) to match React's
     // delegation: the D4 oracle's document capture-phase read at `focusin` now
-    // runs before the at-target write, so touch reads -1 and mouse (which syncs
-    // focusedKey on press-start, before focus) reads 0 — both matching React. No
-    // waiver remains; all D4 gestures are green.
+    // runs before the at-target write. Mouse press-start selection copies
+    // selected→focused in createTabListState after paint (RAC useEffect), so
+    // pointerup/click capture still reads tabindex="-1" on both stacks.
   },
   // D5: the roving-tabindex walk — arrows, Home, End across the tablist; the
   // roving snapshot must show exactly one tab at tabindex=0 after every key.

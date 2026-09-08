@@ -29,6 +29,7 @@ describe("Tabs", () => {
     const after = screen.getByRole("button", { name: "After tabs" });
 
     await waitFor(() => expect(panel).not.toHaveAttribute("tabindex"));
+    await waitFor(() => expect(tab).toHaveAttribute("tabindex", "0"));
 
     before.focus();
     await user.tab();
