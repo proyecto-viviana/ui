@@ -177,6 +177,41 @@ describe("createDateSegment", () => {
     },
   );
 
+  it("isolates a numeric month segment under ar-AE with ltr embed", () => {
+    renderSegment({
+      locale: "ar-AE",
+      segment: {
+        type: "month",
+        text: "2",
+        value: 2,
+        minValue: 1,
+        maxValue: 12,
+        isEditable: true,
+        isPlaceholder: false,
+        placeholder: "mm",
+      },
+    });
+    const segment = screen.getByTestId("segment");
+    expect(segment.style.getPropertyValue("unicode-bidi")).toBe("embed");
+    expect(segment.style.direction).toBe("ltr");
+  });
+
+  it("does not force ltr on a literal segment under ar-AE", () => {
+    renderSegment({
+      locale: "ar-AE",
+      segment: {
+        type: "literal",
+        text: "/",
+        isEditable: false,
+        isPlaceholder: false,
+        placeholder: "",
+      },
+    });
+    const segment = screen.getByTestId("segment");
+    expect(segment.style.direction).not.toBe("ltr");
+    expect(segment.style.getPropertyValue("unicode-bidi")).not.toBe("embed");
+  });
+
   it("routes ArrowUp/ArrowDown to the spinbutton value model", () => {
     const { state } = renderSegment();
     const segment = screen.getByTestId("segment");

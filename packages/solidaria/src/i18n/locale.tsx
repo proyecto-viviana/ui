@@ -22,6 +22,7 @@
 
 import {
   type Accessor,
+  type Context,
   type JSX,
   type ParentProps,
   createContext,
@@ -32,6 +33,7 @@ import {
   useContext,
 } from "solid-js";
 import { isRTL } from "./utils";
+import { access } from "../utils/reactivity";
 
 /** Text direction: left-to-right or right-to-left. */
 export type Direction = "ltr" | "rtl";
@@ -86,7 +88,24 @@ function updateLocale(): void {
   }
 }
 
-const I18nContext = createContext<Accessor<Locale> | null>(null);
+// Duplicate module graphs each mint a createContext identity. Share one
+// I18nContext via a well-known symbol so Provider and field hooks see the
+// same locale (same pattern as the default-locale window key above).
+const i18nContextSymbol = Symbol.for("solidaria.i18n.context");
+
+type I18nContextValue = Accessor<Locale> | null;
+
+function getI18nContext(): Context<I18nContextValue> {
+  const registry = globalThis as unknown as Record<symbol, Context<I18nContextValue> | undefined>;
+  let context = registry[i18nContextSymbol];
+  if (!context) {
+    context = createContext<I18nContextValue>(null);
+    registry[i18nContextSymbol] = context;
+  }
+  return context;
+}
+
+const I18nContext = getI18nContext();
 
 /**
  * Returns the current browser/system locale, and updates when it changes.
@@ -164,10 +183,11 @@ export function I18nProvider(props: I18nProviderProps): JSX.Element {
   const defaultLocale = createDefaultLocale();
 
   const locale = createMemo<Locale>(() => {
-    if (props.locale) {
+    const localeString = access(props.locale);
+    if (localeString) {
       return {
-        locale: props.locale,
-        direction: isRTL(props.locale) ? "rtl" : "ltr",
+        locale: localeString,
+        direction: isRTL(localeString) ? "rtl" : "ltr",
       };
     }
     return defaultLocale();

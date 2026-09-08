@@ -405,9 +405,14 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     toggle: () => datePickerState.setOpen(!datePickerState.isOpen()),
   };
 
-  // Create field state synced through datePickerState
+  // Create field state synced through datePickerState.
+  // Locale stays a getter: spreading stateProps would snapshot it to en-US
+  // when the Provider locale is still an accessor (D10 ar-AE).
   const fieldState = createDateFieldState<T>({
     ...stateProps,
+    get locale() {
+      return access(stateProps.locale);
+    },
     value: () => datePickerState.value(),
     onChange: (value) => {
       datePickerState.setValue(value);
@@ -427,7 +432,9 @@ function DatePickerInner<T extends DateValue = CalendarDate>(
     maxValue: stateProps.maxValue,
     isDisabled: stateProps.isDisabled,
     isReadOnly: stateProps.isReadOnly,
-    locale: stateProps.locale,
+    get locale() {
+      return access(stateProps.locale);
+    },
     createCalendar: stateProps.createCalendar as CalendarStateProps<T>["createCalendar"],
     isDateUnavailable: stateProps.isDateUnavailable,
     firstDayOfWeek: stateProps.firstDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined,
@@ -701,6 +708,9 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
 
   const calendarState = createRangeCalendarState({
     ...stateProps,
+    get locale() {
+      return access(stateProps.locale);
+    },
     value: currentRangeValue,
     onChange: (value) => {
       setCommittedRangeValue(value);
@@ -775,7 +785,9 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
     isDisabled: stateProps.isDisabled,
     isReadOnly: stateProps.isReadOnly,
     isRequired,
-    locale: access(stateProps.locale),
+    get locale() {
+      return access(stateProps.locale);
+    },
     granularity: rangeGranularity(),
     hourCycle: stateProps.hourCycle,
     hideTimeZone: stateProps.hideTimeZone,
@@ -791,12 +803,18 @@ function DateRangePickerInner<T extends DateValue = CalendarDate>(
 
   const startFieldState = createDateFieldState<T>({
     ...rangeFieldStateProps,
+    get locale() {
+      return access(stateProps.locale);
+    },
     value: startFieldValue,
     onChange: (value) => setRangeFieldValue("start", value),
   });
 
   const endFieldState = createDateFieldState<T>({
     ...rangeFieldStateProps,
+    get locale() {
+      return access(stateProps.locale);
+    },
     value: endFieldValue,
     onChange: (value) => setRangeFieldValue("end", value),
   });

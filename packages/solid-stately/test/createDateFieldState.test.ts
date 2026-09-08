@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vite-plus/test";
-import { createRoot } from "solid-js";
+import { createRoot, createSignal } from "solid-js";
 import { CalendarDate } from "@internationalized/date";
 import { createDateFieldState } from "../src/calendar/createDateFieldState";
 
@@ -248,6 +248,49 @@ describe("createDateFieldState", () => {
 
       expect(state.isInvalid()).toBe(true);
       expect(state.displayValidation().validationErrors).toContain("Unavailable date");
+
+      dispose();
+    });
+  });
+
+  it("unwraps a locale accessor so ar-AE orders day before month", () => {
+    createRoot((dispose) => {
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 15),
+        locale: () => "ar-AE",
+      });
+
+      const editable = state
+        .segments()
+        .filter((segment) => segment.isEditable)
+        .map((segment) => segment.type);
+
+      expect(state.locale).toBe("ar-AE");
+      expect(editable).toEqual(["day", "month", "year"]);
+
+      dispose();
+    });
+  });
+
+  it("reorders segments when a locale accessor changes", () => {
+    createRoot((dispose) => {
+      const [locale, setLocale] = createSignal("en-US");
+      const state = createDateFieldState({
+        defaultValue: new CalendarDate(2025, 2, 15),
+        locale: () => locale(),
+      });
+
+      const editable = () =>
+        state
+          .segments()
+          .filter((segment) => segment.isEditable)
+          .map((segment) => segment.type);
+
+      expect(editable()).toEqual(["month", "day", "year"]);
+
+      setLocale("ar-AE");
+      expect(state.locale).toBe("ar-AE");
+      expect(editable()).toEqual(["day", "month", "year"]);
 
       dispose();
     });

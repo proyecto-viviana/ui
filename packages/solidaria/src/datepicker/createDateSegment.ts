@@ -442,10 +442,14 @@ export function createDateSegment<T extends DateFieldState>(
     // names, so upstream's React CSSProperties must be written kebab here to
     // actually take effect (React auto-kebabs camelCase; a Solid spread does
     // not). `direction` matched already precisely because it is single-word.
+    // Resolve formatter options inside this memo so numeric `ltr` / `embed`
+    // compute on the current segment when locale becomes rtl (D10 ar-AE).
     const segmentStyle: Record<string, string> = { "caret-color": "transparent" };
     if (direction() === "rtl") {
       segmentStyle["unicode-bidi"] = "embed";
-      const format = (resolvedOptions as unknown as Record<string, unknown>)[seg.type];
+      const format = (state.dateFormatter.resolvedOptions() as unknown as Record<string, unknown>)[
+        seg.type
+      ];
       if (format === "numeric" || format === "2-digit") {
         segmentStyle.direction = "ltr";
       }
@@ -484,6 +488,25 @@ export function createDateSegment<T extends DateFieldState>(
         },
       },
     );
+  });
+
+  createEffect(() => {
+    const el = ref();
+    const seg = segment();
+    if (!el || seg.type === "literal") {
+      return;
+    }
+    if (direction() === "rtl") {
+      el.style.setProperty("unicode-bidi", "embed");
+      const format = (state.dateFormatter.resolvedOptions() as unknown as Record<string, unknown>)[
+        seg.type
+      ];
+      if (format === "numeric" || format === "2-digit") {
+        el.style.setProperty("direction", "ltr");
+      } else {
+        el.style.removeProperty("direction");
+      }
+    }
   });
 
   return {

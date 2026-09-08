@@ -88,7 +88,7 @@ export interface TimeFieldStateProps<T extends TimeValue = Time> {
   /** Whether the value is invalid (controlled). */
   isInvalid?: boolean;
   /** The locale to use for formatting. */
-  locale?: string;
+  locale?: MaybeAccessor<string | undefined>;
   /** The granularity (hour, minute, second). */
   granularity?: "hour" | "minute" | "second";
   /** Whether to show 12 or 24 hour format. */

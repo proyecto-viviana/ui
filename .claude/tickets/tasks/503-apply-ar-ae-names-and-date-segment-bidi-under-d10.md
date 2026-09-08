@@ -4,12 +4,22 @@ type: task
 title: "Apply ar-AE names and date-segment bidi under D10"
 created: 2026-09-07
 parent: 136
-status: open
+status: merged
 history:
   - {
       state: open,
       at: 2026-09-07,
       note: "filed from #493 inventory of Certification Gates run 34155176389 on 0d84b016 (1998 passed / 165 failed / 4 skipped / 0 waived)",
+    }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "implement ar-ae-date-segment-bidi: DateFieldState access(locale), DatePicker locale getters, shared I18nContext, date-segment rtl embed",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "Provider ar-AE reaches Aria date/combo strings and numeric segment bidi. DateFieldState MaybeAccessor+access; DatePicker locale getters; I18nContext Symbol.for share across duplicate graphs; createDateSegment rtl embed/ltr. Prove cwd /home/emoporemilio/projects/viviana-hub/ui: vp test run packages/solidaria/test/createDateSegment.test.tsx packages/solid-stately/test/createDateFieldState.test.ts packages/solidaria/test/createComboBox.test.tsx — 3 files, 75 passed. Focused D10 RTL datefield/timefield/datepicker/daterangepicker/calendar/rangecalendar — 26 passed. ComboBox field D10 (grep ComboBox field) — 3 passed. Overlay list D10 not run (#498). git diff --check clean.",
     }
 ---
 

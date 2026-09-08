@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vite-plus/test";
 import { createRoot, createSignal } from "solid-js";
-import { render, screen, waitFor } from "@solidjs/testing-library";
+import { render, screen, waitFor, cleanup } from "@solidjs/testing-library";
 import { createComboBox } from "../src/combobox";
+import { I18nProvider } from "../src/i18n";
 import { createComboBoxState } from "@proyecto-viviana/solid-stately";
 import * as liveAnnouncer from "../src/live-announcer";
 import * as platform from "../src/utils/platform";
@@ -231,6 +232,28 @@ describe("createComboBox", () => {
         expect(comboBox.buttonProps["aria-label"]).toBe("Show suggestions");
         dispose();
       });
+    });
+
+    it("localizes buttonLabel under I18nProvider locale ar-AE", () => {
+      function Probe() {
+        let inputRef: HTMLInputElement | null = null;
+        const state = createComboBoxState({
+          items,
+          getKey: (item) => item.id,
+          getTextValue: (item) => item.name,
+        });
+        const comboBox = createComboBox({}, state, () => inputRef);
+        return <button data-testid="combo-trigger" {...(comboBox.buttonProps as object)} />;
+      }
+
+      render(() => (
+        <I18nProvider locale="ar-AE">
+          <Probe />
+        </I18nProvider>
+      ));
+
+      expect(screen.getByTestId("combo-trigger").getAttribute("aria-label")).toBe("عرض المقترحات");
+      cleanup();
     });
 
     it("combobox input does not carry aria-haspopup", () => {

@@ -41,6 +41,11 @@ history:
       at: 2026-09-07,
       note: "#500 host inline pressScale already matches S2; #511 owns the remaining 3D pressed D3 raster burn-down",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "#503 merged: ar-AE names and date-segment bidi under D10 (27 titles). Overlay list D10 stays #498. Did not start #511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

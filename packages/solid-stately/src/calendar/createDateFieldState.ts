@@ -115,7 +115,7 @@ export interface DateFieldStateProps<T extends DateValue = DateValue> {
   /** Whether the value is invalid (controlled). */
   isInvalid?: boolean;
   /** The locale to use for formatting. */
-  locale?: string;
+  locale?: MaybeAccessor<string | undefined>;
   /** The granularity of the date/time (day, hour, minute, second). */
   granularity?: FieldGranularity;
   /** The maximum granularity (largest editable unit). Defaults to `year`. */
@@ -250,7 +250,7 @@ const TYPE_MAPPING: Record<string, string> = {
 export function createDateFieldState<T extends DateValue = DateValue>(
   props: DateFieldStateProps<T> = {},
 ): DateFieldState<T> {
-  const locale = (): string => props.locale ?? "en-US";
+  const locale = createMemo(() => access(props.locale) ?? "en-US");
   const createCalendarFn = (name: CalendarIdentifier): Calendar =>
     (props.createCalendar ?? intlCreateCalendar)(name);
 
