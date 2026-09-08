@@ -21,6 +21,16 @@ history:
       at: 2026-09-07,
       note: "ComboBox/Picker list selected checkmark and label match S2 baseColor stops. Pointer-open React keeps data-focus-visible on the focused row; Solid did not. Checkmark still takes { isSelected, isFocused, size } only (class, not icon styles, flexShrink 0). Option keeps hover/press; isFocusVisible := isFocused || isFocusVisible. No isFocused: accent on the option macro. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: combobox D1 6 / D7 2 / D9 6 passed; combobox D3 6 failed compositor class (size-s dark 0.25493421052631576 9920/38912, same as CI retry-1, not the 0.022 color band); picker D1+D3+D7+D9 20 passed. Slice 3 icon size not taken (picker D3 exact-pair). Waivers []. git diff --check clean. Did not start #498/#499/#511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "remainder after independent test fail: ComboBox D3 overlay-wide ~0.25 was the D3 clone frame contained by the lower ComboBox portal (CDP clipped site chrome at 0,0), not the option isFocusVisible remap. Picker overlay sits higher so the sibling probe still painted.",
+    }
+  - {
+      state: merged,
+      at: 2026-09-07,
+      note: "ComboBox D3 exact-pair: D3 clone probe mounts on document.body and copies color/color-scheme. ComboBox option isFocusVisible := isFocused || isFocusVisible kept (D7 Pro ink; React pointer-open listboxItem still paints the selected-row ring). Checkmark still { isSelected, isFocused, size } only. Picker product untouched. Prove cwd /home/emoporemilio/projects/viviana-hub/ui WSL COMPARISON_CHROMIUM_ARGS=--disable-software-rasterizer: ComboBox list D1+D3+D7+D9 20 passed; Picker list D1+D3+D7+D9 20 passed. Waivers []. git diff --check clean. Did not start #498/#499/#511. No knownDivergence.",
+    }
 ---
 
 Certification Gates run [34155176389](https://github.com/proyecto-viviana/ui/actions/runs/34155176389) on `0d84b016`: **40** unwaived titles, one paint miss.

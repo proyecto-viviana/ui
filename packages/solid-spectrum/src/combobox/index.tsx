@@ -1042,6 +1042,9 @@ export function ComboBoxOption<T>(props: ComboBoxOptionProps<T>): JSX.Element {
     [
       comboBoxOption({
         ...renderProps,
+        // Virtual-focus + pointer modality leaves headless isFocusVisible
+        // false while isFocused is true. React still spreads isFocusVisible
+        // into listboxItem (D7 Pro ink; D3 selected-row ring).
         isFocusVisible: renderProps.isFocused || renderProps.isFocusVisible,
         size,
         isLink: isLink(),

@@ -51,6 +51,11 @@ history:
       at: 2026-09-07,
       note: "#497 merged: ComboBox/Picker list selected checkmark accent. Pointer-open focused row uses S2 baseColor focused stop. Overlay list D10 stays #498. Picker D5 stays #499. Did not start #511.",
     }
+  - {
+      state: in-progress,
+      at: 2026-09-07,
+      note: "#497 remainder: ComboBox list D3 exact-pair. Clone probe mounts on document.body so the lower ComboBox portal cannot contain it. Overlay list D10 stays #498. Picker D5 stays #499. Did not start #511.",
+    }
 ---
 
 Audit the monorepo across architecture, Solid patterns, TypeScript, quality,

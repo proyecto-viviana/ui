@@ -381,9 +381,11 @@ export type ClonedScreenshotOptions = {
  * cleared by a re-render racing the capture — moving the element out from
  * under a held pointer fires real pointer events. The clone sits outside both
  * frameworks' ownership, so the driven state is frozen for as long as the
- * shot takes, and the live element never moves. Cloning in place (the frame
- * is inserted as a next sibling of the original) keeps every inherited style
- * and S2 custom property.
+ * shot takes, and the live element never moves. The clone is shown from a
+ * `document.body` popover frame (not a sibling of the overlay) so a lower
+ * ComboBox portal cannot contain or clip the probe. Theme tokens still
+ * resolve from `:root`; inherited `color` / `color-scheme` are copied onto
+ * the frame.
  *
  * Why the frame is a `popover="manual"` element shown into the top layer:
  * no z-index inside the page can guarantee the probe paints on top. The
@@ -397,8 +399,8 @@ export type ClonedScreenshotOptions = {
  * `showModal()`) moves no focus, makes nothing inert, and ignores Escape and
  * light dismiss, so the driven gesture state on the live element survives.
  * The frame normalizes the UA popover styles (margin/border/padding/
- * overflow/background) and sets `color: inherit` so the clone inherits
- * exactly what the original's parent provides.
+ * overflow/background) and copies the original's computed `color` /
+ * `color-scheme` onto the frame so UA `CanvasText` does not replace ink.
  *
  * The frame doubles as the backdrop, padded so outline rings and drop
  * shadows stay in the certified area (a screenshot of the element itself
@@ -448,9 +450,6 @@ export async function clonedElementScreenshot(
     frame.style.padding = "0";
     frame.style.overflow = "visible";
     frame.style.background = backdropColor;
-    // The UA popover style sets `color: CanvasText`; the clone must inherit
-    // through the frame exactly what the original inherits from its parent.
-    frame.style.color = "inherit";
 
     const clone = original.cloneNode(true) as HTMLElement;
     clone.setAttribute("data-comparison-pixel-clone", "true");
@@ -470,7 +469,13 @@ export async function clonedElementScreenshot(
     clone.style.boxSizing = "border-box";
 
     frame.appendChild(clone);
-    original.insertAdjacentElement("afterend", frame);
+    // Pin inherited ink/scheme onto the frame: it mounts on `document.body`
+    // (not as a sibling of the overlay) so ComboBox's lower overlay
+    // (`isolation: isolate` + listbox `overflow`) cannot contain or clip
+    // the top-layer probe. Theme tokens still resolve from `:root`.
+    frame.style.color = getComputedStyle(original).color;
+    frame.style.colorScheme = getComputedStyle(original).colorScheme;
+    document.body.appendChild(frame);
     frame.showPopover();
   }, padding);
 
