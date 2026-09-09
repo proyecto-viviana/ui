@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import { dither, edgeFade, glassSurface, wellScan } from "../src/s2-internal/style-utils";
+import {
+  dither,
+  edgeFade,
+  glassSurface,
+  hudBracket,
+  pixelBlocks,
+  wellScan,
+} from "../src/s2-internal/style-utils";
 
 /* These two helpers are how ~96 components inherit the register by construction, so a
  * regression here is silent and system-wide: nothing throws, the components just stop
@@ -69,5 +76,85 @@ describe("edgeFade", () => {
   it("keeps the fade depth on --gl-fade so a call site tunes one property", () => {
     expect(edgeFade().maskImage).toContain("var(--gl-fade, 24px)");
     expect(edgeFade("inline").maskImage).toContain("linear-gradient(90deg");
+  });
+});
+
+describe("pixelBlocks", () => {
+  it("leaves a gutter between blocks instead of painting a continuous bar", () => {
+    /* The failure mode: a repeating gradient whose stop is the block width, which tiles
+     * edge to edge and produces exactly the solid bar the register refuses to draw for a
+     * countable quantity. The transparent leg has to run to `block + gap`. */
+    const row = pixelBlocks();
+    expect(row.backgroundImage.default).toBe(
+      "[repeating-linear-gradient(to right, var(--status-metric) 0 10px, transparent 10px calc(10px + 4px))]",
+    );
+  });
+
+  it("keeps the blocks square and vertically centred on their track", () => {
+    /* Sizing the layer to `100% 100%` instead of `100% block` stretches every block to the
+     * track's height, so a 10px block in a 24px tile reads as a bar again. */
+    expect(pixelBlocks().backgroundSize).toBe("[100% 10px]");
+    expect(pixelBlocks().backgroundPosition).toBe("[left center]");
+    expect(pixelBlocks().backgroundRepeat).toBe("[repeat-x]");
+  });
+
+  it("threads the channel colour and the handoff's 6-12px geometry", () => {
+    const streak = pixelBlocks({ block: "6px", gap: "3px", color: "var(--accent-detail)" });
+    expect(streak.backgroundImage.default).toContain("var(--accent-detail) 0 6px");
+    expect(streak.backgroundImage.default).toContain("calc(6px + 3px)");
+  });
+
+  it("drops the blocks under forced colors", () => {
+    expect(pixelBlocks().backgroundImage.forcedColors).toBe("none");
+  });
+});
+
+describe("hudBracket", () => {
+  it("marks four corners, not a border", () => {
+    /* Eight layers or it is not a bracket: two arms per corner. Fewer means some corner is
+     * drawing an L on one axis only, which reads as a broken border rather than a HUD
+     * mark, and nothing else in the output would look wrong. */
+    const frame = hudBracket();
+    const layers = frame.backgroundImage.default.split("), linear-gradient(");
+    expect(layers).toHaveLength(8);
+    expect(frame.backgroundPosition.match(/left|right/g)).toHaveLength(8);
+    expect(frame.backgroundRepeat).toBe("[no-repeat]");
+  });
+
+  it("pairs one arm along each axis at every corner", () => {
+    /* Both arms of a corner share its position, and they are the transpose of each other —
+     * `arm x stroke` and `stroke x arm`. A pair that came out the same shape draws a
+     * square blob in the corner instead of an L, and a size list that fell out of step
+     * with the position list moves an arm to the wrong corner. */
+    const arm = "var(--hud-bracket, 14px)";
+    const stroke = "var(--hud-stroke, 2px)";
+    expect(hudBracket().backgroundSize).toBe(
+      `[${[`${arm} ${stroke}`, `${stroke} ${arm}`].join(", ")}, ` +
+        `${[`${arm} ${stroke}`, `${stroke} ${arm}`].join(", ")}, ` +
+        `${[`${arm} ${stroke}`, `${stroke} ${arm}`].join(", ")}, ` +
+        `${[`${arm} ${stroke}`, `${stroke} ${arm}`].join(", ")}]`,
+    );
+    expect(hudBracket().backgroundPosition).toBe(
+      "[left top, left top, right top, right top, left bottom, left bottom, right bottom, right bottom]",
+    );
+  });
+
+  it("steps the arm to the frame sizes the handoff draws, and never the stroke", () => {
+    /* 14px is the card token, 22px the theater frame, 26px the top of the documented
+     * range. The stroke stays `--hud-stroke` at every size — a bracket that scaled its
+     * stroke with its arm would thicken into a corner fill on a full-bleed frame. */
+    expect(hudBracket({ size: "M" }).backgroundSize).toContain("22px var(--hud-stroke, 2px)");
+    expect(hudBracket({ size: "L" }).backgroundSize).toContain("26px var(--hud-stroke, 2px)");
+    for (const size of ["S", "M", "L"] as const) {
+      const strokes = hudBracket({ size }).backgroundSize.match(/var\(--hud-stroke, 2px\)/g);
+      expect(strokes).toHaveLength(8);
+    }
+  });
+
+  it("takes the channel colour and drops out under forced colors", () => {
+    expect(hudBracket({ color: "var(--accent-detail)" }).backgroundImage.default).toContain(
+      "linear-gradient(var(--accent-detail), var(--accent-detail))",
+    );
+    expect(hudBracket().backgroundImage.forcedColors).toBe("none");
   });
 });

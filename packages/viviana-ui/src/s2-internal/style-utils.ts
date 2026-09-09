@@ -288,24 +288,28 @@ export const controlFont = () =>
  * ramp, only where on the ramp the band sits. Spread AFTER `font:` (which owns the
  * whole shorthand) so only size moves.
  *
- * CLAMPED AT `ui-xs`, which is the bottom of the ui ramp: spectrum-theme.ts:759-765
- * declares exactly `ui-xs` / `ui-sm` / `ui` / `ui-lg` / `ui-xl` (indices -2…+2), and
- * there is no rung below `ui-xs`. So the small end of each table saturates rather than
- * stepping — at `steps: 2`, sizes XS/S/M all land on `ui-xs` (~11.06px at base 14).
- * That is the nearest expressible value to the badge's drawn 9.5px, not a match for
- * it; reaching ~9.8px would mean adding a new rung to the fontSize map, which is a
- * token-level decision and lives in spectrum-theme.ts, not here.
+ * The ramp bottoms out at `ui-2xs` (spectrum-theme.ts, `font-size-25`, ~9.8px at base
+ * 14) — the rung the register added below Spectrum's `ui-xs` precisely so the stamp
+ * band could be reached. `steps: 3` is the badge's band and lands on it; `steps: 2`
+ * stays the CHIP's band at `ui-xs` (~11.06px), which is the chip's drawn 11px, so the
+ * two are separate steps rather than one clamped table. Below `ui-2xs` the tables still
+ * saturate, since that is the last declared rung.
  */
-export const controlFontStep = (steps: 1 | 2) =>
+export const controlFontStep = (steps: 1 | 2 | 3) =>
   steps === 1
     ? ({
         default: "ui-sm",
         size: { XS: "ui-xs", S: "ui-xs", L: "ui", XL: "ui-lg" },
       } as const)
-    : ({
-        default: "ui-xs",
-        size: { XS: "ui-xs", S: "ui-xs", L: "ui-sm", XL: "ui" },
-      } as const);
+    : steps === 2
+      ? ({
+          default: "ui-xs",
+          size: { XS: "ui-xs", S: "ui-xs", L: "ui-sm", XL: "ui" },
+        } as const)
+      : ({
+          default: "ui-2xs",
+          size: { XS: "ui-2xs", S: "ui-2xs", L: "ui-xs", XL: "ui-sm" },
+        } as const);
 
 export const controlSize = (size: "sm" | "md" = "md"): typeof controlSizeM | typeof controlSizeS =>
   size === "sm" ? controlSizeS : controlSizeM;
@@ -524,13 +528,13 @@ export function control(options: ControlOptions): ControlResult {
    * and now weight per register but left size wholly to `controlFont()`, which is the
    * button/field band — so a badge came out at 12px and a chip at 14px against the
    * handoff's 9.5px and 11px (TerminalGlassLab.tsx:238, :500). Two rungs down lands a
-   * size-M chip on ~11px exactly; the badge band saturates at the bottom of the ui ramp
-   * (see `controlFontStep`), landing near 11px rather than the drawn 9.5px. Set as
+   * size-M chip on ~11px exactly; the badge is one rung lower still, on the register's
+   * own `ui-2xs` (~9.8px), the nearest declared rung to its drawn 9.5px. Set as
    * `fontSize`, not `font`, so it overrides ONLY the size the shorthand above
    * established and leaves family, weight, line-height and color intact — and it must
    * come after that shorthand to win. */
   if (register === "badge" || register === "chip") {
-    result.fontSize = controlFontStep(2);
+    result.fontSize = controlFontStep(register === "badge" ? 3 : 2);
   }
 
   if (options.shape === "pill") {
@@ -718,6 +722,100 @@ export const edgeFade = (side: "block" | "inline" = "block") => {
     maskSize: "[100% 100%, 4px 4px]",
     maskRepeat: "[no-repeat, repeat]",
     maskComposite: "[add]",
+  } as const;
+};
+
+/**
+ * Viviana UI v2 (Terminal Glass): the register's block meter — a row of hard-edged
+ * squares with a gutter between them, in one channel colour.
+ *
+ * The handoff never draws a continuous bar for a countable quantity. A streak is "14
+ * yellow 10px blocks, 12th dithered", an XP level is a block bar, a volume readout is
+ * `▮▮▮▮▯`, and a journey's progress is `[▮▮▮▮▯▯]` in its channel colour (README §Home,
+ * §Theater, §Profile). Geometry from README §Metrics: blocks 6–12px square, gap 3–5px.
+ * The default 10px/4px is the streak tile, the most-drawn instance.
+ *
+ * Painted as ONE repeating gradient rather than N elements, for the same reason
+ * `dither()` is a background and not a child: the paint order is identical, and a meter
+ * fill that is a background can be clipped by the track's own `border-radius` and sized
+ * by a single width without the DOM growing a node per block. The cost is that a block
+ * cannot carry its own rim or corner — at 10px square with a 1px corner there is nothing
+ * to see, and the row's rim belongs to the TRACK, which is a `control()` surface and gets
+ * `edge-glass` there.
+ *
+ * The caller owns how MANY blocks show: the helper paints an unbounded row, and the
+ * filled portion is the width of the element carrying it, exactly as a progress fill
+ * already works. A dithered lead block (the handoff's 12th-of-14, its 6%-of-84% XP lead)
+ * is `dither()` on a sibling, not a mode here.
+ *
+ * Suppressed under forced colors, where the channel colour is not ours to paint.
+ */
+export const pixelBlocks = <Block extends string, Gap extends string, Color extends string>(
+  options: { block?: Block; gap?: Gap; color?: Color } = {},
+) => {
+  const block = (options.block ?? "10px") as Block;
+  const gap = (options.gap ?? "4px") as Gap;
+  const color = (options.color ?? "var(--status-metric)") as Color;
+  return {
+    backgroundImage: {
+      default: `[repeating-linear-gradient(to right, ${color} 0 ${block}, transparent ${block} calc(${block} + ${gap}))]`,
+      forcedColors: "none",
+    },
+    backgroundSize: `[100% ${block}]`,
+    backgroundRepeat: "[repeat-x]",
+    backgroundPosition: "[left center]",
+  } as const;
+};
+
+/**
+ * Viviana UI v2 (Terminal Glass): the HUD corner brackets — four L-shaped marks at the
+ * corners of a full-bleed frame, drawn instead of a border.
+ *
+ * The handoff frames media, not panels, this way: the Continue card's image half takes
+ * "HUD corner brackets 14px 2px `--status-info`" and the theater frame takes 22px
+ * (README §Home, §Theater); `--hud-bracket` / `--hud-stroke` (surfaces.css:32-33) are the
+ * tokens, the second commented "20–26px on full-bleed frames". A continuous border would
+ * close the frame and make the media read as a card; the brackets mark the corners and
+ * leave the edges open, which is what says "viewport" in this register.
+ *
+ * Eight background layers — an arm each way per corner, every one a solid
+ * `linear-gradient(color, color)` sized to a rectangle and pinned to its corner. Not
+ * pseudo-elements: `style()` emits one element's declarations and has no `::before`
+ * channel, a bracket must survive on elements that already use their pseudos (an `<img>`
+ * has none at all), and a background needs neither `position: relative` on the host nor
+ * a wrapper. `background-clip` is left alone so the marks sit inside the padding box.
+ *
+ * `size` is the ladder the handoff actually draws, not a free number: `S` is the
+ * `--hud-bracket` token (14px, cards), `M` the theater frame's 22px, `L` the 26px top of
+ * the documented range. Stroke is `--hud-stroke` at every size — the handoff never varies
+ * it. Suppressed under forced colors.
+ */
+export const hudBracket = <Color extends string>(
+  options: { size?: "S" | "M" | "L"; color?: Color } = {},
+) => {
+  const arm =
+    options.size === "M" ? "22px" : options.size === "L" ? "26px" : "var(--hud-bracket, 14px)";
+  const stroke = "var(--hud-stroke, 2px)";
+  const color = (options.color ?? "var(--status-info)") as Color;
+  const mark = `linear-gradient(${color}, ${color})`;
+  return {
+    backgroundImage: {
+      default: `[${Array(8).fill(mark).join(", ")}]`,
+      forcedColors: "none",
+    },
+    backgroundSize: `[${[
+      `${arm} ${stroke}`,
+      `${stroke} ${arm}`,
+      `${arm} ${stroke}`,
+      `${stroke} ${arm}`,
+      `${arm} ${stroke}`,
+      `${stroke} ${arm}`,
+      `${arm} ${stroke}`,
+      `${stroke} ${arm}`,
+    ].join(", ")}]`,
+    backgroundPosition:
+      "[left top, left top, right top, right top, left bottom, left bottom, right bottom, right bottom]",
+    backgroundRepeat: "[no-repeat]",
   } as const;
 };
 

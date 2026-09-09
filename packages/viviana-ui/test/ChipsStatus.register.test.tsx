@@ -83,6 +83,25 @@ describe("Badge stamp", () => {
     expect(declarations).toMatch(/padding(-block|-top)[^;]*:/);
   });
 
+  it("sets the stamp on its own rung, one step below the chip's", () => {
+    /* The badge is drawn 9.5px and the chip 11px, so they are two rungs, not one. Both
+       used to take `controlFontStep(2)`, which clamped at the bottom of Spectrum's ui
+       ramp and put the badge on the CHIP's 11px — a stamp that read as a small chip.
+       `ui-2xs` (index -3, ~9.8px at base 14) is the register's own rung below `ui-xs`;
+       the failure this pins is the badge silently sliding back onto -2. */
+    const { unmount } = render(() => <Badge>NEW</Badge>);
+    const badge = screen.getByText("NEW").closest("[class]")!.parentElement!;
+    expect(declarationsOf(badge)).toContain("--fs:pow(1.125, -3)");
+    unmount();
+
+    render(() => (
+      <TagGroup aria-label="Topics" items={[{ id: "rung", name: "Rung" }]}>
+        {(item: { id: string; name: string }) => item.name}
+      </TagGroup>
+    ));
+    expect(declarationsOf(screen.getByRole("row"))).toContain("--fs:pow(1.125, -2)");
+  });
+
   it("marks the live badge with the register's pulse", () => {
     /* LIVE is the one badge allowed a fuchsia fill (DECISIONS B-3). It has to be
        distinguishable from a plain accent badge that merely happens to be pink, and the
@@ -274,13 +293,20 @@ describe("bold badge ink clears AA on its own fill", () => {
 
   it("sinks the subtle accent ink a stop, because its plate is the same hue", () => {
     /* The failure this pins: reusing the panel-grade link blue as ink on a plate tinted
-       with that same blue. It measures 4.14:1 on the light column — the pair that made
-       /showcase/chips red — and nothing about either literal looks wrong alone. */
+       with that same blue. The badge stamp is smaller and bolder than body copy, so the
+       margin the link ink has on a bare surface is not the margin it has here — the
+       accent badge takes `blue-1000` — the daylight INK stop, a step below the accent's
+       fill stop, which is 2.5:1 against its own tint. (Daylight `--text-link` has since
+       been re-valued from the 500 to that same 600/1000 stop, for the same reason on the
+       docs accent wash; the two inks agreeing is the register working, not a coupling.) */
     expect(badgeSource).toContain('accent: "blue-1000"');
     expect(badgeSource).toContain('informative: "blue-1000"');
     expect(ratio(rampStop("blue-1000", "light"), "#dae9fb")).toBeGreaterThanOrEqual(4.5);
     expect(ratio(rampStop("blue-1000", "dark"), "#020e1b")).toBeGreaterThanOrEqual(4.5);
-    expect(ratio(cssToken("--text-link", "light"), "#dae9fb")).toBeLessThan(4.5);
+    /* The literal that WOULD have been reached for: the accent's own fill stop. It is
+       2.5:1 on a plate tinted with itself — the pair that made /showcase/chips red. */
+    expect(ratio(cssToken("--accent-primary", "light"), "#dae9fb")).toBeLessThan(4.5);
+    expect(ratio(cssToken("--accent-primary", "dark"), "#020e1b")).toBeGreaterThanOrEqual(4.5);
   });
 
   it("keeps white legible on the neutral badge fill in both schemes", () => {
